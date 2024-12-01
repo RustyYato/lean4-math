@@ -6,7 +6,7 @@ class DFunLike (F: Sort*) (α: outParam Sort*) (β: outParam (α -> Sort*)) wher
   coe: F -> ∀x, β x
   coe_inj: Function.Injective coe
 
-abbrev FunLike (F: Sort*) (α: Sort*) (β: Sort*) := DFunLike F α (fun _ => β)
+abbrev FunLike (F: Sort*) (α β: outParam <| Sort*) := DFunLike F α (fun _ => β)
 
 instance [DFunLike F α β] : CoeFun F (fun _ => ∀x, β x) where
   coe := DFunLike.coe
@@ -39,10 +39,18 @@ namespace FunLike
 
 variable {F α β : Sort*} [i : FunLike F α β]
 
-protected theorem congr {f g : F} {x y : α} (h₁ : f = g) (h₂ : x = y) : f x = g y :=
-  congr (congrArg _ h₁) h₂
+def congr {f g : F} {x y : α} (h₁ : f = g) (h₂ : x = y) : f x = g y :=
+  _root_.congr (congrArg _ h₁) h₂
 
-protected theorem congr_arg (f : F) {x y : α} (h₂ : x = y) : f x = f y :=
-  congrArg _ h₂
+def congrArg (f : F) {x y : α} (h₂ : x = y) : f x = f y :=
+  _root_.congrArg _ h₂
+
+def comp (f: A -> B) (h: Function.Injective f) [fl: FunLike B α β] : FunLike A α β where
+  coe := fl.coe ∘ f
+  coe_inj := by
+    apply Function.Injective.comp
+    apply fl.coe_inj
+    assumption
+
 
 end FunLike
