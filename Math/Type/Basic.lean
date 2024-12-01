@@ -19,6 +19,20 @@ instance {α: Type*} {β: α -> Type*} [IsEmpty α] : IsEmpty ((x: α) × β x) 
   elim f := elim_empty f.1
 instance {α: Sort*} {β: α -> Sort*} [IsEmpty α] : IsEmpty ((x: α) ×' β x) where
   elim f := elim_empty f.1
+instance {α: Type*} {β: Type*} [IsEmpty α] : IsEmpty (α × β) where
+  elim f := elim_empty f.1
+instance {α: Sort*} {β: Sort*} [IsEmpty α] : IsEmpty (α ×' β) where
+  elim f := elim_empty f.1
+instance {α: Type*} {β: Type*} [IsEmpty α] [IsEmpty β] : IsEmpty (α ⊕ β) where
+  elim f := (by cases f <;> (rename_i f; exact elim_empty f))
+instance {α: Sort*} {β: Sort*} [IsEmpty α] [IsEmpty β] : IsEmpty (α ⊕' β) where
+  elim f := (by cases f <;> (rename_i f; exact elim_empty f))
+instance {α: Prop} {β: Prop} [IsEmpty α] : IsEmpty (α ∧ β) where
+  elim f := elim_empty f.1
+instance {α: Prop} {β: Prop} [IsEmpty β] : IsEmpty (α ∧ β) where
+  elim f := elim_empty f.2
+instance {α: Prop} {β: Prop} [IsEmpty α] [IsEmpty β] : IsEmpty (α ∨ β) where
+  elim f := (by cases f <;> (rename_i f; exact elim_empty f))
 
 class Embedding (α β: Sort*) where
   toFun: α -> β
