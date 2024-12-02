@@ -3,8 +3,11 @@ namespace Function
 variable (g: β -> α) (f: α -> β)
 variable {g₀ g₁: β -> α} {f₀ f₁: α -> β}
 
+@[reducible]
 def Injective: Prop := ∀⦃x y⦄, f x = f y -> x = y
+@[reducible]
 def Surjective: Prop := ∀b, ∃a, f a = b
+@[reducible]
 def Bijective: Prop := Injective f ∧ Surjective f
 
 def IsLeftInverse: Prop := ∀x, g (f x) = x

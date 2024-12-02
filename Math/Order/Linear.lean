@@ -100,6 +100,8 @@ def not_lt_of_le (hab : a ≤ b) : ¬ b < a := imp_not_comm.1 not_le_of_lt hab
 @[refl]
 def le_refl (a: α): a ≤ a := le_of_eq rfl
 def lt_irrefl: ¬a < a := fun h => (lt_iff_le_and_not_le.mp h).right (le_refl _)
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply lt_irrefl (by assumption))
 def ne_of_lt: a < b -> a ≠ b := fun h g => lt_irrefl (g ▸ h)
 def lt_or_eq_of_le: a ≤ b -> a < b ∨ a = b := by
   intro h

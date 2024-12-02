@@ -16,9 +16,7 @@ def nat.toNat.LeftInverse : ∀x, nat.toNat (nat.ofNat x) = x := fun _ => rfl
 
 instance : OfNat nat n := ⟨n⟩
 
-@[match_pattern]
 def nat.zero : nat := 0
-@[match_pattern]
 def nat.succ : nat -> nat := Nat.succ
 
 @[simp]
@@ -48,8 +46,42 @@ def nat.cases (motive: nat -> Sort u)
 def nat.rec.zero {zero} {succ} : nat.rec motive zero succ 0 = zero := rfl
 def nat.rec.succ {zero} {succ} : nat.rec motive zero succ (nat.succ n) = succ n (nat.rec motive zero succ n) := rfl
 
+def nat.noConfusion :
+  {P : Sort u_1} → {v1 v2 : Nat} → v1 = v2 → Nat.noConfusionType P v1 v2 := by
+  intro P v1 v2 h
+  match v1, v2 with
+  | 0, 0 => exact id
+  | v1 + 1, v2 + 1 =>
+    intro ih
+    apply ih
+    apply Nat.succ.inj h
+
+def nat.succ.inj : Function.Injective nat.succ := fun {_ _} => Nat.succ.inj
+
+def nat.zero_ne_succ (a: nat) : 0 ≠ a.succ := nat.noConfusion
+def nat.succ_ne_zero (a: nat) : a.succ ≠ 0 := nat.noConfusion
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply nat.zero_ne_succ; assumption)
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply nat.succ_ne_zero; assumption)
+
 -- seal nat so that you can't see that it's really just Nat
 attribute [irreducible] nat
+attribute [match_pattern] nat.zero
+attribute [match_pattern] nat.succ
+
+def nat.ne_succ_self (a: nat) : a ≠ a.succ := by
+  intro h
+  induction a using rec with
+  | zero => contradiction
+  | succ _ ih =>
+    apply ih
+    apply nat.succ.inj
+    assumption
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply nat.ne_succ_self; assumption)
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply nat.ne_succ_self; symm; assumption)
 
 section add
 
@@ -113,6 +145,15 @@ def nat.add_left_comm (a b c: nat) : (a + b) + c = (c + b) + a := by
   simp only [nat.add_comm, ←nat.add_assoc _ a, nat.add_assoc a]
 def nat.add_right_comm (a b c: nat) : (a + b) + c = (a + c) + b := by
   simp only [nat.add_comm, ←nat.add_assoc _ a, nat.add_assoc a]
+
+def nat.add_eq_zero {a b: nat} : a + b = 0 -> a = 0 ∧ b = 0 := by
+  intro h
+  cases a using cases
+  cases b using cases
+  trivial
+  rw [add_succ] at h
+  contradiction
+  contradiction
 
 end add
 
@@ -195,6 +236,36 @@ def nat.mul_one (a: nat) : a * 1 = a := by
   rw [nat.mul_succ, nat.mul_zero, nat.add_zero]
 def nat.one_mul (a: nat) : 1 * a = a := by
   rw [mul_comm, mul_one]
+
+def nat.of_mul_eq_zero {a b: nat} : a * b = 0 -> a = 0 ∨ b = 0 := by
+  intro h
+  cases a using cases
+  left; rfl
+  cases b using cases
+  right; rfl
+  simp at h
+  contradiction
+
+def nat.of_mul_eq_one {a b: nat} : a * b = 1 -> a = 1 ∧ b = 1 := by
+  intro h
+  cases a using cases with
+  | zero =>
+    rw [zero_mul] at h
+    contradiction
+  | succ a =>
+  cases a using cases with
+  | zero =>
+    erw [one_mul] at h
+    apply And.intro <;> trivial
+  | succ a =>
+    rw [succ_mul, succ_mul, ←add_assoc] at h
+    cases b using cases
+    rw [mul_zero] at h
+    contradiction
+    rw [add_succ, succ_add, succ_add, succ_add] at h
+    replace h : _ = nat.succ 0 := h
+    have := nat.succ.inj h
+    contradiction
 
 end mul
 
