@@ -252,6 +252,31 @@ def nat.le_iff_exists_add_eq {a b: nat} : a ≤ b ↔ ∃k, a + k = b := by
   subst b
   apply nat.le_add_right
 
+def nat.lt_iff_exists_add_eq {a b: nat} : a < b ↔ ∃k: nat, a + k.succ = b := by
+  apply Iff.intro
+  intro h
+  induction h with
+  | zero => refine ⟨_, rfl⟩
+  | succ _ ih =>
+    obtain ⟨k, prf⟩ := ih
+    exists k
+    rw [nat.succ_add, prf]
+  intro ⟨k, eq⟩
+  subst b
+  apply lt_of_le_of_lt
+  apply nat.le_add_right _ k
+  rw [add_succ]
+  apply nat.lt_succ_self
+
+def nat.eq_zero_of_add_le_self {a b: nat} : a + b ≤ a -> b = 0 := by
+  intro ab_le_a
+  cases b using cases
+  rfl
+  rw [add_succ, ←succ_add] at ab_le_a
+  have := le_trans (le_add_right _ _) ab_le_a
+  have := not_lt_of_le this (lt_succ_self _)
+  contradiction
+
 def nat.le_add_left_of_le (a b k: nat) : a ≤ b -> k + a ≤ k + b := by
   intro h
   induction k using rec with
@@ -437,5 +462,16 @@ def nat.sub_add_cancel (a b: nat) (h: b ≤ a) : a - b + b = a := by
   induction h with
   | zero => simp
   | succ _ ih =>  simp [ih]
+
+def nat.sub_le (a b: nat) : a - b ≤ a := by
+  induction b using rec generalizing a with
+  | zero => rfl
+  | succ b ih =>
+    cases a using cases
+    rw [zero_sub]
+    rw [succ_sub_succ]
+    apply le_trans
+    apply ih
+    apply le_succ_self
 
 end sub

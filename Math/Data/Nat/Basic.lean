@@ -128,8 +128,12 @@ def nat.lift_add (a b: nat) : a + b = nat.ofNat (a.toNat + b.toNat) := by
     rw [Nat.add_assoc _ 1, Nat.add_comm 1, ←Nat.add_assoc, Nat.add_one,
       nat.ofNat_succ, ih]
 
-def nat.lift_add' (a b: Nat) : nat.ofNat (a + b) = nat.ofNat a + nat.ofNat b := by
+def nat.lift_add₁ : nat.ofNat (a + b) = nat.ofNat a + nat.ofNat b := by
   rw [lift_add, toNat.LeftInverse, toNat.LeftInverse]
+
+def nat.lift_add₂ : nat.toNat (a + b) = nat.toNat a + nat.toNat b := by
+  conv => { lhs; rw [←nat.ofNat.LeftInverse a, ←nat.ofNat.LeftInverse b] }
+  rw [←lift_add₁, nat.toNat.LeftInverse]
 
 @[csimp]
 def nat.add_eq_addFast : @nat.add = @nat.addFast := by
@@ -211,10 +215,14 @@ def nat.lift_mul (a b: nat) : a * b = nat.ofNat (a.toNat * b.toNat) := by
   | zero => simp
   | succ a ih =>
     simp [←ih]
-    rw [Nat.add_one, Nat.succ_mul, Nat.add_comm, lift_add', ofNat.LeftInverse, ih]
+    rw [Nat.add_one, Nat.succ_mul, Nat.add_comm, lift_add₁, ofNat.LeftInverse, ih]
 
-def nat.lift_mul' (a b: Nat) : nat.ofNat (a * b) = nat.ofNat a * nat.ofNat b := by
+def nat.lift_mul₁ : nat.ofNat (a * b) = nat.ofNat a * nat.ofNat b := by
   rw [lift_mul, toNat.LeftInverse, toNat.LeftInverse]
+
+def nat.lift_mul₂ : nat.toNat (a * b) = nat.toNat a * nat.toNat b := by
+  conv => { lhs; rw [←nat.ofNat.LeftInverse a, ←nat.ofNat.LeftInverse b] }
+  rw [←lift_mul₁, nat.toNat.LeftInverse]
 
 @[csimp]
 def nat.mul_eq_mulFast : @nat.mul = @nat.mulFast := by
@@ -278,7 +286,7 @@ instance : Pow nat Nat := ⟨nat.pow⟩
 def nat.npow_zero (x: nat) : x ^ 0 = 1 := rfl
 def nat.npow_succ (x: nat) (n: Nat) : x ^ n.succ = x * x ^ n := by
   show nat.ofNat (_ * _) = _ * nat.ofNat _
-  rw [lift_mul', ofNat.LeftInverse, mul_comm]
+  rw [lift_mul₁, ofNat.LeftInverse, mul_comm]
 
 end pow
 
@@ -333,8 +341,12 @@ def nat.lift_sub : a - b = nat.ofNat (a.toNat - b.toNat) := by
     | zero => simp
     | succ b => simp [ih]
 
-def nat.lift_sub' : nat.ofNat (a - b) = nat.ofNat a - nat.ofNat b := by
+def nat.lift_sub₁ : nat.ofNat (a - b) = nat.ofNat a - nat.ofNat b := by
   rw [lift_sub, toNat.LeftInverse, toNat.LeftInverse]
+
+def nat.lift_sub₂ : nat.toNat (a - b) = nat.toNat a - nat.toNat b := by
+  conv => { lhs; rw [←nat.ofNat.LeftInverse a, ←nat.ofNat.LeftInverse b] }
+  rw [←lift_sub₁, nat.toNat.LeftInverse]
 
 @[csimp]
 def nat.sub_eq_subFast : nat.sub = nat.subFast := by
