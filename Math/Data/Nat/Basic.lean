@@ -29,6 +29,7 @@ def nat.toNat_zero : nat.toNat 0 = 0 := rfl
 @[simp]
 def nat.toNat_succ : nat.toNat (nat.succ n) = (nat.toNat n).succ := rfl
 
+noncomputable
 def nat.rec (motive: nat -> Sort u)
   (zero: motive 0)
   (succ: ∀n, motive n -> motive n.succ):
@@ -188,4 +189,23 @@ def nat.mul_left_comm (a b c: nat) : (a * b) * c = (c * b) * a := by
 def nat.mul_right_comm (a b c: nat) : (a * b) * c = (a * c) * b := by
   simp only [nat.mul_comm, ←nat.mul_assoc _ a, nat.mul_assoc a]
 
+def nat.mul_one (a: nat) : a * 1 = a := by
+  show a * nat.succ 0 = a
+  rw [nat.mul_succ, nat.mul_zero, nat.add_zero]
+def nat.one_mul (a: nat) : 1 * a = a := by
+  rw [mul_comm, mul_one]
+
 end mul
+
+section pow
+
+def nat.pow (x: nat) (n: Nat) : nat := nat.ofNat (Nat.pow x.toNat n)
+
+instance : Pow nat Nat := ⟨nat.pow⟩
+
+def nat.npow_zero (x: nat) : x ^ 0 = 1 := rfl
+def nat.npow_succ (x: nat) (n: Nat) : x ^ n.succ = x * x ^ n := by
+  show nat.ofNat (_ * _) = _ * nat.ofNat _
+  rw [lift_mul', ofNat.LeftInverse, mul_comm]
+
+end pow
