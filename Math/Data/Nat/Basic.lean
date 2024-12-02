@@ -1,4 +1,5 @@
 import Math.Function.Basic
+import Math.Type.Basic
 
 -- use a different namespace so that
 def nat := Nat
@@ -209,3 +210,66 @@ def nat.npow_succ (x: nat) (n: Nat) : x ^ n.succ = x * x ^ n := by
   rw [lift_mul', ofNat.LeftInverse, mul_comm]
 
 end pow
+
+def nat.iso : nat ≃ Nat where
+  toFun := nat.toNat
+  invFun := nat.ofNat
+  leftInv := by apply nat.ofNat.LeftInverse
+  rightInv := by apply nat.toNat.LeftInverse
+
+section sub
+
+def nat.pred : nat -> nat := nat.cases _ 0 id
+
+def nat.succ_pred (a: nat) : a.succ.pred = a := rfl
+
+noncomputable
+def nat.sub (a b: nat) : nat := b.rec (fun _ => nat) a (fun _ => nat.pred)
+def nat.subFast (a b: nat) : nat := nat.ofNat (a.toNat - b.toNat)
+
+noncomputable
+instance : Sub nat := ⟨nat.sub⟩
+
+@[simp]
+def nat.sub_zero (n: nat) : n - 0 = n := rfl
+@[simp]
+def nat.zero_sub (n: nat) : 0 - n = 0 := by
+  induction n using rec with
+  | zero => rfl
+  | succ n ih =>
+    show (0 - n).pred = 0
+    rw [ih]
+    rfl
+@[simp]
+def nat.succ_sub_succ (a b: nat) : a.succ - b.succ = a - b := by
+  show (a.succ - b).pred = a - b
+  induction b using rec with
+  | zero => rfl
+  | succ b ih =>
+    show (a.succ - b).pred.pred = a - b.succ
+    rw [ih]
+    rfl
+def nat.add_sub (a b: nat) : a + b - b = a := by
+  induction b using rec with
+  | zero => simp
+  | succ b ih => simp [ih]
+
+def nat.lift_sub : a - b = nat.ofNat (a.toNat - b.toNat) := by
+  induction a using rec generalizing b with
+  | zero => simp
+  | succ a ih =>
+    cases b using nat.cases with
+    | zero => simp
+    | succ b => simp [ih]
+
+def nat.lift_sub' : nat.ofNat (a - b) = nat.ofNat a - nat.ofNat b := by
+  rw [lift_sub, toNat.LeftInverse, toNat.LeftInverse]
+
+@[csimp]
+def nat.sub_eq_subFast : nat.sub = nat.subFast := by
+  funext a b
+  apply lift_sub
+
+instance : Sub nat := ⟨nat.sub⟩
+
+end sub
