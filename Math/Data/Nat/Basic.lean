@@ -36,6 +36,13 @@ def nat.rec (motive: nat -> Sort u)
 | 0 => zero
 | .succ n => succ _ (nat.rec motive zero succ n)
 
+def nat.cases (motive: nat -> Sort u)
+  (zero: motive 0)
+  (succ: ∀n: nat, motive n.succ):
+  ∀n: nat, motive n
+| 0 => zero
+| .succ _ => succ _
+
 def nat.rec.zero {zero} {succ} : nat.rec motive zero succ 0 = zero := rfl
 def nat.rec.succ {zero} {succ} : nat.rec motive zero succ (nat.succ n) = succ n (nat.rec motive zero succ n) := rfl
 
