@@ -433,4 +433,9 @@ end mul
 
 section sub
 
+def nat.sub_add_cancel (a b: nat) (h: b ≤ a) : a - b + b = a := by
+  induction h with
+  | zero => simp
+  | succ _ ih =>  simp [ih]
+
 end sub

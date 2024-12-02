@@ -249,7 +249,7 @@ def nat.succ_sub_succ (a b: nat) : a.succ - b.succ = a - b := by
     show (a.succ - b).pred.pred = a - b.succ
     rw [ih]
     rfl
-def nat.add_sub (a b: nat) : a + b - b = a := by
+def nat.add_sub_cancel (a b: nat) : a + b - b = a := by
   induction b using rec with
   | zero => simp
   | succ b ih => simp [ih]
@@ -271,5 +271,29 @@ def nat.sub_eq_subFast : nat.sub = nat.subFast := by
   apply lift_sub
 
 instance : Sub nat := ⟨nat.sub⟩
+
+@[simp]
+def nat.sub_add (a b k: nat) : k - (a + b) = k - a - b := by
+  induction a using rec generalizing k with
+  | zero => simp
+  | succ a ih =>
+    cases k using cases with
+    | zero => simp
+    | succ k => simp [ih]
+
+@[simp]
+def nat.sub_mul (a b k: nat) : (a - b) * k = a * k - b * k := by
+  induction a using rec generalizing b with
+  | zero => simp
+  | succ a ih =>
+    cases b using cases with
+    | zero => simp
+    | succ b =>
+      simp [ih]
+      rw [add_comm k, nat.add_sub_cancel]
+
+@[simp]
+def nat.mul_sub (a b k: nat) : k * (a - b) = k * a - k * b := by
+  simp [mul_comm k]
 
 end sub
