@@ -239,6 +239,15 @@ def nat.le_add_right (a b: nat) : a ≤ a + b := by
   rw [add_comm]
   apply le_add_left
 
+def nat.add_pos (a b: nat) : 0 < a ∨ 0 < b -> 0 < a + b := by
+  intro h
+  cases a using cases
+  cases b using cases
+  contradiction
+  rw [add_succ]
+  apply zero_lt_succ
+  apply zero_lt_succ
+
 def nat.le_iff_exists_add_eq {a b: nat} : a ≤ b ↔ ∃k, a + k = b := by
   apply Iff.intro
   intro h

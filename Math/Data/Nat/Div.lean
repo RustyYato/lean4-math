@@ -205,9 +205,26 @@ def nat.mul_div_of_dvd (a b: nat) (bpos: 0 < b) : b ∣ a -> b * (a /? b) = a :=
   apply div_mul_of_dvd
   assumption
 
-def nat.mul_div (a b: nat) (bpos: 0 < b) : a * b /? b = a := by
+def nat.div_den_congr (a b c: nat) (h: b = c) (bpos: 0 < b) : a /? b = a /? c ~(by
+  subst c
+  assumption) := by
+  subst c
+  rfl
+
+def nat.mul_left_div (a b: nat) (bpos: 0 < b) : a * b /? b = a := by
   apply le_antisymm
   apply div_spec_ge
   rw [mul_comm]
   apply div_spec_le
   rw [mul_comm]
+
+def nat.mul_right_div (a b: nat) (bpos: 0 < b) : b * a /? b = a := by
+  rw [mul_comm, ]
+  apply le_antisymm
+  apply div_spec_ge
+  rw [mul_comm]
+  apply div_spec_le
+  rw [mul_comm]
+
+macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply nat.add_pos; invert_tactic_trivial)
+macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply nat.mul_pos <;> invert_tactic_trivial)
