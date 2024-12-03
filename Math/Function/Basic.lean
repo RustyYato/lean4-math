@@ -79,4 +79,14 @@ def inverse_congr : IsLeftInverse g₀ f₀ -> IsRightInverse g₁ f₀ -> g₀ 
   intro a b
   rw [←comp_id g₀, ←b.comp_id_eq, comp_assoc, a.comp_id_eq, id_comp]
 
+def hfunext {α α' : Sort u} {β : α → Sort v} {β' : α' → Sort v} {f : ∀a, β a} {f' : ∀a, β' a}
+    (hα : α = α') (h : ∀a a', HEq a a' → HEq (f a) (f' a')) : HEq f f' := by
+  subst hα
+  have : ∀a, HEq (f a) (f' a) := fun a ↦ h a a (HEq.refl a)
+  have : β = β' := by funext a; exact type_eq_of_heq (this a)
+  subst this
+  apply heq_of_eq
+  funext a
+  exact eq_of_heq (this a)
+
 end Function
