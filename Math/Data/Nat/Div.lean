@@ -1,8 +1,10 @@
 import Math.Data.Nat.Dvd
 import Math.Ops.Checked
 
+namespace nat
+
 noncomputable
-def nat.div_rec
+def div_rec
   (motive: nat -> ∀b: nat, 0 < b -> Sort _)
   (lt: ∀a b: nat, ∀h: 0 < b, a < b -> motive a b h)
   (ge: ∀a b: nat, ∀h: 0 < b, b ≤ a -> motive (a - b) b h -> motive a b h)
@@ -14,9 +16,9 @@ def nat.div_rec
 termination_by a
 decreasing_by
   replace g := le_of_not_lt g
-  cases b using nat.cases
+  cases b using cases
   contradiction
-  cases a using nat.cases
+  cases a using cases
   contradiction
   rw [succ_sub_succ]
   apply lt_of_le_of_lt
@@ -24,40 +26,40 @@ decreasing_by
   apply lt_succ_self
 
 noncomputable
-def nat.div : nat -> ∀den: nat, 0 < den -> nat :=
-  nat.div_rec _ (fun _ _ _ _ => 0) (fun _ _ _ _ ih => ih.succ)
+def div : nat -> ∀den: nat, 0 < den -> nat :=
+  div_rec _ (fun _ _ _ _ => 0) (fun _ _ _ _ ih => ih.succ)
 
 noncomputable
-def nat.mod : nat -> ∀den: nat, 0 < den -> nat :=
-  nat.div_rec _ (fun a _ _ _ => a) (fun _ _ _ _ ih => ih)
+def mod : nat -> ∀den: nat, 0 < den -> nat :=
+  div_rec _ (fun a _ _ _ => a) (fun _ _ _ _ ih => ih)
 
-def nat.fastDiv (a b: nat) (_h: 0 < b) := nat.ofNat (a.toNat / b.toNat)
-def nat.fastMod (a b: nat) (_h: 0 < b) := nat.ofNat (a.toNat % b.toNat)
+def fastDiv (a b: nat) (_h: 0 < b) := ofNat (a.toNat / b.toNat)
+def fastMod (a b: nat) (_h: 0 < b) := ofNat (a.toNat % b.toNat)
 
 noncomputable
 instance : CheckedDiv nat ((0: nat) < ·) where
-  checked_div := nat.div
+  checked_div := div
 
 noncomputable
 instance : CheckedMod nat ((0: nat) < ·) where
-  checked_mod := nat.mod
+  checked_mod := mod
 
-def nat.div_rec_of_lt (a b h) (a_lt_b: a < b) : nat.div_rec motive lt ge a b h = lt a b h a_lt_b := by
+def div_rec_of_lt (a b h) (a_lt_b: a < b) : div_rec motive lt ge a b h = lt a b h a_lt_b := by
   unfold div_rec
   rw [dif_pos]
-def nat.div_rec_of_ge (a b h) (a_lt_b: b ≤ a) : nat.div_rec motive lt ge a b h = ge a b h a_lt_b (nat.div_rec motive lt ge _ b h) := by
+def div_rec_of_ge (a b h) (a_lt_b: b ≤ a) : div_rec motive lt ge a b h = ge a b h a_lt_b (div_rec motive lt ge _ b h) := by
   rw [div_rec, dif_neg]
   apply not_lt_of_le
   assumption
 
-def nat.div_of_lt (a b: nat) (h: 0 < b) : a < b -> a /? b = 0 := div_rec_of_lt a b h
-def nat.div_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a /? b = ((a - b) /? b).succ := div_rec_of_ge a b h
+def div_of_lt (a b: nat) (h: 0 < b) : a < b -> a /? b = 0 := div_rec_of_lt a b h
+def div_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a /? b = ((a - b) /? b).succ := div_rec_of_ge a b h
 
-def nat.mod_of_lt (a b: nat) (h: 0 < b) : a < b -> a %? b = a := div_rec_of_lt a b h
-def nat.mod_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a %? b = (a - b) %? b := div_rec_of_ge a b h
+def mod_of_lt (a b: nat) (h: 0 < b) : a < b -> a %? b = a := div_rec_of_lt a b h
+def mod_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a %? b = (a - b) %? b := div_rec_of_ge a b h
 
 @[csimp]
-def nat.div_eq_fastDiv : nat.div = nat.fastDiv := by
+def div_eq_fastDiv : div = fastDiv := by
   funext a b h
   show a /? b = _
   unfold fastDiv
@@ -65,25 +67,25 @@ def nat.div_eq_fastDiv : nat.div = nat.fastDiv := by
   | lt a b h a_lt_b =>
     rw [div_of_lt, Nat.div_eq_of_lt]
     rfl
-    apply (nat.LT_iff_toNat_lt _ _).mp
+    apply (LT_iff_toNat_lt _ _).mp
     assumption
     assumption
   | ge a b h b_le_a ih =>
     rw [div_of_ge, Nat.div_eq, if_pos]
-    show _ = (nat.ofNat (_)).succ
+    show _ = (ofNat (_)).succ
     congr
     rw [lift_sub₂] at ih
     assumption
     apply And.intro
-    show nat.toNat 0 < _
-    apply (nat.LT_iff_toNat_lt _ _).mp
+    show toNat 0 < _
+    apply (LT_iff_toNat_lt _ _).mp
     assumption
-    apply (nat.LE_iff_toNat_le _ _).mp
+    apply (LE_iff_toNat_le _ _).mp
     assumption
     assumption
 
 @[csimp]
-def nat.mod_eq_fastMod : nat.mod = nat.fastMod := by
+def mod_eq_fastMod : mod = fastMod := by
   funext a b h
   show a %? b = _
   unfold fastMod
@@ -91,7 +93,7 @@ def nat.mod_eq_fastMod : nat.mod = nat.fastMod := by
   | lt a b h a_lt_b =>
     rw [mod_of_lt, Nat.mod_eq_of_lt]
     rfl
-    apply (nat.LT_iff_toNat_lt _ _).mp
+    apply (LT_iff_toNat_lt _ _).mp
     assumption
     assumption
   | ge a b h b_le_a ih =>
@@ -100,39 +102,39 @@ def nat.mod_eq_fastMod : nat.mod = nat.fastMod := by
     rw [lift_sub₂] at ih
     assumption
     apply And.intro
-    show nat.toNat 0 < _
-    apply (nat.LT_iff_toNat_lt _ _).mp
+    show toNat 0 < _
+    apply (LT_iff_toNat_lt _ _).mp
     assumption
-    apply (nat.LE_iff_toNat_le _ _).mp
+    apply (LE_iff_toNat_le _ _).mp
     assumption
     assumption
 
 instance : CheckedDiv nat ((0: nat) < ·) where
-  checked_div := nat.div
+  checked_div := div
 
 instance : CheckedMod nat ((0: nat) < ·) where
-  checked_mod := nat.mod
+  checked_mod := mod
 
 instance : Div nat where
   div a b := if h:0 < b then a /? b else 0
 instance : Mod nat where
   mod a b := if h:0 < b then a %? b else a
 
-def nat.udiv_eq_div (a b: nat) (h: 0 < b) : a / b = a /? b := by
-  unfold HDiv.hDiv instHDiv Div.div instDivNat
+def udiv_eq_div (a b: nat) (h: 0 < b) : a / b = a /? b := by
+  unfold HDiv.hDiv instHDiv Div.div instDiv
   dsimp
   rw [dif_pos]
 
-def nat.umod_eq_mod (a b: nat) (h: 0 < b) : a % b = a %? b := by
+def umod_eq_mod (a b: nat) (h: 0 < b) : a % b = a %? b := by
   show Mod.mod _ _ = _
-  unfold Mod.mod instModNat
+  unfold Mod.mod instMod
   dsimp
   rw [dif_pos]
 
-def nat.udiv_zero (a: nat) : a / 0 = 0 := rfl
-def nat.umod_zero (a: nat) : a % 0 = a := rfl
+def udiv_zero (a: nat) : a / 0 = 0 := rfl
+def umod_zero (a: nat) : a % 0 = a := rfl
 
-def nat.div_add_mod (a b: nat) (bpos: 0 < b) : b * (a /? b) + a %? b = a := by
+def div_add_mod (a b: nat) (bpos: 0 < b) : b * (a /? b) + a %? b = a := by
   induction a, b, bpos using div_rec with
   | lt a b b_pos a_lt_b =>
     rw [div_of_lt, mod_of_lt, mul_zero]
@@ -141,7 +143,7 @@ def nat.div_add_mod (a b: nat) (bpos: 0 < b) : b * (a /? b) + a %? b = a := by
     rw [div_of_ge, mod_of_ge, mul_succ, add_assoc, ih, add_comm, sub_add_cancel]
     repeat trivial
 
-def nat.udiv_add_umod (a b: nat) : b * (a / b) + a % b = a := by
+def udiv_add_umod (a b: nat) : b * (a / b) + a % b = a := by
   cases b using cases with
   | zero => rfl
   | succ b =>
@@ -149,7 +151,7 @@ def nat.udiv_add_umod (a b: nat) : b * (a / b) + a % b = a := by
     apply div_add_mod
     trivial
 
-def nat.mod_lt (a b: nat) (bpos: 0 < b) : a %? b < b := by
+def mod_lt (a b: nat) (bpos: 0 < b) : a %? b < b := by
   induction a, b, bpos using div_rec with
   | lt a b b_pos a_lt_b =>
     rw [mod_of_lt]
@@ -158,7 +160,7 @@ def nat.mod_lt (a b: nat) (bpos: 0 < b) : a %? b < b := by
     rw [mod_of_ge]
     repeat assumption
 
-def nat.div_spec_le (a b: nat) (bpos: 0 < b) : ∀k, b * k ≤ a -> k ≤ a /? b := by
+def div_spec_le (a b: nat) (bpos: 0 < b) : ∀k, b * k ≤ a -> k ≤ a /? b := by
   intro k bk_le_a
   rw [←div_add_mod a b bpos] at bk_le_a
   apply Decidable.byContradiction
@@ -167,13 +169,13 @@ def nat.div_spec_le (a b: nat) (bpos: 0 < b) : ∀k, b * k ≤ a -> k ≤ a /? b
   have ⟨k₀, eq⟩  := lt_iff_exists_add_eq.mp h
   subst k
   rw [mul_add] at bk_le_a
-  replace bk_le_a := nat.le_add_left_iff_le.mpr bk_le_a
+  replace bk_le_a := le_add_left_iff_le.mpr bk_le_a
   clear h
   have := lt_of_le_of_lt bk_le_a (mod_lt _ _ _)
   rw [mul_succ] at this
-  exact not_le_of_lt this (nat.le_add_right _ _)
+  exact not_le_of_lt this (le_add_right _ _)
 
-def nat.div_spec_ge (a b: nat) (bpos: 0 < b) : ∀k, a ≤ b * k -> a /? b ≤ k := by
+def div_spec_ge (a b: nat) (bpos: 0 < b) : ∀k, a ≤ b * k -> a /? b ≤ k := by
   intro k bk_le_a
   rw [←div_add_mod a b bpos] at bk_le_a
   apply Decidable.byContradiction
@@ -187,7 +189,7 @@ def nat.div_spec_ge (a b: nat) (bpos: 0 < b) : ∀k, a ≤ b * k -> a /? b ≤ k
   subst b
   contradiction
 
-def nat.div_mul_of_dvd (a b: nat) (bpos: 0 < b) : b ∣ a -> a /? b * b = a := by
+def div_mul_of_dvd (a b: nat) (bpos: 0 < b) : b ∣ a -> a /? b * b = a := by
   intro ⟨k, h⟩
   have : a /? b = k := by
     apply le_antisymm
@@ -199,26 +201,26 @@ def nat.div_mul_of_dvd (a b: nat) (bpos: 0 < b) : b ∣ a -> a /? b * b = a := b
   rw [mul_comm]
   assumption
 
-def nat.mul_div_of_dvd (a b: nat) (bpos: 0 < b) : b ∣ a -> b * (a /? b) = a := by
+def mul_div_of_dvd (a b: nat) (bpos: 0 < b) : b ∣ a -> b * (a /? b) = a := by
   intro h
   rw [mul_comm]
   apply div_mul_of_dvd
   assumption
 
-def nat.div_den_congr (a b c: nat) (h: b = c) (bpos: 0 < b) : a /? b = a /? c ~(by
+def div_den_congr (a b c: nat) (h: b = c) (bpos: 0 < b) : a /? b = a /? c ~(by
   subst c
   assumption) := by
   subst c
   rfl
 
-def nat.mul_left_div (a b: nat) (bpos: 0 < b) : a * b /? b = a := by
+def mul_left_div (a b: nat) (bpos: 0 < b) : a * b /? b = a := by
   apply le_antisymm
   apply div_spec_ge
   rw [mul_comm]
   apply div_spec_le
   rw [mul_comm]
 
-def nat.mul_right_div (a b: nat) (bpos: 0 < b) : b * a /? b = a := by
+def mul_right_div (a b: nat) (bpos: 0 < b) : b * a /? b = a := by
   rw [mul_comm, ]
   apply le_antisymm
   apply div_spec_ge
@@ -226,5 +228,8 @@ def nat.mul_right_div (a b: nat) (bpos: 0 < b) : b * a /? b = a := by
   apply div_spec_le
   rw [mul_comm]
 
-macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply nat.add_pos; invert_tactic_trivial)
-macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply nat.mul_pos <;> invert_tactic_trivial)
+macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply add_pos; invert_tactic_trivial)
+macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply mul_pos <;> invert_tactic_trivial)
+
+
+end nat
