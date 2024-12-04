@@ -120,6 +120,9 @@ def nat.add_assoc (a b c: nat) : a + b + c = a + (b + c) := by
   | zero => simp
   | succ a ih => simp [ih]
 
+instance : @Std.Commutative nat (· + ·) := ⟨nat.add_comm⟩
+instance : @Std.Associative nat (· + ·) := ⟨nat.add_assoc⟩
+
 def nat.lift_add (a b: nat) : a + b = nat.ofNat (a.toNat + b.toNat) := by
   induction a using nat.rec with
   | zero => simp
@@ -209,6 +212,9 @@ def nat.mul_assoc (a b c: nat) : a * b * c = a * (b * c) := by
   induction a using rec with
   | zero => simp
   | succ a ih => simp [ih]
+
+instance : @Std.Commutative nat (· * ·) := ⟨nat.mul_comm⟩
+instance : @Std.Associative nat (· * ·) := ⟨nat.mul_assoc⟩
 
 def nat.lift_mul (a b: nat) : a * b = nat.ofNat (a.toNat * b.toNat) := by
   induction a using nat.rec with

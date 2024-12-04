@@ -40,6 +40,10 @@ def int.toInt_ofNat : int.toInt (int.ofNat n) = Int.ofNat n.toNat := rfl
 @[simp]
 def int.toInt_negSucc : int.toInt (int.negSucc n) = int.negSucc n.toNat := rfl
 
+instance decEQ (a b: int) : Decidable (a = b) :=
+  have : DecidableEq Int := inferInstance
+  this a b
+
 noncomputable
 def int.rec (motive: int -> Sort u)
   (ofNat: ∀n, motive (ofNat n))
@@ -112,11 +116,15 @@ instance : Neg int := ⟨neg⟩
 def neg_zero : -(0: int) = 0 := rfl
 def neg_ofNat_succ : -ofNat n.succ = negSucc n := rfl
 @[simp]
-def neg_negSucc : -negSucc n = ofNat n.succ := rfl
+def neg_negSucc : -negSucc n = posSucc n := rfl
+@[simp]
+def neg_posSucc : -posSucc n = negSucc n := rfl
 
 @[simp]
 def neg_neg (x: int) : - -x = x := by
   cases x using rec' <;> rfl
+
+def neg.inj : Function.Injective neg := Function.IsLeftInverse.Injective neg_neg
 
 end neg
 
@@ -214,7 +222,9 @@ def neg_succ (a: int) : -a.succ = (-a).pred := by
   cases a using rec'
   any_goals rfl
   rename_i a; cases a using nat.rec <;> rfl
-
+@[simp]
+def neg_ofNat (a: nat) : -ofNat a = (negSucc a).succ := by
+  erw [←succ_pred (ofNat a), neg_pred, neg_ofNat_succ]
 noncomputable
 def ind (motive: int -> Sort _)
   (zero: motive 0)
@@ -479,6 +489,18 @@ def ofNat_add (a b: nat ) : ofNat a + ofNat b = ofNat (a + b) := by
     rw [←ofNat_succ a, succ_add]
     simp [ih]
 
+@[simp]
+def posSucc_add (a b: nat ) : posSucc a + posSucc b = posSucc (a + b).succ := by
+  apply neg.inj
+  show -_ = (-_: int)
+  simp [posSucc]
+
+@[simp]
+def negSucc_add (a b: nat ) : negSucc a + negSucc b = negSucc (a + b).succ := by
+  apply neg.inj
+  show -_ = (-_: int)
+  simp
+
 def add_comm_left (a b c: int) : a + (b + c) = b + (a + c) := by
   simp only [add_comm, ←add_assoc _ a, add_assoc a]
 def add_comm_right (a b c: int) : a + (b + c) = c + (b + a) := by
@@ -610,14 +632,14 @@ def mul_comm (a b: int) : a * b = b * a := by
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
-def neg_mul_right (a b: int) : a * -b = -(a * b) := by
+def mul_neg (a b: int) : a * -b = -(a * b) := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih, sub_eq_add_neg]
 
-def neg_mul_left (a b: int) : -a * b = -(a * b) := by
-  simp [mul_comm _ b, neg_mul_right]
+def neg_mul (a b: int) : -a * b = -(a * b) := by
+  simp [mul_comm _ b, mul_neg]
 
 @[simp]
 def add_mul (a b k: int) : (a + b) * k = a * k + b * k := by
@@ -632,7 +654,7 @@ def mul_add (a b k: int) : k * (a + b) = k * a + k * b := by
 
 @[simp]
 def mul_sub (a b k: int) : k * (a - b) = k * a - k * b := by
-  simp [mul_comm k, sub_eq_add_neg, neg_mul_left]
+  simp [mul_comm k, sub_eq_add_neg, neg_mul]
 
 @[simp]
 def sub_mul (a b k: int) : (a - b) * k = a * k - b * k := by
@@ -655,6 +677,52 @@ def mul_left_comm (a b c: int) : (a * b) * c = (c * b) * a := by
   simp only [mul_comm, ←mul_assoc _ a, mul_assoc a]
 def mul_right_comm (a b c: int) : (a * b) * c = (a * c) * b := by
   simp only [mul_comm, ←mul_assoc _ a, mul_assoc a]
+
+@[simp]
+def mul_one (a: int) : a * 1 = a := by
+  show a * succ 0 = a
+  simp
+@[simp]
+def one_mul (a: int) : 1 * a = a := by
+  show succ 0 * a = a
+  simp
+
+def ofNat_mul : ofNat a * ofNat b = ofNat (a * b) := by
+  induction a using nat.rec
+  erw [zero_mul]; rfl
+  rename_i ih
+  rw [←ofNat_succ, succ_mul, ih]
+  simp [nat.add_comm]
+
+@[simp]
+def posSucc_mul : posSucc a * posSucc b = posSucc (a * b + a + b) := by
+  simp [posSucc, ofNat_mul]
+  ac_rfl
+
+@[simp]
+def negSucc_mul : negSucc a * negSucc b = posSucc (a * b + a + b) := by
+  rw [←neg_neg (_ * _), ←neg_mul, ←mul_neg, neg_negSucc, neg_negSucc]
+  simp
+
+@[simp]
+def negSucc_mul_posSucc : negSucc a * posSucc b = negSucc (a * b + a + b) := by
+  rw [←neg_posSucc, neg_mul]
+  simp [posSucc, ofNat_mul]
+  ac_rfl
+
+@[simp]
+def posSucc_mul_negSucc : posSucc a * negSucc b = negSucc (a * b + a + b) := by
+  rw [←neg_posSucc, mul_neg]
+  simp [posSucc, ofNat_mul]
+  ac_rfl
+
+def mul_eq_zero {a b: int} : a * b = 0 ↔ a = 0 ∨ b = 0 := by
+  cases a using rec'
+  simp
+  all_goals cases b using rec'
+  all_goals
+    simp
+    try exact Iff.intro nofun nofun
 
 end mul
 
