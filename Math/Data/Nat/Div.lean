@@ -3,6 +3,7 @@ import Math.Ops.Checked
 
 namespace nat
 
+@[reducible]
 noncomputable
 def div_rec
   (motive: nat -> ∀b: nat, 0 < b -> Sort _)
@@ -52,11 +53,23 @@ def div_rec_of_ge (a b h) (a_lt_b: b ≤ a) : div_rec motive lt ge a b h = ge a 
   apply not_lt_of_le
   assumption
 
-def div_of_lt (a b: nat) (h: 0 < b) : a < b -> a /? b = 0 := div_rec_of_lt a b h
-def div_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a /? b = ((a - b) /? b).succ := div_rec_of_ge a b h
+def div_of_lt (a b: nat) (h: 0 < b) : a < b -> a /? b = 0 := by
+  show _ -> div _ _ _ = _
+  unfold div
+  apply div_rec_of_lt
+def div_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a /? b = ((a - b) /? b).succ := by
+  show _ -> div _ _ _ = _
+  unfold div
+  apply div_rec_of_ge
 
-def mod_of_lt (a b: nat) (h: 0 < b) : a < b -> a %? b = a := div_rec_of_lt a b h
-def mod_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a %? b = (a - b) %? b := div_rec_of_ge a b h
+def mod_of_lt (a b: nat) (h: 0 < b) : a < b -> a %? b = a := by
+  show _ -> mod _ _ _ = _
+  unfold mod
+  apply div_rec_of_lt
+def mod_of_ge (a b: nat) (h: 0 < b) : b ≤ a -> a %? b = (a - b) %? b := by
+  show _ -> mod _ _ _ = _
+  unfold mod
+  apply div_rec_of_ge
 
 @[csimp]
 def div_eq_fastDiv : div = fastDiv := by
@@ -213,6 +226,12 @@ def div_den_congr (a b c: nat) (h: b = c) (bpos: 0 < b) : a /? b = a /? c ~(by
   subst c
   rfl
 
+def mod_den_congr (a b c: nat) (h: b = c) (bpos: 0 < b) : a %? b = a %? c ~(by
+  subst c
+  assumption) := by
+  subst c
+  rfl
+
 def mul_left_div (a b: nat) (bpos: 0 < b) : a * b /? b = a := by
   apply le_antisymm
   apply div_spec_ge
@@ -231,5 +250,77 @@ def mul_right_div (a b: nat) (bpos: 0 < b) : b * a /? b = a := by
 macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply add_pos; invert_tactic_trivial)
 macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|apply mul_pos <;> invert_tactic_trivial)
 
+def dvd_mod {a b k: nat} (h: 0 < b) : k ∣ a -> k ∣ b -> k ∣ a %? b := by
+  intro ka kb
+  have := div_add_mod a b h
+  rw [←this] at ka
+  exact of_dvd_add (by
+    apply dvd_trans kb
+    apply dvd_mul_right) ka
+
+def mul_div_le (a b: nat) (hb: 0 < b): b * (a /? b) ≤ a := by
+  induction a, b, hb using div_rec with
+  | lt a b hb ab =>
+    rw [div_of_lt, mul_zero]
+    apply zero_le
+    assumption
+  | ge a b hb ba ih  =>
+    rw [div_of_ge, mul_succ]
+    conv => {
+      rhs; rw [←sub_add_cancel _ _ ba, add_comm]
+    }
+    apply add_le_add
+    rfl
+    assumption
+    assumption
+
+def mul_div_mul (a b k: nat) (hb: 0 < b) (hk: 0 < k) : (a * k) /? (b * k) = a /? b := by
+  apply le_antisymm
+  · apply div_spec_le
+    induction a, b, hb using div_rec with
+    | lt a b hb ab =>
+      rw [div_of_lt, mul_zero]
+      apply zero_le
+      apply (lt_mul_right_iff_lt hk).mp
+      assumption
+    | ge a b hb ba ih  =>
+      rw [div_of_ge, mul_succ]
+      conv => {
+        rhs; rw [←sub_add_cancel _ _ ba, add_comm]
+      }
+      apply add_le_add
+      rfl
+      rw [sub_mul] at ih
+      assumption
+      apply mul_le_mul
+      assumption
+      rfl
+  · apply div_spec_le
+    rw [mul_comm b, mul_comm a, mul_assoc]
+    apply mul_le_mul
+    rfl
+    apply mul_div_le
+
+def mod_mul (a b k: nat) (hb: 0 < b) (hk: 0 < k) : (a %? b) * k = (a * k) %? (b * k) := by
+  have p1 : (b * (a /? b) + a %? b) * k = a * k := by
+    rw [div_add_mod a b (by invert_tactic)]
+  replace p1 := p1.trans (div_add_mod (a * k) (b * k) (by invert_tactic)).symm
+  rw [add_mul, mul_right_comm, mul_div_mul] at p1
+  exact add_left_cancel_iff.mp p1
+  assumption
+
+def dvd_iff_mod_eq_zero (a b: nat) (h: 0 < a) : a ∣ b ↔ b %? a = 0 := by
+  have := div_add_mod b a h
+  apply Iff.intro
+  intro dvd
+  rw [mul_div_of_dvd b a h dvd] at this
+  exact add_eq_left this
+  intro h
+  exists b /? a
+  rw [h, add_zero] at this
+  assumption
+
+@[refl]
+def dvd_refl (a: nat) : a ∣ a := ⟨1, one_mul _⟩
 
 end nat

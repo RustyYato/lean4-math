@@ -142,6 +142,10 @@ variable {a b c: nat}
 def nat.zero_le (a: nat) : 0 ≤ a := nat.LE.zero
 def nat.zero_lt_succ (a: nat) : 0 < a.succ := nat.LT.zero
 def nat.not_lt_zero (a: nat) : ¬a < 0 := nofun
+def nat.le_zero (a: nat) : a ≤ 0 -> a = 0 := by
+  intro h
+  cases h
+  rfl
 
 macro_rules
 | `(tactic|trivial) => `(tactic|apply nat.zero_le)
@@ -367,6 +371,49 @@ def nat.le_add_right_iff_le {a b k: nat} : a ≤ b ↔ a + k ≤ b + k := by
 def nat.lt_add_right_iff_lt {a b k: nat} : a < b ↔ a + k < b + k := by
   rw [add_comm _ k, add_comm _ k]
   apply nat.lt_add_left_iff_lt
+
+def nat.add_left_cancel_iff {a b k: nat} : k + a = k + b ↔ a = b := by
+  apply flip Iff.intro
+  intro h
+  subst h
+  rfl
+  intro h
+  induction a using rec generalizing b with
+  | zero =>
+    rw [add_zero] at h
+    cases b using cases with
+    | zero => rfl
+    | succ b =>
+      exfalso
+      have : k < k + b.succ := by
+        conv => { lhs; rw [←add_zero k] }
+        apply add_lt_add_of_le_of_lt
+        rfl
+        trivial
+      rw [←h] at this
+      have := lt_irrefl this
+      contradiction
+  | succ a ih =>
+    cases b using cases with
+    | zero =>
+      exfalso
+      have : k < k + a.succ := by
+        conv => { lhs; rw [←add_zero k] }
+        apply add_lt_add_of_le_of_lt
+        rfl
+        trivial
+      rw [h, add_zero] at this
+      have := lt_irrefl this
+      contradiction
+    | succ b =>
+      congr
+      apply ih
+      apply succ.inj
+      rw [add_succ, add_succ] at h
+      assumption
+
+def nat.add_right_cancel_iff {a b k: nat} : a + k = b + k ↔ a = b := by
+  simp [add_comm _ k, add_left_cancel_iff]
 
 end add
 
