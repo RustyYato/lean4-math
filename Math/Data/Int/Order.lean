@@ -1,10 +1,12 @@
 import Math.Data.Int.Basic
 import Math.Data.Nat.Order
 
-inductive int.NonNeg : int -> Prop where
+namespace int
+
+inductive NonNeg : int -> Prop where
 | intro (a: nat) : NonNeg (.ofNat a)
 
-attribute [simp] int.NonNeg.intro
+attribute [simp] NonNeg.intro
 
 @[simp]
 instance : LE int where
@@ -13,7 +15,7 @@ instance : LE int where
 instance : LT int where
   lt a b := a.succ ≤ b
 
-def int.NonNeg_iff_toInt_Noneg (a: int) : a.NonNeg ↔ a.toInt.NonNeg := by
+def NonNeg_iff_toInt_Noneg (a: int) : a.NonNeg ↔ a.toInt.NonNeg := by
   apply Iff.intro
   intro ⟨h⟩
   rw [toInt_ofNat]
@@ -23,7 +25,7 @@ def int.NonNeg_iff_toInt_Noneg (a: int) : a.NonNeg ↔ a.toInt.NonNeg := by
   apply NonNeg.intro
   contradiction
 
-def int.NonNeg.iff {a: int} : a.NonNeg ↔ ∃a', a = int.ofNat a' := by
+def NonNeg.iff {a: int} : a.NonNeg ↔ ∃a', a = ofNat a' := by
   apply Iff.intro
   intro ⟨a⟩
   exists a
@@ -31,29 +33,29 @@ def int.NonNeg.iff {a: int} : a.NonNeg ↔ ∃a', a = int.ofNat a' := by
   subst h
   apply NonNeg.intro
 
-def int.NonNeg_iff_ofInt_Noneg (a: Int) : (ofInt a).NonNeg ↔ a.NonNeg := by
+def NonNeg_iff_ofInt_Noneg (a: Int) : (ofInt a).NonNeg ↔ a.NonNeg := by
   conv => { rhs; rw [←toInt.LeftInverse a] }
   apply flip Iff.trans
   apply NonNeg_iff_toInt_Noneg
   rfl
 
-def int.LE_iff_toInt_LE (a b: int) : a ≤ b ↔ a.toInt ≤ b.toInt := by
+def LE_iff_toInt_LE (a b: int) : a ≤ b ↔ a.toInt ≤ b.toInt := by
   apply Iff.trans _ (NonNeg_iff_ofInt_Noneg _)
   show _ ↔ (b.subFast a).NonNeg
   rw [←sub_eq_subFast]
   apply Iff.refl
-def int.LT_iff_toInt_LT (a b: int) : a < b ↔ a.toInt < b.toInt := by
+def LT_iff_toInt_LT (a b: int) : a < b ↔ a.toInt < b.toInt := by
   show a.succ ≤ b ↔ a.toInt + 1 ≤ b.toInt
-  apply Iff.trans (int.LE_iff_toInt_LE _ _)
+  apply Iff.trans (LE_iff_toInt_LE _ _)
   rw [toInt_succ]
 
-def int.NonNeg.succ : NonNeg a -> NonNeg a.succ := by
+def NonNeg.succ : NonNeg a -> NonNeg a.succ := by
   intro ⟨a⟩
   apply NonNeg.intro
 
-instance int.decLT (a b: int) : Decidable (a < b) := decidable_of_iff _ (int.LT_iff_toInt_LT a b).symm
-instance int.decLE (a b: int) : Decidable (a ≤ b) := decidable_of_iff _ (int.LE_iff_toInt_LE a b).symm
-instance int.decEQ (a b: int) : Decidable (a = b) := decidable_of_iff (a.toInt = b.toInt) (by
+instance decLT (a b: int) : Decidable (a < b) := decidable_of_iff _ (LT_iff_toInt_LT a b).symm
+instance decLE (a b: int) : Decidable (a ≤ b) := decidable_of_iff _ (LE_iff_toInt_LE a b).symm
+instance decEQ (a b: int) : Decidable (a = b) := decidable_of_iff (a.toInt = b.toInt) (by
   apply Iff.intro
   intro h
   cases h
@@ -65,7 +67,7 @@ instance int.decEQ (a b: int) : Decidable (a = b) := decidable_of_iff (a.toInt =
 instance : Min int := minOfLe
 instance : Max int := maxOfLe
 
-def int.le_antisymm' {a b: int} : a ≤ b -> b ≤ a -> a = b := by
+def le_antisymm' {a b: int} : a ≤ b -> b ≤ a -> a = b := by
   intro ab ba
   replace ⟨k₀, ab⟩  := NonNeg.iff.mp ab
   replace ⟨k₁, ba⟩ := NonNeg.iff.mp ba
@@ -82,9 +84,8 @@ def int.le_antisymm' {a b: int} : a ≤ b -> b ≤ a -> a = b := by
   have ⟨_, _⟩  := nat.add_eq_zero this
   subst k₀; subst k₁
   clear this; clear this
-  exact int.sub_eq_zero_iff.mp ba
+  exact sub_eq_zero_iff.mp ba
 
-open int in
 instance : IsLinearOrder int where
   lt_iff_le_and_not_le := by
     intro a b
@@ -136,8 +137,6 @@ instance : IsLinearOrder int where
       left; simp at ab; simp [ab]
       right; simp at ba; simp [ba]
 instance : IsDecidableLinearOrder int where
-
-namespace int
 
 variable {a b: int}
 
