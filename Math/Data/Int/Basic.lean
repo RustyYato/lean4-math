@@ -1,4 +1,5 @@
 import Math.Data.Nat.Basic
+import Math.Ops.Abs
 
 section
 unseal nat
@@ -108,6 +109,7 @@ instance : Neg int := ⟨int.neg⟩
 @[simp]
 def int.neg_zero : -(0: int) = 0 := rfl
 def int.neg_ofNat_succ : -int.ofNat n.succ = int.negSucc n := rfl
+@[simp]
 def int.neg_negSucc : -int.negSucc n = int.ofNat n.succ := rfl
 
 @[simp]
@@ -190,6 +192,9 @@ def int.pred_succ (a: int) : a.pred.succ = a := by
   rename_i a
   cases a using nat.cases <;> rfl
   rfl
+
+def int.succ.inj : Function.Injective succ := Function.IsLeftInverse.Injective int.succ_pred
+def int.pred.inj : Function.Injective pred := Function.IsLeftInverse.Injective int.pred_succ
 
 @[simp]
 def int.succ_ofNat : (int.ofNat a).succ = int.ofNat a.succ := rfl
@@ -421,9 +426,11 @@ def int.sub_add_assoc (a b c: int) : a - b + c = a - (b - c) := by
 def int.add_sub_assoc (a b c: int) : a + b - c = a + (b - c) := by
   simp [sub_eq_add_neg, add_assoc]
 
+@[simp]
 def int.sub_add_cancel (a b: int) : a - b + b = a := by
   simp [sub_eq_add_neg, add_assoc]
 
+@[simp]
 def int.add_sub_cancel (a b: int) : a + b - b = a := by
   simp [sub_eq_add_neg, add_assoc]
 
@@ -466,6 +473,61 @@ def int.neg_sub (a b: int) : -(a - b) = b - a := by
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
+@[simp]
+def int.ofNat_succ (a: nat ) : (ofNat a).succ = ofNat a.succ := by
+  rfl
+
+@[simp]
+def int.ofNat_add (a b: nat ) : ofNat a + ofNat b = ofNat (a + b) := by
+  induction a using nat.rec generalizing b with
+  | zero => rfl
+  | succ a ih =>
+    rw [←ofNat_succ a, succ_add]
+    simp [ih]
+
+def int.add_comm_left (a b c: int) : a + (b + c) = b + (a + c) := by
+  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
+def int.add_comm_right (a b c: int) : a + (b + c) = c + (b + a) := by
+  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
+def int.add_left_comm (a b c: int) : (a + b) + c = (c + b) + a := by
+  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
+def int.add_right_comm (a b c: int) : (a + b) + c = (a + c) + b := by
+  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
+
+@[simp]
+def int.add_left_iff {a b k: int} : k + a = k + b ↔ a = b := by
+  symm; apply Iff.intro
+  intro h; subst h; rfl
+  intro h
+  induction k using ind with
+  | zero => assumption
+  | succ k ih =>
+    apply ih
+    rw [succ_add, succ_add] at h
+    apply succ.inj
+    assumption
+  | pred k ih =>
+    apply ih
+    rw [pred_add, pred_add] at h
+    apply pred.inj
+    assumption
+@[simp]
+def int.add_right_iff {a b k: int} : a + k = b + k ↔ a = b := by
+  simp [add_comm _ k]
+
+@[simp]
+def int.sub_eq_zero_iff {a b: int} : a - b = 0 ↔ a = b := by
+  apply Iff.intro
+  intro h
+  have : a - b + b = 0 + b := add_right_iff.mpr h
+  simp at this
+  assumption
+  intro h
+  simp [h]
+
+@[simp]
+def int.sub_neg {a b: int} : a - -b = a + b := by rw [sub_eq_add_neg, neg_neg]
+
 end add
 
 section mul
@@ -480,12 +542,8 @@ instance : Mul int := ⟨.mul⟩
 
 def int.mul_sound : int.ind_sound (fun _ => int) 0 (fun _ ih =>  ih + b) (fun _ ih =>  ih - b) where
   zero_eq_succ := (sub_add_cancel _ _).symm
-  succ_pred a := by
-    simp
-    rw [add_sub_cancel]
-  pred_succ a := by
-    simp
-    rw [sub_add_cancel]
+  succ_pred a := by simp
+  pred_succ a := by simp
 
 @[simp]
 def int.zero_mul (a: int) : 0 * a = 0 := rfl
@@ -595,4 +653,32 @@ def int.mul_assoc (a b c: int) : a * b * c = a * (b * c) := by
 instance : @Std.Commutative int (· * ·) := ⟨int.mul_comm⟩
 instance : @Std.Associative int (· * ·) := ⟨int.mul_assoc⟩
 
+def int.mul_comm_left (a b c: int) : a * (b * c) = b * (a * c) := by
+  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
+def int.mul_comm_right (a b c: int) : a * (b * c) = c * (b * a) := by
+  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
+def int.mul_left_comm (a b c: int) : (a * b) * c = (c * b) * a := by
+  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
+def int.mul_right_comm (a b c: int) : (a * b) * c = (a * c) * b := by
+  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
+
 end mul
+
+section abs
+
+noncomputable
+def int.abs := int.rec (fun _ => nat) (fun x => x) (fun x => x.succ)
+
+def int.absFast (a: int) := nat.ofNat a.toInt.natAbs
+
+@[csimp]
+def int.abs_eq_absFast : int.abs = int.absFast := by
+  funext a
+  cases a using rec <;> rfl
+
+instance : AbsoluteValue int nat := ⟨int.abs⟩
+
+def int.abs_ofNat : ‖int.ofNat a‖ = a := rfl
+def int.abs_negSucc : ‖int.negSucc a‖ = a.succ := rfl
+
+end abs

@@ -1,5 +1,5 @@
 import Math.Data.Nat.Dvd
-import Math.CheckedOps.Basic
+import Math.Ops.Checked
 
 noncomputable
 def nat.div_rec
