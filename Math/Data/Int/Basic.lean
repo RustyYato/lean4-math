@@ -81,73 +81,67 @@ attribute [match_pattern] int.negSucc
 
 end
 
+namespace int
+
 section neg
 
-def int.posSucc : nat -> int := (int.ofNat ·.succ)
+def posSucc : nat -> int := (ofNat ·.succ)
 
 noncomputable
-def int.rec' (motive: int -> Sort _)
+def rec' (motive: int -> Sort _)
   (zero: motive 0)
-  (posSucc : ∀a: nat, motive (int.posSucc a))
-  (negSucc : ∀a: nat, motive (int.negSucc a)):
-  ∀x, motive x := int.rec motive (fun x => x.cases (fun n => motive (int.ofNat n)) zero posSucc) negSucc
+  (posSucc : ∀a: nat, motive (posSucc a))
+  (negSucc : ∀a: nat, motive (negSucc a)):
+  ∀x, motive x := rec motive (fun x => x.cases (fun n => motive (ofNat n)) zero posSucc) negSucc
 
 noncomputable
-def int.neg : int -> int :=
-  int.rec' (fun _ => int) 0 int.negSucc int.posSucc
+def neg : int -> int :=
+  rec' (fun _ => int) 0 negSucc posSucc
 
-def int.negFast (x: int) : int :=
-  int.ofInt (-x.toInt)
+def negFast (x: int) : int :=
+  ofInt (-x.toInt)
 
 @[csimp]
-def int.neg_eq_negFast : int.neg = int.negFast := by
+def neg_eq_negFast : neg = negFast := by
   funext x
   cases x using rec' <;> rfl
 
-instance : Neg int := ⟨int.neg⟩
+instance : Neg int := ⟨neg⟩
 
 @[simp]
-def int.neg_zero : -(0: int) = 0 := rfl
-def int.neg_ofNat_succ : -int.ofNat n.succ = int.negSucc n := rfl
+def neg_zero : -(0: int) = 0 := rfl
+def neg_ofNat_succ : -ofNat n.succ = negSucc n := rfl
 @[simp]
-def int.neg_negSucc : -int.negSucc n = int.ofNat n.succ := rfl
+def neg_negSucc : -negSucc n = ofNat n.succ := rfl
 
 @[simp]
-def int.neg_neg (x: int) : - -x = x := by
+def neg_neg (x: int) : - -x = x := by
   cases x using rec' <;> rfl
-
-noncomputable
-def int.rec'' (motive: int -> Sort _)
-  (zero: motive 0)
-  (neg_one: motive (-1))
-  (posSucc : ∀a: nat, motive (int.ofNat a.succ))
-  (negSucc : ∀a: nat, motive (int.negSucc a.succ)):
-  ∀x, motive x := int.rec motive (fun x => x.cases (fun n => motive (int.ofNat n)) zero posSucc) (fun x => x.cases (fun n => motive (int.negSucc n)) neg_one negSucc)
 
 end neg
 
 section succ_pred
 
 noncomputable
-def int.succ : int -> int :=
-  int.rec _ (fun n => int.ofNat n.succ) (fun n => n.cases (fun _ => int) 0 (fun n => int.negSucc n))
+def succ : int -> int :=
+  rec _ (fun n => ofNat n.succ) (fun n => n.cases (fun _ => int) 0 (fun n => negSucc n))
 
-def int.fastSucc (a: int) : int := int.ofInt (a.toInt + 1)
+def fastSucc (a: int) : int := ofInt (a.toInt + 1)
 
 noncomputable
-def int.pred : int -> int :=
-  int.rec _ (fun n => n.cases (fun _ => int) (int.negSucc 0) (fun n => int.ofNat n)) (fun n => int.negSucc n.succ)
+def pred : int -> int :=
+  rec _ (fun n => n.cases (fun _ => int) (negSucc 0) (fun n => ofNat n)) (fun n => negSucc n.succ)
 
-def int.fastPred (a: int) : int := int.ofInt (a.toInt - 1)
+def fastPred (a: int) : int := ofInt (a.toInt - 1)
 
 @[simp]
-def int.ofInt_succ : (ofInt a).succ = ofInt (a + 1) := by
+def ofInt_succ : (ofInt a).succ = ofInt (a + 1) := by
   cases a
   rfl
   rename_i a
   cases a <;> rfl
 @[simp]
-def int.ofInt_pred : (ofInt a).pred = ofInt (a - 1) := by
+def ofInt_pred : (ofInt a).pred = ofInt (a - 1) := by
   cases a
   rename_i a
   cases a
@@ -158,71 +152,71 @@ def int.ofInt_pred : (ofInt a).pred = ofInt (a - 1) := by
   rfl
   rfl
 @[simp]
-def int.toInt_succ : toInt a.succ = (toInt a) + 1 := by
+def toInt_succ : toInt a.succ = (toInt a) + 1 := by
   conv => { lhs; rw [←ofInt.LeftInverse a, ofInt_succ] }
   rw [toInt.LeftInverse]
 @[simp]
-def int.toInt_pred : toInt a.pred = (toInt a) - 1 := by
+def toInt_pred : toInt a.pred = (toInt a) - 1 := by
   conv => { lhs; rw [←ofInt.LeftInverse a, ofInt_pred] }
   rw [toInt.LeftInverse]
 
 @[csimp]
-def int.succ_eq_fastSucc : int.succ = int.fastSucc := by
+def succ_eq_fastSucc : succ = fastSucc := by
   funext a
   unfold fastSucc
   rw [←ofInt_succ]
   rfl
 @[csimp]
-def int.pred_eq_fastPred : int.pred = int.fastPred := by
+def pred_eq_fastPred : pred = fastPred := by
   funext a
   unfold fastPred
   rw [←ofInt_pred]
   rfl
 
 @[simp]
-def int.succ_pred (a: int) : a.succ.pred = a := by
+def succ_pred (a: int) : a.succ.pred = a := by
   cases a using rec
   rfl
   rename_i a
   cases a using nat.cases <;> rfl
 
 @[simp]
-def int.pred_succ (a: int) : a.pred.succ = a := by
+def pred_succ (a: int) : a.pred.succ = a := by
   cases a using rec
   rename_i a
   cases a using nat.cases <;> rfl
   rfl
 
-def int.succ.inj : Function.Injective succ := Function.IsLeftInverse.Injective int.succ_pred
-def int.pred.inj : Function.Injective pred := Function.IsLeftInverse.Injective int.pred_succ
+def succ.inj : Function.Injective succ := Function.IsLeftInverse.Injective succ_pred
+def pred.inj : Function.Injective pred := Function.IsLeftInverse.Injective pred_succ
 
 @[simp]
-def int.succ_ofNat : (int.ofNat a).succ = int.ofNat a.succ := rfl
+def succ_ofNat : (ofNat a).succ = ofNat a.succ := rfl
 @[simp]
-def int.pred_negSucc : (int.negSucc a).pred = int.negSucc a.succ := rfl
+def pred_negSucc : (negSucc a).pred = negSucc a.succ := rfl
 @[simp]
-def int.pred_ofNat_succ : (int.ofNat a.succ).pred = int.ofNat a := rfl
+def pred_ofNat_succ : (ofNat a.succ).pred = ofNat a := rfl
 @[simp]
-def int.succ_negSucc_succ : (int.negSucc a.succ).succ = int.negSucc a := rfl
+def succ_negSucc_succ : (negSucc a.succ).succ = negSucc a := rfl
 @[simp]
-def int.pred_zero : int.pred 0 = int.negSucc 0 := rfl
+def pred_zero : pred 0 = negSucc 0 := rfl
 
 @[simp]
-def int.succ_posSucc : (int.posSucc a).succ = int.posSucc a.succ := rfl
+def succ_posSucc : (posSucc a).succ = posSucc a.succ := rfl
 @[simp]
-def int.pred_posSucc : (int.posSucc a).pred = int.ofNat a := rfl
+def pred_posSucc : (posSucc a).pred = ofNat a := rfl
 
 @[simp]
-def int.neg_pred (a: int) : -a.pred = (-a).succ := by
+def neg_pred (a: int) : -a.pred = (-a).succ := by
   cases a using rec' <;> rfl
 @[simp]
-def int.neg_succ (a: int) : -a.succ = (-a).pred := by
+def neg_succ (a: int) : -a.succ = (-a).pred := by
   cases a using rec'
   any_goals rfl
   rename_i a; cases a using nat.rec <;> rfl
 
 noncomputable
-def int.ind (motive: int -> Sort _)
+def ind (motive: int -> Sort _)
   (zero: motive 0)
   (succ: ∀a, motive a -> motive a.succ)
   (pred: ∀a, motive a -> motive a.pred) : ∀x, motive x := by
@@ -243,11 +237,11 @@ def int.ind (motive: int -> Sort _)
       apply pred (.negSucc x)
       assumption
 
-structure int.ind_sound (motive: int -> Sort _)
+structure ind_sound (motive: int -> Sort _)
   (zero: motive 0)
   (succ: ∀a, motive a -> motive a.succ)
   (pred: ∀a, motive a -> motive a.pred) : Prop where
-  zero_eq_succ: zero = succ _ (ind motive zero succ pred (int.negSucc 0))
+  zero_eq_succ: zero = succ _ (ind motive zero succ pred (negSucc 0))
   succ_pred: ∀a, HEq (ind motive zero succ pred a) (pred _ (succ _ <| ind motive zero succ pred a))
   pred_succ: ∀a, HEq (ind motive zero succ pred a) (succ _ (pred _ <| ind motive zero succ pred a))
 
@@ -256,13 +250,13 @@ variable
   {zero: motive 0}
   {succ: ∀a, motive a -> motive a.succ}
   {pred: ∀a, motive a -> motive a.pred}
-  (sound: int.ind_sound motive zero succ pred)
+  (sound: ind_sound motive zero succ pred)
   {a: int}
 
-def int.ind_zero : ind motive zero succ pred 0 = zero := rfl
-def int.ind_hcongr (h: a = b) : HEq (ind motive zero succ pred a) (ind motive zero succ pred b) := by
+def ind_zero : ind motive zero succ pred 0 = zero := rfl
+def ind_hcongr (h: a = b) : HEq (ind motive zero succ pred a) (ind motive zero succ pred b) := by
   rw [h]
-def int.ind_spec :
+def ind_spec :
   ind motive zero succ pred a.succ =
   succ _ (ind motive zero succ pred a) ∧
   ind motive zero succ pred a.pred =
@@ -292,48 +286,48 @@ def int.ind_spec :
       apply flip HEq.trans
       apply sound.pred_succ (negSucc n)
       rfl
-def int.ind_succ :
+def ind_succ :
   ind motive zero succ pred a.succ =
   succ _ (ind motive zero succ pred a)
-  := (int.ind_spec sound).left
-def int.ind_pred :
+  := (ind_spec sound).left
+def ind_pred :
   ind motive zero succ pred a.pred =
   pred _ (ind motive zero succ pred a)
-  := (int.ind_spec sound).right
+  := (ind_spec sound).right
 
 end succ_pred
 
 section add
 
 noncomputable
-def int.add (a b: int) : int :=
+def add (a b: int) : int :=
   a.ind (fun _ => int) b (fun _ ih => ih.succ) (fun _ ih => ih.pred)
-def int.addFast (a b: int) : int :=
-  int.ofInt (a.toInt + b.toInt)
+def addFast (a b: int) : int :=
+  ofInt (a.toInt + b.toInt)
 
 noncomputable
 instance : Add int := ⟨.add⟩
 
-def int.add_sound : int.ind_sound (fun _ => int) b (fun _ ih => ih.succ) (fun _ ih => ih.pred) where
+def add_sound : ind_sound (fun _ => int) b (fun _ ih => ih.succ) (fun _ ih => ih.pred) where
   zero_eq_succ := (pred_succ _).symm
   succ_pred := by simp
   pred_succ := by simp
 
 @[simp]
-def int.zero_add (a: int) : 0 + a = a := rfl
+def zero_add (a: int) : 0 + a = a := rfl
 @[simp]
-def int.succ_add (a b: int) : a.succ + b = (a + b).succ := by
+def succ_add (a b: int) : a.succ + b = (a + b).succ := by
   show add _ _ = _
-  apply int.ind_succ
-  apply int.add_sound
+  apply ind_succ
+  apply add_sound
 @[simp]
-def int.pred_add (a b: int) : a.pred + b = (a + b).pred := by
+def pred_add (a b: int) : a.pred + b = (a + b).pred := by
   show add _ _ = pred (add _ _)
-  apply int.ind_pred
-  apply int.add_sound
+  apply ind_pred
+  apply add_sound
 
 @[csimp]
-def int.add_eq_addFast : int.add = int.addFast := by
+def add_eq_addFast : add = addFast := by
   funext a b
   show a + b = _
   unfold addFast
@@ -351,151 +345,151 @@ def int.add_eq_addFast : int.add = int.addFast := by
 instance : Add int := ⟨.add⟩
 
 @[simp]
-def int.add_zero (a: int) : a + 0 = a := by
+def add_zero (a: int) : a + 0 = a := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 @[simp]
-def int.add_succ (a b: int) : a + b.succ = (a + b).succ := by
+def add_succ (a b: int) : a + b.succ = (a + b).succ := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 @[simp]
-def int.add_pred (a b: int) : a + b.pred = (a + b).pred := by
+def add_pred (a b: int) : a + b.pred = (a + b).pred := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
-def int.add_comm (a b: int) : a + b = b + a := by
+def add_comm (a b: int) : a + b = b + a := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
-def int.add_assoc (a b c: int) : a + b + c = a + (b + c) := by
+def add_assoc (a b c: int) : a + b + c = a + (b + c) := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
-instance : @Std.Commutative int (· + ·) := ⟨int.add_comm⟩
-instance : @Std.Associative int (· + ·) := ⟨int.add_assoc⟩
+instance : @Std.Commutative int (· + ·) := ⟨add_comm⟩
+instance : @Std.Associative int (· + ·) := ⟨add_assoc⟩
 
 @[simp]
-def int.neg_add (a b: int) : -(a + b) = -a + -b := by
+def neg_add (a b: int) : -(a + b) = -a + -b := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
 @[simp]
-def int.add_neg_self (a: int) : a + -a = 0 := by
+def add_neg_self (a: int) : a + -a = 0 := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]; rfl
 
 @[simp]
-def int.neg_self_add (a: int) : -a + a = 0 := by
+def neg_self_add (a: int) : -a + a = 0 := by
   rw [add_comm, add_neg_self]
 
-def int.sub (a b: int) := a + -b
-def int.subFast (a b: int) := ofInt (a.toInt - b.toInt)
+def sub (a b: int) := a + -b
+def subFast (a b: int) := ofInt (a.toInt - b.toInt)
 
 @[csimp]
-def int.sub_eq_subFast : int.sub = int.subFast := by
+def sub_eq_subFast : sub = subFast := by
   funext a b
   unfold sub subFast
   show add _ (neg _) = _
   rw [add_eq_addFast, neg_eq_negFast]
   rfl
 
-instance : Sub int := ⟨int.sub⟩
+instance : Sub int := ⟨sub⟩
 
-def int.sub_eq_add_neg (a b: int) : a - b = a + -b := rfl
+def sub_eq_add_neg (a b: int) : a - b = a + -b := rfl
 @[simp]
-def int.sub_self (a: int) : a - a = 0 := add_neg_self a
+def sub_self (a: int) : a - a = 0 := add_neg_self a
 
-def int.sub_assoc (a b c: int) : a - b - c = a - (b + c) := by
+def sub_assoc (a b c: int) : a - b - c = a - (b + c) := by
   simp [sub_eq_add_neg, add_assoc]
-def int.sub_add_assoc (a b c: int) : a - b + c = a - (b - c) := by
+def sub_add_assoc (a b c: int) : a - b + c = a - (b - c) := by
   simp [sub_eq_add_neg, add_assoc]
-def int.add_sub_assoc (a b c: int) : a + b - c = a + (b - c) := by
-  simp [sub_eq_add_neg, add_assoc]
-
-@[simp]
-def int.sub_add_cancel (a b: int) : a - b + b = a := by
+def add_sub_assoc (a b c: int) : a + b - c = a + (b - c) := by
   simp [sub_eq_add_neg, add_assoc]
 
 @[simp]
-def int.add_sub_cancel (a b: int) : a + b - b = a := by
+def sub_add_cancel (a b: int) : a - b + b = a := by
   simp [sub_eq_add_neg, add_assoc]
 
 @[simp]
-def int.zero_sub (a: int) : 0 - a = -a := rfl
+def add_sub_cancel (a b: int) : a + b - b = a := by
+  simp [sub_eq_add_neg, add_assoc]
 
 @[simp]
-def int.sub_zero (a: int) : a - 0 = a := add_zero _
+def zero_sub (a: int) : 0 - a = -a := rfl
 
 @[simp]
-def int.add_one (a: int) : a + 1 = a.succ := by
+def sub_zero (a: int) : a - 0 = a := add_zero _
+
+@[simp]
+def add_one (a: int) : a + 1 = a.succ := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 @[simp]
-def int.add_neg_one (a: int) : a + -1 = a.pred := by
+def add_neg_one (a: int) : a + -1 = a.pred := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 @[simp]
-def int.sub_one (a: int) : a - 1 = a.pred := add_neg_one _
+def sub_one (a: int) : a - 1 = a.pred := add_neg_one _
 @[simp]
-def int.sub_neg_one (a: int) : a - -1 = a.succ := add_one _
+def sub_neg_one (a: int) : a - -1 = a.succ := add_one _
 
 @[simp]
-def int.sub_pred (a b: int) : a - b.pred = (a - b).succ := by simp [sub_eq_add_neg]
+def sub_pred (a b: int) : a - b.pred = (a - b).succ := by simp [sub_eq_add_neg]
 @[simp]
-def int.sub_succ (a b: int) : a - b.succ = (a - b).pred := by simp [sub_eq_add_neg]
+def sub_succ (a b: int) : a - b.succ = (a - b).pred := by simp [sub_eq_add_neg]
 @[simp]
-def int.succ_sub (a b: int) : a.succ - b = (a - b).succ := by simp [sub_eq_add_neg]
+def succ_sub (a b: int) : a.succ - b = (a - b).succ := by simp [sub_eq_add_neg]
 @[simp]
-def int.pred_sub (a b: int) : a.pred - b = (a - b).pred := by simp [sub_eq_add_neg]
+def pred_sub (a b: int) : a.pred - b = (a - b).pred := by simp [sub_eq_add_neg]
 
 @[simp]
-def int.neg_sub (a b: int) : -(a - b) = b - a := by
+def neg_sub (a b: int) : -(a - b) = b - a := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
 @[simp]
-def int.ofNat_succ (a: nat ) : (ofNat a).succ = ofNat a.succ := by
+def ofNat_succ (a: nat ) : (ofNat a).succ = ofNat a.succ := by
   rfl
 
 @[simp]
-def int.ofNat_add (a b: nat ) : ofNat a + ofNat b = ofNat (a + b) := by
+def ofNat_add (a b: nat ) : ofNat a + ofNat b = ofNat (a + b) := by
   induction a using nat.rec generalizing b with
   | zero => rfl
   | succ a ih =>
     rw [←ofNat_succ a, succ_add]
     simp [ih]
 
-def int.add_comm_left (a b c: int) : a + (b + c) = b + (a + c) := by
-  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
-def int.add_comm_right (a b c: int) : a + (b + c) = c + (b + a) := by
-  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
-def int.add_left_comm (a b c: int) : (a + b) + c = (c + b) + a := by
-  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
-def int.add_right_comm (a b c: int) : (a + b) + c = (a + c) + b := by
-  simp only [int.add_comm, ←int.add_assoc _ a, int.add_assoc a]
+def add_comm_left (a b c: int) : a + (b + c) = b + (a + c) := by
+  simp only [add_comm, ←add_assoc _ a, add_assoc a]
+def add_comm_right (a b c: int) : a + (b + c) = c + (b + a) := by
+  simp only [add_comm, ←add_assoc _ a, add_assoc a]
+def add_left_comm (a b c: int) : (a + b) + c = (c + b) + a := by
+  simp only [add_comm, ←add_assoc _ a, add_assoc a]
+def add_right_comm (a b c: int) : (a + b) + c = (a + c) + b := by
+  simp only [add_comm, ←add_assoc _ a, add_assoc a]
 
 @[simp]
-def int.add_left_iff {a b k: int} : k + a = k + b ↔ a = b := by
+def add_left_iff {a b k: int} : k + a = k + b ↔ a = b := by
   symm; apply Iff.intro
   intro h; subst h; rfl
   intro h
@@ -512,11 +506,11 @@ def int.add_left_iff {a b k: int} : k + a = k + b ↔ a = b := by
     apply pred.inj
     assumption
 @[simp]
-def int.add_right_iff {a b k: int} : a + k = b + k ↔ a = b := by
+def add_right_iff {a b k: int} : a + k = b + k ↔ a = b := by
   simp [add_comm _ k]
 
 @[simp]
-def int.sub_eq_zero_iff {a b: int} : a - b = 0 ↔ a = b := by
+def sub_eq_zero_iff {a b: int} : a - b = 0 ↔ a = b := by
   apply Iff.intro
   intro h
   have : a - b + b = 0 + b := add_right_iff.mpr h
@@ -526,42 +520,42 @@ def int.sub_eq_zero_iff {a b: int} : a - b = 0 ↔ a = b := by
   simp [h]
 
 @[simp]
-def int.sub_neg {a b: int} : a - -b = a + b := by rw [sub_eq_add_neg, neg_neg]
+def sub_neg {a b: int} : a - -b = a + b := by rw [sub_eq_add_neg, neg_neg]
 
 end add
 
 section mul
 
 noncomputable
-def int.mul (a b: int) : int :=
+def mul (a b: int) : int :=
   a.ind (fun _ => int) 0 (fun _ ih =>  ih + b) (fun _ ih =>  ih - b)
-def int.mulFast (a b: int) : int := ofInt (a.toInt * b.toInt)
+def mulFast (a b: int) : int := ofInt (a.toInt * b.toInt)
 
 noncomputable
 instance : Mul int := ⟨.mul⟩
 
-def int.mul_sound : int.ind_sound (fun _ => int) 0 (fun _ ih =>  ih + b) (fun _ ih =>  ih - b) where
+def mul_sound : ind_sound (fun _ => int) 0 (fun _ ih =>  ih + b) (fun _ ih =>  ih - b) where
   zero_eq_succ := (sub_add_cancel _ _).symm
   succ_pred a := by simp
   pred_succ a := by simp
 
 @[simp]
-def int.zero_mul (a: int) : 0 * a = 0 := rfl
+def zero_mul (a: int) : 0 * a = 0 := rfl
 @[simp]
-def int.neg_one_mul (a: int) : -1 * a = -a := rfl
+def neg_one_mul (a: int) : -1 * a = -a := rfl
 @[simp]
-def int.succ_mul (a b: int) : a.succ * b = a * b + b := by
+def succ_mul (a b: int) : a.succ * b = a * b + b := by
   show mul _ _ = _
-  apply int.ind_succ
-  apply int.mul_sound
+  apply ind_succ
+  apply mul_sound
 @[simp]
-def int.pred_mul (a b: int) : a.pred * b = a * b - b := by
+def pred_mul (a b: int) : a.pred * b = a * b - b := by
   show mul _ _ = _
-  apply int.ind_pred
-  apply int.mul_sound
+  apply ind_pred
+  apply mul_sound
 
 @[csimp]
-def int.mul_eq_mulFast : int.mul = int.mulFast := by
+def mul_eq_mulFast : mul = mulFast := by
   funext a b
   show a * b = a.mulFast b
   unfold mulFast
@@ -583,102 +577,104 @@ def int.mul_eq_mulFast : int.mul = int.mulFast := by
 instance : Mul int := ⟨.mul⟩
 
 @[simp]
-def int.mul_zero (a: int) : a * 0 = 0 := by
+def mul_zero (a: int) : a * 0 = 0 := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
 @[simp]
-def int.mul_neg_one (a: int) : a * -1 = -a := by
+def mul_neg_one (a: int) : a * -1 = -a := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
 @[simp]
-def int.mul_succ (a b: int) : a * b.succ = a * b + a := by
+def mul_succ (a b: int) : a * b.succ = a * b + a := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih, add_assoc, add_comm a]
   | pred a ih => simp [ih, sub_eq_add_neg, add_assoc, add_comm a]
 
 @[simp]
-def int.mul_pred (a b: int) : a * b.pred = a * b - a := by
+def mul_pred (a b: int) : a * b.pred = a * b - a := by
   induction a using ind with
   | zero => rfl
   | succ a ih => simp [ih, sub_eq_add_neg, add_assoc, add_comm b]
   | pred a ih => simp [ih, sub_eq_add_neg, add_assoc, add_comm (-a)]
 
-def int.mul_comm (a b: int) : a * b = b * a := by
+def mul_comm (a b: int) : a * b = b * a := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
-def int.neg_mul_right (a b: int) : a * -b = -(a * b) := by
+def neg_mul_right (a b: int) : a * -b = -(a * b) := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih, sub_eq_add_neg]
 
-def int.neg_mul_left (a b: int) : -a * b = -(a * b) := by
+def neg_mul_left (a b: int) : -a * b = -(a * b) := by
   simp [mul_comm _ b, neg_mul_right]
 
 @[simp]
-def int.add_mul (a b k: int) : (a + b) * k = a * k + b * k := by
+def add_mul (a b k: int) : (a + b) * k = a * k + b * k := by
   induction k using ind with
   | zero => simp
   | succ k ih => simp [ih]; ac_rfl
   | pred k ih => simp [ih, sub_eq_add_neg]; ac_rfl
 
 @[simp]
-def int.mul_add (a b k: int) : k * (a + b) = k * a + k * b := by
+def mul_add (a b k: int) : k * (a + b) = k * a + k * b := by
   simp [mul_comm k]
 
 @[simp]
-def int.mul_sub (a b k: int) : k * (a - b) = k * a - k * b := by
+def mul_sub (a b k: int) : k * (a - b) = k * a - k * b := by
   simp [mul_comm k, sub_eq_add_neg, neg_mul_left]
 
 @[simp]
-def int.sub_mul (a b k: int) : (a - b) * k = a * k - b * k := by
+def sub_mul (a b k: int) : (a - b) * k = a * k - b * k := by
   simp [mul_comm _ k]
 
-def int.mul_assoc (a b c: int) : a * b * c = a * (b * c) := by
+def mul_assoc (a b c: int) : a * b * c = a * (b * c) := by
   induction a using ind with
   | zero => simp
   | succ a ih => simp [ih]
   | pred a ih => simp [ih]
 
-instance : @Std.Commutative int (· * ·) := ⟨int.mul_comm⟩
-instance : @Std.Associative int (· * ·) := ⟨int.mul_assoc⟩
+instance : @Std.Commutative int (· * ·) := ⟨mul_comm⟩
+instance : @Std.Associative int (· * ·) := ⟨mul_assoc⟩
 
-def int.mul_comm_left (a b c: int) : a * (b * c) = b * (a * c) := by
-  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
-def int.mul_comm_right (a b c: int) : a * (b * c) = c * (b * a) := by
-  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
-def int.mul_left_comm (a b c: int) : (a * b) * c = (c * b) * a := by
-  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
-def int.mul_right_comm (a b c: int) : (a * b) * c = (a * c) * b := by
-  simp only [int.mul_comm, ←int.mul_assoc _ a, int.mul_assoc a]
+def mul_comm_left (a b c: int) : a * (b * c) = b * (a * c) := by
+  simp only [mul_comm, ←mul_assoc _ a, mul_assoc a]
+def mul_comm_right (a b c: int) : a * (b * c) = c * (b * a) := by
+  simp only [mul_comm, ←mul_assoc _ a, mul_assoc a]
+def mul_left_comm (a b c: int) : (a * b) * c = (c * b) * a := by
+  simp only [mul_comm, ←mul_assoc _ a, mul_assoc a]
+def mul_right_comm (a b c: int) : (a * b) * c = (a * c) * b := by
+  simp only [mul_comm, ←mul_assoc _ a, mul_assoc a]
 
 end mul
 
 section abs
 
 noncomputable
-def int.abs := int.rec (fun _ => nat) (fun x => x) (fun x => x.succ)
+def abs := rec (fun _ => nat) (fun x => x) (fun x => x.succ)
 
-def int.absFast (a: int) := nat.ofNat a.toInt.natAbs
+def absFast (a: int) := nat.ofNat a.toInt.natAbs
 
 @[csimp]
-def int.abs_eq_absFast : int.abs = int.absFast := by
+def abs_eq_absFast : abs = absFast := by
   funext a
   cases a using rec <;> rfl
 
-instance : AbsoluteValue int nat := ⟨int.abs⟩
+instance : AbsoluteValue int nat := ⟨abs⟩
 
-def int.abs_ofNat : ‖int.ofNat a‖ = a := rfl
-def int.abs_negSucc : ‖int.negSucc a‖ = a.succ := rfl
+def abs_ofNat : ‖ofNat a‖ = a := rfl
+def abs_negSucc : ‖negSucc a‖ = a.succ := rfl
 
 end abs
+
+end int
