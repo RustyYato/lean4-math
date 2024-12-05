@@ -7,8 +7,12 @@ class SUnion (α: Type*) (β: outParam <| Type*) where
 class SInter (α: Type*) (β: outParam <| Type*) where
   sInter : α -> β
 
+class SetComplement (α: Type*) where
+  scompl : α -> α
+
 prefix:100 "⋃ " => SUnion.sUnion
 prefix:100 "⋂ " => SInter.sInter
+postfix:max "ᶜ" => SetComplement.scompl
 
 structure Set (α: Type u) where
   Mem : α -> Prop
@@ -113,6 +117,11 @@ def mem_range {f: α -> β} : ∀{x}, x ∈ range f ↔ ∃a', x = f a' := by
 
 def powerset (a: Set α) : Set (Set α) := mk fun x => x ⊆ a
 def mem_powerset {a: Set α} : ∀{x}, x ∈ a.powerset ↔ x ⊆ a := Iff.refl _
+
+def compl (a: Set α) : Set α := mk fun x => x ∉ a
+instance : SetComplement (Set α) where
+  scompl := compl
+def mem_compl {a: Set α} : ∀{x}, x ∈ aᶜ ↔ x ∉ a := Iff.refl _
 
 def Nonempty (a: Set α) := ∃x, x ∈ a
 def Elem (a: Set α) := { x // x ∈ a }

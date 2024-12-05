@@ -9,6 +9,8 @@ def Injective: Prop := ∀⦃x y⦄, f x = f y -> x = y
 def Surjective: Prop := ∀b, ∃a, f a = b
 @[reducible]
 def Bijective: Prop := Injective f ∧ Surjective f
+@[reducible]
+def Injective₂ (f: α₀ -> α₁ -> β): Prop := ∀⦃x₀ x₁ y₀ y₁⦄, f x₀ x₁ = f y₀ y₁ -> x₀ = y₀ ∧ x₁ = y₁
 
 def IsLeftInverse: Prop := ∀x, g (f x) = x
 def IsRightInverse: Prop := ∀x, f (g x) = x
