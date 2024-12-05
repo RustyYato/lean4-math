@@ -290,9 +290,33 @@ def nat.pow (x: nat) (n: Nat) : nat := nat.ofNat (Nat.pow x.toNat n)
 instance : Pow nat Nat := ⟨nat.pow⟩
 
 def nat.npow_zero (x: nat) : x ^ 0 = 1 := rfl
-def nat.npow_succ (x: nat) (n: Nat) : x ^ n.succ = x * x ^ n := by
+def nat.npow_succ (x: nat) (n: Nat) : x ^ (n + 1) = x * x ^ n := by
   show nat.ofNat (_ * _) = _ * nat.ofNat _
   rw [lift_mul₁, ofNat.LeftInverse, mul_comm]
+
+def nat.pow_eq_one {a: nat} : a ^ b = 1 ↔ a = 1 ∨ b = 0 := by
+  apply flip Iff.intro
+  intro h
+  cases h
+  subst a
+  · induction b with
+    | zero => rfl
+    | succ b ih =>
+      rw [npow_succ, ih]
+      rfl
+  subst b
+  rfl
+  intro h
+  cases b
+  right; rfl
+  rw [npow_succ] at h
+  have := of_mul_eq_one h
+  left; exact this.left
+
+def nat.pow_mul (a: nat) (n m: Nat) : a ^ n * a ^ m = a ^ (n + m) := by
+  induction n with
+  | zero =>  rw [npow_zero, one_mul, Nat.zero_add]
+  | succ n ih => rw [npow_succ, Nat.succ_add, ←Nat.add_one, npow_succ, mul_assoc, ih]
 
 end pow
 

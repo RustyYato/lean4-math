@@ -159,6 +159,32 @@ instance (a b: nat) : Decidable (a ∣ b) :=
         contradiction
         apply zero_lt_succ
 
+def dvd_one {a: nat} : a ∣ 1 ↔ a = 1 := by
+  apply flip Iff.intro
+  intro h; subst h
+  rfl
+  intro ⟨k, prf⟩
+  exact (of_mul_eq_one prf).left
+
+def mul_left_dvd {a b k: nat} : a ∣ b -> k * a ∣ k * b := by
+  intro ⟨x, h⟩
+  exists x
+  rw [mul_assoc, h]
+
+def of_mul_left_dvd {a b k: nat} (h: 0 < k) : k * a ∣ k * b -> a ∣ b := by
+  intro ⟨x, g⟩
+  exists x
+  rw [mul_assoc] at g
+  exact (mul_left_cancel_iff h).mp g
+
+def dvd_pow_succ (a: nat) (n: Nat) : a ∣ a ^ (n + 1) := ⟨a ^ n, (npow_succ _ _).symm⟩
+
+def dvd_pow_le (a: nat) (n m: Nat) : m ≤ n -> a ^ m ∣ a ^ n := by
+  intro le
+  exists a ^ (n - m)
+  rw [pow_mul, Nat.add_sub_cancel']
+  assumption
+
 end dvd
 
 end nat

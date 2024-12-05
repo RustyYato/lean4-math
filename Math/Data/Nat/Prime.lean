@@ -1,5 +1,6 @@
-import Math.Data.Nat.Dvd
+import Math.Data.Nat.Gcd
 import Math.Data.Nat.Find
+import Math.Ops.Checked
 
 namespace nat
 
@@ -127,5 +128,29 @@ def min_fac_prime (n: nat) (h: n ≠ 1) : (min_fac n).Prime := by
   subst x
   right
   rfl
+def min_fac_pos (n: nat) : 0 < min_fac n := by
+  have ⟨min_fac_pos, _, min_fac_eq_one_iff⟩  := findP_spec (exists_min_fac n)
+  assumption
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply min_fac_pos)
+
+def prime_coprime_or_dvd (h: Prime p) (a: nat) : Coprime p a ∨ p ∣ a  := by
+  rcases h.right _ (gcd_dvd_left p a) with g | g
+  left
+  assumption
+  right
+  rw [←g]
+  apply gcd_dvd_right
+
+def prime_dvd_mul {p a b: nat} (h: p.Prime) : p ∣ a * b -> p ∣ a ∨ p ∣ b := by
+  intro ab
+  rcases prime_coprime_or_dvd h a with co | pa
+  right
+  apply dvd_of_coprime_mul
+  assumption
+  assumption
+  left
+  assumption
 
 end nat

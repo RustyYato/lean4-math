@@ -249,34 +249,65 @@ theorem Multiset.flatMap_hcongr {β' : Type v} {m : Multiset α} {f : α → Mul
   simp only [heq_eq_eq] at hf
   simp [flatMap_congr hf]
 
-theorem Multiset.flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
-  m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
-  quot_ind (m n)
-  induction m generalizing n with
-  | nil =>
-    show ∅ = _
-    symm
-    show flatMap (fun _ => ∅) _ = ∅
-    induction n with
-    | nil => rfl
-    | cons n ns ih =>
-      simp [ih, flatMap_cons, ←mk_cons]
-      rfl
-  | cons m ms ih =>
-    cases n
-    simp [ih, flatMap_cons, ←mk_cons]
-    rfl
-    rw [←mk_cons, flatMap_cons]
-    rw [←mk_cons, flatMap_cons]
-    rw [flatMap_cons]
-    rw [flatMap_cons]
-    simp [append_assoc]
-    congr 1
-    rw [ih]
-    rw [←mk_cons, flatMap_cons]
-    rw [←append_assoc, append_comm (flatMap _ _), append_assoc]
-    congr 1
-    sorry
+instance [DecidableEq α] : DecidableEq (Multiset α) := Quotient.decidableEq
+
+def Multiset.of_count_cons {x a: α} {as: Multiset α} {n: Nat} :
+  (a::ₘas).MinCount x n -> as.MinCount x n ∨ (n ≠ 0 ∧ x = a ∧ as.MinCount a n.pred) := by
+  quot_ind as
+  intro h
+  cases h
+  left
+  assumption
+  right
+  apply And.intro
+  exact Nat.noConfusion
+  apply And.intro rfl
+  assumption
+
+def Multiset.MinCount.zero : MinCount x 0 ms := by
+  quot_ind ms
+  apply List.MinCount.zero
+
+def Multiset.MinCount.head : MinCount x n ms -> MinCount x n.succ (x::ₘms) := by
+  quot_ind ms
+  intro c
+  apply List.MinCount.head
+  assumption
+
+def Multiset.MinCount.cons : MinCount x n ms -> MinCount x n (m::ₘms) := by
+  quot_ind ms
+  intro c
+  apply List.MinCount.cons
+  assumption
+
+-- theorem Multiset.flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
+--   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
+--   quot_ind (m n)
+--   induction m generalizing n with
+--   | nil =>
+--     show ∅ = _
+--     symm
+--     show flatMap (fun _ => ∅) _ = ∅
+--     induction n with
+--     | nil => rfl
+--     | cons n ns ih =>
+--       simp [ih, flatMap_cons, ←mk_cons]
+--       rfl
+--   | cons m ms ih =>
+--     cases n
+--     simp [ih, flatMap_cons, ←mk_cons]
+--     rfl
+--     rw [←mk_cons, flatMap_cons]
+--     rw [←mk_cons, flatMap_cons]
+--     rw [flatMap_cons]
+--     rw [flatMap_cons]
+--     simp [append_assoc]
+--     congr 1
+--     rw [ih]
+--     rw [←mk_cons, flatMap_cons]
+--     rw [←append_assoc, append_comm (flatMap _ _), append_assoc]
+--     congr 1
+--     sorry
 
 -- theorem bind_bind (m : Multiset α) (n : Multiset β) {f : α → β → Multiset γ} :
 --     ((bind m) fun a => (bind n) fun b => f a b) = (bind n) fun b => (bind m) fun a => f a b :=

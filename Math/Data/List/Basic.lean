@@ -75,6 +75,27 @@ def List.mem_iff_exists_perm_cons (x: α) (as: List α) :
     apply perm.mem_iff.mpr
     apply List.Mem.head
 
+def List.find_perm_cons [DecidableEq α] (x: α) (as: List α) (h: x ∈ as) :
+  (as': _) ×' as ≈ x::as' := by
+  match as with
+  | nil => nomatch h
+  | cons a as =>
+    if g:x = a then
+      apply PSigma.mk as
+      subst x
+      apply List.Perm.cons
+      apply List.Perm.refl
+    else
+      have ⟨as', perm⟩  := find_perm_cons x as (by
+        cases h
+        contradiction
+        assumption)
+      apply PSigma.mk (a::as')
+      apply List.Perm.trans
+      apply List.Perm.cons
+      assumption
+      apply List.Perm.swap
+
 def List.MinCount.of_perm (h: as ≈ bs) : List.MinCount as x n -> List.MinCount bs x n := by
   intro c
   induction h generalizing n with
@@ -156,3 +177,49 @@ def List.MinCount_count [BEq α] [LawfulBEq α] (x: α) (as: List α) : List.Min
     assumption
     apply List.MinCount.cons
     assumption
+
+def List.reduce (default: α) (op: α -> α -> α) : List α -> α
+| [] => default
+| a::as => op a <| reduce default op as
+
+def List.reduce_spec
+  (default: α)
+  (op: α -> α -> α)
+  [Std.Associative op]
+  [Std.Commutative op]:
+  ∀as bs, as ≈ bs -> List.reduce default op as = List.reduce default op bs := by
+  intro as bs perm
+  induction perm with
+  | trans _ _ aih bih => rw [aih, bih]
+  | nil => rfl
+  | cons _ _ ih =>
+    unfold reduce
+    rw [ih]
+  | swap =>
+    unfold reduce reduce
+    ac_rfl
+
+instance List.decPerm [DecidableEq α] (as bs: List α) : Decidable (as ≈ bs) :=
+match as with
+| [] => match bs with
+  | [] => .isTrue List.Perm.nil
+  | _::_ => .isFalse fun h => nomatch (List.Perm.length_eq h)
+| a::as =>
+  if h: a ∈ bs then
+    have ⟨bs', perm'⟩ := bs.find_perm_cons _ h
+    match List.decPerm as bs' with
+    | .isTrue perm =>
+      .isTrue <| by
+      apply Perm.trans _ (Perm.symm perm')
+      apply Perm.cons
+      assumption
+    | .isFalse perm => by
+      apply Decidable.isFalse
+      intro p
+      have := (p.trans perm').cons_inv
+      contradiction
+  else by
+    apply Decidable.isFalse
+    intro h
+    have := h.mem_iff.mp (List.Mem.head _)
+    contradiction

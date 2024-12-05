@@ -258,6 +258,15 @@ def dvd_mod {a b k: nat} (h: 0 < b) : k ∣ a -> k ∣ b -> k ∣ a %? b := by
     apply dvd_trans kb
     apply dvd_mul_right) ka
 
+def of_dvd_mod {a b k: nat} (h: 0 < b) : k ∣ b -> k ∣ a %? b -> k ∣ a := by
+  intro kb kmod
+  rw [←div_add_mod a b h]
+  apply dvd_add
+  apply dvd_trans
+  exact kb
+  apply dvd_mul_right
+  assumption
+
 def mul_div_le (a b: nat) (hb: 0 < b): b * (a /? b) ≤ a := by
   induction a, b, hb using div_rec with
   | lt a b hb ab =>
@@ -320,7 +329,58 @@ def dvd_iff_mod_eq_zero (a b: nat) (h: 0 < a) : a ∣ b ↔ b %? a = 0 := by
   rw [h, add_zero] at this
   assumption
 
-@[refl]
-def dvd_refl (a: nat) : a ∣ a := ⟨1, one_mul _⟩
+def zero_lt_of_one_lt {a: nat} : 1 < a -> 0 < a := lt_trans (zero_lt_succ 0)
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply zero_lt_of_one_lt; assumption)
+
+def div_lt (a b: nat) : 0 < a -> (h: 1 < b) -> a /? b < a := by
+  intro a_pos one_lt_b
+  conv => { rhs; rw [←div_add_mod a b (zero_lt_of_one_lt one_lt_b)] }
+  cases b using cases
+  contradiction
+  rename_i b
+  rw [succ_mul]
+  conv => { lhs; rw [←add_zero (a /? _)] }
+  rw [add_assoc]
+  apply lt_add_left_iff_lt.mp
+  apply add_pos
+  by_cases h: a < b.succ
+  rw [mod_of_lt]
+  right; assumption
+  assumption
+  rw [div_of_ge, mul_succ]
+  left
+  apply add_pos
+  left
+  apply lt_of_succ_lt_succ
+  assumption
+  apply le_of_not_lt
+  assumption
+
+def zero_div (a: nat) (h: 0 < a) : 0 /? a = 0 := by
+  apply le_zero
+  apply div_spec_ge
+  rw [mul_zero]
+
+def add_div (a b: nat) (h: 0 < b) : (b + a) /? b = (a /? b).succ := by
+  rw [div_of_ge, add_comm, add_sub_cancel]
+  apply le_add_right
+
+def mul_div (a b: nat) (h: 0 < b) : (a * b) /? b = a := by
+  induction a using rec generalizing b with
+  | zero => rw [zero_mul, zero_div]
+  | succ a ih => rw [succ_mul, add_div, ih]
+
+def mul_udiv_assoc (a b c: nat) : c ∣ b -> a * (b / c) = a * b / c := by
+  if h:0 < c then
+    intro ⟨k, prf⟩
+    subst b
+    repeat rw [udiv_eq_div _ _ h]
+    rw [mul_comm c, mul_div, mul_comm_right, mul_comm c, mul_div, mul_comm]
+  else
+    cases (le_zero _ (le_of_not_lt h))
+    intro
+    rw [udiv_zero, udiv_zero, mul_zero]
 
 end nat

@@ -510,6 +510,33 @@ def nat.lt_mul_right_iff_lt (kpos: 0 < k) : (a < b ↔ a * k < b * k) := by
   apply lt_mul_left_iff_lt
   assumption
 
+def nat.mul_left_cancel_iff {a b k: nat} (h: 0 < k) : k * a = k * b ↔ a = b := by
+  apply Iff.intro
+  intro g
+  induction a using nat.rec generalizing b with
+  | zero =>
+    rw [mul_zero] at g
+    cases of_mul_eq_zero g.symm
+    subst k
+    contradiction
+    symm; assumption
+  | succ a ih =>
+    cases b using cases with
+    | zero =>
+      rw [mul_zero] at g
+      cases of_mul_eq_zero g
+      subst k
+      contradiction
+      contradiction
+    | succ b =>
+      congr
+      apply ih
+      rw [mul_succ, mul_succ] at g
+      apply add_left_cancel_iff.mp
+      assumption
+  intro h
+  rw [h]
+
 end mul
 
 section sub
