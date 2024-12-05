@@ -96,3 +96,12 @@ def Equiv.trans (h: Equiv α β) (g: Equiv β γ) : Equiv α γ where
 instance [IsEmpty α] : Embedding α β where
   toFun x := (elim_empty x).elim
   inj x := (elim_empty x).elim
+
+def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x = f := by
+  have ⟨finv, finvdef⟩ := b.Surjective.exists_inv
+  refine ⟨?_, ?_⟩
+  apply Equiv.mk f finv _ finvdef
+  intro x
+  apply b.Injective
+  rw [finvdef]
+  rfl
