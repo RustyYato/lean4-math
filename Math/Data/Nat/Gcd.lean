@@ -97,6 +97,24 @@ def gcd_dvd_left (a b: nat) : gcd a b ∣ a := (gcd_dvd_args a b).left
 @[simp]
 def gcd_dvd_right (a b: nat) : gcd a b ∣ b := (gcd_dvd_args a b).right
 
+def of_dvd_gcd : ∀k, k ∣ gcd a b -> k ∣ a ∧ k ∣ b := by
+  intro k kdvd
+  induction a, b using gcd.ind with
+  | zero =>
+    rw [zero_gcd] at kdvd
+    apply And.intro
+    apply dvd_zero
+    assumption
+  | pos a b apos ih =>
+    rw [pos_gcd _ _ apos] at kdvd
+    have ⟨k_dvd_mod, k_dvd_a⟩ := ih kdvd
+    apply And.intro k_dvd_a
+    rw [←div_add_mod b a apos]
+    apply dvd_add
+    apply dvd_trans k_dvd_a
+    apply dvd_mul_right
+    assumption
+
 def gcd_dvd : ∀k, a ∣ k ∨ b ∣ k -> gcd a b ∣ k := by
   intro k h
   cases h <;> rename_i h
@@ -189,6 +207,31 @@ def coprime_of_npow_succ :
   rw [npow_succ]
   apply coprime_of_mul_right
 
+def of_gcd_eq_zero {a b: nat} : gcd a b = 0 -> a = 0 ∧ b = 0 := by
+  intro h
+  have ⟨_, _⟩ := of_dvd_gcd 0 (zero_dvd.mpr h)
+  apply And.intro
+  apply zero_dvd.mp; assumption
+  apply zero_dvd.mp; assumption
+
+def gcd_mul (a b k: nat) : (gcd a b) * k = gcd (a * k) (b * k) := by
+  apply dvd_antisymm
+  apply dvd_gcd
+  apply mul_dvd_mul
+  apply gcd_dvd_left
+  apply mul_dvd_mul
+  apply gcd_dvd_right
+  induction a, b using gcd.ind with
+  | zero b => rw [zero_mul, zero_gcd, zero_gcd]
+  | pos a b apos ih =>
+    rw [pos_gcd _ _ apos]
+    apply dvd_trans _ ih
+    cases k using cases with
+    | zero => rw [mul_zero, mul_zero, zero_gcd, mul_zero, zero_gcd]
+    | succ k =>
+      rw [pos_gcd, mod_mul]
+      trivial
+
 def coprime_mul :
   Coprime a k ->
   Coprime b k ->
@@ -230,8 +273,6 @@ def dvd_of_coprime_mul : a ∣ b * c -> Coprime a b -> a ∣ c := by
   intro ⟨k, prf⟩  g
   exists k / b
   rw [mul_udiv_assoc, prf, mul_comm]
-
-
-  sorry
+  repeat sorry
 
 end nat

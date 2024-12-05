@@ -724,6 +724,41 @@ def mul_eq_zero {a b: int} : a * b = 0 ↔ a = 0 ∨ b = 0 := by
     simp
     try exact Iff.intro nofun nofun
 
+def mul_left_cancel_iff {a b k: int} (h: k ≠ 0) : k * a = k * b ↔ a = b := by
+  apply flip Iff.intro
+  intro h
+  rw [h]
+  intro h
+  induction a using ind generalizing b with
+  | zero =>
+    rw [mul_zero] at h
+    cases mul_eq_zero.mp h.symm
+    contradiction
+    subst b
+    rfl
+  | succ a ih =>
+    rw [←pred_succ b, mul_succ, mul_succ] at h
+    rw [←pred_succ b]
+    congr
+    apply ih
+    suffices k * a + k - k = k * b.pred + k - k by
+      rw [add_sub_cancel, add_sub_cancel] at this
+      assumption
+    rw [h]
+  | pred a ih =>
+    rw [←succ_pred b, mul_pred, mul_pred] at h
+    rw [←succ_pred b]
+    congr
+    apply ih
+    suffices k * a - k + k = k * b.succ - k + k by
+      rw [sub_add_cancel, sub_add_cancel] at this
+      assumption
+    rw [h]
+def mul_right_cancel_iff {a b k: int} (h: k ≠ 0) : a * k = b * k ↔ a = b := by
+  rw [mul_comm _ k, mul_comm _ k]
+  apply mul_left_cancel_iff
+  assumption
+
 end mul
 
 section abs
@@ -742,6 +777,9 @@ instance : AbsoluteValue int nat := ⟨abs⟩
 
 def abs_ofNat : ‖ofNat a‖ = a := rfl
 def abs_negSucc : ‖negSucc a‖ = a.succ := rfl
+def abs_posSucc : ‖posSucc a‖ = a.succ := rfl
+def abs_neg (a: int) : ‖-a‖ = ‖a‖ := by
+  cases a using rec' <;> rfl
 
 end abs
 

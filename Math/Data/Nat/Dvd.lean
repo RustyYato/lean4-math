@@ -185,6 +185,11 @@ def dvd_pow_le (a: nat) (n m: Nat) : m ≤ n -> a ^ m ∣ a ^ n := by
   rw [pow_mul, Nat.add_sub_cancel']
   assumption
 
+def mul_dvd_mul (a b k: nat) : a ∣ b -> a * k ∣ b * k := by
+  intro ⟨x, prf⟩
+  exists x
+  rw [mul_right_comm, prf]
+
 end dvd
 
 end nat
