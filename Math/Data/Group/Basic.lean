@@ -3,9 +3,16 @@ import Math.Algebra.Ring
 import Math.Data.QuotLike.Basic
 import Math.Type.Finite
 import Math.Data.Set.Finite
+import Math.Data.Fin.Basic
 
 attribute [local simp] IsEquivLike.coe
 attribute [local simp] DFunLike.coe
+
+theorem Nat.mul_sub_div' (x n p : Nat) (h₁ : p ≤ n * x) : (n * x - p) / n = x - p / n := by
+  sorry
+
+theorem Nat.sub_mul (a b k : Nat): (a - b) * k = a * k - b * k := by
+  sorry
 
 structure Group where
   ty: Type*
@@ -166,12 +173,18 @@ instance : Membership Group IsoClass where
 instance : HasSubset IsoClass where
   Subset a b := ∀a' ∈ a, ∃b' ∈ b, a' ⊆ b'
 
+def fin_inverse (x: Fin n): Fin n :=
+  Fin.mk ((n - x.val) % n) (Nat.mod_lt _ (Nat.zero_lt_of_ne_zero (by
+    intro h
+    cases h
+    exact x.elim0)))
+
 -- a cyclic group with n elements
-def FinCyclic' (n: Nat) [h: NeZero n] : Group where
+def FinCyclic (n: Nat) [h: NeZero n] : Group where
   ty := Fin n
   mul' a b := a + b
   one' := ⟨0, Nat.zero_lt_of_ne_zero h.ne⟩
-  inv' x := Fin.mk ((n - x.val) % n) (Nat.mod_lt _ (Nat.zero_lt_of_ne_zero h.ne))
+  inv' := fin_inverse
   mul_assoc' := by
     intro a b c
     simp [Fin.add_def]
@@ -179,12 +192,12 @@ def FinCyclic' (n: Nat) [h: NeZero n] : Group where
   one_mul' := Fin.zero_add
   inv_mul' := by
     intro x
-    simp [Fin.add_def]
+    simp [Fin.add_def, fin_inverse]
 
 -- the cyclic groups of order n elements
-def IsoClass.Cyclic (n: Nat) [NeZero n] := ⟦FinCyclic' n⟧
+def IsoClass.Cyclic (n: Nat) [NeZero n] := ⟦FinCyclic n⟧
 
-example [NeZero n] : FinCyclic' n ∈ IsoClass.Cyclic n := rfl
+example [NeZero n] : FinCyclic n ∈ IsoClass.Cyclic n := rfl
 
 def Trivial : Group where
   ty := Unit
@@ -295,6 +308,16 @@ def gmul.spec (a b c d: Group) : a ≈ c -> b ≈ d -> a * b ≈ c * d := by
   congr
   apply ac_resp_mul
   apply bd_resp_mul
+
+def IsoClass.mul : IsoClass -> IsoClass -> IsoClass := by
+  apply Quotient.lift₂ (⟦· * ·⟧)
+  intros
+  apply Quot.sound
+  apply gmul.spec <;> assumption
+
+instance : Mul IsoClass := ⟨IsoClass.mul⟩
+
+def mk_mul (a b: Group) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
 
 def IsSimple (a: Group) : Prop := ∀x y, x * y ≈ a -> x ≈ 1 ∨ y ≈ 1
 
@@ -424,5 +447,13 @@ def Trivial.IsSimple : IsSimple 1 := by
   intro x y eq
   exact .inl (of_gmul_eq_one _ _ eq).left
 
+def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
+  apply Eq.mpr mk_IsSimple
+  exact Group.Trivial.IsSimple
+
+instance {n m: Nat} [NeZero n] [NeZero m] : NeZero (n * m) where
+  out := by
+    intro h
+    cases Nat.mul_eq_zero.mp h <;> (rename_i h; exact NeZero.ne _ h)
 
 end Group

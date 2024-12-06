@@ -1,4 +1,5 @@
 import Math.Function.Basic
+import Math.Type.Basic
 import Math.Algebra.Order
 import Math.Algebra.Nat
 
@@ -72,6 +73,11 @@ def Fin.pair.inj : Function.Injective₂ (Fin.pair (n := n) (m := m)) := by
   rw [pair_pair_left] at h₀
   rw [pair_pair_right] at h₁
   apply And.intro <;> (symm; assumption)
+
+def Fin.pair.congr (a b: Fin (n * m)) : pair_left a = pair_left b -> pair_right a = pair_right b -> a = b := by
+  intro x y
+  rw [←pair_split_eq_self a, x, y, pair_split_eq_self]
+
 
 variable [Zero α] [Add α]
 
@@ -317,3 +323,15 @@ def Fin.powTwoSum_inj : Function.Injective (Fin.powTwoSum (n := n)) := by
           apply Fin.val_inj.mp g)⟩
         unfold castLE at this
         exact this
+
+def Fin.isoPair : Fin n × Fin m ≃ Fin (n * m) where
+  toFun x := Fin.pair x.1 x.2
+  invFun x := ⟨x.pair_left, x.pair_right⟩
+  leftInv := by
+    intro x
+    simp
+    rw [pair_pair_left, pair_pair_right]
+  rightInv := by
+    intro x
+    simp
+    rw [pair_split_eq_self]
