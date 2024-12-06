@@ -1,5 +1,6 @@
 import Math.Type.Basic
 import Math.Order.Fin
+import Math.Data.Fin.Basic
 
 class inductive IsFinite (α: Sort*): Prop where
 | intro (limit: Nat) : (α ↪ Fin limit) -> IsFinite α
@@ -147,12 +148,33 @@ instance IsFinite.ofProd {α β: Type*} [ha: IsFinite α] [hb: IsFinite β] : Is
   apply Embedding.mk
   case toFun =>
     intro x
-    have := Fin.pair
-    apply Fin.mk ((aemb x.1) * blim + (bemb x.2))
-    sorry
+    apply Fin.pair
+    exact aemb x.1
+    exact bemb x.2
   case inj =>
     intro x y eq
     dsimp at eq
+    cases x; cases y
+    have ⟨aeq, beq⟩   := Fin.pair.inj eq
+    congr
+    exact aemb.inj aeq
+    exact bemb.inj beq
 
-
-    sorry
+instance IsFinite.ofPProd {α β: Sort*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ×' β) := by
+  obtain ⟨alim, aemb⟩ := ha
+  obtain ⟨blim, bemb⟩ := hb
+  apply IsFinite.intro (alim * blim)
+  apply Embedding.mk
+  case toFun =>
+    intro x
+    apply Fin.pair
+    exact aemb x.1
+    exact bemb x.2
+  case inj =>
+    intro x y eq
+    dsimp at eq
+    cases x; cases y
+    have ⟨aeq, beq⟩   := Fin.pair.inj eq
+    congr
+    exact aemb.inj aeq
+    exact bemb.inj beq
