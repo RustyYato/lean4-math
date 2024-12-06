@@ -18,6 +18,11 @@ structure Group where
   one_mul': ∀a: ty, mul' one' a = a
   inv_mul': ∀a: ty, mul' (inv' a) a = one'
 
+class HasNormalSubgroup (α: Type*) where
+  NormalSubgroup: α -> α -> Prop
+
+infix:75 " ◀ " => HasNormalSubgroup.NormalSubgroup
+
 namespace Group
 
 instance (g: Group) : One g.ty := ⟨g.one'⟩
@@ -87,23 +92,25 @@ inductive IsNormalSubgroup (a b: Group): Prop where
 inductive IsIsomorphic (a b: Group): Prop where
 | ofIso (iso: Isomorphsism a b)
 
+instance : HasSubset Group := ⟨Group.IsSubgroup⟩
+
+instance : HasNormalSubgroup Group := ⟨Group.IsNormalSubgroup⟩
+
 def IsSubgroup.intro {a b: Group}
   (emb: a.ty ↪ b.ty)
   (resp_one: emb 1 = 1)
   (resp_inv: ∀x, emb (x⁻¹) = (emb x)⁻¹)
-  (resp_mul: ∀x y, emb (x * y) = emb x * emb y) : IsSubgroup a b := ⟨⟨emb, resp_one, resp_inv, resp_mul⟩⟩
+  (resp_mul: ∀x y, emb (x * y) = emb x * emb y) : a ⊆ b := ⟨⟨emb, resp_one, resp_inv, resp_mul⟩⟩
 
 def IsNormalSubgroup.intro {N G: Group}
   (emb: N.ty ↪ G.ty)
   (resp_one: emb 1 = 1)
   (resp_inv: ∀x, emb (x⁻¹) = (emb x)⁻¹)
   (resp_mul: ∀x y, emb (x * y) = emb x * emb y)
-  (conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * emb.toFun n * g⁻¹ ∈ Set.range emb.toFun) : IsNormalSubgroup N G := .ofSub <| by
+  (conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * emb.toFun n * g⁻¹ ∈ Set.range emb.toFun) : N ◀ G := .ofSub <| by
   apply NormalSubgroupEmbedding.mk _ _
   apply SubgroupEmbedding.mk
   all_goals assumption
-
-infix:75 " ◀ " => IsNormalSubgroup
 
 def IsIsomorphic.intro {a b: Group}
   (eq: a.ty ≃ b.ty)
@@ -230,8 +237,8 @@ def IsIsomorphic.trans {a b c: Group} :
   intro ⟨ab⟩ ⟨bc⟩
   exact ⟨ab.trans bc⟩
 
-def IsSubgroup.refl (a: Group) : a.IsSubgroup a := (IsIsomorphic.refl a).IsSubgroup
-def IsSubgroup.trans {a b c: Group} : a.IsSubgroup b -> b.IsSubgroup c -> a.IsSubgroup c := by
+def IsSubgroup.refl (a: Group) : a ⊆ a := (IsIsomorphic.refl a).IsSubgroup
+def IsSubgroup.trans {a b c: Group} : a ⊆ b -> b ⊆ c -> a ⊆ c := by
   intro h g
   obtain ⟨h, hresp_one, hresp_inv, hresp_mul⟩ := h
   obtain ⟨g, gresp_one, gresp_inv, gresp_mul⟩ := g
@@ -244,8 +251,6 @@ def IsSubgroup.trans {a b c: Group} : a.IsSubgroup b -> b.IsSubgroup c -> a.IsSu
   rw [hresp_mul, gresp_mul]
 
 def IsNormalSubgroup.refl (a: Group) : a ◀ a := (IsIsomorphic.refl a).IsNormalSubgroup
-
-instance : HasSubset Group := ⟨IsSubgroup⟩
 
 def sub_refl (a: Group) : a ⊆ a := IsSubgroup.refl _
 def sub_trans {a b c: Group} : a ⊆ b -> b ⊆ c -> a ⊆ c := IsSubgroup.trans
@@ -273,9 +278,6 @@ local notation "⟦" a "⟧" => IsoClass.mk a
 
 instance : Membership Group IsoClass where
   mem a b := a = ⟦b⟧
-
-instance : HasSubset IsoClass where
-  Subset a b := ∀a' ∈ a, ∃b' ∈ b, a' ⊆ b'
 
 def fin_inverse (x: Fin n): Fin n :=
   Fin.mk ((n - x.val) % n) (Nat.mod_lt _ (Nat.zero_lt_of_ne_zero (by
@@ -386,6 +388,23 @@ def sub_one (a: Group) : a ⊆ 1 -> a ∈ (1: IsoClass) := by
   rw [inv_one]
   intros; simp
   rw [mul_one]
+
+def IsoClass.IsSubgroup : IsoClass -> IsoClass -> Prop := by
+  apply Quotient.lift₂ Group.IsSubgroup
+  intros; ext
+  apply Iff.intro
+  apply eqv_sub_eqv <;> assumption
+  apply eqv_sub_eqv <;> (symm; assumption)
+
+def IsoClass.IsNormalSubgroup : IsoClass -> IsoClass -> Prop := by
+  apply Quotient.lift₂ Group.IsSubgroup
+  intros; ext
+  apply Iff.intro
+  apply eqv_sub_eqv <;> assumption
+  apply eqv_sub_eqv <;> (symm; assumption)
+
+instance : HasSubset IsoClass where
+  Subset a b := ∀a' ∈ a, ∃b' ∈ b, a' ⊆ b'
 
 -- the class trivial group can embed into any other isomorphism classs
 def IsoClass.one_sub (a: IsoClass) : 1 ⊆ a := by
