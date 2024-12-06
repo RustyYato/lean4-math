@@ -58,30 +58,28 @@ def inv_inj (g: Group) : Function.Injective (fun x: g.ty => x⁻¹) := by
   apply mul_cancel_right
   rw [mul_inv, eq, mul_inv]
 
-structure SubgroupEmbedding (a b: Group) where
-  emb: a.ty ↪ b.ty
-  resp_one: emb.toFun 1 = 1
-  resp_inv: ∀x, emb.toFun (x⁻¹) = (emb.toFun x)⁻¹
-  resp_mul: ∀x y, emb.toFun (x * y) = emb.toFun x * emb.toFun y
+structure SubgroupEmbedding (a b: Group) extends a.ty ↪ b.ty where
+  resp_one: toFun 1 = 1
+  resp_inv: ∀x, toFun (x⁻¹) = (toFun x)⁻¹
+  resp_mul: ∀x y, toFun (x * y) = toFun x * toFun y
 
-structure Isomorphsism (a b: Group) where
-  eq: a.ty ≃ b.ty
-  resp_one: eq.toFun 1 = 1
-  resp_inv: ∀x, eq.toFun (x⁻¹) = (eq.toFun x)⁻¹
-  resp_mul: ∀x y, eq.toFun (x * y) = eq.toFun x * eq.toFun y
+structure Isomorphsism (a b: Group) extends a.ty ≃ b.ty where
+  resp_one: toFun 1 = 1
+  resp_inv: ∀x, toFun (x⁻¹) = (toFun x)⁻¹
+  resp_mul: ∀x y, toFun (x * y) = toFun x * toFun y
 
 structure NormalSubgroupEmbedding (N G: Group) extends SubgroupEmbedding N G where
-  conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * emb.toFun n * g⁻¹ ∈ Set.range emb.toFun
+  conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * toFun n * g⁻¹ ∈ Set.range toFun
 
-def Isomorphsism.inv_resp_one (iso: Isomorphsism a b) : iso.eq.invFun 1 = 1 := by
-  apply iso.eq.toFun_inj
-  rw [iso.resp_one, iso.eq.rightInv]
-def Isomorphsism.inv_resp_inv (iso: Isomorphsism a b) (x: b.ty) : iso.eq.invFun (x⁻¹) = (iso.eq.invFun x)⁻¹ := by
-  apply iso.eq.toFun_inj
-  rw [iso.resp_inv, iso.eq.rightInv, iso.eq.rightInv]
-def Isomorphsism.inv_resp_mul (iso: Isomorphsism a b) (x y: b.ty) : iso.eq.invFun (x * y) = (iso.eq.invFun x) * (iso.eq.invFun y) := by
-  apply iso.eq.toFun_inj
-  rw [iso.resp_mul, iso.eq.rightInv, iso.eq.rightInv, iso.eq.rightInv]
+def Isomorphsism.inv_resp_one (iso: Isomorphsism a b) : iso.invFun 1 = 1 := by
+  apply iso.toFun_inj
+  rw [iso.resp_one, iso.rightInv]
+def Isomorphsism.inv_resp_inv (iso: Isomorphsism a b) (x: b.ty) : iso.invFun (x⁻¹) = (iso.invFun x)⁻¹ := by
+  apply iso.toFun_inj
+  rw [iso.resp_inv, iso.rightInv, iso.rightInv]
+def Isomorphsism.inv_resp_mul (iso: Isomorphsism a b) (x y: b.ty) : iso.invFun (x * y) = (iso.invFun x) * (iso.invFun y) := by
+  apply iso.toFun_inj
+  rw [iso.resp_mul, iso.rightInv, iso.rightInv, iso.rightInv]
 
 inductive IsSubgroup (a b: Group): Prop where
 | ofSub (sub: SubgroupEmbedding a b)
@@ -119,13 +117,13 @@ def IsIsomorphic.intro {a b: Group}
   (resp_mul: ∀x y, eq (x * y) = eq x * eq y) : IsIsomorphic a b := ⟨⟨eq, resp_one, resp_inv, resp_mul⟩⟩
 
 def Isomorphsism.toSubgroupEmbedding (h: Isomorphsism a b) : SubgroupEmbedding a b where
-  emb := h.eq.toEmbedding
+  toEmbedding := h.toEmbedding
   resp_one := h.resp_one
   resp_inv := h.resp_inv
   resp_mul := h.resp_mul
 
 def Isomorphsism.toNormalSubgroupEmbedding (h: Isomorphsism a b) : NormalSubgroupEmbedding a b where
-  emb := h.eq.toEmbedding
+  toEmbedding := h.toEmbedding
   resp_one := h.resp_one
   resp_inv := h.resp_inv
   resp_mul := h.resp_mul
@@ -133,16 +131,16 @@ def Isomorphsism.toNormalSubgroupEmbedding (h: Isomorphsism a b) : NormalSubgrou
     intro x y
     simp
     apply Set.mem_range.mpr
-    exists (h.eq.invFun x) * y * (h.eq.invFun x⁻¹)
+    exists (h.invFun x) * y * (h.invFun x⁻¹)
     simp [Equiv.toEmbedding]
-    rw [h.resp_mul, h.eq.rightInv, h.resp_mul, h.eq.rightInv]
+    rw [h.resp_mul, h.rightInv, h.resp_mul, h.rightInv]
 
 def SubgroupEmbedding.respIso
   (ac: Isomorphsism a c)
   (bd: Isomorphsism b d)
   (ab: SubgroupEmbedding a b)
   : SubgroupEmbedding c d where
-  emb := bd.eq.toEmbedding.comp <| ab.emb.comp ac.eq.symm.toEmbedding
+  toEmbedding := bd.toEmbedding.comp <| ab.toEmbedding.comp ac.symm.toEmbedding
   resp_one := by
     simp [Equiv.toEmbedding, Equiv.symm, Embedding.comp]
     rw [ac.inv_resp_one, ab.resp_one, bd.resp_one]
@@ -162,22 +160,22 @@ def NormalSubgroupEmbedding.respIso
   conj_in_norm g n := by
     simp [toSubgroupEmbedding, SubgroupEmbedding.respIso,
       Equiv.toEmbedding, Equiv.symm, Embedding.comp]
-    have ⟨x, prf⟩ := Set.mem_range.mp <| ab.conj_in_norm (bd.eq.invFun g) (ac.eq.invFun n)
+    have ⟨x, prf⟩ := Set.mem_range.mp <| ab.conj_in_norm (bd.invFun g) (ac.invFun n)
     apply Set.mem_range.mpr
-    exists ac.eq.toFun x
+    exists ac.toFun x
     simp
-    rw [ac.eq.leftInv, ←prf]
+    rw [ac.leftInv, ←prf]
     simp [bd.resp_mul]
-    rw [bd.eq.rightInv, bd.resp_inv, bd.eq.rightInv]
+    rw [bd.rightInv, bd.resp_inv, bd.rightInv]
 
 def Isomorphsism.refl (a: Group) : Isomorphsism a a where
-  eq := .refl
+  toEquiv := .refl
   resp_one := rfl
   resp_inv _ := rfl
   resp_mul _ _ := rfl
 
 def Isomorphsism.symm (h: Isomorphsism a b) : Isomorphsism b a where
-  eq := h.eq.symm
+  toEquiv := h.toEquiv.symm
   resp_one := by
     simp [Equiv.symm]
     rw [h.inv_resp_one]
@@ -189,7 +187,7 @@ def Isomorphsism.symm (h: Isomorphsism a b) : Isomorphsism b a where
     rw [h.inv_resp_mul]
 
 def Isomorphsism.trans (h: Isomorphsism a b) (g: Isomorphsism b c) : Isomorphsism a c where
-  eq := h.eq.trans g.eq
+  toEquiv := h.toEquiv.trans g.toEquiv
   resp_one := by
     simp [Equiv.trans]
     rw [h.resp_one, g.resp_one]
@@ -201,7 +199,7 @@ def Isomorphsism.trans (h: Isomorphsism a b) (g: Isomorphsism b c) : Isomorphsis
     rw [h.resp_mul, g.resp_mul]
 
 def SubgroupEmbedding.trans (h: SubgroupEmbedding a b) (g: SubgroupEmbedding b c) : SubgroupEmbedding a c where
-  emb := g.emb.comp h.emb
+  toEmbedding := g.toEmbedding.comp h.toEmbedding
   resp_one := by
     simp [Embedding.comp]
     rw [h.resp_one, g.resp_one]
@@ -597,30 +595,30 @@ def IsoClass.Trivial.notNontrivial : ¬Nontrivial 1 := by
 def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
   intro ⟨iso⟩
   apply And.intro
-  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.eq.invFun x).1), _, _⟩
+  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.invFun x).1), _, _⟩
     rfl
     any_goals try intro x; intros; rfl
     intro x
     simp [Equiv.symm]
-    show (iso.eq.invFun 1).fst = _
+    show (iso.invFun 1).fst = _
     rw [iso.inv_resp_one]
     show 1 = x
     symm
     have : Prod.mk x 1 = (1: (a * b).ty) := by
-      apply iso.eq.toFun_inj
+      apply iso.toFun_inj
       rfl
     exact (Prod.mk.inj this).left
-  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.eq.invFun x).2), _, _⟩
+  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.invFun x).2), _, _⟩
     rfl
     any_goals try intro x; intros; rfl
     intro x
     simp [Equiv.symm]
-    show (iso.eq.invFun 1).snd = _
+    show (iso.invFun 1).snd = _
     rw [iso.inv_resp_one]
     show 1 = x
     symm
     have : Prod.mk 1 x = (1: (a * b).ty) := by
-      apply iso.eq.toFun_inj
+      apply iso.toFun_inj
       rfl
     exact (Prod.mk.inj this).right
 
