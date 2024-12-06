@@ -23,6 +23,8 @@ class HasNormalSubgroup (α: Type*) where
 
 infix:75 " ◀ " => HasNormalSubgroup.NormalSubgroup
 
+def Nat.sub_mul (a b k: Nat)  : (a - b) * k = a * k - b * k := by sorry
+
 namespace Group
 
 instance (g: Group) : One g.ty := ⟨g.one'⟩
@@ -634,5 +636,63 @@ instance {n m: Nat} [NeZero n] [NeZero m] : NeZero (n * m) where
   out := by
     intro h
     cases Nat.mul_eq_zero.mp h <;> (rename_i h; exact NeZero.ne _ h)
+
+def cyclic_sub_of_mul' [NeZero n] [NeZero m] : SubgroupEmbedding (FinCyclic n) (FinCyclic (n * m)) where
+  toFun a := ⟨a.val * m, (Nat.mul_lt_mul_right (Nat.zero_lt_of_ne_zero (NeZero.ne _))).mpr a.isLt⟩
+  inj a b eq := by
+    simp at eq
+    injection eq with eq
+    apply Fin.val_inj.mp
+    apply Nat.mul_right_cancel
+    exact Nat.zero_lt_of_ne_zero (NeZero.ne m)
+    assumption
+  resp_one := by
+    show Fin.mk (0 * _) _  = 0
+    congr
+    rw [Nat.zero_mul, Nat.zero_mod]
+  resp_inv x := by
+    simp
+    congr
+    simp
+    rw [←Nat.sub_mul, Nat.mul_comm n m, Nat.mod_mul, Nat.mul_div_cancel,
+      Nat.mul_mod, Nat.mod_self, Nat.mul_zero, Nat.zero_mod, Nat.zero_add, Nat.mul_comm]
+    congr
+    exact Nat.zero_lt_of_ne_zero (NeZero.ne m)
+  resp_mul x y := by
+    simp
+    cases x with | mk x xLt =>
+    cases y with | mk y yLt =>
+    congr
+    simp
+    show (_ + _) % _ * _ = _
+    rw [Nat.mul_comm n m, Nat.mod_mul, ←Nat.add_mul, Nat.mul_mod_left, Nat.zero_add, Nat.mul_comm]
+    congr
+    rw [Nat.mul_div_cancel]
+    exact Nat.zero_lt_of_ne_zero (NeZero.ne m)
+
+def cyclic_sub_of_mul (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ⊆ FinCyclic (n * m) := ⟨cyclic_sub_of_mul'⟩
+def IsoClass.cyclic_sub_of_mul (n m: Nat) [NeZero n] [NeZero m] : Cyclic n ⊆ Cyclic (n * m) := ⟨cyclic_sub_of_mul'⟩
+
+def cyclic_nsub_of_mul' [NeZero n] [NeZero m] : NormalSubgroupEmbedding (FinCyclic n) (FinCyclic (n * m)) where
+  toSubgroupEmbedding := cyclic_sub_of_mul'
+  conj_in_norm  := by
+    intro ⟨x, xLt⟩ ⟨y, yLt⟩
+    unfold cyclic_sub_of_mul'
+    simp
+    unfold HMul.hMul instHMul Mul.mul instMulNat FinCyclic instMulTy Inv.inv instInvTy fin_inverse
+    simp [Fin.add_def]
+    apply Set.mem_range.mpr
+    simp
+    exists ⟨y, yLt⟩
+    simp
+    rw [Nat.add_comm x, Nat.add_assoc, ←Nat.add_sub_assoc, Nat.add_comm x, Nat.add_sub_cancel]
+    rw [Nat.add_mod, Nat.mod_self, Nat.add_zero, Nat.mod_mod, Nat.mul_comm n, Nat.mod_mul, Nat.mul_mod_left]
+    rw [Nat.zero_add, Nat.mul_div_cancel, Nat.mod_eq_of_lt yLt, Nat.mul_comm]
+    exact Nat.zero_lt_of_ne_zero (NeZero.ne m)
+    apply Nat.le_of_lt
+    assumption
+
+def cyclic_nsub_of_mul (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ◀ FinCyclic (n * m) := ⟨cyclic_nsub_of_mul'⟩
+def IsoClass.cyclic_nsub_of_mul (n m: Nat) [NeZero n] [NeZero m] : Cyclic n ◀ Cyclic (n * m) := ⟨cyclic_nsub_of_mul'⟩
 
 end Group
