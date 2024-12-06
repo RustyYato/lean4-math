@@ -45,50 +45,79 @@ def inv_unique {g: Group} {a b: g.ty} : a * b = 1 -> a = b⁻¹ := by
 def inv_one (g: Group) : (1: g.ty)⁻¹ = 1 := by
   apply mul_cancel_left
   rw [mul_inv, one_mul]
+def inv_inj (g: Group) : Function.Injective (fun x: g.ty => x⁻¹) := by
+  intro a b eq
+  simp at eq
+  apply mul_cancel_right
+  rw [mul_inv, eq, mul_inv]
+
+structure SubgroupEmbedding (a b: Group) where
+  emb: a.ty ↪ b.ty
+  resp_one: emb.toFun 1 = 1
+  resp_inv: ∀x, emb.toFun (x⁻¹) = (emb.toFun x)⁻¹
+  resp_mul: ∀x y, emb.toFun (x * y) = emb.toFun x * emb.toFun y
+
+structure Isomorphsism (a b: Group) where
+  eq: a.ty ≃ b.ty
+  resp_one: eq.toFun 1 = 1
+  resp_inv: ∀x, eq.toFun (x⁻¹) = (eq.toFun x)⁻¹
+  resp_mul: ∀x y, eq.toFun (x * y) = eq.toFun x * eq.toFun y
+
+def Isomorphsism.inv_resp_one (iso: Isomorphsism a b) : iso.eq.invFun 1 = 1 := by
+  apply iso.eq.toFun_inj
+  rw [iso.resp_one, iso.eq.rightInv]
+def Isomorphsism.inv_resp_inv (iso: Isomorphsism a b) (x: b.ty) : iso.eq.invFun (x⁻¹) = (iso.eq.invFun x)⁻¹ := by
+  apply iso.eq.toFun_inj
+  rw [iso.resp_inv, iso.eq.rightInv, iso.eq.rightInv]
+def Isomorphsism.inv_resp_mul (iso: Isomorphsism a b) (x y: b.ty) : iso.eq.invFun (x * y) = (iso.eq.invFun x) * (iso.eq.invFun y) := by
+  apply iso.eq.toFun_inj
+  rw [iso.resp_mul, iso.eq.rightInv, iso.eq.rightInv, iso.eq.rightInv]
 
 inductive IsSubgroup (a b: Group): Prop where
-| intro (eq: a.ty ↪ b.ty)
-  (resp_one: eq 1 = 1)
-  (resp_inv: ∀x, eq (x⁻¹) = (eq x)⁻¹)
-  (resp_mul: ∀x y, eq (x * y) = eq x * eq y)
+| ofSub (sub: SubgroupEmbedding a b)
 
 inductive IsIsomorphic (a b: Group): Prop where
-| intro (eq: a.ty ≃ b.ty)
+| ofIso (iso: Isomorphsism a b)
+
+def IsSubgroup.intro {a b: Group}
+  (emb: a.ty ↪ b.ty)
+  (resp_one: emb 1 = 1)
+  (resp_inv: ∀x, emb (x⁻¹) = (emb x)⁻¹)
+  (resp_mul: ∀x y, emb (x * y) = emb x * emb y) : IsSubgroup a b := ⟨⟨emb, resp_one, resp_inv, resp_mul⟩⟩
+
+def IsIsomorphic.intro {a b: Group}
+  (eq: a.ty ≃ b.ty)
   (resp_one: eq 1 = 1)
   (resp_inv: ∀x, eq (x⁻¹) = (eq x)⁻¹)
-  (resp_mul: ∀x y, eq (x * y) = eq x * eq y)
+  (resp_mul: ∀x y, eq (x * y) = eq x * eq y) : IsIsomorphic a b := ⟨⟨eq, resp_one, resp_inv, resp_mul⟩⟩
 
 def IsIsomorphic.IsSubgroup (a b: Group) (h: a.IsIsomorphic b) : a.IsSubgroup b := by
-  obtain ⟨eq, resp_one, resp_inv, resp_mul⟩ := h
+  obtain ⟨⟨eq, resp_one, resp_inv, resp_mul⟩⟩ := h
   apply IsSubgroup.intro eq.toEmbedding <;> assumption
 
 @[refl]
 def IsIsomorphic.refl (a: Group) : a.IsIsomorphic a := by
-  apply IsIsomorphic.intro .refl <;> (intros; rfl)
+  apply IsIsomorphic.intro Equiv.refl <;> (intros; rfl)
 
 @[symm]
 def IsIsomorphic.symm {a b: Group} (h: a.IsIsomorphic b) : b.IsIsomorphic a := by
   obtain ⟨eq, resp_one, resp_inv, resp_mul⟩ := h
   apply IsIsomorphic.intro eq.symm
   simp [Equiv.symm]
-  simp at resp_one
   rw [←resp_one, eq.leftInv]
   intro x
   simp [Equiv.symm]
-  simp at resp_inv
   rw [
     ←eq.rightInv x,
     ←resp_inv (eq.invFun x),
     eq.rightInv, eq.leftInv]
   intro x y
   simp [Equiv.symm]
-  simp at resp_mul
   rw [←eq.leftInv (eq.invFun x * eq.invFun y), resp_mul, eq.rightInv, eq.rightInv]
 
 def IsIsomorphic.trans {a b c: Group} (h: a.IsIsomorphic b) (g: b.IsIsomorphic c) : a.IsIsomorphic c := by
   obtain ⟨h, hresp_one, hresp_inv, hresp_mul⟩ := h
   obtain ⟨g, gresp_one, gresp_inv, gresp_mul⟩ := g
-  simp at *
   apply IsIsomorphic.intro (h.trans g)
   simp [Equiv.trans]
   rw [hresp_one, gresp_one]
@@ -102,7 +131,6 @@ def IsSubgroup.trans {a b c: Group} : a.IsSubgroup b -> b.IsSubgroup c -> a.IsSu
   intro h g
   obtain ⟨h, hresp_one, hresp_inv, hresp_mul⟩ := h
   obtain ⟨g, gresp_one, gresp_inv, gresp_mul⟩ := g
-  simp at *
   apply IsSubgroup.intro (g.comp h)
   simp [Embedding.comp]
   rw [hresp_one, gresp_one]
@@ -361,5 +389,32 @@ def Trivial.notNontrivial : ¬Nontrivial 1 := by
 def IsoClass.Trivial.notNontrivial : ¬Nontrivial 1 := by
   intro ⟨_, h⟩
   apply h rfl
+
+def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
+  intro ⟨eq, resp_one, resp_inv, resp_mul⟩
+  apply And.intro
+  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (eq.symm x).1), _, _⟩
+    rfl
+    any_goals try intro x; intros; rfl
+    intro x
+    simp [Equiv.symm]
+    show (eq.invFun 1).fst = _
+    rw [←eq.rightInv 1] at resp_one
+    rw [←eq.toFun_inj resp_one]
+    show 1 = x
+
+
+
+
+
+
+
+    sorry
+  · sorry
+
+def Trivial.IsSimple : IsSimple 1 := by
+  intro x y eq
+  exact .inl (of_gmul_eq_one _ _ eq).left
+
 
 end Group
