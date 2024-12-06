@@ -1,4 +1,6 @@
 import Math.Function.Basic
+import Math.Algebra.Order
+import Math.Algebra.Nat
 
 def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) ≠ y.addNat n := by
   intro h
@@ -71,32 +73,36 @@ def Fin.pair.inj : Function.Injective₂ (Fin.pair (n := n) (m := m)) := by
   rw [pair_pair_right] at h₁
   apply And.intro <;> (symm; assumption)
 
-def Fin.sum [Zero α] [Add α] : ∀{n}, (f: Fin n -> α) -> α
+variable [Zero α] [Add α]
+
+def Fin.sum : ∀{n}, (f: Fin n -> α) -> α
 | 0, _ => 0
 | _ + 1, f => f 0 + Fin.sum (f ∘ Fin.succ)
 
-def Fin.sum_to [Zero α] [Add α] (x: Fin n) (f: Fin n -> α) : α :=
+def Fin.sum_to (x: Fin n) (f: Fin n -> α) : α :=
   Fin.sum <| fun y => if y < x then f y else 0
 
+variable [IsAddZeroClass α] [IsAddSemigroup α]
+
 def Fin.sum_zero :
-  Fin.sum (fun _: Fin n => 0) = (0: Nat) := by
+  Fin.sum (fun _: Fin n => 0) = (0: α) := by
   induction n with
   | zero => rfl
   | succ n ih =>
     unfold sum
-    rw [Nat.zero_add]
+    rw [zero_add]
     exact ih
 
-def Fin.sum_to_zero (f: Fin (n + 1) -> Nat) :
+def Fin.sum_to_zero (f: Fin (n + 1) -> α) :
   Fin.sum_to 0 f = 0 := by
   unfold sum_to
   simp
   rw [sum_zero]
 
-def Fin.sum_succ (f: Fin (n + 1) -> Nat):
+def Fin.sum_succ (f: Fin (n + 1) -> α):
   Fin.sum f = f 0 + Fin.sum (f ∘ Fin.succ) := rfl
 
-def Fin.sum_to_succ (f: Fin (n + 1) -> Nat) (x: Fin (n + 1)) (h: x ≠ 0) :
+def Fin.sum_to_succ (f: Fin (n + 1) -> α) (x: Fin (n + 1)) (h: x ≠ 0) :
   Fin.sum_to x f = f 0 + Fin.sum_to (x.pred h) (f ∘ Fin.succ) := by
   unfold sum_to
   rw [sum_succ]
@@ -121,21 +127,50 @@ def Fin.sum_to_succ (f: Fin (n + 1) -> Nat) (x: Fin (n + 1)) (h: x ≠ 0) :
   apply h
   exact Fin.val_inj.mp g
 
-def Fin.le_sum (x: Fin n) (f: Fin n -> Nat) : f x ≤ sum f := by
+variable [LE α] [LT α] [SMul ℕ α] [IsOrderedAddCommMonoid α]
+
+def Fin.zero_le_sum (f: Fin n -> α) (f_nonneg: ∀x, 0 ≤ f x) : 0 ≤ sum f := by
+  induction n with
+  | zero =>
+    unfold sum
+    rfl
+  | succ n ih =>
+    unfold sum
+    rw [←add_zero 0]
+    apply add_le_add
+    apply f_nonneg
+    apply ih
+    intro
+    apply f_nonneg
+
+def Fin.le_sum (x: Fin n) (f: Fin n -> α) (f_nonneg: ∀x, 0 ≤ f x := by intro; apply Nat.zero_le _) : f x ≤ sum f := by
+  replace f_nonneg: ∀x, 0 ≤ f x := f_nonneg
   induction n with
   | zero => exact x.elim0
   | succ n ih =>
     if h:x = 0 then
       subst x
-      apply Nat.le_add_right
+      rw [←add_zero (f 0), sum_succ]
+      apply add_le_add_left
+      apply zero_le_sum
+      intro x
+      apply f_nonneg
     else
-      apply flip Nat.le_trans
-      apply Nat.le_add_left
-      apply flip Nat.le_trans
+      apply flip le_trans
+      apply add_le_add_left
+      apply flip le_trans
       apply ih (x.pred h)
       dsimp
-      rw [Fin.succ_pred]
-      apply Nat.le_refl
+      intro
+      apply f_nonneg
+      rfl
+      simp
+      conv => {
+        lhs
+        rw [←zero_add (f x)]
+      }
+      apply add_le_add_right
+      apply f_nonneg
 
 def Fin.sum_to_lt_sum (x: Fin n) (f: Fin n -> Nat) (y: Fin (f x)) :
   sum_to x f + y.val < sum f := by
@@ -148,6 +183,8 @@ def Fin.sum_to_lt_sum (x: Fin n) (f: Fin n -> Nat) (y: Fin (f x)) :
       apply Nat.lt_of_lt_of_le
       apply Fin.isLt
       apply le_sum
+      intro
+      apply Nat.zero_le
     else
       replace ih := ih (x.pred h) (f ∘ Fin.succ)
       simp at ih

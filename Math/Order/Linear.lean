@@ -1,11 +1,20 @@
-import Math.Type.Notation
-import Math.Logic.Basic
+import Math.Order.Partial
 
 class IsLinearOrder (α: Type*) [LT α] [LE α]: Prop where
   lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
   le_antisymm: ∀{a b: α}, a ≤ b -> b ≤ a -> a = b
   lt_or_le: ∀a b: α, a < b ∨ b ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
+
+instance [LT α] [LE α] [IsLinearOrder α] : IsPartialOrder α where
+  lt_iff_le_and_not_le := IsLinearOrder.lt_iff_le_and_not_le
+  le_antisymm := IsLinearOrder.le_antisymm
+  le_refl := by
+    intro a
+    rcases IsLinearOrder.lt_or_le a a with r | r
+    exact (IsLinearOrder.lt_iff_le_and_not_le.mp r).left
+    assumption
+  le_trans := IsLinearOrder.le_trans
 
 class IsLinearMinMaxOrder (α: Type*) [LT α] [LE α] [Min α] [Max α] extends IsLinearOrder α: Prop where
   min_iff_le_left: ∀{a b: α}, a ≤ b ↔ min a b = a := by
@@ -69,18 +78,12 @@ class IsLinearMinMaxOrder (α: Type*) [LT α] [LE α] [Min α] [Max α] extends 
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [IsLinearOrder α] [Min α] [Max α] [IsLinearMinMaxOrder α]
 
-def lt_iff_le_and_not_le: a < b ↔ a ≤ b ∧ ¬b ≤ a := IsLinearOrder.lt_iff_le_and_not_le
-def le_antisymm: a ≤ b -> b ≤ a -> a = b := IsLinearOrder.le_antisymm
 def lt_or_le: ∀a b: α, a < b ∨ b ≤ a := IsLinearOrder.lt_or_le
-def le_trans: a ≤ b -> b ≤ c -> a ≤ c := IsLinearOrder.le_trans
 
 def min_iff_le_left: a ≤ b ↔ min a b = a := IsLinearMinMaxOrder.min_iff_le_left
 def min_iff_le_right: b ≤ a ↔ min a b = b := IsLinearMinMaxOrder.min_iff_le_right
 def max_iff_le_left: a ≤ b ↔ max a b = b := IsLinearMinMaxOrder.max_iff_le_left
 def max_iff_le_right: b ≤ a ↔ max a b = a := IsLinearMinMaxOrder.max_iff_le_right
-
-def le_of_lt: a < b -> a ≤ b := fun h => (lt_iff_le_and_not_le.mp h).left
-def lt_of_le_of_not_le : a ≤ b -> ¬(b ≤ a) -> a < b := (lt_iff_le_and_not_le.mpr ⟨·, ·⟩)
 
 def le_total: ∀a b: α, a ≤ b ∨ b ≤ a := by
   intro a b
@@ -93,53 +96,6 @@ def le_complete: ∀a b: α, a ≤ b ∨ ¬(a ≤ b) := by
   right
   exact (lt_iff_le_and_not_le.mp ab).right
   left; assumption
-
-def le_of_eq: a = b -> a ≤ b := fun h => h ▸ match le_total a a with | .inl h | .inr h => h
-def not_le_of_lt (hab : a < b) : ¬ b ≤ a := (lt_iff_le_and_not_le.1 hab).2
-def not_lt_of_le (hab : a ≤ b) : ¬ b < a := imp_not_comm.1 not_le_of_lt hab
-@[refl]
-def le_refl (a: α): a ≤ a := le_of_eq rfl
-def lt_irrefl: ¬a < a := fun h => (lt_iff_le_and_not_le.mp h).right (le_refl _)
-def ne_of_lt: a < b -> a ≠ b := fun h g => lt_irrefl (g ▸ h)
-def lt_or_eq_of_le: a ≤ b -> a < b ∨ a = b := by
-  intro h
-  cases le_complete b a <;> rename_i h
-  apply Or.inr
-  apply le_antisymm <;> assumption
-  apply Or.inl
-  apply lt_iff_le_and_not_le.mpr
-  apply And.intro <;> assumption
-def le_of_lt_or_eq: a < b ∨ a = b -> a ≤ b := by
-  intro h
-  cases h
-  apply le_of_lt; assumption
-  apply le_of_eq; assumption
-def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
-  intro h g
-  cases lt_or_eq_of_le h
-  assumption
-  contradiction
-def lt_trans : a < b -> b < c -> a < c := by
-  intro ab bc
-  apply lt_of_le_of_ne
-  apply le_trans <;> (apply le_of_lt; assumption)
-  intro h
-  subst c
-  have ⟨_,nba⟩ := lt_iff_le_and_not_le.mp ab
-  have ⟨ba,_⟩ := lt_iff_le_and_not_le.mp bc
-  contradiction
-def lt_of_lt_of_le : a < b -> b ≤ c -> a < c := by
-  intro ab bc
-  cases lt_or_eq_of_le bc <;> rename_i bc
-  apply lt_trans <;> assumption
-  subst c
-  assumption
-def lt_of_le_of_lt : a ≤ b -> b < c -> a < c := by
-  intro ab bc
-  cases lt_or_eq_of_le ab <;> rename_i ab
-  apply lt_trans <;> assumption
-  subst a
-  assumption
 def lt_of_not_le : ¬(a ≤ b) -> b < a := by
   intro h
   cases le_total a b
@@ -153,8 +109,6 @@ def le_of_not_lt : ¬(a < b) -> b ≤ a := by
   apply le_of_eq; symm
   cases lt_or_eq_of_le h <;> trivial
 def le_of_not_le : ¬(a ≤ b) -> b ≤ a := le_of_lt ∘ lt_of_not_le
-
-def lt_asymm : a < b -> b < a -> False := (lt_irrefl <| lt_trans · ·)
 
 def lt_or_gt_of_ne : a ≠ b -> a < b ∨ b < a := by
   intro h
