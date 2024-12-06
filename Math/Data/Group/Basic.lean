@@ -130,6 +130,39 @@ def Isomorphsism.toNormalSubgroupEmbedding (h: Isomorphsism a b) : NormalSubgrou
     simp [Equiv.toEmbedding]
     rw [h.resp_mul, h.eq.rightInv, h.resp_mul, h.eq.rightInv]
 
+def SubgroupEmbedding.respIso
+  (ac: Isomorphsism a c)
+  (bd: Isomorphsism b d)
+  (ab: SubgroupEmbedding a b)
+  : SubgroupEmbedding c d where
+  emb := bd.eq.toEmbedding.comp <| ab.emb.comp ac.eq.symm.toEmbedding
+  resp_one := by
+    simp [Equiv.toEmbedding, Equiv.symm, Embedding.comp]
+    rw [ac.inv_resp_one, ab.resp_one, bd.resp_one]
+  resp_inv x := by
+    simp [Equiv.toEmbedding, Equiv.symm, Embedding.comp]
+    rw [ac.inv_resp_inv, ab.resp_inv, bd.resp_inv]
+  resp_mul x y := by
+    simp [Equiv.toEmbedding, Equiv.symm, Embedding.comp]
+    rw [ac.inv_resp_mul, ab.resp_mul, bd.resp_mul]
+
+def NormalSubgroupEmbedding.respIso
+  (ac: Isomorphsism a c)
+  (bd: Isomorphsism b d)
+  (ab: NormalSubgroupEmbedding a b)
+  : NormalSubgroupEmbedding c d where
+  toSubgroupEmbedding := SubgroupEmbedding.respIso ac bd ab.toSubgroupEmbedding
+  conj_in_norm g n := by
+    simp [toSubgroupEmbedding, SubgroupEmbedding.respIso,
+      Equiv.toEmbedding, Equiv.symm, Embedding.comp]
+    have ⟨x, prf⟩ := Set.mem_range.mp <| ab.conj_in_norm (bd.eq.invFun g) (ac.eq.invFun n)
+    apply Set.mem_range.mpr
+    exists ac.eq.toFun x
+    simp
+    rw [ac.eq.leftInv, ←prf]
+    simp [bd.resp_mul]
+    rw [bd.eq.rightInv, bd.resp_inv, bd.eq.rightInv]
+
 def Isomorphsism.refl (a: Group) : Isomorphsism a a where
   eq := .refl
   resp_one := rfl
@@ -285,16 +318,40 @@ def IsoClass.Trivial := ⟦.Trivial⟧
 instance : One Group := ⟨.Trivial⟩
 instance : One IsoClass := ⟨.Trivial⟩
 
-def eqv_sub (a b k: Group) : a ≈ b -> a ⊆ k -> b ⊆ k := by
-  intro eqv a_sub_k
-  apply IsSubgroup.trans _ a_sub_k
-  apply IsIsomorphic.IsSubgroup
-  symm; assumption
+def eqv_sub_eqv {a b c d: Group} : a ≈ c -> b ≈ d -> a ⊆ b -> c ⊆ d := by
+  intro ⟨ac⟩ ⟨bd⟩ ⟨sub⟩
+  exact ⟨sub.respIso ac bd⟩
 
-def sub_eqv (a b k: Group) : a ≈ b -> k ⊆ a -> k ⊆ b := by
+def eqv_sub {a b k: Group} : a ≈ b -> a ⊆ k -> b ⊆ k := by
   intro eqv a_sub_k
-  apply IsSubgroup.trans a_sub_k
-  apply IsIsomorphic.IsSubgroup
+  apply eqv_sub_eqv
+  assumption
+  rfl
+  assumption
+
+def sub_eqv {a b k: Group} : a ≈ b -> k ⊆ a -> k ⊆ b := by
+  intro eqv a_sub_k
+  apply eqv_sub_eqv
+  rfl
+  assumption
+  assumption
+
+def eqv_nsub_eqv {a b c d: Group} : a ≈ c -> b ≈ d -> a ◀ b -> c ◀ d := by
+  intro ⟨ac⟩ ⟨bd⟩ ⟨ab⟩
+  exact ⟨ab.respIso ac bd⟩
+
+def eqv_nsub (a b k: Group) : a ≈ b -> a ◀ k -> b ◀ k := by
+  intro eqv a_sub_k
+  apply eqv_nsub_eqv
+  assumption
+  rfl
+  assumption
+
+def nsub_eqv (a b k: Group) : a ≈ b -> k ◀ a -> k ◀ b := by
+  intro eqv a_sub_k
+  apply eqv_nsub_eqv
+  rfl
+  assumption
   assumption
 
 -- the trivial group is a subgroup of every group
