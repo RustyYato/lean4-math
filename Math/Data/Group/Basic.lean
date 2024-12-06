@@ -4,15 +4,10 @@ import Math.Data.QuotLike.Basic
 import Math.Type.Finite
 import Math.Data.Set.Finite
 import Math.Data.Fin.Basic
+import Math.Data.Set.Basic
 
 attribute [local simp] IsEquivLike.coe
 attribute [local simp] DFunLike.coe
-
-theorem Nat.mul_sub_div' (x n p : Nat) (h₁ : p ≤ n * x) : (n * x - p) / n = x - p / n := by
-  sorry
-
-theorem Nat.sub_mul (a b k : Nat): (a - b) * k = a * k - b * k := by
-  sorry
 
 structure Group where
   ty: Type*
@@ -70,6 +65,9 @@ structure Isomorphsism (a b: Group) where
   resp_inv: ∀x, eq.toFun (x⁻¹) = (eq.toFun x)⁻¹
   resp_mul: ∀x y, eq.toFun (x * y) = eq.toFun x * eq.toFun y
 
+structure NormalSubgroupEmbedding (N G: Group) extends SubgroupEmbedding N G where
+  conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * emb.toFun n * g⁻¹ ∈ Set.range emb.toFun
+
 def Isomorphsism.inv_resp_one (iso: Isomorphsism a b) : iso.eq.invFun 1 = 1 := by
   apply iso.eq.toFun_inj
   rw [iso.resp_one, iso.eq.rightInv]
@@ -83,6 +81,9 @@ def Isomorphsism.inv_resp_mul (iso: Isomorphsism a b) (x y: b.ty) : iso.eq.invFu
 inductive IsSubgroup (a b: Group): Prop where
 | ofSub (sub: SubgroupEmbedding a b)
 
+inductive IsNormalSubgroup (a b: Group): Prop where
+| ofSub (sub: NormalSubgroupEmbedding a b)
+
 inductive IsIsomorphic (a b: Group): Prop where
 | ofIso (iso: Isomorphsism a b)
 
@@ -92,15 +93,95 @@ def IsSubgroup.intro {a b: Group}
   (resp_inv: ∀x, emb (x⁻¹) = (emb x)⁻¹)
   (resp_mul: ∀x y, emb (x * y) = emb x * emb y) : IsSubgroup a b := ⟨⟨emb, resp_one, resp_inv, resp_mul⟩⟩
 
+def IsNormalSubgroup.intro {N G: Group}
+  (emb: N.ty ↪ G.ty)
+  (resp_one: emb 1 = 1)
+  (resp_inv: ∀x, emb (x⁻¹) = (emb x)⁻¹)
+  (resp_mul: ∀x y, emb (x * y) = emb x * emb y)
+  (conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * emb.toFun n * g⁻¹ ∈ Set.range emb.toFun) : IsNormalSubgroup N G := .ofSub <| by
+  apply NormalSubgroupEmbedding.mk _ _
+  apply SubgroupEmbedding.mk
+  all_goals assumption
+
+infix:75 " ◀ " => IsNormalSubgroup
+
 def IsIsomorphic.intro {a b: Group}
   (eq: a.ty ≃ b.ty)
   (resp_one: eq 1 = 1)
   (resp_inv: ∀x, eq (x⁻¹) = (eq x)⁻¹)
   (resp_mul: ∀x y, eq (x * y) = eq x * eq y) : IsIsomorphic a b := ⟨⟨eq, resp_one, resp_inv, resp_mul⟩⟩
 
-def IsIsomorphic.IsSubgroup (a b: Group) (h: a.IsIsomorphic b) : a.IsSubgroup b := by
-  obtain ⟨⟨eq, resp_one, resp_inv, resp_mul⟩⟩ := h
-  apply IsSubgroup.intro eq.toEmbedding <;> assumption
+def Isomorphsism.toSubgroupEmbedding (h: Isomorphsism a b) : SubgroupEmbedding a b where
+  emb := h.eq.toEmbedding
+  resp_one := h.resp_one
+  resp_inv := h.resp_inv
+  resp_mul := h.resp_mul
+
+def Isomorphsism.toNormalSubgroupEmbedding (h: Isomorphsism a b) : NormalSubgroupEmbedding a b where
+  emb := h.eq.toEmbedding
+  resp_one := h.resp_one
+  resp_inv := h.resp_inv
+  resp_mul := h.resp_mul
+  conj_in_norm := by
+    intro x y
+    simp
+    apply Set.mem_range.mpr
+    exists (h.eq.invFun x) * y * (h.eq.invFun x⁻¹)
+    simp [Equiv.toEmbedding]
+    rw [h.resp_mul, h.eq.rightInv, h.resp_mul, h.eq.rightInv]
+
+def Isomorphsism.refl (a: Group) : Isomorphsism a a where
+  eq := .refl
+  resp_one := rfl
+  resp_inv _ := rfl
+  resp_mul _ _ := rfl
+
+def Isomorphsism.symm (h: Isomorphsism a b) : Isomorphsism b a where
+  eq := h.eq.symm
+  resp_one := by
+    simp [Equiv.symm]
+    rw [h.inv_resp_one]
+  resp_inv _ := by
+    simp [Equiv.symm]
+    rw [h.inv_resp_inv]
+  resp_mul x y := by
+    simp [Equiv.symm]
+    rw [h.inv_resp_mul]
+
+def Isomorphsism.trans (h: Isomorphsism a b) (g: Isomorphsism b c) : Isomorphsism a c where
+  eq := h.eq.trans g.eq
+  resp_one := by
+    simp [Equiv.trans]
+    rw [h.resp_one, g.resp_one]
+  resp_inv _ := by
+    simp [Equiv.trans]
+    rw [h.resp_inv, g.resp_inv]
+  resp_mul x y := by
+    simp [Equiv.trans]
+    rw [h.resp_mul, g.resp_mul]
+
+def SubgroupEmbedding.trans (h: SubgroupEmbedding a b) (g: SubgroupEmbedding b c) : SubgroupEmbedding a c where
+  emb := g.emb.comp h.emb
+  resp_one := by
+    simp [Embedding.comp]
+    rw [h.resp_one, g.resp_one]
+  resp_inv _ := by
+    simp [Embedding.comp]
+    rw [h.resp_inv, g.resp_inv]
+  resp_mul x y := by
+    simp [Embedding.comp]
+    rw [h.resp_mul, g.resp_mul]
+
+def SubgroupEmbedding.refl (a: Group): SubgroupEmbedding a a := (Isomorphsism.refl a).toSubgroupEmbedding
+def NormalSubgroupEmbedding.refl (a: Group): NormalSubgroupEmbedding a a := (Isomorphsism.refl a).toNormalSubgroupEmbedding
+
+def IsIsomorphic.IsSubgroup {a b: Group} (h: a.IsIsomorphic b) : a.IsSubgroup b := by
+  obtain ⟨iso⟩ := h
+  apply IsSubgroup.ofSub iso.toSubgroupEmbedding
+
+def IsIsomorphic.IsNormalSubgroup {a b: Group} (h: a.IsIsomorphic b) : a ◀ b := by
+  obtain ⟨iso⟩ := h
+  apply IsNormalSubgroup.ofSub iso.toNormalSubgroupEmbedding
 
 @[refl]
 def IsIsomorphic.refl (a: Group) : a.IsIsomorphic a := by
@@ -108,30 +189,13 @@ def IsIsomorphic.refl (a: Group) : a.IsIsomorphic a := by
 
 @[symm]
 def IsIsomorphic.symm {a b: Group} (h: a.IsIsomorphic b) : b.IsIsomorphic a := by
-  obtain ⟨eq, resp_one, resp_inv, resp_mul⟩ := h
-  apply IsIsomorphic.intro eq.symm
-  simp [Equiv.symm]
-  rw [←resp_one, eq.leftInv]
-  intro x
-  simp [Equiv.symm]
-  rw [
-    ←eq.rightInv x,
-    ←resp_inv (eq.invFun x),
-    eq.rightInv, eq.leftInv]
-  intro x y
-  simp [Equiv.symm]
-  rw [←eq.leftInv (eq.invFun x * eq.invFun y), resp_mul, eq.rightInv, eq.rightInv]
+  obtain ⟨iso⟩ := h
+  exact ⟨iso.symm⟩
 
-def IsIsomorphic.trans {a b c: Group} (h: a.IsIsomorphic b) (g: b.IsIsomorphic c) : a.IsIsomorphic c := by
-  obtain ⟨h, hresp_one, hresp_inv, hresp_mul⟩ := h
-  obtain ⟨g, gresp_one, gresp_inv, gresp_mul⟩ := g
-  apply IsIsomorphic.intro (h.trans g)
-  simp [Equiv.trans]
-  rw [hresp_one, gresp_one]
-  simp [Equiv.trans]; intro x
-  rw [hresp_inv, gresp_inv]
-  simp [Equiv.trans]; intro x y
-  rw [hresp_mul, gresp_mul]
+def IsIsomorphic.trans {a b c: Group} :
+  a.IsIsomorphic b -> b.IsIsomorphic c -> a.IsIsomorphic c := by
+  intro ⟨ab⟩ ⟨bc⟩
+  exact ⟨ab.trans bc⟩
 
 def IsSubgroup.refl (a: Group) : a.IsSubgroup a := (IsIsomorphic.refl a).IsSubgroup
 def IsSubgroup.trans {a b c: Group} : a.IsSubgroup b -> b.IsSubgroup c -> a.IsSubgroup c := by
@@ -146,10 +210,17 @@ def IsSubgroup.trans {a b c: Group} : a.IsSubgroup b -> b.IsSubgroup c -> a.IsSu
   simp [Embedding.comp]; intro x y
   rw [hresp_mul, gresp_mul]
 
+def IsNormalSubgroup.refl (a: Group) : a ◀ a := (IsIsomorphic.refl a).IsNormalSubgroup
+
 instance : HasSubset Group := ⟨IsSubgroup⟩
 
 def sub_refl (a: Group) : a ⊆ a := IsSubgroup.refl _
 def sub_trans {a b c: Group} : a ⊆ b -> b ⊆ c -> a ⊆ c := IsSubgroup.trans
+
+@[refl]
+def nsub_refl (a: Group) : a ◀ a := by
+  apply IsNormalSubgroup.ofSub
+  apply NormalSubgroupEmbedding.refl
 
 instance setoid : Setoid Group where
   r := IsIsomorphic
@@ -319,7 +390,7 @@ instance : Mul IsoClass := ⟨IsoClass.mul⟩
 
 def mk_mul (a b: Group) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
 
-def IsSimple (a: Group) : Prop := ∀x y, x * y ≈ a -> x ≈ 1 ∨ y ≈ 1
+def IsSimple (a: Group) : Prop := ∀n, n ◀ a -> n ≈ 1 ∨ n ≈ a
 
 def gmul_one (a: Group) : a * 1 ≈ a := by
   apply IsIsomorphic.intro
@@ -342,16 +413,12 @@ def one_gmul (a: Group) : 1 * a ≈ a := by
   intros; rfl
 
 def IsSimple.spec (a b: Group) : a ≈ b -> a.IsSimple -> b.IsSimple := by
-  intro eq asimp x y h
-  have := h.trans (gmul_one b).symm
+  intro eq asimp n norm
+  suffices n ≈ 1 ∨ n ≈ a by
+    cases this; left; assumption
+    right; apply eqv_trans; assumption; assumption
   apply asimp
-  apply eqv_trans _ (gmul_one _)
-  apply flip eqv_trans
-  apply gmul.spec
-  symm; assumption
-  rfl
-  apply eqv_trans _ (gmul_one _).symm
-  assumption
+  sorry
 
 def IsoClass.IsSimple : IsoClass -> Prop := by
   apply Quotient.lift Group.IsSimple
@@ -443,13 +510,13 @@ def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
       rfl
     exact (Prod.mk.inj this).right
 
-def Trivial.IsSimple : IsSimple 1 := by
-  intro x y eq
-  exact .inl (of_gmul_eq_one _ _ eq).left
+-- def Trivial.IsSimple : IsSimple 1 := by
+--   intro x y eq
+--   exact .inl (of_gmul_eq_one _ _ eq).left
 
-def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
-  apply Eq.mpr mk_IsSimple
-  exact Group.Trivial.IsSimple
+-- def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
+--   apply Eq.mpr mk_IsSimple
+--   exact Group.Trivial.IsSimple
 
 instance {n m: Nat} [NeZero n] [NeZero m] : NeZero (n * m) where
   out := by
