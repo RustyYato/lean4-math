@@ -346,14 +346,14 @@ def eqv_nsub_eqv {a b c d: Group} : a ≈ c -> b ≈ d -> a ◀ b -> c ◀ d := 
   intro ⟨ac⟩ ⟨bd⟩ ⟨ab⟩
   exact ⟨ab.respIso ac bd⟩
 
-def eqv_nsub (a b k: Group) : a ≈ b -> a ◀ k -> b ◀ k := by
+def eqv_nsub {a b k: Group} : a ≈ b -> a ◀ k -> b ◀ k := by
   intro eqv a_sub_k
   apply eqv_nsub_eqv
   assumption
   rfl
   assumption
 
-def nsub_eqv (a b k: Group) : a ≈ b -> k ◀ a -> k ◀ b := by
+def nsub_eqv {a b k: Group} : a ≈ b -> k ◀ a -> k ◀ b := by
   intro eqv a_sub_k
   apply eqv_nsub_eqv
   rfl
@@ -532,7 +532,7 @@ def IsSimple.spec (a b: Group) : a ≈ b -> a.IsSimple -> b.IsSimple := by
     cases this; left; assumption
     right; apply eqv_trans; assumption; assumption
   apply asimp
-  sorry
+  exact nsub_eqv eq.symm norm
 
 def IsoClass.IsSimple : IsoClass -> Prop := by
   apply Quotient.lift Group.IsSimple
@@ -624,13 +624,13 @@ def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
       rfl
     exact (Prod.mk.inj this).right
 
--- def Trivial.IsSimple : IsSimple 1 := by
---   intro x y eq
---   exact .inl (of_gmul_eq_one _ _ eq).left
+def Trivial.IsSimple : IsSimple 1 := by
+  intro x nsub_one; left; symm
+  exact Quotient.exact <| sub_one _ (IsNormalSubgroup.IsSubgroup nsub_one)
 
--- def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
---   apply Eq.mpr mk_IsSimple
---   exact Group.Trivial.IsSimple
+def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
+  apply Eq.mpr mk_IsSimple
+  exact Group.Trivial.IsSimple
 
 instance {n m: Nat} [NeZero n] [NeZero m] : NeZero (n * m) where
   out := by
