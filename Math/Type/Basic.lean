@@ -105,3 +105,7 @@ def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x =
   apply b.Injective
   rw [finvdef]
   rfl
+
+def Embedding.comp (b: β ↪ γ) (a: α ↪ β) : α ↪ γ where
+  toFun := b.toFun ∘ a.toFun
+  inj := Function.Injective.comp b.inj a.inj

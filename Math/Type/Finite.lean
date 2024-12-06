@@ -5,7 +5,7 @@ import Math.Data.Fin.Basic
 class inductive IsFinite (α: Sort*): Prop where
 | intro (limit: Nat) : (α ↪ Fin limit) -> IsFinite α
 
-def existsEquiv (α: Sort*) [h: IsFinite α] : ∃card, _root_.Nonempty (α ≃ Fin card) := by
+def IsFinite.existsEquiv (α: Sort*) [h: IsFinite α] : ∃card, _root_.Nonempty (α ≃ Fin card) := by
   obtain ⟨ limit, emb ⟩ := h
   induction limit with
   | zero =>
@@ -246,7 +246,7 @@ instance IsFinite.ofSigma {α: Type*} {β: α -> Type*} [ha: IsFinite α] [hb: �
     cases βequiv.toFun_inj xb_eq_yb
     rfl
 
-instance IsFinite.ofPSigma {α: Type*} {β: α -> Type*} [ha: IsFinite α] [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) ×' β x) := by
+instance IsFinite.ofPSigma {α: Sort*} {β: α -> Sort*} [ha: IsFinite α] [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) ×' β x) := by
   have equiv := toEquiv α
   have βequiv : {x: α} -> β x ≃ Fin (card (β x)) := fun {x} => toEquiv _
   apply IsFinite.intro <| Fin.sum fun x => card (β (equiv.invFun x))
