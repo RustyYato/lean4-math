@@ -109,3 +109,17 @@ def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x =
 def Embedding.comp (b: β ↪ γ) (a: α ↪ β) : α ↪ γ where
   toFun := b.toFun ∘ a.toFun
   inj := Function.Injective.comp b.inj a.inj
+
+def Equiv.toProd (h: a ≃ c) (g: b ≃ d) : a × b ≃ c × d where
+  toFun | ⟨x, y⟩ => ⟨h x, g y⟩
+  invFun | ⟨x, y⟩ => ⟨h.symm x, g.symm y⟩
+  leftInv := by
+    intro ⟨x, y⟩
+    simp [DFunLike.coe, IsEquivLike.coe, Equiv.symm]
+    rw [h.leftInv, g.leftInv]
+    trivial
+  rightInv := by
+    intro ⟨x, y⟩
+    simp [DFunLike.coe, IsEquivLike.coe, Equiv.symm]
+    rw [h.rightInv, g.rightInv]
+    trivial
