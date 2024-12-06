@@ -5,6 +5,7 @@ import Math.Type.Finite
 import Math.Data.Set.Finite
 import Math.Data.Fin.Basic
 import Math.Data.Set.Basic
+import Math.Data.StdNat.Prime
 
 attribute [local simp] IsEquivLike.coe
 attribute [local simp] DFunLike.coe
@@ -23,7 +24,15 @@ class HasNormalSubgroup (α: Type*) where
 
 infix:75 " ◀ " => HasNormalSubgroup.NormalSubgroup
 
-def Nat.sub_mul (a b k: Nat)  : (a - b) * k = a * k - b * k := by sorry
+def Nat.sub_mul (a b k: Nat)  : (a - b) * k = a * k - b * k := by
+  induction a generalizing b with
+  | zero => simp
+  | succ a ih =>
+    cases b
+    simp
+    simp [ih, Nat.succ_mul]
+    rename_i b
+    rw [Nat.add_comm (b * k) k, Nat.sub_add_eq, Nat.add_sub_cancel]
 
 namespace Group
 
@@ -694,5 +703,39 @@ def cyclic_nsub_of_mul' [NeZero n] [NeZero m] : NormalSubgroupEmbedding (FinCycl
 
 def cyclic_nsub_of_mul (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ◀ FinCyclic (n * m) := ⟨cyclic_nsub_of_mul'⟩
 def IsoClass.cyclic_nsub_of_mul (n m: Nat) [NeZero n] [NeZero m] : Cyclic n ◀ Cyclic (n * m) := ⟨cyclic_nsub_of_mul'⟩
+
+def Trivial.isoOfSubsingleton (g: Group) [Subsingleton g.ty] : Isomorphsism g 1 where
+  toFun _ := 1
+  invFun _ := 1
+  leftInv _ := Subsingleton.allEq _ _
+  rightInv _ := rfl
+  resp_one := rfl
+  resp_inv _ := rfl
+  resp_mul _ _ := rfl
+def Trivial.eqvOfSubsingleton (g: Group) [Subsingleton g.ty] : g ≈ 1 := ⟨isoOfSubsingleton g⟩
+
+def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZero n, x ≈ FinCyclic n := by
+  intro sub
+  sorry
+
+def dvd_of_sub_cyclic (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ⊆ FinCyclic m -> n ∣ m := by
+  intro sub
+  sorry
+
+def cyclic_simple_iff_prime_order [NeZero n] : n.IsAtomic -> (FinCyclic n).IsSimple := by
+  intro atomic x nsub
+  have ⟨m, mpos, eq⟩ := cylic_of_sub_cyclic (IsNormalSubgroup.IsSubgroup nsub)
+  replace nsub := eqv_nsub eq nsub
+  suffices FinCyclic m ≈ 1 ∨ FinCyclic m ≈ FinCyclic n by
+    cases this
+    left; apply IsIsomorphic.trans eq; assumption
+    right; apply IsIsomorphic.trans eq; assumption
+  clear eq x
+  have dvd := dvd_of_sub_cyclic _ _ (IsNormalSubgroup.IsSubgroup nsub)
+  cases atomic _ dvd <;> subst m
+  left
+  unfold FinCyclic
+  apply Trivial.eqvOfSubsingleton
+  right; rfl
 
 end Group
