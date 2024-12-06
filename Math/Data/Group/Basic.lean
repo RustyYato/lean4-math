@@ -391,26 +391,34 @@ def IsoClass.Trivial.notNontrivial : ¬Nontrivial 1 := by
   apply h rfl
 
 def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
-  intro ⟨eq, resp_one, resp_inv, resp_mul⟩
+  intro ⟨iso⟩
   apply And.intro
-  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (eq.symm x).1), _, _⟩
+  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.eq.invFun x).1), _, _⟩
     rfl
     any_goals try intro x; intros; rfl
     intro x
     simp [Equiv.symm]
-    show (eq.invFun 1).fst = _
-    rw [←eq.rightInv 1] at resp_one
-    rw [←eq.toFun_inj resp_one]
+    show (iso.eq.invFun 1).fst = _
+    rw [iso.inv_resp_one]
     show 1 = x
-
-
-
-
-
-
-
-    sorry
-  · sorry
+    symm
+    have : Prod.mk x 1 = (1: (a * b).ty) := by
+      apply iso.eq.toFun_inj
+      rfl
+    exact (Prod.mk.inj this).left
+  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.eq.invFun x).2), _, _⟩
+    rfl
+    any_goals try intro x; intros; rfl
+    intro x
+    simp [Equiv.symm]
+    show (iso.eq.invFun 1).snd = _
+    rw [iso.inv_resp_one]
+    show 1 = x
+    symm
+    have : Prod.mk 1 x = (1: (a * b).ty) := by
+      apply iso.eq.toFun_inj
+      rfl
+    exact (Prod.mk.inj this).right
 
 def Trivial.IsSimple : IsSimple 1 := by
   intro x y eq
