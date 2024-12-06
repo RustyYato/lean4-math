@@ -161,3 +161,70 @@ instance : IsFinite (∅: Set α) := by
   intro x
   have := x.property
   contradiction
+
+instance : IsFinite ({a}: Set α) := by
+  apply IsFinite.intro 1
+  apply Embedding.mk
+  case toFun =>
+    intro
+    exact 0
+  intro ⟨x, xprop⟩ ⟨y, yprop⟩ eq
+  cases yprop
+  cases xprop
+  rfl
+
+instance {a: α} {as: Set α} [IsFinite as] : IsFinite (Insert.insert a as) :=
+  inferInstanceAs (IsFinite ({ a } ∪ as))
+
+instance {as: Set α} {f: α -> β} [ha: IsFinite as] : IsFinite (Set.image as f) := by
+  obtain ⟨lim, emb⟩ := ha
+  apply IsFinite.intro lim
+  apply Embedding.comp emb
+  clear emb
+  apply Embedding.mk
+  case toFun =>
+    intro ⟨x, xprop⟩
+    apply Subtype.mk (Classical.choose xprop)
+    exact (Classical.choose_spec xprop).left
+  case inj =>
+    intro ⟨x, xprop⟩ ⟨y, yprop⟩ eq
+    simp at eq
+    replace eq := Subtype.mk.inj eq
+    have ⟨_, h₀⟩ := Classical.choose_spec xprop
+    have ⟨_, h₁⟩ := Classical.choose_spec yprop
+    rw [←eq] at h₁
+    congr
+    rw [h₀, h₁]
+
+open Classical in
+instance {as: Set α} [ha: IsFinite as] : IsFinite as.powerset := by
+  let card := _root_.IsFinite.card as.Elem
+  have eqv: as.Elem ≃ Fin card := _root_.IsFinite.toEquiv as.Elem
+  apply IsFinite.intro (2 ^ card)
+  apply Embedding.mk
+  case toFun =>
+    intro x
+    apply Fin.mk <| Fin.powTwoSum fun y: Fin card => (eqv.invFun y).val ∈ x.val
+    apply Fin.powTwoSum_lt
+  case inj =>
+    intro x y eq
+    simp at eq
+    have := congrFun (Fin.powTwoSum_inj eq)
+    simp at this
+    cases x with | mk x xprop =>
+    cases y with | mk y yprop =>
+    congr
+    ext z
+    apply Iff.intro
+    intro mem_x
+    have := (this (eqv.toFun ⟨_, xprop _ mem_x⟩)).mp
+    rw [eqv.leftInv] at this
+    apply this
+    assumption
+    intro mem_y
+    have := (this (eqv.toFun ⟨_, yprop _ mem_y⟩)).mpr
+    rw [eqv.leftInv] at this
+    apply this
+    assumption
+
+end Set

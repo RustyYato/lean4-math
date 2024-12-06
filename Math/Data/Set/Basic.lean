@@ -126,4 +126,12 @@ def mem_compl {a: Set α} : ∀{x}, x ∈ aᶜ ↔ x ∉ a := Iff.refl _
 def Nonempty (a: Set α) := ∃x, x ∈ a
 def Elem (a: Set α) := { x // x ∈ a }
 
+instance : Singleton α (Set α) where
+  singleton a := mk fun x => x = a
+def mem_singleton {a: α}: ∀{x}, x ∈ ({a}: Set α) ↔ x = a := Iff.refl _
+
+instance : Insert α (Set α) where
+  insert a x := {a} ∪ x
+def mem_insert {a: α} {as: Set α}: ∀{x}, x ∈ Insert.insert a as ↔ x = a ∨ x ∈ as := Iff.refl _
+
 end Set

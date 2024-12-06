@@ -79,6 +79,9 @@ def Fin.sum : ∀{n}, (f: Fin n -> α) -> α
 | 0, _ => 0
 | _ + 1, f => f 0 + Fin.sum (f ∘ Fin.succ)
 
+def Fin.sum' : ∀{n}, (f: Fin n -> α) -> α
+| 0, _ => 0
+| _ + 1, f => f (Fin.last _) + Fin.sum' (f ∘ (Fin.castLE (Nat.le_succ _)))
 def Fin.sum_to (x: Fin n) (f: Fin n -> α) : α :=
   Fin.sum <| fun y => if y < x then f y else 0
 
@@ -249,3 +252,68 @@ def Fin.lt_add_sum_to_inj (f: Fin n -> Nat)
         cases y₀; cases y₁
         cases b
         apply And.intro <;> rfl
+
+def Fin.powTwoSum (f : Fin n -> Bool) := Fin.sum' (fun x => if f x then 2 ^ x.val else 0)
+
+def Fin.powTwoSum_lt {f: Fin n -> Bool} : powTwoSum f < 2 ^ n := by
+  induction n with
+  | zero => apply Nat.zero_lt_succ
+  | succ n ih =>
+    rw [Nat.pow_succ, Nat.mul_two]
+    apply Nat.add_lt_add_of_le_of_lt
+    simp
+    split
+    rfl
+    apply Nat.zero_le
+    apply Nat.lt_of_le_of_lt _ (ih (f := fun x => f <| x.castLE (Nat.le_succ _)))
+    unfold powTwoSum
+    apply Nat.le_of_eq
+    congr
+
+def Fin.powTwoSum_inj : Function.Injective (Fin.powTwoSum (n := n)) := by
+  intro x y eq
+  funext i
+  induction n with
+  | zero => exact i.elim0
+  | succ n ih =>
+    have eq : (if _ then _ else _) + powTwoSum _ = (if _ then _ else _) + powTwoSum _ := eq
+    split at eq <;> split at eq
+    all_goals
+      rename_i hx hy
+      simp at eq
+      generalize ihx_def:(powTwoSum fun x_1 => x (castLE (Nat.le_succ _) x_1)) = ihx
+      generalize ihy_def:(powTwoSum fun x_1 => y (castLE (Nat.le_succ _) x_1)) = ihy
+      have ihx_lt: ihx < 2 ^ n := by
+        subst ihx
+        exact powTwoSum_lt
+      have ihy_lt: ihy < 2 ^ n := by
+        subst ihy
+        exact powTwoSum_lt
+    · if h:i = Fin.last _ then
+        subst i
+        rw [hx, hy]
+      else
+        have := ih eq ⟨i.val, lt_of_le_of_ne (Nat.le_of_lt_succ i.isLt) (by
+          intro g
+          apply h
+          apply Fin.val_inj.mp g)⟩
+        unfold castLE at this
+        exact this
+    · rw [ihx_def, ihy_def] at eq
+      rw [←eq] at ihy_lt
+      have := Nat.not_lt_of_le (Nat.le_add_right _ _) ihy_lt
+      contradiction
+    · rw [ihx_def, ihy_def] at eq
+      rw [eq] at ihx_lt
+      have := Nat.not_lt_of_le (Nat.le_add_right _ _) ihx_lt
+      contradiction
+    · if h:i = Fin.last _ then
+        subst i
+        rw [Bool.eq_false_iff.mpr hx, Bool.eq_false_iff.mpr hy]
+      else
+        have := ih eq ⟨i.val, lt_of_le_of_ne (Nat.le_of_lt_succ i.isLt) (by
+          intro g
+          apply h
+          apply Fin.val_inj.mp g)⟩
+        unfold castLE at this
+        exact this
