@@ -223,6 +223,10 @@ def IsIsomorphic.IsNormalSubgroup {a b: Group} (h: a.IsIsomorphic b) : a ◀ b :
   obtain ⟨iso⟩ := h
   apply IsNormalSubgroup.ofSub iso.toNormalSubgroupEmbedding
 
+def IsNormalSubgroup.IsSubgroup {a b: Group} (h: a ◀ b) : a ⊆ b := by
+  obtain ⟨emb⟩ := h
+  exact ⟨emb.toSubgroupEmbedding⟩
+
 @[refl]
 def IsIsomorphic.refl (a: Group) : a.IsIsomorphic a := by
   apply IsIsomorphic.intro Equiv.refl <;> (intros; rfl)
@@ -404,18 +408,52 @@ def IsoClass.IsNormalSubgroup : IsoClass -> IsoClass -> Prop := by
   apply eqv_nsub_eqv <;> (symm; assumption)
 
 instance : HasSubset IsoClass where
-  Subset a b := ∀a' ∈ a, ∃b' ∈ b, a' ⊆ b'
+  Subset := IsoClass.IsSubgroup
+instance : HasNormalSubgroup IsoClass where
+  NormalSubgroup := IsoClass.IsNormalSubgroup
+
+def IsoClass.IsSubgroup.def {a b: IsoClass} :
+  a ⊆ b -> ∀a' ∈ a, ∃b' ∈ b, a' ⊆ b' := by
+  quot_ind (a b)
+  intro a_sub_b a' a'_in_a
+  replace a_eqv_a' := Quotient.exact a'_in_a
+  replace a_sub_b: a ⊆ b := a_sub_b
+  exists b
+  apply And.intro
+  rfl
+  apply eqv_sub
+  assumption
+  assumption
+
+def IsoClass.IsNormalSubgroup.IsSubgroup {a b: IsoClass} : a ◀ b -> a ⊆ b := by
+  quot_ind (a b)
+  apply Group.IsNormalSubgroup.IsSubgroup
+
+-- the class trivial group is a normal subgroup of every group
+def IsoClass.one_nsub (a: IsoClass) : 1 ◀ a := by
+  quot_ind a
+  show 1 ◀ a
+  apply IsNormalSubgroup.intro ⟨fun _ => 1, _⟩
+  any_goals
+    try intro x
+    intros
+    rfl
+  intro
+  simp
+  rw [inv_one]
+  intros
+  simp
+  rw [mul_one]
+  intro g ()
+  simp
+  rw [mul_one, mul_inv]
+  apply Set.mem_range.mpr
+  exists 1
 
 -- the class trivial group can embed into any other isomorphism classs
 def IsoClass.one_sub (a: IsoClass) : 1 ⊆ a := by
-  intros x mem
-  quot_ind a
-  exists a
-  apply And.intro rfl
-  have := quot.exact mem
-  apply eqv_sub
-  assumption
-  apply Group.one_sub
+  apply IsNormalSubgroup.IsSubgroup
+  apply one_nsub
 
 @[local simp]
 def mul (a b: Group) : Group where
