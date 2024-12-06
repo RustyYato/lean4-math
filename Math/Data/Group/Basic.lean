@@ -397,11 +397,11 @@ def IsoClass.IsSubgroup : IsoClass -> IsoClass -> Prop := by
   apply eqv_sub_eqv <;> (symm; assumption)
 
 def IsoClass.IsNormalSubgroup : IsoClass -> IsoClass -> Prop := by
-  apply Quotient.lift₂ Group.IsSubgroup
+  apply Quotient.lift₂ Group.IsNormalSubgroup
   intros; ext
   apply Iff.intro
-  apply eqv_sub_eqv <;> assumption
-  apply eqv_sub_eqv <;> (symm; assumption)
+  apply eqv_nsub_eqv <;> assumption
+  apply eqv_nsub_eqv <;> (symm; assumption)
 
 instance : HasSubset IsoClass where
   Subset a b := ∀a' ∈ a, ∃b' ∈ b, a' ⊆ b'
