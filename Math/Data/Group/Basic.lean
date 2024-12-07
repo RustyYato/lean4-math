@@ -373,6 +373,52 @@ def SubgroupEmbedding.trans (h: SubgroupEmbedding a b) (g: SubgroupEmbedding b c
     simp [Embedding.comp]
     rw [h.resp_mul, g.resp_mul]
 
+def SubgroupEmbedding.resp_npow {a b: Group} (h: SubgroupEmbedding a b) :
+  ∀(x: a.ty) (n: ℕ), h.toFun (x ^ n) = (h.toFun x) ^ n := by
+  intro x n
+  induction n with
+  | zero => simp; rw [resp_one]
+  | succ n ih => simp [npow_succ]; rw [resp_mul, ih]
+
+def SubgroupEmbedding.resp_zpow {a b: Group} (h: SubgroupEmbedding a b) :
+  ∀(x: a.ty) (n: ℤ), h.toFun (x ^ n) = (h.toFun x) ^ n := by
+  intro x n
+  cases n with
+  | ofNat n => simp; rw [resp_npow]
+  | negSucc n => simp; rw [resp_inv, resp_npow]
+
+def SubgroupEmbedding.resp_div {a b: Group} (h: SubgroupEmbedding a b) :
+  ∀(x y: a.ty), h.toFun (x / y) = (h.toFun x) / (h.toFun y) := by
+  intro x n
+  erw [resp_mul, resp_inv]; rfl
+
+def NormalSubgroupEmbedding.resp_npow {a b: Group} (h: NormalSubgroupEmbedding a b) :
+  ∀(x: a.ty) (n: ℕ), h.toFun (x ^ n) = (h.toFun x) ^ n := h.toSubgroupEmbedding.resp_npow
+
+def NormalSubgroupEmbedding.resp_zpow {a b: Group} (h: NormalSubgroupEmbedding a b) :
+  ∀(x: a.ty) (n: ℤ), h.toFun (x ^ n) = (h.toFun x) ^ n := h.toSubgroupEmbedding.resp_zpow
+
+def NormalSubgroupEmbedding.resp_div {a b: Group} (h: NormalSubgroupEmbedding a b) :
+  ∀(x y: a.ty), h.toFun (x / y) = (h.toFun x) / (h.toFun y) := h.toSubgroupEmbedding.resp_div
+
+def Isomorphsism.resp_npow {a b: Group} (h: NormalSubgroupEmbedding a b) :
+  ∀(x: a.ty) (n: ℕ), h.toFun (x ^ n) = (h.toFun x) ^ n := h.toSubgroupEmbedding.resp_npow
+
+def Isomorphsism.resp_zpow {a b: Group} (h: NormalSubgroupEmbedding a b) :
+  ∀(x: a.ty) (n: ℤ), h.toFun (x ^ n) = (h.toFun x) ^ n := h.toSubgroupEmbedding.resp_zpow
+
+def Isomorphsism.resp_div {a b: Group} (h: NormalSubgroupEmbedding a b) :
+  ∀(x y: a.ty), h.toFun (x / y) = (h.toFun x) / (h.toFun y) := h.toSubgroupEmbedding.resp_div
+
+def Isomorphsism.inv_resp_npow {a b: Group} (h: Isomorphsism a b) :
+  ∀(x: b.ty) (n: ℕ), h.invFun (x ^ n) = (h.invFun x) ^ n := h.symm.toSubgroupEmbedding.resp_npow
+
+def Isomorphsism.inv_resp_zpow {a b: Group} (h: Isomorphsism a b) :
+  ∀(x: b.ty) (n: ℤ), h.invFun (x ^ n) = (h.invFun x) ^ n := h.symm.toSubgroupEmbedding.resp_zpow
+
+def Isomorphsism.inv_resp_div {a b: Group} (h: Isomorphsism a b) :
+  ∀(x y: b.ty), h.invFun (x / y) = (h.invFun x) / (h.invFun y) := h.symm.toSubgroupEmbedding.resp_div
+
 def SubgroupEmbedding.refl (a: Group): SubgroupEmbedding a a := (Isomorphsism.refl a).toSubgroupEmbedding
 def NormalSubgroupEmbedding.refl (a: Group): NormalSubgroupEmbedding a a := (Isomorphsism.refl a).toNormalSubgroupEmbedding
 
