@@ -39,35 +39,187 @@ namespace Group
 instance (g: Group) : One g.ty := ⟨g.one'⟩
 instance (g: Group) : Mul g.ty := ⟨g.mul'⟩
 instance (g: Group) : Inv g.ty := ⟨g.inv'⟩
+instance (g: Group) : Div g.ty where
+  div a b := a * b⁻¹
+
+def npow (g: Group) (x: g.ty) : Nat -> g.ty
+| 0 => 1
+| n + 1 => x * npow g x n
+
+def zpow (g: Group) (x: g.ty) : Int -> g.ty
+| .ofNat n => npow g x n
+| .negSucc n => (npow g x n.succ)⁻¹
+
+instance (g: Group) : Pow g.ty ℕ := ⟨npow g⟩
+instance (g: Group) : Pow g.ty ℤ := ⟨zpow g⟩
+
+def div_eq_mul_inv {g: Group} (a b: g.ty) : a / b = a * b⁻¹ := rfl
 
 def mul_assoc {g: Group} (a b c: g.ty) : a * b * c = a * (b * c) := g.mul_assoc' _ _ _
+@[local simp]
 def one_mul {g: Group} (a: g.ty) : 1 * a = a := g.one_mul' _
-def inv_mul {g: Group} (a: g.ty) : a⁻¹ * a = 1 := g.inv_mul' _
-def mul_inv {g: Group} (a: g.ty) : a * a⁻¹ = 1 := by
+@[local simp]
+def inv_self_mul {g: Group} (a: g.ty) : a⁻¹ * a = 1 := g.inv_mul' _
+@[local simp]
+def mul_inv_self {g: Group} (a: g.ty) : a * a⁻¹ = 1 := by
   rw [←one_mul (a * a⁻¹)]
-  conv => { lhs; rw [←inv_mul (a⁻¹)] }
-  rw [←mul_assoc, mul_assoc (a⁻¹⁻¹), inv_mul, mul_assoc, one_mul, inv_mul]
+  conv => { lhs; rw [←inv_self_mul (a⁻¹)] }
+  rw [←mul_assoc, mul_assoc (a⁻¹⁻¹), inv_self_mul, mul_assoc, one_mul, inv_self_mul]
+@[local simp]
 def mul_one {g: Group} (a: g.ty) : a * 1 = a := by
-  rw [←inv_mul a, ←mul_assoc, mul_inv, one_mul]
+  rw [←inv_self_mul a, ←mul_assoc, mul_inv_self, one_mul]
 def mul_cancel_left {g: Group} {k a b: g.ty} : k * a = k * b -> a = b := by
   intro eq
-  rw [←one_mul a, ←one_mul b, ←inv_mul k, mul_assoc, mul_assoc, eq]
+  rw [←one_mul a, ←one_mul b, ←inv_self_mul k, mul_assoc, mul_assoc, eq]
 def mul_cancel_right {g: Group} {k a b: g.ty} : a * k = b * k -> a = b := by
   intro eq
-  rw [←mul_one a, ←mul_one b, ←mul_inv k, ←mul_assoc, ←mul_assoc, eq]
+  rw [←mul_one a, ←mul_one b, ←mul_inv_self k, ←mul_assoc, ←mul_assoc, eq]
 def inv_unique {g: Group} {a b: g.ty} : a * b = 1 -> a = b⁻¹ := by
   intro m
   apply mul_cancel_right
-  rw [inv_mul]
+  rw [inv_self_mul]
   assumption
+@[local simp]
 def inv_one (g: Group) : (1: g.ty)⁻¹ = 1 := by
   apply mul_cancel_left
-  rw [mul_inv, one_mul]
+  rw [mul_inv_self, one_mul]
 def inv_inj (g: Group) : Function.Injective (fun x: g.ty => x⁻¹) := by
   intro a b eq
   simp at eq
   apply mul_cancel_right
-  rw [mul_inv, eq, mul_inv]
+  rw [mul_inv_self, eq, mul_inv_self]
+
+def mul_inv_rev {g: Group} {a b: g.ty} : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
+  apply mul_cancel_left
+  rw [mul_inv_self, ←mul_assoc, mul_assoc a, mul_inv_self, mul_one, mul_inv_self]
+
+@[local simp]
+def npow_zero {g: Group} (x: g.ty) : x ^ 0 = 1 := rfl
+def npow_succ {g: Group} (x: g.ty) : x ^ (n + 1) = x * x ^ n := rfl
+def npow_mul {g: Group} (x: g.ty) (n m: Nat) : x ^ n * x ^ m = x ^ (n + m) := by
+  induction n with
+  | zero => rw [npow_zero, Nat.zero_add, one_mul]
+  | succ n ih => rw [npow_succ, Nat.succ_add, npow_succ, mul_assoc, ih]
+@[local simp]
+def npow_one {g: Group} (x: g.ty) : x ^ 1 = x := by
+  rw [npow_succ, npow_zero, mul_one]
+def mul_npow_comm {g: Group} (x: g.ty) (n: ℕ) : x * x ^ n = x ^ n * x := by
+  rw [←npow_succ, ←npow_mul, npow_one]
+def npow_inv {g: Group} (x: g.ty) (n: Nat) : (x^n)⁻¹ = (x⁻¹) ^ n := by
+  induction n with
+  | zero => rw [npow_zero, npow_zero, inv_one]
+  | succ n ih => simp [ih, npow_succ, mul_inv_rev, mul_npow_comm]
+def mul_npow_comm' {g: Group} (x: g.ty) (n: ℕ) : x * (x ^ n)⁻¹ = (x ^ n)⁻¹ * x := by
+  cases n
+  rw [npow_zero, inv_one]; simp
+  rw [npow_succ, mul_inv_rev, npow_inv, ←mul_npow_comm, ←mul_assoc]; simp [mul_npow_comm, mul_assoc]
+def npow_comm {g: Group} (x: g.ty) (n m: ℕ) : x ^ n * x ^ m = x ^ m * x ^ n := by
+  rw [npow_mul, Nat.add_comm, ←npow_mul]
+def npow_comm' {g: Group} (x: g.ty) (n m: ℕ) : x ^ n * (x ^ m)⁻¹ = (x ^ m)⁻¹ * x ^ n := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    simp [ih, npow_succ]
+    rw [←mul_assoc, ←mul_npow_comm', mul_assoc, mul_assoc, ih]
+
+@[simp]
+def inv_inv {g: Group} (x: g.ty) : x⁻¹⁻¹ = x := by
+  symm; apply inv_unique
+  rw [mul_inv_self]
+
+def npow_div_ge {g: Group} (x: g.ty) (n m: Nat) (h: m ≤ n): x^n * (x^m)⁻¹ = x ^ (n - m) := by
+  induction n generalizing m with
+  | zero =>
+    cases Nat.le_zero.mp h
+    simp
+  | succ n ih =>
+    cases m with
+    | zero =>
+      rw [Nat.sub_zero]
+      simp
+    | succ m =>
+      rw [npow_succ, npow_succ, mul_npow_comm x, mul_npow_comm x, mul_inv_rev, ←mul_assoc, mul_assoc (x ^ n)]
+      simp [ih _ (Nat.le_of_succ_le_succ h)]
+
+@[simp]
+def zpow_ofNat {g: Group} (x: g.ty) (n: ℕ) : x ^ (↑n: Int) = x ^ n := rfl
+@[simp]
+def zpow_negSucc {g: Group} (x: g.ty) (n: ℕ) : x ^ (Int.negSucc n) = (x ^ n.succ)⁻¹ := rfl
+
+def Int.castRec (motive: Int -> Sort u) (ofNat: ∀x: Nat, motive x) (negSucc: ∀x, motive (Int.negSucc x)) : ∀(x: Int), motive x
+| .ofNat x => ofNat x
+| .negSucc x => negSucc x
+
+def zpow_comm {g: Group} (x: g.ty) (n m: ℤ) : x ^ n * x ^ m = x ^ m * x ^ n := by
+  match n, m with
+  | .ofNat n, .ofNat m => simp [npow_comm]
+  | .ofNat n, .negSucc m => simp [npow_comm']
+  | .negSucc n, .ofNat m => simp [npow_comm']
+  | .negSucc n, .negSucc m => simp [npow_inv, npow_comm]
+
+@[simp]
+def zpow_mul {g: Group} (x: g.ty) (n m: ℤ) : x ^ n * x ^ m = x ^ (n + m) := by
+  cases n using Int.castRec with
+  | ofNat n =>
+    cases m using Int.castRec with
+    | ofNat m => rw [zpow_ofNat, zpow_ofNat, npow_mul, Int.ofNat_add_ofNat, zpow_ofNat]
+    | negSucc m =>
+      rw [Int.ofNat_add_negSucc, Int.subNatNat]
+      split
+      · rw [zpow_ofNat, zpow_negSucc, Int.ofNat_eq_coe, zpow_ofNat]
+        rw [npow_div_ge]
+        apply Nat.le_of_sub_eq_zero
+        assumption
+      · rename_i m' h
+        simp
+        rw [Nat.add_one m', ←h, ←npow_div_ge, mul_inv_rev]
+        simp
+        apply Nat.le_of_lt
+        exact Nat.lt_of_sub_eq_succ h
+  | negSucc n =>
+    cases m using Int.castRec with
+    | negSucc m =>
+      rw [zpow_negSucc, zpow_negSucc, Int.negSucc_add_negSucc, zpow_negSucc, ←Nat.succ_add n m, ←Nat.add_succ, Nat.add_comm, ←npow_mul, mul_inv_rev]
+    | ofNat m =>
+      rw [Int.negSucc_add_ofNat, Int.subNatNat, zpow_comm]
+      split
+      · rw [zpow_ofNat, zpow_negSucc, Int.ofNat_eq_coe, zpow_ofNat]
+        rw [npow_div_ge]
+        apply Nat.le_of_sub_eq_zero
+        assumption
+      · rename_i m' h
+        simp
+        rw [Nat.add_one m', ←h, ←npow_div_ge, mul_inv_rev]
+        simp
+        apply Nat.le_of_lt
+        exact Nat.lt_of_sub_eq_succ h
+
+@[simp]
+def zpow_zero {g: Group} (x: g.ty) : x ^ (0: ℤ) = 1 := npow_zero x
+@[simp]
+def zpow_one {g: Group} (x: g.ty) : x ^ (1: ℤ) = x := npow_one x
+
+def zpow_inv {g: Group} {x: g.ty} (n: ℤ) : (x ^ n)⁻¹ = x ^ (-n) := by
+  apply mul_cancel_left
+  rw [mul_inv_self, zpow_mul, ←Int.sub_eq_add_neg, Int.sub_self, zpow_zero]
+
+@[simp]
+def zpow_neg_one {g: Group} (x: g.ty) : x ^ (-1: ℤ) = x⁻¹ := by
+  rw [←zpow_inv, zpow_one]
+
+@[simp]
+def zpow_div {g: Group} (x: g.ty) (n m: ℤ) : x ^ n / x ^ m = x ^ (n - m) := by
+  rw [Int.sub_eq_add_neg, ←zpow_mul, ←zpow_inv]
+  rfl
+
+def zpow_succ {g: Group} (x: g.ty) (z: ℤ) : x ^ (z + 1) = x ^ z * x := by
+  rw [←zpow_mul, zpow_one]
+def zpow_pred {g: Group} (x: g.ty) (z: ℤ) : x ^ (z - 1) = x ^ z / x := by
+  rw [div_eq_mul_inv, ←zpow_div, zpow_one]
+  rfl
+
+@[simp]
+def div_self {g: Group} (x: g.ty) : x / x = 1 := mul_inv_self _
 
 structure SubgroupEmbedding (a b: Group) extends a.ty ↪ b.ty where
   resp_one: toFun 1 = 1
@@ -375,10 +527,8 @@ def one_sub (a: Group) : 1 ⊆ a := by
   rfl
   intros
   simp
-  rw [inv_one]
-  simp
   intros
-  rw [mul_one]
+  simp
   intros x y eq
   rfl
 
@@ -396,11 +546,8 @@ def sub_one (a: Group) : a ⊆ 1 -> a ∈ (1: IsoClass) := by
     apply h.inj
     rfl
   rfl
-  intros
-  simp
-  rw [inv_one]
   intros; simp
-  rw [mul_one]
+  intros; simp
 
 def IsoClass.IsSubgroup : IsoClass -> IsoClass -> Prop := by
   apply Quotient.lift₂ Group.IsSubgroup
@@ -447,15 +594,10 @@ def IsoClass.one_nsub (a: IsoClass) : 1 ◀ a := by
     try intro x
     intros
     rfl
-  intro
-  simp
-  rw [inv_one]
-  intros
-  simp
-  rw [mul_one]
+  intro; simp
+  intros; simp
   intro g ()
   simp
-  rw [mul_one, mul_inv]
   apply Set.mem_range.mpr
   exists 1
 
@@ -478,7 +620,7 @@ def mul (a b: Group) : Group where
     simp [one_mul]
   inv_mul' := by
     intro ⟨a₀, a₁⟩
-    simp [inv_mul]
+    simp [inv_self_mul]
 
 instance : Mul Group := ⟨.mul⟩
 
@@ -712,11 +854,38 @@ def Trivial.isoOfSubsingleton (g: Group) [Subsingleton g.ty] : Isomorphsism g 1 
   resp_one := rfl
   resp_inv _ := rfl
   resp_mul _ _ := rfl
-def Trivial.eqvOfSubsingleton (g: Group) [Subsingleton g.ty] : g ≈ 1 := ⟨isoOfSubsingleton g⟩
+def Trivial.eqvOfSubsingleton (g: Group) [inst: Subsingleton g.ty] : g ≈ 1 := ⟨isoOfSubsingleton g⟩
 
+def cyclic_iso_trivial : Isomorphsism (FinCyclic 1) Trivial where
+  toFun _ := 1
+  invFun _ := 1
+  leftInv _ := by
+    unfold FinCyclic at *
+    exact Subsingleton.allEq _ _
+  rightInv _ := rfl
+  resp_one := rfl
+  resp_inv _ := rfl
+  resp_mul _ _ := rfl
+
+def cyclic_eqv_trivial : FinCyclic 1 ≈ Trivial := ⟨cyclic_iso_trivial⟩
+def IsoClass.cyclic_eqv_trivial : Cyclic 1 = Trivial := Quot.sound ⟨cyclic_iso_trivial⟩
+
+open Classical in
 def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZero n, x ≈ FinCyclic n := by
   intro sub
-  sorry
+  if h:x.Nontrivial then
+    obtain ⟨a, a_ne_one⟩ := h
+    sorry
+  else
+    have := fun x => not_not.mp (not_exists.mp h x)
+    have := Trivial.eqvOfSubsingleton x (inst := ⟨by
+      intro a b
+      rw [this a, this b]⟩)
+    exists 1
+    exists inferInstance
+    apply this.trans
+    symm
+    exact ⟨cyclic_iso_trivial⟩
 
 def dvd_of_sub_cyclic (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ⊆ FinCyclic m -> n ∣ m := by
   intro sub
