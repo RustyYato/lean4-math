@@ -6,6 +6,7 @@ import Math.Data.Set.Finite
 import Math.Data.Fin.Basic
 import Math.Data.Set.Basic
 import Math.Data.StdNat.Prime
+import Math.Data.StdNat.Find
 
 attribute [local simp] IsEquivLike.coe
 attribute [local simp] DFunLike.coe
@@ -916,11 +917,66 @@ def cyclic_iso_trivial : Isomorphsism (FinCyclic 1) Trivial where
 def cyclic_eqv_trivial : FinCyclic 1 ≈ Trivial := ⟨cyclic_iso_trivial⟩
 def IsoClass.cyclic_eqv_trivial : Cyclic 1 = Trivial := Quot.sound ⟨cyclic_iso_trivial⟩
 
+def FinCyclic.pow_eq_mul [NeZero m] (x: (FinCyclic m).ty) (n: ℕ): x ^ n = Fin.mul x (Fin.ofNat' _ n) := by
+  induction n with
+  | zero =>
+    rw [npow_zero]
+    unfold FinCyclic at x
+    unfold Fin.ofNat'
+    unfold Fin.mul
+    simp
+    rfl
+  | succ n ih =>
+    rw [npow_succ]
+    unfold Fin.mul
+    unfold HMul.hMul instHMul Mul.mul instMulTy FinCyclic instMulNat
+    cases x with | mk x xLt =>
+    simp
+    rw [ih]
+    unfold Fin.mul
+    simp
+    rw [Fin.add_def]
+    simp
+    rw [Nat.mul_mod, Nat.mod_mod, ←Nat.mul_mod]
+    rw [Nat.add_mod, Nat.mul_mod, Nat.mod_mod, ←Nat.mul_mod, ←Nat.add_mod]
+    rw [Nat.add_comm, ←Nat.mul_succ]
+
+def FinCyclic.pow_eq_one [NeZero m] (x: (FinCyclic m).ty): x ^ m = 1 := by
+  have n: { x // x = m } := ⟨m, rfl⟩
+  rw [pow_eq_mul]
+  unfold FinCyclic at x
+  show x * _ = 0
+  simp
+  rfl
+
 open Classical in
 def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZero n, x ≈ FinCyclic n := by
-  intro sub
+  intro ⟨sub⟩
   if h:x.Nontrivial then
     obtain ⟨a, a_ne_one⟩ := h
+    have ex : ∃n: ℕ, 0 < n ∧ a ^ n = 1 := by
+      exists m
+      apply And.intro
+      apply Nat.zero_lt_of_ne_zero
+      apply NeZero.ne
+      have := sub.resp_npow a m
+      rw [FinCyclic.pow_eq_one (sub.toFun a), ←sub.resp_one] at this
+      exact sub.inj this
+    have n : { n: Nat // (0 < n ∧ a ^ n = 1) ∧ ∀m < n, ¬(0 < m ∧ a ^ m = 1) } := ⟨
+        Nat.findP ex,
+        Nat.findP_spec ex,
+        Nat.lt_findP_spec ex
+    ⟩
+    obtain ⟨n, ⟨n_pos, an_eq_one⟩, no_smaller_cycle⟩ := n
+    replace no_smaller_cycle: ∀m < n, 0 < m -> a ^ m ≠ 1 :=
+      fun m h => not_and.mp (no_smaller_cycle m h)
+    exists n
+    exists (by
+      apply NeZero.mk
+      intro h
+      subst n
+      contradiction)
+
     sorry
   else
     have := fun x => not_not.mp (not_exists.mp h x)
