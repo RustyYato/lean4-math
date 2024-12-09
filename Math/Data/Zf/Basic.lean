@@ -306,4 +306,10 @@ def mem_sep {P: ZfSet -> Prop} {a: ZfSet} : ∀{x}, x ∈ a.sep P ↔ x ∈ a �
   rw [Quotient.sound prf] at prop
   exists ⟨y, prop⟩
 
+def inter (a b: ZfSet) := a.sep (· ∈ b)
+
+instance : Inter ZfSet := ⟨inter⟩
+
+def mem_inter {a b: ZfSet} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := mem_sep
+
 end ZfSet
