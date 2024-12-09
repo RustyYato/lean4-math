@@ -228,4 +228,29 @@ def mem_union {a b: ZfSet} : ∀{x}, x ∈ a ∪ b ↔ x ∈ a ∨ x ∈ b := by
   obtain ⟨x, prf⟩ := h
   exists .inr x
 
+def union_comm (a b: ZfSet) : a ∪ b = b ∪ a := by
+  ext x; simp [mem_union, or_comm]
+
+def union_assoc (a b c: ZfSet) : a ∪ b ∪ c = a ∪ (b ∪ c) := by
+  ext x; simp [mem_union, or_assoc]
+
+instance : @Std.Commutative ZfSet (· ∪ ·) := ⟨union_comm⟩
+instance : @Std.Associative ZfSet (· ∪ ·) := ⟨union_assoc⟩
+
+def union_empty (a: ZfSet) : a ∪ ∅ = a := by
+  ext x
+  apply Iff.intro
+  intro h
+  cases mem_union.mp h
+  assumption
+  have := not_mem_empty x
+  contradiction
+  intro h
+  apply mem_union.mpr
+  left; assumption
+
+def empty_union (a: ZfSet) : ∅ ∪ a = a := by
+  rw [union_comm]
+  apply union_empty
+
 end ZfSet
