@@ -61,7 +61,7 @@ def Equiv.to_right : ∀{a b}, Equiv a b -> ∀b₀: b.Type, ∃a₀: a.Type, (a
 | .intro _ _, .intro _ _, ⟨_, r⟩ => r
 
 def _root_.ZfSet := Quotient setoid
-def mk : Pre -> ZfSet := Quotient.mk setoid
+def mk : Pre -> ZfSet := Quot.mk Equiv
 instance : QuotientLike setoid ZfSet where
 
 local notation "⟦" a "⟧" => mk a
@@ -330,7 +330,7 @@ def sep (P: ZfSet -> Prop) : ZfSet -> ZfSet := by
   assumption
   intro _ _ eq
   unfold ZfSet.mk
-  rw [Quotient.sound eq]
+  rw [Quot.sound eq]
   exact id
 
 @[simp]
@@ -343,14 +343,18 @@ def mem_sep {P: ZfSet -> Prop} {a: ZfSet} : ∀{x}, x ∈ a.sep P ↔ x ∈ a �
   simp
   apply Iff.intro
   intro ⟨y, prf⟩
+  have : Quot.mk Equiv x = Quot.mk Equiv (amem y.val) := Quot.sound prf
   apply And.intro
   exists y.val
   unfold ZfSet.mk
-  rw [Quotient.sound prf]
+  unfold Pre.sep Pre.Mem at prf
+  simp at prf
+  rw [this]
   exact y.property
   intro ⟨⟨y, prf⟩, prop⟩
+  have : Quot.mk Equiv x = Quot.mk Equiv (amem y) := Quot.sound prf
   unfold ZfSet.mk at prop
-  rw [Quotient.sound prf] at prop
+  rw [this] at prop
   exists ⟨y, prop⟩
 
 def inter (a b: ZfSet) := a.sep (· ∈ b)
@@ -490,3 +494,70 @@ def powerset_empty : powerset ∅ = {∅} := by
   ext x
   rw [mem_powerset, mem_singleton]
   exact sub_empty_iff x
+
+def Pre.image (f: Pre.{u} -> Pre.{u}): Pre.{u} -> Pre.{u}
+| .intro a amem => .intro a (fun x => f (amem x))
+
+def cast_eqv: a ≈ b -> a zf≈ b := id
+
+def image (f: ZfSet.{u} -> ZfSet.{u}): ZfSet.{u} -> ZfSet.{u} := by
+  apply Quotient.lift (fun _ => ⟦_⟧) _
+  intro p
+  apply p.image
+  intro h
+  exact unwrapQuot (f ⟦h⟧)
+  simp
+  intro a b eq
+  cases a with | intro a amem =>
+  cases b with | intro b bmem =>
+  apply Quotient.sound
+  apply And.intro
+  · intro a₀
+    have ⟨b₀, prf⟩ := eq.left a₀
+    simp
+    exists b₀
+    apply Quotient.exact (s := setoid)
+    unfold Quotient.mk
+    show QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧)) = QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧))
+    rw [mk_unwrapQuot, mk_unwrapQuot]
+    congr 1
+    exact Quotient.sound prf
+  · intro b₀
+    have ⟨a₀, prf⟩ := eq.right b₀
+    simp
+    exists a₀
+    apply Quotient.exact (s := setoid)
+    unfold Quotient.mk
+    show QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧)) = QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧))
+    rw [mk_unwrapQuot, mk_unwrapQuot]
+    congr 1
+    exact Quotient.sound prf
+
+def mem_image {a: ZfSet} {f: ZfSet -> ZfSet} : ∀{x}, x ∈ a.image f ↔ ∃a₀ ∈ a, x = f a₀ := by
+  intro x
+  induction a, x using ind₂ with | mk a x =>
+  cases a with | intro a amem =>
+  apply Iff.intro
+  intro ⟨a₀, prf⟩
+  simp at a₀
+  exists ⟦amem a₀⟧
+  apply And.intro
+  apply Pre.mem_def
+  simp only [Pre.image, Pre.Mem] at prf
+  have := quot.sound (Q := ZfSet) prf
+  rw [mk_unwrapQuot] at this
+  simp [QuotLike.mk] at this
+  assumption
+  intro ⟨a₀, a₀_in_a, x_eq⟩
+  induction a₀ using ind with | mk a₀ =>
+  obtain ⟨a₁, a₁prf⟩ := a₀_in_a
+  refine ⟨a₁, ?_⟩
+  simp [Pre.image, Pre.Mem]
+  apply quot.exact (Q := ZfSet)
+  erw [mk_unwrapQuot]
+  apply x_eq.trans
+  congr 1
+  apply Quotient.sound
+  assumption
+
+end ZfSet
