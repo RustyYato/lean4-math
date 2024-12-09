@@ -952,16 +952,16 @@ def FinCyclic.pow_eq_one [NeZero m] (x: (FinCyclic m).ty): x ^ m = 1 := by
 open Classical in
 def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZero n, x ≈ FinCyclic n := by
   intro ⟨sub⟩
+  have m_pos : 0 < m := by
+    apply Nat.zero_lt_of_ne_zero
+    apply NeZero.ne
   if h:x.Nontrivial then
     obtain ⟨a, a_ne_one⟩ := h
-    have ex : ∃n: ℕ, 0 < n ∧ a ^ n = 1 := by
-      exists m
-      apply And.intro
-      apply Nat.zero_lt_of_ne_zero
-      apply NeZero.ne
+    have : a  ^ m = 1 := by
       have := sub.resp_npow a m
       rw [FinCyclic.pow_eq_one (sub.toFun a), ←sub.resp_one] at this
       exact sub.inj this
+    have ex : ∃n: ℕ, 0 < n ∧ a ^ n = 1 := by exists m
     have n : { n: Nat // (0 < n ∧ a ^ n = 1) ∧ ∀m < n, ¬(0 < m ∧ a ^ m = 1) } := ⟨
         Nat.findP ex,
         Nat.findP_spec ex,
@@ -970,6 +970,36 @@ def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZer
     obtain ⟨n, ⟨n_pos, an_eq_one⟩, no_smaller_cycle⟩ := n
     replace no_smaller_cycle: ∀m < n, 0 < m -> a ^ m ≠ 1 :=
       fun m h => not_and.mp (no_smaller_cycle m h)
+    have n_le_m : n ≤ m := by
+      apply byContradiction
+      intro h
+      replace h := Nat.lt_of_not_le h
+      have := no_smaller_cycle _ h m_pos
+      contradiction
+    have : ∀y, sub.toFun y ^ n = 1 := by
+      intro y
+      sorry
+    have : n ∣ m := by
+      have := sub.resp_npow a n
+      rw [an_eq_one, sub.resp_one] at this
+      rw [FinCyclic.pow_eq_mul] at this
+      replace this : Fin.mk 0 m_pos = _ := this
+      unfold Fin.mul at this
+      split at this
+      rename_i x₀ x₁ a' a'_lt_m b' b'_lt_m a'_def b'_def
+      clear x₀ x₁
+      replace b'_def := Fin.val_inj.mpr b'_def
+      simp at b'_def
+      subst b'
+      clear b'_lt_m
+      replace this := Fin.val_inj.mpr this
+      simp at this
+      rw [Nat.mul_mod, Nat.mod_mod, ←Nat.mul_mod] at this
+      replace this := Nat.dvd_of_mod_eq_zero this.symm
+
+
+
+      sorry
     exists n
     exists (by
       apply NeZero.mk
