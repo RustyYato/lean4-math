@@ -112,6 +112,17 @@ instance : HasSubset ZfSet where
 @[simp]
 def mk_mem (a b: Pre) : (⟦a⟧ ∈ ⟦b⟧) = (a ∈ b) := rfl
 
+@[simp]
+def mk_sub (a b: Pre) : ⟦a⟧ ⊆ ⟦b⟧ ↔ a ⊆ b := by
+  apply Iff.intro
+  intro h x
+  simp only [←mk_mem]
+  apply h
+  intro h x
+  induction x using ind with | mk x =>
+  simp
+  apply h
+
 def Pre.mem_def {a: Pre} : ∀{x: a.Type}, a.Mem x ∈ a := by
   intro x
   cases a with | intro a amem =>
@@ -392,4 +403,80 @@ def sdiff_sub_left (a b: ZfSet) : a \ b ⊆ a := by
   simp [mem_sdiff]
   intros; assumption
 
-end ZfSet
+def Pre.singleton (a: Pre) : Pre := .intro PUnit (fun _ => a)
+instance : Singleton Pre Pre := ⟨.singleton⟩
+def singleton : ZfSet -> ZfSet := by
+  apply Quotient.lift (⟦{·}⟧)
+  intros a b  eq
+  apply Quotient.sound
+  apply And.intro
+  intro; refine ⟨(), eq⟩
+  intro; refine ⟨(), eq⟩
+instance : Singleton ZfSet ZfSet := ⟨.singleton⟩
+
+def mem_singleton {a: ZfSet} : ∀{x: ZfSet}, x ∈ ({a}: ZfSet) ↔ x = a := by
+  intro x
+  induction a, x using ind₂ with | mk a x =>
+  apply Iff.intro
+  intro ⟨h, prf⟩
+  exact Quotient.sound prf
+  intro h
+  exact ⟨(), Quotient.exact h⟩
+
+def Pre.powerset : Pre -> Pre
+| .intro a amem => .intro (Set a) fun s => .intro { x // x ∈ s } fun x => amem x
+
+def Pre.mem_powerset {a: Pre} : ∀{x}, x ∈ a.powerset ↔ x ⊆ a := by
+  intro x
+  cases a with | intro a amem =>
+  cases x with | intro x xmem =>
+  apply Iff.intro
+  intro mem
+  obtain ⟨s, h⟩ := mem
+  obtain s : Set a := s
+  intro x₀ x₀mem
+  obtain ⟨x₁, x₀_eq_x₁⟩ := x₀mem
+  obtain x₁: x := x₁
+  obtain ⟨a₀, prf⟩ := h.to_left x₁
+  replace ⟨a₀, a₀_mem⟩ : { a // a ∈ _ } := a₀
+  refine ⟨a₀, ?_⟩
+  apply x₀_eq_x₁.trans
+  apply prf.trans
+  rfl
+  intro sub
+  replace sub := fun y => sub y
+  refine ⟨?_, ?_⟩
+  apply Set.mk
+  intro a₀
+  exact ∃x₀, xmem x₀ zf≈ amem a₀
+  apply And.intro
+  intro x₀
+  simp only
+  have ⟨a₀, pf⟩ := sub (xmem x₀) Pre.mem_def
+  refine ⟨⟨a₀, ?_⟩, ?_⟩
+  exists x₀
+  assumption
+  intro ⟨a₀, prf⟩
+  obtain ⟨x₀, prf⟩  := prf
+  exists x₀
+
+def powerset : ZfSet -> ZfSet := by
+  apply Quotient.lift (⟦·.powerset⟧)
+  intro a b eq
+  ext x; induction x using ind with | mk x =>
+  simp [Pre.mem_powerset]
+  have : ⟦a⟧ = ⟦b⟧ := Quotient.sound eq
+  rw [←mk_sub, ←mk_sub, this]
+
+@[simp]
+def mk_powerset (a: Pre) : ⟦a⟧.powerset = ⟦a.powerset⟧ := rfl
+
+def mem_powerset {a: ZfSet} : ∀{x}, x ∈ a.powerset ↔ x ⊆ a := by
+  intro x
+  induction a, x using ind₂ with | mk a x =>
+  simp [Pre.mem_powerset]
+
+def powerset_empty : powerset ∅ = {∅} := by
+  ext x
+  rw [mem_powerset, mem_singleton]
+  exact sub_empty_iff x
