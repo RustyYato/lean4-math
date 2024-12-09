@@ -253,4 +253,57 @@ def empty_union (a: ZfSet) : ∅ ∪ a = a := by
   rw [union_comm]
   apply union_empty
 
+def Pre.sep (P: Pre → Prop) : Pre -> Pre
+| .intro a amem => .intro { x: a // P (amem x) } (fun x => amem x.val)
+
+def Pre.sep.spec (P: Pre → Prop) (a b: Pre) :
+  a zf≈ b -> (∀x y, x zf≈ y -> P x -> P y) ->
+  a.sep P zf≈ b.sep P := by
+  intro ab resp
+  cases a with | intro a amem =>
+  cases b with | intro b bmem =>
+  apply And.intro
+  · intro ⟨a₀, pa₀⟩
+    have ⟨b₀, prf⟩ := ab.left a₀
+    refine ⟨⟨b₀, ?_⟩, ?_⟩
+    apply resp
+    all_goals assumption
+  · intro ⟨b₀, pb₀⟩
+    have ⟨a₀, prf⟩ := ab.right b₀
+    refine ⟨⟨a₀, ?_⟩, ?_⟩
+    apply resp
+    symm
+    all_goals assumption
+
+def sep (P: ZfSet -> Prop) : ZfSet -> ZfSet := by
+  apply Quotient.lift (⟦Pre.sep (fun x => P ⟦x⟧) ·⟧)
+  intro a b eq
+  apply Quotient.sound
+  apply Pre.sep.spec
+  assumption
+  intro _ _ eq
+  unfold ZfSet.mk
+  rw [Quotient.sound eq]
+  exact id
+
+@[simp]
+def mk_sep {P: ZfSet -> Prop} {a: Pre} : ⟦a⟧.sep P = ⟦a.sep (fun x => P ⟦x⟧)⟧ := rfl
+
+def mem_sep {P: ZfSet -> Prop} {a: ZfSet} : ∀{x}, x ∈ a.sep P ↔ x ∈ a ∧ P x := by
+  intro x
+  induction a, x using ind₂ with | mk a x =>
+  cases a with | intro a amem =>
+  simp
+  apply Iff.intro
+  intro ⟨y, prf⟩
+  apply And.intro
+  exists y.val
+  unfold ZfSet.mk
+  rw [Quotient.sound prf]
+  exact y.property
+  intro ⟨⟨y, prf⟩, prop⟩
+  unfold ZfSet.mk at prop
+  rw [Quotient.sound prf] at prop
+  exists ⟨y, prop⟩
+
 end ZfSet
