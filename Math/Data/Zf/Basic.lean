@@ -160,6 +160,18 @@ def lift.{u, v} : ZfSet.{u} -> ZfSet.{max u v} := by
   apply Equiv.trans _ (Pre.lift.spec b)
   assumption
 
+instance : EmptyCollection Pre where
+  emptyCollection := .intro PEmpty PEmpty.elim
+
+instance : EmptyCollection ZfSet where
+  emptyCollection := ⟦∅⟧
+
+def not_mem_empty : ∀x, x ∉ (∅: ZfSet) := by
+  intro x
+  induction x using ind with | mk x =>
+  intro ⟨_, _⟩
+  contradiction
+
 def Pre.union : Pre.{u} -> Pre.{u} -> Pre.{u}
 | .intro a amem, .intro b bmem => .intro (a ⊕ b) (fun
   | .inl x => amem x
