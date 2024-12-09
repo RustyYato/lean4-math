@@ -181,6 +181,8 @@ instance : EmptyCollection Pre where
 instance : EmptyCollection ZfSet where
   emptyCollection := ⟦∅⟧
 
+instance : Nonempty ZfSet := ⟨∅⟩
+
 @[simp]
 def not_mem_empty : ∀x, x ∉ (∅: ZfSet) := by
   intro x

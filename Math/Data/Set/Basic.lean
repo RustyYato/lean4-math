@@ -31,6 +31,8 @@ def empty α : Set α := .mk fun _ => False
 instance : EmptyCollection (Set α) where
   emptyCollection := empty α
 
+instance : Nonempty (Set α) := ⟨∅⟩
+
 def mem_univ : ∀x, x ∈ Set.univ α := fun _ => True.intro
 def not_mem_empty : ∀{x}, ¬x ∈ Set.empty α := False.elim
 
@@ -83,27 +85,39 @@ def mem_inter {a b: Set α} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := I
 def sep (P: α -> Prop) (a: Set α) : Set α := mk fun x => x ∈ a ∧ P x
 def mem_sep {P: α -> Prop} {a: Set α} : ∀{x}, x ∈ a.sep P ↔ x ∈ a ∧ P x := Iff.refl _
 
-def sUnion (a: Set α) [Membership β α] : Set β := .mk fun x => ∃a' ∈ a, x ∈ a'
-instance [Membership β α] : SUnion (Set α) (Set β) := ⟨(·.sUnion)⟩
-def mem_sUnion {a: Set α} [Membership β α] : ∀{x}, x ∈ ⋃ a ↔ ∃a' ∈ a, x ∈ a' := Iff.refl _
+def sUnion (a: Set (Set α)) : Set α := .mk fun x => ∃a' ∈ a, x ∈ a'
+instance : SUnion (Set (Set α)) (Set α) := ⟨(·.sUnion)⟩
+def mem_sUnion {a: Set (Set α)} : ∀{x}, x ∈ ⋃ a ↔ ∃a' ∈ a, x ∈ a' := Iff.refl _
 
-def sInter (a: Set α) [Membership β α] : Set β := .mk fun x => ∀a' ∈ a, x ∈ a'
-instance [Membership β α] : SInter (Set α) (Set β) := ⟨(·.sInter)⟩
-def mem_sInter {a: Set α} [Membership β α] : ∀{x}, x ∈ ⋂ a ↔ ∀a' ∈ a, x ∈ a' := Iff.refl _
+def sInter (a: Set (Set α)) : Set α := .mk fun x => ∀a' ∈ a, x ∈ a'
+instance : SInter (Set (Set α)) (Set α) := ⟨(·.sInter)⟩
+def mem_sInter {a: Set (Set α)} : ∀{x}, x ∈ ⋂ a ↔ ∀a' ∈ a, x ∈ a' := Iff.refl _
 
-def sUnion_empty [Membership β α] : ⋃(∅: Set α) = ∅ := by
+def sUnion_empty : ⋃(∅: Set (Set α)) = ∅ := by
   apply ext_empty
   intro x
   rw [mem_sUnion]
   intro ⟨_, _, _⟩
   contradiction
 
-def sInter_empty [Membership β α] : ⋂(∅: Set α) = univ _ := by
+def sInter_empty [Membership β α] : ⋂(∅: Set (Set α)) = univ _ := by
   apply ext_univ
   intro x
   rw [mem_sInter]
   intros
   contradiction
+
+def sub_sUnion (a: Set α) (s: Set (Set α)): a ∈ s -> a ⊆ ⋃s := by
+  intro mem x x_in_a
+  rw [mem_sUnion]
+  exists a
+
+def sInter_sub (a: Set α) (s: Set (Set α)): a ∈ s -> ⋂s ⊆ a := by
+  intro mem x
+  rw [mem_sInter]
+  intro h
+  apply h
+  assumption
 
 def preimage (a: Set α) (f: β -> α) : Set β := mk fun x => ∃a' ∈ a, a' = f x
 def mem_preimage {a: Set α} {f: β -> α} : ∀{x}, x ∈ a.preimage f ↔ ∃a' ∈ a, a' = f x := Iff.refl _
@@ -133,5 +147,42 @@ def mem_singleton {a: α}: ∀{x}, x ∈ ({a}: Set α) ↔ x = a := Iff.refl _
 instance : Insert α (Set α) where
   insert a x := {a} ∪ x
 def mem_insert {a: α} {as: Set α}: ∀{x}, x ∈ Insert.insert a as ↔ x = a ∨ x ∈ as := Iff.refl _
+
+end Set
+
+class SupSet (α: Type*) where
+  sSup: Set α -> α
+
+class InfSet (α: Type*) where
+  sInf: Set α -> α
+
+export SupSet (sSup)
+export InfSet (sInf)
+
+def iSup [SupSet α] (s: ι -> α) : α := sSup (Set.range s)
+def iInf [InfSet α] (s: ι -> α) : α := sInf (Set.range s)
+
+instance : SupSet (Set α) where
+  sSup x := ⋃x
+instance : InfSet (Set α) where
+  sInf x := ⋂x
+
+namespace Set
+
+def sub_sSup (a: Set α) (s: Set (Set α)): a ∈ s -> a ⊆ sSup s := sub_sUnion _ _
+def sInf_sub (a: Set α) (s: Set (Set α)): a ∈ s -> sInf s ⊆ a := sInter_sub _ _
+
+def sub_iSup (a: Set α) (s: ι -> Set α): a ∈ range s -> a ⊆ iSup s := by
+  intro eq
+  apply sub_trans _ (sub_sSup _ _ _)
+  exact a
+  rfl
+  assumption
+
+def iInf_sub (a: Set α) (s: ι -> Set α): a ∈ range s -> iInf s ⊆ a := by
+  intro eq
+  apply sub_trans (sInf_sub _ _ _)
+  rfl
+  assumption
 
 end Set
