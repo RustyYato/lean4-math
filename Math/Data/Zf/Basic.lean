@@ -139,6 +139,10 @@ def ext (a b: ZfSet) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
   apply Pre.ext
   exact fun x => h ⟦x⟧
 
+@[refl]
+def sub_refl (a: ZfSet) : a ⊆ a := fun _ => id
+def sub_trans {a b c: ZfSet} : a ⊆ b -> b ⊆ c -> a ⊆ c := fun ab bc x h => bc x (ab x h)
+
 def Pre.lift.{u, v} : Pre.{u} -> Pre.{max u v}
 | .intro a amem => .intro (ULift a) (fun x => (amem x.down).lift)
 
@@ -172,6 +176,27 @@ def not_mem_empty : ∀x, x ∉ (∅: ZfSet) := by
   induction x using ind with | mk x =>
   intro ⟨_, _⟩
   contradiction
+
+def empty_sub (a: ZfSet) : ∅ ⊆ a := by
+  intro _ h
+  have := not_mem_empty _ h
+  contradiction
+
+def of_sub_empty (a: ZfSet) : a ⊆ ∅ -> a = ∅ := by
+  intro h
+  ext x
+  apply Iff.intro
+  apply h
+  intro h
+  have := not_mem_empty _ h
+  contradiction
+
+def sub_empty_iff (a: ZfSet) : a ⊆ ∅ ↔ a = ∅ := by
+  apply Iff.intro
+  apply of_sub_empty
+  intro h
+  subst h
+  rfl
 
 def Pre.union : Pre.{u} -> Pre.{u} -> Pre.{u}
 | .intro a amem, .intro b bmem => .intro (a ⊕ b) (fun
@@ -234,6 +259,16 @@ def union_comm (a b: ZfSet) : a ∪ b = b ∪ a := by
 
 def union_assoc (a b c: ZfSet) : a ∪ b ∪ c = a ∪ (b ∪ c) := by
   ext x; simp [mem_union, or_assoc]
+
+def sub_union_left (a b: ZfSet) : a ⊆ a ∪ b := by
+  intro x
+  simp [mem_union]
+  exact .inl
+
+def sub_union_right (a b: ZfSet) : b ⊆ a ∪ b := by
+  intro x
+  simp [mem_union]
+  exact .inr
 
 instance : @Std.Commutative ZfSet (· ∪ ·) := ⟨union_comm⟩
 instance : @Std.Associative ZfSet (· ∪ ·) := ⟨union_assoc⟩
@@ -327,6 +362,15 @@ def empty_inter (a: ZfSet) : ∅ ∩ a = ∅ := by
 def inter_empty (a: ZfSet) : a ∩ ∅ = ∅ := by
   ext; simp [mem_inter]
 
+def inter_sub_left (a b: ZfSet) : a ∩ b ⊆ a := by
+  intro x
+  simp [mem_inter]
+  intros; assumption
+
+def inter_sub_right (a b: ZfSet) : a ∩ b ⊆ b := by
+  intro x
+  simp [mem_inter]
+
 def sdiff (a b: ZfSet) := a.sep (· ∉ b)
 
 instance : SDiff ZfSet := ⟨sdiff⟩
@@ -342,5 +386,10 @@ def empty_sdiff (a: ZfSet) : ∅ \ a = ∅ := by
 
 def sdiff_empty (a: ZfSet) : a \ ∅ = a := by
   ext; simp [mem_sdiff]
+
+def sdiff_sub_left (a b: ZfSet) : a \ b ⊆ a := by
+  intro x
+  simp [mem_sdiff]
+  intros; assumption
 
 end ZfSet
