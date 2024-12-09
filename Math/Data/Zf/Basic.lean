@@ -166,6 +166,7 @@ instance : EmptyCollection Pre where
 instance : EmptyCollection ZfSet where
   emptyCollection := ⟦∅⟧
 
+@[simp]
 def not_mem_empty : ∀x, x ∉ (∅: ZfSet) := by
   intro x
   induction x using ind with | mk x =>
@@ -311,5 +312,35 @@ def inter (a b: ZfSet) := a.sep (· ∈ b)
 instance : Inter ZfSet := ⟨inter⟩
 
 def mem_inter {a b: ZfSet} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := mem_sep
+
+def inter_comm (a b: ZfSet) : a ∩ b = b ∩ a := by
+  ext x
+  simp [mem_inter, and_comm]
+
+def inter_assoc (a b c: ZfSet) : a ∩ b ∩ c = a ∩ (b ∩ c) := by
+  ext x
+  simp [mem_inter, and_assoc]
+
+def empty_inter (a: ZfSet) : ∅ ∩ a = ∅ := by
+  ext; simp [mem_inter]
+
+def inter_empty (a: ZfSet) : a ∩ ∅ = ∅ := by
+  ext; simp [mem_inter]
+
+def sdiff (a b: ZfSet) := a.sep (· ∉ b)
+
+instance : SDiff ZfSet := ⟨sdiff⟩
+
+def mem_sdiff {a b: ZfSet} : ∀{x}, x ∈ a \ b ↔ x ∈ a ∧ x ∉ b := by
+  intro x
+  show x ∈ sdiff a b ↔ _
+  unfold sdiff
+  exact mem_sep
+
+def empty_sdiff (a: ZfSet) : ∅ \ a = ∅ := by
+  ext; simp [mem_sdiff]
+
+def sdiff_empty (a: ZfSet) : a \ ∅ = a := by
+  ext; simp [mem_sdiff]
 
 end ZfSet
