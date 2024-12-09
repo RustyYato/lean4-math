@@ -423,6 +423,16 @@ def mem_singleton {a: ZfSet} : ∀{x: ZfSet}, x ∈ ({a}: ZfSet) ↔ x = a := by
   intro h
   exact ⟨(), Quotient.exact h⟩
 
+def insert (a b: ZfSet) := { a } ∪ b
+
+instance : Insert ZfSet ZfSet  := ⟨.insert⟩
+
+def mem_insert {a b: ZfSet} : ∀{x}, x ∈ Insert.insert a b ↔ x = a ∨ x ∈ b := by
+  simp [Insert.insert, mem_union, mem_singleton, insert]
+
+def mem_pair {a b: ZfSet} : ∀{x}, x ∈ ({a, b}: ZfSet) ↔ x = a ∨ x = b := by
+  simp [mem_insert, mem_singleton]
+
 def Pre.powerset : Pre -> Pre
 | .intro a amem => .intro (Set a) fun s => .intro { x // x ∈ s } fun x => amem x
 
