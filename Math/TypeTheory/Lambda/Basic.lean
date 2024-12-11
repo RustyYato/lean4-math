@@ -190,3 +190,7 @@ def LamTerm.IsWellTyped.subst_at :
 
 def LamTerm.IsWellTyped.subst : ∀{ty' ctx ty}, IsWellTyped (ty'::ctx) ty term -> ∀subst, IsWellTyped ctx ty' subst -> IsWellTyped ctx ty (term.subst subst) :=
   fun wt subst subst_wt => subst_at wt 0 (Nat.zero_lt_succ _) subst subst_wt
+
+inductive LamTerm.IsValue : LamTerm -> Prop where
+| ConstUnit : IsValue .ConstUnit
+| Lambda (arg_ty: LamType) (body: LamTerm) : IsValue (.Lambda arg_ty body)
