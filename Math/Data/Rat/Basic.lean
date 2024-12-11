@@ -1,7 +1,6 @@
--- import Math.Data.Int.Div
--- import Math.Data.Nat.Gcd
 import Math.Data.StdInt.AbsoluteValue
 import Math.Data.QuotLike.Basic
+import Math.Data.StdNat.Gcd
 
 section
 
@@ -106,12 +105,42 @@ def Fract.reduce.spec (a: Fract) : a ≈ a.reduce := by
   show _ * _ = _ * _
   unfold reduce
   dsimp
-  rw [←Int.ofNat_ediv]
-  sorry
+  rw [←Int.mul_ediv_assoc, Int.mul_comm n, Int.mul_ediv_assoc, Int.mul_comm]
+  apply Int.dvd_natAbs.mp
+  apply Int.ofNat_dvd.mpr
+  apply Nat.gcd_dvd_left
+  apply Int.dvd_natAbs.mp
+  apply Int.ofNat_dvd.mpr
+  apply Nat.gcd_dvd_right
 
 def Fract.isReduced.spec (a b: Fract) : a.isReduced -> b.isReduced -> a ≈ b -> a = b := by
   intro ared bred h
-  sorry
+  replace h : _ * _  = _ * _ := h
+  cases a with | mk an ad adpos =>
+  cases b with | mk bn bd bdpos =>
+  unfold isReduced at ared bred
+  simp at *
+  have sign_eq : (an * bd).sign = (bn * ad).sign := by rw [h]
+  rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero (Nat.not_eq_zero_of_lt adpos)
+    , Int.sign_ofNat_of_nonzero (Nat.not_eq_zero_of_lt bdpos), Int.mul_one, Int.mul_one] at sign_eq
+  have val_eq : (an * bd).natAbs = (bn * ad).natAbs := by rw [h]
+  rw [Int.natAbs_mul, Int.natAbs_mul, Int.natAbs_ofNat, Int.natAbs_ofNat] at val_eq
+  replace val_eq : ‖an‖ * bd = ‖bn‖ * ad := val_eq
+  have p1 : ‖bn‖ ∣ ‖an‖ * bd := by exists ad
+  replace p1 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p1 bred
+  have p2 : ‖an‖ ∣ ‖bn‖ * ad := by exists bd; rw [val_eq]
+  replace p2 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p2 ared
+  have an_abs_eq_bn_abs : an.natAbs = bn.natAbs := Nat.dvd_antisymm p2 p1
+
+  have p1 : ad ∣ bd * ‖an‖ := by exists ‖bn‖; rw [Nat.mul_comm, val_eq, Nat.mul_comm]
+  replace p1 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p1 (Nat.gcd_comm _ _ ▸ ared)
+  have p2 : bd ∣ ad * ‖bn‖ := by exists ‖an‖; rw [Nat.mul_comm, ←val_eq, Nat.mul_comm]
+  replace p2 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p2 (Nat.gcd_comm _ _ ▸ bred)
+  cases Nat.dvd_antisymm p2 p1
+
+  rw [←Int.sign_mul_natAbs an, ←Int.sign_mul_natAbs bn]
+  rw [an_abs_eq_bn_abs, sign_eq]
+  trivial
 
 instance : QuotientLike Fract.setoid ℚ where
   mk a := .mk a.reduce (Fract.reduce.isReduced _)
