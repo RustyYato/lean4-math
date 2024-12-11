@@ -67,6 +67,43 @@ def Reduction.pop {a b c: LamTerm} (h: c.IsValue) :
   cases ba.decide bc
   assumption
 
+-- any term in the empty context either is either a value or steps to another term
+def progress (ty: LamType) (term: LamTerm) : term.IsWellTyped [] ty -> term.IsValue ∨ ∃term', term ~> term' := by
+  intro wt
+  induction term generalizing ty with
+  | ConstUnit => left; exact .ConstUnit
+  | Lambda => left; exact .Lambda _ _
+  -- no variables in empty context
+  | Var => contradiction
+  | Panic _ ty ih  =>
+    right
+    cases wt; rename_i wt
+    rcases ih _ wt with body_val | ⟨body', body_red⟩
+    cases body_val
+    contradiction
+    contradiction
+    exists .Panic body' ty
+    apply Reduce.PanicBody
+    assumption
+  | App func arg funih argih =>
+    right
+    cases wt <;> rename_i funwt argwt
+    rcases funih _ funwt with fun_val | ⟨fun', fun_red⟩
+    rcases argih _ argwt with arg_val | ⟨arg', arg_red⟩
+    cases fun_val
+    contradiction
+    rename_i body
+    exists body.subst arg
+    apply Reduce.Apply
+    assumption
+    exists func.App arg'
+    apply Reduce.AppArg
+    assumption
+    assumption
+    exists fun'.App arg
+    apply Reduce.AppFunc
+    assumption
+
 def IsWellTyped.Reduce (red: a ~> b) : ∀ctx ty, a.IsWellTyped ctx ty -> b.IsWellTyped ctx ty := by
   induction red with
   | PanicBody _ _ _ _ ih =>
