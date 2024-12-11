@@ -2,12 +2,10 @@ import Math.Data.StdInt.AbsoluteValue
 import Math.Data.QuotLike.Basic
 import Math.Data.StdNat.Gcd
 
-section
-
 structure Fract where
   num: Int
   den: Nat
-  den_pos: 0 < den
+  den_pos: 0 < den := by exact Nat.zero_lt_succ _
 
 def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: Int) ≠ 0 := by
   intro h
@@ -185,4 +183,31 @@ instance : QuotientLike Fract.setoid ℚ where
     symm; apply Fract.reduce.spec
     rw [Rat.mk.inj h]
 
-end
+local notation "⟦" f "⟧" => QuotLike.mk (Q := ℚ) f
+
+def Fract.add (a b: Fract) : Fract where
+  num := a.num * b.den + b.num * a.den
+  den := a.den * b.den
+  den_pos := Nat.mul_pos a.den_pos b.den_pos
+
+instance : Add Fract := ⟨.add⟩
+
+def Fract.add.spec (a b c d: Fract) : a ≈ c -> b ≈ d -> a + b ≈ c + d := by
+  intro ac bd
+  replace ac : _ * _ = _ * _ := ac
+  replace bd : _ * _ = _ * _ := bd
+  show a.add b ≈ c.add d
+  unfold add
+  show _ * _ = _ * _
+  simp [Int.add_mul, Int.mul_assoc]
+  rw [Int.mul_left_comm b.den c.den, Int.mul_comm c.den d.den, Int.mul_left_comm a.den d.den,
+    ←Int.mul_assoc, ac, ←Int.mul_assoc b.num, bd]
+  ac_rfl
+
+def Rat.add : ℚ -> ℚ -> ℚ := by
+  apply quot.lift₂ (⟦· + ·⟧)
+  intros
+  apply quot.sound
+  apply Fract.add.spec <;> assumption
+
+instance : Add ℚ := ⟨.add⟩
