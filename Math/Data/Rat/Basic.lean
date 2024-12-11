@@ -1,6 +1,7 @@
 import Math.Data.StdInt.AbsoluteValue
 import Math.Data.QuotLike.Basic
 import Math.Data.StdNat.Gcd
+import Math.Ops.Checked
 
 structure Fract where
   num: Int
@@ -237,3 +238,66 @@ def Rat.mul : ℚ -> ℚ -> ℚ := by
   intros
   apply quot.sound
   apply Fract.mul.spec <;> assumption
+
+instance : Mul ℚ := ⟨.mul⟩
+
+def Rat.abs (a: ℚ) : ℚ where
+  num := ‖a.num‖
+  den := a.den
+  den_pos := a.den_pos
+  isReduced := by
+    unfold Fract.isReduced
+    simp
+    show (Int.natAbs _).gcd _ = 1
+    rw [Int.natAbs_ofNat, a.isReduced]
+
+instance : AbsoluteValue ℚ ℚ := ⟨.abs⟩
+
+def Rat.ofNat (n: Nat) : ℚ where
+  num := n
+  den := 1
+  isReduced := Nat.gcd_eq_right (Nat.one_dvd _)
+
+instance : OfNat ℚ n := ⟨Rat.ofNat n⟩
+
+def Rat.eq_zero_iff_num_eq_zero {a: ℚ} : a = 0 ↔ a.num = 0 := by
+  apply Iff.intro
+  intro h
+  cases h; rfl
+  intro h
+  cases a with | mk a red =>
+  simp at h
+  cases a with | mk a d =>
+  simp at *
+  subst h
+  unfold Fract.isReduced at red
+  simp at red
+  replace red : Nat.gcd 0 d = 1 := red
+  rw [Nat.gcd_zero_left] at red
+  subst d
+  rfl
+
+def Rat.inv (a: ℚ) (h: a ≠ 0) : ℚ where
+  num := a.den
+  den := ‖a.num‖
+  den_pos := by
+    apply Nat.zero_lt_of_ne_zero
+    intro g
+    apply h
+    apply Rat.eq_zero_iff_num_eq_zero.mpr
+    apply Int.natAbs_eq_zero.mp
+    assumption
+  isReduced := by
+    unfold Fract.isReduced
+    simp
+    show (Int.natAbs _).gcd _ = 1
+    rw [Int.natAbs_ofNat, Nat.gcd_comm]
+    exact a.isReduced
+
+instance : CheckedInvert ℚ (fun q => q ≠ 0) where
+  checked_invert := Rat.inv
+
+def Rat.div (a b: ℚ) (h: b ≠ 0) : ℚ := a * b⁻¹
+
+instance : CheckedDiv ℚ (fun q => q ≠ 0) where
+  checked_div := Rat.div
