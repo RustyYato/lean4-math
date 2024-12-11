@@ -211,3 +211,29 @@ def Rat.add : ℚ -> ℚ -> ℚ := by
   apply Fract.add.spec <;> assumption
 
 instance : Add ℚ := ⟨.add⟩
+
+def Fract.mul (a b: Fract) : Fract where
+  num := a.num * b.num
+  den := a.den * b.den
+  den_pos := Nat.mul_pos a.den_pos b.den_pos
+
+instance : Mul Fract := ⟨.mul⟩
+
+def Fract.mul.spec (a b c d: Fract) : a ≈ c -> b ≈ d -> a * b ≈ c * d := by
+  intro ac bd
+  replace ac : _ * _ = _ * _ := ac
+  replace bd : _ * _ = _ * _ := bd
+  show a.mul b ≈ c.mul d
+  unfold mul
+  show _ * _ = _ * _
+  simp
+  rw [Int.mul_assoc, Int.mul_left_comm b.num]
+  rw [Int.mul_assoc, Int.mul_left_comm d.num]
+  rw [←Int.mul_assoc, ←Int.mul_assoc, ac, ←bd]
+  ac_rfl
+
+def Rat.mul : ℚ -> ℚ -> ℚ := by
+  apply quot.lift₂ (⟦· * ·⟧)
+  intros
+  apply quot.sound
+  apply Fract.mul.spec <;> assumption
