@@ -1,55 +1,72 @@
-import Math.Data.Int.Div
-import Math.Data.Nat.Gcd
+-- import Math.Data.Int.Div
+-- import Math.Data.Nat.Gcd
+import Math.Data.StdInt.AbsoluteValue
 import Math.Data.QuotLike.Basic
 
 section
 
-local instance  : Coe nat int := ⟨int.ofNat⟩
-
 structure Fract where
-  num: int
-  den: nat
+  num: Int
+  den: Nat
   den_pos: 0 < den
 
-def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: int) ≠ 0 := by
+def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: Int) ≠ 0 := by
   intro h
-  have : ‖a.num‖.gcd a.den = 0 := int.ofNat.inj h
-  have ⟨_, h⟩ := nat.of_gcd_eq_zero this
+  have : ‖a.num‖.gcd a.den = 0 := Int.ofNat.inj h
+  have h := Nat.eq_zero_of_gcd_eq_zero_right this
   have := a.den_pos
   rw [h] at this
   contradiction
 
-macro_rules
-| `(tactic|invert_tactic_trivial) => `(tactic|apply fract_reduce_den)
-
-def Fract.isReduced (a: Fract) : Prop := ‖a.num‖.Coprime a.den
+def Fract.isReduced (a: Fract) : Prop := ‖a.num‖.gcd a.den = 1
 def Fract.reduce (a: Fract) : Fract where
-  num := a.num /? ‖a.num‖.gcd a.den
-  den := a.den /? ‖a.num‖.gcd a.den
+  num := a.num / ‖a.num‖.gcd a.den
+  den := a.den / ‖a.num‖.gcd a.den
   den_pos := by
-    rw [nat.div_of_ge]
-    apply nat.zero_lt_succ
-    apply nat.dvd.le
+    rw [Nat.div_eq, if_pos]
+    apply Nat.zero_lt_succ
+    apply And.intro
+    apply Nat.zero_lt_of_ne_zero
+    intro h
+    have h := Nat.eq_zero_of_gcd_eq_zero_right h
+    have := a.den_pos
+    rw [h] at this
+    contradiction
+    apply Nat.le_of_dvd
     exact a.den_pos
-    apply nat.gcd_dvd_right
+    apply Nat.gcd_dvd_right
 
 def Fract.reduce.isReduced (a: Fract) : a.reduce.isReduced := by
   unfold reduce Fract.isReduced
   simp
-  rw [int.div_abs, nat.div_den_congr (h := int.abs_ofNat)]
-  unfold nat.Coprime
-  apply (nat.mul_left_cancel_iff _).mp
-  rw [nat.mul_comm, nat.gcd_mul, nat.div_mul_of_dvd, nat.div_mul_of_dvd, nat.mul_one]
-  apply nat.gcd_dvd_right
-  apply nat.gcd_dvd_left
-  invert_tactic
+  apply Nat.eq_of_mul_eq_mul_right
+  show 0 < ‖a.num‖.gcd a.den
+  apply Nat.zero_lt_of_ne_zero
+  intro h
+  have h := Nat.eq_zero_of_gcd_eq_zero_right h
+  have := a.den_pos
+  rw [h] at this
+  contradiction
+  rw [←Nat.gcd_mul_right]
+  conv => {
+    lhs; lhs
+    rhs
+    rw [←Int.natAbs_ofNat (‖a.num‖.gcd a.den),]
+  }
+  show (Int.natAbs _ * _).gcd _ = _
+  rw [←Int.natAbs_mul, Int.ediv_mul_cancel, Nat.div_mul_cancel, Nat.one_mul]
+  rfl
+  apply Nat.gcd_dvd_right
+  apply Int.dvd_natAbs.mp
+  apply Int.ofNat_dvd.mpr
+  apply Nat.gcd_dvd_left
 
 structure Rat extends Fract where
   isReduced: toFract.isReduced
 
 notation "ℚ" => Rat
 
-def Fract.den_nz (a: Fract) : int.ofNat a.den ≠ 0 := by
+def Fract.den_nz (a: Fract) : Int.ofNat a.den ≠ 0 := by
   cases a  with | mk a d p =>
   dsimp
   intro h
@@ -66,11 +83,11 @@ def Fract.Equiv.symm {a b: Fract} : a.Equiv b -> b.Equiv a := Eq.symm
 def Fract.Equiv.trans {a b c: Fract} : a.Equiv b -> b.Equiv c -> a.Equiv c := by
   unfold Equiv
   intro ab bc
-  have p1 : a.num * c.den * b.den = b.num * a.den * c.den := by rw [int.mul_right_comm, ab]
+  have p1 : a.num * c.den * b.den = b.num * a.den * c.den := by rw [Int.mul_right_comm, ab]
   have p2 : a.num * c.den * b.den = c.num * a.den * b.den := by
-    rw [int.mul_right_comm c.num, ←bc, p1]
+    rw [Int.mul_right_comm c.num, ←bc, p1]
     ac_rfl
-  apply (int.mul_right_cancel_iff _).mp
+  apply (Int.mul_eq_mul_right_iff _).mp
   assumption
   exact b.den_nz
 
@@ -89,7 +106,7 @@ def Fract.reduce.spec (a: Fract) : a ≈ a.reduce := by
   show _ * _ = _ * _
   unfold reduce
   dsimp
-  rw [←int.ofNat_div]
+  rw [←Int.ofNat_ediv]
   sorry
 
 def Fract.isReduced.spec (a b: Fract) : a.isReduced -> b.isReduced -> a ≈ b -> a = b := by
