@@ -64,6 +64,11 @@ structure Rat extends Fract where
 
 notation "ℚ" => Rat
 
+def Rat.toFract.inj (a b: ℚ) : a.toFract = b.toFract -> a = b := by
+  intro eq
+  cases a; cases b;
+  congr
+
 def Fract.den_nz (a: Fract) : Int.ofNat a.den ≠ 0 := by
   cases a  with | mk a d p =>
   dsimp
@@ -213,12 +218,21 @@ def Rat.add : ℚ -> ℚ -> ℚ := by
 
 instance : Add ℚ := ⟨.add⟩
 
+def Rat.mk_add (a b: Fract) : ⟦a⟧ + ⟦b⟧ = ⟦a + b⟧ := by
+  show Rat.add _ _ = _
+  exact quot.lift₂_mk
+
 def Fract.mul (a b: Fract) : Fract where
   num := a.num * b.num
   den := a.den * b.den
   den_pos := Nat.mul_pos a.den_pos b.den_pos
 
 instance : Mul Fract := ⟨.mul⟩
+
+@[simp]
+def Fract.mul_num (a b: Fract) : (a * b).num = a.num * b.num := rfl
+@[simp]
+def Fract.mul_den (a b: Fract) : (a * b).den = a.den * b.den := rfl
 
 def Fract.mul.spec (a b c d: Fract) : a ≈ c -> b ≈ d -> a * b ≈ c * d := by
   intro ac bd
@@ -241,17 +255,56 @@ def Rat.mul : ℚ -> ℚ -> ℚ := by
 
 instance : Mul ℚ := ⟨.mul⟩
 
-def Rat.abs (a: ℚ) : ℚ where
+def Rat.mk_mul (a b: Fract) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := by
+  show Rat.mul _ _ = _
+  exact quot.lift₂_mk
+
+def Fract.abs (a: Fract) : Fract where
   num := ‖a.num‖
   den := a.den
   den_pos := a.den_pos
+
+instance : AbsoluteValue Fract Fract := ⟨.abs⟩
+
+@[simp]
+def Fract.abs_num (a: Fract) : ‖a‖.num = ‖a.num‖ := rfl
+@[simp]
+def Fract.abs_den (a: Fract) : ‖a‖.den = a.den := rfl
+
+def Fract.abs.spec (a b: Fract) : a ≈ b -> ‖a‖ ≈ ‖b‖ := by
+  intro eqv
+  show _ * _ = _ * _
+  have : ‖a‖.num = ‖a.num‖ := rfl
+  rw [this]
+  have : ‖b‖.num = ‖b.num‖ := rfl
+  rw [this]
+  have : ‖a‖.den = ‖Int.ofNat a.den‖ := rfl
+  rw [this]
+  have : ‖b‖.den = ‖Int.ofNat b.den‖ := rfl
+  rw [this]
+  rw [Int.ofNat_mul_ofNat, Int.ofNat_mul_ofNat]
+  congr 1
+  show Int.natAbs a.num * Int.natAbs b.den = Int.natAbs b.num * Int.natAbs a.den
+  rw [←Int.natAbs_mul, eqv, ←Int.natAbs_mul]
+
+def Rat.abs (a: ℚ) : ℚ where
+  toFract := a.toFract.abs
   isReduced := by
-    unfold Fract.isReduced
-    simp
+    unfold Fract.isReduced Fract.abs
     show (Int.natAbs _).gcd _ = 1
     rw [Int.natAbs_ofNat, a.isReduced]
 
 instance : AbsoluteValue ℚ ℚ := ⟨.abs⟩
+
+def Rat.mk_abs (a: Fract) : ‖⟦a⟧‖ = ⟦‖a‖⟧ := by
+  apply Rat.toFract.inj
+  apply Fract.isReduced.spec
+  apply Rat.isReduced
+  apply Rat.isReduced
+  apply Fract.trans _ (Fract.reduce.spec _)
+  apply Fract.abs.spec
+  symm
+  apply Fract.reduce.spec
 
 def Rat.ofNat (n: Nat) : ℚ where
   num := n
@@ -301,3 +354,13 @@ def Rat.div (a b: ℚ) (h: b ≠ 0) : ℚ := a * b⁻¹
 
 instance : CheckedDiv ℚ (fun q => q ≠ 0) where
   checked_div := Rat.div
+
+def Rat.abs_mul (a b: ℚ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
+  quot_ind (a b)
+  simp [mk_mul, mk_abs]
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  repeat rw [Int.ofNat_mul_ofNat]
+  congr
+  exact Int.natAbs_mul _ _
