@@ -815,3 +815,22 @@ def Rat.inv_self_mul (a: ℚ) (h: a ≠ 0) : a⁻¹ * a = 1 := by
 
 def Rat.div_self (a: ℚ) (h: a ≠ 0) : a /? a = 1 := by
   rw [div_eq_mul_inv, mul_inv_self]
+
+def Rat.add_mul (a b k: ℚ) : (a + b) * k = a * k + b * k := by
+  quot_ind (a b k)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp [Int.add_mul]
+  ac_rfl
+
+def Rat.mul_add (a b k: ℚ) : k * (a + b) = k * a + k * b := by
+  repeat rw [mul_comm k]
+  rw [add_mul]
+
+def Rat.mul_two (a: ℚ) : 2 * a = a + a := by
+  have : (2: ℚ) = 1 + 1 := rfl
+  rw [this, add_mul, one_mul]
+
+def Rat.mul_div_cancel (a b: ℚ) (h: a ≠ 0) : a * (b /? a) = b := by
+  rw [div_eq_mul_inv, mul_comm a, mul_assoc, inv_self_mul, mul_one]

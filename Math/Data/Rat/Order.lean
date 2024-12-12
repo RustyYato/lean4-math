@@ -344,4 +344,84 @@ def abs_add_lt_add_abs_right_neg (a b: ℚ) :
   rw [add_comm a, add_comm ‖a‖]
   apply abs_add_lt_add_abs_left_neg <;> assumption
 
+def lt_of_mul_right_pos {a b k: ℚ} : 0 < k -> (a < b ↔ a * k < b * k) := by
+  intro k_pos
+  replace k_pos : ⟦0⟧ < k := k_pos
+  quot_ind (a b k)
+  simp [mk_lt]
+  simp [mk_lt] at k_pos
+  erw [Int.zero_mul, Int.mul_one] at k_pos
+  rw [Int.mul_assoc _ k.num, Int.mul_left_comm k.num, ←Int.mul_assoc a.num]
+  rw [Int.mul_assoc _ k.num, Int.mul_left_comm k.num, ←Int.mul_assoc b.num]
+  apply Iff.intro
+  intro h
+  refine Int.mul_lt_mul_of_pos_right h ?_
+  apply Int.mul_pos
+  assumption
+  apply Int.ofNat_pos.mpr
+  exact k.den_pos
+  intro h
+  apply Int.lt_of_mul_lt_mul_right h
+  apply le_of_lt
+  apply Int.mul_pos
+  assumption
+  apply Int.ofNat_pos.mpr
+  exact k.den_pos
+
+def lt_of_mul_left_pos {a b k: ℚ} : 0 < k -> (a < b ↔ k * a < k * b) := by
+  intro k_pos
+  rw [mul_comm k, mul_comm k]
+  apply lt_of_mul_right_pos
+  assumption
+
+def le_of_mul_right_pos {a b k: ℚ} : 0 < k -> (a ≤ b ↔ a * k ≤ b * k) := by
+  intro k_pos
+  apply Iff.trans le_iff_not_lt
+  apply Iff.trans _ le_iff_not_lt.symm
+  apply Iff.not_iff_not
+  apply lt_of_mul_right_pos
+  assumption
+
+def le_of_mul_left_pos {a b k: ℚ} : 0 < k -> (a ≤ b ↔ k * a ≤ k * b) := by
+  intro k_pos
+  apply Iff.trans le_iff_not_lt
+  apply Iff.trans _ le_iff_not_lt.symm
+  apply Iff.not_iff_not
+  apply lt_of_mul_left_pos
+  assumption
+
+def mul_le_mul_of_right_nonneg (a b k: ℚ) : 0 ≤ k -> a ≤ b -> a * k ≤ b * k := by
+  intro k_nonneg ab
+  rcases lt_or_eq_of_le k_nonneg with k_pos | k_eq_ero
+  apply (le_of_mul_right_pos _).mp
+  assumption
+  assumption
+  subst k
+  rw [mul_zero, mul_zero]
+
+def mul_le_mul_of_left_nonneg (a b k: ℚ) : 0 ≤ k -> a ≤ b -> k * a ≤ k * b := by
+  rw [mul_comm k, mul_comm k]
+  apply mul_le_mul_of_right_nonneg
+
+def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹ := by
+  apply Iff.intro
+  intro h
+  apply (lt_of_mul_right_pos (a := 0) (b := a⁻¹) (k := a) h).mpr
+  rw [zero_mul, inv_self_mul]
+  decide
+  intro h
+  apply (lt_of_mul_right_pos (a := 0) (b := a) (k := a⁻¹) h).mpr
+  rw [zero_mul, mul_inv_self]
+  decide
+
+def div_pos {a b: ℚ} : 0 < a -> (h: 0 < b) -> 0 < a /? b~(by
+  symm; apply ne_of_lt; assumption) := by
+  intro apos bpos
+  rw [div_eq_mul_inv]
+  conv => { lhs; rw [←mul_zero a] }
+  apply (lt_of_mul_left_pos _).mp
+  apply (inv_pos _ _).mp
+  assumption
+  assumption
+
 end Rat
