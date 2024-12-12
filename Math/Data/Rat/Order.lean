@@ -12,6 +12,13 @@ instance : LE Fract := ⟨Fract.LE⟩
 instance : LT ℚ := ⟨fun a b => a.LT b.toFract⟩
 instance : LE ℚ := ⟨fun a b => a.LE b.toFract⟩
 
+@[simp]
+def Fract.le_def (a b: Fract) : (a ≤ b) = (a.num * b.den ≤ b.num * a.den) := rfl
+@[simp]
+def Fract.lt_def (a b: Fract) : (a < b) = (a.num * b.den < b.num * a.den) := rfl
+def Rat.le_def (a b: ℚ) : (a ≤ b) = (a.num * b.den ≤ b.num * a.den) := rfl
+def Rat.lt_def (a b: ℚ) : (a < b) = (a.num * b.den < b.num * a.den) := rfl
+
 def Fract.LE.spec (a b c d: Fract) : a ≈ c -> b ≈ d -> a ≤ b -> c ≤ d := by
   intro ac bd ab
   replace ab : a.num * _ ≤ _ *_ := ab
@@ -179,5 +186,86 @@ def abs_pos (a: ℚ) : a ≠ 0 -> 0 < ‖a‖ := by
   intro g
   have := eq_zero_iff_abs_eq_zero.mpr (le_antisymm g (abs_nonneg _))
   contradiction
+
+def add_le_add_right {a b k: ℚ} : a ≤ b ↔ a + k ≤ b + k := by
+  quot_ind (a b k)
+  simp [mk_le, Int.add_mul]
+  have : k.num * ↑a.den * (↑b.den * ↑k.den) = k.num * ↑b.den * (↑a.den * ↑k.den) := by ac_rfl
+  rw [this]; clear this
+  apply Iff.trans _ (Int.add_le_add_iff_right _).symm
+  have : ∀a b: Int, a * ↑k.den * (b * ↑k.den) = a * b * (↑k.den * ↑k.den) := by intros; ac_rfl
+  rw [this, this]; clear this
+  repeat rw [Int.ofNat_mul_ofNat]
+  apply Iff.intro
+  intro h
+  refine Int.mul_le_mul_of_nonneg_right ?_ ?_
+  assumption
+  apply Int.ofNat_zero_le
+  intro h
+  apply Int.le_of_mul_le_mul_right
+  assumption
+  apply Int.ofNat_lt.mpr
+  apply Nat.mul_pos <;> exact k.den_pos
+
+def add_le_add_left {a b k: ℚ} : a ≤ b ↔ k + a ≤ k + b := by
+  rw [add_comm k, add_comm k]
+  exact add_le_add_right
+
+def add_lt_add_right {a b k: ℚ} : a < b ↔ a + k < b + k := by
+  apply Iff.trans lt_iff_not_le
+  apply Iff.trans _ lt_iff_not_le.symm
+  apply Iff.not_iff_not
+  apply add_le_add_right
+
+def add_lt_add_left {a b k: ℚ} : a < b ↔ k + a < k + b := by
+  apply Iff.trans lt_iff_not_le
+  apply Iff.trans _ lt_iff_not_le.symm
+  apply Iff.not_iff_not
+  apply add_le_add_left
+
+def add_le_add {a b c d: ℚ} : a ≤ c -> b ≤ d -> a + b ≤ c + d := by
+  intro ac bd
+  apply le_trans
+  apply add_le_add_right.mp
+  assumption
+  apply add_le_add_left.mp
+  assumption
+
+def add_lt_add {a b c d: ℚ} : a < c -> b < d -> a + b < c + d := by
+  intro ac bd
+  apply lt_trans
+  apply add_lt_add_right.mp
+  assumption
+  apply add_lt_add_left.mp
+  assumption
+
+def add_lt_add_of_lt_of_le {a b c d: ℚ} : a < c -> b ≤ d -> a + b < c + d := by
+  intro ac bd
+  apply lt_of_lt_of_le
+  apply add_lt_add_right.mp
+  assumption
+  apply add_le_add_left.mp
+  assumption
+
+def add_lt_add_of_le_of_lt {a b c d: ℚ} : a ≤ c -> b < d -> a + b < c + d := by
+  intro ac bd
+  apply lt_of_le_of_lt
+  apply add_le_add_right.mp
+  assumption
+  apply add_lt_add_left.mp
+  assumption
+
+def abs_def (a: ℚ) : ‖a‖ = if a < 0 then -a else a := by
+  obtain ⟨⟨n, d, d_pos⟩, red⟩ := a
+  apply Rat.congr
+  simp [neg_iff_sign_neg, sign]
+  cases n
+  rw [if_neg]
+  rfl
+  intro h
+  rename_i n
+  cases n <;> contradiction
+  rfl
+  split <;> rfl
 
 end Rat
