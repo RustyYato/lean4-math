@@ -433,8 +433,28 @@ def Rat.eq_zero_iff_num_eq_zero {a: ℚ} : a = 0 ↔ a.num = 0 := by
   subst d
   rfl
 
+def Fract.inv (a: Fract) (h: ¬a ≈ 0) : Fract where
+  num := a.num.sign * a.den
+  den := ‖a.num‖
+  den_pos := by
+    apply Nat.zero_lt_of_ne_zero
+    intro g
+    apply h
+    apply quot.exact (Q := ℚ)
+    apply Rat.eq_zero_iff_num_eq_zero.mpr
+    apply Int.natAbs_eq_zero.mp
+    simp
+    apply Rat.eq_zero_iff_num_eq_zero.mp
+    show _ = ⟦0⟧
+    apply quot.sound
+    obtain ⟨n, d, dpos⟩  := a
+    simp at g
+    cases Int.natAbs_eq_zero.mp g
+    show _ * _ = _ * _
+    erw [Int.zero_mul, Int.zero_mul]
+
 def Rat.inv (a: ℚ) (h: a ≠ 0) : ℚ where
-  num := a.den
+  num := a.num.sign * a.den
   den := ‖a.num‖
   den_pos := by
     apply Nat.zero_lt_of_ne_zero
@@ -447,11 +467,22 @@ def Rat.inv (a: ℚ) (h: a ≠ 0) : ℚ where
     unfold Fract.isReduced
     simp
     show (Int.natAbs _).gcd _ = 1
-    rw [Int.natAbs_ofNat, Nat.gcd_comm]
+    rw [Int.natAbs_mul, Int.natAbs_sign, if_neg, Nat.one_mul,
+      Int.natAbs_ofNat, Nat.gcd_comm]
     exact a.isReduced
+    intro g; apply h
+    apply Rat.eq_zero_iff_num_eq_zero.mpr
+    assumption
 
+instance : CheckedInvert Fract (fun q => ¬q ≈ 0) where
+  checked_invert := Fract.inv
 instance : CheckedInvert ℚ (fun q => q ≠ 0) where
   checked_invert := Rat.inv
+
+@[simp]
+def Fract.inv.num (a: Fract) (h: ¬a ≈ 0) : (a⁻¹).num = a.num.sign * a.den := rfl
+@[simp]
+def Fract.inv.den (a: Fract) (h: ¬a ≈ 0) : (a⁻¹).den = ‖a.num‖ := rfl
 
 def Rat.div (a b: ℚ) (h: b ≠ 0) : ℚ := a * b⁻¹
 
@@ -529,6 +560,38 @@ def Rat.abs_sign (a: ℚ) : ‖a‖.sign = ‖a.sign‖ := by
 def Rat.neg_sign (a: ℚ) : (-a).sign = -a.sign := by
   obtain ⟨⟨a, _, _ ⟩, _⟩ := a
   cases a using Int.cases <;> rfl
+
+def Fract.inv.spec (a b: Fract) (h₀: ¬a ≈ 0) (h₁: ¬b ≈ 0) : a ≈ b -> a⁻¹ ≈ b⁻¹ := by
+  intro eq
+  have : a.num.sign = b.num.sign := by
+    have : ⟦a⟧ = ⟦b⟧ := quot.sound eq
+    have : ⟦a⟧.sign = ⟦b⟧.sign :=  by rw [this]
+    simp at this
+    assumption
+  replace eq : _ * _ = _ * _ := eq
+  show _ * _ = _ * _
+  simp
+  show _ * (Int.natAbs _: Int) = _ * (Int.natAbs _: Int)
+  rw [Int.mul_right_comm, this, Int.sign_mul_natAbs]
+  rw [Int.mul_right_comm, ←this, Int.sign_mul_natAbs]
+  exact eq.symm
+
+@[simp]
+def Rat.mk_inv (a: Fract) (h: ¬a ≈ 0 := by invert_tactic)  :
+  ⟦a⟧⁻¹~(by
+    intro g
+    apply h
+    exact quot.exact g) = ⟦a⁻¹⟧ := by
+  apply Rat.toFract.inj
+  apply Fract.isReduced.spec
+  apply Rat.isReduced
+  apply Rat.isReduced
+  apply Fract.trans _ (Fract.reduce.spec _)
+  apply Fract.inv.spec
+  intro g
+  apply h
+  exact (Fract.reduce.spec _).trans g
+  symm; apply Fract.reduce.spec
 
 def Rat.approx_sqrt_aux (n x: ℚ) : Nat -> ℚ
 | 0 => x
@@ -722,3 +785,33 @@ def Rat.eq_zero_of_eq_neg_self (a: ℚ) : a = -a -> a = 0 := by
     cases n
     rfl
     contradiction
+
+def Rat.abs_neg (a: ℚ) : ‖-a‖ = ‖a‖ := by
+  quot_ind a
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  show ↑(Int.natAbs (-a.num)) * (a.den: Int) = _ * _
+  rw [Int.natAbs_neg]
+  rfl
+
+def Rat.abs_sub_comm (a b: ℚ) : ‖a - b‖ = ‖b - a‖ := by
+  rw [←neg_sub, abs_neg]
+
+def Rat.mul_inv_self (a: ℚ) (h: a ≠ 0) : a * a⁻¹ = 1 := by
+  quot_ind a
+  have : ¬a ≈ 0 := fun g => h (quot.sound g)
+  simp [mk_inv _ this]
+  show _ = ⟦1⟧
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  erw [Int.one_mul, Int.mul_one, ←Int.mul_assoc, Int.mul_sign, Int.mul_comm]
+  rfl
+
+def Rat.inv_self_mul (a: ℚ) (h: a ≠ 0) : a⁻¹ * a = 1 := by
+  rw [mul_comm, mul_inv_self]
+
+def Rat.div_self (a: ℚ) (h: a ≠ 0) : a /? a = 1 := by
+  rw [div_eq_mul_inv, mul_inv_self]
