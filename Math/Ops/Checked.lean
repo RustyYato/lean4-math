@@ -56,7 +56,7 @@ def delab_checked_mod : Delab := do
   `($x %? $y)
 
 open Lean Meta PrettyPrinter Delaborator SubExpr in
-@[delab app.Invert.invert]
+@[delab app.CheckedInvert.checked_invert]
 def delab_checked_invert : Delab := do
   let expr ← getExpr
   let #[_, _, _, x, _] := expr.getAppArgs | failure

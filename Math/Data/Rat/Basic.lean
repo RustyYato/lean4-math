@@ -202,6 +202,11 @@ def Fract.add (a b: Fract) : Fract where
 
 instance : Add Fract := ⟨.add⟩
 
+@[simp]
+def Fract.add_num (a b: Fract) : (a + b).num = a.num * b.den + b.num * a.den := rfl
+@[simp]
+def Fract.add_den (a b: Fract) : (a + b).den = a.den * b.den := rfl
+
 def Fract.add.spec (a b c d: Fract) : a ≈ c -> b ≈ d -> a + b ≈ c + d := by
   intro ac bd
   replace ac : _ * _ = _ * _ := ac
@@ -316,6 +321,11 @@ def Fract.sub (a b: Fract) : Fract where
   den_pos := Nat.mul_pos a.den_pos b.den_pos
 
 instance : Sub Fract := ⟨.sub⟩
+
+@[simp]
+def Fract.sub_num (a b: Fract) : (a - b).num = a.num * b.den - b.num * a.den := rfl
+@[simp]
+def Fract.sub_den (a b: Fract) : (a - b).den = a.den * b.den := rfl
 
 def Fract.sub_eq_add_neg (a b: Fract) : a - b = a + -b := by
   cases a; cases b
@@ -551,3 +561,79 @@ def Rat.eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ ‖a‖ = 0 := by
   have := Int.natAbs_eq_zero.mp (Int.ofNat.inj h)
   apply eq_zero_of_num_eq_zero.mpr
   assumption
+
+def Rat.congr {a b: ℚ} : a.num = b.num -> a.den = b.den -> a = b := by
+  intro numeq deneq
+  obtain ⟨⟨n, d, d_pos⟩, red⟩ := a
+  obtain ⟨⟨n, d, d_pos⟩, red⟩ := b
+  congr
+
+def Rat.neg_add (a b: ℚ) : -(a + b) = -a + -b := by
+  quot_ind (a b)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp [Int.add_mul, Int.neg_add]
+
+def Rat.neg_sub (a b: ℚ) : -(a - b) = b - a := by
+  quot_ind (a b)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp [Int.sub_mul, Int.neg_sub, Int.mul_comm b.den]
+
+def Rat.neg_mul_left (a b: ℚ) : -(a * b) = -a * b := by
+  quot_ind (a b)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+
+def Rat.neg_mul_right (a b: ℚ) : -(a * b) = a * -b := by
+  quot_ind (a b)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+
+def Rat.add_comm (a b: ℚ) : a + b = b + a := by
+  quot_ind (a b)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  ac_rfl
+
+def Rat.add_assoc (a b c: ℚ) : a + b + c = a + (b + c) := by
+  quot_ind (a b c)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp [Int.add_mul]
+  ac_rfl
+
+def Rat.mul_comm (a b: ℚ) : a * b = b * a := by
+  quot_ind (a b)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  ac_rfl
+
+def Rat.mul_assoc (a b c: ℚ) : a * b * c = a * (b * c) := by
+  quot_ind (a b c)
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp [Int.add_mul]
+  ac_rfl
+
+def Rat.div_eq_mul_inv (a b: ℚ) (h: b ≠ 0) : a /? b = a * b⁻¹ := rfl
+
+def Rat.mul_div_assoc (a b c: ℚ) (h: c ≠ 0) : a * b /? c = a * (b /? c) := by
+  rw [div_eq_mul_inv, div_eq_mul_inv, mul_assoc]
+
+instance : @Std.Commutative ℚ (· + ·) := ⟨Rat.add_comm⟩
+instance : @Std.Associative ℚ (· + ·) := ⟨Rat.add_assoc⟩
+instance : @Std.Commutative ℚ (· * ·) := ⟨Rat.mul_comm⟩
+instance : @Std.Associative ℚ (· * ·) := ⟨Rat.mul_assoc⟩
