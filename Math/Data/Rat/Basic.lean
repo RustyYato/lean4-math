@@ -7,6 +7,7 @@ structure Fract where
   num: Int
   den: Nat
   den_pos: 0 < den := by exact Nat.zero_lt_succ _
+deriving Repr
 
 def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: Int) ≠ 0 := by
   intro h
@@ -61,8 +62,10 @@ def Fract.reduce.isReduced (a: Fract) : a.reduce.isReduced := by
 
 structure Rat extends Fract where
   isReduced: toFract.isReduced
+deriving Repr
 
 notation "ℚ" => Rat
+
 
 def Rat.toFract.inj (a b: ℚ) : a.toFract = b.toFract -> a = b := by
   intro eq
@@ -218,6 +221,7 @@ def Rat.add : ℚ -> ℚ -> ℚ := by
 
 instance : Add ℚ := ⟨.add⟩
 
+@[simp]
 def Rat.mk_add (a b: Fract) : ⟦a⟧ + ⟦b⟧ = ⟦a + b⟧ := by
   show Rat.add _ _ = _
   exact quot.lift₂_mk
@@ -255,9 +259,82 @@ def Rat.mul : ℚ -> ℚ -> ℚ := by
 
 instance : Mul ℚ := ⟨.mul⟩
 
+@[simp]
 def Rat.mk_mul (a b: Fract) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := by
   show Rat.mul _ _ = _
   exact quot.lift₂_mk
+
+def Fract.neg (a: Fract) : Fract where
+  num := -a.num
+  den := a.den
+  den_pos := a.den_pos
+
+instance : Neg Fract := ⟨.neg⟩
+
+@[simp]
+def Fract.neg_num (a: Fract) : (-a).num = -a.num := rfl
+@[simp]
+def Fract.neg_den (a: Fract) : (-a).den = a.den := rfl
+
+def Fract.neg.spec (a b: Fract) : a ≈ b -> -a ≈ -b := by
+  intro ab
+  show _ * _ = _ * _
+  simp
+  rw [ab]
+
+def Rat.neg (a: ℚ) : ℚ where
+  toFract := -a.toFract
+  isReduced := by
+    unfold toFract Fract.isReduced
+    simp
+    show (Int.natAbs _).gcd _ = _
+    rw [Int.natAbs_neg]
+    exact a.isReduced
+
+instance : Neg ℚ := ⟨.neg⟩
+
+@[simp]
+def Rat.mk_neg (a: Fract) : -⟦a⟧ = ⟦-a⟧ := by
+  apply Rat.toFract.inj
+  apply Fract.isReduced.spec
+  apply Rat.isReduced
+  apply Rat.isReduced
+  apply Fract.trans _ (Fract.reduce.spec _)
+  apply Fract.neg.spec
+  symm
+  apply Fract.reduce.spec
+
+def Fract.sub (a b: Fract) : Fract where
+  num := a.num * b.den - b.num * a.den
+  den := a.den * b.den
+  den_pos := Nat.mul_pos a.den_pos b.den_pos
+
+instance : Sub Fract := ⟨.sub⟩
+
+def Fract.sub_eq_add_neg (a b: Fract) : a - b = a + -b := by
+  cases a; cases b
+  show sub _ _ = add _ (neg _)
+  unfold sub add neg
+  simp
+  rw [Int.sub_eq_add_neg]
+
+def Rat.sub : ℚ -> ℚ -> ℚ := by
+  apply quot.lift₂ (⟦· - ·⟧)
+  intros _ _ _ _ ac bd
+  simp only [Fract.sub_eq_add_neg, ←mk_neg, ←mk_add]
+  rw [quot.sound ac, quot.sound bd]
+
+instance : Sub ℚ := ⟨.sub⟩
+
+@[simp]
+def Rat.mk_sub (a b: Fract) : ⟦a⟧ - ⟦b⟧ = ⟦a - b⟧ := by
+  show sub _ _ = ⟦Fract.sub _ _⟧
+  exact quot.lift₂_mk
+
+def Rat.sub_eq_add_neg (a b: ℚ) : a - b = a + -b := by
+  quot_ind (a b)
+  simp
+  rw [Fract.sub_eq_add_neg]
 
 def Fract.abs (a: Fract) : Fract where
   num := ‖a.num‖
@@ -296,6 +373,7 @@ def Rat.abs (a: ℚ) : ℚ where
 
 instance : AbsoluteValue ℚ ℚ := ⟨.abs⟩
 
+@[simp]
 def Rat.mk_abs (a: Fract) : ‖⟦a⟧‖ = ⟦‖a‖⟧ := by
   apply Rat.toFract.inj
   apply Fract.isReduced.spec
@@ -364,3 +442,5 @@ def Rat.abs_mul (a b: ℚ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   repeat rw [Int.ofNat_mul_ofNat]
   congr
   exact Int.natAbs_mul _ _
+
+instance : Inhabited ℚ := ⟨0⟩
