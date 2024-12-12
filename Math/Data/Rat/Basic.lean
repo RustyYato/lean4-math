@@ -1,13 +1,14 @@
 import Math.Data.StdInt.AbsoluteValue
 import Math.Data.QuotLike.Basic
 import Math.Data.StdNat.Gcd
+import Math.Data.StdInt.Induction
 import Math.Ops.Checked
 
 structure Fract where
   num: Int
   den: Nat
   den_pos: 0 < den := by exact Nat.zero_lt_succ _
-deriving Repr
+deriving Repr, DecidableEq
 
 def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: Int) ≠ 0 := by
   intro h
@@ -62,7 +63,7 @@ def Fract.reduce.isReduced (a: Fract) : a.reduce.isReduced := by
 
 structure Rat extends Fract where
   isReduced: toFract.isReduced
-deriving Repr
+deriving Repr, DecidableEq
 
 notation "ℚ" => Rat
 
@@ -294,6 +295,11 @@ def Rat.neg (a: ℚ) : ℚ where
 instance : Neg ℚ := ⟨.neg⟩
 
 @[simp]
+def Rat.neg_num (a: ℚ) : (-a).num = -a.num := rfl
+@[simp]
+def Rat.neg_den (a: ℚ) : (-a).den = a.den := rfl
+
+@[simp]
 def Rat.mk_neg (a: Fract) : -⟦a⟧ = ⟦-a⟧ := by
   apply Rat.toFract.inj
   apply Fract.isReduced.spec
@@ -374,6 +380,11 @@ def Rat.abs (a: ℚ) : ℚ where
 instance : AbsoluteValue ℚ ℚ := ⟨.abs⟩
 
 @[simp]
+def Rat.abs_num (a: ℚ) : ‖a‖.num = ‖a.num‖ := rfl
+@[simp]
+def Rat.abs_den (a: ℚ) : ‖a‖.den = a.den := rfl
+
+@[simp]
 def Rat.mk_abs (a: Fract) : ‖⟦a⟧‖ = ⟦‖a‖⟧ := by
   apply Rat.toFract.inj
   apply Fract.isReduced.spec
@@ -444,3 +455,99 @@ def Rat.abs_mul (a b: ℚ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   exact Int.natAbs_mul _ _
 
 instance : Inhabited ℚ := ⟨0⟩
+
+def Fract.sign (q: Fract) : Int := q.num.sign
+
+def Fract.sign.spec (a b: Fract) : a ≈ b -> a.sign = b.sign := by
+  intro eq
+  cases a with | mk an ad ad_pos =>
+  cases b with | mk bn bd bd_pos =>
+  simp [sign]
+  replace eq : _ * _ = _ * _ := eq
+  simp at *
+  cases an with
+  | ofNat an =>
+    cases bn with
+    | ofNat bn =>
+      cases an; cases bn
+      rfl
+      erw [Int.ofNat_mul_ofNat, Int.ofNat_mul_ofNat,
+        Nat.zero_mul] at eq
+      replace eq := Int.ofNat.inj eq
+      cases Nat.mul_eq_zero.mp eq.symm
+      contradiction
+      subst ad
+      contradiction
+      cases bn
+      erw [Int.ofNat_mul_ofNat, Int.ofNat_mul_ofNat,
+        Nat.zero_mul] at eq
+      replace eq := Int.ofNat.inj eq
+      cases Nat.mul_eq_zero.mp eq
+      contradiction
+      subst bd
+      contradiction
+      rfl
+    | negSucc bn =>
+      cases ad
+      contradiction
+      erw [Int.ofNat_mul_ofNat, Int.negSucc_mul_ofNat] at eq
+      contradiction
+  | negSucc an =>
+    cases bn with
+    | negSucc bn => rfl
+    | ofNat bn =>
+      cases bd
+      contradiction
+      erw [Int.ofNat_mul_ofNat, Int.negSucc_mul_ofNat] at eq
+      contradiction
+
+def Rat.sign (q: ℚ) : Int := q.num.sign
+
+@[simp]
+def Rat.mk_sign (a: Fract) : ⟦a⟧.sign = a.sign := by
+  apply Fract.sign.spec
+  symm; apply Fract.reduce.spec
+
+def Rat.abs_sign (a: ℚ) : ‖a‖.sign = ‖a.sign‖ := by
+  obtain ⟨⟨a, _, _ ⟩, _⟩ := a
+  cases a using Int.cases <;> rfl
+
+def Rat.neg_sign (a: ℚ) : (-a).sign = -a.sign := by
+  obtain ⟨⟨a, _, _ ⟩, _⟩ := a
+  cases a using Int.cases <;> rfl
+
+def Rat.approx_sqrt_aux (n x: ℚ) : Nat -> ℚ
+| 0 => x
+| .succ m =>
+  if h:x = 0 then
+    0
+  else
+    Rat.approx_sqrt_aux n ((x + n /? x) /? (2: ℚ)) m
+
+def Rat.approx_sqrt (a: ℚ) : Nat -> ℚ := a.approx_sqrt_aux a
+
+@[simp]
+def Rat.neg_neg (a: ℚ) : - -a = a := by
+  obtain ⟨⟨n, d, d_pos⟩, _⟩ := a
+  simp [Neg.neg, Rat.neg, Fract.neg]
+  exact Int.neg_neg n
+
+def Rat.eq_zero_of_num_eq_zero {a: ℚ} : a = 0 ↔ a.num = 0 := by
+  apply Iff.intro
+  intro h; subst h; rfl
+  intro h
+  obtain ⟨⟨n, d, d_pos⟩, red⟩ := a
+  congr
+  simp [Fract.isReduced] at red
+  simp at h
+  erw [h, Nat.gcd_zero_left] at red
+  assumption
+
+def Rat.eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ ‖a‖ = 0 := by
+  apply Iff.intro
+  intro h; subst h; rfl
+  intro h
+  have ⟨h, g⟩  := Fract.mk.inj (Rat.mk.inj h)
+  have := Int.natAbs_eq_zero.mp (Int.ofNat.inj h)
+  apply eq_zero_of_num_eq_zero.mpr
+  assumption

@@ -1,5 +1,11 @@
 namespace Int
 
+def cases {motive: Int -> Sort _}
+  (zero: motive 0) (pos: ∀n: Nat, motive ↑(n + 1)) (neg: ∀n: Nat, motive -[n+1]) : ∀i, motive i
+| 0 => zero
+| .negSucc _ => neg _
+| .ofNat (.succ _) => pos _
+
 def induction {motive : Int → Prop} (i : Int)
   (zero : motive 0) (succ : ∀i, motive i → motive (i + 1)) (pred : ∀i, motive i → motive (i - 1)) : motive i := by
 induction i with

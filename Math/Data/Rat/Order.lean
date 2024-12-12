@@ -102,3 +102,82 @@ instance : IsLinearOrder ℚ where
     exact Int.ofNat_pos.mpr this
 
 instance : IsDecidableLinearOrder ℚ where
+
+namespace Rat
+
+def neg_le_neg_iff (a b: ℚ) : a ≤ b ↔ -b ≤ -a := by
+  unfold LE.le
+  simp [instLERat, Fract.LE]
+  apply Iff.intro
+  apply Int.neg_le_neg
+  intro h
+  have := Int.neg_le_neg h
+  simp at this
+  assumption
+
+def neg_lt_neg_iff (a b: ℚ) : a < b ↔ -b < -a := by
+  apply Iff.trans lt_iff_not_le
+  apply Iff.trans _ lt_iff_not_le.symm
+  apply Iff.not_iff_not
+  apply neg_le_neg_iff
+
+def nonneg_iff_sign_nonneg {a: ℚ} : 0 ≤ a ↔ 0 ≤ a.sign := by
+  obtain ⟨⟨a, _, _ ⟩, _⟩ := a
+  simp [sign]
+  conv => { lhs; unfold LE.le }
+  show _ * _ ≤ _ * _ ↔ _
+  erw [Int.zero_mul, Int.mul_one]
+
+def nonpos_iff_sign_nonpos {a: ℚ} : a ≤ 0 ↔ a.sign ≤ 0 := by
+  obtain ⟨⟨a, _, _ ⟩, _⟩ := a
+  simp [sign]
+  conv => { lhs; unfold LE.le }
+  show _ * _ ≤ _ * _ ↔ _
+  simp
+  erw [Int.zero_mul, Int.mul_one]
+  have : ∀{a b: Int}, a ≤ b ↔ -b ≤ -a := by
+    intros a b
+    apply Iff.intro Int.neg_le_neg
+    intro h
+    rw [←Int.neg_neg a, ←Int.neg_neg b]
+    exact Int.neg_le_neg h
+  rw [this, this (a := a.sign), ←Int.sign_neg]
+  apply Int.sign_nonneg.symm
+
+def pos_iff_sign_pos {a: ℚ} : 0 < a ↔ 0 < a.sign := by
+  apply Iff.trans lt_iff_not_le
+  apply Iff.trans _ lt_iff_not_le.symm
+  apply Iff.not_iff_not
+  apply nonpos_iff_sign_nonpos
+
+def neg_iff_sign_neg {a: ℚ} : a < 0 ↔ a.sign < 0 := by
+  apply Iff.trans lt_iff_not_le
+  apply Iff.trans _ lt_iff_not_le.symm
+  apply Iff.not_iff_not
+  apply nonneg_iff_sign_nonneg
+
+def eq_zero_iff_sign_eq_zero {a: ℚ} : a = 0 ↔ a.sign = 0 := by
+  apply Iff.intro
+  intro h; subst h; rfl
+  intro h
+  apply le_antisymm
+  apply nonpos_iff_sign_nonpos.mpr
+  rw [h]
+  apply nonneg_iff_sign_nonneg.mpr
+  rw [h]
+
+def abs_nonneg (a: ℚ) : 0 ≤ ‖a‖ := by
+  apply nonneg_iff_sign_nonneg.mpr
+  rw [abs_sign]
+  obtain ⟨⟨a, _, _ ⟩, _⟩ := a
+  simp [sign]
+  apply Int.ofNat_zero_le
+
+def abs_pos (a: ℚ) : a ≠ 0 -> 0 < ‖a‖ := by
+  intro h
+  apply lt_of_not_le
+  intro g
+  have := eq_zero_iff_abs_eq_zero.mpr (le_antisymm g (abs_nonneg _))
+  contradiction
+
+end Rat
