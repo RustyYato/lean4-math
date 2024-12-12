@@ -405,11 +405,15 @@ def Rat.mk_abs (a: Fract) : ‖⟦a⟧‖ = ⟦‖a‖⟧ := by
   symm
   apply Fract.reduce.spec
 
-def Rat.ofNat (n: Nat) : ℚ where
+def Fract.ofNat (n: Nat) : Fract where
   num := n
   den := 1
+
+def Rat.ofNat (n: Nat) : ℚ where
+  toFract := Fract.ofNat n
   isReduced := Nat.gcd_eq_right (Nat.one_dvd _)
 
+instance : OfNat Fract n := ⟨Fract.ofNat n⟩
 instance : OfNat ℚ n := ⟨Rat.ofNat n⟩
 
 def Rat.eq_zero_iff_num_eq_zero {a: ℚ} : a = 0 ↔ a.num = 0 := by
@@ -637,3 +641,84 @@ instance : @Std.Commutative ℚ (· + ·) := ⟨Rat.add_comm⟩
 instance : @Std.Associative ℚ (· + ·) := ⟨Rat.add_assoc⟩
 instance : @Std.Commutative ℚ (· * ·) := ⟨Rat.mul_comm⟩
 instance : @Std.Associative ℚ (· * ·) := ⟨Rat.mul_assoc⟩
+
+def Rat.add_zero (a: ℚ) : a + 0 = a := by
+  quot_ind a
+  have : (0: ℚ) = ⟦0⟧ := rfl
+  rw [this]
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  erw [Int.mul_one, Int.mul_one, Int.zero_mul, Int.add_zero]
+
+def Rat.zero_add (a: ℚ) : 0 + a = a := by
+  rw [add_comm, add_zero]
+
+def Rat.mul_zero (a: ℚ) : a * 0 = 0 := by
+  quot_ind a
+  have : (0: ℚ) = ⟦0⟧ := rfl
+  rw [this]
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  erw [Int.mul_one, Int.mul_one, Int.zero_mul, Int.mul_zero]
+
+def Rat.zero_mul (a: ℚ) : 0 * a = 0 := by
+  rw [mul_comm, mul_zero]
+
+def Rat.mul_one (a: ℚ) : a * 1 = a := by
+  quot_ind a
+  have : (1: ℚ) = ⟦1⟧ := rfl
+  rw [this]
+  simp
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  erw [Int.mul_one, Int.mul_one]
+
+def Rat.one_mul (a: ℚ) : 1 * a = a := by
+  rw [mul_comm, mul_one]
+
+def Rat.add_neg_self (a: ℚ) : a + -a = 0 := by
+  quot_ind a
+  simp
+  show _ = ⟦0⟧
+  apply quot.sound
+  show _ * _ = _ * _
+  simp
+  erw [Int.zero_mul, Int.mul_one, ←Int.sub_eq_add_neg, Int.sub_self]
+
+def Rat.neg_self_add (a: ℚ) : -a + a = 0 := by
+  rw [add_comm, add_neg_self]
+
+def Rat.sub_self (a: ℚ) : a - a = 0 := by
+  rw [sub_eq_add_neg, add_neg_self]
+
+def Rat.add_cancel_left {a b k: ℚ} : a = b ↔ k + a = k + b := by
+  apply Iff.intro
+  intro eq; rw [eq]
+  intro eq
+  have : -k + (k + a) = -k + (k + b) := by rw [eq]
+  iterate 2 rw [←add_assoc, neg_self_add, zero_add] at this
+  assumption
+
+def Rat.add_cancel_right {a b k: ℚ} : a = b ↔ a + k = b + k := by
+  rw [add_comm _ k, add_comm _ k, add_cancel_left]
+
+def Rat.eq_zero_of_eq_neg_self (a: ℚ) : a = -a -> a = 0 := by
+  intro h
+  obtain ⟨⟨n, d, dpos⟩, red⟩ := a
+  simp [Neg.neg, neg, Fract.neg] at h
+  simp [Fract.isReduced] at red
+  suffices n = 0 by
+    erw [this, Nat.gcd_zero_left] at red
+    congr
+  clear red dpos d
+  cases n with
+  | negSucc n => contradiction
+  | ofNat n =>
+    cases n
+    rfl
+    contradiction

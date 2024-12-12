@@ -112,7 +112,7 @@ instance : IsDecidableLinearOrder ℚ where
 
 namespace Rat
 
-def neg_le_neg_iff (a b: ℚ) : a ≤ b ↔ -b ≤ -a := by
+def neg_le_neg_iff {a b: ℚ} : a ≤ b ↔ -b ≤ -a := by
   unfold LE.le
   simp [instLERat, Fract.LE]
   apply Iff.intro
@@ -122,7 +122,7 @@ def neg_le_neg_iff (a b: ℚ) : a ≤ b ↔ -b ≤ -a := by
   simp at this
   assumption
 
-def neg_lt_neg_iff (a b: ℚ) : a < b ↔ -b < -a := by
+def neg_lt_neg_iff {a b: ℚ} : a < b ↔ -b < -a := by
   apply Iff.trans lt_iff_not_le
   apply Iff.trans _ lt_iff_not_le.symm
   apply Iff.not_iff_not
@@ -267,5 +267,81 @@ def abs_def (a: ℚ) : ‖a‖ = if a < 0 then -a else a := by
   cases n <;> contradiction
   rfl
   split <;> rfl
+
+def add_neg_lt_left (a b: ℚ) : b < 0 -> a + b < a := by
+  intro bneg
+  conv => { rhs; rw [←add_zero a] }
+  apply add_lt_add_of_le_of_lt
+  rfl
+  assumption
+
+def left_le_add_nonneg (a b: ℚ) : 0 ≤ b -> a ≤ a + b := by
+  intro bneg
+  conv => { lhs; rw [←add_zero a] }
+  apply add_le_add
+  rfl
+  assumption
+
+def abs_add_le_add_abs.helper (a b: ℚ) : a < 0 -> 0 ≤ b -> ‖a + b‖ ≤ -a + b := by
+  intro a_neg b_nonneg
+  rw [abs_def]
+  split
+  rw [neg_add]
+  apply add_le_add
+  rfl
+  apply le_trans _ b_nonneg
+  apply neg_le_neg_iff.mpr
+  rw [neg_neg]
+  assumption
+  apply add_le_add
+  apply le_trans (le_of_lt a_neg)
+  apply neg_le_neg_iff.mpr
+  rw [neg_neg]
+  apply le_of_lt
+  assumption
+  rfl
+
+def abs_add_le_add_abs (a b: ℚ) : ‖a + b‖ ≤ ‖a‖ + ‖b‖ := by
+  rw [abs_def a, abs_def b]
+  split <;> split <;> rename_i h g
+  rw [abs_def, if_pos, neg_add]
+  rw [←add_zero 0]
+  apply add_lt_add <;> assumption
+  · apply abs_add_le_add_abs.helper
+    assumption
+    apply le_of_not_lt
+    assumption
+  · rw [add_comm a, add_comm a]
+    apply abs_add_le_add_abs.helper
+    assumption
+    apply le_of_not_lt
+    assumption
+  rw [abs_def, if_neg]
+  apply not_lt_of_le
+  rw [←add_zero 0]
+  apply add_le_add <;> (apply le_of_not_lt; assumption)
+
+def abs_add_lt_add_abs_left_neg (a b: ℚ) :
+  a < 0 -> 0 < b -> ‖a + b‖ < ‖a‖ + ‖b‖ := by
+  intro aneg bpos
+  apply lt_of_le_of_ne
+  apply abs_add_le_add_abs
+  intro eq
+  rw [abs_def a, abs_def b] at eq
+  rw [if_pos aneg, if_neg (not_lt_of_le (le_of_lt bpos)), abs_def] at eq
+  split at eq
+  rw [neg_add] at eq
+  have := add_cancel_left.mpr eq
+  cases eq_zero_of_eq_neg_self _ this.symm
+  contradiction
+  have := add_cancel_right.mpr eq
+  cases eq_zero_of_eq_neg_self _ this
+  contradiction
+
+def abs_add_lt_add_abs_right_neg (a b: ℚ) :
+  0 < a -> b < 0 -> ‖a + b‖ < ‖a‖ + ‖b‖ := by
+  intro apos bneg
+  rw [add_comm a, add_comm ‖a‖]
+  apply abs_add_lt_add_abs_left_neg <;> assumption
 
 end Rat
