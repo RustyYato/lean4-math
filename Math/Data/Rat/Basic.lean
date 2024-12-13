@@ -848,3 +848,10 @@ def Rat.neg_sub_neg (a b: ℚ) : -a - -b = b - a := by
 
 def Rat.sub_zero (a: ℚ) : a - 0 = a := by erw [sub_eq_add_neg, add_zero]
 def Rat.zero_sub (a: ℚ) : 0 - a = -a := by rw [sub_eq_add_neg, zero_add]
+
+def Rat.mul_cancel_right {a b k: ℚ} (h: k ≠ 0) : a = b ↔  a * k = b * k := by
+  apply Iff.intro
+  intro g; rw [g]
+  intro g
+  have : (a * k) * k⁻¹ = (b * k) * k⁻¹ := by rw [g]
+  rwa [mul_assoc, mul_assoc, mul_inv_self, mul_one, mul_one] at this

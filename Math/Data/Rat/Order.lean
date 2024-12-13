@@ -403,6 +403,17 @@ def mul_le_mul_of_left_nonneg (a b k: ℚ) : 0 ≤ k -> a ≤ b -> k * a ≤ k *
   rw [mul_comm k, mul_comm k]
   apply mul_le_mul_of_right_nonneg
 
+def mul_lt_mul_of_left_pos (a b k: ℚ) : 0 < k -> a < b -> k * a < k * b := by
+  rw [mul_comm k, mul_comm k]
+  intro k_pos a_lt_b
+  apply lt_of_le_of_ne
+  apply mul_le_mul_of_right_nonneg
+  apply le_of_lt; assumption
+  apply le_of_lt; assumption
+  intro ak_eq_bk
+  cases (mul_cancel_right (ne_of_lt k_pos).symm).mpr ak_eq_bk
+  exact lt_irrefl a_lt_b
+
 def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹ := by
   apply Iff.intro
   intro h

@@ -441,3 +441,94 @@ def Real.abs : ℝ -> ℝ := by
 
 instance : AbsoluteValue ℝ ℝ where
   abs := .abs
+
+def CauchySeq.mul.spec (a b c d: CauchySeq) : a ≈ c -> b ≈ d ->
+  is_cauchy_equiv (fun n => a n * b n) (fun n => c n * d n) := by
+  intro ac bd ε ε_pos
+  simp
+  have ⟨amax,one_lt_amax,amax_spec⟩ := ‖a‖.upper_bound_with 1
+  have ⟨dmax,one_lt_dmax,dmax_spec⟩ := ‖d‖.upper_bound_with 1
+
+  have amax_pos : 0 < amax := lt_of_lt_of_le (by decide) one_lt_amax
+  have dmax_pos : 0 < dmax := lt_of_lt_of_le (by decide) one_lt_dmax
+
+  have amax_nonzero := (ne_of_lt amax_pos).symm
+  have dmax_nonzero := (ne_of_lt dmax_pos).symm
+
+  let ε₀ := (ε /? 2) /? dmax
+  let ε₁ := (ε /? 2) /? amax
+
+  have ε₀_pos : 0 < ε₀ := by
+    apply Rat.div_pos
+    apply Rat.div_pos
+    assumption
+    decide
+    assumption
+  have ε₁_pos : 0 < ε₁ := by
+    apply Rat.div_pos
+    apply Rat.div_pos
+    assumption
+    decide
+    assumption
+
+  -- = |a b - c d + a d - a d|
+  -- = |a b - a d - c d + a d|
+  -- = |a b - a d + a d - c d|
+  -- = |a (b - d) + (a - c) d|
+  -- ≤ |a (b - d)| + |(a - c) d|
+  -- = |a| |(b - d)| + |(a - c)| |d|
+  -- < amax ε/(2 amax) + (ε/(2 dmax)) dmax
+  -- = ε/2 + ε/2
+  -- = ε
+
+  have ⟨δ, prf⟩ := (ac _ ε₀_pos).merge (bd _ ε₁_pos)
+  refine ⟨δ, ?_⟩
+  intro n m δ_le_n δ_le_m
+  replace ⟨ab, bd⟩ := prf _ _ δ_le_n δ_le_m
+  rw [←Rat.add_zero (_ - _), ←Rat.add_neg_self (a n * d m),
+    Rat.sub_eq_add_neg]
+  have :
+    a n * b n + -(c m * d m) + (a n * d m + -(a n * d m)) =
+    a n * b n + -(a n * d m) + (a n * d m + -(c m * d m)) := by ac_rfl
+  rw [this]; clear this
+  iterate 2 rw [←Rat.sub_eq_add_neg]
+  rw [←Rat.mul_sub, ←Rat.sub_mul]
+  apply lt_of_le_of_lt
+  apply Rat.abs_add_le_add_abs
+  rw [Rat.abs_mul, Rat.abs_mul]
+  apply lt_of_le_of_lt (b := amax * _ + _ * dmax)
+  apply Rat.add_le_add
+  apply Rat.mul_le_mul_of_right_nonneg
+  apply Rat.abs_nonneg
+  apply le_of_lt
+  apply amax_spec
+  apply Rat.mul_le_mul_of_left_nonneg
+  apply Rat.abs_nonneg
+  apply le_of_lt
+  apply dmax_spec
+  apply lt_of_lt_of_le
+  apply Rat.add_lt_add_of_lt_of_le
+  apply Rat.mul_lt_mul_of_left_pos
+  apply lt_of_lt_of_le _ one_lt_amax
+  decide
+  assumption
+  apply Rat.mul_le_mul_of_right_nonneg
+  apply le_trans _ one_lt_dmax
+  decide
+  apply le_of_lt; assumption
+  rw [Rat.mul_div_cancel, Rat.mul_comm, Rat.mul_div_cancel,
+    ←Rat.mul_two, Rat.mul_div_cancel]
+
+def CauchySeq.mul (a b: CauchySeq) : CauchySeq where
+  seq n := a n * b n
+  is_cacuhy := by apply CauchySeq.mul.spec <;> rfl
+
+instance : Mul CauchySeq := ⟨.mul⟩
+
+def Real.mul : ℝ -> ℝ -> ℝ := by
+  apply Quotient.lift₂ (⟦· * ·⟧)
+  intros
+  apply Quotient.sound
+  apply CauchySeq.mul.spec <;> assumption
+
+instance : Mul ℝ := ⟨.mul⟩
