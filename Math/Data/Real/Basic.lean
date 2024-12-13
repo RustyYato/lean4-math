@@ -106,6 +106,16 @@ def CauchySeq.upper_bound (c: CauchySeq) : ∃bound: ℚ, ∀n, c n < bound := b
     rfl
     exact h n δ (le_of_lt (lt_of_not_le g)) (le_refl _)
 
+def CauchySeq.upper_bound_with (c: CauchySeq) (b: ℚ) : ∃bound: ℚ, b ≤ bound ∧ ∀n, c n < bound := by
+  have ⟨bound, prf⟩  := c.upper_bound
+  exists max bound b
+  apply And.intro
+  apply le_max_right
+  intro n
+  apply lt_of_lt_of_le
+  apply prf
+  apply le_max_left
+
 def CauchySeq.Equiv (a b: CauchySeq) := is_cauchy_equiv a.seq b.seq
 
 def Rat.half_pos {ε: ℚ} : 0 < ε -> 0 < ε /? 2 := (Rat.div_pos · (by decide))
@@ -344,3 +354,90 @@ def Real.sub_self (a: ℝ) : a - a = 0 := by
 
 instance : @Std.Commutative ℝ (· + ·) := ⟨Real.add_comm⟩
 instance : @Std.Associative ℝ (· + ·) := ⟨Real.add_assoc⟩
+
+def CauchySeq.abs.proof1 (a b: Rat) :
+  0 ≤ a -> b ≤ 0 -> ‖a - b‖ < ε -> ‖a + b‖ < ε := by
+  intro ha hb habs
+  cases lt_or_eq_of_le hb <;> rename_i hb
+  · apply lt_of_le_of_lt _ habs
+    rw [Rat.abs_def (a - b)]
+    have : b < a := lt_of_lt_of_le hb ha
+    have : 0 ≤ a - b := by
+      apply Rat.add_le_add_right.mpr
+      rw [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.add_zero, Rat.zero_add]
+      apply le_of_lt; assumption
+    rw [if_neg (not_lt_of_le this)]
+    rw [Rat.abs_def]
+    split
+    rw [Rat.neg_add, Rat.sub_eq_add_neg]
+    apply Rat.add_le_add_right.mp
+    apply Rat.neg_le_self_of_nonneg
+    assumption
+    rw [Rat.sub_eq_add_neg]
+    apply Rat.add_le_add_left.mp
+    apply Rat.self_le_neg_of_nonpos
+    assumption
+  · subst b
+    rw [Rat.sub_zero] at habs
+    rwa [Rat.add_zero]
+
+def CauchySeq.abs.spec (a b: CauchySeq) : a ≈ b ->
+  is_cauchy_equiv (fun n => ‖a n‖) (fun n => ‖b n‖) := by
+  intro ab ε ε_pos
+  dsimp
+  replace ⟨δ, ab⟩ := ab _ (Rat.half_pos ε_pos)
+  refine ⟨δ, ?_⟩
+  intro n m δ_le_n δ_le_m
+  rw [Rat.abs_def (a n), Rat.abs_def (b m)]
+  suffices ‖a.seq n - b.seq m‖ < ε by
+    split <;> split <;> rename_i h g
+    · rw [Rat.neg_sub_neg, Rat.abs_sub_comm]
+      exact this
+    · rw [Rat.sub_eq_add_neg]
+      apply CauchySeq.abs.proof1
+      apply Rat.neg_le_neg_iff.mpr
+      rw [Rat.neg_neg]
+      apply le_of_lt; assumption
+      apply Rat.neg_le_neg_iff.mpr
+      rw [Rat.neg_neg]
+      apply le_of_not_lt; assumption
+      rw [Rat.neg_sub_neg, Rat.abs_sub_comm]
+      exact this
+    · rw [Rat.sub_eq_add_neg, Rat.neg_neg]
+      apply CauchySeq.abs.proof1
+      apply le_of_not_lt; assumption
+      apply le_of_lt; assumption
+      exact this
+    · exact this
+  replace ab  := ab _ _ δ_le_n δ_le_m
+  apply lt_trans ab
+  apply Rat.add_lt_add_right.mpr
+  rw [Rat.add_neg_self]
+  conv => {
+    rhs; lhs;
+    rw [←Rat.mul_div_cancel 2 ε (by decide)]
+  }
+  rw [Rat.mul_two, Rat.add_assoc, Rat.add_neg_self, Rat.add_zero, Rat.div_eq_mul_inv]
+  apply Rat.div_pos
+  assumption
+  decide
+
+
+def CauchySeq.abs (a: CauchySeq) : CauchySeq where
+  seq n := ‖a n‖
+  is_cacuhy := by
+    apply CauchySeq.abs.spec
+    rfl
+
+instance : AbsoluteValue CauchySeq CauchySeq where
+  abs := .abs
+
+def Real.abs : ℝ -> ℝ := by
+  apply Quotient.lift (⟦‖·‖⟧)
+  intros
+  apply Quotient.sound
+  apply CauchySeq.abs.spec
+  assumption
+
+instance : AbsoluteValue ℝ ℝ where
+  abs := .abs

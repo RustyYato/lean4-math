@@ -828,6 +828,14 @@ def Rat.mul_add (a b k: ℚ) : k * (a + b) = k * a + k * b := by
   repeat rw [mul_comm k]
   rw [add_mul]
 
+def Rat.sub_mul (a b k: ℚ) : (a - b) * k = a * k - b * k := by
+  iterate 2 rw [sub_eq_add_neg]
+  rw [add_mul, neg_mul_left]
+
+def Rat.mul_sub (a b k: ℚ) : k * (a - b) = k * a - k * b := by
+  repeat rw [mul_comm k]
+  rw [sub_mul]
+
 def Rat.mul_two (a: ℚ) : 2 * a = a + a := by
   have : (2: ℚ) = 1 + 1 := rfl
   rw [this, add_mul, one_mul]
@@ -837,3 +845,6 @@ def Rat.mul_div_cancel (a b: ℚ) (h: a ≠ 0) : a * (b /? a) = b := by
 
 def Rat.neg_sub_neg (a b: ℚ) : -a - -b = b - a := by
   rw [sub_eq_add_neg, sub_eq_add_neg, add_comm, neg_neg]
+
+def Rat.sub_zero (a: ℚ) : a - 0 = a := by erw [sub_eq_add_neg, add_zero]
+def Rat.zero_sub (a: ℚ) : 0 - a = -a := by rw [sub_eq_add_neg, zero_add]

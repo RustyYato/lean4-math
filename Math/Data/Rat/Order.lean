@@ -424,4 +424,16 @@ def div_pos {a b: ℚ} : 0 < a -> (h: 0 < b) -> 0 < a /? b~(by
   assumption
   assumption
 
+def neg_le_self_of_nonneg (a: ℚ) : 0 ≤ a -> -a ≤ a := by
+  intro h
+  apply le_trans _ h
+  apply neg_le_neg_iff.mpr
+  rwa [neg_neg]
+
+def self_le_neg_of_nonpos (a: ℚ) : a ≤ 0 -> a ≤ -a := by
+  intro h
+  apply le_trans h
+  apply neg_le_neg_iff.mpr
+  rwa [neg_neg]
+
 end Rat
