@@ -84,3 +84,26 @@ def CauchySeq.Equiv.trans {a b c: CauchySeq} : Equiv a b -> Equiv b c -> Equiv a
     a n + -c m + (-b m + b m) + (b n + -b n) := by ac_rfl
   rw [this]; clear this
   rw [Rat.neg_self_add, Rat.add_neg_self, Rat.add_zero, Rat.add_zero]
+
+instance CauchySeq.setoid : Setoid CauchySeq := ⟨Equiv, Equiv.refl, Equiv.symm, Equiv.trans⟩
+
+def Real := Quotient CauchySeq.setoid
+notation "ℝ" => Real
+def Real.mk : CauchySeq -> ℝ := Quotient.mk _
+
+local notation "⟦" v "⟧" => Real.mk v
+
+def CauchySeq.ofRat (q: ℚ) : CauchySeq where
+  seq _ := q
+  is_cacuhy ε ε_pos := by
+    refine ⟨0, ?_⟩
+    intro n m _ _
+    simp
+    rw [Rat.sub_self]
+    assumption
+
+
+def Real.ofRat (q: ℚ) : ℝ := ⟦.ofRat q⟧
+
+instance : Coe ℚ ℝ := ⟨.ofRat⟩
+instance : OfNat ℝ n := ⟨(OfNat.ofNat n: ℚ)⟩
