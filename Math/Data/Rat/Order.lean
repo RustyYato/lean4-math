@@ -472,4 +472,7 @@ def sub_half (a: ℚ) : a - a /? 2 = a /? 2 := by
   conv => { lhs; lhs; rw [←mul_div_cancel 2 a (by decide)] }
   rw [mul_two, sub_eq_add_neg, add_assoc, add_neg_self, add_zero]
 
+def add_half (a: ℚ) : a = a /? 2 + a /? 2 := by
+  rw [←mul_two, mul_div_cancel]
+
 end Rat

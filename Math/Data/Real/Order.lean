@@ -2,9 +2,11 @@ import Math.Data.Real.Basic
 
 local notation "⟦" v "⟧" => Real.mk v
 
-def CauchySeq.IsPos (a: CauchySeq): Prop := ∃B, 0 < B ∧ Eventually fun n => B ≤ a n
+namespace CauchySeq
 
-def CauchySeq.IsPos.spec (a b: CauchySeq) : a ≈ b -> a.IsPos -> b.IsPos := by
+def IsPos (a: CauchySeq): Prop := ∃B, 0 < B ∧ Eventually fun n => B ≤ a n
+
+def IsPos.spec (a b: CauchySeq) : a ≈ b -> a.IsPos -> b.IsPos := by
   intro ab pos
   replace ⟨B, B_pos, pos⟩ := pos
   refine ⟨_, Rat.half_pos B_pos, ?_⟩
@@ -26,7 +28,7 @@ def CauchySeq.IsPos.spec (a b: CauchySeq) : a ≈ b -> a.IsPos -> b.IsPos := by
   }
   rw [Rat.mul_two, Rat.sub_eq_add_neg, Rat.add_assoc, Rat.add_neg_self, Rat.add_zero]
 
-def CauchySeq.non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
+def non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
   intro pos eq_zero
   obtain ⟨B, B_pos, pos⟩ := pos
   replace ⟨δ, prf⟩  := pos.to₂.merge (eq_zero _ B_pos)
@@ -38,7 +40,7 @@ def CauchySeq.non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
   exact lt_asymm B_pos (lt_of_le_of_lt pos h)
   exact lt_irrefl <| lt_of_lt_of_le eq_zero pos
 
-def CauchySeq.abv_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
+def abv_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
   false_or_by_contra
   rename_i nk
 
@@ -63,7 +65,7 @@ def CauchySeq.abv_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f�
   rwa [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.add_zero,
       ←Rat.mul_two, Rat.mul_div_cancel] at this
 
-def CauchySeq.pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos f ∨ IsPos (-f) := by
+def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos f ∨ IsPos (-f) := by
   obtain ⟨B, B_pos, pos⟩ := hf
   replace ⟨δ, prf⟩ := pos.to₂.merge (f.is_cacuhy _ (Rat.half_pos B_pos))
   replace ⟨pos, f_eqv⟩ := prf _ _  (le_refl _) (le_refl _)
@@ -97,7 +99,41 @@ def CauchySeq.pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos
     exact (prf δ n (le_refl _) δ_n).right
     rw [Rat.sub_half]
 
-def Real.IsPos : ℝ -> Prop := by
+def not_neg_of_pos {f: CauchySeq} : f.IsPos -> ¬(-f).IsPos := by
+  intro pos neg
+  obtain ⟨A, A_pos, pos⟩ := pos
+  obtain ⟨B, B_pos, neg⟩ := neg
+  have ⟨δ, prf⟩ := pos.merge neg
+  have ⟨pos, neg⟩ := prf _ (le_refl _)
+  have : - - f δ ≤ - B := Rat.neg_le_neg_iff.mp neg
+  rw [Rat.neg_neg] at this
+  have A_le_neg_B := le_trans pos this
+  have := lt_of_lt_of_le A_pos A_le_neg_B
+  have : - - B < 0 := Rat.neg_lt_neg_iff.mp this
+  rw [Rat.neg_neg] at this
+  exact lt_asymm B_pos this
+
+def add_pos {a b: CauchySeq} : a.IsPos -> b.IsPos -> (a + b).IsPos := by
+  intro apos bpos
+  obtain ⟨A, A_pos, apos⟩ := apos
+  obtain ⟨B, B_pos, bpos⟩ := bpos
+  refine ⟨A + B, ?_, ?_⟩
+  rw [←Rat.add_zero 0]
+  apply Rat.add_lt_add
+  assumption
+  assumption
+  have ⟨δ, prf⟩ := apos.merge bpos
+  exists δ
+  intro n δn
+  replace prf := prf _ δn
+  obtain ⟨apos, bpos⟩ := prf
+  apply Rat.add_le_add <;> assumption
+
+end CauchySeq
+
+namespace Real
+
+def IsPos : ℝ -> Prop := by
   apply Quotient.lift CauchySeq.IsPos
   intro a b ab
   ext; apply Iff.intro
@@ -105,17 +141,17 @@ def Real.IsPos : ℝ -> Prop := by
   apply CauchySeq.IsPos.spec; symm; assumption
 
 @[simp]
-def Real.mk_IsPos (a: CauchySeq) : ⟦a⟧.IsPos = a.IsPos := rfl
+def mk_IsPos (a: CauchySeq) : ⟦a⟧.IsPos = a.IsPos := rfl
 
-def Real.zero_not_pos : ¬IsPos 0 := by
+def zero_not_pos : ¬IsPos 0 := by
   intro h
   exact CauchySeq.non_zero_of_IsPos _ h (by rfl)
-def Real.non_zero_of_IsPos {a: ℝ} : a.IsPos -> a ≠ 0 := by
+def non_zero_of_IsPos {a: ℝ} : a.IsPos -> a ≠ 0 := by
   intro h g
   subst g
   exact zero_not_pos h
 
-def Real.abs_pos_of_non_zero {a: ℝ} : a ≠ 0 -> ‖a‖.IsPos := by
+def abs_pos_of_non_zero {a: ℝ} : a ≠ 0 -> ‖a‖.IsPos := by
   intro h
   induction a using ind with | mk a =>
   apply CauchySeq.abv_pos_of_non_zero
@@ -124,10 +160,81 @@ def Real.abs_pos_of_non_zero {a: ℝ} : a ≠ 0 -> ‖a‖.IsPos := by
   apply Quotient.sound
   assumption
 
-def Real.pos_or_eq_or_neg {a: ℝ} : a.IsPos ∨ a = 0 ∨ (-a).IsPos := by
+def pos_or_eq_or_neg (a: ℝ) : a.IsPos ∨ a = 0 ∨ (-a).IsPos := by
   by_cases h:a = 0
   right; left; assumption
   induction a using ind with | mk a =>
   cases CauchySeq.pos_or_neg_of_abs_pos (Real.abs_pos_of_non_zero h)
   left; assumption
   right; right; assumption
+
+def not_neg_of_pos {a: ℝ} : a.IsPos -> ¬(-a).IsPos := by
+  induction a using ind with | mk a =>
+  apply CauchySeq.not_neg_of_pos
+
+def add_pos {a b: ℝ} : a.IsPos -> b.IsPos -> (a + b).IsPos := by
+  induction a, b using ind₂ with | mk a b =>
+  apply CauchySeq.add_pos
+
+instance : LT ℝ where
+  lt a b := (b - a).IsPos
+instance : LE ℝ where
+  le a b := a < b ∨ a = b
+
+def lt_def (a b: ℝ) : (a < b) = (b - a).IsPos := rfl
+def le_def (a b: ℝ) : (a ≤ b) = (a < b ∨ a = b) := rfl
+
+instance : IsLinearOrder ℝ where
+  lt_iff_le_and_not_le := by
+    intro a b
+    simp [lt_def, le_def]
+    apply Iff.intro
+    intro h
+    repeat any_goals apply And.intro
+    left; assumption
+    intro g
+    apply not_neg_of_pos h
+    rw [neg_sub]
+    assumption
+    intro h
+    subst h
+    rw [sub_self] at h
+    exact zero_not_pos h
+    intro ⟨ab, nba⟩
+    cases ab
+    assumption
+    subst b
+    have := nba.right rfl
+    contradiction
+  le_antisymm := by
+    intro a b ab ba
+    cases ab <;> rename_i ab
+    cases ba <;> rename_i ba
+    have := not_neg_of_pos ab
+    rw [neg_sub] at this
+    contradiction
+    symm; assumption
+    assumption
+  lt_or_le := by
+    intro a b
+    rcases pos_or_eq_or_neg (b - a) with ab | eq | ba
+    left; assumption
+    cases eq_of_sub_eq_zero eq
+    right; right; rfl
+    rw [neg_sub] at ba
+    right; left; assumption
+  le_trans := by
+    intro a b c ab bc
+    cases ab <;> rename_i ab
+    cases bc <;> rename_i bc
+    · replace ab : (b - a).IsPos := ab
+      replace bc : (c - b).IsPos := bc
+      left
+      show (c - a).IsPos
+      rw [←add_zero c, ←neg_self_add b, ←add_assoc, sub_eq_add_neg, add_assoc,
+        ←sub_eq_add_neg, ←sub_eq_add_neg]
+      apply add_pos <;> assumption
+    subst c; left; assumption
+    subst b; assumption
+
+end Real

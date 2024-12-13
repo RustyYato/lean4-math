@@ -300,63 +300,6 @@ def Real.mk_sub (a b: CauchySeq) : ⟦a⟧ - ⟦b⟧ = ⟦a - b⟧ := rfl
 @[simp]
 def CauchySeq.eval_sub (a b: CauchySeq) (n: Nat) : (a - b) n = a n - b n := rfl
 
-def Real.sub_eq_add_neg (a b: ℝ) : a - b = a + -b := by
-  induction a, b using ind₂ with | mk a b =>
-  simp
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.sub_eq_add_neg]
-
-def Real.add_comm (a b: ℝ) : a + b = b + a := by
-  induction a, b using ind₂ with | mk a b =>
-  simp
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.add_comm]
-
-def Real.add_assoc (a b c: ℝ) : a + b + c = a + (b + c) := by
-  induction a, b, c using ind₃ with | mk a b =>
-  simp
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.add_assoc]
-
-def Real.add_neg_self (a: ℝ) : a + -a = 0 := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.add_neg_self]
-  rfl
-
-def Real.neg_self_add (a: ℝ) : -a + a = 0 := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.neg_self_add]
-  rfl
-
-def Real.sub_self (a: ℝ) : a - a = 0 := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.sub_self]
-  rfl
-
-instance : @Std.Commutative ℝ (· + ·) := ⟨Real.add_comm⟩
-instance : @Std.Associative ℝ (· + ·) := ⟨Real.add_assoc⟩
-
 def CauchySeq.abs.proof1 (a b: Rat) :
   0 ≤ a -> b ≤ 0 -> ‖a - b‖ < ε -> ‖a + b‖ < ε := by
   intro ha hb habs
@@ -534,3 +477,239 @@ def Real.mul : ℝ -> ℝ -> ℝ := by
   apply CauchySeq.mul.spec <;> assumption
 
 instance : Mul ℝ := ⟨.mul⟩
+
+@[simp]
+def Real.mk_mul (a b: CauchySeq) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
+@[simp]
+def Real.eval_mul (a b: CauchySeq) (n: Nat) : (a * b) n = a n * b n := rfl
+
+namespace Real
+
+def sub_eq_add_neg (a b: ℝ) : a - b = a + -b := by
+  induction a, b using ind₂ with | mk a b =>
+  simp
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.sub_eq_add_neg]
+
+def add_comm (a b: ℝ) : a + b = b + a := by
+  induction a, b using ind₂ with | mk a b =>
+  simp
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.add_comm]
+
+def add_assoc (a b c: ℝ) : a + b + c = a + (b + c) := by
+  induction a, b, c using ind₃ with | mk a b =>
+  simp
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.add_assoc]
+
+def add_neg_self (a: ℝ) : a + -a = 0 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.add_neg_self]
+  rfl
+
+def neg_self_add (a: ℝ) : -a + a = 0 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.neg_self_add]
+  rfl
+
+def sub_self (a: ℝ) : a - a = 0 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.sub_self]
+  rfl
+
+instance : @Std.Commutative ℝ (· + ·) := ⟨add_comm⟩
+instance : @Std.Associative ℝ (· + ·) := ⟨add_assoc⟩
+
+def mul_comm (a b: ℝ) : a * b = b * a := by
+  induction a, b using ind₂ with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.mul_comm]
+
+def mul_assoc (a b c: ℝ) : a * b * c = a * (b * c) := by
+  induction a, b, c using ind₃ with | mk a b c =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.mul_assoc]
+
+instance : @Std.Commutative ℝ (· * ·) := ⟨mul_comm⟩
+instance : @Std.Associative ℝ (· * ·) := ⟨mul_assoc⟩
+
+def neg_add (a b: ℝ) : -(a + b) = -a + -b := by
+  induction a, b using ind₂ with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.neg_add]
+
+def neg_sub (a b: ℝ) : -(a - b) = b - a := by
+  induction a, b using ind₂ with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.neg_sub]
+
+def neg_sub_neg (a b: ℝ) : -a - -b = b - a := by
+  induction a, b using ind₂ with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.neg_sub_neg]
+
+def neg_mul_left (a b: ℝ) : -(a * b) = -a * b := by
+  induction a, b using ind₂ with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.neg_mul_left]
+
+def neg_mul_right (a b: ℝ) : -(a * b) = a * -b := by
+  induction a, b using ind₂ with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.neg_mul_right]
+
+@[simp]
+def neg_neg (a: ℝ) : - -a = a := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+
+def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
+  induction a, b, k using ind₃ with | mk a b k =>
+  apply Iff.intro
+  intro h
+  rw [h]
+  intro h
+  apply Quotient.sound
+  simp at h
+  intro ε ε_pos
+  replace ⟨δ, h⟩ := (Quotient.exact h _ (Rat.half_pos ε_pos)).merge (k.is_cacuhy _ (Rat.half_pos ε_pos))
+  refine ⟨δ, ?_⟩
+  intro n m δn δm
+  replace h := h _ _ δn δm
+  simp at h
+  rw [Rat.sub_eq_add_neg, Rat.neg_add, Rat.add_assoc,
+    ←Rat.add_assoc (k n), Rat.add_comm (k n), Rat.add_assoc, ←Rat.add_assoc] at h
+  rw [←Rat.add_zero (_ - _), ←Rat.add_neg_self (k n - k m), ←Rat.add_assoc]
+  apply lt_of_le_of_lt
+  apply Rat.abs_add_le_add_abs
+  rw [←Rat.sub_eq_add_neg, ←Rat.sub_eq_add_neg] at h
+  rw [Rat.abs_neg, Rat.add_half ε]
+  apply Rat.add_lt_add
+  exact h.left
+  exact h.right
+
+def eq_iff_neg_eq {a b: ℝ} : a = b ↔ -a = -b := by
+  apply Iff.intro
+  intro h; rw [h]
+  intro h
+  have : a + -a = b + -b := by rw [add_neg_self, add_neg_self]
+  rw [h] at this
+  exact eq_iff_add_right.mpr this
+
+def eq_iff_add_left {a b k: ℝ} : a = b ↔ k + a = k + b := by
+  rw [add_comm k, add_comm k]
+  exact eq_iff_add_right
+
+def eq_iff_sub_right {a b k: ℝ} : a = b ↔ a - k = b - k := by
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  exact eq_iff_add_right
+
+def eq_iff_sub_left {a b k: ℝ} : a = b ↔ k - a = k - b := by
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  exact eq_iff_neg_eq.trans eq_iff_add_left
+
+def add_zero (a: ℝ) : a + 0 = a := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro; simp
+  erw [Rat.add_zero]
+
+def zero_add (a: ℝ) : 0 + a = a := by
+  rw [add_comm, add_zero]
+
+def mul_zero (a: ℝ) : a * 0 = 0 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro; simp
+  erw [Rat.mul_zero]
+  rfl
+
+def zero_mul (a: ℝ) : 0 * a = 0 := by
+  rw [mul_comm, mul_zero]
+
+def mul_one (a: ℝ) : a * 1 = a := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro; simp
+  erw [Rat.mul_one]
+
+def one_mul (a: ℝ) : 1 * a = a := by
+  rw [mul_comm, mul_one]
+
+def sub_add_cancel (a b: ℝ) : a - b + b = a := by
+  rw [sub_eq_add_neg, add_assoc, neg_self_add, add_zero]
+
+def eq_of_sub_eq_zero {a b: ℝ} : a - b = 0 -> a = b := by
+  intro h
+  have : a = (a - b) + b := by rw [sub_add_cancel]
+  rw [h, zero_add] at this
+  exact this
+
+def add_mul (a b k: ℝ) : (a + b) * k = a * k + b * k := by
+  induction a, b, k using ind₃ with | mk a b k =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro; simp
+  erw [Rat.add_mul]
+
+def mul_add (a b k: ℝ) : k * (a + b) = k * a + k * b := by
+  iterate 3 rw [mul_comm k]
+  rw [add_mul]
+
+def sub_mul (a b k: ℝ) : (a - b) * k = a * k - b * k := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, add_mul, neg_mul_left]
+
+def mul_sub (a b k: ℝ) : k * (a - b) = k * a - k * b := by
+  iterate 3 rw [mul_comm k]
+  rw [sub_mul]
+
+end Real
