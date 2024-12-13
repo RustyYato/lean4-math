@@ -414,6 +414,10 @@ def mul_lt_mul_of_left_pos (a b k: ℚ) : 0 < k -> a < b -> k * a < k * b := by
   cases (mul_cancel_right (ne_of_lt k_pos).symm).mpr ak_eq_bk
   exact lt_irrefl a_lt_b
 
+def mul_lt_mul_of_right_pos (a b k: ℚ) : 0 < k -> a < b -> a * k < b * k := by
+  rw [mul_comm _ k, mul_comm _ k]
+  apply mul_lt_mul_of_left_pos
+
 def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹ := by
   apply Iff.intro
   intro h
@@ -474,5 +478,77 @@ def sub_half (a: ℚ) : a - a /? 2 = a /? 2 := by
 
 def add_half (a: ℚ) : a = a /? 2 + a /? 2 := by
   rw [←mul_two, mul_div_cancel]
+
+def mul_pos {a b: ℚ} : 0 < a -> 0 < b -> 0 < a * b := by
+  intro ha hb
+  rw [←mul_zero a]
+  apply mul_lt_mul_of_left_pos
+  assumption
+  assumption
+
+def pos_mul_lt_of_right_lt_one (a b: ℚ) : 0 < a -> b < 1 -> a * b < a := by
+  intro ha blt
+  conv => { rhs; rw [←mul_one a] }
+  apply mul_lt_mul_of_left_pos <;> assumption
+
+def abs_of_pos (a: ℚ) : 0 < a -> ‖a‖ = a := by
+  intro
+  rw [abs_def, if_neg]
+  apply lt_asymm
+  assumption
+
+def mul_lt_mul_of_pos (a b c d: ℚ) :
+  0 < a ->
+  a < c ->
+  0 < b ->
+  b < d ->
+  a * b < c * d := by
+  intro apos ac bpos bd
+  apply lt_trans
+  apply mul_lt_mul_of_left_pos
+  assumption
+  assumption
+  apply mul_lt_mul_of_right_pos
+  apply lt_trans bpos
+  assumption
+  assumption
+
+def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ < 1 ↔ ‖a‖ < ‖b‖ := by
+  apply Iff.intro
+  intro h
+  apply (lt_of_mul_left_pos _).mpr
+  rw [inv_self_mul ‖b‖, mul_comm, ←abs_inv, ←abs_mul]
+  assumption
+  apply (inv_pos _).mp
+  apply abs_pos
+  assumption
+  intro h
+  apply (lt_of_mul_left_pos _).mpr
+  show ‖b‖ * _ < _
+  rw [abs_div, mul_div_cancel, mul_one]
+  assumption
+  apply abs_pos
+  assumption
+
+def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
+  show _ /? ⟦2⟧ < _
+  replace h : ⟦0⟧ < a := h
+  induction a using quot.ind with | mk a =>
+  rw [div_eq_mul_inv, mk_inv]
+  rw [mk_lt] at h
+  simp [mk_lt]
+  have : ∀x: Int, x * 2 = x + x := by
+    intro x
+    have : (2: Int) = 1 + 1 := rfl
+    rw [this, Int.mul_add, Int.mul_one]
+  erw [Int.mul_one, this, Int.mul_add]
+  apply Int.lt_add_of_pos_left
+  apply Int.mul_pos
+  simp at h
+  erw [Int.zero_mul, Int.mul_one] at h
+  assumption
+  apply Int.ofNat_pos.mpr
+  exact a.den_pos
+  decide
 
 end Rat

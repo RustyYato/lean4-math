@@ -31,7 +31,7 @@ def IsPos.spec (a b: CauchySeq) : a ≈ b -> a.IsPos -> b.IsPos := by
 def non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
   intro pos eq_zero
   obtain ⟨B, B_pos, pos⟩ := pos
-  replace ⟨δ, prf⟩  := pos.to₂.merge (eq_zero _ B_pos)
+  replace ⟨δ, prf⟩  := pos.to₂_right.merge (eq_zero _ B_pos)
   replace ⟨pos, eq_zero⟩ := prf δ δ (le_refl _) (le_refl _)
   clear prf
   erw [Rat.sub_zero] at eq_zero
@@ -40,7 +40,7 @@ def non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
   exact lt_asymm B_pos (lt_of_le_of_lt pos h)
   exact lt_irrefl <| lt_of_lt_of_le eq_zero pos
 
-def abv_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
+def abs_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
   false_or_by_contra
   rename_i nk
 
@@ -67,7 +67,7 @@ def abv_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
 
 def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos f ∨ IsPos (-f) := by
   obtain ⟨B, B_pos, pos⟩ := hf
-  replace ⟨δ, prf⟩ := pos.to₂.merge (f.is_cacuhy _ (Rat.half_pos B_pos))
+  replace ⟨δ, prf⟩ := pos.to₂_right.merge (f.is_cacuhy _ (Rat.half_pos B_pos))
   replace ⟨pos, f_eqv⟩ := prf _ _  (le_refl _) (le_refl _)
   replace pos: B ≤ ‖f δ‖ := pos
   clear f_eqv
@@ -154,7 +154,7 @@ def non_zero_of_IsPos {a: ℝ} : a.IsPos -> a ≠ 0 := by
 def abs_pos_of_non_zero {a: ℝ} : a ≠ 0 -> ‖a‖.IsPos := by
   intro h
   induction a using ind with | mk a =>
-  apply CauchySeq.abv_pos_of_non_zero
+  apply CauchySeq.abs_pos_of_non_zero
   intro g
   apply h
   apply Quotient.sound

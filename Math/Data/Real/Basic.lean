@@ -4,7 +4,13 @@ import Math.Function.Basic
 def CauchySeq.Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
 def CauchySeq.Eventually₂ (P: Nat -> Nat -> Prop) : Prop := ∃k, ∀n m, k ≤ n -> k ≤ m -> P n m
 
-def CauchySeq.Eventually.to₂ : Eventually a -> Eventually₂ fun i _ => a i := by
+def CauchySeq.Eventually.to₂_left : Eventually a -> Eventually₂ fun i _ => a i := by
+  intro ⟨i,hi⟩
+  exists i
+  intro n _ hn _
+  apply hi; assumption
+
+def CauchySeq.Eventually.to₂_right : Eventually a -> Eventually₂ fun _ i => a i := by
   intro ⟨i,hi⟩
   exists i
   intro n _ hn _
@@ -711,5 +717,16 @@ def sub_mul (a b k: ℝ) : (a - b) * k = a * k - b * k := by
 def mul_sub (a b k: ℝ) : k * (a - b) = k * a - k * b := by
   iterate 3 rw [mul_comm k]
   rw [sub_mul]
+
+def non_zero_of_ofNat (n: Nat) : (OfNat.ofNat (α := ℝ) n.succ) ≠ 0 := by
+  intro h
+  have ⟨δ, prf⟩ := (Quotient.exact h) (1 /? 2) (by decide)
+  have : ‖Rat.ofNat n.succ - 0‖ < 1 /? 2 := prf _ _ (le_refl _) (le_refl _)
+  simp at this
+  rw [Rat.sub_zero] at this
+  contradiction
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply non_zero_of_ofNat)
 
 end Real
