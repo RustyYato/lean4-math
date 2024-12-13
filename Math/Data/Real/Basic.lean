@@ -46,6 +46,66 @@ structure CauchySeq where
 
 instance : CoeFun CauchySeq (fun _ => Nat -> ℚ) := ⟨CauchySeq.seq⟩
 
+-- noncomputable so lean doesn't waste time compiling this
+noncomputable def CauchySeq.max_until (c: CauchySeq) (limit: Nat) : ℚ :=
+  limit.succ.rec (motive := fun _ => ℚ) (c 0) (fun n acc => max acc (c n))
+
+def CauchySeq.max_until.spec (c: CauchySeq) (limit: Nat) : ∀n ≤ limit, c n ≤ c.max_until limit := by
+  intro n le
+  induction limit generalizing n with
+  | zero =>
+    cases Nat.le_zero.mp le
+    unfold max_until
+    simp
+    apply le_max_left
+  | succ limit ih =>
+    cases lt_or_eq_of_le le
+    rename_i le
+    replace le := Nat.le_of_lt_succ le
+    apply le_trans
+    apply ih
+    assumption
+    apply le_max_left
+    subst n
+    apply le_max_right
+
+def CauchySeq.upper_bound (c: CauchySeq) : ∃bound: ℚ, ∀n, c n < bound := by
+  have ⟨δ, h⟩  := c.is_cacuhy 1 (by decide)
+  let max := c.max_until δ
+  exists max + 1
+  intro n
+  simp at h
+  if g:n ≤ δ then
+    apply lt_of_le_of_lt
+    apply max_until.spec c δ
+    assumption
+    rw [←Rat.add_zero (c.max_until δ)]
+    apply Rat.add_lt_add_of_le_of_lt
+    rfl
+    decide
+  else
+    suffices c δ + ‖c n - c δ‖ < max + 1 by
+      apply lt_of_le_of_lt _ this
+      rw [Rat.abs_def]
+      split <;> rename_i g
+      apply le_trans
+      show c n ≤ c δ
+      apply Rat.add_le_add_right.mpr
+      rw [Rat.add_neg_self (c δ), ←Rat.sub_eq_add_neg]
+      apply le_of_lt; assumption
+      conv => { lhs; rw [←Rat.add_zero (c δ)] }
+      apply Rat.add_le_add
+      rfl
+      apply Rat.neg_le_neg_iff.mpr
+      rw [Rat.neg_neg]
+      apply le_of_lt; assumption
+      rw [Rat.sub_eq_add_neg, ←Rat.add_assoc, Rat.add_comm (c δ),
+        Rat.add_assoc, Rat.add_neg_self, Rat.add_zero]
+    apply Rat.add_lt_add_of_le_of_lt
+    apply max_until.spec c δ
+    rfl
+    exact h n δ (le_of_lt (lt_of_not_le g)) (le_refl _)
+
 def CauchySeq.Equiv (a b: CauchySeq) := is_cauchy_equiv a.seq b.seq
 
 def Rat.half_pos {ε: ℚ} : 0 < ε -> 0 < ε /? 2 := (Rat.div_pos · (by decide))
