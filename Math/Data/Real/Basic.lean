@@ -1,4 +1,5 @@
 import Math.Data.Rat.Order
+import Math.Function.Basic
 
 def CauchySeq.Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
 def CauchySeq.Eventually₂ (P: Nat -> Nat -> Prop) : Prop := ∃k, ∀n m, k ≤ n -> k ≤ m -> P n m
@@ -197,7 +198,8 @@ def CauchySeq.pointwise (a b: CauchySeq) : (∀n, a n = b n) -> a ≈ b := by
   apply h
 
 instance : Coe ℚ ℝ := ⟨.ofRat⟩
-instance : OfNat ℝ n := ⟨(OfNat.ofNat n: ℚ)⟩
+instance : OfNat CauchySeq n := ⟨.ofRat (OfNat.ofNat n: ℚ)⟩
+instance : OfNat ℝ n := ⟨⟦OfNat.ofNat n⟧⟩
 
 def CauchySeq.add.spec (a b c d: CauchySeq) :
   a ≈ c -> b ≈ d ->

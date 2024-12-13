@@ -447,4 +447,29 @@ def self_le_neg_of_nonpos (a: ℚ) : a ≤ 0 -> a ≤ -a := by
   apply neg_le_neg_iff.mpr
   rwa [neg_neg]
 
+def sub_abs_self_sub (a b: ℚ) : a - ‖a - b‖ ≤ b := by
+  rw [abs_def]
+  split
+  rw [sub_eq_add_neg, neg_neg]
+  conv => { rhs; rw [←add_zero b] }
+  apply add_le_add
+  apply add_le_add_right.mpr
+  apply le_of_lt
+  rwa [add_neg_self b, ←sub_eq_add_neg]
+  apply le_of_lt; assumption
+  rw [sub_eq_add_neg, sub_eq_add_neg, neg_add,
+    neg_neg, ←add_assoc, add_neg_self, zero_add]
+
+def sub_le_sub (a b c d: ℚ) : a ≤ c -> d ≤ b -> a - b ≤ c - d := by
+  intro ab db
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  apply add_le_add
+  assumption
+  apply neg_le_neg_iff.mp
+  assumption
+
+def sub_half (a: ℚ) : a - a /? 2 = a /? 2 := by
+  conv => { lhs; lhs; rw [←mul_div_cancel 2 a (by decide)] }
+  rw [mul_two, sub_eq_add_neg, add_assoc, add_neg_self, add_zero]
+
 end Rat
