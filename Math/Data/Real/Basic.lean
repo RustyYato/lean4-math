@@ -93,6 +93,15 @@ def Real.mk : CauchySeq -> ℝ := Quotient.mk _
 
 local notation "⟦" v "⟧" => Real.mk v
 
+def Real.ind {motive: ℝ -> Prop} : (mk: ∀x, motive ⟦x⟧) -> ∀r, motive r := Quotient.ind
+def Real.ind₂ {motive: ℝ -> ℝ -> Prop} : (mk: ∀x y, motive ⟦x⟧ ⟦y⟧) -> ∀x y, motive x y := Quotient.ind₂
+def Real.ind₃ {motive: ℝ -> ℝ -> ℝ -> Prop} : (mk: ∀x y z, motive ⟦x⟧ ⟦y⟧ ⟦z⟧) -> ∀x y z, motive x y z := by
+  intro h x y z
+  induction x using ind with | mk x =>
+  induction y using ind with | mk y =>
+  induction z using ind with | mk z =>
+  apply h
+
 def CauchySeq.ofRat (q: ℚ) : CauchySeq where
   seq _ := q
   is_cacuhy ε ε_pos := by
@@ -102,13 +111,20 @@ def CauchySeq.ofRat (q: ℚ) : CauchySeq where
     rw [Rat.sub_self]
     assumption
 
-
 def Real.ofRat (q: ℚ) : ℝ := ⟦.ofRat q⟧
 
 @[refl]
 def CauchySeq.refl (a: CauchySeq) : a ≈ a := CauchySeq.Equiv.refl a
 @[symm]
 def CauchySeq.symm {a b: CauchySeq} : a ≈ b -> b ≈ a := CauchySeq.Equiv.symm
+
+def CauchySeq.pointwise (a b: CauchySeq) : (∀n, a n = b n) -> a ≈ b := by
+  intro h
+  suffices a = b by rw [this]
+  cases a; cases b
+  congr
+  funext
+  apply h
 
 instance : Coe ℚ ℝ := ⟨.ofRat⟩
 instance : OfNat ℝ n := ⟨(OfNat.ofNat n: ℚ)⟩
@@ -148,6 +164,8 @@ instance : Add ℝ := ⟨.add⟩
 
 @[simp]
 def Real.mk_add (a b: CauchySeq) : ⟦a⟧ + ⟦b⟧ = ⟦a + b⟧ := rfl
+@[simp]
+def CauchySeq.eval_add (a b: CauchySeq) (n: Nat) : (a + b) n = a n + b n := rfl
 
 def CauchySeq.neg.spec (a b: CauchySeq) :
   a ≈ b ->
@@ -173,3 +191,96 @@ def Real.neg : ℝ -> ℝ := by
   apply CauchySeq.neg.spec <;> assumption
 
 instance : Neg ℝ := ⟨.neg⟩
+
+@[simp]
+def Real.mk_neg (a: CauchySeq) : -⟦a⟧ = ⟦-a⟧ := rfl
+@[simp]
+def CauchySeq.eval_neg (a: CauchySeq) (n: Nat) : (-a) n = -a n := rfl
+
+def CauchySeq.sub.spec (a b c d: CauchySeq) :
+  a ≈ c -> b ≈ d ->
+  is_cauchy_equiv (fun n => a n - b n) (fun n => c n - d n) := by
+  intro ac bd ε ε_pos
+  have ⟨δ, h⟩ := CauchySeq.add.spec a (-b) c (-d) ac (neg.spec _ _ bd) ε ε_pos
+  refine ⟨δ, ?_⟩
+  intro n m δ_le_n δ_le_m
+  simp
+  rw [Rat.sub_eq_add_neg (a n), Rat.sub_eq_add_neg (c m)]
+  exact h n m δ_le_n δ_le_m
+
+def CauchySeq.sub (a b: CauchySeq) : CauchySeq where
+  seq n := a n - b n
+  is_cacuhy := by
+    apply sub.spec <;> rfl
+
+instance : Sub CauchySeq := ⟨.sub⟩
+
+def Real.sub : ℝ -> ℝ -> ℝ := by
+  apply Quotient.lift₂ (⟦· - ·⟧)
+  intros
+  apply Quotient.sound
+  apply CauchySeq.sub.spec <;> assumption
+
+instance : Sub ℝ := ⟨.sub⟩
+
+@[simp]
+def Real.mk_sub (a b: CauchySeq) : ⟦a⟧ - ⟦b⟧ = ⟦a - b⟧ := rfl
+@[simp]
+def CauchySeq.eval_sub (a b: CauchySeq) (n: Nat) : (a - b) n = a n - b n := rfl
+
+def Real.sub_eq_add_neg (a b: ℝ) : a - b = a + -b := by
+  induction a, b using ind₂ with | mk a b =>
+  simp
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.sub_eq_add_neg]
+
+def Real.add_comm (a b: ℝ) : a + b = b + a := by
+  induction a, b using ind₂ with | mk a b =>
+  simp
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.add_comm]
+
+def Real.add_assoc (a b c: ℝ) : a + b + c = a + (b + c) := by
+  induction a, b, c using ind₃ with | mk a b =>
+  simp
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.add_assoc]
+
+def Real.add_neg_self (a: ℝ) : a + -a = 0 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.add_neg_self]
+  rfl
+
+def Real.neg_self_add (a: ℝ) : -a + a = 0 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.neg_self_add]
+  rfl
+
+def Real.sub_self (a: ℝ) : a - a = 0 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  rw [Rat.sub_self]
+  rfl
+
+instance : @Std.Commutative ℝ (· + ·) := ⟨Real.add_comm⟩
+instance : @Std.Associative ℝ (· + ·) := ⟨Real.add_assoc⟩
