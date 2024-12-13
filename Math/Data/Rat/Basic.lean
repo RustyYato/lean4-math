@@ -834,3 +834,6 @@ def Rat.mul_two (a: ℚ) : 2 * a = a + a := by
 
 def Rat.mul_div_cancel (a b: ℚ) (h: a ≠ 0) : a * (b /? a) = b := by
   rw [div_eq_mul_inv, mul_comm a, mul_assoc, inv_self_mul, mul_one]
+
+def Rat.neg_sub_neg (a b: ℚ) : -a - -b = b - a := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, add_comm, neg_neg]
