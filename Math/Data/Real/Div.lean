@@ -135,7 +135,25 @@ def CauchySeq.inv (a: CauchySeq) (ha: ¬a ≈ 0) : CauchySeq where
 
 instance : CheckedInvert CauchySeq (fun x => ¬x ≈ 0) := ⟨.inv⟩
 
-def Real.inv (a: ℝ) : a ≠ 0 -> ℝ := by
+def CauchySeq.eventually_pointwise_ne_of_ne (a b: CauchySeq) (h: ¬a ≈ b) : Eventually (fun n => a n ≠ b n) := by
+  have : IsPos ‖a - b‖ := CauchySeq.abs_pos_of_non_zero (by
+    intro g; apply h
+    apply Quotient.exact
+    replace g : ⟦a⟧ - ⟦b⟧ = 0 := Quotient.sound g
+    exact Real.eq_of_sub_eq_zero g)
+  obtain ⟨B, B_pos, δ, even⟩ := this
+  refine ⟨δ, ?_⟩
+  intro n δn
+  intro g
+  simp at even
+  replace even : B ≤ ‖a n - b n‖ := even _ δn
+  rw [←g, Rat.sub_self] at even
+  have := not_lt_of_le even
+  contradiction
+
+namespace Real
+
+def inv (a: ℝ) : a ≠ 0 -> ℝ := by
   apply a.hrecOn (motive := fun a => a ≠ (0: ℝ) -> ℝ)
   case f =>
     intro a eq
@@ -167,3 +185,89 @@ instance : Min ℝ where
   min x y := (x + y - ‖x - y‖) /? 2
 instance : Max ℝ where
   max x y := (x + y + ‖x - y‖) /? 2
+
+def inv_self_mul (a: ℝ) (h: a ≠ 0) : a⁻¹ * a = 1 := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.eventually_pointwise
+  have ⟨δ, prf⟩ := CauchySeq.eventually_pointwise_ne_of_ne a 0 (by
+    intro g; apply h
+    apply Quotient.sound; assumption)
+  refine ⟨δ, ?_⟩
+  intro n δn
+  replace prf : a n ≠ 0 := prf _ δn
+  unfold CauchySeq.inv
+  simp
+  rw [dif_neg prf]
+  rw [Rat.inv_self_mul]
+  rfl
+
+def mul_inv_self (a: ℝ) (h: a ≠ 0) : a * a⁻¹ = 1 := by
+  rw [mul_comm, inv_self_mul]
+
+def inv_pos (a: ℝ) (apos: a.IsPos) : (a⁻¹).IsPos := by
+  induction a using ind with | mk a =>
+  obtain ⟨B, B_pos, δ, apos⟩ := apos
+  have ⟨bound, one_le_bound, prf⟩  := a.upper_bound_with 1
+  have bound_pos: 0 < (bound: ℚ) := lt_of_lt_of_le (by decide) one_le_bound
+  refine ⟨_, (Rat.inv_pos _ ?_).mp bound_pos, δ, ?_⟩
+  intro h; subst h; contradiction
+  intro n δn
+  have anpos := lt_of_lt_of_le B_pos (apos n δn)
+  have := (ne_of_lt bound_pos).symm
+  have := (ne_of_lt anpos).symm
+  simp at apos
+  unfold CauchySeq.inv
+  simp
+  rw [dif_neg]
+  apply (Rat.le_of_mul_left_pos anpos).mpr
+  apply (Rat.le_of_mul_left_pos bound_pos).mpr
+  rw [Rat.mul_inv_self, ←Rat.mul_assoc, Rat.mul_comm bound, Rat.mul_assoc, Rat.mul_inv_self,
+    Rat.mul_one, Rat.mul_one]
+  apply le_of_lt
+  apply prf
+  assumption
+
+def of_mul_pos (a b: ℝ) : (a * b).IsPos -> (a.IsPos ↔ b.IsPos) := by
+  revert a b
+  suffices ∀(a b: ℝ), (a * b).IsPos -> a.IsPos -> b.IsPos by
+    intro a b mpos
+    apply Iff.intro
+    apply this _ _ mpos
+    apply this _ _ (mul_comm _ _ ▸ mpos)
+  intro a b mpos apos
+  have := mul_pos_of_pos_of_pos _ _ (inv_pos _ apos) mpos
+  rw [←mul_assoc, inv_self_mul, one_mul] at this
+  assumption
+
+def lt_iff_mul_lt_mul_of_pos_right (a b k: ℝ) (h: 0 < k) : a < b ↔ a * k < b * k := by
+  replace h : IsPos (k - 0) := h
+  rw [sub_zero] at h
+  show IsPos _ ↔ IsPos _
+  rw [←sub_mul]
+  apply Iff.intro
+  intro g
+  apply mul_pos_of_pos_of_pos
+  assumption
+  assumption
+  intro g
+  apply (of_mul_pos _ _ _).mpr
+  exact h
+  assumption
+
+def lt_iff_mul_lt_mul_of_pos_left (a b k: ℝ) (h: 0 < k) : a < b ↔ k * a < k * b := by
+  rw [mul_comm k, mul_comm k]
+  apply lt_iff_mul_lt_mul_of_pos_right
+  assumption
+
+def le_iff_mul_le_mul_of_pos_right (a b k: ℝ) (h: 0 < k) : a ≤ b ↔ a * k ≤ b * k := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_mul_lt_mul_of_pos_right
+  assumption
+
+def le_iff_mul_le_mul_of_pos_left (a b k: ℝ) (h: 0 < k) : a ≤ b ↔ k * a ≤ k * b := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_mul_lt_mul_of_pos_left
+  assumption
+
+end Real

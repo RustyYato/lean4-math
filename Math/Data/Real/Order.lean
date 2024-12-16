@@ -151,6 +151,9 @@ def non_zero_of_IsPos {a: ℝ} : a.IsPos -> a ≠ 0 := by
   subst g
   exact zero_not_pos h
 
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply non_zero_of_IsPos <;> invert_tactic)
+
 def abs_pos_of_non_zero {a: ℝ} : a ≠ 0 -> ‖a‖.IsPos := by
   intro h
   induction a using ind with | mk a =>

@@ -203,6 +203,16 @@ def CauchySeq.pointwise (a b: CauchySeq) : (∀n, a n = b n) -> a ≈ b := by
   funext
   apply h
 
+def CauchySeq.eventually_pointwise (a b: CauchySeq) : Eventually (fun n => a n = b n) -> a ≈ b := by
+  intro eq
+  intro ε ε_pos
+  have ⟨δ, prf⟩ := eq.to₂_right.merge (a.is_cacuhy ε ε_pos)
+  refine ⟨δ, ?_⟩
+  intro n m δn δm
+  replace ⟨eq, prf⟩ := prf _ _ δn δm
+  rw [←eq]
+  assumption
+
 instance : Coe ℚ ℝ := ⟨.ofRat⟩
 instance : OfNat CauchySeq n := ⟨.ofRat (OfNat.ofNat n: ℚ)⟩
 instance : OfNat ℝ n := ⟨⟦OfNat.ofNat n⟧⟩
@@ -728,5 +738,21 @@ def non_zero_of_ofNat (n: Nat) : (OfNat.ofNat (α := ℝ) n.succ) ≠ 0 := by
 
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply non_zero_of_ofNat)
+
+def sub_zero (a: ℝ) : a - 0 = a := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  erw [Rat.sub_zero]
+
+def zero_sub (a: ℝ) : 0 - a = -a := by
+  induction a using ind with | mk a =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp
+  erw [Rat.zero_sub]
 
 end Real
