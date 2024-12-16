@@ -513,6 +513,22 @@ def mul_lt_mul_of_pos (a b c d: ℚ) :
   assumption
   assumption
 
+def mul_le_mul_of_nonneg (a b c d: ℚ) :
+  0 ≤ a ->
+  a ≤ c ->
+  0 ≤ b ->
+  b ≤ d ->
+  a * b ≤ c * d := by
+  intro apos ac bpos bd
+  apply le_trans
+  apply mul_le_mul_of_left_nonneg
+  assumption
+  assumption
+  apply mul_le_mul_of_right_nonneg
+  apply le_trans bpos
+  assumption
+  assumption
+
 def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ < 1 ↔ ‖a‖ < ‖b‖ := by
   apply Iff.intro
   intro h

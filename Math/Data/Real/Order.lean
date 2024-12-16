@@ -237,4 +237,86 @@ instance : IsLinearOrder ℝ where
     subst c; left; assumption
     subst b; assumption
 
+def lt_iff_neg_lt_neg {a b: ℝ} : a < b ↔ -b < -a := by
+  revert a b
+  suffices ∀{a b: ℝ}, a < b -> -b < -a by
+    intro a b
+    apply Iff.intro this
+    intro h
+    rw [←neg_neg a, ←neg_neg b]
+    exact this h
+  intro a b lt
+  show IsPos _
+  rw [neg_sub_neg]
+  exact lt
+
+def le_iff_neg_le_neg {a b: ℝ} : a ≤ b ↔ -b ≤ -a := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_neg_lt_neg
+
+def lt_iff_add_lt_add_right {a b k: ℝ} : a < b ↔ a + k < b + k := by
+  show IsPos _ ↔ IsPos _
+  rw [sub_eq_add_neg (b + k), neg_add]
+  have : b + k + (-a + -k) = b + -a + (k + -k) := by ac_rfl
+  rw [this]; clear this
+  rw [add_neg_self, add_zero, sub_eq_add_neg]
+
+def lt_iff_add_lt_add_left {a b k: ℝ} : a < b ↔ k + a < k + b := by
+  rw [add_comm k, add_comm k]
+  apply lt_iff_add_lt_add_right
+
+def le_iff_add_le_add_right {a b k: ℝ} : a ≤ b ↔ a + k ≤ b + k := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_add_lt_add_right
+
+def le_iff_add_le_add_left {a b k: ℝ} : a ≤ b ↔ k + a ≤ k + b := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_add_lt_add_left
+
+def lt_iff_sub_lt_sub_right {a b k: ℝ} : a < b ↔ a - k < b - k := by
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  apply lt_iff_add_lt_add_right
+
+def le_iff_sub_le_sub_right {a b k: ℝ} : a ≤ b ↔ a - k ≤ b - k := by
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  apply le_iff_add_le_add_right
+
+def lt_iff_sub_lt_sub_left {a b k: ℝ} : a < b ↔ k - b < k - a := by
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  apply Iff.trans _ lt_iff_add_lt_add_left
+  apply lt_iff_neg_lt_neg
+
+def le_iff_sub_le_sub_left {a b k: ℝ} : a ≤ b ↔ k - b ≤ k - a := by
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  apply Iff.trans _ le_iff_add_le_add_left
+  apply le_iff_neg_le_neg
+
+def mul_pos_of_pos_of_pos (a b: ℝ) : a.IsPos -> b.IsPos -> (a * b).IsPos := by
+  intro apos bpos
+  induction a, b using ind₂ with | mk a b =>
+  obtain ⟨A, A_pos, apos⟩ := apos
+  obtain ⟨B, B_pos, bpos⟩ := bpos
+  show (a * b).IsPos
+  have ⟨δ, prf⟩ := apos.merge bpos
+  refine ⟨A * B, Rat.mul_pos A_pos B_pos, δ, ?_⟩
+  intro n δn
+  obtain ⟨apos, bpos⟩ := prf _ δn
+  apply Rat.mul_le_mul_of_nonneg
+  apply le_of_lt; assumption
+  assumption
+  apply le_of_lt; assumption
+  assumption
+def mul_pos_of_neg_of_neg (a b: ℝ) : (-a).IsPos -> (-b).IsPos -> (a * b).IsPos := by
+  intro apos bpos
+  have := mul_pos_of_pos_of_pos _ _ apos bpos
+  rwa [←neg_mul_left, ←neg_mul_right, neg_neg] at this
+def mul_neg_of_pos_of_neg (a b: ℝ) : a.IsPos -> (-b).IsPos -> (-(a * b)).IsPos := by
+  intro apos bpos
+  have := mul_pos_of_pos_of_pos _ _ apos bpos
+  rwa [←neg_mul_right] at this
+def mul_neg_of_neg_of_pos (a b: ℝ) : (-a).IsPos -> b.IsPos -> (-(a * b)).IsPos := by
+  intro apos bpos
+  have := mul_pos_of_pos_of_pos _ _ apos bpos
+  rwa [←neg_mul_left] at this
+
 end Real
