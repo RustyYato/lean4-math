@@ -1,3 +1,6 @@
+import Math.Logic.Basic
+import Math.Function.Basic
+
 inductive List.MinCount : List α -> α -> Nat -> Prop where
 | nil x : MinCount [] x 0
 | cons x a as n : MinCount as x n -> MinCount (a::as) x n
@@ -223,3 +226,42 @@ match as with
     intro h
     have := h.mem_iff.mp (List.Mem.head _)
     contradiction
+
+def List.minCount_of_nodup (as: List α) : as.Nodup -> as.MinCount x n -> n ≤ 1 := by
+  intro nodup mincount
+  induction nodup generalizing n with
+  | nil =>
+    cases mincount
+    apply Nat.zero_le
+  | cons nomem nodup ih =>
+    rename_i a as
+    cases mincount <;> rename_i mincount
+    apply ih
+    assumption
+    rename_i n
+    replace nomem : x ∉ as := fun h => nomem _ h rfl
+    have := mem_iff_MinCount_one.not_iff_not.mp nomem
+    cases n
+    apply Nat.le_refl
+    exfalso
+    apply this
+    apply MinCount.reduce
+    exact mincount
+    apply Nat.le_add_left
+
+def List.nodup_map (as: List α) (f: α -> β) :
+  Function.Injective f -> as.Nodup -> (as.map f).Nodup := by
+  intro finj nodup
+  induction nodup with
+  | nil => apply List.Pairwise.nil
+  | cons nomem nodup ih =>
+    rename_i a as
+    replace nomem : a ∉ as := fun h => nomem _ h rfl
+    apply List.Pairwise.cons
+    intro x mem
+    replace ⟨x₀, x₀_in_as, fx₀_eq_x⟩ := List.mem_map.mp mem
+    subst x
+    intro h
+    cases finj h
+    contradiction
+    assumption

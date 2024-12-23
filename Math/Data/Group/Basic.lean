@@ -517,6 +517,33 @@ def NatAddMod (n: Nat) [h: NeZero n] : Group where
 -- the cyclic groups of order n elements
 def IsoClass.Cyclic (n: Nat) [NeZero n] := ⟦NatAddMod n⟧
 
+-- a cyclic group with n elements
+def NatMulMod (n: Nat) (h: 1 < n) : Group where
+  ty := { x: Nat // Nat.gcd x n = 1 ∧ x < n }
+  mul'
+  | ⟨a, agcd, aLt⟩, ⟨b, bgcd, gLt⟩ => ⟨(a*b)%n, (by
+    have := Nat.gcd_mul_dvd_mul_gcd n a b
+    rw [Nat.gcd_comm n a, Nat.gcd_comm n b, agcd, bgcd, Nat.mul_one] at this
+    replace := Nat.dvd_one.mp this
+    rw [Nat.gcd, if_neg] at this
+    exact this
+    intro h; cases h
+    contradiction), Nat.mod_lt _ (Nat.zero_lt_of_lt h)⟩
+  one' := ⟨1, Nat.gcd_one_left _, h⟩
+  inv'
+  | ⟨a, agcd, aLt⟩ => by
+    have := IsFinite.card { x: Nat // Nat.gcd x n = 1 ∧ x < n }
+
+    sorry
+  -- mul_assoc' := by
+  --   intro a b c
+  --   simp [Fin.add_def]
+  --   rw [Nat.add_assoc]
+  -- one_mul' := Fin.zero_add
+  -- inv_mul' := by
+  --   intro x
+  --   simp [Fin.add_def, fin_inverse]
+
 example [NeZero n] : NatAddMod n ∈ IsoClass.Cyclic n := rfl
 
 def Trivial : Group where
