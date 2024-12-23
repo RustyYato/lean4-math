@@ -1,5 +1,5 @@
 import Math.Type.Notation
-import Math.StdInt.Induction
+import Math.Data.StdInt.Induction
 import Math.AxiomBlame
 
 notation "ℕ" => Nat

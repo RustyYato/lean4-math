@@ -37,6 +37,8 @@ def Nat.sub_mul (a b k: Nat)  : (a - b) * k = a * k - b * k := by
 
 namespace Group
 
+local notation "𝟙" => One.one
+
 instance (g: Group) : One g.ty := ⟨g.one'⟩
 instance (g: Group) : Mul g.ty := ⟨g.mul'⟩
 instance (g: Group) : Inv g.ty := ⟨g.inv'⟩
@@ -44,7 +46,7 @@ instance (g: Group) : Div g.ty where
   div a b := a * b⁻¹
 
 def npow (g: Group) (x: g.ty) : Nat -> g.ty
-| 0 => 1
+| 0 => 𝟙
 | n + 1 => x * npow g x n
 
 def zpow (g: Group) (x: g.ty) : Int -> g.ty
@@ -58,16 +60,16 @@ def div_eq_mul_inv {g: Group} (a b: g.ty) : a / b = a * b⁻¹ := rfl
 
 def mul_assoc {g: Group} (a b c: g.ty) : a * b * c = a * (b * c) := g.mul_assoc' _ _ _
 @[local simp]
-def one_mul {g: Group} (a: g.ty) : 1 * a = a := g.one_mul' _
+def one_mul {g: Group} (a: g.ty) : 𝟙 * a = a := g.one_mul' _
 @[local simp]
-def inv_self_mul {g: Group} (a: g.ty) : a⁻¹ * a = 1 := g.inv_mul' _
+def inv_self_mul {g: Group} (a: g.ty) : a⁻¹ * a = 𝟙 := g.inv_mul' _
 @[local simp]
-def mul_inv_self {g: Group} (a: g.ty) : a * a⁻¹ = 1 := by
+def mul_inv_self {g: Group} (a: g.ty) : a * a⁻¹ = 𝟙 := by
   rw [←one_mul (a * a⁻¹)]
   conv => { lhs; rw [←inv_self_mul (a⁻¹)] }
   rw [←mul_assoc, mul_assoc (a⁻¹⁻¹), inv_self_mul, mul_assoc, one_mul, inv_self_mul]
 @[local simp]
-def mul_one {g: Group} (a: g.ty) : a * 1 = a := by
+def mul_one {g: Group} (a: g.ty) : a * 𝟙 = a := by
   rw [←inv_self_mul a, ←mul_assoc, mul_inv_self, one_mul]
 def mul_cancel_left {g: Group} {k a b: g.ty} : k * a = k * b -> a = b := by
   intro eq
@@ -75,13 +77,13 @@ def mul_cancel_left {g: Group} {k a b: g.ty} : k * a = k * b -> a = b := by
 def mul_cancel_right {g: Group} {k a b: g.ty} : a * k = b * k -> a = b := by
   intro eq
   rw [←mul_one a, ←mul_one b, ←mul_inv_self k, ←mul_assoc, ←mul_assoc, eq]
-def inv_unique {g: Group} {a b: g.ty} : a * b = 1 -> a = b⁻¹ := by
+def inv_unique {g: Group} {a b: g.ty} : a * b = 𝟙 -> a = b⁻¹ := by
   intro m
   apply mul_cancel_right
   rw [inv_self_mul]
   assumption
 @[local simp]
-def inv_one (g: Group) : (1: g.ty)⁻¹ = 1 := by
+def inv_one (g: Group) : (𝟙: g.ty)⁻¹ = 𝟙 := by
   apply mul_cancel_left
   rw [mul_inv_self, one_mul]
 def inv_inj (g: Group) : Function.Injective (fun x: g.ty => x⁻¹) := by
@@ -95,7 +97,7 @@ def mul_inv_rev {g: Group} {a b: g.ty} : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
   rw [mul_inv_self, ←mul_assoc, mul_assoc a, mul_inv_self, mul_one, mul_inv_self]
 
 @[local simp]
-def npow_zero {g: Group} (x: g.ty) : x ^ 0 = 1 := rfl
+def npow_zero {g: Group} (x: g.ty) : x ^ 0 = 𝟙 := rfl
 def npow_succ {g: Group} (x: g.ty) : x ^ (n + 1) = x * x ^ n := rfl
 def npow_mul {g: Group} (x: g.ty) (n m: Nat) : x ^ n * x ^ m = x ^ (n + m) := by
   induction n with
@@ -196,7 +198,7 @@ def zpow_mul {g: Group} (x: g.ty) (n m: ℤ) : x ^ n * x ^ m = x ^ (n + m) := by
         exact Nat.lt_of_sub_eq_succ h
 
 @[simp]
-def zpow_zero {g: Group} (x: g.ty) : x ^ (0: ℤ) = 1 := npow_zero x
+def zpow_zero {g: Group} (x: g.ty) : x ^ (0: ℤ) = 𝟙 := npow_zero x
 @[simp]
 def zpow_one {g: Group} (x: g.ty) : x ^ (1: ℤ) = x := npow_one x
 
@@ -220,22 +222,22 @@ def zpow_pred {g: Group} (x: g.ty) (z: ℤ) : x ^ (z - 1) = x ^ z / x := by
   rfl
 
 @[simp]
-def div_self {g: Group} (x: g.ty) : x / x = 1 := mul_inv_self _
+def div_self {g: Group} (x: g.ty) : x / x = 𝟙 := mul_inv_self _
 
 structure SubgroupEmbedding (a b: Group) extends a.ty ↪ b.ty where
-  resp_one: toFun 1 = 1
+  resp_one: toFun 𝟙 = 𝟙
   resp_inv: ∀x, toFun (x⁻¹) = (toFun x)⁻¹
   resp_mul: ∀x y, toFun (x * y) = toFun x * toFun y
 
 structure Isomorphsism (a b: Group) extends a.ty ≃ b.ty where
-  resp_one: toFun 1 = 1
+  resp_one: toFun 𝟙 = 𝟙
   resp_inv: ∀x, toFun (x⁻¹) = (toFun x)⁻¹
   resp_mul: ∀x y, toFun (x * y) = toFun x * toFun y
 
 structure NormalSubgroupEmbedding (N G: Group) extends SubgroupEmbedding N G where
   conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * toFun n * g⁻¹ ∈ Set.range toFun
 
-def Isomorphsism.inv_resp_one (iso: Isomorphsism a b) : iso.invFun 1 = 1 := by
+def Isomorphsism.inv_resp_one (iso: Isomorphsism a b) : iso.invFun 𝟙 = 𝟙 := by
   apply iso.toFun_inj
   rw [iso.resp_one, iso.rightInv]
 def Isomorphsism.inv_resp_inv (iso: Isomorphsism a b) (x: b.ty) : iso.invFun (x⁻¹) = (iso.invFun x)⁻¹ := by
@@ -260,13 +262,13 @@ instance : HasNormalSubgroup Group := ⟨Group.IsNormalSubgroup⟩
 
 def IsSubgroup.intro {a b: Group}
   (emb: a.ty ↪ b.ty)
-  (resp_one: emb 1 = 1)
+  (resp_one: emb 𝟙 = 𝟙)
   (resp_inv: ∀x, emb (x⁻¹) = (emb x)⁻¹)
   (resp_mul: ∀x y, emb (x * y) = emb x * emb y) : a ⊆ b := ⟨⟨emb, resp_one, resp_inv, resp_mul⟩⟩
 
 def IsNormalSubgroup.intro {N G: Group}
   (emb: N.ty ↪ G.ty)
-  (resp_one: emb 1 = 1)
+  (resp_one: emb 𝟙 = 𝟙)
   (resp_inv: ∀x, emb (x⁻¹) = (emb x)⁻¹)
   (resp_mul: ∀x y, emb (x * y) = emb x * emb y)
   (conj_in_norm: ∀g: G.ty, ∀n: N.ty, g * emb.toFun n * g⁻¹ ∈ Set.range emb.toFun) : N ◀ G := .ofSub <| by
@@ -276,7 +278,7 @@ def IsNormalSubgroup.intro {N G: Group}
 
 def IsIsomorphic.intro {a b: Group}
   (eq: a.ty ≃ b.ty)
-  (resp_one: eq 1 = 1)
+  (resp_one: eq 𝟙 = 𝟙)
   (resp_inv: ∀x, eq (x⁻¹) = (eq x)⁻¹)
   (resp_mul: ∀x y, eq (x * y) = eq x * eq y) : IsIsomorphic a b := ⟨⟨eq, resp_one, resp_inv, resp_mul⟩⟩
 
@@ -498,7 +500,7 @@ def fin_inverse (x: Fin n): Fin n :=
     exact x.elim0)))
 
 -- a cyclic group with n elements
-def FinCyclic (n: Nat) [h: NeZero n] : Group where
+def NatAddMod (n: Nat) [h: NeZero n] : Group where
   ty := Fin n
   mul' a b := a + b
   one' := ⟨0, Nat.zero_lt_of_ne_zero h.ne⟩
@@ -513,9 +515,9 @@ def FinCyclic (n: Nat) [h: NeZero n] : Group where
     simp [Fin.add_def, fin_inverse]
 
 -- the cyclic groups of order n elements
-def IsoClass.Cyclic (n: Nat) [NeZero n] := ⟦FinCyclic n⟧
+def IsoClass.Cyclic (n: Nat) [NeZero n] := ⟦NatAddMod n⟧
 
-example [NeZero n] : FinCyclic n ∈ IsoClass.Cyclic n := rfl
+example [NeZero n] : NatAddMod n ∈ IsoClass.Cyclic n := rfl
 
 def Trivial : Group where
   ty := Unit
@@ -569,8 +571,8 @@ def nsub_eqv {a b k: Group} : a ≈ b -> k ◀ a -> k ◀ b := by
   assumption
 
 -- the trivial group is a subgroup of every group
-def one_sub (a: Group) : 1 ⊆ a := by
-  apply IsSubgroup.intro ⟨fun _ => 1, _⟩
+def one_sub (a: Group) : 𝟙 ⊆ a := by
+  apply IsSubgroup.intro ⟨fun _ => 𝟙, _⟩
   rfl
   intros
   simp
@@ -580,12 +582,12 @@ def one_sub (a: Group) : 1 ⊆ a := by
   rfl
 
 -- the only subgroup of the trivial subgroup is itself up to isomorphism
-def sub_one (a: Group) : a ⊆ 1 -> a ∈ (1: IsoClass) := by
+def sub_one (a: Group) : a ⊆ 𝟙 -> a ∈ (𝟙: IsoClass) := by
   intro ⟨h, resp_one, resp_inv, resp_mul⟩
   apply quot.sound
   apply IsIsomorphic.intro
   case a.eq =>
-    apply Equiv.mk (fun _ => 1) h.toFun
+    apply Equiv.mk (fun _ => 𝟙) h.toFun
     intro _
     rfl
     intro
@@ -633,10 +635,10 @@ def IsoClass.IsNormalSubgroup.IsSubgroup {a b: IsoClass} : a ◀ b -> a ⊆ b :=
   apply Group.IsNormalSubgroup.IsSubgroup
 
 -- the class trivial group is a normal subgroup of every group
-def IsoClass.one_nsub (a: IsoClass) : 1 ◀ a := by
+def IsoClass.one_nsub (a: IsoClass) : 𝟙 ◀ a := by
   quot_ind a
-  show 1 ◀ a
-  apply IsNormalSubgroup.intro ⟨fun _ => 1, _⟩
+  show 𝟙 ◀ a
+  apply IsNormalSubgroup.intro ⟨fun _ => 𝟙, _⟩
   any_goals
     try intro x
     intros
@@ -646,17 +648,17 @@ def IsoClass.one_nsub (a: IsoClass) : 1 ◀ a := by
   intro g ()
   simp
   apply Set.mem_range.mpr
-  exists 1
+  exists 𝟙
 
 -- the class trivial group can embed into any other isomorphism classs
-def IsoClass.one_sub (a: IsoClass) : 1 ⊆ a := by
+def IsoClass.one_sub (a: IsoClass) : 𝟙 ⊆ a := by
   apply IsNormalSubgroup.IsSubgroup
   apply one_nsub
 
 @[local simp]
 def mul (a b: Group) : Group where
   ty := a.ty × b.ty
-  one' := ⟨1, 1⟩
+  one' := ⟨𝟙, 𝟙⟩
   inv' | ⟨x, y⟩ => ⟨x⁻¹, y⁻¹⟩
   mul' | ⟨a, b⟩, ⟨x, y⟩ => ⟨a * x, b * y⟩
   mul_assoc' := by
@@ -702,9 +704,9 @@ instance : Mul IsoClass := ⟨IsoClass.mul⟩
 
 def mk_mul (a b: Group) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
 
-def IsSimple (a: Group) : Prop := ∀n, n ◀ a -> n ≈ 1 ∨ n ≈ a
+def IsSimple (a: Group) : Prop := ∀n, n ◀ a -> n ≈ 𝟙 ∨ n ≈ a
 
-def gmul_one (a: Group) : a * 1 ≈ a := by
+def gmul_one (a: Group) : a * 𝟙 ≈ a := by
   apply IsIsomorphic.intro
   case eq =>
     apply Equiv.mk (·.1) (⟨·, ()⟩)
@@ -714,7 +716,7 @@ def gmul_one (a: Group) : a * 1 ≈ a := by
   intros; rfl
   intros; rfl
 
-def one_gmul (a: Group) : 1 * a ≈ a := by
+def one_gmul (a: Group) : 𝟙 * a ≈ a := by
   apply IsIsomorphic.intro
   case eq =>
     apply Equiv.mk (·.2) (⟨(), ·⟩)
@@ -726,7 +728,7 @@ def one_gmul (a: Group) : 1 * a ≈ a := by
 
 def IsSimple.spec (a b: Group) : a ≈ b -> a.IsSimple -> b.IsSimple := by
   intro eq asimp n norm
-  suffices n ≈ 1 ∨ n ≈ a by
+  suffices n ≈ 𝟙 ∨ n ≈ a by
     cases this; left; assumption
     right; apply eqv_trans; assumption; assumption
   apply asimp
@@ -742,7 +744,7 @@ def IsoClass.IsSimple : IsoClass -> Prop := by
 
 def mk_IsSimple : ⟦a⟧.IsSimple = a.IsSimple := rfl
 
-def Nontrivial (a: Group) := ∃x: a.ty, x ≠ 1
+def Nontrivial (a: Group) := ∃x: a.ty, x ≠ 𝟙
 def Nontrivial.spec (a b: Group) : a ≈ b -> a.Nontrivial -> b.Nontrivial := by
   intro ⟨eqv, resp_one, resp_inv, resp_mul⟩ ⟨x, h⟩
   exists eqv x
@@ -757,7 +759,7 @@ def Nontrivial_def (a: Group) : a.Nontrivial ↔ a ∉ IsoClass.Trivial := by
   have ⟨eqv, resp_one, resp_inv, resp_mul⟩ := Quotient.exact g
   have := Equiv.invFun_inj eqv
   unfold Function.Injective at this
-  have := @this x 1 rfl
+  have := @this x 𝟙 rfl
   contradiction
   intro h
   replace h : ¬a ≈ Trivial := by
@@ -765,8 +767,8 @@ def Nontrivial_def (a: Group) : a.Nontrivial ↔ a ∉ IsoClass.Trivial := by
     apply h
     apply Quot.sound
     exact g.symm
-  let emb : (ty 1) ↪ a.ty := by
-    apply Embedding.mk (fun _ => 1)
+  let emb : (ty 𝟙) ↪ a.ty := by
+    apply Embedding.mk (fun _ => 𝟙)
     intro x y eq; rfl
   have : ¬Function.Surjective emb.toFun := by
     intro surj
@@ -784,15 +786,15 @@ def Nontrivial_def (a: Group) : a.Nontrivial ↔ a ∉ IsoClass.Trivial := by
   apply this ()
   rfl
 
-def Trivial.notNontrivial : ¬Nontrivial 1 := by
+def Trivial.notNontrivial : ¬Nontrivial 𝟙 := by
   intro ⟨_, h⟩
   apply h rfl
 
-def IsoClass.Trivial.notNontrivial : ¬Nontrivial 1 := by
+def IsoClass.Trivial.notNontrivial : ¬Nontrivial 𝟙 := by
   intro ⟨_, h⟩
   apply h rfl
 
-def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
+def of_gmul_eq_one (a b: Group) : a * b ≈ 𝟙 -> a ≈ 𝟙 ∧ b ≈ 𝟙 := by
   intro ⟨iso⟩
   apply And.intro
   · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.invFun x).1), _, _⟩
@@ -800,11 +802,11 @@ def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
     any_goals try intro x; intros; rfl
     intro x
     simp [Equiv.symm]
-    show (iso.invFun 1).fst = _
+    show (iso.invFun 𝟙).fst = _
     rw [iso.inv_resp_one]
-    show 1 = x
+    show 𝟙 = x
     symm
-    have : Prod.mk x 1 = (1: (a * b).ty) := by
+    have : Prod.mk x 𝟙 = (𝟙: (a * b).ty) := by
       apply iso.toFun_inj
       rfl
     exact (Prod.mk.inj this).left
@@ -813,20 +815,20 @@ def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
     any_goals try intro x; intros; rfl
     intro x
     simp [Equiv.symm]
-    show (iso.invFun 1).snd = _
+    show (iso.invFun 𝟙).snd = _
     rw [iso.inv_resp_one]
-    show 1 = x
+    show 𝟙 = x
     symm
-    have : Prod.mk 1 x = (1: (a * b).ty) := by
+    have : Prod.mk 𝟙 x = (𝟙: (a * b).ty) := by
       apply iso.toFun_inj
       rfl
     exact (Prod.mk.inj this).right
 
-def Trivial.IsSimple : IsSimple 1 := by
+def Trivial.IsSimple : IsSimple 𝟙 := by
   intro x nsub_one; left; symm
   exact Quotient.exact <| sub_one _ (IsNormalSubgroup.IsSubgroup nsub_one)
 
-def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
+def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 𝟙 := by
   apply Eq.mpr mk_IsSimple
   exact Group.Trivial.IsSimple
 
@@ -835,7 +837,7 @@ instance {n m: Nat} [NeZero n] [NeZero m] : NeZero (n * m) where
     intro h
     cases Nat.mul_eq_zero.mp h <;> (rename_i h; exact NeZero.ne _ h)
 
-def cyclic_sub_of_mul' [NeZero n] [NeZero m] : SubgroupEmbedding (FinCyclic n) (FinCyclic (n * m)) where
+def cyclic_sub_of_mul' [NeZero n] [NeZero m] : SubgroupEmbedding (NatAddMod n) (NatAddMod (n * m)) where
   toFun a := ⟨a.val * m, (Nat.mul_lt_mul_right (Nat.zero_lt_of_ne_zero (NeZero.ne _))).mpr a.isLt⟩
   inj a b eq := by
     simp at eq
@@ -868,16 +870,16 @@ def cyclic_sub_of_mul' [NeZero n] [NeZero m] : SubgroupEmbedding (FinCyclic n) (
     rw [Nat.mul_div_cancel]
     exact Nat.zero_lt_of_ne_zero (NeZero.ne m)
 
-def cyclic_sub_of_mul (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ⊆ FinCyclic (n * m) := ⟨cyclic_sub_of_mul'⟩
+def cyclic_sub_of_mul (n m: Nat) [NeZero n] [NeZero m] : NatAddMod n ⊆ NatAddMod (n * m) := ⟨cyclic_sub_of_mul'⟩
 def IsoClass.cyclic_sub_of_mul (n m: Nat) [NeZero n] [NeZero m] : Cyclic n ⊆ Cyclic (n * m) := ⟨cyclic_sub_of_mul'⟩
 
-def cyclic_nsub_of_mul' [NeZero n] [NeZero m] : NormalSubgroupEmbedding (FinCyclic n) (FinCyclic (n * m)) where
+def cyclic_nsub_of_mul' [NeZero n] [NeZero m] : NormalSubgroupEmbedding (NatAddMod n) (NatAddMod (n * m)) where
   toSubgroupEmbedding := cyclic_sub_of_mul'
   conj_in_norm  := by
     intro ⟨x, xLt⟩ ⟨y, yLt⟩
     unfold cyclic_sub_of_mul'
     simp
-    unfold HMul.hMul instHMul Mul.mul instMulNat FinCyclic instMulTy Inv.inv instInvTy fin_inverse
+    unfold HMul.hMul instHMul Mul.mul instMulNat NatAddMod instMulTy Inv.inv instInvTy fin_inverse
     simp [Fin.add_def]
     apply Set.mem_range.mpr
     simp
@@ -890,38 +892,38 @@ def cyclic_nsub_of_mul' [NeZero n] [NeZero m] : NormalSubgroupEmbedding (FinCycl
     apply Nat.le_of_lt
     assumption
 
-def cyclic_nsub_of_mul (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ◀ FinCyclic (n * m) := ⟨cyclic_nsub_of_mul'⟩
+def cyclic_nsub_of_mul (n m: Nat) [NeZero n] [NeZero m] : NatAddMod n ◀ NatAddMod (n * m) := ⟨cyclic_nsub_of_mul'⟩
 def IsoClass.cyclic_nsub_of_mul (n m: Nat) [NeZero n] [NeZero m] : Cyclic n ◀ Cyclic (n * m) := ⟨cyclic_nsub_of_mul'⟩
 
-def Trivial.isoOfSubsingleton (g: Group) [Subsingleton g.ty] : Isomorphsism g 1 where
-  toFun _ := 1
-  invFun _ := 1
+def Trivial.isoOfSubsingleton (g: Group) [Subsingleton g.ty] : Isomorphsism g 𝟙 where
+  toFun _ := 𝟙
+  invFun _ := 𝟙
   leftInv _ := Subsingleton.allEq _ _
   rightInv _ := rfl
   resp_one := rfl
   resp_inv _ := rfl
   resp_mul _ _ := rfl
-def Trivial.eqvOfSubsingleton (g: Group) [inst: Subsingleton g.ty] : g ≈ 1 := ⟨isoOfSubsingleton g⟩
+def Trivial.eqvOfSubsingleton (g: Group) [inst: Subsingleton g.ty] : g ≈ 𝟙 := ⟨isoOfSubsingleton g⟩
 
-def cyclic_iso_trivial : Isomorphsism (FinCyclic 1) Trivial where
-  toFun _ := 1
-  invFun _ := 1
+def cyclic_iso_trivial : Isomorphsism (NatAddMod 𝟙) Trivial where
+  toFun _ := 𝟙
+  invFun _ := 𝟙
   leftInv _ := by
-    unfold FinCyclic at *
-    exact Subsingleton.allEq _ _
+    unfold NatAddMod at *
+    exact Subsingleton.allEq (α := Fin 1) _ _
   rightInv _ := rfl
   resp_one := rfl
   resp_inv _ := rfl
   resp_mul _ _ := rfl
 
-def cyclic_eqv_trivial : FinCyclic 1 ≈ Trivial := ⟨cyclic_iso_trivial⟩
-def IsoClass.cyclic_eqv_trivial : Cyclic 1 = Trivial := Quot.sound ⟨cyclic_iso_trivial⟩
+def cyclic_eqv_trivial : NatAddMod 𝟙 ≈ Trivial := ⟨cyclic_iso_trivial⟩
+def IsoClass.cyclic_eqv_trivial : Cyclic 𝟙 = Trivial := Quot.sound ⟨cyclic_iso_trivial⟩
 
-def FinCyclic.pow_eq_mul [NeZero m] (x: (FinCyclic m).ty) (n: ℕ): x ^ n = Fin.mul x (Fin.ofNat' _ n) := by
+def NatAddMod.pow_eq_mul [NeZero m] (x: (NatAddMod m).ty) (n: ℕ): x ^ n = Fin.mul x (Fin.ofNat' _ n) := by
   induction n with
   | zero =>
     rw [npow_zero]
-    unfold FinCyclic at x
+    unfold NatAddMod at x
     unfold Fin.ofNat'
     unfold Fin.mul
     simp
@@ -929,7 +931,7 @@ def FinCyclic.pow_eq_mul [NeZero m] (x: (FinCyclic m).ty) (n: ℕ): x ^ n = Fin.
   | succ n ih =>
     rw [npow_succ]
     unfold Fin.mul
-    unfold HMul.hMul instHMul Mul.mul instMulTy FinCyclic instMulNat
+    unfold HMul.hMul instHMul Mul.mul instMulTy NatAddMod instMulNat
     cases x with | mk x xLt =>
     simp
     rw [ih]
@@ -941,34 +943,34 @@ def FinCyclic.pow_eq_mul [NeZero m] (x: (FinCyclic m).ty) (n: ℕ): x ^ n = Fin.
     rw [Nat.add_mod, Nat.mul_mod, Nat.mod_mod, ←Nat.mul_mod, ←Nat.add_mod]
     rw [Nat.add_comm, ←Nat.mul_succ]
 
-def FinCyclic.pow_eq_one [NeZero m] (x: (FinCyclic m).ty): x ^ m = 1 := by
+def NatAddMod.pow_eq_one [NeZero m] (x: (NatAddMod m).ty): x ^ m = 𝟙 := by
   have n: { x // x = m } := ⟨m, rfl⟩
   rw [pow_eq_mul]
-  unfold FinCyclic at x
+  unfold NatAddMod at x
   show x * _ = 0
   simp
   rfl
 
 open Classical in
-def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZero n, x ≈ FinCyclic n := by
+def cylic_of_sub_cyclic [NeZero m] : x ⊆ NatAddMod m -> ∃n: Nat, ∃h: NeZero n, x ≈ NatAddMod n := by
   intro ⟨sub⟩
   have m_pos : 0 < m := by
     apply Nat.zero_lt_of_ne_zero
     apply NeZero.ne
   if h:x.Nontrivial then
     obtain ⟨a, a_ne_one⟩ := h
-    have : a  ^ m = 1 := by
+    have : a  ^ m = 𝟙 := by
       have := sub.resp_npow a m
-      rw [FinCyclic.pow_eq_one (sub.toFun a), ←sub.resp_one] at this
+      rw [NatAddMod.pow_eq_one (sub.toFun a), ←sub.resp_one] at this
       exact sub.inj this
-    have ex : ∃n: ℕ, 0 < n ∧ a ^ n = 1 := by exists m
-    have n : { n: Nat // (0 < n ∧ a ^ n = 1) ∧ ∀m < n, ¬(0 < m ∧ a ^ m = 1) } := ⟨
+    have ex : ∃n: ℕ, 0 < n ∧ a ^ n = 𝟙 := by exists m
+    have n : { n: Nat // (0 < n ∧ a ^ n = 𝟙) ∧ ∀m < n, ¬(0 < m ∧ a ^ m = 𝟙) } := ⟨
         Nat.findP ex,
         Nat.findP_spec ex,
         Nat.lt_findP_spec ex
     ⟩
     obtain ⟨n, ⟨n_pos, an_eq_one⟩, no_smaller_cycle⟩ := n
-    replace no_smaller_cycle: ∀m < n, 0 < m -> a ^ m ≠ 1 :=
+    replace no_smaller_cycle: ∀m < n, 0 < m -> a ^ m ≠ 𝟙 :=
       fun m h => not_and.mp (no_smaller_cycle m h)
     have n_le_m : n ≤ m := by
       apply byContradiction
@@ -976,13 +978,13 @@ def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZer
       replace h := Nat.lt_of_not_le h
       have := no_smaller_cycle _ h m_pos
       contradiction
-    have : ∀y, sub.toFun y ^ n = 1 := by
+    have : ∀y, sub.toFun y ^ n = 𝟙 := by
       intro y
       sorry
     have : n ∣ m := by
       have := sub.resp_npow a n
       rw [an_eq_one, sub.resp_one] at this
-      rw [FinCyclic.pow_eq_mul] at this
+      rw [NatAddMod.pow_eq_mul] at this
       replace this : Fin.mk 0 m_pos = _ := this
       unfold Fin.mul at this
       split at this
@@ -1013,21 +1015,21 @@ def cylic_of_sub_cyclic [NeZero m] : x ⊆ FinCyclic m -> ∃n: Nat, ∃h: NeZer
     have := Trivial.eqvOfSubsingleton x (inst := ⟨by
       intro a b
       rw [this a, this b]⟩)
-    exists 1
+    exists 𝟙
     exists inferInstance
     apply this.trans
     symm
     exact ⟨cyclic_iso_trivial⟩
 
-def dvd_of_sub_cyclic (n m: Nat) [NeZero n] [NeZero m] : FinCyclic n ⊆ FinCyclic m -> n ∣ m := by
+def dvd_of_sub_cyclic (n m: Nat) [NeZero n] [NeZero m] : NatAddMod n ⊆ NatAddMod m -> n ∣ m := by
   intro sub
   sorry
 
-def cyclic_simple_iff_prime_order [NeZero n] : n.IsAtomic -> (FinCyclic n).IsSimple := by
+def cyclic_simple_iff_prime_order [NeZero n] : n.IsAtomic -> (NatAddMod n).IsSimple := by
   intro atomic x nsub
   have ⟨m, mpos, eq⟩ := cylic_of_sub_cyclic (IsNormalSubgroup.IsSubgroup nsub)
   replace nsub := eqv_nsub eq nsub
-  suffices FinCyclic m ≈ 1 ∨ FinCyclic m ≈ FinCyclic n by
+  suffices NatAddMod m ≈ 𝟙 ∨ NatAddMod m ≈ NatAddMod n by
     cases this
     left; apply IsIsomorphic.trans eq; assumption
     right; apply IsIsomorphic.trans eq; assumption
@@ -1035,7 +1037,7 @@ def cyclic_simple_iff_prime_order [NeZero n] : n.IsAtomic -> (FinCyclic n).IsSim
   have dvd := dvd_of_sub_cyclic _ _ (IsNormalSubgroup.IsSubgroup nsub)
   cases atomic _ dvd <;> subst m
   left
-  unfold FinCyclic
+  unfold NatAddMod
   apply Trivial.eqvOfSubsingleton
   right; rfl
 
