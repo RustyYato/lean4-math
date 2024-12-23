@@ -265,3 +265,53 @@ def List.nodup_map (as: List α) (f: α -> β) :
     cases finj h
     contradiction
     assumption
+
+def List.nodup_append (as bs: List α) :
+  as.Nodup ->
+  bs.Nodup ->
+  (∀x, x ∈ as -> x ∈ bs -> False) ->
+  (as ++ bs).Nodup := by
+  intro asnodup bsnodup nocommon
+  induction asnodup with
+  | nil => exact bsnodup
+  | cons nomem nodup ih =>
+    rename_i a as
+    apply List.Pairwise.cons
+    intro x mem
+    intro g
+    subst x
+    rcases List.mem_append.mp mem with memas | membs
+    exact nomem _ memas rfl
+    apply nocommon
+    apply List.Mem.head
+    assumption
+    apply ih
+    intro x memas membs
+    apply nocommon
+    apply List.Mem.tail
+    assumption
+    assumption
+
+def List.nodup_filterMap (as: List α) (f: α -> Option β) :
+  as.Nodup ->
+  (∀{x y}, (f x).isSome -> f x = f y -> x = y) ->
+  (as.filterMap f).Nodup := by
+  intro nodup finj
+  induction nodup with
+  | nil => apply List.Pairwise.nil
+  | cons nomem nodup ih =>
+    rename_i a as
+    unfold filterMap
+    split <;> (rename_i h; rename Option β => b; clear b)
+    assumption
+    apply List.Pairwise.cons _ ih
+    intro x mem g
+    subst x
+    rename_i b
+    have ⟨a₀, a₀_mem, fa₀_eq_b⟩  := List.mem_filterMap.mp mem
+    have := (finj · (h.trans fa₀_eq_b.symm))
+    rw [h] at this
+    cases this rfl
+    apply nomem
+    assumption
+    rfl
