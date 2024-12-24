@@ -174,3 +174,30 @@ def Fin.equivOfEq (h: n = m) : Fin n ≃ Fin m where
   invFun x := x.cast h.symm
   leftInv | ⟨_, _⟩ => rfl
   rightInv | ⟨_, _⟩ => rfl
+
+def cast_eq_of_heq' {β: α -> Sort _}
+  {a: β x}
+  {b: β y}
+  (h: HEq a b) (g: x = y) : g ▸ a = b := by
+  cases g
+  cases h
+  rfl
+
+def Pi.congrEquiv {β₀: α₀ -> Sort _} {β₁: α₁ -> Sort _}
+  (h: α₀ ≃ α₁) (g: ∀x, β₀ x ≃ β₁ (h.toFun x)) : (∀x, β₀ x) ≃ (∀x, β₁ x) where
+  toFun f x := h.rightInv x ▸ (g _).toFun (f (h.invFun x))
+  invFun f x := (g _).invFun (f (h.toFun x))
+  leftInv f := by
+    funext x
+    dsimp
+    apply (g x).toFun_inj
+    rw [(g x).rightInv]
+    apply cast_eq_of_heq'
+    rw [h.leftInv]
+  rightInv f := by
+    funext x
+    dsimp
+    apply cast_eq_of_heq'
+    rw [(g _).rightInv, h.rightInv]
+
+#print axioms Pi.congrEquiv

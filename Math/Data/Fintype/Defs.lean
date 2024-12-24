@@ -194,3 +194,15 @@ def Fintype.eqCardOfEquiv {fa: Fintype α} {fb: Fintype β} (h: α ≃ β) : fa.
   show _  = (List.map _ _).length
   rw [List.length_map]
   rfl
+
+instance {P: α -> Prop} [DecidablePred P] [f: Fintype α] : Decidable (∃x, P x) :=
+  decidable_of_iff (∃x ∈ f.all, P x) <| by
+    apply Iff.intro
+    intro ⟨x, _, _⟩
+    exists x
+    intro ⟨x, _⟩
+    exists x
+    apply And.intro
+    apply f.complete
+    assumption
+instance {P: α -> Prop} [DecidablePred P] [Fintype α] : Decidable (∀x, P x) := decidable_of_iff _ Decidable.not_exists_not
