@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Basic
+import Math.Data.Fintype.Defs
 
 instance [as: Fintype α] [bs: Fintype β] : Fintype (α ⊕ β) where
   all := as.all.map .inl ++ bs.all.map .inr
