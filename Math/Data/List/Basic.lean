@@ -340,3 +340,44 @@ def List.nodup_flatMap (as: List α) (f: α -> List β) :
       have := (nodup_cons.mp asnodup).left
       cases nocommon (List.Mem.head _) (List.Mem.tail _ b_in_as) x fx x_in_fb
       contradiction
+
+def List.sum_const (as: List Nat) (h: ∀x y, x ∈ as -> y ∈ as -> x = y) :
+  as.sum = match as.head? with
+  | .some x => x * as.length
+  | .none => 0 := by
+  induction as with
+  | nil => rfl
+  | cons a as ih =>
+    dsimp
+    rw [Nat.mul_succ, Nat.add_comm]
+    congr
+    have := ih (by
+      intro x y xm ym
+      apply h
+      apply List.Mem.tail; assumption
+      apply List.Mem.tail; assumption)
+    cases as with
+    | nil => rfl
+    | cons a' as =>
+      have : a = a' := h a a' (List.Mem.head _) (List.Mem.tail _ <| List.Mem.head _)
+      subst a'
+      exact this
+
+def List.sum_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
+  as.sum = a * as.length := by
+  rw [sum_const]
+  cases as
+  rfl
+  dsimp
+  rename_i b _
+  rw [h b]
+  apply List.Mem.head
+  intro x y _ _
+  rw [h x, h y]
+  assumption
+  assumption
+
+def List.length_flatMap (as: List α) (f: α -> List β) : (as.flatMap f).length = List.sum (as.map fun x => (f x).length) := by
+  induction as with
+  | nil => rfl
+  | cons a as ih => simp [ih]

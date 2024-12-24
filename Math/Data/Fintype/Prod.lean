@@ -48,13 +48,11 @@ def Sigma.card_eq {β: α -> Type _} (as: Fintype α) (bs: ∀x, Fintype (β x))
   unfold Fintype.card Fintype.all instFintypeSigma
   dsimp
   clear asnodup ascomplete
-  induction as with
-  | nil => rfl
-  | cons a as ih =>
-    rw [List.flatMap_cons, List.map_cons, List.sum_cons, List.length_append]
-    congr
-    rw [List.length_map]
-    rfl
+  erw [List.length_flatMap]
+  congr
+  funext x
+  rw [List.length_map]
+  rfl
 
 def Prod.card_eq (as: Fintype α) (bs: Fintype β) :
   Fintype.card (α × β) = as.card * bs.card := by
@@ -65,8 +63,7 @@ def Prod.card_eq (as: Fintype α) (bs: Fintype β) :
   unfold Fintype.card Fintype.all
   dsimp
   clear asnodup ascomplete bsnodup bscomplete
-  induction as with
-  | nil => erw [Nat.zero_mul]; rfl
-  | cons a as ih =>
-    erw [List.map_cons, List.sum_cons, Nat.succ_mul, Nat.add_comm]
-    congr
+  rw [List.sum_const' (as.map _) bs.length, List.length_map, Nat.mul_comm]
+  intro x mem
+  have ⟨_, _,_⟩  := List.mem_map.mp mem
+  symm; assumption
