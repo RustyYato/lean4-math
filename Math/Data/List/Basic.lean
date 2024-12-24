@@ -381,3 +381,45 @@ def List.length_flatMap (as: List α) (f: α -> List β) : (as.flatMap f).length
   induction as with
   | nil => rfl
   | cons a as ih => simp [ih]
+
+def List.product [Mul α] [OfNat α 1] : List α -> α
+| [] => 1
+| a::as => a * product as
+
+def List.product_const (as: List Nat) (h: ∀x y, x ∈ as -> y ∈ as -> x = y) :
+  as.product = match as.head? with
+  | .some x => x ^ as.length
+  | .none => 1 := by
+  induction as with
+  | nil => rfl
+  | cons a as ih =>
+    dsimp
+    rw [Nat.pow_succ, Nat.mul_comm]
+    congr
+    have := ih (by
+      intro x y xm ym
+      apply h
+      apply List.Mem.tail; assumption
+      apply List.Mem.tail; assumption)
+    cases as with
+    | nil => rfl
+    | cons a' as =>
+      have : a = a' := h a a' (List.Mem.head _) (List.Mem.tail _ <| List.Mem.head _)
+      subst a'
+      dsimp at this
+      rw [product, this]
+      rfl
+
+def List.product_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
+  as.product = a ^ as.length := by
+  rw [product_const]
+  cases as
+  rfl
+  dsimp
+  rename_i b _
+  rw [h b]
+  apply List.Mem.head
+  intro x y _ _
+  rw [h x, h y]
+  assumption
+  assumption

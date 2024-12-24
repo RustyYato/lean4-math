@@ -195,6 +195,12 @@ def Fintype.eqCardOfEquiv {fa: Fintype α} {fb: Fintype β} (h: α ≃ β) : fa.
   rw [List.length_map]
   rfl
 
+def Fintype.ofEquiv_card_eq {fa: Fintype α} (h: α ≃ β) : (fa.ofEquiv h).card = fa.card := by
+  unfold card all ofEquiv
+  dsimp
+  rw [List.length_map]
+  rfl
+
 instance {P: α -> Prop} [DecidablePred P] [f: Fintype α] : Decidable (∃x, P x) :=
   decidable_of_iff (∃x ∈ f.all, P x) <| by
     apply Iff.intro
