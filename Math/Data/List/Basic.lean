@@ -315,3 +315,28 @@ def List.nodup_filterMap (as: List α) (f: α -> Option β) :
     apply nomem
     assumption
     rfl
+
+def List.nodup_flatMap (as: List α) (f: α -> List β) :
+  as.Nodup ->
+  (∀x, (f x).Nodup) ->
+  (∀{x y}, x ∈ as -> y ∈ as -> ∀z, z ∈ f x -> z ∈ f y -> x = y) ->
+  (as.flatMap f).Nodup := by
+  intro asnodup nodups nocommon
+  induction as with
+  | nil => apply List.Pairwise.nil
+  | cons a as ih =>
+    apply List.nodup_append
+    apply nodups
+    apply ih
+    · exact asnodup.tail
+    · intro x y xas yas z zx zy
+      apply nocommon
+      apply List.Mem.tail; assumption
+      apply List.Mem.tail; assumption
+      assumption
+      assumption
+    · intro x fx mem
+      have ⟨b, b_in_as, x_in_fb⟩  := List.mem_flatMap.mp mem
+      have := (nodup_cons.mp asnodup).left
+      cases nocommon (List.Mem.head _) (List.Mem.tail _ b_in_as) x fx x_in_fb
+      contradiction
