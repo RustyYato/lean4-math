@@ -200,4 +200,32 @@ def Pi.congrEquiv {β₀: α₀ -> Sort _} {β₁: α₁ -> Sort _}
     apply cast_eq_of_heq'
     rw [(g _).rightInv, h.rightInv]
 
-#print axioms Pi.congrEquiv
+def Char.equivSubtype : Char ≃ { x : UInt32 // x.isValidChar } where
+  toFun | ⟨x, p⟩ => ⟨x, p⟩
+  invFun | ⟨x, p⟩ => ⟨x, p⟩
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def UInt8.equivFin : UInt8 ≃ Fin (2^8) where
+  toFun | ⟨⟨x⟩⟩ => x
+  invFun x := ⟨⟨x⟩⟩
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def UInt16.equivFin : UInt16 ≃ Fin (2^16) where
+  toFun | ⟨⟨x⟩⟩ => x
+  invFun x := ⟨⟨x⟩⟩
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def UInt32.equivFin : UInt32 ≃ Fin (2^32) where
+  toFun | ⟨⟨x⟩⟩ => x
+  invFun x := ⟨⟨x⟩⟩
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def UInt64.equivFin : UInt64 ≃ Fin (2^64) where
+  toFun | ⟨⟨x⟩⟩ => x
+  invFun x := ⟨⟨x⟩⟩
+  leftInv _ := rfl
+  rightInv _ := rfl

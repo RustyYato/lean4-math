@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Basic
+import Math.Data.Fintype.Defs
 
 instance {β: α -> Type _} [as: Fintype α] [bs: ∀x, Fintype (β x)] : Fintype ((x: α) × β x) where
   all := as.all.flatMap fun x => (bs x).all.map fun b => ⟨x, b⟩

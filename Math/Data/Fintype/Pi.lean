@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Basic
+import Math.Data.Fintype.Defs
 
 def Pi.all (β: Fin n -> Type _) (f: ∀x, List (β x)) : List (∀x, β x) :=
   match n with

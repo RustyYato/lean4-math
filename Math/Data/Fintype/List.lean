@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Basic
+import Math.Data.Fintype.Defs
 
 namespace List
 
