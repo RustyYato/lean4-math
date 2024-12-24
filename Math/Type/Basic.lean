@@ -123,3 +123,54 @@ def Equiv.toProd (h: a ≃ c) (g: b ≃ d) : a × b ≃ c × d where
     simp [DFunLike.coe, IsEquivLike.coe, Equiv.symm]
     rw [h.rightInv, g.rightInv]
     trivial
+
+def Prod.equivSigma : (α × β) ≃ (_: α) × β where
+  toFun
+  | ⟨a, b⟩ => ⟨a, b⟩
+  invFun
+  | ⟨a, b⟩ => ⟨a, b⟩
+  leftInv
+  | ⟨_, _⟩ => rfl
+  rightInv
+  | ⟨_, _⟩ => rfl
+def Prod.equivComm : (α × β) ≃ (β × α) where
+  toFun
+  | ⟨a, b⟩ => ⟨b, a⟩
+  invFun
+  | ⟨a, b⟩ => ⟨b, a⟩
+  leftInv
+  | ⟨_, _⟩ => rfl
+  rightInv
+  | ⟨_, _⟩ => rfl
+def Sum.equivComm : (α ⊕ β) ≃ (β ⊕ α) where
+  toFun
+  | .inl x => .inr x
+  | .inr x => .inl x
+  invFun
+  | .inl x => .inr x
+  | .inr x => .inl x
+  leftInv | .inl _ | .inr _ => rfl
+  rightInv | .inl _ | .inr _ => rfl
+def PSum.equivComm : (α ⊕' β) ≃ (β ⊕' α) where
+  toFun
+  | .inl x => .inr x
+  | .inr x => .inl x
+  invFun
+  | .inl x => .inr x
+  | .inr x => .inl x
+  leftInv | .inl _ | .inr _ => rfl
+  rightInv | .inl _ | .inr _ => rfl
+def Sum.equivPSum : (α ⊕ β) ≃ (α ⊕' β) where
+  toFun
+  | .inl x => .inl x
+  | .inr x => .inr x
+  invFun
+  | .inl x => .inl x
+  | .inr x => .inr x
+  leftInv | .inl _ | .inr _ => rfl
+  rightInv | .inl _ | .inr _ => rfl
+def Fin.equivOfEq (h: n = m) : Fin n ≃ Fin m where
+  toFun x := x.cast h
+  invFun x := x.cast h.symm
+  leftInv | ⟨_, _⟩ => rfl
+  rightInv | ⟨_, _⟩ => rfl
