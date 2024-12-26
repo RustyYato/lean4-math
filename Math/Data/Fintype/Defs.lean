@@ -218,3 +218,27 @@ instance {P: α -> Prop} [DecidablePred P] [f: Fintype α] : Decidable (∃x, P 
     apply f.complete
     assumption
 instance {P: α -> Prop} [DecidablePred P] [Fintype α] : Decidable (∀x, P x) := decidable_of_iff _ Decidable.not_exists_not
+
+instance {β: α -> Type _} [Fintype α] [∀x, DecidableEq (β x)] : DecidableEq (∀x, β x) :=
+  fun f g => if h:∀x, f x = g x then
+    .isTrue (funext h)
+  else
+    .isFalse fun eq => (eq ▸ h) fun _ => rfl
+
+instance [Fintype α] [DecidableEq β] : DecidableEq (α -> β) := inferInstance
+
+instance [Fintype α] [DecidableEq β] [DecidableEq α] {f: α -> β} : Decidable (Function.Injective f) :=
+  inferInstance
+
+instance [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] {f: α -> β} : Decidable (Function.Surjective f) :=
+  inferInstance
+
+instance [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] {f: α -> β} : Decidable (Function.Bijective f) :=
+  inferInstance
+
+instance [Fintype β] [DecidableEq β] {f: α -> β} {g: β -> α} : Decidable (Function.IsLeftInverse f g) := by
+  delta Function.IsLeftInverse
+  exact inferInstance
+instance [Fintype α] [DecidableEq α] {f: α -> β} {g: β -> α} : Decidable (Function.IsRightInverse f g) := by
+  delta Function.IsRightInverse
+  exact inferInstance

@@ -70,6 +70,11 @@ instance : IsEquivLike (α ≃ β) α β where
   inj a b h g := by cases a; cases b; congr
 
 @[refl]
+def Embedding.refl : α ↪ α where
+  toFun := id
+  inj _ _ := id
+
+@[refl]
 def Equiv.refl : Equiv α α where
   toFun := id
   invFun := id
@@ -275,3 +280,24 @@ def Subtype.congrEquiv { α β: Sort _ } {P: α -> Prop} {Q: β -> Prop}
   | ⟨_, _⟩ => by
     dsimp; congr
     rw [h.rightInv]
+
+def Embedding.equivSubtype : (α ↪ β) ≃ { x: α -> β // x.Injective } where
+  toFun | ⟨a, b⟩ => ⟨a, b⟩
+  invFun | ⟨a, b⟩ => ⟨a, b⟩
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def Equiv.equivSubtype {α β: Type*} : (α ≃ β) ≃ { x: (α -> β) × (β -> α) // x.1.IsLeftInverse x.2 ∧ x.1.IsRightInverse x.2 } where
+  toFun | ⟨f, g, l, r⟩ => ⟨⟨f, g⟩, r, l⟩
+  invFun | ⟨⟨f, g⟩, l, r⟩ => ⟨f, g, r, l⟩
+  leftInv _ := rfl
+  rightInv| ⟨⟨_, _⟩, _, _⟩ => rfl
+
+def Embedding.congr (emb: α ↪ β) (eqa: α ≃ α₀) (eqb: β ≃ β₀) : α₀ ↪ β₀ where
+  toFun := eqb.toFun ∘ emb.toFun ∘ eqa.invFun
+  inj := by
+    apply Function.Injective.comp
+    apply eqb.toFun_inj
+    apply Function.Injective.comp
+    apply emb.inj
+    apply eqa.invFun_inj
