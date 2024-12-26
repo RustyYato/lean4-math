@@ -1,3 +1,5 @@
+import Math.Type.Notation
+
 namespace Function
 
 variable (g: β -> α) (f: α -> β)

@@ -1,16 +1,19 @@
 import Math.Type.Basic
 import Math.Order.Fin
 import Math.Data.Fin.Basic
+import Math.Data.Fintype.Basic
 
 class inductive IsFinite (α: Sort*): Prop where
-| intro (limit: Nat) : (α ↪ Fin limit) -> IsFinite α
+| intro (limit: Nat) : (α ≃ Fin limit) -> IsFinite α
 
-def IsFinite.existsEquiv (α: Sort*) [h: IsFinite α] : ∃card, _root_.Nonempty (α ≃ Fin card) := by
-  obtain ⟨ limit, emb ⟩ := h
+def IsFinite.existsEquiv (α: Sort*) [h: IsFinite α] : ∃card, _root_.Nonempty (α ≃ Fin card) :=
+  have ⟨limit, eqv⟩ := h
+  ⟨limit, ⟨eqv⟩⟩
+
+def IsFinite.ofEmbedding {limit: Nat} (emb: α ↪ Fin limit) : IsFinite α := by
   induction limit with
   | zero =>
     exists 0
-    apply Nonempty.intro
     apply Equiv.mk emb Fin.elim0
     intro x
     exact (emb x).elim0
@@ -18,9 +21,8 @@ def IsFinite.existsEquiv (α: Sort*) [h: IsFinite α] : ∃card, _root_.Nonempty
     exact x.elim0
   | succ limit ih =>
     if h:Function.Surjective emb then
+      have ⟨_, _⟩ := Equiv.ofBij ⟨emb.inj, h⟩
       exists limit.succ
-      have ⟨x, _⟩  := Equiv.ofBij ⟨emb.inj, h⟩
-      exact ⟨x⟩
     else
       replace ⟨missing, not_in_range⟩ := Classical.not_forall.mp h
       replace not_in_range := not_exists.mp not_in_range
@@ -86,222 +88,73 @@ noncomputable
 def IsFinite.toEquiv α [IsFinite α] : α ≃ Fin (card α) :=
   Classical.choice (Classical.choose_spec (existsEquiv α))
 
-instance IsFinite.ofFin : IsFinite (Fin n) := by
-  apply IsFinite.intro n
-  apply Embedding.mk id
-  intro ⟨x,_⟩ ⟨y, _⟩ eq
-  exact eq
+noncomputable
+def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=
+  Fintype.ofEquiv (IsFinite.toEquiv α)
 
-instance IsFinite.ofSum {α β: Type*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ⊕ β) := by
-  obtain ⟨alim, aemb⟩ := ha
-  obtain ⟨blim, bemb⟩ := hb
-  apply IsFinite.intro (alim + blim)
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    match x with
-    | .inr b =>
-      apply Fin.castLE
-      apply Nat.le_add_left
-      apply bemb b
-    | .inl a =>
-      apply Fin.addNat
-      apply aemb a
-  case inj =>
-    intro x y eq
-    dsimp at eq
-    split at eq <;> split at eq
-    · have := bemb.inj (Fin.val_inj.mp (Fin.mk.inj eq))
-      congr
-    · have := Fin.castLE_ne_addNat _ _ eq
-      contradiction
-    · have := Fin.castLE_ne_addNat _ _ eq.symm
-      contradiction
-    · have := aemb.inj <| Fin.val_inj.mp (Nat.add_right_cancel_iff.mp (Fin.mk.inj eq))
-      congr
+open Classical in
+instance [f: Fintype α] : IsFinite α := by
+  exists Fintype.card α
+  apply Fintype.equivFin
 
-instance IsFinite.ofPSum {α β: Sort*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ⊕' β) := by
-  obtain ⟨alim, aemb⟩ := ha
-  obtain ⟨blim, bemb⟩ := hb
-  apply IsFinite.intro (alim + blim)
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    match x with
-    | .inr b =>
-      apply Fin.castLE
-      apply Nat.le_add_left
-      apply bemb b
-    | .inl a =>
-      apply Fin.addNat
-      apply aemb a
-  case inj =>
-    intro x y eq
-    dsimp at eq
-    split at eq <;> split at eq
-    · have := bemb.inj (Fin.val_inj.mp (Fin.mk.inj eq))
-      congr
-    · have := Fin.castLE_ne_addNat _ _ eq
-      contradiction
-    · have := Fin.castLE_ne_addNat _ _ eq.symm
-      contradiction
-    · have := aemb.inj <| Fin.val_inj.mp (Nat.add_right_cancel_iff.mp (Fin.mk.inj eq))
-      congr
+instance {α β: Type*} [IsFinite α] [IsFinite β] : IsFinite (α ⊕ β) := by
+  have := Fintype.ofIsFinite α
+  have := Fintype.ofIsFinite β
+  exact inferInstance
 
-instance IsFinite.ofProd {α β: Type*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α × β) := by
-  obtain ⟨alim, aemb⟩ := ha
-  obtain ⟨blim, bemb⟩ := hb
-  apply IsFinite.intro (alim * blim)
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    apply Fin.pair
-    exact aemb x.1
-    exact bemb x.2
-  case inj =>
-    intro x y eq
-    dsimp at eq
-    cases x; cases y
-    have ⟨aeq, beq⟩   := Fin.pair.inj eq
-    congr
-    exact aemb.inj aeq
-    exact bemb.inj beq
+def IsFinite.ofEquiv {α β: Sort*} [hb: IsFinite β] (h: α ≃ β) : IsFinite α := by
+  obtain ⟨limit, hb⟩ := hb
+  apply IsFinite.intro limit
+  exact h.trans hb
 
-instance IsFinite.ofPProd {α β: Sort*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ×' β) := by
-  obtain ⟨alim, aemb⟩ := ha
-  obtain ⟨blim, bemb⟩ := hb
-  apply IsFinite.intro (alim * blim)
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    apply Fin.pair
-    exact aemb x.1
-    exact bemb x.2
-  case inj =>
-    intro x y eq
-    dsimp at eq
-    cases x; cases y
-    have ⟨aeq, beq⟩   := Fin.pair.inj eq
-    congr
-    exact aemb.inj aeq
-    exact bemb.inj beq
+def IsFinite.ofEquiv' {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ≃ β) : IsFinite α := by
+  obtain ⟨limit, hb⟩ := hb
+  apply IsFinite.intro limit
+  exact h.trans hb
 
-instance IsFinite.ofSigma {α: Type*} {β: α -> Type*} [ha: IsFinite α] [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) × β x) := by
-  have equiv := toEquiv α
-  have βequiv : {x: α} -> β x ≃ Fin (card (β x)) := fun {x} => toEquiv _
-  apply IsFinite.intro <| Fin.sum fun x => card (β (equiv.invFun x))
-  apply Embedding.mk
-  case toFun =>
-    intro ⟨a, b⟩
-    apply Fin.mk _ _
-    apply _ + Fin.sum_to (equiv a) fun x => card (β (equiv.invFun x))
-    exact (βequiv b).val
-    simp
-    rw [←Nat.sub_add_cancel (n := Fin.sum _) (m := (βequiv b).val), Nat.add_comm]
-    apply Nat.add_lt_add_right
-    show _ < _ - (βequiv.toFun b).val
-    apply Nat.lt_sub_of_add_lt
-    have := Fin.sum_to_lt_sum (x := equiv a) (f := fun x => card (β (equiv.invFun x))) (y := by
-      dsimp
-      show Fin (card (β (equiv.invFun (equiv.toFun _))))
-      apply Fin.mk
-      rw [equiv.leftInv]
-      exact (βequiv.toFun b).isLt)
-    dsimp at this
-    apply this
-    apply Nat.le_trans
-    apply Nat.le_of_lt
-    apply Fin.isLt
-    have : card (β (equiv.invFun (equiv.toFun _))) ≤ _ := Fin.le_sum (equiv a) (fun x => card (β (equiv.invFun x)))
-    rw [equiv.leftInv] at this
-    assumption
-  case inj =>
-    dsimp
-    intro ⟨xa, xb⟩ ⟨ya, yb⟩ eq
-    dsimp at eq
-    replace eq := Fin.mk.inj eq
-    have ⟨xa_eq_ya, xb_eq_yb⟩ := Fin.lt_add_sum_to_inj (fun x => card (β (equiv.invFun x)))
-      (equiv xa) (equiv ya) (by
-        apply Fin.mk (βequiv xb).val
-        simp [DFunLike.coe, IsEquivLike.coe]
-        have := equiv.leftInv xa
-        apply Nat.lt_of_lt_of_le
-        apply Fin.isLt
-        apply Nat.le_of_eq
-        congr
-        symm; assumption) (by
-        apply Fin.mk (βequiv yb).val
-        simp [DFunLike.coe, IsEquivLike.coe]
-        have := equiv.leftInv ya
-        apply Nat.lt_of_lt_of_le
-        apply Fin.isLt
-        apply Nat.le_of_eq
-        congr
-        symm; assumption) eq
-    clear eq
-    cases equiv.toFun_inj xa_eq_ya
-    congr
-    simp at xb_eq_yb
-    replace xb_eq_yb := Fin.val_inj.mp xb_eq_yb
-    cases βequiv.toFun_inj xb_eq_yb
-    rfl
+instance (α: Sort*) [IsFinite α] : IsFinite (PLift α) :=
+  IsFinite.ofEquiv PLift.equiv
 
-instance IsFinite.ofPSigma {α: Sort*} {β: α -> Sort*} [ha: IsFinite α] [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) ×' β x) := by
-  have equiv := toEquiv α
-  have βequiv : {x: α} -> β x ≃ Fin (card (β x)) := fun {x} => toEquiv _
-  apply IsFinite.intro <| Fin.sum fun x => card (β (equiv.invFun x))
-  apply Embedding.mk
-  case toFun =>
-    intro ⟨a, b⟩
-    apply Fin.mk _ _
-    apply _ + Fin.sum_to (equiv a) fun x => card (β (equiv.invFun x))
-    exact (βequiv b).val
-    simp
-    rw [←Nat.sub_add_cancel (n := Fin.sum _) (m := (βequiv b).val), Nat.add_comm]
-    apply Nat.add_lt_add_right
-    show _ < _ - (βequiv.toFun b).val
-    apply Nat.lt_sub_of_add_lt
-    have := Fin.sum_to_lt_sum (x := equiv a) (f := fun x => card (β (equiv.invFun x))) (y := by
-      dsimp
-      show Fin (card (β (equiv.invFun (equiv.toFun _))))
-      apply Fin.mk
-      rw [equiv.leftInv]
-      exact (βequiv.toFun b).isLt)
-    dsimp at this
-    apply this
-    apply Nat.le_trans
-    apply Nat.le_of_lt
-    apply Fin.isLt
-    have : card (β (equiv.invFun (equiv.toFun _))) ≤ _ := Fin.le_sum (equiv a) (fun x => card (β (equiv.invFun x)))
-    rw [equiv.leftInv] at this
-    assumption
-  case inj =>
-    dsimp
-    intro ⟨xa, xb⟩ ⟨ya, yb⟩ eq
-    dsimp at eq
-    replace eq := Fin.mk.inj eq
-    have ⟨xa_eq_ya, xb_eq_yb⟩ := Fin.lt_add_sum_to_inj (fun x => card (β (equiv.invFun x)))
-      (equiv xa) (equiv ya) (by
-        apply Fin.mk (βequiv xb).val
-        simp [DFunLike.coe, IsEquivLike.coe]
-        have := equiv.leftInv xa
-        apply Nat.lt_of_lt_of_le
-        apply Fin.isLt
-        apply Nat.le_of_eq
-        congr
-        symm; assumption) (by
-        apply Fin.mk (βequiv yb).val
-        simp [DFunLike.coe, IsEquivLike.coe]
-        have := equiv.leftInv ya
-        apply Nat.lt_of_lt_of_le
-        apply Fin.isLt
-        apply Nat.le_of_eq
-        congr
-        symm; assumption) eq
-    clear eq
-    cases equiv.toFun_inj xa_eq_ya
-    congr
-    simp at xb_eq_yb
-    replace xb_eq_yb := Fin.val_inj.mp xb_eq_yb
-    cases βequiv.toFun_inj xb_eq_yb
-    rfl
+instance {α β: Sort*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ⊕' β) := by
+  apply IsFinite.ofEquiv' (PLift α ⊕ PLift β)
+  apply Equiv.trans
+  apply PSum.equivCongr
+  apply PLift.equiv.symm
+  apply PLift.equiv.symm
+  apply Sum.equivPSum.symm
+
+instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) ×' β x) := by
+  have := Fintype.ofIsFinite (PLift α)
+  have : ∀x: PLift α, Fintype (PLift (β x.down)) := fun ⟨x⟩ =>
+    Fintype.ofIsFinite (PLift (β x))
+  apply IsFinite.ofEquiv' ((x : PLift α) × PLift (β x.down))
+  apply Equiv.trans  _ Sigma.equivPSigma.symm
+  apply PSigma.equivCongr PLift.equiv.symm
+  intro x x₀ eq
+  subst x₀
+  apply Equiv.trans _ PLift.equiv.symm
+  rfl
+
+instance {α: Type*} {β: α -> Type*} [IsFinite α]  [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) × β x) := by
+  have := Fintype.ofIsFinite (PLift α)
+  have : ∀x: PLift α, Fintype (PLift (β x.down)) := fun ⟨x⟩ =>
+    Fintype.ofIsFinite (PLift (β x))
+  apply IsFinite.ofEquiv' ((x : PLift α) × PLift (β x.down))
+  apply Sigma.equivCongr PLift.equiv.symm
+  intro x x₀ eq
+  subst x₀
+  apply Equiv.trans _ PLift.equiv.symm
+  rfl
+
+instance {α: Type*} {β: Type*} [IsFinite α]  [IsFinite β] : IsFinite (α × β) := by
+  have := Fintype.ofIsFinite α
+  have := Fintype.ofIsFinite β
+  exact inferInstance
+
+instance {α: Sort*} {β: Sort*} [IsFinite α]  [IsFinite β] : IsFinite (α ×' β) := by
+  apply IsFinite.ofEquiv' (PLift α × PLift β)
+  apply Equiv.trans
+  apply PProd.equivCongr
+  apply PLift.equiv.symm
+  apply PLift.equiv.symm
+  apply Prod.equivPProd.symm

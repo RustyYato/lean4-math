@@ -129,7 +129,25 @@ def Equiv.toProd (h: a ≃ c) (g: b ≃ d) : a × b ≃ c × d where
     rw [h.rightInv, g.rightInv]
     trivial
 
+def Prod.equivPProd : (α × β) ≃ α ×' β where
+  toFun
+  | ⟨a, b⟩ => ⟨a, b⟩
+  invFun
+  | ⟨a, b⟩ => ⟨a, b⟩
+  leftInv
+  | ⟨_, _⟩ => rfl
+  rightInv
+  | ⟨_, _⟩ => rfl
 def Prod.equivSigma : (α × β) ≃ (_: α) × β where
+  toFun
+  | ⟨a, b⟩ => ⟨a, b⟩
+  invFun
+  | ⟨a, b⟩ => ⟨a, b⟩
+  leftInv
+  | ⟨_, _⟩ => rfl
+  rightInv
+  | ⟨_, _⟩ => rfl
+def PProd.equivPSigma : (α ×' β) ≃ (_: α) ×' β where
   toFun
   | ⟨a, b⟩ => ⟨a, b⟩
   invFun
@@ -165,6 +183,19 @@ def PSum.equivComm : (α ⊕' β) ≃ (β ⊕' α) where
   | .inr x => .inl x
   leftInv | .inl _ | .inr _ => rfl
   rightInv | .inl _ | .inr _ => rfl
+def PSum.equivCongr (ha: α ≃ α₀) (hb: β ≃ β₀) : (α ⊕' β) ≃ (α₀ ⊕' β₀) where
+  toFun
+  | .inl x => .inl (ha.toFun x)
+  | .inr x => .inr (hb.toFun x)
+  invFun
+  | .inl x => .inl (ha.invFun x)
+  | .inr x => .inr (hb.invFun x)
+  leftInv
+  | .inl _ => by dsimp; rw [ha.leftInv]
+  | .inr _ => by dsimp; rw [hb.leftInv]
+  rightInv
+  | .inl _ => by dsimp; rw [ha.rightInv]
+  | .inr _ => by dsimp; rw [hb.rightInv]
 def Sum.equivPSum : (α ⊕ β) ≃ (α ⊕' β) where
   toFun
   | .inl x => .inl x
@@ -174,11 +205,106 @@ def Sum.equivPSum : (α ⊕ β) ≃ (α ⊕' β) where
   | .inr x => .inr x
   leftInv | .inl _ | .inr _ => rfl
   rightInv | .inl _ | .inr _ => rfl
+def Sum.equivCongr (ha: α ≃ α₀) (hb: β ≃ β₀) : (α ⊕ β) ≃ (α₀ ⊕ β₀) where
+  toFun
+  | .inl x => .inl (ha.toFun x)
+  | .inr x => .inr (hb.toFun x)
+  invFun
+  | .inl x => .inl (ha.invFun x)
+  | .inr x => .inr (hb.invFun x)
+  leftInv
+  | .inl _ => by dsimp; rw [ha.leftInv]
+  | .inr _ => by dsimp; rw [hb.leftInv]
+  rightInv
+  | .inl _ => by dsimp; rw [ha.rightInv]
+  | .inr _ => by dsimp; rw [hb.rightInv]
 def Fin.equivOfEq (h: n = m) : Fin n ≃ Fin m where
   toFun x := x.cast h
   invFun x := x.cast h.symm
   leftInv | ⟨_, _⟩ => rfl
   rightInv | ⟨_, _⟩ => rfl
+
+def Equiv.heq_invFun_left {a: α ≃ β} {b: α₀ ≃ β} (h: HEq a b) : α = α₀ -> ∀x, HEq (a.invFun x) (b.invFun x) := by
+  intro eq
+  subst α₀
+  cases h
+  intro x
+  rfl
+def Equiv.heq_toFun_left {a: α ≃ β} {b: α₀ ≃ β₀} (hb: HEq β β₀) (h: HEq a b) : α = α₀ -> ∀x x₀, HEq x x₀ -> HEq (a.toFun x) (b.toFun x₀) := by
+  intro eq
+  intro x x₀ eq
+  cases eq
+  cases hb
+  cases h
+  rfl
+
+def PSigma.equivCongr {β: α -> Sort*} {β₀: α₀ -> Sort*} (ha: α ≃ α₀) (hb: ∀x x₀, x₀ = ha.toFun x -> β x ≃ β₀ x₀) :
+  (x: α) ×' β x ≃ (x: α₀) ×' β₀ x where
+  toFun | ⟨a, b⟩ => ⟨ha.toFun a, (hb _ _ rfl).toFun b⟩
+  invFun | ⟨a, b⟩ => ⟨ha.invFun a, by
+    apply (hb (ha.invFun a) _ _).invFun
+    exact b
+    rw [ha.rightInv]⟩
+  leftInv := by
+    intro ⟨a, b⟩
+    dsimp
+    congr
+    rw [ha.leftInv]
+    apply HEq.trans
+    apply Equiv.heq_invFun_left
+    show HEq _ (hb a (ha.toFun a) rfl)
+    congr 1
+    rw [ha.leftInv]
+    apply proof_irrel_heq
+    rw [ha.leftInv]
+    rw [(hb  _ _ _).leftInv]
+  rightInv := by
+    intro ⟨a, b⟩
+    dsimp
+    congr
+    rw [ha.rightInv]
+    apply HEq.trans
+    apply Equiv.heq_toFun_left _
+    show HEq _ (hb (ha.invFun a) a (ha.rightInv _).symm)
+    congr
+    rw [ha.rightInv]
+    apply proof_irrel_heq
+    rfl
+    rfl
+    rw [ha.rightInv]
+    rw [(hb _ _ _).rightInv]
+
+def Sigma.equivPSigma {β: α -> Type*} :
+  (x: α) × β x ≃ (x: α) ×' β x where
+  toFun | ⟨a, b⟩ => ⟨a, b⟩
+  invFun | ⟨a, b⟩ => ⟨a, b⟩
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def Sigma.equivCongr {β: α -> Type*} {β₀: α₀ -> Type*} (ha: α ≃ α₀) (hb: ∀x x₀, x₀ = ha.toFun x -> β x ≃ β₀ x₀) :
+  (x: α) × β x ≃ (x: α₀) × β₀ x := by
+  apply Equiv.trans Sigma.equivPSigma
+  apply Equiv.trans _ Sigma.equivPSigma.symm
+  apply PSigma.equivCongr
+  assumption
+
+def PProd.equivCongr (ha: α ≃ α₀) (hb: β ≃ β₀) :
+  α ×' β ≃ α₀ ×' β₀ := by
+  apply Equiv.trans PProd.equivPSigma
+  apply Equiv.trans _ PProd.equivPSigma.symm
+  apply PSigma.equivCongr
+  intro x x₀ eq
+  assumption
+  assumption
+
+def Prod.equivCongr (ha: α ≃ α₀) (hb: β ≃ β₀) :
+  α × β ≃ α₀ × β₀ := by
+  apply Equiv.trans Prod.equivSigma
+  apply Equiv.trans _ Prod.equivSigma.symm
+  apply Sigma.equivCongr
+  intro x x₀ eq
+  assumption
+  assumption
 
 def cast_eq_of_heq' {β: α -> Sort _}
   {a: β x}
