@@ -159,19 +159,21 @@ def Fintype.indexOf_getElem [DecidableEq α] {f: Fintype α} (x: Fin (card α)) 
     apply List.getElem_mem (Nat.lt_of_succ_lt_succ xLt)
     assumption
 
-def Fintype.ofEquiv {a b: Type _} (eq: a ≃ b) [f: Fintype a] : Fintype b where
-  all := f.all.map eq.toFun
+def Fintype.ofEquiv {a b: Type _} (eq: a ≃ b) [f: Fintype b] : Fintype a where
+  all := f.all.map eq.invFun
   nodup := by
     apply List.nodup_map
-    apply eq.toFun_inj
+    apply eq.invFun_inj
     exact f.nodup
   complete := by
     intro x
     apply List.mem_map.mpr
-    exists eq.invFun x
+    exists eq.toFun x
     apply And.intro
     apply f.complete
-    rw [eq.rightInv]
+    rw [eq.leftInv]
+
+def Fintype.ofEquiv' {a b: Type _} (eq: a ≃ b) [f: Fintype a] : Fintype b := Fintype.ofEquiv eq.symm
 
 def Fintype.equivFin [f: Fintype α] [DecidableEq α] : α ≃ Fin f.card where
   toFun := f.indexOf
@@ -190,16 +192,20 @@ def Fintype.equivOfEqCard [DecidableEq α] [DecidableEq β] {fa: Fintype α} {fb
   assumption
 
 def Fintype.eqCardOfEquiv {fa: Fintype α} {fb: Fintype β} (h: α ≃ β) : fa.card = fb.card := by
-  rw [Fintype.card_eq fb (fa.ofEquiv h)]
+  rw [Fintype.card_eq fb (fa.ofEquiv' h)]
   show _  = (List.map _ _).length
   rw [List.length_map]
   rfl
 
-def Fintype.ofEquiv_card_eq {fa: Fintype α} (h: α ≃ β) : (fa.ofEquiv h).card = fa.card := by
+def Fintype.ofEquiv_card_eq {fa: Fintype β} (h: α ≃ β) : (fa.ofEquiv h).card = fa.card := by
   unfold card all ofEquiv
   dsimp
   rw [List.length_map]
   rfl
+
+def Fintype.ofEquiv'_card_eq {fa: Fintype α} (h: α ≃ β) : (fa.ofEquiv' h).card = fa.card := by
+  unfold ofEquiv'
+  rw [ofEquiv_card_eq]
 
 instance {P: α -> Prop} [DecidablePred P] [f: Fintype α] : Decidable (∃x, P x) :=
   decidable_of_iff (∃x ∈ f.all, P x) <| by

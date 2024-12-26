@@ -229,3 +229,49 @@ def UInt64.equivFin : UInt64 ≃ Fin (2^64) where
   invFun x := ⟨⟨x⟩⟩
   leftInv _ := rfl
   rightInv _ := rfl
+
+def Except.equivSum : Except α β ≃ α ⊕ β where
+  toFun
+  | .ok x => .inr x
+  | .error x => .inl x
+  invFun
+  | .inr x => .ok x
+  | .inl x => .error x
+  leftInv | .ok _ | .error _ => rfl
+  rightInv | .inl _ | .inr _ => rfl
+
+def ULift.equiv : ULift α ≃ α where
+  toFun | ⟨x⟩ => x
+  invFun x := ⟨x⟩
+  leftInv | ⟨_⟩ => rfl
+  rightInv _ := rfl
+
+def PLift.equiv : PLift α ≃ α where
+  toFun | ⟨x⟩ => x
+  invFun x := ⟨x⟩
+  leftInv | ⟨_⟩ => rfl
+  rightInv _ := rfl
+
+def Array.equivList : Array α ≃ List α where
+  toFun | ⟨x⟩ => x
+  invFun x := ⟨x⟩
+  leftInv | ⟨_⟩ => rfl
+  rightInv _ := rfl
+
+def Subtype.congrEquiv { α β: Sort _ } {P: α -> Prop} {Q: β -> Prop}
+  (h: α ≃ β)
+  (iff: ∀{x}, P x ↔ Q (h.toFun x))
+  : Subtype P ≃ Subtype Q where
+  toFun | ⟨x, prop⟩ => ⟨h.toFun x, iff.mp prop⟩
+  invFun | ⟨x, prop⟩ => ⟨h.invFun x, by
+    apply iff.mpr
+    rw [h.rightInv]
+    exact prop⟩
+  leftInv
+  | ⟨_, _⟩ => by
+    dsimp; congr
+    rw [h.leftInv]
+  rightInv
+  | ⟨_, _⟩ => by
+    dsimp; congr
+    rw [h.rightInv]

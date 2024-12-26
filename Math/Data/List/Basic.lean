@@ -423,3 +423,5 @@ def List.product_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
   rw [h x, h y]
   assumption
   assumption
+
+def List.Nodup.singleton (x: α) : List.Nodup [x] := List.Pairwise.cons nofun List.Pairwise.nil

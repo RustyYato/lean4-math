@@ -69,7 +69,7 @@ def Pi.finArgFintype (β: Fin n -> Type _) [f: ∀x, Fintype (β x)] : Fintype (
 instance Pi.FintypeInst {β: α -> Type _} [DecidableEq α] [fa: Fintype α] [∀x, Fintype (β x)] : Fintype (∀x, β x) := by
   let eqvFin : α ≃ Fin (Fintype.card α) := fa.equivFin
   have := Pi.finArgFintype (fun x => β (eqvFin.invFun x))
-  apply Fintype.ofEquiv (a := (∀x: (Fin (Fintype.card α)), β (eqvFin.invFun x)))
+  apply Fintype.ofEquiv' (a := (∀x: (Fin (Fintype.card α)), β (eqvFin.invFun x)))
   clear this
   apply Pi.congrEquiv _ _
   symm; assumption
@@ -99,7 +99,7 @@ def Pi.fin_card_eq {β: Fin n -> Type _} [bs: ∀x, Fintype (β x)] :
 
 def Pi.card_eq {β: α -> Type _} [DecidableEq α] [fa: Fintype α] [bs: ∀x, Fintype (β x)] :
   Fintype.card (∀x, β x) = (List.product <| fa.all.map (fun x => (bs x).all.length)) := by
-  rw [Fintype.ofEquiv_card_eq, Pi.fin_card_eq]
+  rw [Fintype.ofEquiv'_card_eq, Pi.fin_card_eq]
   congr
   cases fa with | mk fa nodup compl =>
   show List.map (fun x => _) (List.finRange fa.length) = List.map (fun x => _) fa

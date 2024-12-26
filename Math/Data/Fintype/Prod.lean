@@ -24,7 +24,7 @@ instance {β: α -> Type _} [as: Fintype α] [bs: ∀x, Fintype (β x)] : Fintyp
     rfl
 
 instance [Fintype α] [Fintype β] : Fintype (α × β) :=
-  Fintype.ofEquiv Prod.equivSigma.symm
+  Fintype.ofEquiv Prod.equivSigma
 
 instance {β: α -> Type _} [IsEmpty α] : Fintype ((x: α) × β x) where
   all := []
