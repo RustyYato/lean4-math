@@ -114,6 +114,8 @@ def IsFinite.ofEquiv' {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ≃ β) :
 
 instance (α: Sort*) [IsFinite α] : IsFinite (PLift α) :=
   IsFinite.ofEquiv PLift.equiv
+instance (α: Type*) [IsFinite α] : IsFinite (ULift α) :=
+  IsFinite.ofEquiv ULift.equiv
 
 instance {α β: Sort*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ⊕' β) := by
   apply IsFinite.ofEquiv' (PLift α ⊕ PLift β)
@@ -158,3 +160,20 @@ instance {α: Sort*} {β: Sort*} [IsFinite α]  [IsFinite β] : IsFinite (α ×'
   apply PLift.equiv.symm
   apply PLift.equiv.symm
   apply Prod.equivPProd.symm
+
+open Classical in
+instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : IsFinite (∀x, β x) := by
+  have := Fintype.ofIsFinite (PLift α)
+  have := fun x: PLift α => Fintype.ofIsFinite (PLift (β x.down))
+  apply IsFinite.ofEquiv' (∀x: PLift α, PLift (β x.down))
+  apply Equiv.mk
+  case toFun =>
+    intro f ⟨x⟩
+    exact ⟨f x⟩
+  case invFun =>
+    intro f x
+    exact (f ⟨x⟩).down
+  case leftInv => intro _; rfl
+  case rightInv => intro _; rfl
+
+instance {α: Sort*} {β: Sort*} [IsFinite α] [IsFinite β] : IsFinite (α -> β) := inferInstance
