@@ -409,16 +409,14 @@ instance (priority := 100) [IsDecidableLinearOrder α] : Decidable (a ≤ b) := 
 instance (priority := 100) [IsDecidableLinearOrder α] : Decidable (a < b) := IsDecidableLinearOrder.decLT _ _
 instance (priority := 100) [IsDecidableLinearOrder α] : Decidable (a = b) := IsDecidableLinearOrder.decEQ _ _
 
-variable [IsDecidableLinearOrder α] [@DecidableRel α (· ≤ ·)]
+variable [IsDecidableLinearOrder α]
 
 def min_def [IsDecidableLinearOrder α] : ∀a b: α, min a b = if a ≤ b then a else b := by
   intro a b
   rw [IsDecidableLinearOrder.min_def]
-  congr
 def max_def [IsDecidableLinearOrder α] : ∀a b: α, max a b = if a ≤ b then b else a := by
   intro a b
   rw [IsDecidableLinearOrder.max_def]
-  congr
 
 instance : IsDecidableLinearOrder Bool where
   decLE := by intros; exact inferInstance
