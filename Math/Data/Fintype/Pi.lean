@@ -90,7 +90,7 @@ def Pi.fin_card_eq {β: Fin n -> Type _} [bs: ∀x, Fintype (β x)] :
     have := ih (β := β ∘ Fin.succ) (bs := fun x => bs x.succ)
     conv at this => { lhs; unfold Fintype.card Fintype.all finArgFintype; dsimp }
     conv => {
-      lhs; rhs; arg 1; intro x; erw [List.length_map, this]
+      lhs; rhs; arg 1; intro x; dsimp; erw [List.length_map, this]
     }
     rw [List.map_map, List.sum_const', List.length_map, Nat.mul_comm]
     intro x mem

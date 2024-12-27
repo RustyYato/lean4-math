@@ -51,6 +51,7 @@ def Sigma.card_eq {β: α -> Type _} (as: Fintype α) (bs: ∀x, Fintype (β x))
   erw [List.length_flatMap]
   congr
   funext x
+  dsimp
   rw [List.length_map]
   rfl
 

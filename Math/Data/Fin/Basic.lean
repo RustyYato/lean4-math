@@ -55,7 +55,7 @@ def Fin.pair_pair_right (x: Fin n) (y: Fin m) : (pair x y).pair_right = y := by
   unfold pair pair_right
   cases y with | mk y yLt =>
   simp
-  rw [Nat.add_mod, Nat.mul_mod, Nat.mod_self, Nat.mul_zero, Nat.zero_mod, Nat.zero_add, Nat.mod_mod, Nat.mod_eq_of_lt]
+  rw [Nat.mod_eq_of_lt]
   assumption
 
 def Fin.pair_split_eq_self (x: Fin (n * m)) : pair x.pair_left x.pair_right = x := by

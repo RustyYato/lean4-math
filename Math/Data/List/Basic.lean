@@ -394,11 +394,6 @@ def List.sum_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
   assumption
   assumption
 
-def List.length_flatMap (as: List α) (f: α -> List β) : (as.flatMap f).length = List.sum (as.map fun x => (f x).length) := by
-  induction as with
-  | nil => rfl
-  | cons a as ih => simp [ih]
-
 def List.product [Mul α] [OfNat α 1] : List α -> α
 | [] => 1
 | a::as => a * product as
