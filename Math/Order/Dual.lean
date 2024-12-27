@@ -13,3 +13,8 @@ instance [Inf α] : Sup (OrderDual α) where
   sup a b := .mk (a.get ⊓ b.get)
 instance [Sup α] : Inf (OrderDual α) where
   inf a b := .mk (a.get ⊔ b.get)
+
+instance [Top α] : Bot (OrderDual α) where
+  bot := .mk ⊤
+instance [Bot α] : Top (OrderDual α) where
+  top := .mk ⊥

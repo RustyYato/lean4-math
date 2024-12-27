@@ -1,5 +1,6 @@
 import Math.Type.Basic
 import Math.Function.Basic
+import Math.Order.Dual
 
 class SUnion (α: Type*) (β: outParam <| Type*) where
   sUnion : α -> β
@@ -171,6 +172,11 @@ class InfSet (α: Type*) where
 export SupSet (sSup)
 export InfSet (sInf)
 
+instance [InfSet α] : SupSet (OrderDual α) where
+  sSup := sInf (α := α)
+instance [SupSet α] : InfSet (OrderDual α) where
+  sInf := sSup (α := α)
+
 def iSup [SupSet α] (s: ι -> α) : α := sSup (Set.range s)
 def iInf [InfSet α] (s: ι -> α) : α := sInf (Set.range s)
 
@@ -317,5 +323,7 @@ def empty_union (a: Set α) : ∅ ∪ a = a := by
 @[simp]
 def union_empty (a: Set α) : a ∪ ∅ = a := by
   simp [union_comm a]
+
+def mem_pair {a b: α} : ∀{x}, x ∈ ({a, b}: Set α) ↔ x = a ∨ x = b := by rfl
 
 end Set
