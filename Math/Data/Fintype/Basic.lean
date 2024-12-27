@@ -6,10 +6,6 @@ import Math.Data.Fintype.Prod
 import Math.Data.Fintype.Subtype
 import Math.Data.Fintype.Option
 
-noncomputable
-def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=
-  Fintype.ofEquiv (IsFinite.toEquiv α)
-
 instance [Fintype α] [Fintype β] : Fintype (Except α β) := Fintype.ofEquiv Except.equivSum
 
 instance : Fintype UInt8 := Fintype.ofEquiv UInt8.equivFin

@@ -112,6 +112,14 @@ def IsFinite.ofEquiv' {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ≃ β) :
   apply IsFinite.intro limit
   exact h.trans hb
 
+def IsFinite.ofEmbed {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ↪ β) : IsFinite α := by
+  obtain ⟨limit, hb⟩ := hb
+  apply IsFinite.ofEmbedding (limit := limit)
+  apply Embedding.congr
+  assumption
+  rfl
+  assumption
+
 instance (α: Sort*) [IsFinite α] : IsFinite (PLift α) :=
   IsFinite.ofEquiv PLift.equiv
 instance (α: Type*) [IsFinite α] : IsFinite (ULift α) :=
@@ -177,3 +185,25 @@ instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : 
   case rightInv => intro _; rfl
 
 instance {α: Sort*} {β: Sort*} [IsFinite α] [IsFinite β] : IsFinite (α -> β) := inferInstance
+open Classical
+instance {α: Sort*} {P: α -> Prop} [IsFinite α] : IsFinite (Subtype P) := by
+  have := Fintype.ofIsFinite (PLift α)
+  apply IsFinite.ofEquiv' (Subtype fun x: PLift α => P x.down)
+  apply Subtype.congrEquiv _ _
+  apply PLift.equiv.symm
+  rfl
+
+instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∨ Q x)) := by
+
+  sorry
+instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
+  apply IsFinite.ofEquiv' (Subtype fun x: Subtype P => Q x.val)
+  apply Equiv.mk
+  case toFun =>
+    intro ⟨x, _, _⟩
+    refine ⟨⟨x, ?_⟩, ?_⟩ <;> assumption
+  case invFun =>
+    intro ⟨⟨x, _⟩, _⟩
+    refine ⟨x, ?_, ?_⟩ <;> assumption
+  case leftInv => intro ⟨x, _, _⟩; rfl
+  case rightInv => intro ⟨⟨x, _⟩, _⟩; rfl

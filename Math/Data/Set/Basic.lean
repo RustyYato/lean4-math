@@ -137,8 +137,20 @@ instance : SetComplement (Set α) where
   scompl := compl
 def mem_compl {a: Set α} : ∀{x}, x ∈ aᶜ ↔ x ∉ a := Iff.refl _
 
+def univ_compl : (Set.univ α)ᶜ = ∅ := by
+  apply ext_empty
+  intro x h
+  exact h True.intro
+
+def empty_compl : ∅ᶜ = Set.univ α := by
+  apply ext_univ
+  intro x h
+  contradiction
+
 def Nonempty (a: Set α) := ∃x, x ∈ a
 def Elem (a: Set α) := { x // x ∈ a }
+
+instance {α: Type u} : CoeSort (Set α) (Type u) := ⟨Set.Elem⟩
 
 instance : Singleton α (Set α) where
   singleton a := mk fun x => x = a
@@ -184,5 +196,44 @@ def iInf_sub (a: Set α) (s: ι -> Set α): a ∈ range s -> iInf s ⊆ a := by
   apply sub_trans (sInf_sub _ _ _)
   rfl
   assumption
+
+instance : SDiff (Set α) where
+  sdiff a b := a ∩ bᶜ
+
+def mem_sdiff {a b: Set α} : ∀{x}, x ∈ a \ b ↔ x ∈ a ∧ x ∉ b := by rfl
+
+def univ_sub (a: Set α) : univ α ⊆ a -> a = univ α := by
+  intro sub
+  apply ext_univ
+  intro x
+  apply sub
+  apply mem_univ
+
+def sub_univ (s: Set α) : s ⊆ univ α := by
+  intros _ _
+  apply mem_univ
+
+def compl_compl (s: Set α) : sᶜᶜ = s := by
+  ext x
+  apply Iff.intro
+  intro h
+  exact Classical.not_not.mp h
+  intro h g
+  exact g h
+
+def Set.inter_comm (a b: Set α) : a ∩ b = b ∩ a := by
+  ext x
+  simp [mem_inter, And.comm]
+
+instance : Subsingleton (∅: Set α).Elem where
+  allEq := by
+    intro x
+    exact x.property.elim
+
+instance : Subsingleton ({a}: Set α).Elem where
+  allEq := by
+    intro ⟨x, hx⟩ ⟨y, hy⟩
+    cases hx; cases hy
+    rfl
 
 end Set

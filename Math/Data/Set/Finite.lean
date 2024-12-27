@@ -14,11 +14,8 @@ def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty 
   _root_.IsFinite.existsEquiv a.Elem
 
 instance IsFinite.ofFin (x: Set (Fin n)) : x.IsFinite := by
-  apply IsFinite.intro n
-  apply Embedding.mk Subtype.val
-  intro ⟨x,_⟩ ⟨y, _⟩  eq
-  cases eq
-  rfl
+  unfold Set.IsFinite Set.Elem
+  exact inferInstance
 
 def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) ≠ y.addNat n := by
   intro h
@@ -30,70 +27,24 @@ def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) 
   subst x
   exact Nat.not_lt_of_le (Nat.le_add_left _ _) xLt
 
+open Classical in
 instance [ha: IsFinite a] [hb: IsFinite b] : IsFinite (a ∪ b) := by
-  obtain ⟨alim, aemb⟩ := ha
-  obtain ⟨blim, bemb⟩ := hb
-  apply IsFinite.intro (alim + blim)
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    match Classical.propDecidable (x.val ∈ b) with
-    | .isTrue h =>
-      apply (bemb ⟨x.val, h⟩).castLE
-      apply Nat.le_add_left
-    | .isFalse h =>
-      apply Fin.addNat
-      apply aemb.toFun
-      exists x.val
-      cases x.property
-      assumption
-      contradiction
-  case inj =>
-    intro x y eq
-    dsimp at eq
-    split at eq <;> split at eq
-    · have := bemb.inj (Fin.val_inj.mp (Fin.mk.inj eq))
-      cases x; cases y
-      congr
-      cases this
-      rfl
-    · have := Fin.castLE_ne_addNat _ _ eq
-      contradiction
-    · have := Fin.castLE_ne_addNat _ _ eq.symm
-      contradiction
-    · have := aemb.inj <| Fin.val_inj.mp (Nat.add_right_cancel_iff.mp (Fin.mk.inj eq))
-      cases x; cases y; cases this
-      rfl
+  have := Fintype.ofIsFinite a
+  have := Fintype.ofIsFinite b
+  unfold Set.Elem at *
+  have : Fintype ((a ∪ b).Elem) := inferInstanceAs (Fintype (Subtype fun x => x ∈ a ∨ x ∈ b))
+  infer_instance
 
+open Classical in
 instance [ha: IsFinite a] : IsFinite (a ∩ b) := by
-  obtain ⟨lim, emb⟩ := ha
-  apply IsFinite.intro lim
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    apply emb.toFun
-    apply Subtype.mk x.val
-    exact x.property.left
-  case inj =>
-    intro x y eq
-    dsimp at eq
-    cases x; cases y; cases (emb.inj eq)
-    rfl
+  have := Fintype.ofIsFinite a
+  unfold Set.Elem at *
+  have : Fintype ((a ∩ b).Elem) := inferInstanceAs (Fintype (Subtype fun x => x ∈ a ∧ x ∈ b))
+  infer_instance
 
 instance [hb: IsFinite b] : IsFinite (a ∩ b) := by
-  obtain ⟨lim, emb⟩ := hb
-  apply IsFinite.intro lim
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    apply emb.toFun
-    apply Subtype.mk x.val
-    exact x.property.right
-  case inj =>
-    intro x y eq
-    dsimp at eq
-    cases x; cases y; cases (emb.inj eq)
-    rfl
+  rw [Set.inter_comm]
+  exact inferInstance
 
 def Set.elem_val_eq_of_elem_heq (a b: Set α) (c: a.Elem) (d: b.Elem) : a = b -> HEq c d -> c.val = d.val := by
   intro eq heq
@@ -101,18 +52,15 @@ def Set.elem_val_eq_of_elem_heq (a b: Set α) (c: a.Elem) (d: b.Elem) : a = b ->
   cases heq
   rfl
 
-def Set.IsFinite.sUnion (a: Set (Set α)) [ha: IsFinite a] (hx: ∀x ∈ a, IsFinite x) : IsFinite (⋃ a) := by
-  have ⟨lim, emb⟩  := _root_.IsFinite.ofPSigma (α := a.Elem) (β := fun x: a.Elem => x.val.Elem) (ha := ha) (hb := fun x => hx x.val x.property)
-  apply IsFinite.intro lim
-  apply Embedding.comp
-  assumption
+def Set.IsFinite.sUnion (a: Set (Set α)) [ha: IsFinite a] (hx: ∀x: a, IsFinite x.val) : IsFinite (⋃ a) := by
+  apply _root_.IsFinite.ofEmbed (Σa': a, a'.val)
   apply Embedding.mk
   case toFun =>
-    intro x
-    have := mem_sUnion.mp x.property
-    let a' := Classical.choose this
-    have : a' ∈ a ∧ x.val ∈ a' := Classical.choose_spec this
-    refine PSigma.mk ⟨a', ?_⟩ ⟨x.val, ?_⟩
+    intro ⟨x, hx⟩
+    replace hx := mem_sUnion.mp hx
+    let a' := Classical.choose hx
+    have : a' ∈ a ∧ x ∈ a' := Classical.choose_spec hx
+    refine Sigma.mk ⟨a', ?_⟩ ⟨x, ?_⟩
     exact this.left
     exact this.right
   case inj =>
@@ -136,10 +84,9 @@ def Set.IsFinite.sUnion (a: Set (Set α)) [ha: IsFinite a] (hx: ∀x ∈ a, IsFi
     congr
 
 def Set.IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, IsFinite x) : IsFinite (⋂ a) := by
-  obtain ⟨a', a'_in_a, lim, emb⟩ := hx
-  apply IsFinite.intro lim
-  apply Embedding.comp emb
-  clear emb
+  obtain ⟨a', a'_in_a, lim, eqv⟩ := hx
+  apply IsFinite.ofEmbedding (limit := lim)
+  apply Embedding.congr _ (by rfl) eqv
   apply Embedding.mk
   case toFun =>
     intro x
@@ -154,33 +101,33 @@ def Set.IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, IsFinite x) : IsFinit
 
 instance : IsFinite (∅: Set α) := by
   apply IsFinite.intro 0
-  apply Embedding.mk
-  intro x y eq
-  have := x.property
-  contradiction
-  intro x
-  have := x.property
-  contradiction
+  apply Equiv.mk
+  case toFun => intro x; exact x.property.elim
+  case invFun => intro x; exact x.elim0
+  case leftInv => intro x; exact x.property.elim
+  case rightInv => intro x; exact x.elim0
 
 instance : IsFinite ({a}: Set α) := by
   apply IsFinite.intro 1
-  apply Embedding.mk
+  apply Equiv.mk
   case toFun =>
     intro
     exact 0
-  intro ⟨x, xprop⟩ ⟨y, yprop⟩ eq
-  cases yprop
-  cases xprop
-  rfl
+  case invFun =>
+    intro
+    exact ⟨a, Set.mem_singleton.mpr rfl⟩
+  case leftInv =>
+    intro _
+    apply Subsingleton.allEq
+  case rightInv =>
+    intro _
+    apply Subsingleton.allEq
 
 instance {a: α} {as: Set α} [IsFinite as] : IsFinite (Insert.insert a as) :=
   inferInstanceAs (IsFinite ({ a } ∪ as))
 
 instance {as: Set α} {f: α -> β} [ha: IsFinite as] : IsFinite (Set.image as f) := by
-  obtain ⟨lim, emb⟩ := ha
-  apply IsFinite.intro lim
-  apply Embedding.comp emb
-  clear emb
+  apply IsFinite.ofEmbed as
   apply Embedding.mk
   case toFun =>
     intro ⟨x, xprop⟩
@@ -200,7 +147,7 @@ open Classical in
 instance {as: Set α} [ha: IsFinite as] : IsFinite as.powerset := by
   let card := _root_.IsFinite.card as.Elem
   have eqv: as.Elem ≃ Fin card := _root_.IsFinite.toEquiv as.Elem
-  apply IsFinite.intro (2 ^ card)
+  apply IsFinite.ofEmbedding (limit := 2 ^ card)
   apply Embedding.mk
   case toFun =>
     intro x

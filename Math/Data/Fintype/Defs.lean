@@ -1,5 +1,5 @@
 import Math.Data.List.Basic
-import Math.Type.Finite
+import Math.Type.Basic
 
 class Fintype (α: Type _) where
   all: List α
@@ -87,10 +87,6 @@ def Fintype.embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) whe
 
 instance : GetElem (Fintype α) Nat α (fun _ n => n < Fintype.card α) where
   getElem f x p := f.all[x]
-
-instance [f: Fintype α] [DecidableEq α] : IsFinite α := by
-  exists Fintype.card α
-  apply Fintype.embedFin
 
 def Fintype.getElem_indexOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.indexOf x] = x := by
   cases f with | mk all nodup complete =>
@@ -239,6 +235,6 @@ instance [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] {f: α -> �
 instance [Fintype β] [DecidableEq β] {f: α -> β} {g: β -> α} : Decidable (Function.IsLeftInverse f g) := by
   delta Function.IsLeftInverse
   exact inferInstance
-instance [Fintype α] [DecidableEq α] {f: α -> β} {g: β -> α} : Decidable (Function.IsRightInverse f g) := by
+instance [Fintype α][DecidableEq α] {f: α -> β} {g: β -> α} : Decidable (Function.IsRightInverse f g) := by
   delta Function.IsRightInverse
   exact inferInstance

@@ -316,6 +316,23 @@ def List.nodup_filterMap (as: List α) (f: α -> Option β) :
     assumption
     rfl
 
+def List.nodup_filter (as: List α) (f: α -> Bool) :
+  as.Nodup ->
+  (as.filter f).Nodup := by
+  intro ha
+  induction ha with
+  | nil => apply List.Pairwise.nil
+  | cons nomem nodup ih =>
+    unfold filter
+    split
+    apply List.Pairwise.cons
+    · intro x mem
+      have ⟨_, _⟩ := List.mem_filter.mp mem
+      apply nomem
+      assumption
+    assumption
+    assumption
+
 def List.nodup_flatMap (as: List α) (f: α -> List β) :
   as.Nodup ->
   (∀x, (f x).Nodup) ->
