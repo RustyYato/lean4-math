@@ -174,4 +174,104 @@ instance {as: Set α} [ha: IsFinite as] : IsFinite as.powerset := by
     apply this
     assumption
 
+def IsFinite.induction {motive : Set α → Prop} (s : Set α) [h : s.IsFinite]
+    (nil: motive ∅)
+    (cons : ∀ a s, a ∉ s → Set.IsFinite s → motive s → motive (insert a s)) : motive s := by
+    obtain ⟨limit, eqv⟩ := h
+    induction limit generalizing s with
+    | zero =>
+      suffices s = ∅ by
+        subst s
+        assumption
+      apply ext_empty
+      intro x mem
+      exact (eqv ⟨x, mem⟩).elim0
+    | succ h ih =>
+      let x := eqv.invFun 0
+      have : s = insert x.val (s \ {x.val}) := by
+        ext y
+        rw [mem_insert, mem_sdiff, mem_singleton]
+        apply Iff.intro
+        intro mem
+        by_cases g:x.val = y
+        rw [←g]
+        left; rfl
+        right
+        apply And.intro
+        assumption
+        exact Ne.symm g
+        intro h
+        cases h
+        subst y
+        exact x.property
+        rename_i g
+        cases g
+        assumption
+      rw [this]
+      clear this
+      suffices (s \ {x.val}: Set _) ≃ Fin h by
+        apply cons
+        intro mem
+        exact (Set.mem_sdiff.mp mem).right (Set.mem_singleton.mpr rfl)
+        exists h
+        apply ih
+        assumption
+      apply Equiv.mk
+      case toFun =>
+        intro ⟨y, hy⟩
+        rw [mem_sdiff] at hy
+        apply (eqv.toFun ⟨y, hy.left⟩).pred
+        intro h
+        have : ⟨y, hy.left⟩ = x := by
+          show _ = eqv.invFun 0
+          rw [←h, eqv.leftInv]
+        apply hy.right
+        rw [mem_singleton]
+        rw [←this]
+      case invFun =>
+        intro y
+        let y' := eqv.invFun y.succ
+        refine ⟨y'.val, ?_⟩
+        rw [mem_sdiff, mem_singleton]
+        apply And.intro
+        exact y'.property
+        intro g
+        replace g := Subtype.ext g
+        have := Fin.val_inj.mpr (eqv.invFun_inj g)
+        contradiction
+      case leftInv =>
+        intro ⟨y, hy⟩
+        dsimp; rw [mem_sdiff, mem_singleton] at hy
+        congr
+        rw [Fin.succ_pred, eqv.leftInv]
+      case rightInv =>
+        intro y
+        dsimp
+        rw [Fin.pred_eq_iff_eq_succ]
+        show eqv.toFun (eqv.invFun _) = _
+        rw [eqv.rightInv]
+
+def IsFinite.spec (s: Set α) [h: s.IsFinite] : ∃s': List α, s'.Nodup ∧ ∀x, x ∈ s ↔ x ∈ s' := by
+  induction s using IsFinite.induction with
+  | nil =>
+    exists []
+    apply And.intro
+    apply List.Pairwise.nil
+    intro x
+    apply Iff.intro
+    intro; contradiction
+    intro; contradiction
+  | cons x s x_notin_s s_fin ih =>
+    obtain ⟨as, nodup, eqv⟩ := ih
+    exists x::as
+    apply And.intro
+    apply List.Pairwise.cons
+    intro y ymemas
+    have := (eqv _).mpr ymemas
+    intro g; subst g
+    contradiction
+    assumption
+    intro y
+    rw [mem_insert, List.mem_cons, eqv]
+
 end Set
