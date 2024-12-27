@@ -1,5 +1,6 @@
 import Math.Type.Notation
 import Math.Logic.Basic
+import Math.Order.Dual
 
 class IsPartialOrder (α: Type*) [LT α] [LE α]: Prop where
   lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
@@ -10,7 +11,7 @@ class IsPartialOrder (α: Type*) [LT α] [LE α]: Prop where
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [IsPartialOrder α]
 
-@[refl]
+@[refl, simp]
 def le_refl: ∀a: α, a ≤ a := IsPartialOrder.le_refl
 def lt_iff_le_and_not_le: a < b ↔ a ≤ b ∧ ¬b ≤ a := IsPartialOrder.lt_iff_le_and_not_le
 def le_antisymm: a ≤ b -> b ≤ a -> a = b := IsPartialOrder.le_antisymm
@@ -67,3 +68,14 @@ def lt_of_le_of_lt : a ≤ b -> b < c -> a < c := by
   assumption
 
 def lt_asymm : a < b -> b < a -> False := (lt_irrefl <| lt_trans · ·)
+
+instance [IsPartialOrder α] : IsPartialOrder (OrderDual α) where
+  lt_iff_le_and_not_le := by
+    intro a b
+    apply Iff.trans (lt_iff_le_and_not_le (α := α))
+    rfl
+  le_antisymm := by
+    intro a b ab ba
+    apply le_antisymm (α := α) <;> assumption
+  le_refl := le_refl (α := α)
+  le_trans := flip (le_trans (α := α))
