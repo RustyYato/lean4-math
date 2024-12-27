@@ -100,7 +100,7 @@ def sUnion_empty : ⋃(∅: Set (Set α)) = ∅ := by
   intro ⟨_, _, _⟩
   contradiction
 
-def sInter_empty [Membership β α] : ⋂(∅: Set (Set α)) = univ _ := by
+def sInter_empty : ⋂(∅: Set (Set α)) = univ _ := by
   apply ext_univ
   intro x
   rw [mem_sInter]
@@ -221,9 +221,13 @@ def compl_compl (s: Set α) : sᶜᶜ = s := by
   intro h g
   exact g h
 
-def Set.inter_comm (a b: Set α) : a ∩ b = b ∩ a := by
+def inter_comm (a b: Set α) : a ∩ b = b ∩ a := by
   ext x
   simp [mem_inter, And.comm]
+
+def union_comm (a b: Set α) : a ∪ b = b ∪ a := by
+  ext x
+  simp [mem_union, Or.comm]
 
 instance : Subsingleton (∅: Set α).Elem where
   allEq := by
@@ -235,5 +239,83 @@ instance : Subsingleton ({a}: Set α).Elem where
     intro ⟨x, hx⟩ ⟨y, hy⟩
     cases hx; cases hy
     rfl
+
+def sInter_insert (a: Set α) (as: Set (Set α)) : ⋂(insert  a as) = a ∩ ⋂as := by
+   ext x
+   simp [mem_sInter, mem_inter, mem_insert]
+
+def sUnion_insert (a: Set α) (as: Set (Set α)) : ⋃(insert  a as) = a ∪ ⋃as := by
+  ext x
+  simp [mem_sUnion, mem_union, mem_insert]
+
+def inter_sub_left (a b: Set α) : a ∩ b ⊆ a := by
+  intro x mem
+  exact (mem_inter.mp mem).left
+def inter_sub_right (a b: Set α) : a ∩ b ⊆ b := by
+  intro x mem
+  exact (mem_inter.mp mem).right
+
+def sub_def (a b: Set α) : (a ⊆ b) = ∀x ∈ a, x ∈ b := rfl
+
+def sub_inter (a b k: Set α) : (k ⊆ a ∧ k ⊆ b) ↔ k ⊆ a ∩ b := by
+  apply Iff.intro
+  intro h x xmem
+  simp [mem_inter, h.left _ xmem, h.right _ xmem]
+  intro h
+  apply And.intro <;> (intro x xmem; simp [mem_inter.mp (h x xmem)])
+
+def sub_union_left (a b: Set α) : a ⊆ a ∪ b := fun _ => .inl
+def sub_union_right (a b: Set α) : b ⊆ a ∪ b := fun _ => .inr
+
+@[simp]
+def mk_mem (P: α -> Prop) : ∀{x}, x ∈ mk P ↔ P x := by rfl
+
+def union_sub (a b k: Set α) : (a ⊆ k ∧ b ⊆ k) ↔ a ∪ b ⊆ k := by
+  apply Iff.intro
+  intro ⟨ha, hb⟩  x xmem
+  rw [mem_union] at xmem
+  rcases xmem with hxa | hxb
+  exact ha _ hxa; exact hb _ hxb
+  intro h
+  apply And.intro
+  intro x ha
+  exact h _ (.inl ha)
+  intro x hb
+  exact h _ (.inr hb)
+
+@[simp]
+def univ_inter (a: Set α) : univ α ∩ a = a := by
+  ext x
+  simp [mem_inter, mem_univ]
+@[simp]
+def inter_univ (a: Set α) : a ∩ univ α = a := by
+  ext x
+  simp [mem_inter, mem_univ]
+
+@[simp]
+def univ_union (a: Set α) : univ α ∪ a = univ α := by
+  ext x
+  simp [mem_union, mem_univ]
+@[simp]
+def union_univ (a: Set α) : a ∪ Set.univ α = univ α := by
+  ext x
+  simp [mem_union, mem_univ]
+
+@[simp]
+def empty_inter (a: Set α) : ∅ ∩ a = ∅ := by
+  apply ext_empty
+  intro x
+  simp [mem_inter]; intro; contradiction
+@[simp]
+def inter_empty (a: Set α) : a ∩ ∅ = ∅ := by
+  simp [inter_comm a]
+
+@[simp]
+def empty_union (a: Set α) : ∅ ∪ a = a := by
+  ext x
+  simp [mem_union]; intro; contradiction
+@[simp]
+def union_empty (a: Set α) : a ∪ ∅ = a := by
+  simp [union_comm a]
 
 end Set
