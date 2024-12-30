@@ -60,7 +60,7 @@ def univ_eq_empty_of_isempty [IsEmpty α] : Set.univ α = Set.empty α := by
   ext x
   exact (IsEmpty.elim x).elim
 
-@[refl]
+@[refl, simp]
 def sub_refl (a: Set α) : a ⊆ a := fun _ => id
 def sub_trans {a b c: Set α} (x: a ⊆ b) (y: b ⊆ c) : a ⊆ c := by
   intro z h
@@ -94,6 +94,7 @@ def sInter (a: Set (Set α)) : Set α := .mk fun x => ∀a' ∈ a, x ∈ a'
 instance : SInter (Set (Set α)) (Set α) := ⟨(·.sInter)⟩
 def mem_sInter {a: Set (Set α)} : ∀{x}, x ∈ ⋂ a ↔ ∀a' ∈ a, x ∈ a' := Iff.refl _
 
+@[simp]
 def sUnion_empty : ⋃(∅: Set (Set α)) = ∅ := by
   apply ext_empty
   intro x
@@ -101,6 +102,7 @@ def sUnion_empty : ⋃(∅: Set (Set α)) = ∅ := by
   intro ⟨_, _, _⟩
   contradiction
 
+@[simp]
 def sInter_empty : ⋂(∅: Set (Set α)) = univ _ := by
   apply ext_univ
   intro x
@@ -120,8 +122,8 @@ def sInter_sub (a: Set α) (s: Set (Set α)): a ∈ s -> ⋂s ⊆ a := by
   apply h
   assumption
 
-def preimage (a: Set α) (f: β -> α) : Set β := mk fun x => ∃a' ∈ a, a' = f x
-def mem_preimage {a: Set α} {f: β -> α} : ∀{x}, x ∈ a.preimage f ↔ ∃a' ∈ a, a' = f x := Iff.refl _
+def preimage (a: Set α) (f: β -> α) : Set β := mk fun x => f x ∈ a
+def mem_preimage {a: Set α} {f: β -> α} : ∀{x}, x ∈ a.preimage f ↔ f x ∈ a := Iff.refl _
 def image (a: Set α) (f: α -> β) : Set β := mk fun x => ∃a' ∈ a, x = f a'
 def mem_image {a: Set α} {f: α -> β} : ∀{x}, x ∈ a.image f ↔ ∃a' ∈ a, x = f a' := Iff.refl _
 def range (f: α -> β) : Set β := image (univ _) f
@@ -149,7 +151,7 @@ def empty_compl : ∅ᶜ = Set.univ α := by
   contradiction
 
 def Nonempty (a: Set α) := ∃x, x ∈ a
-def Elem (a: Set α) := { x // x ∈ a }
+abbrev Elem (a: Set α) := { x // x ∈ a }
 
 instance {α: Type u} : CoeSort (Set α) (Type u) := ⟨Set.Elem⟩
 
@@ -215,9 +217,14 @@ def univ_sub (a: Set α) : univ α ⊆ a -> a = univ α := by
   apply sub
   apply mem_univ
 
+@[simp]
 def sub_univ (s: Set α) : s ⊆ univ α := by
   intros _ _
   apply mem_univ
+
+def sub_empty (s: Set α) : s ⊆ ∅ -> s = ∅ := ext_empty s
+@[simp]
+def empty_sub (s: Set α) : ∅ ⊆ s := fun _ mem => (not_mem_empty mem).elim
 
 def compl_compl (s: Set α) : sᶜᶜ = s := by
   ext x
@@ -235,6 +242,14 @@ def union_comm (a b: Set α) : a ∪ b = b ∪ a := by
   ext x
   simp [mem_union, Or.comm]
 
+def inter_assoc (a b c: Set α) : a ∩ b ∩ c = a ∩ (b ∩ c) := by
+  ext x
+  simp [mem_inter, and_assoc]
+
+def union_assoc (a b c: Set α) : a ∪ b ∪ c = a ∪ (b ∪ c) := by
+  ext x
+  simp [mem_union, or_assoc]
+
 instance : Subsingleton (∅: Set α).Elem where
   allEq := by
     intro x
@@ -246,10 +261,12 @@ instance : Subsingleton ({a}: Set α).Elem where
     cases hx; cases hy
     rfl
 
+@[simp]
 def sInter_insert (a: Set α) (as: Set (Set α)) : ⋂(insert  a as) = a ∩ ⋂as := by
    ext x
    simp [mem_sInter, mem_inter, mem_insert]
 
+@[simp]
 def sUnion_insert (a: Set α) (as: Set (Set α)) : ⋃(insert  a as) = a ∪ ⋃as := by
   ext x
   simp [mem_sUnion, mem_union, mem_insert]
@@ -325,5 +342,163 @@ def union_empty (a: Set α) : a ∪ ∅ = a := by
   simp [union_comm a]
 
 def mem_pair {a b: α} : ∀{x}, x ∈ ({a, b}: Set α) ↔ x = a ∨ x = b := by rfl
+
+def singleton_eq_insert_empty (a: α) : {a} = insert a (∅: Set _) := by
+  ext x
+  simp [mem_singleton, mem_insert]
+  intro; contradiction
+
+@[simp]
+def sUnion_singleton (s: Set α) : ⋃({s}: Set _) = s := by
+  simp [singleton_eq_insert_empty]
+
+@[simp]
+def sInter_singleton (s: Set α) : ⋂({s}: Set _) = s := by
+  simp [singleton_eq_insert_empty]
+
+def inter_sInter_sub_sInter_inter (a b: Set (Set α)) : ⋂a ∩ ⋂b ⊆ ⋂(a ∩ b) := by
+  intro x mem
+  simp [mem_sInter, mem_inter] at *
+  obtain ⟨ha, hb⟩ := mem
+  intro y ya yb
+  apply ha
+  assumption
+
+def inter_sub_inter (a b c d: Set α) : a ⊆ c -> b ⊆ d -> a ∩ b ⊆ c ∩ d := by
+  intro ac bd
+  intro x
+  simp [mem_inter]
+  intro ha hb
+  apply And.intro
+  apply ac; assumption
+  apply bd; assumption
+
+def sInter_union (a b: Set (Set α)) : ⋂(a ∪ b) = ⋂a ∩ ⋂b := by
+  ext x
+  simp [mem_sInter, mem_union, mem_inter]
+  apply Iff.intro
+  intro h
+  apply And.intro
+  intro y mem
+  apply h
+  left; assumption
+  intro y mem
+  apply h
+  right; assumption
+  intro ⟨ha, hb⟩ y mem
+  cases mem
+  apply ha; assumption
+  apply hb; assumption
+
+def sUnion_union (a b: Set (Set α)) : ⋃(a ∪ b) = ⋃a ∪ ⋃b := by
+  ext x
+  simp [mem_sUnion, mem_union]
+  apply Iff.intro
+  intro ⟨x', h, mem⟩
+  cases h
+  left
+  exists x'
+  right
+  exists x'
+  intro h
+  rcases h with ⟨x', _, h⟩ | ⟨x', _, h⟩ <;>(
+    exists x'
+    apply And.intro _ h)
+  left; assumption
+  right; assumption
+
+def singleton_sub (a: α) (b: Set α) : {a} ⊆ b ↔ a ∈ b := by
+  simp [sub_def, mem_singleton]
+
+def inter_union_right (a b k: Set α) : (a ∪ b) ∩ k = a ∩ k ∪ b ∩ k := by
+  ext x
+  simp  [mem_union, mem_inter, or_and_right]
+
+def inter_union_left (a b k: Set α) : k ∩ (a ∪ b) = k ∩ a ∪ k ∩ b := by
+  simp [inter_comm k, inter_union_right]
+
+def union_inter_right (a b k: Set α) : (a ∩ b) ∪ k = (a ∪ k) ∩ (b ∪ k) := by
+  ext x
+  simp  [mem_union, mem_inter, and_or_right]
+
+def union_inter_left (a b k: Set α) : k ∪ (a ∩ b) = (k ∪ a) ∩ (k ∪ b) := by
+  simp [union_comm k, union_inter_right]
+
+instance : @Std.Commutative (Set α) (· ∩ ·) := ⟨inter_comm⟩
+instance : @Std.Associative (Set α) (· ∩ ·) := ⟨inter_assoc⟩
+instance : @Std.Commutative (Set α) (· ∪ ·) := ⟨union_comm⟩
+instance : @Std.Associative (Set α) (· ∪ ·) := ⟨union_assoc⟩
+
+@[simp]
+def pair_image (a b: α) (f: α -> β) : Set.image {a, b} f = {f a, f b} := by
+  ext x
+  simp [mem_pair, mem_image]
+
+@[simp]
+def sInter_pair (a b: Set α) : ⋂({a, b}: Set _) = a ∩ b := by
+  ext x
+  simp
+
+@[simp]
+def sUnion_pair (a b: Set α) : ⋃({a, b}: Set _) = a ∪ b := by
+  ext x
+  simp
+
+def attach (s: Set α) : Set s := .univ _
+
+def mem_attach {s: Set α} : ∀{x}, x ∈ s.attach ↔ x.val ∈ s := by
+  intro x
+  simp [mem_univ, attach, x.property]
+
+@[simp]
+def pair_attach {a b: α} : ({a, b}: Set α).attach = {⟨a, mem_pair.mpr (.inl rfl)⟩, ⟨b, mem_pair.mpr (.inr rfl)⟩} := by
+  ext x
+  cases x with | mk x mem =>
+  simp [mem_pair, mem_attach, mem]
+  cases mem_pair.mp mem
+  subst x; left; rfl
+  subst x; right; rfl
+
+@[simp]
+def inter_self (a: Set α) : a ∩ a = a := by
+  ext x
+  simp [mem_inter]
+@[simp]
+def union_self (a: Set α) : a ∪ a = a := by
+  ext x
+  simp [mem_union]
+
+def image_const_of_nonempty (a: Set α) (b: β) : a.Nonempty -> a.image (fun _ => b) = {b} := by
+  intro ⟨a', ha'⟩
+  ext x
+  simp [mem_image, mem_singleton]
+  intro h
+  exists a'
+
+def nonempty_attach (a: Set α) : a.attach.Nonempty ↔ a.Nonempty := by
+  apply Iff.intro
+  intro ⟨⟨x, _⟩,  _⟩
+  exists x
+  intro ⟨x, h⟩
+  exists ⟨x, h⟩
+
+def not_nonempty (a: Set α) (h: ¬a.Nonempty) : a = ∅ := by
+  apply ext_empty
+  intro x hx
+  apply h
+  exists x
+
+@[simp]
+def empty_attach : (∅: Set α).attach = ∅ := by
+  apply ext_empty
+  intro ⟨_, _⟩
+  contradiction
+
+@[simp]
+def empty_image : (∅: Set α).image f = ∅ := by
+  apply ext_empty
+  intro x h
+  have ⟨_, _, _⟩  := mem_image.mp h
+  contradiction
 
 end Set
