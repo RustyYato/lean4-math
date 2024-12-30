@@ -93,6 +93,20 @@ def sup_eq_left {a b: α₀} : a ⊔ b = a ↔ b ≤ a := by
   rw [sup_comm]
   apply sup_eq_right
 
+def lt_sup_left {a b k: α₀} : k < a -> k < a ⊔ b := by
+  simp [lt_iff_le_and_not_le]
+  intro ka nak
+  apply And.intro
+  apply le_trans
+  assumption
+  apply le_sup_left
+  intro ak
+  contradiction
+
+def lt_sup_right {a b k: α₀} : k < b -> k < a ⊔ b := by
+  rw [sup_comm]
+  apply lt_sup_left
+
 end
 
 section
