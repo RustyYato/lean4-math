@@ -33,6 +33,23 @@ instance {α: Prop} {β: Prop} [IsEmpty β] : IsEmpty (α ∧ β) where
   elim f := elim_empty f.2
 instance {α: Prop} {β: Prop} [IsEmpty α] [IsEmpty β] : IsEmpty (α ∨ β) where
   elim f := (by cases f <;> (rename_i f; exact elim_empty f))
+instance {α: Type*} [IsEmpty α] : IsEmpty (ULift α) where
+  elim f := (by cases f <;> (rename_i f; exact elim_empty f))
+instance {α: Sort*} [IsEmpty α] : IsEmpty (PLift α) where
+  elim f := (by cases f <;> (rename_i f; exact elim_empty f))
+instance : IsEmpty (Fin 0) where
+  elim f := f.elim0
+
+instance [IsEmpty α] : Subsingleton α where
+  allEq x := (elim_empty x).elim
+
+instance [IsEmpty α] (β: α -> Sort*) : Subsingleton (∀x, β x) where
+  allEq f g := by
+    funext x
+    have := elim_empty x
+    contradiction
+
+instance [IsEmpty α] : Subsingleton (α -> β) := inferInstance
 
 structure Embedding (α β: Sort*) where
   toFun: α -> β
@@ -330,6 +347,12 @@ def Pi.congrEquiv {β₀: α₀ -> Sort _} {β₁: α₁ -> Sort _}
     dsimp
     apply cast_eq_of_heq'
     rw [(g _).rightInv, h.rightInv]
+
+def Function.congrEquiv (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ -> β₀) ≃ (α₁ -> β₁) := by
+  apply Pi.congrEquiv
+  intro
+  assumption
+  assumption
 
 def Char.equivSubtype : Char ≃ { x : UInt32 // x.isValidChar } where
   toFun | ⟨x, p⟩ => ⟨x, p⟩

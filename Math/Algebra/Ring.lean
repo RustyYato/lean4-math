@@ -8,6 +8,9 @@ notation "ℤ" => Int
 class One (α) where
   one: α
 
+instance (priority := 100) [OfNat α 1] : One α where
+  one := 1
+
 instance One.ofNat [One α] : OfNat α 1 := ⟨ One.one ⟩
 
 variable {a b c k: a₀}
@@ -114,6 +117,18 @@ class IsMulOneClass: Prop where
 class IsMulZeroClass: Prop where
   zero_mul (a: α): 0 * a = 0
   mul_zero (a: α): a * 0 = 0
+
+def IsAddZeroClass.ofAddCommMagma [IsAddCommMagma α₀] (h: ∀x: α₀, 0 + x = x) : IsAddZeroClass α₀ where
+  zero_add := h
+  add_zero x := by rw [add_comm]; apply h
+
+def IsMulZeroClass.ofCommMagma [Zero α₁] [IsCommMagma α₁] (h: ∀x: α₁, 0 * x = 0) : IsMulZeroClass α₁ where
+  zero_mul := h
+  mul_zero x := by rw [mul_comm]; apply h
+
+def IsMulOneClass.ofCommMagma [IsCommMagma α₁] (h: ∀x: α₁, 1 * x = x) : IsMulOneClass α₁ where
+  one_mul := h
+  mul_one x := by rw [mul_comm]; apply h
 
 def zero_add [IsAddZeroClass α₀] (a: α₀) : 0 + a = a := IsAddZeroClass.zero_add a
 def add_zero [IsAddZeroClass α₀] (a: α₀) : a + 0 = a := IsAddZeroClass.add_zero a
@@ -328,6 +343,15 @@ class IsRightDistrib: Prop where
 
 def mul_add [IsLeftDistrib R] (k a b: R): k * (a + b) = k * a + k * b := IsLeftDistrib.left_distrib k a b
 def add_mul [IsRightDistrib R] (a b k: R): (a + b) * k = a * k + b * k := IsRightDistrib.right_distrib a b k
+
+instance (priority := 100) [IsCommMagma α] [IsLeftDistrib α] : IsRightDistrib α where
+  right_distrib a b k := by
+    iterate 3 rw [mul_comm _ k]
+    rw [mul_add]
+instance (priority := 100) [IsCommMagma α] [IsRightDistrib α] : IsLeftDistrib α where
+  left_distrib k a b := by
+    iterate 3 rw [mul_comm k]
+    rw [add_mul]
 
 def natCastRec : ℕ -> α
 | 0 => 0

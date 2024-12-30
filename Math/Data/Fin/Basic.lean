@@ -335,3 +335,46 @@ def Fin.isoPair : Fin n × Fin m ≃ Fin (n * m) where
     intro x
     simp
     rw [pair_split_eq_self]
+
+def Fin.equivAdd (n m: Nat) : Fin n ⊕ Fin m ≃ Fin (n + m) where
+  toFun
+  | .inl x => x.addNat m
+  | .inr x => x.castLE (Nat.le_add_left _ _)
+  invFun x :=
+    if h:x.val < m then .inr ⟨x, h⟩ else .inl ⟨x.val - m, by
+      apply Nat.sub_lt_left_of_lt_add
+      apply Nat.le_of_not_lt
+      assumption
+      cases x; dsimp
+      rw [Nat.add_comm]; assumption⟩
+  leftInv x := by
+    dsimp
+    cases x <;> rename_i x <;> dsimp
+    rw [dif_neg]
+    congr
+    rw [Nat.add_sub_cancel]
+    apply Nat.not_lt_of_le
+    apply Nat.le_add_left
+    rw [dif_pos]
+    exact x.isLt
+  rightInv x := by
+    dsimp
+    by_cases h:x.val < m
+    rw [dif_pos h]
+    rfl
+    rw [dif_neg h]
+    dsimp; congr
+    rw [Nat.sub_add_cancel]
+    apply Nat.le_of_not_lt
+    assumption
+
+def Fin.equivMul (n m: Nat) : Fin n × Fin m ≃ Fin (n * m) where
+  toFun | ⟨x, y⟩ => Fin.pair x y
+  invFun x := ⟨x.pair_left, x.pair_right⟩
+  leftInv x := by
+    dsimp
+    rw [Fin.pair_pair_left]
+    rw [Fin.pair_pair_right]
+  rightInv x := by
+    dsimp
+    rw [Fin.pair_split_eq_self]
