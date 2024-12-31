@@ -2,8 +2,10 @@ import Math.Type.Basic
 import Math.Tactics.PPWithUniv
 import Math.Algebra.Ring
 import Math.Data.Fin.Basic
+import Math.Data.StdNat.Basic
 import Math.Data.Fintype.Fin
 import Math.Data.Fintype.Pi
+import Math.Order.Linear
 
 def type_setoid : Setoid (Type u) where
   r a b := Nonempty (a ≃ b)
@@ -387,5 +389,41 @@ instance : IsAddMonoidWithOne Cardinal where
 instance : IsSemiring Cardinal where
   npow_succ := npow_succ
   npow_zero := npow_zero
+
+def aleph0 : Cardinal := ⟦ℕ⟧
+notation "ℵ₀" => aleph0
+
+def aleph0_add_fin (n: Nat) : ℵ₀ + n = ℵ₀ := by
+  apply sound
+  apply Equiv.mk _ _ _ _
+  intro x
+  match x with
+  | .inl x => exact x + n
+  | .inr x => exact x.down.val
+  intro x
+  if h:x < n then
+    exact .inr ⟨⟨x, h⟩⟩
+  else
+    exact .inl (x - n)
+  intro x
+  simp
+  cases x
+  dsimp
+  rw [dif_neg, Nat.add_sub_cancel]
+  apply Nat.not_lt_of_le
+  apply Nat.le_add_left
+  dsimp
+  rw [if_pos]
+  rename_i x
+  exact x.down.isLt
+  intro x
+  dsimp
+  by_cases h:x < n
+  rw [dif_pos h]
+  rw [dif_neg h]
+  dsimp
+  rw [Nat.sub_add_cancel]
+  apply Nat.le_of_not_lt
+  assumption
 
 end Cardinal
