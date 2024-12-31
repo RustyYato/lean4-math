@@ -132,3 +132,54 @@ def axiomOfChoice {α : Sort u}
   ⟨_, fun x => choose_spec (h x)⟩
 
 end Encodable
+
+instance : Encodable Bool where
+  encode
+  | false => 0
+  | true => 1
+  decode'
+  | 0 => .some false
+  | 1 => .some true
+  | _ => .none
+  spec
+  | false => rfl
+  | true => rfl
+
+instance [Encodable α] : Encodable (Option α) where
+  encode
+  | .none => 0
+  | .some x => encode x + 1
+  decode'
+  | 0 => .some .none
+  | x+1 => (decode' x).map .some
+  spec
+  | .none => rfl
+  | .some x => by
+    dsimp
+    rw [decode'_spec]
+    rfl
+
+instance [Encodable α] [Encodable β] : Encodable (α ⊕ β) where
+  encode
+  | .inl x => 2 * encode x
+  | .inr x => 2 * encode x + 1
+  decode' x :=
+    if x % 2 = 0 then
+      (decode' (x / 2)).map .inl
+    else
+      (decode' (x / 2)).map .inr
+  spec
+  | .inl x => by
+    dsimp
+    rw [if_pos, Nat.mul_comm, Nat.mul_div_cancel, decode'_spec]
+    rfl
+    decide
+    rw [Nat.mul_mod_right]
+  | .inr x => by
+    dsimp
+    rw [if_neg, Nat.mul_add_div, Nat.div_eq, if_neg, Nat.add_zero, decode'_spec]
+    rfl
+    decide
+    decide
+    rw [Nat.add_mod,  Nat.mul_mod_right, Nat.zero_add]
+    decide
