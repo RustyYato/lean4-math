@@ -1,0 +1,134 @@
+import Math.Type.Basic
+import Math.Data.StdNat.Find
+import Math.Function.Basic
+
+class Encodable (α: Type*) where
+  encode: α -> Nat
+  decode': Nat -> Option α
+  spec: ∀x, decode' (encode x) = x
+
+export Encodable (encode decode')
+
+def decode (repr: Nat) [Encodable α]: Option α :=
+  match decode' repr with
+  | .some x => if encode x = repr then .some x else .none
+  | .none => .none
+
+def decode'_spec (x: α) [Encodable α] : decode' (encode x) = .some x := Encodable.spec _
+def decode_spec (repr: Nat) [Encodable α] : (decode repr: Option α).isSome ↔ ∃x: α, encode x = repr := by
+  unfold decode
+  split; split
+  all_goals
+    try rename α => x
+    try rename decode' _ = _ => hd
+    try rename encode _ = _ => he
+    try rename ¬encode _ = _ => he
+  apply Iff.intro
+  intro h
+  exists x
+  intro ⟨y, h⟩
+  rfl
+  apply Iff.intro
+  intro
+  contradiction
+  intro ⟨y, h⟩
+  rw [←h] at hd
+  rw [decode'_spec] at hd
+  cases hd
+  contradiction
+  apply Iff.intro
+  intro h
+  contradiction
+  intro ⟨y, h⟩
+  rw [←h] at hd
+  rw [decode'_spec] at hd
+  contradiction
+
+def encode_inj [Encodable α] : Function.Injective (encode (α := α)) := by
+  intro x y eq
+  have := decode'_spec y
+  rw [←eq, decode'_spec] at this
+  cases this
+  rfl
+
+namespace Encodable
+
+def Embedding [Encodable α] : α ↪ Nat where
+  toFun := encode
+  inj := encode_inj
+
+instance : Encodable Nat where
+  encode := id
+  decode' := .some
+  spec _ := rfl
+
+instance : Encodable (Fin n) where
+  encode := Fin.val
+  decode' x := if h:x < n then  .some ⟨x, h⟩ else .none
+  spec x := by
+    dsimp
+    rw [if_pos x.isLt]
+
+instance {P: α -> Prop} [DecidablePred P] [Encodable α] : Encodable (Subtype P) where
+  encode x := encode x.val
+  decode' x :=
+    match decode' x with
+    | .none => .none
+    | .some x =>
+    if h:P x then
+      .some ⟨x, h⟩
+    else
+      .none
+  spec x := by
+    dsimp
+    split
+    rename_i h
+    erw [decode'_spec] at h
+    contradiction
+    rename_i x h
+    split <;> rename_i hx
+    congr
+    apply Option.some.inj
+    symm
+    rw [←decode'_spec]
+    assumption
+    erw [decode'_spec] at h
+    cases h
+    have := hx x.property
+    contradiction
+
+-- a computable choice function for Encodable types
+def choice {α: Type*} [Encodable α] (h: Nonempty α) : α :=
+  have : ∃n, (decode' n).isSome := (by
+    obtain ⟨x⟩ := h
+    exists encode x
+    dsimp
+    rw [decode'_spec]
+    rfl)
+  (decode' (Nat.findP this)).get (Nat.findP_spec this)
+
+section
+
+variable {α : Type*} [Encodable α] {p : α → Prop} [DecidablePred p] (h : ∃ x, p x)
+
+def indefiniteDescription : {x // p x} := by
+  apply choice
+  obtain ⟨x, px⟩ := h
+  exact ⟨⟨x, px⟩⟩
+
+-- a computable version of Classical.choose for countable types
+def choose: α := indefiniteDescription h
+def choose_spec: p (choose h) := (indefiniteDescription h).property
+
+end
+
+/-- the axiom of choice for sets of countable types -/
+def axiomOfChoice {α : Sort u}
+  {β : α → Type v} {r : ∀ x, β x → Prop}
+  [∀x, Encodable (β x)]
+  [∀x, DecidablePred (r x)]
+  (h : ∀ x, ∃ y, r x y) :
+  ∃ (f : ∀ x, β x), ∀ x, r x (f x) :=
+  ⟨_, fun x => choose_spec (h x)⟩
+
+end Encodable
