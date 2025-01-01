@@ -1,4 +1,5 @@
 import Math.Logic.Basic
+import Math.Function.Basic
 
 namespace Nat
 
@@ -283,10 +284,204 @@ def sqrt_le_of_le_sq (n: Nat) : ∀{x}, n ≤ x * x -> sqrt n ≤ x := by
   apply sqrt_sq_le_self
 
 def pair (a b: Nat) :=
-  if a < b then b * b + a else a * a + a + b
+  (a + b) * (a + b + 1) / 2 + a
 
-def unpair (n: Nat) : Nat × Nat :=
-  have s := sqrt n
-  if n - s * s < s then (n - s * s, s) else (s, n - s * s - s)
+def unpair (a: Nat): Nat × Nat :=
+  have w := (sqrt (8 * a + 1) - 1) / 2
+  have t := (w * (w + 1)) / 2
+  ⟨a - t, w + t - a⟩
+
+def PerfectSquare (a: Nat) := ∃b, b * b = a
+
+def sqrt_eq_of_sq_eq (a b: Nat) :
+  b * b = a -> sqrt a = b := by
+  intro h
+  subst a
+  symm; apply (sqrt_eq_iff _ _).mpr
+  apply And.intro
+  apply Nat.le_refl
+  apply (lt_iff_sq_lt _ _).mp
+  apply Nat.lt_succ_self
+
+def sqrt_of_perfect_square (a: Nat) :
+  sqrt a * sqrt a = a ↔ PerfectSquare a := by
+  apply Iff.intro
+  intro h
+  exists sqrt a
+  intro ⟨b, prf⟩
+  conv => { rhs; rw [←prf] }
+  suffices sqrt a = b by rw [this]
+  apply sqrt_eq_of_sq_eq
+  assumption
+
+def square_add (a b: Nat) : (a + b) * (a + b) = a * a + 2 * a * b + b * b := by
+  rw [Nat.add_mul, Nat.mul_add, Nat.mul_add, Nat.mul_assoc, Nat.two_mul]
+  ac_rfl
+
+def sub_mul (a b k: Nat) : (a - b) * k = a * k - b * k := by
+  by_cases h:b < a
+  · apply Int.ofNat.inj
+    simp
+    repeat rw [Int.ofNat_sub]
+    repeat rw [Int.ofNat_mul]
+    rw [Int.sub_mul]
+    apply Nat.mul_le_mul_right
+    apply Nat.le_of_lt
+    assumption
+    apply Nat.le_of_lt
+    assumption
+  · replace h := Nat.le_of_not_lt h
+    rw [Nat.sub_eq_zero_iff_le.mpr h, Nat.sub_eq_zero_iff_le.mpr, Nat.zero_mul]
+    apply Nat.mul_le_mul_right
+    assumption
+def mul_sub (a b k: Nat) : k * (a - b) = k * a - k * b := by
+  iterate 3 rw [Nat.mul_comm k]
+  rw [sub_mul]
+
+def unpair_pair.helper₀ (a b: Nat) (h: b ≤ a) :
+  (a - b) * (a - b) + 2 * a * b = a * a + b * b := by
+  apply Int.ofNat.inj
+  rw [Nat.two_mul, Int.ofNat_eq_coe, Int.ofNat_eq_coe]
+  simp [Int.ofNat_sub h, Int.sub_mul, Int.mul_sub]
+  simp [Int.sub_eq_add_neg, Int.mul_comm b, Int.neg_add, Int.add_mul]
+  omega
+
+def lt_sqrt_iff (a b: Nat) :
+  b < sqrt a ↔ (b + 1) * (b + 1) ≤ a := by
+  apply Iff.trans Nat.succ_le.symm
+  show b + 1 ≤ _ ↔ _
+  apply Iff.trans (le_sqrt_iff _)
+  rfl
+
+def sqrt_pos (a: Nat) : 0 < a -> 0 < a.sqrt := by
+  intro h
+  rw [lt_sqrt_iff]
+  exact h
+
+def div_add_div_le (a b k: Nat) : a / k + b / k ≤ (a + b) / k := by
+  cases k
+  iterate 3 rw [Nat.div_zero]
+  apply Nat.le_refl
+  rename_i k
+  rw [Nat.le_div_iff_mul_le (Nat.zero_lt_succ _)]
+  rw [Nat.add_mul]
+  apply Nat.add_le_add
+  apply Nat.div_mul_le_self
+  apply Nat.div_mul_le_self
+
+def pair_unpair (a b: Nat) : unpair (pair a b) = ⟨a, b⟩ := by
+  unfold pair
+  generalize hw:a + b = w
+  generalize ht:(w * (w + 1)) / 2 = t
+  generalize hz:t + a = z
+  have : 2 ∣ w * (w + 1) := by
+    cases Nat.mod_two_eq_zero_or_one w <;> rename_i h
+    apply Nat.dvd_trans
+    apply Nat.dvd_of_mod_eq_zero
+    assumption
+    apply Nat.dvd_mul_right
+    apply flip Nat.dvd_trans
+    apply Nat.dvd_mul_left
+    apply Nat.dvd_of_mod_eq_zero
+    rw [Nat.add_mod, h]
+  have sqrt_eq : (8 * t + 1).sqrt = 2 * w + 1 := by
+    subst t
+    show (4 * 2 * _ + _).sqrt = _
+    rw [Nat.mul_assoc, Nat.mul_div_cancel' this]
+    rw [Nat.mul_add, Nat.mul_add, Nat.mul_one]
+    apply sqrt_eq_of_sq_eq
+    simp [Nat.mul_add, Nat.add_mul]
+    rw [←Nat.add_assoc, Nat.add_assoc (_ * _)]
+    congr 2
+    ac_rfl
+    rw [←Nat.two_mul, ←Nat.mul_assoc]
+  unfold unpair
+  dsimp
+  suffices ((8 * z + 1).sqrt - 1) / 2 = w by
+    rw [this]; clear this
+    subst z; subst t; subst w
+    congr
+    rw [Nat.add_sub_cancel_left]
+    rw [Nat.add_comm a, Nat.add_assoc, Nat.add_comm a, Nat.add_sub_cancel]
+  apply Nat.eq_of_le_of_lt_succ
+  · apply (Nat.le_div_iff_mul_le (by decide)).mpr
+    apply Nat.le_pred_of_lt
+    apply Nat.lt_of_succ_le
+    show w * 2 + 1 ≤ _
+    apply (Nat.le_sqrt_iff _).mpr
+    rw [square_add, Nat.mul_one, Nat.mul_one]
+    apply Nat.succ_le_succ
+    have : w * 2 * (w * 2) + 2 * (w * 2)
+      = 2 * 2 * (w * w) + 2 * 2 * (w * 1) := by ac_rfl
+    rw [this]; clear this
+    rw [←Nat.mul_add, ←Nat.mul_add]
+    show _ ≤ 4 * 2 * _
+    rw [Nat.mul_assoc 4]
+    apply Nat.mul_le_mul_left
+    subst z
+    subst t
+    rw [Nat.mul_add 2, Nat.mul_div_cancel']
+    apply Nat.le_add_right
+    assumption
+  · rw [Nat.div_lt_iff_lt_mul (by decide), ←Nat.add_lt_add_iff_right (k := 1), Nat.sub_add_cancel]
+    rw [Nat.add_mul, Nat.add_assoc]
+    show _ < _ + 3
+    rw [Nat.sqrt_lt_iff, Nat.mul_comm _ 2, square_add, Nat.mul_comm _ 3]
+    apply Nat.succ_lt_succ
+    have : 2 * w * (2 * w) + 3 * (2 * (2 * w)) + 8
+         = 2 * 2 * (w * w) + 2 * 2 * (3 * w) + 8 := by ac_rfl
+    rw [this]; clear this; show 4 * 2 * _ < _ + 4 * 2
+    rw [←Nat.mul_add, ←Nat.mul_add, Nat.mul_assoc]
+    rw [Nat.mul_lt_mul_left (by decide)]
+    show _ < _ + (1 + 2) * _ + 2 * 1
+    rw [Nat.add_mul, Nat.mul_comm 1, ←Nat.add_assoc, ←Nat.mul_add,
+      Nat.add_assoc, ←Nat.mul_add]
+    subst z; subst t
+    rw [Nat.mul_add, Nat.mul_div_cancel' (by assumption)]
+    apply Nat.add_lt_add_left
+    rw [Nat.mul_lt_mul_left (by decide), Nat.lt_succ]
+    subst w; apply Nat.le_add_right
+    apply Nat.succ_le_of_lt
+    apply sqrt_pos
+    apply Nat.zero_lt_succ
+
+def unpair_pair (z: Nat) : pair (unpair z).1 (unpair z).2 = z := by
+  generalize h:z.unpair=a'
+  obtain ⟨a, b⟩ := a'
+  dsimp
+  unfold pair
+  unfold unpair at h
+  dsimp at h
+  have ⟨ha, hb⟩ := Prod.mk.inj h; clear h
+  generalize hw:((8 * z + 1).sqrt - 1) / 2 = w
+  rw [hw] at ha hb
+  subst a; subst b
+  have : w * (w + 1) / 2 ≤ z := by
+    rw [Nat.mul_add, Nat.mul_one, Nat.div_le_iff_le_mul (by decide)]
+    show _ ≤ _ + 1
+    subst w
+    apply Nat.le_trans
+    apply Nat.add_le_add_right
+    apply Nat.div_mul_le_mul_div
+    conv => {
+      lhs; rhs; lhs
+      rw [←Nat.mul_div_cancel (_ - _) (n := 2) (by decide)]
+    }
+    rw [Nat.div_div_eq_div_mul]
+    apply Nat.le_trans
+    apply Nat.div_add_div_le
+    rw [Nat.div_le_iff_le_mul]
+    conv => {
+      lhs; rhs
+      rw [Nat.mul_comm, ←Nat.mul_one (sqrt _)]
+    }
+    rw [mul_sub (k := 2), ←Nat.add_sub_assoc, ←Nat.mul_assoc, unpair_pair.helper₀]
+    simp
+    erw [Nat.pred_le_iff_le_succ]
+    show _ * _ ≤ _ + 4
+    apply Nat.le_trans
+    apply sqrt_sq_le_self
+    repeat sorry
+  sorry
 
 end Nat
