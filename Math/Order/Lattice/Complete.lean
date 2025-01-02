@@ -1,5 +1,6 @@
 import Math.Order.Lattice.Basic
 import Math.Data.Set.Basic
+import Math.Data.Set.TopBot
 
 variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
@@ -265,3 +266,110 @@ def sInf_eq_top : sInf s = ⊤ ↔ ∀x ∈ s, x = ⊤ :=
   sSup_eq_bot (α₀ := OrderDual α₀)
 
 end
+
+namespace OrderIso
+
+def instIsCompleteSemiLatticeSup
+  {α}
+  [LE α] [LT α] [Sup α] [SupSet α]
+  [LE β] [LT β] [Sup β] [SupSet β]
+  [IsCompleteSemiLatticeSup α]
+  [IsSemiLatticeSup β]
+  (h: β ≃o α)
+  (hs: ∀s: Set β, sSup s = h.symm (sSup (s.preimage h.symm)))
+  : IsCompleteSemiLatticeSup β where
+  le_sSup := by
+    intro s x mem
+    rw [hs]
+    apply h.resp_le.mpr
+    rw [h.symm_coe]
+    apply le_sSup
+    show h.symm (h x) ∈ s
+    rw [h.coe_symm]
+    exact mem
+  sSup_le := by
+    intro k s g
+    rw [hs]
+    apply h.resp_le.mpr
+    rw [h.symm_coe]
+    apply sSup_le
+    intro x mem
+    apply h.symm.resp_le.mpr
+    rw [h.coe_symm]
+    exact g _ mem
+
+def instIsCompleteSemiLatticeInf
+  [LE β] [LT β] [Inf β] [InfSet β]
+  [IsCompleteSemiLatticeInf α]
+  [IsSemiLatticeInf β]
+  (h: β ≃o α)
+  (hs: ∀s: Set β, sInf s = h.symm (sInf (s.preimage h.symm)))
+  : IsCompleteSemiLatticeInf β :=
+  let h': OrderDual β ≃o OrderDual α := OrderDual.orderIsoCongr h
+  have := instIsCompleteSemiLatticeSup h' hs
+  inferInstanceAs (
+    IsCompleteSemiLatticeInf (OrderDual (OrderDual β))
+  )
+
+end OrderIso
+
+instance
+  {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithTop α) where
+  sSup_le := by
+    intro k s h
+    simp [sSup]
+    split <;> rename_i g
+    rcases g with g | g
+    exact h _ g
+    have := not_exists.mp g
+    cases k
+    rfl
+    rename_i k
+    exfalso
+    apply this k
+    intro a mem
+    replace mem := Set.mem_preimage.mp mem
+    cases h _ mem
+    assumption
+    cases k
+    apply WithTop.LE.top
+    rename_i k
+    apply WithTop.LE.of
+    apply sSup_le
+    intro x mem
+    cases h x mem
+    assumption
+  le_sSup := by
+    intro s x mem
+    simp [sSup]
+    cases x
+    rw [if_pos (.inl mem)]
+    split
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply le_sSup
+    exact mem
+
+-- instance
+--   {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithTop α) where
+--   sInf_le := by
+--     intro s x mem
+--     simp [sInf]
+--     split <;> rename_i h
+--     rcases h with h | h
+--     cases Set.mem_singleton.mp <| h _ mem
+--     rfl
+--     · cases x
+--       rfl
+--       rename_i x
+--       exfalso
+
+--       -- replace ⟨k, h⟩ := Classical.not_forall.mp <| not_exists.mp h x
+--       -- have ⟨k_in_s, x_not_le_k⟩ := not_imp.mp h
+--       sorry
+--     cases x
+--     apply WithTop.LE.top
+--     apply WithTop.LE.of
+--     apply sInf_le
+--     exact mem
+--   le_sInf := sorry

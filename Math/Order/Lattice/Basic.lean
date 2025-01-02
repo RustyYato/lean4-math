@@ -1,5 +1,6 @@
 import Math.Order.Partial
 import Math.Order.Notation
+import Math.Order.TopBot
 
 variable (α: Type*) [Sup α] [Inf α] [LE α] [LT α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [LE α₀] [LT α₀]
@@ -183,3 +184,129 @@ theorem le_sup_inf : ∀ {x y z : α₀}, (x ⊔ y) ⊓ (x ⊔ z) ≤ x ⊔ y �
   IsDistribLattice.le_sup_inf
 
 end
+
+namespace OrderIso
+
+def instIsSemiLatticeSup
+  {α}
+  [LE α] [LT α] [Sup α]
+  [LE β] [LT β] [Sup β]
+  [IsSemiLatticeSup α]
+  [_root_.IsPartialOrder β]
+  (h: β ≃o α)
+  (hs: ∀a b, h (a ⊔ b) = h a ⊔ h b): IsSemiLatticeSup β where
+  le_sup_left := by
+    intro a b
+    have : h a ≤ h a ⊔ h b := le_sup_left _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  le_sup_right := by
+    intro a b
+    have : h b ≤ h a ⊔ h b := le_sup_right _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  sup_le := by
+    intro a b k ak bk
+    replace ak := h.resp_le.mp ak
+    replace bk := h.resp_le.mp bk
+    have := sup_le ak bk
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+
+def instIsSemiLatticeInf
+  {α}
+  [LE α] [LT α] [Inf α]
+  [LE β] [LT β] [Inf β]
+  [IsSemiLatticeInf α]
+  [_root_.IsPartialOrder β]
+  (h: β ≃o α)
+  (hs: ∀a b, h (a ⊓ b) = h a ⊓ h b): IsSemiLatticeInf β where
+  inf_le_left := by
+    intro a b
+    have : h a ⊓ h b ≤ h a := inf_le_left _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  inf_le_right := by
+    intro a b
+    have : h a ⊓ h b ≤ h b := inf_le_right _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  le_inf := by
+    intro a b k ak bk
+    replace ak := h.resp_le.mp ak
+    replace bk := h.resp_le.mp bk
+    have := le_inf ak bk
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+
+end OrderIso
+
+instance [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithTop α) where
+  le_sup_left := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply le_sup_left
+  le_sup_right := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply le_sup_right
+  sup_le := by
+    intro a b k ak bk
+    cases ak <;> cases bk
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply sup_le <;> assumption
+
+instance [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeInf (WithTop α) where
+  inf_le_left := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply inf_le_left
+  inf_le_right := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply inf_le_right
+  le_inf := by
+    intro a b k ak bk
+    cases ak <;> cases bk
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    assumption
+    apply WithTop.LE.of
+    assumption
+    apply WithTop.LE.of
+    apply le_inf <;> assumption
+
+instance [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithBot α) :=
+  WithBot.orderIsoWithTop.instIsSemiLatticeSup <| by
+    intro a b
+    cases a <;> cases b
+    all_goals rfl
+
+instance [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeInf (WithBot α) :=
+  WithBot.orderIsoWithTop.instIsSemiLatticeInf <| by
+    intro a b
+    cases a <;> cases b
+    all_goals rfl
+
+instance [LE α] [LT α] [Inf α] [IsLattice α] : IsLattice (WithTop α) where
+  inf_le_left := inf_le_left
+  inf_le_right := inf_le_right
+  le_inf := le_inf
+
+instance [LE α] [LT α] [Inf α] [IsLattice α] : IsLattice (WithBot α) where
+  inf_le_left := inf_le_left
+  inf_le_right := inf_le_right
+  le_inf := le_inf
