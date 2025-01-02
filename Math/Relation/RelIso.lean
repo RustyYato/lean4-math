@@ -1,4 +1,5 @@
 import Math.Type.Basic
+import Math.Relation.Basic
 
 section
 
@@ -113,6 +114,53 @@ def symm (h: r ≃r s) : s ≃r r where
 def trans (h: r ≃r s) (g: s ≃r t) : r ≃r t where
   toEquiv := .trans h.toEquiv g.toEquiv
   resp_rel := Iff.trans h.resp_rel g.resp_rel
+
+def coe_symm (h: r ≃r s) (x: α) : h.symm (h x) = x := h.leftInv _
+def symm_coe (h: r ≃r s) (x: β) : h (h.symm x) = x := h.rightInv _
+
+end RelIso
+
+namespace RelHom
+
+def wf (h: s →r r) (wf: WellFounded r) : WellFounded s := by
+  apply WellFounded.intro
+  intro a
+  generalize ha:h.toFun a = a'
+  induction a' using wf.induction generalizing a with
+  | h a' g =>
+    apply Acc.intro
+    intro b sba
+    subst ha
+    apply g (h.toFun b) (h.resp_rel sba)
+    rfl
+
+def irrefl (h: s →r r) [Relation.IsIrrefl r] : Relation.IsIrrefl s where
+  irrefl rel := Relation.irrefl (h.resp_rel rel)
+
+end RelHom
+
+namespace RelIso
+
+def wf (h: s ≃r r) (wf: WellFounded r) : WellFounded s :=
+  h.toRelHom.wf wf
+
+def irrefl (h: s ≃r r) [Relation.IsIrrefl r] : Relation.IsIrrefl s :=
+  h.toRelHom.irrefl
+
+def tri (h: s ≃r r) [Relation.IsTrichotomous s] : Relation.IsTrichotomous r where
+  tri a b := by
+    rcases Relation.trichotomous s (h.symm a) (h.symm b) with ab | eq | ba
+    exact .inl <| h.inv_resp_rel.mpr ab
+    exact .inr <| .inl <| h.invFun_inj eq
+    exact .inr <| .inr <| h.inv_resp_rel.mpr ba
+
+def trans' (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r where
+  trans := by
+    intro a b c ab bc
+    apply h.inv_resp_rel.mpr
+    apply Relation.trans
+    exact h.inv_resp_rel.mp ab
+    exact h.inv_resp_rel.mp bc
 
 end RelIso
 

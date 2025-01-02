@@ -119,16 +119,10 @@ instance [IsEmpty α] : Embedding α β where
   toFun x := (elim_empty x).elim
   inj x := (elim_empty x).elim
 
-def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x = f := by
-  have ⟨finv, finvdef⟩ := b.Surjective.exists_inv
-  refine ⟨?_, ?_⟩
-  apply Equiv.mk f finv _ finvdef
-  intro x
-  apply b.Injective
-  rw [finvdef]
-  rfl
+def Equiv.coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
+def Equiv.symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
 
-def Equiv.ofEmbeddings {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x = f := by
+def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x = f := by
   have ⟨finv, finvdef⟩ := b.Surjective.exists_inv
   refine ⟨?_, ?_⟩
   apply Equiv.mk f finv _ finvdef
