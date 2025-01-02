@@ -55,4 +55,15 @@ instance [IsWellFounded rel] [IsTrans rel] [IsTrichotomous rel] : IsWellOrder re
 instance IsWellOrder.toIsIrrefl [wo: IsWellOrder rel] : IsIrrefl rel where
   irrefl := wo.wf.irrefl
 
+class IsSymmetric: Prop where
+  symm: ∀{a b}, rel a b -> rel b a
+
+def symm [IsSymmetric r] : ∀{a b}, r a b -> r b a := IsSymmetric.symm
+def symm_iff [IsSymmetric r] : ∀{a b}, r a b ↔ r b a := Iff.intro symm symm
+
+instance {r: β -> β -> Prop} (f: α -> β) [IsSymmetric r] : IsSymmetric (fun x y => r (f x) (f y)) where
+  symm := symm
+instance : IsSymmetric (fun x y: α => x ≠ y) where
+  symm := Ne.symm
+
 end Relation

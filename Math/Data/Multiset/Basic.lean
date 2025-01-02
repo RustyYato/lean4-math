@@ -2,12 +2,29 @@ import Math.Data.QuotLike.Basic
 import Math.Type.Notation
 import Math.Data.List.Basic
 import Math.Function.Basic
+import Math.Relation.Basic
 import Math.AxiomBlame
 
 def Multiset (α: Type*) := Quotient (List.isSetoid α)
+def Multiset.mk : List α -> Multiset α := Quotient.mk _
 instance : QuotientLike (List.isSetoid α) (Multiset α) where
 
-local notation "⟦" a "⟧" => (QuotLike.mk (a: List _): Multiset _)
+local notation "⟦" a "⟧" => Multiset.mk a
+
+@[cases_eliminator]
+def Multiset.ind {motive: Multiset α -> Prop} : (mk: ∀x, motive ⟦x⟧) -> ∀x, motive x := Quotient.ind
+@[cases_eliminator]
+def Multiset.ind₂ {motive: Multiset α -> Multiset α -> Prop} : (mk: ∀x y, motive ⟦x⟧ ⟦y⟧) -> ∀x y, motive x y := Quotient.ind₂
+@[cases_eliminator]
+def Multiset.ind₃ {motive: Multiset α -> Multiset α -> Multiset α -> Prop} : (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) -> ∀a b c, motive a b c := by
+  intro  h a b c
+  cases a, b; cases c
+  apply h
+@[cases_eliminator]
+def Multiset.ind₄ {motive: Multiset α -> Multiset α -> Multiset α -> Multiset α -> Prop} : (mk: ∀a b c d, motive ⟦a⟧ ⟦b⟧ ⟦c⟧ ⟦d⟧) -> ∀a b c d, motive a b c d := by
+  intro  h a b c d
+  cases a, b; cases c, d
+  apply h
 
 instance : EmptyCollection (Multiset α) := ⟨⟦[]⟧⟩
 
@@ -46,7 +63,7 @@ def Multiset.mk_cons (x: α) (as: List α) : x ::ₘ ⟦as⟧ = ⟦x::as⟧ := r
 @[simp]
 def Multiset.mem_cons {a: α} {as: Multiset α} : ∀{x}, x ∈ a::ₘas ↔ x = a ∨ x ∈ as := by
   intro x
-  quot_ind as
+  cases as with | mk as =>
   simp
 
 def Multiset.append : Multiset α -> Multiset α -> Multiset α := by
@@ -63,16 +80,16 @@ def Multiset.mk_append (as bs: List α) : ⟦as⟧ ++ ⟦bs⟧ = ⟦as ++ bs⟧ 
 @[simp]
 def Multiset.mem_append {as bs: Multiset α} : ∀{x}, x ∈ as ++ bs ↔ x ∈ as ∨ x ∈ bs := by
   intro x
-  quot_ind (as bs)
+  cases as, bs
   simp
 
 def Multiset.append_comm (as bs: Multiset α) : as ++ bs = bs ++ as := by
-  quot_ind (as bs)
+  cases as, bs
   simp
   apply quot.sound
   apply List.perm_append_comm
 def Multiset.append_assoc (as bs cs: Multiset α) : as ++ bs ++ cs = as ++ (bs ++ cs) := by
-  quot_ind (as bs cs)
+  cases as, bs, cs
   simp
 
 def Multiset.map {β: Type _} (f: α -> β) (as: Multiset α) : Multiset β := by
@@ -145,12 +162,12 @@ def Multiset.mk_flatMap' (as: List α) (f: α -> Multiset β) : ⟦as⟧.flatMap
   apply mk_unwrapQuot
 
 def Multiset.flatMap_cons (a: α) (as: Multiset α) (f: α -> Multiset β) : (a::ₘas).flatMap f = f a ++ as.flatMap f := by
-  quot_ind as
+  cases as
   simp
   rfl
 
 def Multiset.map_append (as bs: Multiset α) (f: α -> β) : (as ++ bs).map f = as.map f ++ bs.map f := by
-  quot_ind (as bs)
+  cases as, bs
   simp
 
 def Multiset.rec' {motive: Multiset α -> Sort _}
@@ -220,7 +237,7 @@ def Multiset.map_map (ms: Multiset α) (f: α -> β) (g: β -> γ) : (ms.map f).
     apply ih
 
 def Multiset.flatMap_map (ms: Multiset α) (f: α -> Multiset β) (g: β -> γ) : (ms.flatMap f).map g = ms.flatMap (fun x => (f x).map g) := by
-  quot_ind ms
+  cases ms with | mk ms =>
   induction ms with
   | nil => rfl
   | cons m ms ih =>
@@ -229,7 +246,7 @@ def Multiset.flatMap_map (ms: Multiset α) (f: α -> Multiset β) (g: β -> γ) 
 
 theorem Multiset.flatMap_congr {ms : Multiset α} {f f': α → Multiset β}
   (hf : ∀ a ∈ ms, (f a) = (f' a)) : ms.flatMap f = ms.flatMap f' := by
-  quot_ind ms
+  cases ms with | mk ms =>
   induction ms with
   | nil => rfl
   | cons m ms ih =>
@@ -279,6 +296,86 @@ def Multiset.MinCount.cons : MinCount x n ms -> MinCount x n (m::ₘms) := by
   intro c
   apply List.MinCount.cons
   assumption
+
+def Multiset.Pairwise (P: α -> α -> Prop) [Relation.IsSymmetric P] : Multiset α -> Prop := by
+  apply Quotient.lift (List.Pairwise P)
+  suffices ∀a b, a ≈ b -> List.Pairwise P a -> List.Pairwise P b by
+    intro a b eq
+    ext; apply Iff.intro
+    apply this; assumption
+    apply this; apply List.Perm.symm; assumption
+  intro a b eq p
+  induction eq with
+  | nil => apply List.Pairwise.nil
+  | cons a perm ih =>
+    rcases p; rename_i p c
+    apply List.Pairwise.cons
+    intro a mem
+    apply c
+    apply perm.mem_iff.mpr
+    assumption
+    apply ih
+    assumption
+  | trans _ _ ih₀ ih₁ =>
+    apply ih₁
+    apply ih₀
+    assumption
+  | swap =>
+    cases p; rename_i p c₀
+    cases p; rename_i p c₁
+    apply List.Pairwise.cons
+    intro x mem
+    cases mem
+    apply Relation.symm
+    apply c₀
+    apply List.Mem.head
+    apply c₁
+    assumption
+    apply List.Pairwise.cons
+    intro x mem
+    apply c₀
+    apply List.Mem.tail
+    assumption
+    assumption
+
+def Multiset.Pairwise.nil {P: α -> α -> Prop} {_: Relation.IsSymmetric P} : Multiset.Pairwise P ∅ :=
+  List.Pairwise.nil
+
+def Multiset.Pairwise.cons {P: α -> α -> Prop} {_: Relation.IsSymmetric P}
+  (h: Multiset.Pairwise P as)
+  (g: ∀x ∈ as, P a x)
+   : Multiset.Pairwise P (a::ₘas) := by
+  cases as with | mk as =>
+  apply List.Pairwise.cons <;> assumption
+
+instance (P: α -> Prop) [DecidablePred P] (a: Multiset α) : Decidable (∃x ∈ a, P x) := by
+  apply Quotient.recOnSubsingleton a (motive := _)
+  intro a
+  show Decidable (∃x ∈ a, P x)
+  infer_instance
+instance (P: α -> Prop) [DecidablePred P] (a: Multiset α) : Decidable (∀x ∈ a, P x) :=
+  decidable_of_iff (¬∃x ∈ a, ¬P x) (by
+    apply Iff.intro
+    intro h
+    replace h := not_exists.mp h
+    intro x mem
+    exact Decidable.not_not.mp <| (not_and.mp (h x)) mem
+    intro h ⟨x, mem, nPx⟩
+    exact nPx (h _ mem))
+
+instance [DecidableEq α] (x: α) (s: Multiset α) : Decidable (x ∈ s) := by
+  apply Quotient.recOnSubsingleton s (motive := fun _ => _)
+  intro as
+  show Decidable (x ∈ as)
+  infer_instance
+
+def Multiset.mem_head (a: α) (as: Multiset α) : a ∈ (a::ₘas) := by
+  cases as
+  apply List.Mem.head
+
+def Multiset.mem_tail (x a: α) (as: Multiset α) : x ∈ as -> x ∈ (a::ₘas) := by
+  cases as
+  apply List.Mem.tail
 
 -- theorem Multiset.flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
 --   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
