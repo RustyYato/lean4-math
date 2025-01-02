@@ -41,4 +41,12 @@ fun hwf F x => WellFounded.fixF F x (hwf.apply _)
 @[csimp]
 def fixC_eq_fix : @fix = @fixC := rfl
 
+def irrefl (wf: WellFounded r) : ¬r a a := by
+  intro h
+  induction a using wf.induction with
+  | h x g =>
+  apply g
+  assumption
+  assumption
+
 end WellFounded

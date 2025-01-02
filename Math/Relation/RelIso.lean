@@ -2,7 +2,7 @@ import Math.Type.Basic
 
 section
 
-variable {α β: Type*} (r: α -> α -> Prop) (s: β -> β -> Prop)
+variable {α β γ: Type*} (r: α -> α -> Prop) (s: β -> β -> Prop)
 
 abbrev resp_rel (toFun: α -> β) := ∀{a b: α}, r a b ↔ s (toFun a) (toFun b)
 
@@ -28,7 +28,7 @@ structure RelIso extends α ≃ β where
 
 infixl:25 " ≃r " => RelIso
 
-variable {r: α -> α -> Prop} {s: β -> β -> Prop}
+variable {r: α -> α -> Prop} {s: β -> β -> Prop} {t: γ -> γ -> Prop}
 
 def RelEmbedding.toRelHom (h: r ↪r s) : r →r s where
   toFun := h.toFun
@@ -92,5 +92,28 @@ instance : IsRelHom (r ↪r s) r s where
 
 instance : IsRelHom (r ≃r s) r s where
   resp_rel h _ _ := h.resp_rel.mp
+
+namespace RelIso
+
+def inv_resp_rel (h: r ≃r s) : _root_.resp_rel s r h.invFun := by
+  intro a b
+  rw [←h.rightInv a, ←h.rightInv b, h.leftInv, h.leftInv]
+  exact h.resp_rel.symm
+
+@[refl]
+def refl : rel ≃r rel where
+  toEquiv := .refl
+  resp_rel := Iff.refl _
+
+@[symm]
+def symm (h: r ≃r s) : s ≃r r where
+  toEquiv := h.toEquiv.symm
+  resp_rel := h.inv_resp_rel
+
+def trans (h: r ≃r s) (g: s ≃r t) : r ≃r t where
+  toEquiv := .trans h.toEquiv g.toEquiv
+  resp_rel := Iff.trans h.resp_rel g.resp_rel
+
+end RelIso
 
 end
