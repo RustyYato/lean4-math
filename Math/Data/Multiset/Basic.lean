@@ -470,9 +470,8 @@ def count_elem_erase [DecidableEq α] (x: α) (as: Multiset α) :
     contradiction
 
 def count_erase [DecidableEq α] (x: α) (as: Multiset α) :
-  ∀{y}, x ≠ y ->
-  (as.MinCount y n ↔ (as.erase x).MinCount y n) := by
-  intro y ne
+  ∀{y n}, x ≠ y -> (as.MinCount y n ↔ (as.erase x).MinCount y n) := by
+  intro y n ne
   cases as with | mk as =>
   induction as generalizing n with
   | nil => rfl

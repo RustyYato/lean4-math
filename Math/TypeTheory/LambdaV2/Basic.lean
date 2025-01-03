@@ -410,6 +410,42 @@ def mem_remove (key: Nat) (ctx: Context) : ∀{k: Nat}, k ≠ key -> k ∈ ctx -
     contradiction
   · exact hk
 
+def Context.data.inj : Function.Injective Context.data := by
+  intro a b eq
+  cases a; cases b; congr
+
+def of_mem_remove (key: Nat) (ctx: Context) : ∀{k: Nat}, k ∈ ctx.remove key -> k ∈ ctx ∧ k ≠ key := by
+  intro k mem
+  apply flip And.intro
+  intro h
+  subst h
+  exact not_mem_remove _ _ mem
+  unfold remove at mem
+  obtain ⟨v, mem⟩ := mem
+  dsimp at mem
+  split at mem <;> rename_i h
+  have cnt := Multiset.MinCount.iff_mem.mpr mem
+  refine ⟨_, Multiset.MinCount.iff_mem.mp <| (Multiset.count_erase _ _ ?_).mpr cnt⟩
+  intro h
+  cases h
+  let ctx' := Context.mk (ctx.data.erase (key, ctx[key])) (by
+    apply Multiset.Pairwise.erase
+    exact ctx.nodup_keys)
+  have : ctx' = ctx.remove key := by
+    rw [remove]
+    apply Context.data.inj
+    dsimp
+    rw [dif_pos]
+  have : key ∈ ctx.remove key := by
+    rw [←this]
+    exact ⟨_, mem⟩
+  exact not_mem_remove _ _ this
+  exact ⟨_, mem⟩
+
+def remove_insert (ne: x ≠ y.fst): remove x (insert y ctx) = insert y (remove x ctx) := by
+
+  sorry
+
 end Context
 
 inductive LamTerm.IsWellFormed : Context -> LamTerm -> Prop where
@@ -493,3 +529,31 @@ def LamTerm.IsWellFormed.NoContextIntroductions
     contradiction
 
 def LamTerm.NoCommonIntroductions (a b: LamTerm) := ∀x, a.Introduces x -> b.Introduces x -> False
+
+def LamTerm.IsWellFormed.subst
+  {ctx: Context}
+  {term subst: LamTerm} {name: Nat}:
+  term.IsWellFormed ctx ->
+  subst.IsWellFormed (ctx.remove name) ->
+  (term.subst subst name).IsWellFormed (ctx.remove name) := by
+  intro wf subst_wf
+  induction wf with
+  | Panic _ _ _ ih  =>
+    apply IsWellFormed.Panic
+    apply ih
+    assumption
+  | App _ _ _ _ ih₀ ih₁ =>
+    apply IsWellFormed.App
+    apply ih₀
+    assumption
+    apply ih₁
+    assumption
+  | Lambda _ _ _ _ _ ih =>
+    apply IsWellFormed.Lambda
+    intro mem
+    have ⟨arg_in_ctx, _⟩  := Context.of_mem_remove _ _ mem
+    contradiction
+    apply ih
+
+    sorry
+  | Var => sorry
