@@ -566,13 +566,54 @@ def LamTerm.NoCommonIntroductions.ofTransSubTerm :
     assumption
     assumption
 
-def LamTerm.weaken
+def LamTerm.IsWellFormed.weaken
   {ctx: Context} {term: LamTerm} {x}:
   IsWellFormed ctx term ->
   (¬term.Introduces x.fst) ->
   IsWellFormed (insert x ctx) term := by
   intro wf nointro
-  sorry
+  induction wf with
+  | Panic _ _ _ ih =>
+    apply IsWellFormed.Panic
+    apply ih
+    intro h
+    apply nointro
+    apply Introduces.Panic
+    assumption
+  | App _ _ _ _ ih₀ ih₁ =>
+    apply IsWellFormed.App
+    apply ih₀
+    intro h
+    apply nointro
+    apply Introduces.AppFunc
+    assumption
+    apply ih₁
+    intro h
+    apply nointro
+    apply Introduces.AppArg
+    assumption
+  | Var =>
+    apply LamTerm.IsWellFormed.Var
+    apply Context.mem_insert_tail
+    assumption
+  | Lambda arg_name _ _ _  _ ih =>
+    apply IsWellFormed.Lambda
+    intro h
+    cases Context.of_mem_insert h
+    subst arg_name
+    apply nointro
+    apply Introduces.Lambda
+    contradiction
+    rw [Context.insert_comm]
+    apply ih
+    intro h
+    apply nointro
+    apply Introduces.LambdaBody
+    assumption
+    intro h
+    subst h
+    apply nointro
+    apply Introduces.Lambda
 
 def LamTerm.IsWellFormed.subst
   {ctx: Context}
@@ -616,7 +657,7 @@ def LamTerm.IsWellFormed.subst
     apply Context.mem_insert_tail
     assumption
     · rw [Context.remove_insert]
-      apply LamTerm.weaken
+      apply LamTerm.IsWellFormed.weaken
       assumption
       apply nocomm
       apply Introduces.Lambda
