@@ -878,6 +878,43 @@ def Pairwise.erase [DecidableEq α] {_: Relation.IsSymmetric P} {x: α} {as: Mul
   apply Pairwise.sub
   apply erase_sub
 
+def MinCountBy.one_iff {P: α -> Prop} {as: Multiset α} :
+  as.MinCountBy P 1 ↔ ∃x ∈ as, P x := by
+  induction as with
+  | nil => apply Iff.intro nofun nofun
+  | cons a as ih =>
+    apply Iff.intro
+    intro h
+    cases h using MinCountBy.casesCons with
+    | cons _ _ _ h =>
+      have ⟨x, _, px⟩  := ih.mp h
+      refine ⟨_, ?_, px⟩
+      apply mem_cons.mpr
+      right; assumption
+    | head =>
+      rename P a => pa
+      refine ⟨_, ?_, pa⟩
+      apply mem_cons.mpr
+      left; rfl
+    intro ⟨x, mem, px⟩
+    cases mem using cases_mem_cons
+    apply MinCountBy.head px
+    exact MinCountBy.zero
+    apply MinCountBy.cons
+    apply ih.mpr
+    refine ⟨_, ?_, px⟩
+    assumption
+
+def MinCountBy.subPredicate {P Q: α -> Prop} {as: Multiset α} (h: ∀x ∈ as, P x -> Q x) : as.MinCountBy P n -> as.MinCountBy Q n := by
+  cases as
+  apply List.MinCountBy.subPredicate
+  assumption
+
+def MinCountBy.map {P: α -> Prop} {Q: β -> Prop} {f: α -> β} {as: Multiset α} (h: ∀x ∈ as, P x -> Q (f x)) : as.MinCountBy P n -> (as.map f).MinCountBy Q n := by
+  cases as
+  apply List.MinCountBy.map
+  assumption
+
 -- theorem flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
 --   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
 --   quot_ind (m n)

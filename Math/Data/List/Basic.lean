@@ -453,9 +453,60 @@ def List.product_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
 
 def List.Nodup.singleton (x: α) : List.Nodup [x] := List.Pairwise.cons nofun List.Pairwise.nil
 
+def List.MinCountBy.pop_head : (a::as).MinCountBy P (n + 1) -> as.MinCountBy P n := by
+  intro h
+  cases h; rename_i h
+  apply h.reduce
+  apply Nat.le_succ
+  assumption
+
 def List.MinCount.pop_head : (a::as).MinCount a (n + 1) -> as.MinCount a n := by
   intro h
   cases h; rename_i h
   apply h.reduce
   apply Nat.le_succ
   assumption
+
+def List.MinCountBy.subPredicate {P Q: α -> Prop} {as: List α} (h: ∀x ∈ as, P x -> Q x) : as.MinCountBy P n -> as.MinCountBy Q n := by
+  intro c
+  induction c with
+  | nil => apply MinCountBy.nil
+  | cons _ _ _ _ ih =>
+    apply MinCountBy.cons
+    apply ih
+    intro x mem
+    apply h
+    apply List.Mem.tail
+    assumption
+  | head _ _ _ _ _ ih  =>
+    apply List.MinCountBy.head
+    apply h
+    apply List.Mem.head
+    assumption
+    apply ih
+    intro x mem
+    apply h
+    apply List.Mem.tail
+    assumption
+
+def List.MinCountBy.map {P: α -> Prop} {Q: β -> Prop} {f: α -> β} {as: List α} (h: ∀x ∈ as, P x -> Q (f x)) : as.MinCountBy P n -> (as.map f).MinCountBy Q n := by
+  intro c
+  induction c with
+  | nil => apply MinCountBy.nil
+  | cons _ _ _ _ ih =>
+    apply MinCountBy.cons
+    apply ih
+    intro x mem
+    apply h
+    apply List.Mem.tail
+    assumption
+  | head _ _ _ _ _ ih  =>
+    apply List.MinCountBy.head
+    apply h
+    apply List.Mem.head
+    assumption
+    apply ih
+    intro x mem
+    apply h
+    apply List.Mem.tail
+    assumption
