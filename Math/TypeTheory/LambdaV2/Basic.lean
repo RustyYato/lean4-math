@@ -494,6 +494,12 @@ def LamTerm.IsWellTyped.IsWellFormed {ctx: Context} {term: LamTerm} {ty: LamType
 inductive LamTerm.IsValue : LamTerm -> Prop where
 | Lambda arg_name arg_ty body : IsValue (.Lambda arg_name arg_ty body)
 
+inductive LamTerm.IsSubTerm : LamTerm -> LamTerm -> Prop where
+| AppFunc func arg: IsSubTerm func (.App func arg)
+| AppArg func arg: IsSubTerm arg (.App func arg)
+| Panic body ty: IsSubTerm body (.Panic body ty)
+| LambdaBody n ty body: IsSubTerm body (.Lambda n ty body)
+
 inductive LamTerm.Introduces (name: Nat) : LamTerm -> Prop where
 | AppFunc func arg: Introduces name func -> Introduces name (.App func arg)
 | AppArg func arg: Introduces name arg -> Introduces name (.App func arg)
@@ -530,30 +536,107 @@ def LamTerm.IsWellFormed.NoContextIntroductions
 
 def LamTerm.NoCommonIntroductions (a b: LamTerm) := ∀x, a.Introduces x -> b.Introduces x -> False
 
+def LamTerm.NoCommonIntroductions.symm :
+  NoCommonIntroductions a b ->
+  NoCommonIntroductions b a := by
+  intro h x ax bx
+  apply h <;> assumption
+
+def LamTerm.NoCommonIntroductions.ofSubTerm :
+  NoCommonIntroductions a b ->
+  IsSubTerm a₀ a ->
+  NoCommonIntroductions a₀ b := by
+  intro h sub x ax bx
+  cases sub <;> apply h x _ bx
+  exact .AppFunc _ _ ax
+  exact .AppArg _ _ ax
+  exact .Panic _ _ ax
+  exact .LambdaBody _ _ _ ax
+
+def LamTerm.NoCommonIntroductions.ofTransSubTerm :
+  NoCommonIntroductions a b ->
+  Relation.ReflTransGen IsSubTerm a₀ a ->
+  NoCommonIntroductions a₀ b := by
+  intro h sub
+  induction sub with
+  | refl => assumption
+  | cons sub _ ih =>
+    apply NoCommonIntroductions.ofSubTerm
+    apply ih
+    assumption
+    assumption
+
+def LamTerm.weaken
+  {ctx: Context} {term: LamTerm} {x}:
+  IsWellFormed ctx term ->
+  (¬term.Introduces x.fst) ->
+  IsWellFormed (insert x ctx) term := by
+  intro wf nointro
+  sorry
+
 def LamTerm.IsWellFormed.subst
   {ctx: Context}
   {term subst: LamTerm} {name: Nat}:
+  name ∈ ctx ->
   term.IsWellFormed ctx ->
   subst.IsWellFormed (ctx.remove name) ->
+  term.NoCommonIntroductions subst ->
   (term.subst subst name).IsWellFormed (ctx.remove name) := by
-  intro wf subst_wf
+  intro name_in_ctx wf subst_wf nocomm
   induction wf with
   | Panic _ _ _ ih  =>
     apply IsWellFormed.Panic
     apply ih
     assumption
+    assumption
+    apply NoCommonIntroductions.ofSubTerm
+    assumption
+    exact .Panic _ _
   | App _ _ _ _ ih₀ ih₁ =>
     apply IsWellFormed.App
     apply ih₀
     assumption
+    assumption
+    apply NoCommonIntroductions.ofSubTerm
+    assumption
+    exact .AppFunc _ _
     apply ih₁
     assumption
+    assumption
+    apply NoCommonIntroductions.ofSubTerm
+    assumption
+    exact .AppArg _ _
   | Lambda _ _ _ _ _ ih =>
     apply IsWellFormed.Lambda
     intro mem
     have ⟨arg_in_ctx, _⟩  := Context.of_mem_remove _ _ mem
     contradiction
+    rw [←Context.remove_insert]
     apply ih
-
-    sorry
-  | Var => sorry
+    apply Context.mem_insert_tail
+    assumption
+    · rw [Context.remove_insert]
+      apply LamTerm.weaken
+      assumption
+      apply nocomm
+      apply Introduces.Lambda
+      dsimp
+      intro h
+      subst h
+      contradiction
+    apply NoCommonIntroductions.ofSubTerm
+    assumption
+    exact .LambdaBody _ _ _
+    dsimp
+    have := nocomm
+    intro h
+    subst h
+    contradiction
+  | Var n n_in_ctx =>
+    unfold LamTerm.subst
+    split
+    assumption
+    apply IsWellFormed.Var
+    apply Context.mem_remove
+    assumption
+    assumption
