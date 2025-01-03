@@ -1,41 +1,48 @@
 import Math.Logic.Basic
 import Math.Function.Basic
 
-inductive List.MinCount : List α -> α -> Nat -> Prop where
-| nil x : MinCount [] x 0
-| cons x a as n : MinCount as x n -> MinCount (a::as) x n
-| head a as n : MinCount as a n -> MinCount (a::as) a n.succ
+inductive List.MinCountBy (P: α -> Prop) : List α -> Nat -> Prop where
+| nil : MinCountBy P [] 0
+| cons a as n : MinCountBy P as n -> MinCountBy P (a::as) n
+| head a as n : P a -> MinCountBy P as n -> MinCountBy P (a::as) n.succ
+
+abbrev List.MinCount (as: List α) (x: α) (n: Nat) := as.MinCountBy (· = x) n
+
+def List.MinCount.head : MinCount as a n -> MinCount (a::as) a n.succ := MinCountBy.head _ _ _ rfl
 
 @[simp]
-def List.MinCount.zero : List.MinCount as x 0 := by
+def List.MinCountBy.zero {as: List α} : as.MinCountBy P 0 := by
   induction as
-  apply List.MinCount.nil
-  apply List.MinCount.cons
+  apply List.MinCountBy.nil
+  apply List.MinCountBy.cons
   assumption
 
+def List.MinCount.zero {as: List α} : as.MinCount x 0 := MinCountBy.zero
+
 @[simp]
-def List.MinCount.reduce : List.MinCount as x n -> ∀{m}, m ≤ n -> List.MinCount as x m := by
+def List.MinCountBy.reduce : List.MinCountBy P as n -> ∀{m}, m ≤ n -> List.MinCountBy P as m := by
   intro c m h
   induction as generalizing m n with
   | nil =>
     cases c
     cases Nat.le_zero.mp h
-    apply MinCount.nil
+    apply MinCountBy.nil
   | cons a as ih =>
     cases c
-    apply List.MinCount.cons
+    apply List.MinCountBy.cons
     apply ih
     assumption
     assumption
     cases m
-    apply MinCount.zero
-    apply List.MinCount.head
+    apply MinCountBy.zero
+    apply List.MinCountBy.head
+    assumption
     apply ih
     assumption
     apply Nat.le_of_succ_le_succ
     assumption
 
-attribute [simp] List.MinCount.head List.MinCount.cons
+attribute [simp] List.MinCountBy.head List.MinCountBy.cons
 
 def List.mem_iff_MinCount_one : x ∈ as ↔ List.MinCount as x 1 := by
   induction as with
@@ -44,13 +51,14 @@ def List.mem_iff_MinCount_one : x ∈ as ↔ List.MinCount as x 1 := by
     apply Iff.intro <;> intro h
     cases h
     simp
-    apply MinCount.cons
+    apply MinCountBy.cons
     apply ih.mp
     assumption
     cases h
     apply List.Mem.tail
     apply ih.mpr
     assumption
+    subst x
     apply List.Mem.head
 
 def List.mem_iff_exists_perm_cons (x: α) (as: List α) :
@@ -99,16 +107,17 @@ def List.find_perm_cons [DecidableEq α] (x: α) (as: List α) (h: x ∈ as) :
       assumption
       apply List.Perm.swap
 
-def List.MinCount.of_perm (h: as ≈ bs) : List.MinCount as x n -> List.MinCount bs x n := by
+def List.MinCountBy.of_perm (h: as ≈ bs) : List.MinCountBy P as n -> List.MinCountBy P bs n := by
   intro c
   induction h generalizing n with
   | nil => assumption
   | cons x _ ih =>
     cases c
-    apply MinCount.cons
+    apply MinCountBy.cons
     apply ih
     assumption
-    apply MinCount.head
+    apply MinCountBy.head
+    assumption
     apply ih
     assumption
   | trans _ _ aih bih =>
@@ -118,10 +127,12 @@ def List.MinCount.of_perm (h: as ≈ bs) : List.MinCount as x n -> List.MinCount
   | swap =>
     cases c <;> rename_i c <;>
     cases c <;> rename_i c
-    apply MinCount.cons; apply MinCount.cons; assumption
-    apply MinCount.head; apply MinCount.cons; assumption
-    apply MinCount.cons; apply MinCount.head; assumption
-    apply MinCount.head; apply MinCount.head; assumption
+    apply MinCountBy.cons; apply MinCountBy.cons; assumption
+    apply MinCountBy.head; assumption; apply MinCountBy.cons; assumption
+    apply MinCountBy.cons; apply MinCountBy.head; assumption; assumption
+    apply MinCountBy.head; assumption; apply MinCountBy.head; assumption; assumption
+
+def List.MinCount.of_perm (h: as ≈ bs) : List.MinCount as x n -> List.MinCount bs x n := MinCountBy.of_perm h
 
 def List.Perm.min_count_iff (h: List.Perm as bs) : List.MinCount as x n ↔ List.MinCount bs x n := by
   apply Iff.intro
@@ -143,7 +154,7 @@ def List.MinCount.iff_perm : as ≈ bs ↔ ∀x n, List.MinCount as x n ↔ List
       cases bs with
       | nil => apply List.Perm.refl
       | cons b bs =>
-        have := (h b 1).mpr List.MinCount.zero.head
+        have := (h b 1).mpr <| List.MinCount.zero.head
         contradiction
     | cons a as ih =>
       have ⟨bs', perm⟩ := (List.mem_iff_MinCount_one.symm.trans (List.mem_iff_exists_perm_cons a bs)).mp ((h _ _).mp (List.MinCount.zero.head))
@@ -155,30 +166,32 @@ def List.MinCount.iff_perm : as ≈ bs ↔ ∀x n, List.MinCount as x n ↔ List
       intro c
       cases MinCount.of_perm perm ((h _ _).mp (c.cons _ _))
       assumption
-      cases MinCount.of_perm perm ((h _ _).mp (c.head _ _))
-      apply MinCount.reduce
+      subst x
+      cases MinCount.of_perm perm ((h _ _).mp c.head)
+      apply MinCountBy.reduce
       assumption
       apply Nat.le_succ
       assumption
       intro c
       cases (h _ _).mpr (MinCount.of_perm perm.symm (c.cons _ _))
       assumption
-      cases (h _ _).mpr (MinCount.of_perm perm.symm (c.head _ _))
-      apply MinCount.reduce
+      subst x
+      cases (h _ _).mpr (MinCount.of_perm perm.symm c.head)
+      apply MinCountBy.reduce
       assumption
       apply Nat.le_succ
       assumption
 
 def List.MinCount_count [BEq α] [LawfulBEq α] (x: α) (as: List α) : List.MinCount as x (as.count x) := by
   induction as with
-  | nil => apply List.MinCount.nil
+  | nil => apply List.MinCountBy.nil
   | cons a as ih =>
     rw [count_cons]
     split <;> rename_i h
     cases LawfulBEq.eq_of_beq h
     apply List.MinCount.head
     assumption
-    apply List.MinCount.cons
+    apply List.MinCountBy.cons
     assumption
 
 def List.reduce (default: α) (op: α -> α -> α) : List α -> α
@@ -238,14 +251,16 @@ def List.minCount_of_nodup (as: List α) : as.Nodup -> as.MinCount x n -> n ≤ 
     cases mincount <;> rename_i mincount
     apply ih
     assumption
-    rename_i n
-    replace nomem : x ∉ as := fun h => nomem _ h rfl
+    rename_i n h'
+    replace nomem : x ∉ as := fun h => nomem _ h h'
     have := mem_iff_MinCount_one.not_iff_not.mp nomem
     cases n
     apply Nat.le_refl
     exfalso
     apply this
-    apply MinCount.reduce
+    subst x
+    rename_i n
+    apply MinCountBy.reduce
     exact mincount
     apply Nat.le_add_left
 
