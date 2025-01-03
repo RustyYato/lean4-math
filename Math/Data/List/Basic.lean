@@ -437,3 +437,10 @@ def List.product_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
   assumption
 
 def List.Nodup.singleton (x: α) : List.Nodup [x] := List.Pairwise.cons nofun List.Pairwise.nil
+
+def List.MinCount.pop_head : (a::as).MinCount a (n + 1) -> as.MinCount a n := by
+  intro h
+  cases h; rename_i h
+  apply h.reduce
+  apply Nat.le_succ
+  assumption

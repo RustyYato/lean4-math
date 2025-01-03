@@ -57,6 +57,17 @@ infixr:67 " ::ₘ " => Multiset.cons
 instance : Insert α (Multiset α) := ⟨.cons⟩
 instance : Singleton α (Multiset α) := ⟨(.cons · ∅)⟩
 
+@[induction_eliminator]
+def Multiset.induction {motive: Multiset α -> Prop}
+  (nil: motive ∅)
+  (cons: ∀a as, motive as -> motive (a::ₘas)):
+  ∀m, motive m := by
+  intro m
+  cases m with | mk m =>
+  induction m with
+  | nil => exact nil
+  | cons _ _ ih => exact cons _ _ ih
+
 @[simp]
 def Multiset.mk_cons (x: α) (as: List α) : x ::ₘ ⟦as⟧ = ⟦x::as⟧ := rfl
 
@@ -395,6 +406,252 @@ def Multiset.mem_head (a: α) (as: Multiset α) : a ∈ (a::ₘas) := by
 def Multiset.mem_tail (x a: α) (as: Multiset α) : x ∈ as -> x ∈ (a::ₘas) := by
   cases as
   apply List.Mem.tail
+
+def Multiset.erase [DecidableEq α] (x: α) (as: Multiset α) : Multiset α := by
+  apply as.lift (fun as => ⟦as.erase x⟧)
+  intro a b eq
+  apply Quotient.sound
+  induction eq with
+  | nil => apply List.Perm.nil
+  | cons c perm ih =>
+    unfold List.erase
+    split
+    assumption
+    apply List.Perm.cons
+    assumption
+  | trans _ _ ih₀ ih₁ => exact ih₀.trans ih₁
+  | swap a b xs =>
+    unfold List.erase List.erase
+    cases h:a == x <;> cases g:b == x <;> dsimp
+    apply List.Perm.swap
+    apply List.Perm.refl
+    apply List.Perm.refl
+    cases LawfulBEq.eq_of_beq h
+    cases LawfulBEq.eq_of_beq g
+    apply List.Perm.refl
+
+def Multiset.erase_empty [DecidableEq α] (x: α) : Multiset.erase x ∅ = ∅ := rfl
+def Multiset.erase_cons [DecidableEq α] (x a: α) (as: Multiset α) : (a::ₘas).erase x = if x = a then as else a::ₘ(as.erase x) := by
+  cases as
+  show ⟦List.erase (a::_) x⟧ = _
+  rw [List.erase]
+  split <;> rename_i h
+  rw [if_pos]
+  symm; apply LawfulBEq.eq_of_beq
+  assumption
+  rw [if_neg]
+  rfl
+  intro h
+  subst x
+  rw [LawfulBEq.rfl] at h
+  contradiction
+
+def Multiset.count_elem_erase [DecidableEq α] (x: α) (as: Multiset α) :
+  as.MinCount x n -> (as.erase x).MinCount x n.pred := by
+  cases as with | mk as =>
+  induction as with
+  | nil =>
+    intro h
+    cases h
+    apply MinCount.zero
+  | cons a as ih =>
+    intro h
+    show List.MinCount (List.erase _ _) _ _
+    unfold List.erase
+    split
+    cases h <;> rename_i h
+    apply h.reduce
+    apply Nat.pred_le
+    assumption
+    apply List.MinCount.cons
+    apply ih
+    cases h
+    assumption
+    rw [LawfulBEq.rfl] at *
+    contradiction
+
+def Multiset.count_erase [DecidableEq α] (x: α) (as: Multiset α) :
+  ∀{y}, x ≠ y ->
+  (as.MinCount y n ↔ (as.erase x).MinCount y n) := by
+  intro y ne
+  cases as with | mk as =>
+  induction as generalizing n with
+  | nil => rfl
+  | cons a as ih =>
+    show _ ↔ MinCount _ _ ⟦_⟧
+    unfold List.erase
+    split <;> rename_i h
+    cases LawfulBEq.eq_of_beq h
+    · apply Iff.intro
+      intro h
+      cases h
+      assumption
+      contradiction
+      intro h
+      apply List.MinCount.cons
+      assumption
+    · apply Iff.intro
+      intro h
+      cases h
+      apply List.MinCount.cons
+      apply ih.mp
+      assumption
+      apply List.MinCount.head
+      apply ih.mp
+      assumption
+      intro h
+      cases h
+      apply List.MinCount.cons
+      apply ih.mpr
+      assumption
+      apply List.MinCount.head
+      apply ih.mpr
+      assumption
+
+def MinCount.iff_mem {x: α} {as: Multiset α} : as.MinCount x 1 ↔ x ∈ as := by
+  cases as with | mk as =>
+  induction as with
+  | nil =>
+    apply Iff.intro
+    intro h
+    contradiction
+    intro h
+    contradiction
+  | cons a as ih =>
+    apply Iff.intro
+    intro h
+    cases h
+    apply List.Mem.tail
+    apply ih.mp
+    assumption
+    apply List.Mem.head
+    intro h
+    cases h
+    apply List.MinCount.head
+    apply List.MinCount.zero
+    apply List.MinCount.cons
+    apply ih.mpr
+    assumption
+
+instance : HasSubset (Multiset α) where
+  Subset a b := ∀x n, a.MinCount x n -> b.MinCount x n
+
+def Multiset.sub_trans {a b c: Multiset α}: a ⊆ b -> b ⊆ c -> a ⊆ c := by
+   intro ab bc x n y
+   apply bc
+   apply ab
+   assumption
+
+@[refl]
+def Multiset.sub_refl (as: Multiset α): as ⊆ as := fun _ _ => id
+def Multiset.sub_cons {a: α} {as: Multiset α}: as ⊆ a::ₘas := by
+  intro x n c
+  apply c.cons
+
+def Multiset.sub_empty {as: Multiset α} : as ⊆ ∅ -> as = ∅ := by
+  intro s
+  induction as
+  rfl
+  rename_i a as _
+  have := s _ _ (MinCount.head MinCount.zero)
+  contradiction
+
+def Multiset.empty_ne_cons {a: α} {as: Multiset α} : ∅ ≠ a::ₘas := by
+  cases as with | mk as =>
+  intro h
+  have := Quotient.exact h
+  have := List.Perm.length_eq this
+  contradiction
+
+def Multiset.MinCount.pop_head : Multiset.MinCount a (n + 1) (a::ₘas) -> Multiset.MinCount a n as := by
+  cases as
+  apply List.MinCount.pop_head
+
+def Multiset.mem_spec {as: Multiset α} :
+  ∀{x}, x ∈ as ↔ ∃as', as = x::ₘas' := by
+  cases as with | mk as =>
+  induction as with
+  | nil =>
+    intro x
+    apply Iff.intro
+    intro h
+    contradiction
+    intro ⟨_, h⟩
+    have := empty_ne_cons h
+    contradiction
+  | cons a as ih =>
+    intro x
+    apply Iff.intro
+    intro h
+    cases h
+    exists ⟦as⟧
+    rename_i mem
+    have ⟨as', h⟩  := ih.mp mem
+    exists a::ₘas'
+    show a::ₘ⟦as⟧ = _
+    rw [h]
+    rw [cons_comm]
+    intro ⟨as', h⟩
+    cases as' with | mk as' =>
+    replace h := Quotient.exact h
+    exact (List.Perm.mem_iff h).mpr (.head _)
+
+def Multiset.sub_mem {x: α} { as bs: Multiset α }:
+  as ⊆ bs -> x ∈ as -> x ∈ bs := by
+  intro sub mem
+  exact MinCount.iff_mem.mp <| sub _ _ (MinCount.iff_mem.mpr mem)
+
+def Multiset.of_cons_sub_cons {x: α} { as bs: Multiset α }:
+  x::ₘas ⊆ x::ₘbs -> as ⊆ bs := by
+  cases as with | mk as =>
+  cases bs with | mk bs =>
+  intro s
+  intro y n cnt
+  cases s _ _ cnt.cons; rename_i cnt'
+  assumption
+  cases s _ _ cnt.head; rename_i cnt'
+  apply cnt'.reduce
+  apply Nat.le_succ
+  assumption
+
+def Multiset.Pairwise.sub {P: α -> α -> Prop} {_: Relation.IsSymmetric P} {as bs: Multiset α} :
+  bs ⊆ as ->
+  as.Pairwise P -> bs.Pairwise P := by
+  intro sub p
+  induction bs with
+  | nil => apply Pairwise.nil
+  | cons b bs ih =>
+    apply (ih (sub_trans sub_cons sub)).cons
+    intro x mem
+    have b_in_as := sub_mem sub (mem_cons.mpr (.inl rfl))
+    have ⟨as', eq⟩ := mem_spec.mp b_in_as
+    subst as; clear b_in_as
+    replace sub := of_cons_sub_cons sub
+    apply p.head
+    apply sub_mem sub
+    assumption
+
+def Multiset.erase_sub [DecidableEq α] {x₀: α} {as: Multiset α}: as.erase x₀ ⊆ as := by
+  intro x n c
+  induction as generalizing n with
+  | nil => exact c
+  | cons a as ih =>
+    rw [erase_cons] at c
+    split at c
+    exact c.cons
+    cases as with | mk as =>
+    cases c
+    apply List.MinCount.cons
+    apply ih
+    assumption
+    apply List.MinCount.head
+    apply ih
+    assumption
+
+def Multiset.Pairwise.erase [DecidableEq α] {_: Relation.IsSymmetric P} {x: α} {as: Multiset α} :
+  as.Pairwise P -> (as.erase x).Pairwise P := by
+  apply Pairwise.sub
+  apply erase_sub
 
 -- theorem Multiset.flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
 --   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
