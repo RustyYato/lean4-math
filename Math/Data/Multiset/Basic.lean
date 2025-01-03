@@ -52,7 +52,7 @@ def Multiset.cons (x: α) : Multiset α -> Multiset α := Quot.lift (⟦List.con
   apply List.Perm.cons
   assumption
 
-infix:67 " ::ₘ " => Multiset.cons
+infixr:67 " ::ₘ " => Multiset.cons
 
 instance : Insert α (Multiset α) := ⟨.cons⟩
 instance : Singleton α (Multiset α) := ⟨(.cons · ∅)⟩
@@ -347,6 +347,25 @@ def Multiset.Pairwise.cons {P: α -> α -> Prop} {_: Relation.IsSymmetric P}
    : Multiset.Pairwise P (a::ₘas) := by
   cases as with | mk as =>
   apply List.Pairwise.cons <;> assumption
+
+def Multiset.Pairwise.head {P: α -> α -> Prop} {_: Relation.IsSymmetric P}
+  (h: Multiset.Pairwise P (a::ₘas))
+   : ∀x ∈ as, P a x := by
+  cases as with | mk as =>
+  cases h
+  assumption
+
+def Multiset.Pairwise.tail {P: α -> α -> Prop} {_: Relation.IsSymmetric P}
+  (h: Multiset.Pairwise P (a::ₘas))
+   : Multiset.Pairwise P as := by
+  cases as with | mk as =>
+  cases h
+  assumption
+
+def Multiset.cons_comm (a b: α) (cs: Multiset α): a ::ₘ b ::ₘ cs = b ::ₘ a ::ₘ cs := by
+  cases cs with | mk cs =>
+  apply Quotient.sound
+  apply List.Perm.swap
 
 instance (P: α -> Prop) [DecidablePred P] (a: Multiset α) : Decidable (∃x ∈ a, P x) := by
   apply Quotient.recOnSubsingleton a (motive := _)
