@@ -62,7 +62,7 @@ def mk_mem (x: α) (as: List α) : (x ∈ ⟦as⟧) = (x ∈ as) := rfl
 
 def cons (x: α) : Multiset α -> Multiset α := Quot.lift (⟦List.cons x ·⟧) <| by
   intro x y eq
-  apply quot.sound
+  apply Quotient.sound
   apply List.Perm.cons
   assumption
 
@@ -147,7 +147,7 @@ def rec {motive: Multiset α -> Sort _}
     unfold rec'
     dsimp
     apply rec_prf_cons
-    apply quot.sound
+    apply Quotient.sound
     assumption
     assumption
   | swap =>
@@ -156,10 +156,21 @@ def rec {motive: Multiset α -> Sort _}
     rename_i x y as
     apply swap (a := y) (a' := x) (as := ⟦as⟧)
 
+def rec_nil {motive: Multiset α -> Sort _}
+  (nil: motive ∅) (cons: ∀a as, motive as -> motive (a::ₘas))
+  (swap: ∀a a' as mas, HEq (cons a _ (cons a' as mas)) (cons a' _ (cons a as mas))) :
+  rec nil cons swap ∅ = nil := rfl
+
+def rec_cons {motive: Multiset α -> Sort _}
+  (nil: motive ∅) (cons: ∀a as, motive as -> motive (a::ₘas))
+  (swap: ∀a a' as mas, HEq (cons a _ (cons a' as mas)) (cons a' _ (cons a as mas))) :
+  rec nil cons swap (m::ₘms) = cons m ms (rec nil cons swap ms) := by
+  cases ms with | mk ms => rfl
+
 def append : Multiset α -> Multiset α -> Multiset α := by
   apply Quotient.lift₂ (⟦· ++ ·⟧)
   intro a b c d ac bd
-  apply quot.sound
+  apply Quotient.sound
   apply List.Perm.append <;> assumption
 
 instance : Append (Multiset α) := ⟨.append⟩
@@ -176,7 +187,7 @@ def mem_append {as bs: Multiset α} : ∀{x}, x ∈ as ++ bs ↔ x ∈ as ∨ x 
 def append_comm (as bs: Multiset α) : as ++ bs = bs ++ as := by
   cases as, bs
   simp
-  apply quot.sound
+  apply Quotient.sound
   apply List.perm_append_comm
 def append_assoc (as bs cs: Multiset α) : as ++ bs ++ cs = as ++ (bs ++ cs) := by
   cases as, bs, cs
@@ -185,7 +196,7 @@ def append_assoc (as bs cs: Multiset α) : as ++ bs ++ cs = as ++ (bs ++ cs) := 
 def map {β: Type _} (f: α -> β) (as: Multiset α) : Multiset β := by
   apply Quot.lift (⟦·.map f⟧) _ as
   intro a b h
-  apply quot.sound
+  apply Quotient.sound
   induction h with
   | nil => apply List.Perm.nil
   | trans _ _ aih bih => apply aih.trans bih
@@ -262,7 +273,7 @@ def map_append (as bs: Multiset α) (f: α -> β) : (as ++ bs).map f = as.map f 
 
 def map_map (ms: Multiset α) (f: α -> β) (g: β -> γ) : (ms.map f).map g = ms.map (g ∘ f) := by
   quot_ind ms
-  apply quot.sound
+  apply Quotient.sound
   simp
   induction ms with
   | nil => apply List.Perm.nil
@@ -410,6 +421,14 @@ def MinCountBy.cases {P: α -> Prop} {motive: ∀(n: Nat) (ms: Multiset α), Min
   assumption
   assumption
 
+def MinCountBy.casesNil {P: α -> Prop} {motive: ∀(n: Nat), MinCountBy P n ∅ -> Prop}
+  (nil: motive 0 .nil):
+  ∀{n} (h: MinCountBy P n ∅), motive n h := by
+  intro n h
+  cases n
+  assumption
+  contradiction
+
 def MinCountBy.casesCons {P: α -> Prop} {motive: ∀(n: Nat) (m: α) (ms: Multiset α), MinCountBy P n (m::ₘms) -> Prop}
   (cons: ∀a as n (h: MinCountBy P n as), motive n a as h.cons)
   (head: ∀a as n (h: MinCountBy P n as) (pa: P a), motive n.succ a as (h.head pa)):
@@ -451,6 +470,10 @@ def MinCount.cases {x: α} {motive: ∀(n: Nat) (ms: Multiset α), MinCount x n 
   assumption
   apply head
   assumption
+
+def MinCount.casesNil {x: α} {motive: ∀(n: Nat), MinCount x n ∅ -> Prop}
+  (nil: motive 0 .nil):
+  ∀{n: Nat} (h: MinCount x n ∅), motive n h := MinCountBy.casesNil nil
 
 def MinCount.casesCons {x: α} {motive: ∀(n: Nat) (m: α) (ms: Multiset α), MinCount x n (m::ₘms) -> Prop}
   (cons: ∀a as n (h: MinCount x n as), motive n a as h.cons)
@@ -914,6 +937,79 @@ def MinCountBy.map {P: α -> Prop} {Q: β -> Prop} {f: α -> β} {as: Multiset �
   cases as
   apply List.MinCountBy.map
   assumption
+
+def eraseP (P: α -> Bool) (ms: Multiset α) (h: ∀x y, x ∈ ms -> y ∈ ms -> P x -> P y -> x = y) : Multiset α := by
+  induction ms using rec with
+  | nil => exact ∅
+  | cons a as ih =>
+    apply cond (P a)
+    exact as
+    apply a::ₘih _
+    intro x y hx hy px py
+    apply h
+    apply mem_cons.mpr; right; assumption
+    apply mem_cons.mpr; right; assumption
+    assumption
+    assumption
+  | swap =>
+    rename_i a₀ a₁ as ih
+    apply Function.hfunext
+    · clear ih
+      apply propext
+      apply Iff.intro
+      all_goals
+        intro h x y hx hy px py
+        apply h
+        rw [cons_comm]; assumption
+        rw [cons_comm]; assumption
+        assumption
+        assumption
+    intro h₀ h₁ eq
+    cases ha₀:P a₀ <;> cases ha₁:P a₁ <;> dsimp
+    rw [cons_comm]
+    rfl
+    rfl
+    congr
+    apply h₀
+    apply mem_cons.mpr; right
+    apply mem_cons.mpr; left; rfl
+    apply mem_cons.mpr; left; rfl
+    assumption
+    assumption
+
+def eraseP_cons
+  {P: α -> Bool} {m: α} {ms: Multiset α} {h: ∀x y, x ∈ (m::ₘms) -> y ∈ (m::ₘms) -> P x -> P y -> x = y} :
+  (m::ₘms).eraseP P h = if P m then ms else m::ₘms.eraseP P (by
+  intro x y hx hy px py
+  apply h
+  apply mem_cons.mpr; right; assumption
+  apply mem_cons.mpr; right; assumption
+  assumption
+  assumption) := by
+  rw [eraseP, rec_cons]
+  split <;> rename_i h
+  rw [h]
+  rfl
+  rw [Bool.eq_false_iff.mpr h]
+  rfl
+
+def eraseP_sub {P: α -> Bool} {ms: Multiset α} {h: ∀x y, x ∈ ms -> y ∈ ms -> P x -> P y -> x = y}: ms.eraseP P h ⊆ ms := by
+  intro x n c
+  induction ms generalizing n with
+  | nil => exact c
+  | cons a as ih =>
+    rw [eraseP_cons] at c
+    split at c
+    exact c.cons
+    cases c using MinCount.casesCons with
+    | cons =>
+      apply MinCount.cons
+      apply ih
+      assumption
+    | head =>
+      apply MinCount.head
+      apply ih
+      assumption
 
 -- theorem flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
 --   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
