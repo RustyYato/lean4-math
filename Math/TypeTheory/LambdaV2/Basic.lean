@@ -656,3 +656,180 @@ def LamTerm.IsWellFormed.rename
     unfold Name.rename; split
     subst source; contradiction
     assumption
+
+def LamTerm.IsWellTyped.rename_from_ctx
+  (source dest: Name) {ctx: Context} {term: LamTerm} {ty: LamType}
+  (hs: source ∈ ctx)
+  (dest_notin_ctx: dest ∉ ctx)
+  (dest_nointro: ¬term.Introduces dest):
+  term.IsWellTyped ctx ty -> (term.rename source dest).IsWellTyped (insert ⟨dest, ctx[source]⟩ (ctx.erase source)) ty := by
+  intro wf
+  induction wf with
+  | Panic _ _ _ ih =>
+    apply IsWellTyped.Panic
+    apply ih
+    assumption
+    intro h
+    exact dest_nointro (.Panic _ _ h)
+  | App _ _ _ _ _ _ ih₀ ih₁ =>
+    apply IsWellTyped.App
+    apply ih₀
+    assumption
+    intro h
+    exact dest_nointro (.AppFunc _ _ h)
+    apply ih₁
+    assumption
+    intro h
+    exact dest_nointro (.AppArg _ _ h)
+  | Lambda name ty retty body name_notin_ctx wt ih  =>
+    replace hs' :=
+      (IsWellFormed.Lambda _ _ _ name_notin_ctx wt.IsWellFormed).NoContextIntroductions _ hs
+    replace hs'' :=
+      wt.IsWellFormed.NoContextIntroductions _ (Map.mem_insert.mpr <| .inl hs)
+    apply IsWellTyped.Lambda
+    unfold Name.rename; split
+    subst source
+    exfalso
+    exact hs' (.Lambda _ _)
+    intro mem
+    rw [Map.mem_insert, Map.mem_erase] at mem
+    dsimp at mem
+    rcases mem with ⟨mem, _⟩ | eq
+    contradiction
+    subst dest
+    exact dest_nointro (.Lambda _ _)
+
+    unfold Name.rename
+    have name_ne_source : name ≠ source := fun h => name_notin_ctx (h ▸ hs)
+    have name_ne_dest : name ≠ dest := fun h => dest_nointro (h ▸ .Lambda _ _)
+    rw [if_neg name_ne_source]
+    have := ih (Map.mem_insert.mpr <| .inl hs) (by
+      intro h
+      cases Map.mem_insert.mp h
+      contradiction
+      subst dest
+      contradiction) (fun h => dest_nointro (.LambdaBody _ _ _ h))
+    rw [Map.insert_get_elem_tail] at this
+    rw [Map.erase_insert_comm_of_ne name_ne_source,
+      Map.insert_comm] at this
+    assumption
+    dsimp
+    exact name_ne_dest.symm
+  | Var =>
+    unfold rename Name.rename
+    split
+    · subst source
+      apply IsWellTyped.Var
+      rw [Map.insert_get_elem_head]
+      dsimp
+      assumption
+      dsimp
+      intro h
+      have ⟨_, _⟩ := Map.mem_erase.mp h
+      contradiction
+    · apply IsWellTyped.Var
+      rw [Map.insert_get_elem_tail, Map.erase_get_elem]
+      assumption
+      apply Map.mem_erase.mpr
+      apply And.intro
+      assumption
+      intro h
+      subst h
+      contradiction
+
+def LamTerm.IsWellTyped.rename
+  {source dest: Name} {ctx: Context} {term: LamTerm} {ty}
+  (hs: term.Introduces source)
+  (dest_notin_ctx: dest ∉ ctx)
+  (dest_nointro: ¬term.Introduces dest):
+  term.IsWellTyped ctx ty -> (term.rename source dest).IsWellTyped ctx ty := by
+  intro wf
+  cases wf with
+  | Panic =>
+    apply IsWellTyped.Panic
+    apply LamTerm.IsWellTyped.rename
+    cases hs
+    assumption
+    assumption
+    intro  h
+    exact dest_nointro (.Panic _ _ h)
+    assumption
+  | App retty _ func arg funcwf argwf =>
+    by_cases hf:func.Introduces source
+    <;> by_cases ha:arg.Introduces source
+    · apply IsWellTyped.App
+      apply IsWellTyped.rename
+      assumption
+      assumption
+      intro h
+      exact dest_nointro (.AppFunc _ _ h)
+      assumption
+      apply IsWellTyped.rename
+      assumption
+      assumption
+      intro h
+      exact dest_nointro (.AppArg _ _ h)
+      assumption
+    · apply IsWellTyped.App
+      apply IsWellTyped.rename
+      assumption
+      assumption
+      intro h
+      exact dest_nointro (.AppFunc _ _ h)
+      assumption
+      rw [IsWellFormed.rename_no_intro]
+      assumption
+      apply flip (funcwf.IsWellFormed.NoContextIntroductions _)
+      assumption
+      assumption
+      exact argwf.IsWellFormed
+    · apply IsWellTyped.App
+      rw [IsWellFormed.rename_no_intro]
+      assumption
+      apply flip (argwf.IsWellFormed.NoContextIntroductions _)
+      assumption
+      assumption
+      exact funcwf.IsWellFormed
+      apply IsWellTyped.rename
+      assumption
+      assumption
+      intro h
+      exact dest_nointro (.AppArg _ _ h)
+      assumption
+    · cases hs <;> contradiction
+  | Lambda name ty retty body name_notin_ctx wf  =>
+    apply IsWellTyped.Lambda
+    unfold Name.rename
+    split
+    assumption
+    assumption
+    unfold Name.rename
+    split
+    subst source
+    have := LamTerm.IsWellTyped.rename_from_ctx name dest (ctx := insert ⟨name, ty⟩ ctx) (Map.mem_insert.mpr (.inr rfl)) (by
+      intro h
+      cases Map.mem_insert.mp h
+      contradiction
+      subst dest
+      exact dest_nointro (.Lambda _ _)) (fun h => dest_nointro (.LambdaBody _ _ _ h)) wf
+    rw [Map.insert_get_elem_head, Map.erase_insert_cancel (x := ⟨name, _⟩)] at this
+    assumption
+    assumption
+    assumption
+    cases hs with
+    | Lambda => contradiction
+    | LambdaBody =>
+    apply LamTerm.IsWellTyped.rename
+    assumption
+    intro h
+    cases Map.mem_insert.mp h
+    contradiction
+    dsimp at *; subst dest
+    exact dest_nointro (.Lambda _ _)
+    intro h
+    exact dest_nointro (.LambdaBody _ _ _ h)
+    assumption
+  | Var =>
+    apply IsWellTyped.Var
+    unfold Name.rename; split
+    all_goals contradiction
