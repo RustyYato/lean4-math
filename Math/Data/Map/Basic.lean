@@ -401,4 +401,57 @@ def ext (a b: Map α β) :
       left; assumption
       left; assumption
 
+def mem_insert {kv: α × β} {map: Map α β}:
+  ∀{x}, x ∈ insert kv map ↔ x ∈ map ∨ x = kv.1 := by
+  intro x
+  simp [insert]
+  split
+  apply Iff.intro .inl
+  intro h
+  cases h
+  assumption
+  subst x
+  assumption
+  apply mem_insert_no_dup
+
+def insert_comm {x y: α × β} {map: Map α β} (h: x.1 ≠ y.1):
+  insert x (insert y map) = insert y (insert x map) := by
+  simp [insert]
+  repeat any_goals split
+  any_goals rfl
+  any_goals
+    exfalso
+    rename ¬_ ∈ insert_no_dup _ _ _ _ => h₂
+    apply h₂
+    apply mem_insert_no_dup.mpr
+    left; assumption
+  any_goals
+    exfalso
+    rename_i h₀ h₁ h₂
+    cases mem_insert_no_dup.mp h₀
+    contradiction
+    contradiction
+  exfalso
+  rename_i _ _ h₁ h₀
+  cases mem_insert_no_dup.mp h₀
+  contradiction
+  have := h.symm
+  contradiction
+  rw [insert_no_dup_comm]
+  assumption
+
+def erase_insert_comm_of_ne {key} {map: Map α β} (h: x.fst ≠ key) :
+  (insert x map).erase key = (insert x  (map.erase key)) := by
+  simp [insert]
+  split <;> split
+  rfl
+  rename_i h₀ h₁
+  have := h₁ (mem_erase.mpr ⟨h₀, h⟩)
+  contradiction
+  rename_i h₀ h₁
+  have := h₀ (mem_erase.mp h₁).left
+  contradiction
+  rw [erase_insert_no_dup_comm_of_ne]
+  assumption
+
 end Map

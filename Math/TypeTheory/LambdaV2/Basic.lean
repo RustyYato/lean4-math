@@ -1,4 +1,5 @@
 import Math.Data.Multiset.Basic
+import Math.Data.Map.Basic
 
 def Name := Nat
 def Name.ofNat : Nat -> Name := id
@@ -20,564 +21,7 @@ inductive LamTerm where
 
 def nodup_keys (data: Multiset (Name × LamType)) := data.Pairwise <| fun x y => x.1 ≠ y.1
 
-structure Context: Type where
-  data: Multiset (Name × LamType)
-  nodup_keys: nodup_keys data
-
-def Context.data.inj : Function.Injective Context.data := by
-  intro a b eq
-  cases a; cases b; congr
-
-def Context.MinNameCount (ctx: Context) (name: Name) (n: Nat) := ctx.data.MinCountBy (·.1 = name) n
-def Context.nodup_keys_MinNameCount (ctx: Context) : ∀name n, ctx.MinNameCount name n -> n ≤ 1 := by
-  intro name n cnt
-  unfold Context.MinNameCount at cnt
-  cases ctx with | mk ctx nodup =>
-  dsimp at cnt
-  induction cnt with
-  | nil => apply Nat.zero_le
-  | cons a as n cnt ih =>
-    apply ih
-    exact Multiset.Pairwise.tail nodup
-  | head a as n c h ih =>
-    apply Nat.succ_le_succ
-    cases n with
-    | zero => apply Nat.zero_le
-    | succ n =>
-    exfalso
-    have ⟨x, x_in_as, prf⟩ := Multiset.MinCountBy.one_iff.mp (c.reduce _ (Nat.le_add_left _ _))
-    subst name
-    exact nodup.head x x_in_as prf.symm
-
-def Context.MinNameCount.ofMinCount_data (ctx: Context) : ∀x n, ctx.data.MinCount x n -> ctx.MinNameCount x.fst n := by
-  intro name n
-  apply Multiset.MinCountBy.subPredicate
-  intro x mem eq
-  rw [eq]
-
-namespace Context
-
-instance : Membership Name Context where
-  mem ctx name := ∃v, ⟨name, v⟩ ∈ ctx.data
-
-instance (x: Name) (ctx: Context) : Decidable (x ∈ ctx) :=
-  decidable_of_iff (∃y ∈ ctx.data, x = y.1) <| by
-    apply Iff.intro
-    intro ⟨⟨k, v⟩, mem, eq⟩
-    exists v
-    subst x
-    assumption
-    intro ⟨v, mem⟩
-    exists ⟨x, v⟩
-
-instance : GetElem Context Name LamType (fun ctx name => name ∈ ctx) where
-  getElem ctx name prf := by
-    apply Quotient.hrecOn ctx.data (motive := fun list => (∃v, Multiset.mem  ⟨name, v⟩ list) -> _root_.nodup_keys list -> LamType)
-    case f =>
-      intro list mem _
-      apply Option.getD _ LamType.Void
-      apply Option.map _
-      exact list.find? fun ⟨k, v⟩ => k = name
-      exact Prod.snd
-    case c =>
-      dsimp
-      intro a b eq
-      apply Function.hfunext
-      · show (∃v, (name, v) ∈ Multiset.mk _) = (∃v, (name, v) ∈ Multiset.mk _)
-        congr
-        funext
-        congr 1
-        apply Quotient.sound
-        assumption
-      intro h₀ h₁ heq₁
-      apply Function.hfunext
-      · congr 1
-        apply Quotient.sound
-        assumption
-      intro h₂ h₃ heq₂
-      apply heq_of_eq
-      clear h₀ h₁ heq₁
-      · induction eq with
-        | nil => rfl
-        | cons _ _ ih =>
-          unfold List.find?
-          split
-          rfl
-          apply ih
-          apply proof_irrel_heq
-          cases h₂
-          assumption
-          cases h₃
-          assumption
-        | trans _ _ ih₀ ih₁ =>
-          rename_i x₀ x₁ x₂ x₁₂ x₂₃
-          have : Multiset.Pairwise (fun x y => x.1 ≠ y.1) (Quotient.mk _ x₁) := by
-            rw [Quotient.sound x₂₃]
-            assumption
-          rw [ih₀, ih₁]
-          any_goals assumption
-          any_goals apply proof_irrel_heq
-        | swap =>
-          unfold List.find? List.find?
-          rename_i x y _
-          cases hx:decide (x.fst = name) <;> cases hy:decide (y.fst = name) <;> dsimp
-          exfalso
-          cases h₂
-          rename_i h
-          apply h
-          apply List.Mem.head
-          rw [of_decide_eq_true hx, of_decide_eq_true hy]
-    case a => exact prf
-    case a => exact ctx.nodup_keys
-
--- remove an existing key from ctx
-def erase (key: Name) (ctx: Context) (h: key ∈ ctx) : Context where
-  data := ctx.data.erase ⟨key, ctx[key]⟩
-  nodup_keys := by
-    apply Multiset.Pairwise.erase
-    exact ctx.nodup_keys
-
--- insert a new key into the context
-def insert_no_dup (key: Name) (v: LamType) (ctx: Context) (h: key ∉ ctx) : Context where
-  data := ctx.data.cons ⟨key, v⟩
-  nodup_keys := by
-    apply ctx.nodup_keys.cons
-    intro x g
-    intro eq; subst eq
-    exact h ⟨_, g⟩
-
--- inserts key into ctx iff it doesn't already exist in ctx
-def insert' (key: Name) (ty: LamType) (ctx: Context) : Context :=
-  if h:key ∈ ctx then
-    ctx
-  else
-    ctx.insert_no_dup key ty h
-
--- remove a key from ctx
-def remove (key: Name) (ctx: Context) : Context :=
-  if h:key ∈ ctx then
-    ctx.erase key h
-  else
-    ctx
-
-instance : EmptyCollection Context where
-  emptyCollection := { data := ∅, nodup_keys := Multiset.Pairwise.nil }
-
-instance : Insert (Name × LamType) Context where
-  insert x := insert' x.1 x.2
-
-instance : Singleton (Name × LamType) Context where
-  singleton := (insert · ∅)
-
-def mem_insert_no_dup {key: Name} {ty: LamType} {ctx: Context} {h: key ∉ ctx}:
-  ∀{x}, x ∈ ctx.insert_no_dup key ty h ↔ x ∈ ctx ∨ x = key := by
-  intro x
-  apply Iff.intro
-  intro ⟨v, h⟩
-  rcases Multiset.mem_cons.mp h with h | h
-  right; cases h; rfl
-  left; exact ⟨_, h⟩
-  intro g
-  rcases g with g | g
-  obtain ⟨v, g⟩  := g
-  exists v
-  apply Multiset.mem_cons.mpr
-  right; assumption
-  exists ty
-  apply Multiset.mem_cons.mpr
-  left; rw [g]
-
-def mem_insert'_head (key: Name) (ty: LamType) (ctx: Context) :
-  key ∈ ctx.insert' key ty := by
-  unfold insert'
-  split
-  assumption
-  apply mem_insert_no_dup.mpr
-  right; rfl
-
-def mem_insert'_tail (k key: Name) (ty: LamType) (ctx: Context) :
-  k ∈ ctx ->
-  k ∈ ctx.insert' key ty := by
-  intro h
-  unfold insert'
-  split
-  assumption
-  apply mem_insert_no_dup.mpr
-  left; assumption
-
-def of_mem_insert' (k key: Name) (ty: LamType) (ctx: Context) :
-  k ∈ ctx.insert' key ty ->
-  k = key ∨ k ∈ ctx := by
-  intro h
-  unfold insert' at h
-  split at h
-  right; assumption
-  exact (mem_insert_no_dup.mp h).symm
-
-def mem_insert_head (x: Name × LamType) (ctx: Context) :
-  x.1 ∈ insert x ctx := by
-  apply mem_insert'_head
-
-def mem_insert_tail {x: Name} {y: Name × LamType} {ctx: Context} :
-  x ∈ ctx ->
-  x ∈ insert y ctx := by
-  apply mem_insert'_tail
-
-def of_mem_insert {x: Name} {y: Name × LamType} {ctx: Context} :
-  x ∈ insert y ctx ->
-  x = y.fst ∨ x ∈ ctx := by
-  apply of_mem_insert'
-
-macro_rules
-| `(tactic|get_elem_tactic_trivial) => `(tactic|apply mem_insert_head)
-macro_rules
-| `(tactic|get_elem_tactic_trivial) => `(tactic|apply mem_insert_tail; get_elem_tactic)
-macro_rules
-| `(tactic|get_elem_tactic_trivial) => `(tactic|apply mem_insert_no_dup.mpr; left; get_elem_tactic)
-macro_rules
-| `(tactic|get_elem_tactic_trivial) => `(tactic|apply mem_insert_no_dup.mpr; right; get_elem_tactic)
-
-def insert_nodup_get_elem (ctx: Context) (key: Name) (ty: LamType) (h: key ∉ ctx) (g: name ∈ ctx ∨ name = key) :
-  (insert_no_dup key ty ctx h)[name]'(mem_insert_no_dup.mpr g) = if hkey:name = key then ty else ctx[name]'(by
-    cases g
-    assumption
-    contradiction) := by
-  unfold insert_no_dup
-  cases ctx with | mk ctx nodup =>
-  cases ctx with | mk ctx =>
-  show Option.getD _ LamType.Void = _
-  unfold List.find?
-  split <;>rename_i h'
-  dsimp at h'
-  cases of_decide_eq_true h'
-  dsimp
-  rw [dif_pos rfl]
-  replace h' := of_decide_eq_false h'
-  rw [dif_neg (Ne.symm h')]
-  rfl
-
-def insert_get_elem_head (ctx: Context) (key: Name) (ty: LamType) (h: key ∉ ctx) : (insert ⟨key, ty⟩ ctx)[key] = ty := by
-  show (insert' _ _ _)[_]'(_) = _
-  unfold insert'
-  split
-  contradiction
-  dsimp
-  rw [insert_nodup_get_elem, dif_pos rfl]
-  right; rfl
-
-def insert_get_elem_tail (ctx: Context) (key k: Name) (ty: LamType) (h: k ∈ ctx) : (insert ⟨key, ty⟩ ctx)[k] = ctx[k] := by
-  show (insert' _ _ _)[_]'(_) = _
-  unfold insert'
-  split
-  rfl
-  dsimp
-  rw [insert_nodup_get_elem, dif_neg]
-  intro h
-  cases h
-  contradiction
-  left; assumption
-
-@[induction_eliminator]
-def ind { motive: Context -> Prop } :
-  (nil: motive ∅) ->
-  (cons: ∀a as, a.1 ∉ as -> motive as -> motive (insert a as)) ->
-  ∀x, motive x := by
-  intro nil cons ctx
-  cases ctx with | mk ctx nodup =>
-  cases ctx with | mk ctx =>
-  induction nodup
-  exact nil
-  rename_i a as a_notin_as as_nodup ih
-  have : a.fst ∉ (mk (Multiset.mk _) as_nodup) := by
-    intro ⟨_, h⟩
-    exact a_notin_as _ h rfl
-  have : motive (insert' _ _ _) := cons a _ this ih
-  unfold insert' at this
-  split at this
-  contradiction
-  assumption
-
-def get_elem_of_mem_data (ctx: Context) :
-  ∀{x}, (h: x ∈ ctx.data) -> ctx[x.1]'⟨_, h⟩ = x.2 := by
-    intro x mem
-    induction ctx
-    contradiction
-    rename_i a ctx  not_mem ih
-    cases a with | mk a₀ a₁ =>
-    simp [insert, insert'] at mem
-    split at mem
-    rw [insert_get_elem_tail]
-    apply ih
-    assumption
-    rcases Multiset.mem_cons.mp mem with mem | mem
-    subst x
-    dsimp
-    rw [insert_get_elem_head]
-    assumption
-    rw [insert_get_elem_tail]
-    apply ih
-    assumption
-
-def not_mem_erase (key: Name) (ctx: Context) (h: key ∈ ctx) : key ∉ ctx.erase key h := by
-  intro g
-  unfold erase at g
-  obtain ⟨v, g⟩ := g
-  dsimp at g
-  obtain ⟨w, h⟩ := h
-  rw [get_elem_of_mem_data _ h] at g
-  dsimp at g
-  have := Multiset.erase_sub (x₀ := ⟨key, w⟩) (as := ctx.data)
-  replace this := Multiset.sub_mem this g
-  replace this := get_elem_of_mem_data _ this; dsimp at this
-  rw [get_elem_of_mem_data _ h] at this; dsimp at this
-  subst v
-  have := (Multiset.count_elem_erase_if_mem (key, w) (n := 2) _ h).mpr (Multiset.MinCount.iff_mem.mpr g)
-  have := Context.MinNameCount.ofMinCount_data _ _ _ this
-  have := ctx.nodup_keys_MinNameCount _ _ this
-  contradiction
-
-def not_mem_remove (key: Name) (ctx: Context) : key ∉ ctx.remove key := by
-  unfold remove
-  split
-  apply not_mem_erase
-  assumption
-
-def mem_erase {key: Name} {ctx: Context} {h: key ∈ ctx}: ∀{x}, x ∈ ctx.erase key h ↔ x ∈ ctx ∧ x ≠ key := by
-  intro x
-  apply Iff.intro
-  intro g
-  apply flip And.intro
-  intro h; cases h
-  obtain ⟨v', h⟩ := h
-  obtain ⟨v, g⟩ := g
-  unfold Context.erase at g
-  dsimp at g
-  rw [get_elem_of_mem_data _ h] at g
-  dsimp at g
-  · have := Multiset.erase_sub (x₀ := ⟨key, v'⟩) (as := ctx.data)
-    replace this := Multiset.sub_mem this g
-    replace this := get_elem_of_mem_data _ this; dsimp at this
-    rw [get_elem_of_mem_data _ h] at this; dsimp at this
-    subst v'
-    apply not_mem_erase key ctx ⟨_, h⟩
-    unfold erase
-    refine ⟨v, ?_⟩
-    dsimp
-    rw [get_elem_of_mem_data _ h]
-    exact g
-  obtain ⟨v, h⟩ := h
-  obtain ⟨v', g⟩ := g
-  unfold erase at g
-  dsimp at g
-  rw [get_elem_of_mem_data _ h] at g
-  have := Multiset.erase_sub (x₀ := ⟨key, v⟩) (as := ctx.data)
-  exact ⟨_, Multiset.sub_mem this g⟩
-  · intro ⟨mem, ne⟩
-    obtain ⟨v, mem⟩ := mem
-    refine ⟨v, ?_⟩
-    apply Multiset.MinCount.iff_mem.mp
-    unfold erase; dsimp
-    apply (Multiset.count_erase _ _ _).mp
-    apply Multiset.MinCount.iff_mem.mpr
-    assumption
-    intro h
-    apply ne
-    exact (Prod.mk.inj h).left.symm
-
-def insert_no_dup_comm (ctx: Context) (a b: Name × LamType)
-  (ne: a.1 ≠ b.1) (ha: a.1 ∉ ctx) (hb: b.1 ∉ ctx)
-  : insert_no_dup a.1 a.2 (insert_no_dup b.1 b.2 ctx hb) (by
-    intro h
-    cases mem_insert_no_dup.mp h
-    contradiction
-    contradiction) = insert_no_dup b.1 b.2 (insert_no_dup a.1 a.2 ctx ha) (by
-    intro h
-    cases mem_insert_no_dup.mp h
-    contradiction
-    apply ne.symm
-    assumption) := by
-  unfold insert_no_dup
-  apply Context.data.inj
-  dsimp
-  rw [Multiset.cons_comm]
-
-def insert_comm (ctx: Context) (a b: Name × LamType)
-  (ne: a.1 ≠ b.1)
-  : insert a (insert b ctx) = insert b (insert a ctx) := by
-  cases a with | mk a₀ a₁ =>
-  cases b with | mk b₀ b₁ =>
-  replace ne: a₀ ≠ b₀ := ne
-  show insert' _ _ (insert' _ _ _) = insert' _ _ (insert' _ _ _)
-  unfold insert'
-  dsimp
-  have ne' := ne.symm
-  repeat any_goals split
-  any_goals rfl
-  any_goals
-    exfalso
-    rename ¬_ ∈ insert_no_dup _ _ _ _ => h₂
-    apply h₂
-    apply mem_insert_no_dup.mpr
-    left; assumption
-  any_goals
-    exfalso
-    rename_i h₀ h₁ h₂
-    cases mem_insert_no_dup.mp h₀
-    contradiction
-    contradiction
-  exfalso
-  rename_i _ _ h₁ h₀
-  cases mem_insert_no_dup.mp h₀
-  contradiction
-  contradiction
-  rw [insert_no_dup_comm _ (a₀, a₁) (b₀, b₁)]
-  assumption
-
-def eq_insert_of_mem (x: Name) (ctx: Context) : x ∈ ctx -> ∃v ctx', ctx = insert ⟨x, v⟩ ctx' ∧ x ∉ ctx' := by
-  intro mem
-  induction ctx generalizing x with
-  | nil =>
-    obtain ⟨_, _⟩ := mem
-    contradiction
-  | cons a as nomem ih =>
-    if h:x = a.fst then
-      exists a.snd
-      exists as
-      subst x
-      apply And.intro
-      rfl
-      assumption
-    else
-      replace h : x ≠ a.fst := h
-      cases of_mem_insert mem
-      contradiction
-      rename_i g
-      replace ih := ih x g
-      obtain ⟨v, ctx', prf, _⟩ := ih
-      refine ⟨v, insert a ctx', ?_, ?_⟩
-      · rw [prf]
-        rw [insert_comm]
-        exact h.symm
-      intro g'
-      cases of_mem_insert g'
-      contradiction
-      contradiction
-
-@[ext]
-def ext (a b: Context) : (∀{x}, x ∈ a ↔ x ∈ b) -> (∀x (h₀: x ∈ a) (h₁: x ∈ b), a[x] = b[x]) -> a = b := by
-  intro mem_iff val_eq
-  induction a generalizing b with
-  | nil =>
-    induction b with
-    | nil => rfl
-    | cons b bs b_notin_bs ih =>
-      have ⟨_, _⟩ := mem_iff.mpr (mem_insert_head _ _)
-      contradiction
-  | cons a as nomem ih =>
-    cases a with | mk a₀ a₁ =>
-    have ⟨v, b, eq, a_notin_b'⟩ := eq_insert_of_mem a₀ b (mem_iff.mp (mem_insert_head _ _))
-    subst eq
-    congr
-    have := val_eq a₀ (mem_insert_head _ _) (mem_iff.mp <| mem_insert_head _ _)
-    rw [insert_get_elem_head, insert_get_elem_head] at this
-    exact this
-    assumption
-    assumption
-    apply ih
-    intro x
-    apply Iff.intro
-    intro h
-    cases of_mem_insert <| mem_iff.mp (mem_insert_tail h)
-    subst x; contradiction
-    assumption
-    intro h
-    cases of_mem_insert <| mem_iff.mpr (mem_insert_tail h)
-    subst x; contradiction
-    assumption
-    intro x h₀ h₁
-    have := val_eq x (mem_insert_tail h₀) (mem_insert_tail h₁)
-    rw [insert_get_elem_tail, insert_get_elem_tail] at this
-    exact this
-
-def mem_remove (key: Name) (ctx: Context) : ∀{k: Name}, k ≠ key -> k ∈ ctx -> k ∈ ctx.remove key := by
-  intro k ne hk
-  unfold remove
-  split
-  obtain ⟨v, hk⟩ := hk
-  exists v
-  dsimp
-  · cases ctx with | mk ctx nodup =>
-    dsimp
-    have ⟨ctx', hctx'⟩  := Multiset.mem_spec.mp hk
-    dsimp at hctx'
-    conv => { lhs; rhs; rw [hctx'] }
-    rw [Multiset.erase_cons, if_neg]
-    apply Multiset.mem_cons.mpr
-    left; rfl
-    intro h
-    cases h
-    contradiction
-  · exact hk
-
-def of_mem_remove (key: Name) (ctx: Context) : ∀{k: Name}, k ∈ ctx.remove key -> k ∈ ctx ∧ k ≠ key := by
-  intro k mem
-  apply flip And.intro
-  intro h
-  subst h
-  exact not_mem_remove _ _ mem
-  unfold remove at mem
-  obtain ⟨v, mem⟩ := mem
-  dsimp at mem
-  split at mem <;> rename_i h
-  have cnt := Multiset.MinCount.iff_mem.mpr mem
-  refine ⟨_, Multiset.MinCount.iff_mem.mp <| (Multiset.count_erase _ _ ?_).mpr cnt⟩
-  intro h
-  cases h
-  let ctx' := Context.mk (ctx.data.erase (key, ctx[key])) (by
-    apply Multiset.Pairwise.erase
-    exact ctx.nodup_keys)
-  have : ctx' = ctx.remove key := by
-    rw [remove]
-    apply Context.data.inj
-    dsimp
-    rw [dif_pos]
-  have : key ∈ ctx.remove key := by
-    rw [←this]
-    exact ⟨_, mem⟩
-  exact not_mem_remove _ _ this
-  exact ⟨_, mem⟩
-
-def remove_insert (ne: x ≠ y.fst): remove x (insert y ctx) = insert y (remove x ctx) := by
-  apply Context.data.inj
-  simp [insert, remove, insert']
-  repeat any_goals split
-
-  split <;> split <;> rename_i h g
-  any_goals rfl
-  split <;> rename_i h'
-  rfl
-  exfalso; apply h'
-  obtain ⟨v, h⟩ := h
-  refine ⟨v, ?_⟩
-  dsimp
-  apply Multiset.MinCount.iff_mem.mp
-  apply (Multiset.count_erase _ _ _).mp
-  apply Multiset.MinCount.iff_mem.mpr
-  assumption
-  intro h
-  have := (Prod.mk.inj h).left
-  contradiction
-  split <;> rename_i h'
-  split
-
-
-
-
-  rw [if_pos]
-
-  sorry
-
-end Context
+abbrev Context := Map Name LamType
 
 inductive LamTerm.IsWellFormed : Context -> LamTerm -> Prop where
 | Panic (body: LamTerm) (ty: LamType):
@@ -662,7 +106,9 @@ def LamTerm.IsWellFormed.NoContextIntroductions
   | Lambda _ _ _ nomem _ ih =>
     intro x mem i
     cases i <;> rename_i i
-    exact ih x (Context.mem_insert_tail mem) i
+    apply ih x _ i
+    apply Map.mem_insert.mpr (.inl _)
+    assumption
     contradiction
 
 def LamTerm.NoCommonIntroductions (a b: LamTerm) := ∀x, a.Introduces x -> b.Introduces x -> False
@@ -725,17 +171,17 @@ def LamTerm.IsWellFormed.weaken
     assumption
   | Var =>
     apply LamTerm.IsWellFormed.Var
-    apply Context.mem_insert_tail
+    apply Map.mem_insert.mpr (.inl _)
     assumption
   | Lambda arg_name _ _ _  _ ih =>
     apply IsWellFormed.Lambda
     intro h
-    cases Context.of_mem_insert h
+    cases Map.mem_insert.mp h
+    contradiction
     subst arg_name
     apply nointro
     apply Introduces.Lambda
-    contradiction
-    rw [Context.insert_comm]
+    rw [Map.insert_comm]
     apply ih
     intro h
     apply nointro
@@ -751,9 +197,9 @@ def LamTerm.IsWellFormed.subst
   {term subst: LamTerm} {name: Name}:
   name ∈ ctx ->
   term.IsWellFormed ctx ->
-  subst.IsWellFormed (ctx.remove name) ->
+  subst.IsWellFormed (ctx.erase name) ->
   term.NoCommonIntroductions subst ->
-  (term.subst subst name).IsWellFormed (ctx.remove name) := by
+  (term.subst subst name).IsWellFormed (ctx.erase name) := by
   intro name_in_ctx wf subst_wf nocomm
   induction wf with
   | Panic _ _ _ ih  =>
@@ -781,13 +227,13 @@ def LamTerm.IsWellFormed.subst
   | Lambda _ _ _ _ _ ih =>
     apply IsWellFormed.Lambda
     intro mem
-    have ⟨arg_in_ctx, _⟩  := Context.of_mem_remove _ _ mem
+    have ⟨arg_in_ctx, _⟩  := Map.mem_erase.mp mem
     contradiction
-    rw [←Context.remove_insert]
+    rw [←Map.erase_insert_comm_of_ne]
     apply ih
-    apply Context.mem_insert_tail
+    apply Map.mem_insert.mpr (.inl _)
     assumption
-    · rw [Context.remove_insert]
+    · rw [Map.erase_insert_comm_of_ne]
       apply LamTerm.IsWellFormed.weaken
       assumption
       apply nocomm
@@ -809,6 +255,6 @@ def LamTerm.IsWellFormed.subst
     split
     assumption
     apply IsWellFormed.Var
-    apply Context.mem_remove
+    apply Map.mem_erase.mpr ⟨_, _⟩
     assumption
     assumption
