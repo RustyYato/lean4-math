@@ -272,7 +272,7 @@ def map_append (as bs: Multiset α) (f: α -> β) : (as ++ bs).map f = as.map f 
   simp
 
 def map_map (ms: Multiset α) (f: α -> β) (g: β -> γ) : (ms.map f).map g = ms.map (g ∘ f) := by
-  quot_ind ms
+  cases ms with | mk ms =>
   apply Quotient.sound
   simp
   induction ms with
@@ -331,19 +331,19 @@ def of_count_cons {x a: α} {as: Multiset α} {n: Nat} :
   assumption
 
 def MinCountBy.zero : MinCountBy P 0 ms := by
-  quot_ind ms
+  cases ms
   apply List.MinCountBy.zero
 
 def MinCountBy.nil {P: α -> Prop} : MinCountBy P 0 ∅ := List.MinCountBy.nil
 
 def MinCountBy.head : P x -> MinCountBy P n ms -> MinCountBy P n.succ (x::ₘms) := by
-  quot_ind ms
+  cases ms
   intro c
   apply List.MinCountBy.head
   assumption
 
 def MinCountBy.pop_head : P x -> MinCountBy P n.succ (x::ₘms) -> MinCountBy P n ms := by
-  quot_ind ms
+  cases ms
   intro c
   intro h
   cases h
@@ -353,13 +353,13 @@ def MinCountBy.pop_head : P x -> MinCountBy P n.succ (x::ₘms) -> MinCountBy P 
   assumption
 
 def MinCountBy.cons : MinCountBy P n ms -> MinCountBy P n (m::ₘms) := by
-  quot_ind ms
+  cases ms
   intro c
   apply List.MinCountBy.cons
   assumption
 
 def MinCountBy.reduce : MinCountBy P n ms ->  ∀m ≤ n, MinCountBy P m ms := by
-  quot_ind ms
+  cases ms
   intro c
   apply List.MinCountBy.reduce
   assumption
@@ -367,17 +367,17 @@ def MinCountBy.reduce : MinCountBy P n ms ->  ∀m ≤ n, MinCountBy P m ms := b
 def MinCount.nil : MinCount x 0 ∅ := List.MinCountBy.nil
 
 def MinCount.zero : MinCount x 0 ms := by
-  quot_ind ms
+  cases ms
   apply List.MinCount.zero
 
 def MinCount.head : MinCount x n ms -> MinCount x n.succ (x::ₘms) := by
-  quot_ind ms
+  cases ms
   intro c
   apply List.MinCount.head
   assumption
 
 def MinCount.cons : MinCount x n ms -> MinCount x n (m::ₘms) := by
-  quot_ind ms
+  cases ms
   intro c
   apply List.MinCountBy.cons
   assumption

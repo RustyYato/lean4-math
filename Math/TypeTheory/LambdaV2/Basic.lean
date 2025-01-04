@@ -258,3 +258,112 @@ def LamTerm.IsWellFormed.subst
     apply Map.mem_erase.mpr ⟨_, _⟩
     assumption
     assumption
+
+def LamTerm.IsWellTyped.weaken
+  {ctx: Context} {term: LamTerm} {ty: LamType} {x}:
+  IsWellTyped ctx term ty ->
+  (¬term.Introduces x.fst) ->
+  IsWellTyped (insert x ctx) term ty  := by
+  intro wf nointro
+  induction wf with
+  | Panic _ _ _ ih =>
+    apply IsWellTyped.Panic
+    apply ih
+    intro h
+    apply nointro
+    apply Introduces.Panic
+    assumption
+  | App _ _ _ _ _ _ ih₀ ih₁ =>
+    apply IsWellTyped.App
+    apply ih₀
+    intro h
+    apply nointro
+    apply Introduces.AppFunc
+    assumption
+    apply ih₁
+    intro h
+    apply nointro
+    apply Introduces.AppArg
+    assumption
+  | Var =>
+    apply LamTerm.IsWellTyped.Var
+    rw [Map.insert_get_elem_tail]
+    assumption
+  | Lambda arg_name _ _ _ _  _ ih =>
+    apply IsWellTyped.Lambda
+    intro h
+    cases Map.mem_insert.mp h
+    contradiction
+    subst arg_name
+    apply nointro
+    apply Introduces.Lambda
+    rw [Map.insert_comm]
+    apply ih
+    intro h
+    apply nointro
+    apply Introduces.LambdaBody
+    assumption
+    intro h
+    subst h
+    apply nointro
+    apply Introduces.Lambda
+
+def LamTerm.IsWellTyped.subst
+  {ctx: Context} {ty: LamType}
+  {term subst: LamTerm} {name: Name} {name_in_ctx: name ∈ ctx}:
+  term.IsWellTyped ctx ty ->
+  subst.IsWellTyped (ctx.erase name) ctx[name] ->
+  term.NoCommonIntroductions subst ->
+  (term.subst subst name).IsWellTyped (ctx.erase name) ty := by
+  intro wf subst_wf nocomm
+  induction wf with
+  | Panic _ _ _ ih  =>
+    apply IsWellTyped.Panic
+    apply ih
+    assumption
+    apply nocomm.ofSubTerm
+    apply IsSubTerm.Panic
+  | App _ _ _ _ _  _ ih₀ ih₁ =>
+    apply IsWellTyped.App
+    apply ih₀
+    assumption
+    apply nocomm.ofSubTerm
+    apply IsSubTerm.AppFunc
+    apply ih₁
+    assumption
+    apply NoCommonIntroductions.ofSubTerm
+    assumption
+    exact .AppArg _ _
+  | Lambda _ _ _ _ _ _ ih =>
+    apply IsWellTyped.Lambda
+    intro mem
+    have ⟨arg_in_ctx, _⟩  := Map.mem_erase.mp mem
+    contradiction
+    rw [←Map.erase_insert_comm_of_ne]
+    apply ih
+    rw [Map.insert_get_elem_tail, Map.erase_insert_comm_of_ne]
+    apply IsWellTyped.weaken
+    assumption
+    apply nocomm
+    apply Introduces.Lambda
+    dsimp; intro h; subst h; contradiction
+    apply NoCommonIntroductions.ofSubTerm
+    assumption
+    exact .LambdaBody _ _ _
+    dsimp
+    have := nocomm
+    intro h
+    subst h
+    contradiction
+  | Var n n_in_ctx =>
+    unfold LamTerm.subst
+    split
+    subst n
+    subst n_in_ctx
+    assumption
+    apply IsWellTyped.Var
+    rw [Map.erase_get_elem]
+    assumption
+    apply Map.mem_erase.mpr ⟨_, _⟩
+    assumption
+    assumption

@@ -454,4 +454,24 @@ def erase_insert_comm_of_ne {key} {map: Map α β} (h: x.fst ≠ key) :
   rw [erase_insert_no_dup_comm_of_ne]
   assumption
 
+def insert_get_elem_tail {key} {map: Map α β} (h: key ∈ map) :
+  (insert x map)[key]'(mem_insert.mpr (.inl h)) = map[key]  := by
+  simp [insert]
+  split
+  rfl
+  rw [insert_nodup_get_elem, dif_neg]
+  intro h
+  subst h
+  contradiction
+  left
+  assumption
+
+def erase_get_elem {map: Map α β} (h: key ∈ erase k map) :
+  (erase k map)[key] = map[key]'(mem_erase.mp h).left := by
+  obtain ⟨v, h⟩ := h
+  rw [get_elem_of_mem_data _ h]
+  unfold erase at h
+  have := Multiset.sub_mem Multiset.eraseP_sub h
+  rw [get_elem_of_mem_data _ this]
+
 end Map
