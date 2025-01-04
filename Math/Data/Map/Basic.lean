@@ -454,6 +454,21 @@ def erase_insert_comm_of_ne {key} {map: Map α β} (h: x.fst ≠ key) :
   rw [erase_insert_no_dup_comm_of_ne]
   assumption
 
+def insert_get_elem_head {map: Map α β} (h: x.fst ∉ map) :
+  (insert x map)[x.fst]'(mem_insert.mpr (.inr rfl)) = x.snd  := by
+  simp [insert]
+  split
+  contradiction
+  rw [insert_nodup_get_elem, dif_pos rfl]
+  right; rfl
+
+def erase_insert_cancel {map: Map α β} (h: x.fst ∉ map) :
+  (insert x map).erase x.fst = map := by
+  simp [insert]
+  split
+  contradiction
+  rw [erase_insert_no_dup_cancel]
+
 def insert_get_elem_tail {key} {map: Map α β} (h: key ∈ map) :
   (insert x map)[key]'(mem_insert.mpr (.inl h)) = map[key]  := by
   simp [insert]
@@ -473,5 +488,17 @@ def erase_get_elem {map: Map α β} (h: key ∈ erase k map) :
   unfold erase at h
   have := Multiset.sub_mem Multiset.eraseP_sub h
   rw [get_elem_of_mem_data _ this]
+
+def insert_insert_eq {map: Map α β} (key: α) (v₀ v₁: β):
+  insert ⟨key, v₀⟩ (insert ⟨key, v₁⟩ map) = (insert ⟨key, v₁⟩ map) := by
+  conv => {
+    lhs; arg 0; unfold insert
+  }
+  conv => {
+    lhs; arg 0; simp [instInsertProd]
+  }
+  dsimp
+  rw [dif_pos]
+  apply mem_insert.mpr; right ; rfl
 
 end Map

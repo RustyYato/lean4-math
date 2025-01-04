@@ -438,6 +438,11 @@ instance : IsLinearOrder Nat where
   le_trans := Nat.le_trans
 instance : IsDecidableLinearOrder Nat where
 
+instance : Bot Nat where
+  bot := 0
+instance : LawfulBot Nat where
+  bot_le := Nat.zero_le
+
 instance : IsLinearOrder Int where
   lt_iff_le_and_not_le := Int.lt_iff_le_not_le
   le_antisymm := Int.le_antisymm

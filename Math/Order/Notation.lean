@@ -37,3 +37,12 @@ instance (priority := 100) bot_nonempty (α : Type*) [Bot α] : Nonempty α :=
   ⟨⊥⟩
 
 attribute [match_pattern] Bot.bot Top.top
+
+class LawfulTop (α: Type*) [LE α] [Top α]: Prop where
+  le_top: ∀x: α, x ≤ ⊤
+
+class LawfulBot (α: Type*) [LE α] [Bot α]: Prop where
+  bot_le: ∀x: α, ⊥ ≤ x
+
+def le_top [LE α] [Top α] [LawfulTop α] (x: α) : x ≤ ⊤ := LawfulTop.le_top _
+def bot_le [LE α] [Bot α] [LawfulBot α] (x: α) : ⊥ ≤ x := LawfulBot.bot_le _
