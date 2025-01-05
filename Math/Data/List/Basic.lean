@@ -510,3 +510,8 @@ def List.MinCountBy.map {P: α -> Prop} {Q: β -> Prop} {f: α -> β} {as: List 
     apply h
     apply List.Mem.tail
     assumption
+
+def List.Pairwise.head :
+  List.Pairwise P (a::as) ->
+  ∀x ∈ as, P a x
+| .cons pa _ => pa

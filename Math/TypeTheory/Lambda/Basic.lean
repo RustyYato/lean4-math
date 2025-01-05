@@ -415,6 +415,77 @@ def LamTerm.Introduces.subst {term s: LamTerm}:
     right; assumption
     left; assumption
 
+def LamTerm.subst_nomem (term: LamTerm):
+  term.IsWellFormed ctx ->
+  ¬term.Introduces n ->
+  n ∉ ctx ->
+  term.subst term' n = term := by
+  intro wf i nomem
+  induction term generalizing ctx with
+  | Var =>
+    unfold subst
+    rw [if_neg]
+    intro h
+    subst n
+    cases wf
+    contradiction
+  | Panic _ _ ih =>
+    unfold subst
+    congr
+    rw [ih]
+    cases wf
+    assumption
+    intro h
+    apply i
+    apply Introduces.Panic
+    assumption
+    assumption
+  | App _ _ fih aih =>
+    unfold subst
+    congr
+    rw [fih]
+    cases wf
+    assumption
+    intro h
+    apply i
+    apply Introduces.AppFunc
+    assumption
+    assumption
+    rw [aih]
+    cases wf
+    assumption
+    intro h
+    apply i
+    apply Introduces.AppArg
+    assumption
+    assumption
+  | Lambda _ _ _ ih =>
+    unfold subst
+    congr
+    rw [ih]
+    cases wf
+    assumption
+    intro h
+    apply i
+    apply Introduces.LambdaBody
+    assumption
+    intro h
+    cases Map.mem_insert.mp h
+    contradiction
+    dsimp at *; subst n
+    apply i
+    apply Introduces.Lambda
+
+def LamTerm.subst_closed (term: LamTerm):
+  term.IsWellFormed ∅ ->
+  ¬term.Introduces n ->
+  term.subst term' n = term := by
+  intro wt i
+  apply subst_nomem
+  assumption
+  assumption
+  apply Map.not_mem_empty
+
 inductive Finder (α: Sort u) (P: α -> Prop): Type u where
 | found (x: α) (px: P x)
 | missing: (∀x, ¬P x) -> Finder α P

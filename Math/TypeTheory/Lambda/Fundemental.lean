@@ -24,82 +24,158 @@ def LamTerm.substAll (term: LamTerm) : List (Name × LamTerm) -> LamTerm
 | [] => term
 | ⟨name, subst⟩::substs => (term.subst subst name).substAll substs
 
-def LamTerm.IsWellTyped.substAll {term: LamTerm} {substs: List (Name × LamTerm)} :
+def LamTerm.substAll_closed (term: LamTerm) :
+  term.IsWellFormed ∅ ->
+  (∀s ∈ substs, ¬term.Introduces s.fst) ->
+  term.substAll substs = term := by
+  intro wf nointro
+  induction substs generalizing term with
+  | nil => rfl
+  | cons s _ ih =>
+    unfold substAll
+    rw [LamTerm.subst_closed]
+    apply ih
+    assumption
+    intro s mem
+    apply nointro
+    apply List.Mem.tail
+    assumption
+    assumption
+    apply nointro
+    apply List.Mem.head
+
+def LamTerm.substAll.Panic (body: LamTerm) (ty: LamType) :
+  (LamTerm.Panic body ty).substAll substs =
+  LamTerm.Panic (body.substAll substs) ty := by
+  induction substs generalizing body with
+  | nil => rfl
+  | cons s _ ih => apply ih
+
+def LamTerm.substAll.App (func arg: LamTerm) :
+  (LamTerm.App func arg).substAll substs =
+  LamTerm.App (func.substAll substs) (arg.substAll substs) := by
+  induction substs generalizing func arg with
+  | nil => rfl
+  | cons s _ ih => apply ih
+
+def LamTerm.substAll.Lambda (n: Name) (ty: LamType) (body: LamTerm) :
+  (LamTerm.Lambda n ty body).substAll substs =
+  LamTerm.Lambda n ty (body.substAll substs) := by
+  induction substs generalizing body with
+  | nil => rfl
+  | cons s _ ih => apply ih
+
+def LamTerm.substAll.Var (n: Name) (v: LamTerm) (h: ⟨n, v⟩ ∈ substs)
+  (is_closed: ∀s ∈ substs, s.snd.IsWellFormed ∅)
+  (nocomm: substs.Pairwise (fun x y => ¬x.snd.Introduces y.fst))
+  (nodup: substs.Pairwise (fun x y => x.fst ≠ y.fst)):
+  (LamTerm.Var n).substAll substs = v := by
+  induction h with
+  | head =>
+    unfold substAll subst
+    rw [if_pos rfl, substAll_closed]
+    apply is_closed ⟨_, _⟩
+    apply List.Mem.head
+    intro s mem
+    apply nocomm.head
+    assumption
+  | tail s _ ih =>
+    unfold substAll subst
+    rw [if_neg, ih]
+    intro s mem
+    apply is_closed
+    apply List.Mem.tail
+    assumption
+    exact nocomm.tail
+    exact nodup.tail
+    intro h
+    subst h
+    apply nodup.head
+    assumption
+    rfl
+
+-- def LamTerm.substAll.Var' (n: Name) (h: ∀v, ⟨n, v⟩ ∉ substs):
+--   (LamTerm.Var n).substAll substs = (.Var n) := by
+--   induction substs with
+--   | nil => rfl
+--   | cons s _ ih =>
+--     apply ih
+
+structure LamTerm.substAllContext (term: LamTerm) (ctx: Context) (ty: LamType) (substs: List (Name × LamTerm)) where
   -- given a well typed term
-  term.IsWellTyped ctx ty ->
+  wt: term.IsWellTyped ctx ty
   -- and a context that can be exactly filled by the given substitutions
-  (eqv: ∀n, n ∈ ctx ↔ ∃t, ⟨n, t⟩ ∈ substs) ->
+  eqv: ∀n, n ∈ ctx ↔ ∃t, ⟨n, t⟩ ∈ substs
   -- where every substitution is well typed in the empty context
   -- according to it's label in the term's context
-  (∀s (h: s ∈ substs), s.snd.IsWellTyped ∅ <| ctx[s.fst]'((eqv s.fst).mpr ⟨_, h⟩)) ->
+  subst_wt: ∀s (h: s ∈ substs), s.snd.IsWellTyped ∅ <| ctx[s.fst]'((eqv s.fst).mpr ⟨_, h⟩)
   -- and there are no common introduction bindings between the term
   -- and the substitutions (which can always be achieved through
   -- `relabel`)
-  (∀s ∈ substs, term.NoCommonIntroductions s.snd) ->
+  term_nocomm: ∀s ∈ substs, term.NoCommonIntroductions s.snd
   -- and there are no common introduction bindings between any
   -- two distinct substitutions (which can always be achieved through
   -- `relabel`)
-  substs.Pairwise (fun x y => x.snd.NoCommonIntroductions y.snd) ->
+  nocomm: substs.Pairwise (fun x y => x.snd.NoCommonIntroductions y.snd)
   -- if all elements of the context have a different name from
   -- any binding introduced in the substitution. (which can
   -- also be handled by `relabel`)
-  (∀s ∈ substs, ∀n ∈ ctx, ¬s.snd.Introduces n) ->
+  nointro: ∀s ∈ substs, ∀n ∈ ctx, ¬s.snd.Introduces n
   -- and there are no duplicate substitutions
-  substs.Pairwise (fun x y => x.fst ≠ y.fst) ->
-  -- then the term with all substitutions applied is well typed in the empty context
+  nodup: substs.Pairwise (fun x y => x.fst ≠ y.fst)
+
+def LamTerm.IsWellTyped.substAll {term: LamTerm} {substs: List (Name × LamTerm)} :
+  LamTerm.substAllContext term ctx ty substs ->
   (term.substAll substs).IsWellTyped ∅ ty := by
-  intro wt ctx_eqv subst_wt nocomm nocomm' nointro nodup
+  intro substctx
   induction substs generalizing ctx term with
   | nil =>
     induction ctx using Map.ind with
-    | nil => assumption
+    | nil => exact substctx.wt
     | cons k v =>
-      have ⟨_, _⟩ := (ctx_eqv k).mp (Map.mem_insert_no_dup.mpr <| .inr rfl)
+      have ⟨_, _⟩ := (substctx.eqv k).mp (Map.mem_insert_no_dup.mpr <| .inr rfl)
       contradiction
   | cons s substs ih =>
-    cases nodup
-    rename_i nodup nodup'
-    cases nocomm'
-    rename_i nocomm' nocomm'₀
-    have mem_ctx := (ctx_eqv s.fst).mpr ⟨_, List.Mem.head _⟩
+    have mem_ctx := (substctx.eqv s.fst).mpr ⟨_, List.Mem.head _⟩
     have ⟨v, ctx, h, eq⟩ := Map.eq_insert_of_mem _ _ mem_ctx; subst eq
-    have := IsWellTyped.subst ?_ wt (name := s.fst) (subst := s.snd) ?_ (nocomm _ (List.Mem.head _))
+    have := IsWellTyped.subst ?_ substctx.wt (name := s.fst) (subst := s.snd) ?_ (substctx.term_nocomm _ (List.Mem.head _))
     rw [Map.erase_insert_no_dup_cancel] at this
-    apply ih this
+    apply ih
+    apply substAllContext.mk
+    · exact this
     · intro s' mem
-      have := subst_wt _ (List.Mem.tail _ mem)
+      have := substctx.subst_wt _ (List.Mem.tail _ mem)
       rw [Map.insert_nodup_get_elem, dif_neg] at this
       assumption
-      exact (nodup' s' mem).symm
+      exact (substctx.nodup.head s' mem).symm
       left
-      have := (ctx_eqv _).mpr ⟨_, List.Mem.tail _ mem⟩
+      have := (substctx.eqv _).mpr ⟨_, List.Mem.tail _ mem⟩
       cases Map.mem_insert_no_dup.mp this
       assumption
-      have := (nodup' s' mem).symm
+      have := (substctx.nodup.head s' mem).symm
       contradiction
     · intro s mem
-      have := nocomm
       intro n it i
       cases LamTerm.Introduces.subst _ it
-      apply nocomm
+      apply substctx.term_nocomm
       apply List.Mem.tail
       exact mem
       assumption
       assumption
-      apply nocomm'₀
+      apply substctx.nocomm.head
       exact mem
       assumption
       assumption
-    · exact nocomm'
+    · exact substctx.nocomm.tail
     · intro s mem n memctx
-      apply nointro
+      apply substctx.nointro
       apply List.Mem.tail
       assumption
       apply Map.mem_insert_no_dup.mpr
       left; assumption
-    · exact nodup
+    · exact substctx.nodup.tail
     · intro n
-      replace ctx_eqv := ctx_eqv n
+      replace ctx_eqv := substctx.eqv n
       apply Iff.intro
       intro h
       have ⟨v, mem⟩ := ctx_eqv.mp (Map.mem_insert_no_dup.mpr <| .inl h)
@@ -112,16 +188,16 @@ def LamTerm.IsWellTyped.substAll {term: LamTerm} {substs: List (Name × LamTerm)
       cases Map.mem_insert_no_dup.mp mem
       assumption
       subst n
-      have := nodup' ⟨s.fst, v⟩ h
+      have := substctx.nodup.head ⟨s.fst, v⟩ h
       contradiction
     assumption
     rw [Map.insert_nodup_get_elem, dif_pos rfl, Map.erase_insert_no_dup_cancel]
-    have  := subst_wt s (List.Mem.head _)
+    have  := substctx.subst_wt s (List.Mem.head _)
     rw [Map.insert_nodup_get_elem, dif_pos rfl] at this
     apply weakenAll
     assumption
     intro x mem
-    apply nointro
+    apply substctx.nointro
     apply List.Mem.head
     apply Map.mem_insert_no_dup.mpr
     left; assumption
