@@ -833,3 +833,27 @@ def LamTerm.IsWellTyped.rename
     apply IsWellTyped.Var
     unfold Name.rename; split
     all_goals contradiction
+
+def LamTerm.unique_typing {term: LamTerm}:
+  term.IsWellTyped ctx ty₀ ->
+  term.IsWellTyped ctx ty₁ ->
+  ty₀ = ty₁ := by
+  intro wt₀ wt₁
+  induction term generalizing ctx ty₀ ty₁ with
+  | Panic  =>
+    cases wt₀; cases wt₁
+    rfl
+  | App func arg ih =>
+    cases wt₀
+    cases wt₁
+    rename_i wt₀ _ _  wt₁
+    cases ih wt₀ wt₁
+    rfl
+  | Lambda _ _ _ ih =>
+    cases wt₀; cases wt₁
+    rename_i wt₀ _ _ wt₁
+    rw [ih wt₀ wt₁]
+  | Var =>
+    cases wt₀; cases wt₁
+    subst ty₀; subst ty₁
+    rfl
