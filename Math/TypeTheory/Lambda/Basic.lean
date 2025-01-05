@@ -381,6 +381,40 @@ def LamTerm.IsWellTyped.subst
     assumption
     assumption
 
+def LamTerm.Introduces.subst {term s: LamTerm}:
+  ∀n, (term.subst s n').Introduces n -> term.Introduces n ∨ s.Introduces n := by
+  intro n i
+  induction term with
+  | Panic _ _ ih =>
+    cases i; rename_i i
+    cases ih i
+    left
+    apply Introduces.Panic
+    assumption
+    right; assumption
+  | Lambda _ _ _ ih =>
+    cases i; rename_i i
+    cases ih i
+    left
+    apply Introduces.LambdaBody
+    assumption
+    right; assumption
+    left
+    apply Introduces.Lambda
+  | App f a fih aih =>
+    cases i <;> rename_i i
+    cases fih i
+    left; apply Introduces.AppFunc; assumption
+    right; assumption
+    cases aih i
+    left; apply Introduces.AppArg; assumption
+    right; assumption
+  | Var =>
+    unfold LamTerm.subst at i
+    split at i
+    right; assumption
+    left; assumption
+
 inductive Finder (α: Sort u) (P: α -> Prop): Type u where
 | found (x: α) (px: P x)
 | missing: (∀x, ¬P x) -> Finder α P
