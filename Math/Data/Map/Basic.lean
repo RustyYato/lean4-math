@@ -501,4 +501,10 @@ def insert_insert_eq {map: Map α β} (key: α) (v₀ v₁: β):
   rw [dif_pos]
   apply mem_insert.mpr; right ; rfl
 
+@[simp]
+def not_mem_empty (x: α) : ¬x ∈ (∅: Map α β) := by
+  intro h
+  obtain ⟨_, _⟩ := h
+  contradiction
+
 end Map

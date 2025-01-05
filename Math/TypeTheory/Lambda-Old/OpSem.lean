@@ -1,4 +1,4 @@
-import Math.TypeTheory.Lambda.Basic
+import Math.TypeTheory.«Lambda-Old».Basic
 import Math.Relation.Basic
 
 namespace LamTerm
