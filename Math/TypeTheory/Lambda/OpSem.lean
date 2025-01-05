@@ -86,7 +86,7 @@ def LamTerm.progress (ty: LamType) (term: LamTerm) : term.IsWellTyped ∅ ty -> 
     · exact ⟨_, .AppArg fval ared⟩
     · exact ⟨_, .AppFunc fred⟩
 
-def LamTerm.IsWellTyped.reduce : ReduceTo ctx term term' -> term.IsWellTyped ctx ty -> term'.IsWellTyped ctx ty := by
+def LamTerm.IsWellTyped.ReduceTo : ReduceTo ctx term term' -> term.IsWellTyped ctx ty -> term'.IsWellTyped ctx ty := by
 intro red wt
 induction red generalizing ty with
 | Panic _ ih =>
@@ -121,3 +121,84 @@ induction red generalizing ty with
   apply LamTerm.relabel.NoCommonIntroductions
   assumption
   assumption
+
+def LamTerm.IsWellTyped.NormalizeTo : NormalizeTo ctx term term' -> term.IsWellTyped ctx ty -> term'.IsWellTyped ctx ty := by
+  intro norm
+  induction norm with
+  | refl => exact id
+  | cons _ _ ih =>
+    intro h
+    apply ih
+    apply ReduceTo
+    assumption
+    assumption
+
+inductive LamTerm.Halts (ctx: Context) (a: LamTerm) : Prop where
+| intro (value: LamTerm) : value.IsValue -> NormalizeTo ctx a value -> Halts ctx a
+
+def LamTerm.Halts.Reduce (a: LamTerm) (h: ReduceTo ctx a b) : Halts ctx a ↔ Halts ctx b := by
+  apply Iff.intro
+  intro ⟨val, val_spec, red⟩
+  refine ⟨val, val_spec, ?_⟩
+  apply NormalizeTo.pop
+  assumption
+  assumption
+  assumption
+  intro ⟨val, val_spec, red⟩
+  refine ⟨val, val_spec, ?_⟩
+  apply NormalizeTo.push
+  assumption
+  assumption
+
+def LamTerm.Halts.Reduction (a: LamTerm) (h: NormalizeTo ctx a b) : Halts ctx a ↔ Halts ctx b := by
+  induction h with
+  | refl => apply Iff.refl
+  | cons r _ ih =>
+    apply Iff.trans _ ih
+    apply Halts.Reduce
+    assumption
+
+def LamTerm.HeredHalts {ctx ty} (a: LamTerm) (wt: a.IsWellTyped ctx ty) : Prop :=
+  match ty with
+  | .Void => False
+  | .Func arg_ty ret_ty =>
+    a.Halts ctx ∧ (
+      ∀(arg: LamTerm) (h: arg.IsWellTyped ctx arg_ty), HeredHalts _ (.App arg_ty ret_ty a arg wt h)
+    )
+
+def Reduce.hered_halts_iff {a: LamTerm} (wt: a.IsWellTyped ctx ty) (red: ReduceTo ctx a b) :
+  a.HeredHalts wt ↔ b.HeredHalts (wt.ReduceTo red) := by
+  induction ty generalizing ctx a b with
+  | Void => apply Iff.intro <;> (intro; contradiction)
+  | Func arg_ty ret_ty arg_ih ret_ih =>
+    apply Iff.intro
+    intro ⟨halts, hered⟩
+    apply And.intro
+    apply (LamTerm.Halts.Reduce _ _).mp <;> assumption
+    intro arg arg_wt
+    apply (ret_ih _ _).mp
+    apply hered
+    assumption
+    apply ReduceTo.AppFunc
+    assumption
+    intro ⟨halts, hered⟩
+    apply And.intro
+    apply (LamTerm.Halts.Reduce _ _).mpr <;> assumption
+    intro arg arg_wt
+    apply (ret_ih _ _).mpr
+    apply hered
+    assumption
+    apply ReduceTo.AppFunc
+    assumption
+
+def Reduction.hered_halts_iff {a: LamTerm} (wt: a.IsWellTyped ctx ty) (red: NormalizeTo ctx a b) :
+  a.HeredHalts wt ↔ b.HeredHalts (wt.NormalizeTo red) := by
+  induction red generalizing ty with
+  | refl => apply Iff.refl
+  | cons r _ ih =>
+    apply Iff.trans _ (ih _)
+    apply LamTerm.IsWellTyped.ReduceTo
+    assumption
+    assumption
+    apply Reduce.hered_halts_iff
+    assumption
