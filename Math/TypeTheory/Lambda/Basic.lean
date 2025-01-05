@@ -14,6 +14,8 @@ instance : Min Name := inferInstanceAs (Min Nat)
 instance : IsDecidableLinearOrder Name := inferInstanceAs (IsDecidableLinearOrder Nat)
 instance : Bot Name := inferInstanceAs (Bot Nat)
 instance : LawfulBot Name := inferInstanceAs (LawfulBot Nat)
+def Name.step : Name -> Name := Nat.succ
+def Name.lt_step (x: Name) : x < x.step := Nat.lt_succ_self _
 attribute [irreducible] Name
 
 def Name.rename (name source dest: Name) :=
@@ -321,7 +323,7 @@ def LamTerm.IsWellTyped.weaken
 
 def LamTerm.IsWellTyped.subst
   {ctx: Context} {ty: LamType}
-  {term subst: LamTerm} {name: Name} {name_in_ctx: name ∈ ctx}:
+  {term subst: LamTerm} {name: Name} (name_in_ctx: name ∈ ctx):
   term.IsWellTyped ctx ty ->
   subst.IsWellTyped (ctx.erase name) ctx[name] ->
   term.NoCommonIntroductions subst ->
@@ -378,6 +380,75 @@ def LamTerm.IsWellTyped.subst
     apply Map.mem_erase.mpr ⟨_, _⟩
     assumption
     assumption
+
+inductive Finder (α: Sort u) (P: α -> Prop): Type u where
+| found (x: α) (px: P x)
+| missing: (∀x, ¬P x) -> Finder α P
+
+def LamTerm.find (P: Name -> Prop) [DecidablePred P] : ∀term: LamTerm, Finder Name (fun x: Name => term.Introduces x ∧ P x)
+| .Var _ => .missing nofun
+| .Panic body _ =>
+  match find P body with
+  | .found x h => .found x <| by
+    obtain ⟨i, pn⟩  := h
+    refine ⟨?_, pn⟩
+    exact (.Panic _ _ i)
+  | .missing h => .missing <| by
+    intro x ⟨i, pn⟩
+    apply h
+    refine ⟨?_, pn⟩
+    cases i
+    assumption
+| .App f a =>
+  match find P f with
+  | .found x h => .found x <| by
+    obtain ⟨i, pn⟩ := h
+    refine ⟨?_, pn⟩
+    exact (.AppFunc _ _ i)
+  | .missing hf =>
+  match find P a with
+  | .found x h => .found x <| by
+    obtain ⟨i, pn⟩  := h
+    refine ⟨?_, pn⟩
+    exact (.AppArg _ _ i)
+  | .missing ha => .missing <| by
+    intro n ⟨i, pn⟩
+    cases i <;> rename_i i
+    apply hf
+    refine ⟨i, pn⟩
+    apply ha
+    refine ⟨i, pn⟩
+| .Lambda n _ body =>
+  if h:P n then
+    .found n <| ⟨.Lambda _ _, h⟩
+  else
+  match find P body with
+  | .found x h => .found x <| by
+    obtain ⟨i, pn⟩ := h
+    refine ⟨?_, pn⟩
+    exact (.LambdaBody _ _ _ i)
+  | .missing ha => .missing <| by
+    intro n ⟨i, pn⟩
+    cases i
+    rename_i i
+    apply ha
+    refine ⟨i, pn⟩
+    contradiction
+
+instance LamTerm.decExistsIntroduces (P: Name -> Prop) [DecidablePred P] (term: LamTerm) : Decidable (∃x: Name, term.Introduces x ∧ P x) :=
+  match find P term with
+  | .found x h => .isTrue ⟨x, h⟩
+  | .missing f => .isFalse <| fun ⟨_, h⟩  => f _ h
+
+instance (P: Name -> Prop) [DecidablePred P] (term : LamTerm) : Decidable (∀x: Name, term.Introduces x -> P x) :=
+  decidable_of_iff (¬∃x: Name, term.Introduces x ∧ ¬P x) <| by
+    rw [not_exists]
+    conv => {
+      lhs; intro
+      rw [not_and]
+      intro
+      rw [Decidable.not_not]
+    }
 
 instance LamTerm.decIntroduces : ∀term, Decidable (LamTerm.Introduces name term)
 | .Var _ => .isFalse nofun
@@ -857,3 +928,145 @@ def LamTerm.unique_typing {term: LamTerm}:
     cases wt₀; cases wt₁
     subst ty₀; subst ty₁
     rfl
+
+def LamTerm.IsWellTyped.NotVoidValue {term: LamTerm} :
+  term.IsWellTyped ctx .Void -> ¬term.IsValue := by
+  intro wt val
+  cases wt <;> contradiction
+
+def LamTerm.max_intro_name_spec (term: LamTerm) :
+  ∀x, term.Introduces x -> x ≤ term.max_intro_name := by
+  intro x i
+  induction i with
+  | Lambda _ _ => apply le_max_left
+  | LambdaBody
+  | AppArg =>
+    apply flip le_trans
+    apply le_max_right
+    assumption
+  | AppFunc =>
+    apply flip le_trans
+    apply le_max_left
+    assumption
+  | Panic => assumption
+
+def LamTerm.count_common_intros (term other: LamTerm): Nat :=
+  match term with
+  | .Var _ => 0
+  | .Panic body _ => body.count_common_intros other
+  | .App f a => f.count_common_intros other + a.count_common_intros other
+  | .Lambda n _ b =>
+    b.count_common_intros other +
+    if other.Introduces n then 1 else 0
+
+def LamTerm.count_common_intros.rename_new
+  (term other: LamTerm) (h: ¬other.Introduces new):
+  (term.rename x new).count_common_intros other ≤ term.count_common_intros other := by
+  induction term with
+  | Var => apply Nat.zero_le
+  | Panic => assumption
+  | App => apply Nat.add_le_add <;> assumption
+  | Lambda =>
+    apply Nat.add_le_add
+    assumption
+    unfold Name.rename
+    split
+    apply Nat.zero_le
+    split <;> apply Nat.le_refl
+
+def LamTerm.relabel.term (term other: LamTerm):
+  Introduces x other -> Introduces x term ->
+  (rename x (max term.max_intro_name other.max_intro_name).step term).count_common_intros other <
+  term.count_common_intros other := by
+  generalize hnew:(max term.max_intro_name other.max_intro_name).step = new
+  have : ∀x, term.Introduces x ∨ other.Introduces x -> x ≠ new := by
+    subst hnew
+    intro n i
+    apply ne_of_lt
+    apply flip lt_of_le_of_lt
+    apply Name.lt_step
+    apply le_max_iff.mpr
+    cases i
+    left; apply max_intro_name_spec; assumption
+    right; apply max_intro_name_spec; assumption
+  clear hnew
+  have newo : ¬other.Introduces new := fun h => this new (.inr h) rfl
+  have newt : ¬term.Introduces new := fun h => this new (.inl h) rfl
+  clear this
+  intro xo xt
+  induction term with
+  | Lambda _ _ _ ih =>
+    cases xt with
+    | Lambda =>
+      unfold rename count_common_intros
+      rw [if_pos xo]
+      apply Nat.lt_succ_of_le
+      unfold Name.rename
+      rw [if_pos rfl, if_neg newo, Nat.add_zero]
+      apply LamTerm.count_common_intros.rename_new
+      assumption
+    | LambdaBody =>
+      unfold rename count_common_intros
+      unfold Name.rename
+      split <;> rename_i h
+      rw [if_pos (h ▸ xo)]
+      apply Nat.lt_trans
+      apply ih
+      intro h
+      apply newt
+      apply Introduces.LambdaBody
+      assumption
+      assumption
+      apply Nat.lt_succ_self
+      apply Nat.add_lt_add_right
+      apply ih
+      intro h
+      apply newt
+      apply Introduces.LambdaBody
+      assumption
+      assumption
+  | App func arg fih aih=>
+    unfold rename count_common_intros
+    cases xt with
+    | AppFunc =>
+      apply Nat.add_lt_add_of_lt_of_le
+      apply fih
+      intro h
+      apply newt
+      apply Introduces.AppFunc
+      assumption
+      assumption
+      apply LamTerm.count_common_intros.rename_new
+      assumption
+    | AppArg =>
+      apply Nat.add_lt_add_of_le_of_lt
+      apply LamTerm.count_common_intros.rename_new
+      assumption
+      apply aih
+      intro h
+      apply newt
+      apply Introduces.AppArg
+      assumption
+      assumption
+  | Var => contradiction
+  | Panic _ _ ih =>
+    apply ih
+    intro h
+    apply newt
+    apply Introduces.Panic
+    assumption
+    cases xt
+    assumption
+
+def LamTerm.relabel (term other: LamTerm): LamTerm :=
+  match other.find (fun n => term.Introduces n) with
+  | .missing _ => term
+  | .found x _ =>
+    (term.rename x (max term.max_intro_name other.max_intro_name).step).relabel other
+termination_by term.count_common_intros other
+decreasing_by
+  rename_i px
+  obtain ⟨_, _⟩ := px
+  apply relabel.term
+  assumption
+  assumption
