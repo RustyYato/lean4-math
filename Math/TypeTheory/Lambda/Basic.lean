@@ -950,6 +950,26 @@ def LamTerm.max_intro_name_spec (term: LamTerm) :
     assumption
   | Panic => assumption
 
+def Context.max_name_spec (ctx: Context) :
+  ∀x ∈ ctx, x ≤ ctx.max_name := by
+  intro x h
+  cases ctx with | mk ctx nodup =>
+  cases ctx with | mk ctx =>
+  induction ctx with
+  | nil =>
+    have := Map.not_mem_empty _ h
+    contradiction
+  | cons kv ctx ih =>
+    obtain ⟨v, h⟩ := h
+    cases h
+    apply le_max_left
+    apply flip le_trans
+    apply le_max_right
+    apply ih
+    rename_i h
+    exact ⟨_, h⟩
+    exact Multiset.Pairwise.tail nodup
+
 def LamTerm.count_common_intros (term other: LamTerm): Nat :=
   match term with
   | .Var _ => 0
@@ -974,17 +994,19 @@ def LamTerm.count_common_intros.rename_new
     apply Nat.zero_le
     split <;> apply Nat.le_refl
 
-def LamTerm.relabel.term (term other: LamTerm):
+def LamTerm.relabel.term (term other: LamTerm) (offset: Name):
   Introduces x other -> Introduces x term ->
-  (rename x (max term.max_intro_name other.max_intro_name).step term).count_common_intros other <
+  (rename x (max offset (max term.max_intro_name other.max_intro_name)).step term).count_common_intros other <
   term.count_common_intros other := by
-  generalize hnew:(max term.max_intro_name other.max_intro_name).step = new
+  generalize hnew:(max offset (max term.max_intro_name other.max_intro_name)).step = new
   have : ∀x, term.Introduces x ∨ other.Introduces x -> x ≠ new := by
     subst hnew
     intro n i
     apply ne_of_lt
     apply flip lt_of_le_of_lt
     apply Name.lt_step
+    apply le_max_iff.mpr
+    right
     apply le_max_iff.mpr
     cases i
     left; apply max_intro_name_spec; assumption
@@ -1058,14 +1080,94 @@ def LamTerm.relabel.term (term other: LamTerm):
     cases xt
     assumption
 
-def LamTerm.relabel (term other: LamTerm): LamTerm :=
+def LamTerm.IsValue.rename (term: LamTerm):
+  term.IsValue ->
+  (term.rename n n').IsValue := by
+  intro h
+  cases h
+  apply IsValue.Lambda
+
+def LamTerm.relabel (term other: LamTerm) (offset: Name): LamTerm :=
   match other.find (fun n => term.Introduces n) with
   | .missing _ => term
   | .found x _ =>
-    (term.rename x (max term.max_intro_name other.max_intro_name).step).relabel other
+    (term.rename x (max offset (max term.max_intro_name other.max_intro_name)).step).relabel other offset
 termination_by term.count_common_intros other
 decreasing_by
   rename_i px
+  obtain ⟨_, _⟩ := px
+  apply relabel.term
+  assumption
+  assumption
+
+def LamTerm.relabel.NoCommonIntroductions (term other: LamTerm):
+  other.NoCommonIntroductions <| term.relabel other offset := by
+  unfold relabel
+  split
+  rename_i f missing eq
+  clear f eq
+  intro x xo xt
+  apply missing
+  apply And.intro <;> assumption
+  rename_i f n px eq
+  clear f eq
+  apply LamTerm.relabel.NoCommonIntroductions
+termination_by term.count_common_intros other
+decreasing_by
+  rename_i px _ _
+  obtain ⟨_, _⟩ := px
+  apply relabel.term
+  assumption
+  assumption
+
+def LamTerm.relabel.IsValue (term other: LamTerm) (h: term.IsValue):
+  (term.relabel other offset).IsValue := by
+  unfold relabel
+  split
+  rename_i f missing eq
+  clear f eq
+  assumption
+  rename_i f n px eq
+  clear f eq
+  apply LamTerm.relabel.IsValue
+  apply LamTerm.IsValue.rename
+  assumption
+termination_by term.count_common_intros other
+decreasing_by
+  rename_i px _ _
+  obtain ⟨_, _⟩ := px
+  apply relabel.term
+  assumption
+  assumption
+
+def LamTerm.IsWellTyped.relabel {ctx: Context} (term other: LamTerm) (h: term.IsWellTyped ctx ty) (g: ctx.max_name ≤ offset):
+  (term.relabel other offset).IsWellTyped ctx ty := by
+  unfold LamTerm.relabel
+  split
+  rename_i f missing eq
+  clear f eq
+  assumption
+  rename_i f n px eq
+  clear f eq
+  apply LamTerm.IsWellTyped.relabel
+  apply LamTerm.IsWellTyped.rename
+  exact px.right
+  intro h
+  have := Context.max_name_spec ctx _ h
+  replace this := lt_of_lt_of_le (Name.lt_step _) this
+  replace this := (max_lt_iff.mp this).left
+  exact not_lt_of_le g this
+  intro i
+  have := max_intro_name_spec _ _ i
+  replace this := lt_of_lt_of_le (Name.lt_step _) this
+  replace this := (max_lt_iff.mp this).right
+  replace this := (max_lt_iff.mp this).left
+  exact lt_irrefl this
+  assumption
+  assumption
+termination_by term.count_common_intros other
+decreasing_by
+  rename_i px _ _
   obtain ⟨_, _⟩ := px
   apply relabel.term
   assumption

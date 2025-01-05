@@ -1,21 +1,21 @@
 import Math.TypeTheory.Lambda.Basic
 import Math.Relation.Basic
 
-inductive ReduceTo : LamTerm -> LamTerm -> Prop where
-| Subst : LamTerm.IsValue arg -> body.NoCommonIntroductions arg -> ReduceTo (.App (.Lambda name argty body) arg) (body.subst arg name)
-| Panic : ReduceTo body body' -> ReduceTo (.Panic body ty) (.Panic body' ty)
-| AppFunc : ReduceTo func func' -> ReduceTo (.App func arg) (.App func' arg)
-| AppArg : LamTerm.IsValue func -> ReduceTo arg arg' -> ReduceTo (.App func arg) (.App func arg')
+inductive ReduceTo (ctx: Context) : LamTerm -> LamTerm -> Prop where
+| Subst : LamTerm.IsValue arg -> ReduceTo ctx (.App (.Lambda name argty body) arg) (body.subst (arg.relabel body ctx.max_name) name)
+| Panic : ReduceTo ctx body body' -> ReduceTo ctx (.Panic body ty) (.Panic body' ty)
+| AppFunc : ReduceTo ctx func func' -> ReduceTo ctx (.App func arg) (.App func' arg)
+| AppArg : LamTerm.IsValue func -> ReduceTo ctx arg arg' -> ReduceTo ctx (.App func arg) (.App func arg')
 
-infix:100 " ~> " => ReduceTo
-def NormalizeTo := Relation.ReflTransGen (· ~> ·)
-infix:100 " ~*> " => NormalizeTo
+variable {ctx: Context}
 
-def ReduceTo.not_value {a b: LamTerm} : a ~> b -> ¬a.IsValue := by
+abbrev NormalizeTo (ctx: Context) := Relation.ReflTransGen (ReduceTo ctx)
+
+def ReduceTo.not_value {a b: LamTerm} : ReduceTo ctx a b -> ¬a.IsValue := by
   intro ab h
   cases ab <;> contradiction
 
-def ReduceTo.decide {a b b': LamTerm} : a ~> b -> a ~> b' -> b = b' := by
+def ReduceTo.decide {a b b': LamTerm} : ReduceTo ctx a b -> ReduceTo ctx a b' -> b = b' := by
   intro ab ab'
   induction ab generalizing b' <;> cases ab'
   rfl
@@ -26,7 +26,7 @@ def ReduceTo.decide {a b b': LamTerm} : a ~> b -> a ~> b' -> b = b' := by
   congr
   rename_i ih _ _ ; apply ih
   assumption
-  rename_i h _ _ _
+  rename_i h _ _
   have := h.not_value
   contradiction
   congr
@@ -36,7 +36,7 @@ def ReduceTo.decide {a b b': LamTerm} : a ~> b -> a ~> b' -> b = b' := by
   rename_i h _ _ _ _
   have := h.not_value
   contradiction
-  rename _ ~> _ => h
+  rename ReduceTo _ _ _ => h
   have := h.not_value
   contradiction
   congr
@@ -44,10 +44,10 @@ def ReduceTo.decide {a b b': LamTerm} : a ~> b -> a ~> b' -> b = b' := by
   apply ih
   assumption
 
-def NormalizeTo.push : a ~> b -> b ~*> c -> a ~*> c := Relation.ReflTransGen.cons
+def NormalizeTo.push :  ReduceTo ctx a b -> NormalizeTo ctx b c -> NormalizeTo ctx a c := Relation.ReflTransGen.cons
 
 def NormalizeTo.pop {a b c: LamTerm} (h: c.IsValue) :
-  b ~> a -> b ~*> c -> a ~*> c := by
+  ReduceTo ctx b a -> NormalizeTo ctx b c -> NormalizeTo ctx a c := by
   intro ba bc
   cases bc
   have := ba.not_value
@@ -57,7 +57,7 @@ def NormalizeTo.pop {a b c: LamTerm} (h: c.IsValue) :
   assumption
 
 -- any well typed term in the empty context either is either a value or steps to another term
-def LamTerm.progress (ty: LamType) (term: LamTerm) : term.IsWellTyped ∅ ty -> term.IsValue ∨ ∃term', term ~> term' := by
+def LamTerm.progress (ty: LamType) (term: LamTerm) : term.IsWellTyped ∅ ty -> term.IsValue ∨ ∃term', ReduceTo ctx term term' := by
   intro wt
   induction term generalizing ty with
   | Lambda =>
@@ -82,16 +82,13 @@ def LamTerm.progress (ty: LamType) (term: LamTerm) : term.IsWellTyped ∅ ty -> 
     rcases fih with fval | ⟨f', fred⟩
     rcases aih with aval | ⟨a', ared⟩
     · cases fval with | Lambda name argty body =>
-      refine ⟨_, .Subst aval sorry⟩
-    · refine ⟨_, .AppArg fval ared⟩
-    · refine ⟨_, .AppFunc fred⟩
+      exact ⟨_, .Subst aval⟩
+    · exact ⟨_, .AppArg fval ared⟩
+    · exact ⟨_, .AppFunc fred⟩
 
-def LamTerm.IsWellTyped.reduce :
-term ~> term' ->
-term.IsWellTyped ctx ty ->
-term'.IsWellTyped ctx ty := by
+def LamTerm.IsWellTyped.reduce : ReduceTo ctx term term' -> term.IsWellTyped ctx ty -> term'.IsWellTyped ctx ty := by
 intro red wt
-induction red generalizing ctx ty with
+induction red generalizing ty with
 | Panic _ ih =>
   cases wt
   apply IsWellTyped.Panic
@@ -109,14 +106,18 @@ induction red generalizing ctx ty with
   assumption
   apply ih
   assumption
-| Subst _ nocomm =>
-  rename_i arg _ _ _ _
+| Subst _ =>
+  rename_i arg _ _ body _
   cases wt
   rename_i awt fwt
   cases fwt; rename_i bodywt
-  have := IsWellTyped.subst (Map.mem_insert.mpr <| .inr rfl) bodywt (subst := arg)
+  have := IsWellTyped.subst (Map.mem_insert.mpr <| .inr rfl) bodywt (subst := arg.relabel body ctx.max_name)
   rw [Map.erase_insert_cancel, Map.insert_get_elem_head] at this
   dsimp at this
-  exact this awt nocomm
+  apply this
+  apply IsWellTyped.relabel
+  assumption
+  apply le_refl
+  apply LamTerm.relabel.NoCommonIntroductions
   assumption
   assumption
