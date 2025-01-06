@@ -515,3 +515,84 @@ def List.Pairwise.head :
   List.Pairwise P (a::as) ->
   ∀x ∈ as, P a x
 | .cons pa _ => pa
+
+abbrev List.Elem (as: List α) := { x // x ∈ as }
+instance : CoeSort (List α) (Sort _) := ⟨List.Elem⟩
+
+def List.nodup_pmap (as: List α) {P: α -> Prop} {f: ∀x, P x -> β} {ofmem} (inj: ∀x y h₀ h₁, HEq (f x h₀) (f y h₁) -> x = y) : as.Nodup ↔ (as.pmap f ofmem).Nodup := by
+  induction as with
+  | nil => apply Iff.intro <;> (intro; apply List.Pairwise.nil)
+  | cons a as ih =>
+    apply Iff.intro
+    intro h
+    cases h; rename_i hs h
+    apply List.Pairwise.cons
+    intro x g eq
+    subst x
+    have ⟨a', mem, eq⟩ := List.mem_pmap.mp g
+    cases inj _ _ _ _ (heq_of_eq eq)
+    exact h _ mem rfl
+    show (List.pmap _ _ _).Nodup
+    apply ih.mp
+    exact hs
+    intro h
+    cases h; rename_i hs h
+    apply Pairwise.cons
+    intro x mem g
+    have px := ofmem x (List.Mem.tail _ mem)
+    exact h (f x px) (List.mem_pmap_of_mem mem) (g ▸ rfl)
+    apply ih.mpr
+    assumption
+
+def List.nodup_attach (as: List α) : as.Nodup ↔ as.attach.Nodup := by
+  apply List.nodup_pmap
+  intro x y _ _ eq
+  cases eq
+  rfl
+
+def List.dedup [DecidableEq α] : List α -> List α
+| [] => []
+| a::as =>
+  have as' := as.dedup
+  if a ∈ as' then as' else a::as'
+
+def List.mem_dedup [DecidableEq α] {as: List α} :
+  ∀{x}, x ∈ as ↔ x ∈ List.dedup as := by
+  intro x
+  induction as with
+  | nil => rfl
+  | cons a as ih =>
+    unfold dedup; dsimp; split <;> rename_i h
+    apply Iff.intro
+    intro mem
+    cases mem
+    assumption
+    apply ih.mp
+    assumption
+    intro
+    apply List.Mem.tail
+    apply ih.mpr
+    assumption
+    apply Iff.intro
+    intro mem
+    cases mem
+    apply List.Mem.head
+    apply List.Mem.tail
+    apply ih.mp
+    assumption
+    intro g
+    cases g
+    apply List.Mem.head
+    apply List.Mem.tail
+    apply ih.mpr
+    assumption
+
+def List.nodup_dedup [DecidableEq α] (as: List α) : as.dedup.Nodup := by
+  induction as with
+  | nil => apply List.Pairwise.nil
+  | cons a as =>
+    unfold dedup; dsimp; split <;> rename_i h
+    assumption
+    apply List.Pairwise.cons
+    intro x m h; subst x; contradiction
+    assumption
