@@ -190,6 +190,50 @@ def ind { motive: Map α β -> Prop } :
     exact a_notin_as _ h rfl
   exact cons a.fst a.snd _ this ih
 
+def rec' { motive: Map α β -> Sort* } :
+  (nil: motive ∅) ->
+  (cons: ∀k v as, (h: k ∉ as) -> motive as -> motive (insert_no_dup k v as h)) ->
+  (swap: ∀k₀ v₀ k₁ v₁ as, (h₀: k₀ ∉ as) -> (h₁: k₁ ∉ as) ->
+    (ne: k₀ ≠ k₁) -> (ih: motive as) ->
+    HEq (cons k₀ v₀ _ (not_or.mpr ⟨h₀, ne⟩ <| Map.mem_insert_no_dup.mp ·) (cons k₁ v₁ as h₁ ih)) (cons k₁ v₁ _ (not_or.mpr ⟨h₁, ne.symm⟩ <| Map.mem_insert_no_dup.mp ·) (cons k₀ v₀ as h₀ ih))) ->
+  ∀x, motive x := by
+  intro nil cons swap ctx
+  cases ctx with | mk ctx nodup =>
+  induction ctx using Multiset.rec with
+  | nil => exact nil
+  | cons p map ih =>
+    refine cons p.fst p.snd ⟨map, ?_⟩ ?_ (ih nodup.tail)
+    exact nodup.tail
+    intro h
+    obtain ⟨v, mem⟩ := h
+    apply (nodup.head ⟨p.fst, v⟩ _ rfl)
+    assumption
+  | swap p₀ p₁ as ih =>
+    apply Function.hfunext
+    rw [Multiset.cons_comm]
+    intros h₀ h₁ eq
+    dsimp
+    refine swap p₀.fst p₀.snd p₁.fst p₁.snd ⟨as, ?_⟩ ?_ ?_ ?_ (ih ?_)
+    intro h
+    exact h₀.head _ (Multiset.mem_cons.mpr <| .inl rfl) h
+
+def rec'_nil  { motive: Map α β -> Sort* }
+  (nil: motive ∅)
+  (cons: ∀k v as, (h: k ∉ as) -> motive as -> motive (insert_no_dup k v as h))
+  {swap: _}:
+  rec' nil cons swap ∅ = nil := rfl
+
+def rec'_cons  { motive: Map α β -> Sort* }
+  (nil: motive ∅)
+  (cons: ∀k v as, (h: k ∉ as) -> motive as -> motive (insert_no_dup k v as h))
+  {swap: _}:
+  rec' nil cons swap (insert_no_dup k v as h) = cons k v as h (rec' nil cons swap as) := by
+  rw [rec']
+  simp
+  unfold insert_no_dup
+  rw [Multiset.rec_cons]
+  rfl
+
 def get_elem_of_mem_data (map: Map α β) :
   ∀{x}, (h: x ∈ map.data) -> map[x.1]'⟨_, h⟩ = x.2 := by
     intro x mem
