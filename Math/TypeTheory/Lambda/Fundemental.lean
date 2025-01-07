@@ -20,11 +20,55 @@ def LamTerm.IsWellTyped.weakenAll {term: LamTerm} :
     apply Map.mem_insert_no_dup.mpr
     right; rfl
 
-def LamTerm.substAll (term: LamTerm) : List (Name × LamTerm) -> LamTerm
-| [] => term
-| ⟨name, subst⟩::substs => (term.subst subst name).substAll substs
+def LamTerm.substAll (term: LamTerm) (substs: Map Name LamTerm) (closed: ∀n (h: n ∈ substs), substs[n].IsWellFormed ∅) : LamTerm := by
+  induction substs using Map.rec' with
+  | nil => exact term
+  | cons k v substs notmem ih =>
+    apply (ih ?_).subst v k
+    intro n h
+    have := closed n (Map.mem_insert_no_dup.mpr <| .inl h)
+    rw [Map.insert_nodup_get_elem, dif_neg] at this
+    assumption
+    intro g
+    exact notmem (g ▸ h)
+    left; assumption
+  | swap k₀ v₀ k₁ v₁ as h₀ h₁ ne ih =>
+    apply Function.hfunext
+    sorry
+    intro g₀ g₁ eq
+    apply heq_of_eq
+    dsimp
+    generalize ih _=ih'
+    induction ih' with
+    | Panic => sorry
+    | Lambda => sorry
+    | App => sorry
+    | Var =>
+      rw [subst]
+      split
+      rw [LamTerm.subst_closed, subst, if_neg, subst, if_pos]
+      assumption
+      intro h
+      subst h
+      contradiction
+      have := g₀ k₁ (Map.mem_insert_no_dup.mpr <| .inl <| Map.mem_insert_no_dup.mpr <| .inr rfl)
+      rw [Map.insert_nodup_get_elem, dif_neg ne.symm, Map.insert_nodup_get_elem, dif_pos rfl] at this
+      assumption
+      right; rfl
+      left; apply Map.mem_insert_no_dup.mpr
+      right; rfl
+      sorry
+      rw [subst]
+      split
+      rw [subst_closed]
 
+
+
+      repeat sorry
+      -- unfold subst
+      -- rfl
 def LamTerm.substAll_closed (term: LamTerm) :
+
   term.IsWellFormed ∅ ->
   (∀s ∈ substs, ¬term.Introduces s.fst) ->
   term.substAll substs = term := by
@@ -124,7 +168,7 @@ structure LamTerm.substAllContext (term: LamTerm) (ctx: Context) (ty: LamType) (
   -- and there are no duplicate substitutions
   nodup: substs.Pairwise (fun x y => x.fst ≠ y.fst)
 
-def LamTerm.IsWellTyped.substAll {term: LamTerm} {substs: List (Name × LamTerm)} :
+def LamTerm.IsWellTyped.substAll {term: LamTerm} {substs: Map Name LamTerm} :
   LamTerm.substAllContext term ctx ty substs ->
   (term.substAll substs).IsWellTyped ∅ ty := by
   intro substctx
@@ -203,3 +247,20 @@ def LamTerm.IsWellTyped.substAll {term: LamTerm} {substs: List (Name × LamTerm)
     left; assumption
     right; rfl
     right; rfl
+
+def LamTerm.HeredHalts.substAll {term: LamTerm} {substs: List (Name × LamTerm)}  :
+  ∀h: LamTerm.substAllContext term ctx ty substs,
+  (term.substAll substs).HeredHalts (IsWellTyped.substAll h) := by
+  intro substctx
+  induction term with
+  | Panic =>
+    sorry
+  | App =>
+    sorry
+  | Lambda =>
+    sorry
+  | Var name =>
+    -- let v := substs
+    have := substctx.nodup
+    conv => { lhs; rw [LamTerm.substAll.Var] }
+    sorry
