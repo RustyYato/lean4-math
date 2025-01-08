@@ -459,3 +459,13 @@ def Embedding.congr (emb: α ↪ β) (eqa: α ≃ α₀) (eqb: β ≃ β₀) : �
     apply eqa.invFun_inj
 
 def Embedding.congr_apply (emb: α ↪ β) (eqa: α ≃ α₀) (eqb: β ≃ β₀): (emb.congr eqa eqb) x = eqb (emb (eqa.symm x)) := rfl
+
+def Fin.embedNat : Fin n ↪ Nat where
+  toFun := Fin.val
+  inj {_ _} := Fin.val_inj.mp
+
+def Subtype.embed {P: α -> Prop} : Subtype P ↪ α where
+  toFun := Subtype.val
+  inj {a b} eq := by
+    cases a; cases b
+    congr

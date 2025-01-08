@@ -3,16 +3,18 @@ import Math.Data.Set.Basic
 
 open Relation
 
+variable {r: α -> α -> Prop} {s: β -> β -> Prop} {t: γ -> γ -> Prop}
+
+def RelEmbedding.IsPrincipalTop (h: r ↪r s) (top: β): Prop := ∀b: β, s b top ↔ b ∈ Set.range h
+
 structure InitialSegment (r: α -> α -> Prop) (s: β -> β -> Prop) extends r ↪r s where
   isInitial: ∀a b, s b (toRelEmbedding a) -> b ∈ Set.range toRelEmbedding
 
 structure PrincipalSegment (r: α -> α -> Prop) (s: β -> β -> Prop) extends r ↪r s where
-  exists_top: ∃top: β, ∀b: β, s b top ↔ b ∈ Set.range toRelEmbedding
+  exists_top: ∃top: β, toRelEmbedding.IsPrincipalTop top
 
 infixl:25 " ≼i " => InitialSegment
 infixl:25 " ≺i " => PrincipalSegment
-
-variable {r: α -> α -> Prop} {s: β -> β -> Prop} {t: γ -> γ -> Prop}
 
 instance : FunLike (InitialSegment r s) α β where
   coe f := f.toFun
@@ -216,5 +218,61 @@ theorem irrefl {r : α → α → Prop} [IsWellOrder r] (f : r ≺i r) : False :
 
 instance (r : α → α → Prop) [IsWellOrder r] : IsEmpty (r ≺i r) :=
   ⟨fun f => f.irrefl⟩
+
+def top_congr [IsWellOrder t] (e : r ≃r s) (f : r ≺i t)
+  : ∀x, f.IsPrincipalTop x -> (f.congr e RelIso.refl).IsPrincipalTop x := by
+  intro x xtop
+  intro y
+  apply (xtop y).trans
+  rw [Set.mem_range, Set.mem_range]
+  apply Iff.intro
+  intro ⟨y, eq⟩
+  subst eq
+  exists e y
+  show f y = f (e.symm (e y))
+  rw [e.coe_symm]
+  intro ⟨x, eq⟩
+  subst eq
+  exists e.symm x
+
+def top_unique' [IsWellOrder t] (f: s ≺i t)
+  : ∀x y, f.IsPrincipalTop x -> f.IsPrincipalTop y -> x = y := by
+  intro x y xtop ytop
+  unfold RelEmbedding.IsPrincipalTop at xtop ytop
+  apply extensional_of_trichotomous_of_irrefl t
+  intro z
+  rw [xtop, ytop]
+
+def top_unique [IsWellOrder t] (e : r ≃r s) (f : r ≺i t) (g : s ≺i t)
+  : ∀x y, f.IsPrincipalTop x -> g.IsPrincipalTop y -> x = y := by
+  intro x y xtop ytop
+  let g' := f.congr e RelIso.refl
+  have : g' = g := Subsingleton.allEq _ _
+  subst g
+  symm; apply top_unique' g'
+  exact ytop
+  apply top_congr
+  assumption
+
+def top_of_lt_of_lt_of_le
+  [IsWellOrder t] (h : r ≺i s) (g : s ≼i t)
+  : ∀x, h.IsPrincipalTop x -> (h.lt_of_lt_of_le g).IsPrincipalTop (g x) := by
+  intro x top y
+  rw [Set.mem_range]
+  apply Iff.intro
+  intro tyx
+  show ∃_, y = g (h _)
+  have ⟨y, eq⟩ := Set.mem_range.mp <| g.isInitial _ _ tyx
+  subst eq
+  replace tyx := g.resp_rel.mpr tyx
+  have ⟨y, eq⟩ := Set.mem_range.mp <| (top y).mp tyx
+  exists y
+  rw [eq]; rfl
+  intro ⟨y, eq⟩
+  subst eq
+  show (t (g (h _))) _
+  apply g.resp_rel.mp
+  apply (top _).mpr
+  apply Set.mem_range'
 
 end PrincipalSegment

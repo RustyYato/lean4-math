@@ -205,3 +205,15 @@ def RelEmbedding.congr (eqr: r₀ ≃r r₁) (eqs: s₀ ≃r s₁) (h: r₀ ↪r
 def RelEmbedding.congr_apply (emb: r₀ ↪r s₀) (eqa: r₀ ≃r r₁) (eqb: s₀ ≃r s₁): (emb.congr eqa eqb) x = eqb (emb (eqa.symm x)) := rfl
 
 end
+
+def Fin.relEmbedNat : (· < (·: Fin n)) ↪r (· < (·: Nat)) where
+  toEmbedding := Fin.embedNat
+  resp_rel := Iff.rfl
+
+def Subtype.relEmbed {P: α -> Prop} (r: α -> α -> Prop) : (fun a b: Subtype P => r a b) ↪r r where
+  toEmbedding := Subtype.embed
+  resp_rel := Iff.rfl
+
+def ULift.relIso (r: α -> α -> Prop) : (fun a b: ULift α => r a.down b.down) ≃r r where
+  toEquiv := ULift.equiv
+  resp_rel := Iff.rfl

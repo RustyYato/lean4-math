@@ -3,6 +3,7 @@ import Math.Relation.RelIso
 import Math.Tactics.PPWithUniv
 import Math.Relation.Segments
 import Math.Order.Linear
+import Math.AxiomBlame
 
 namespace Ordinal
 
@@ -42,31 +43,18 @@ def sound {a b: Pre} : a.rel ≃r b.rel -> ⟦a⟧ = ⟦b⟧ := Quotient.sound �
 
 def type (rel: α -> α -> Prop) [Relation.IsWellOrder rel] := ⟦.mk _ rel⟧
 
-private
-def ulift_rel (r: α -> α -> Prop) (a b: ULift α) : Prop := r a.down b.down
-
-private
-def ulift_rel_equiv (r: α -> α -> Prop) : r ≃r ulift_rel r where
-  toEquiv := ULift.equiv.symm
-  resp_rel := Iff.rfl
-
-private
-instance (r: α -> α -> Prop) [Relation.IsWellOrder r] : Relation.IsWellOrder (ulift_rel r) where
-  toIsWellFounded := (ulift_rel_equiv _).symm.wf
-  toIsTrichotomous := (ulift_rel_equiv _).tri
-  toIsTrans := (ulift_rel_equiv _).trans'
-
 def Pre.lift (a: Pre.{u}): Pre.{max u v} where
   ty := ULift a.ty
-  rel := ulift_rel a.rel
+  rel x y := a.rel x.down y.down
+  wo := (ULift.relIso _).toRelEmbedding.wo
 
 def lift : Ordinal -> Ordinal := by
   apply Quotient.lift (fun _ => ⟦_⟧) _
   exact Pre.lift
   intro a b ⟨eq⟩
   apply sound
-  apply RelIso.trans (ulift_rel_equiv _).symm
-  apply RelIso.trans _ (ulift_rel_equiv _)
+  apply RelIso.trans (ULift.relIso _)
+  apply RelIso.trans _ (ULift.relIso _).symm
   assumption
 
 instance : LE Ordinal.{u} where
@@ -152,28 +140,144 @@ instance : IsPartialOrder Ordinal where
     apply sound
     apply InitialSegment.antisymm <;> assumption
 
+instance : @Relation.IsWellOrder Nat (· < ·) where
+  wf := Nat.lt_wfRel.wf
+  trans := Nat.lt_trans
+  tri := Nat.lt_trichotomy
+
 def Pre.ofNat (n: Nat) : Pre where
   ty := Fin n
   rel a b := a < b
-  wo := {
-    tri a b := by
-      rw [←Fin.val_inj]
-      exact Nat.lt_trichotomy a b
-    trans := Nat.lt_trans
-    wf := by
-      apply WellFounded.intro
-      intro ⟨a, aLt⟩
-      induction a using Nat.lt_wfRel.wf.induction with
-      | h a ih =>
-      apply Acc.intro
-      intro b lt
-      apply ih
-      assumption
-  }
+  wo := Fin.relEmbedNat.wo
 
 def Ordinal.ofNat (n: Nat) := ⟦Pre.ofNat n⟧
 
 instance : OfNat Pre n := ⟨(Pre.ofNat n).lift⟩
 instance : OfNat Ordinal n := ⟨(Ordinal.ofNat n).lift⟩
+
+def Pre.typein {α: Type u} (r: α -> α -> Prop) [Relation.IsWellOrder r] (a: α) : Pre.{u} where
+  ty := { x: α // r x a }
+  rel x y := r x y
+  wo := (Subtype.relEmbed r).wo
+
+def typein (r: α -> α -> Prop) [Relation.IsWellOrder r] (a: α) : Ordinal := ⟦Pre.typein r a⟧
+
+def typein_surj (r: α -> α -> Prop) [Relation.IsWellOrder r] : ∀o, o < type r -> ∃x: α, o = typein r x := by
+  intro o lt
+  induction o using ind with | mk o =>
+  obtain ⟨lt⟩ := lt
+  have ⟨top, spec⟩  := lt.exists_top
+  exists top
+  apply sound
+  apply RelIso.mk
+  case toEquiv =>
+    apply Equiv.mk
+    case toFun =>
+      intro x
+      refine ⟨lt x, ?_⟩
+      apply (spec _).mpr
+      apply Set.mem_range'
+    case invFun =>
+      intro ⟨val, lt_top⟩
+      exact Classical.choose <| Set.mem_range.mp <| (spec val).mp lt_top
+    case rightInv =>
+      intro ⟨a, lt_top⟩
+      dsimp
+      congr
+      exact (Classical.choose_spec <| Set.mem_range.mp <| (spec a).mp lt_top).symm
+    case leftInv =>
+      intro x
+      dsimp
+      apply lt.inj
+      refine (Classical.choose_spec <| Set.mem_range.mp <| (spec _).mp ?_).symm
+      exact (spec (lt x)).mpr Set.mem_range'
+  case resp_rel =>
+    exact lt.resp_rel
+
+def Pre.typein_lt (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (typein r a).rel ≺i r := by
+  apply PrincipalSegment.mk _ _
+  exact Subtype.relEmbed r
+  exists a
+  intro b
+  apply Iff.intro
+  intro h
+  apply Set.mem_range.mpr
+  exact ⟨⟨b, h⟩, rfl⟩
+  intro mem
+  obtain ⟨⟨b, h⟩, eq⟩ := Set.mem_range.mp mem
+  subst eq
+  assumption
+
+def typein_lt (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (typein r a) < type r := by
+  apply Nonempty.intro
+  apply Pre.typein_lt
+
+open Classical in
+def typein_lt_typein_iff [Relation.IsWellOrder r] : typein r a < typein r b ↔ r a b := by
+  have := (Subtype.relEmbed (P := fun x => r x b) r).wo
+  have := (Subtype.relEmbed (P := fun x => r x a) r).wo
+  apply Iff.intro
+  · intro ⟨h⟩
+    let rb_lt_r := Pre.typein_lt r b
+    let ra_lt_r := Pre.typein_lt r a
+    have a_princ_top_ra_lt_r : ra_lt_r.IsPrincipalTop a := by
+      intro x
+      rw [Set.mem_range]
+      apply Iff.intro
+      intro g
+      exists ⟨x, g⟩
+      intro ⟨x', eq⟩
+      subst x
+      exact x'.property
+    let ra_lt_r' := PrincipalSegment.trans h rb_lt_r
+    have : ra_lt_r = ra_lt_r' := Subsingleton.allEq _ _
+    rw [this] at a_princ_top_ra_lt_r
+    obtain ⟨top, spec⟩  := h.exists_top
+    have : ra_lt_r'.IsPrincipalTop top := h.top_of_lt_of_lt_of_le (rb_lt_r: (Pre.typein r b).rel ≼i r) top spec
+    have := PrincipalSegment.top_unique' ra_lt_r' _ _ a_princ_top_ra_lt_r this
+    subst a
+    exact top.property
+  · intro h
+    apply Nonempty.intro
+    refine ⟨⟨⟨?_, ?_⟩ , ?_⟩ , ?_⟩
+    intro ⟨x, g⟩
+    exact ⟨x, Relation.trans g h⟩
+    intro ⟨_, _⟩ ⟨_, _⟩ eq
+    cases eq
+    congr
+    rfl
+    dsimp
+    exists ⟨a, h⟩
+    intro ⟨c, g⟩
+    dsimp
+    rw [Set.mem_range]
+    apply Iff.intro
+    intro g
+    exact ⟨⟨_, g⟩, rfl⟩
+    intro ⟨⟨c, g⟩, eq⟩
+    cases eq
+    assumption
+
+def lt_wf : @WellFounded Ordinal (· < ·) := by
+  apply WellFounded.intro
+  intro a
+  apply Acc.intro
+  intro b r
+  induction a using ind with | mk a =>
+  obtain ⟨α, rel, wo⟩ := a
+  have ⟨a₀, eq⟩ := typein_surj rel b r
+  subst b
+  clear r
+  induction a₀ using (Relation.wellFounded rel).induction with
+  | h a₀ ih =>
+  apply Acc.intro
+  intro c r
+  have ⟨c₀, eq⟩  := typein_surj _ _ (lt_trans r (typein_lt _ _))
+  subst eq
+  apply ih
+  apply typein_lt_typein_iff.mp r
+
+instance : @Relation.IsWellFounded Ordinal (· < ·) := ⟨lt_wf⟩
+instance : WellFoundedRelation Ordinal := ⟨_, lt_wf⟩
 
 end Ordinal
