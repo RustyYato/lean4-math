@@ -40,7 +40,7 @@ def ind₄ : {motive: Ordinal -> Ordinal -> Ordinal -> Ordinal -> Prop} -> (mk: 
   apply h
 def sound {a b: Pre} : a.rel ≃r b.rel -> ⟦a⟧ = ⟦b⟧ := Quotient.sound ∘ Nonempty.intro
 
-def Ordinal.type (rel: α -> α -> Prop) [Relation.IsWellOrder rel] := ⟦.mk _ rel⟧
+def type (rel: α -> α -> Prop) [Relation.IsWellOrder rel] := ⟦.mk _ rel⟧
 
 private
 def ulift_rel (r: α -> α -> Prop) (a b: ULift α) : Prop := r a.down b.down
@@ -60,7 +60,7 @@ def Pre.lift (a: Pre.{u}): Pre.{max u v} where
   ty := ULift a.ty
   rel := ulift_rel a.rel
 
-def Ordinal.lift : Ordinal -> Ordinal := by
+def lift : Ordinal -> Ordinal := by
   apply Quotient.lift (fun _ => ⟦_⟧) _
   exact Pre.lift
   intro a b ⟨eq⟩
@@ -151,5 +151,29 @@ instance : IsPartialOrder Ordinal where
     intro ⟨ab⟩ ⟨ba⟩
     apply sound
     apply InitialSegment.antisymm <;> assumption
+
+def Pre.ofNat (n: Nat) : Pre where
+  ty := Fin n
+  rel a b := a < b
+  wo := {
+    tri a b := by
+      rw [←Fin.val_inj]
+      exact Nat.lt_trichotomy a b
+    trans := Nat.lt_trans
+    wf := by
+      apply WellFounded.intro
+      intro ⟨a, aLt⟩
+      induction a using Nat.lt_wfRel.wf.induction with
+      | h a ih =>
+      apply Acc.intro
+      intro b lt
+      apply ih
+      assumption
+  }
+
+def Ordinal.ofNat (n: Nat) := ⟦Pre.ofNat n⟧
+
+instance : OfNat Pre n := ⟨(Pre.ofNat n).lift⟩
+instance : OfNat Ordinal n := ⟨(Ordinal.ofNat n).lift⟩
 
 end Ordinal
