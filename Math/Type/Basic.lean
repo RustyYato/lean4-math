@@ -98,6 +98,10 @@ def Equiv.refl : Equiv α α where
   leftInv _ := rfl
   rightInv _ := rfl
 
+def Embedding.trans (h: α ↪ β) (g: β ↪ γ) : α ↪ γ where
+  toFun := g ∘ h
+  inj := Function.Injective.comp g.inj h.inj
+
 @[symm]
 def Equiv.symm (h: Equiv α β) : Equiv β α where
   toFun := h.invFun
@@ -453,3 +457,5 @@ def Embedding.congr (emb: α ↪ β) (eqa: α ≃ α₀) (eqb: β ≃ β₀) : �
     apply Function.Injective.comp
     apply emb.inj
     apply eqa.invFun_inj
+
+def Embedding.congr_apply (emb: α ↪ β) (eqa: α ≃ α₀) (eqb: β ≃ β₀): (emb.congr eqa eqb) x = eqb (emb (eqa.symm x)) := rfl

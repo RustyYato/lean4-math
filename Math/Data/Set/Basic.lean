@@ -513,4 +513,17 @@ def has_min (r: α -> α -> Prop) (wf: WellFounded r) (s: Set α) (h: s.Nonempty
   intro y ymem
   exact (h ⟨y, ⟨ymem, ·⟩⟩)
 
+def range_comp {f: α -> β} {g: β -> γ} :
+  x ∈ Set.range f ->
+  g x ∈ Set.range (g ∘ f) := by
+  intro mem
+  apply Set.mem_range.mpr
+  obtain ⟨a', eq⟩  := Set.mem_range.mp mem
+  exact ⟨a', eq ▸ rfl⟩
+
+def mem_range' {f: α -> β} :
+  f x ∈ Set.range f := by
+  apply Set.mem_range.mpr
+  exists x
+
 end Set

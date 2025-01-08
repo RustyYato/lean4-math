@@ -94,6 +94,53 @@ instance : IsRelHom (r ↪r s) r s where
 instance : IsRelHom (r ≃r s) r s where
   resp_rel h _ _ := h.resp_rel.mp
 
+namespace RelHom
+
+def acc (f : r →r s) (a : α) : Acc s (f a) → Acc r a := by
+  generalize fa_def:f a = fa
+  intro acc
+  induction acc generalizing a with
+  | intro acc h ih =>
+  subst acc
+  apply Acc.intro
+  intro b rba
+  apply ih
+  apply f.resp_rel
+  assumption
+  rfl
+
+def wf (h: r →r s) [Relation.IsWellFounded s] : Relation.IsWellFounded r where
+  wf := ⟨fun x => h.acc x (Relation.acc s (h x))⟩
+
+def irrefl (h: s →r r) [Relation.IsIrrefl r] : Relation.IsIrrefl s where
+  irrefl rel := Relation.irrefl (h.resp_rel rel)
+
+end RelHom
+
+namespace RelEmbedding
+
+def refl : r ↪r r where
+  toEmbedding := .refl
+  resp_rel := Iff.rfl
+
+def trans (h: r ↪r s) (g: s ↪r t) : r ↪r t where
+  toEmbedding := Embedding.trans h.toEmbedding g.toEmbedding
+  resp_rel := Iff.trans h.resp_rel g.resp_rel
+
+def wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s where
+  toIsWellFounded := h.toRelHom.wf
+  trans := by
+    intro a b c ab bc
+    exact h.resp_rel.mpr <| Relation.trans (h.resp_rel.mp ab) (h.resp_rel.mp bc)
+  tri := by
+    intro a b
+    rcases Relation.trichotomous r (h a) (h b) with ab | eq | ba
+    left; exact h.resp_rel.mpr ab
+    right; left; exact h.inj eq
+    right; right; exact h.resp_rel.mpr ba
+
+end RelEmbedding
+
 namespace RelIso
 
 def inv_resp_rel (h: r ≃r s) : _root_.resp_rel s r h.invFun := by
@@ -120,29 +167,10 @@ def symm_coe (h: r ≃r s) (x: β) : h (h.symm x) = x := h.rightInv _
 
 end RelIso
 
-namespace RelHom
-
-def wf (h: s →r r) (wf: WellFounded r) : WellFounded s := by
-  apply WellFounded.intro
-  intro a
-  generalize ha:h.toFun a = a'
-  induction a' using wf.induction generalizing a with
-  | h a' g =>
-    apply Acc.intro
-    intro b sba
-    subst ha
-    apply g (h.toFun b) (h.resp_rel sba)
-    rfl
-
-def irrefl (h: s →r r) [Relation.IsIrrefl r] : Relation.IsIrrefl s where
-  irrefl rel := Relation.irrefl (h.resp_rel rel)
-
-end RelHom
-
 namespace RelIso
 
-def wf (h: s ≃r r) (wf: WellFounded r) : WellFounded s :=
-  h.toRelHom.wf wf
+def wf (h: s ≃r r) [Relation.IsWellFounded r] : Relation.IsWellFounded s :=
+  h.toRelHom.wf
 
 def irrefl (h: s ≃r r) [Relation.IsIrrefl r] : Relation.IsIrrefl s :=
   h.toRelHom.irrefl
@@ -163,5 +191,17 @@ def trans' (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r where
     exact h.inv_resp_rel.mp bc
 
 end RelIso
+
+def RelEmbedding.congr (eqr: r₀ ≃r r₁) (eqs: s₀ ≃r s₁) (h: r₀ ↪r s₀) : r₁ ↪r s₁ where
+  toEmbedding := h.toEmbedding.congr eqr.toEquiv eqs.toEquiv
+  resp_rel := by
+    intro a b
+    unfold Embedding.congr
+    dsimp
+    apply Iff.trans _ eqs.resp_rel
+    apply Iff.trans _ h.resp_rel
+    exact eqr.symm.resp_rel
+
+def RelEmbedding.congr_apply (emb: r₀ ↪r s₀) (eqa: r₀ ≃r r₁) (eqb: s₀ ≃r s₁): (emb.congr eqa eqb) x = eqb (emb (eqa.symm x)) := rfl
 
 end

@@ -30,6 +30,7 @@ class IsWellFounded: Prop where
   wf: WellFounded rel
 def wellFounded [inst: IsWellFounded rel] := inst.wf
 def wfInduction [inst: IsWellFounded rel] := @WellFounded.induction _ _ inst.wf
+def acc [inst: IsWellFounded rel] : ∀x, Acc rel x := (wellFounded rel).apply
 
 class IsTrans: Prop where
   trans: ∀{a b c}, rel a b -> rel b c -> rel a c
@@ -65,5 +66,11 @@ instance {r: β -> β -> Prop} (f: α -> β) [IsSymmetric r] : IsSymmetric (fun 
   symm := symm
 instance : IsSymmetric (fun x y: α => x ≠ y) where
   symm := Ne.symm
+
+/-- In a trichotomous irreflexive order, every element is determined by the set of predecessors. -/
+theorem extensional_of_trichotomous_of_irrefl (r : α → α → Prop) [IsTrichotomous r] [IsIrrefl r]
+    {a b : α} (H : ∀ x, r x a ↔ r x b) : a = b :=
+  ((@trichotomous _ r _ a b).resolve_left <| mt (H _).2 <| irrefl).resolve_right <| mt (H _).1
+    <| irrefl
 
 end Relation

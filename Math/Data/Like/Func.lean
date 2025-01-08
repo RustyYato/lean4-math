@@ -1,6 +1,7 @@
 import Math.Function.Basic
 import Math.Logic.Basic
 import Math.Type.Notation
+import Lean.Elab.Command
 
 class DFunLike (F: Sort*) (α: outParam Sort*) (β: outParam (α -> Sort*)) where
   coe: F -> ∀x, β x
@@ -10,6 +11,10 @@ abbrev FunLike (F: Sort*) (α β: outParam <| Sort*) := DFunLike F α (fun _ => 
 
 instance [DFunLike F α β] : CoeFun F (fun _ => ∀x, β x) where
   coe := DFunLike.coe
+
+run_cmd Lean.Elab.Command.liftTermElabM do
+  Lean.Meta.registerCoercion ``DFunLike.coe
+    (some { numArgs := 5, coercee := 4, type := .coeFun })
 
 namespace DFunLike
 
@@ -51,6 +56,5 @@ def comp (f: A -> B) (h: Function.Injective f) [fl: FunLike B α β] : FunLike A
     apply Function.Injective.comp
     apply fl.coe_inj
     assumption
-
 
 end FunLike
