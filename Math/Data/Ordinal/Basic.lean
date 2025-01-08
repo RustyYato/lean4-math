@@ -194,10 +194,7 @@ def typein_surj (r: α -> α -> Prop) [Relation.IsWellOrder r] : ∀o, o < type 
   case resp_rel =>
     exact lt.resp_rel
 
-def Pre.typein_lt (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (typein r a).rel ≺i r := by
-  apply PrincipalSegment.mk _ _
-  exact Subtype.relEmbed r
-  exists a
+def Pre.typein_top (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (Subtype.relEmbed r (P := fun x => r x a)).IsPrincipalTop a := by
   intro b
   apply Iff.intro
   intro h
@@ -208,11 +205,16 @@ def Pre.typein_lt (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (typein r
   subst eq
   assumption
 
+def Pre.typein_lt (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (typein r a).rel ≺i r := by
+  apply PrincipalSegment.mk _ _
+  exact Subtype.relEmbed r
+  exists a
+  apply Pre.typein_top
+
 def typein_lt (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (typein r a) < type r := by
   apply Nonempty.intro
   apply Pre.typein_lt
 
-open Classical in
 def typein_lt_typein_iff [Relation.IsWellOrder r] : typein r a < typein r b ↔ r a b := by
   have := (Subtype.relEmbed (P := fun x => r x b) r).wo
   have := (Subtype.relEmbed (P := fun x => r x a) r).wo
@@ -220,15 +222,7 @@ def typein_lt_typein_iff [Relation.IsWellOrder r] : typein r a < typein r b ↔ 
   · intro ⟨h⟩
     let rb_lt_r := Pre.typein_lt r b
     let ra_lt_r := Pre.typein_lt r a
-    have a_princ_top_ra_lt_r : ra_lt_r.IsPrincipalTop a := by
-      intro x
-      rw [Set.mem_range]
-      apply Iff.intro
-      intro g
-      exists ⟨x, g⟩
-      intro ⟨x', eq⟩
-      subst x
-      exact x'.property
+    have a_princ_top_ra_lt_r : ra_lt_r.IsPrincipalTop a := Pre.typein_top _ _
     let ra_lt_r' := PrincipalSegment.trans h rb_lt_r
     have : ra_lt_r = ra_lt_r' := Subsingleton.allEq _ _
     rw [this] at a_princ_top_ra_lt_r
@@ -258,6 +252,87 @@ def typein_lt_typein_iff [Relation.IsWellOrder r] : typein r a < typein r b ↔ 
     cases eq
     assumption
 
+def typein_inj (r: α -> α -> Prop) [Relation.IsWellOrder r] : Function.Injective (typein r) := by
+  intro x y eq
+  replace ⟨eq⟩ := Quotient.exact eq
+  dsimp [Pre.typein] at eq
+  apply PrincipalSegment.top_unique (t := r)
+  assumption
+  case f =>
+    apply PrincipalSegment.mk (Subtype.relEmbed _)
+    exists x
+    apply Pre.typein_top _ _
+  case g =>
+    apply PrincipalSegment.mk (Subtype.relEmbed _)
+    exists y
+    apply Pre.typein_top _ _
+  case a =>
+    apply Pre.typein_top _ _
+  case a =>
+    apply Pre.typein_top _ _
+
+def typein_congr {r: α -> α -> Prop} {s: β -> β -> Prop} [Relation.IsWellOrder r] [Relation.IsWellOrder s] {a: α}
+  (eq: r ≃r s) : typein s (eq a) = typein r a := by
+  apply sound
+  unfold Pre.typein
+  dsimp
+  refine ⟨⟨?_, ?_, ?_, ?_⟩ , ?_⟩
+  intro ⟨x, sx⟩
+  refine ⟨eq.symm x, ?_⟩
+  rw [←eq.coe_symm a]
+  apply eq.inv_resp_rel.mp
+  assumption
+  intro ⟨x, rx⟩
+  refine ⟨eq x, ?_⟩
+  apply eq.resp_rel.mp
+  assumption
+  intro ⟨x, sx⟩
+  dsimp; congr
+  rw [eq.symm_coe]
+  intro ⟨x, sx⟩
+  dsimp; congr
+  rw [eq.coe_symm]
+  exact eq.symm.resp_rel
+
+def typein_congr_initial {r: α -> α -> Prop} {s: β -> β -> Prop} [rwo: Relation.IsWellOrder r] [swo: Relation.IsWellOrder s]
+  (init: r ≼i s) {a: α} : typein s (init a) = typein r a := by
+  apply sound; symm
+  unfold Pre.typein
+  dsimp
+  refine ⟨⟨?_, ?_, ?_, ?_⟩ , ?_⟩
+  intro ⟨x, rxa⟩
+  refine ⟨?_, ?_⟩
+  exact init x
+  apply init.resp_rel.mp
+  assumption
+  intro ⟨x, sx⟩
+  have mem := Set.mem_range.mp <| init.isInitial _ _ sx
+  refine ⟨?_, ?_⟩
+  exact Classical.choose mem
+  apply init.resp_rel.mpr
+  show s (init _) (init _)
+  have : x = init _ := Classical.choose_spec mem
+  rw [←this]
+  assumption
+  · intro ⟨x, rxa⟩
+    dsimp
+    congr
+    have mem := Set.mem_range.mp <| init.isInitial _ _ (init.resp_rel.mp rxa)
+    apply init.inj
+    exact (Classical.choose_spec mem).symm
+  · intro ⟨x, sxa⟩
+    dsimp
+    have mem := Set.mem_range.mp <| init.isInitial _ _ sxa
+    congr
+    exact (Classical.choose_spec mem).symm
+  exact init.resp_rel
+
+def typein_inj_initial {r: α -> α -> Prop} {s: β -> β -> Prop} [Relation.IsWellOrder r] [Relation.IsWellOrder s] {a: α} {b: β}
+  (init: r ≼i s) : typein r a = typein s b -> b = init a := by
+  intro eq
+  rw [←typein_congr_initial init] at eq
+  exact (typein_inj _ eq).symm
+
 def lt_wf : @WellFounded Ordinal (· < ·) := by
   apply WellFounded.intro
   intro a
@@ -279,5 +354,142 @@ def lt_wf : @WellFounded Ordinal (· < ·) := by
 
 instance : @Relation.IsWellFounded Ordinal (· < ·) := ⟨lt_wf⟩
 instance : WellFoundedRelation Ordinal := ⟨_, lt_wf⟩
+
+def Pre.minType (a b: Pre) := { x: a.ty × b.ty // Ordinal.typein a.rel x.fst = Ordinal.typein b.rel x.snd }
+
+def Pre.minTypeRelEmbed : (fun x y: Pre.minType a b => a.rel x.val.fst y.val.fst) ↪r a.rel where
+  toFun x := x.val.fst
+  resp_rel := Iff.rfl
+  inj := by
+    intro ⟨⟨x₀, x₁⟩, xordeq⟩ ⟨⟨y₀, y₁⟩, yordeq⟩ eq
+    dsimp at eq
+    cases eq
+    congr
+    dsimp at xordeq
+    dsimp at yordeq
+    exact typein_inj _ <| xordeq.symm.trans yordeq
+
+def Pre.min (a b: Pre) : Pre where
+  ty := minType a b
+  rel x y := a.rel x.val.fst y.val.fst
+  wo := Pre.minTypeRelEmbed.wo
+
+def Pre.min.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd:  b.rel ≃r d.rel): (a.min b).rel ≃r (c.min d).rel where
+  toFun | ⟨⟨a₀, b₀⟩, ordeq⟩ => ⟨⟨ac a₀, bd b₀⟩, by
+    dsimp at *
+    rw [typein_congr, typein_congr]
+    assumption⟩
+  invFun | ⟨⟨c₀, d₀⟩, ordeq⟩ => ⟨⟨ac.symm c₀, bd.symm d₀⟩, by
+    dsimp at *
+    rw [typein_congr, typein_congr]
+    assumption⟩
+  leftInv := by
+    intro ⟨⟨a₀, b₀⟩, ordeq⟩
+    dsimp
+    congr
+    rw [ac.coe_symm]
+    rw [bd.coe_symm]
+  rightInv := by
+    intro ⟨⟨c₀, d₀⟩, ordeq⟩
+    dsimp
+    congr
+    rw [ac.symm_coe]
+    rw [bd.symm_coe]
+  resp_rel := by
+    intro ⟨⟨a₀, b₀⟩, ordeq₀⟩ ⟨⟨a₁, b₁⟩, ordeq₁⟩
+    exact ac.resp_rel
+
+def min' : Ordinal -> Ordinal -> Ordinal := by
+  apply Quotient.lift₂ (fun a b => ⟦a.min b⟧)
+  intro a b c d ⟨ac⟩ ⟨bd⟩
+  apply sound
+  apply Pre.min.spec <;> assumption
+
+instance : Min Ordinal := ⟨min'⟩
+
+def min_comm' (a b: Ordinal) : min a b = min' b a := by
+  induction a, b using ind₂ with | mk a b =>
+  apply sound
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  intro ⟨⟨a₀, b₀⟩, ordeq⟩
+  exact ⟨⟨b₀, a₀⟩, ordeq.symm⟩
+  intro ⟨⟨b₀, a₀⟩, ordeq⟩
+  exact ⟨⟨a₀, b₀⟩, ordeq.symm⟩
+  intro ⟨⟨a₀, b₀⟩, ordeq⟩
+  rfl
+  intro ⟨⟨b₀, a₀⟩, ordeq⟩
+  rfl
+  intro ⟨⟨a₀, b₀⟩, ordeq₀⟩ ⟨⟨a₁, b₁⟩, ordeq₁⟩
+  dsimp
+  unfold Pre.min
+  dsimp
+  dsimp at ordeq₀ ordeq₁
+  apply Iff.intro
+  intro ha
+  have := typein_lt_typein_iff.mpr ha
+  rw [ordeq₀, ordeq₁] at this
+  apply typein_lt_typein_iff.mp
+  assumption
+  intro hb
+  have := typein_lt_typein_iff.mpr hb
+  rw [←ordeq₀, ←ordeq₁] at this
+  apply typein_lt_typein_iff.mp
+  assumption
+
+def min_eq_left_iff {a b: Ordinal} : a ≤ b ↔ min a b = a := by
+  induction a, b using ind₂ with | mk a b =>
+  apply Iff.intro
+  · intro ⟨h⟩
+    apply sound
+    refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+    intro ⟨x, _⟩
+    exact x.fst
+    intro a₀
+    refine ⟨⟨a₀, h a₀⟩, ?_⟩
+    dsimp
+    symm
+    apply typein_congr_initial
+    intro ⟨⟨a₀, b₀⟩, g⟩
+    dsimp; congr
+    dsimp at g
+    exact (typein_inj_initial h g).symm
+    intro x
+    rfl
+    rfl
+  · intro h
+    rw [←h, min_comm']
+    clear h
+    apply Nonempty.intro
+    refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+    intro x
+    exact x.val.fst
+    intro x y eq
+    dsimp at eq
+    have : x.val.snd = y.val.snd := by
+      apply typein_inj a.rel
+      rw [←x.property, ←y.property, eq]
+    exact Subtype.embed.inj <| Prod.ext eq this
+    rfl
+    intro x y h
+    replace h : b.rel y x.val.fst := h
+    apply Set.mem_range.mpr
+    have ⟨g⟩ := Quotient.exact x.property
+    refine ⟨⟨⟨y, (g ⟨_, h⟩).val⟩, ?_⟩, ?_⟩
+    dsimp
+    have: typein _ (g ⟨y, h⟩) = typein (Pre.typein _ _).rel (Subtype.mk y h) := typein_congr_initial g.toInitial
+    let ainit := Subtype.initalSegment a.rel (P := fun y => a.rel y x.val.snd) <| by
+      intro a₀ a₁
+      exact flip Relation.trans
+    let binit := Subtype.initalSegment b.rel (P := fun y => b.rel y x.val.fst) <| by
+      intro a₀ a₁
+      exact flip Relation.trans
+    have awo := ainit.wo
+    have bwo := binit.wo
+    have : typein b.rel y = _ := typein_congr_initial binit (rwo := inferInstance) (swo := inferInstance) (a := ⟨y, h⟩)
+    rw [this]; clear this
+    have : typein a.rel (g ⟨y, h⟩).val  = _ := typein_congr_initial ainit (rwo := inferInstance) (swo := inferInstance) (a := (g ⟨y, h⟩))
+    rw [this]; clear this
+    exact (typein_congr g (a := ⟨y, h⟩) (r := (Pre.typein b.rel _).rel)).symm
+    rfl
 
 end Ordinal

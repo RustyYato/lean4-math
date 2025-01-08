@@ -276,3 +276,40 @@ def top_of_lt_of_lt_of_le
   apply Set.mem_range'
 
 end PrincipalSegment
+
+namespace RelIso
+
+def toInitial (h: r ≃r s) : r ≼i s where
+  toRelEmbedding := h.toRelEmbedding
+  isInitial := by
+    intros a b sb
+    apply Set.mem_range.mpr
+    refine ⟨h.symm b, ?_⟩
+    show _ = h (h.symm _)
+    rw [h.symm_coe]
+
+def toInitial_inj : Function.Injective (toInitial (r := r) (s := s)) := by
+  intro ⟨x, _⟩ ⟨y, _⟩ eq
+  congr
+  have : x.toFun = y.toFun := Embedding.mk.inj (RelEmbedding.mk.inj (InitialSegment.mk.inj eq))
+  apply Equiv.toFun_inj'
+  exact this
+
+instance [IsWellOrder s] : Subsingleton (r ≃r s) where
+  allEq := by
+    intro a b
+    apply toInitial_inj
+    apply Subsingleton.allEq
+
+end RelIso
+
+def Subtype.initalSegment {P: α -> Prop} (r: α -> α -> Prop) (h: ∀x y, P x -> r y x -> P y) : (fun a b: Subtype P => r a b) ≼i r where
+  toRelEmbedding := Subtype.relEmbed _
+  isInitial := by
+    intro ⟨x, Px⟩ y ryx
+    replace ryx : r y x := ryx
+    apply Set.mem_range.mpr
+    refine ⟨⟨y, ?_⟩, rfl⟩
+    apply h
+    assumption
+    assumption

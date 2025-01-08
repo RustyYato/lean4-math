@@ -126,6 +126,28 @@ instance [IsEmpty α] : Embedding α β where
 def Equiv.coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
 def Equiv.symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
 
+def Equiv.symm_inj : Function.Injective (Equiv.symm (α := α) (β := β)) := by
+  intro x y eq
+  have : x.symm.symm = y.symm.symm := by rw [eq]
+  exact this
+
+def Equiv.toFun_inj' : Function.Injective (Equiv.toFun (α := α) (β := β)) := by
+  intro x y eq
+  suffices x.invFun = y.invFun by
+    cases x; cases y
+    congr
+  funext z
+  have : (x.toFun (x.invFun z)) = (y.toFun (y.invFun z)) := by
+    rw [x.rightInv, y.rightInv]
+  rw [eq] at this
+  exact y.toFun_inj this
+
+def Equiv.invFun_inj' : Function.Injective (Equiv.invFun (α := α) (β := β)) := by
+  intro x y eq
+  apply Equiv.symm_inj
+  apply Equiv.toFun_inj'
+  assumption
+
 def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x = f := by
   have ⟨finv, finvdef⟩ := b.Surjective.exists_inv
   refine ⟨?_, ?_⟩
