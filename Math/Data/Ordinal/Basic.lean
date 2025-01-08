@@ -1,6 +1,8 @@
 import Math.Relation.Basic
 import Math.Relation.RelIso
 import Math.Tactics.PPWithUniv
+import Math.Relation.Segments
+import Math.Order.Linear
 
 namespace Ordinal
 
@@ -50,7 +52,7 @@ def ulift_rel_equiv (r: α -> α -> Prop) : r ≃r ulift_rel r where
 
 private
 instance (r: α -> α -> Prop) [Relation.IsWellOrder r] : Relation.IsWellOrder (ulift_rel r) where
-  wf := (ulift_rel_equiv _).symm.wf (Relation.wellFounded _)
+  toIsWellFounded := (ulift_rel_equiv _).symm.wf
   toIsTrichotomous := (ulift_rel_equiv _).tri
   toIsTrans := (ulift_rel_equiv _).trans'
 
@@ -66,5 +68,88 @@ def Ordinal.lift : Ordinal -> Ordinal := by
   apply RelIso.trans (ulift_rel_equiv _).symm
   apply RelIso.trans _ (ulift_rel_equiv _)
   assumption
+
+instance : LE Ordinal.{u} where
+  le := by
+    refine Quotient.lift₂ ?_ ?_
+    intro ⟨a, ar, arwo⟩ ⟨b, br, brwo⟩
+    exact Nonempty (ar ≼i br)
+    suffices ∀a b c d: Pre.{u}, a.rel ≃r c.rel -> b.rel ≃r d.rel -> a.rel ≼i b.rel -> c.rel ≼i d.rel by
+      intro a b c d ⟨ac⟩ ⟨bd⟩
+      dsimp
+      apply propext
+      apply Iff.intro
+      intro ⟨ab⟩
+      apply Nonempty.intro
+      apply this <;> assumption
+      intro ⟨ab⟩
+      apply Nonempty.intro
+      apply this _ _ _ _ _ _ ab <;> (symm; assumption)
+    intro a b c d ac bd ab
+    apply InitialSegment.congr <;> assumption
+
+instance : LT Ordinal.{u} where
+  lt := by
+    refine Quotient.lift₂ ?_ ?_
+    intro ⟨a, ar, arwo⟩ ⟨b, br, brwo⟩
+    exact Nonempty (ar ≺i br)
+    suffices ∀a b c d: Pre.{u}, a.rel ≃r c.rel -> b.rel ≃r d.rel -> a.rel ≺i b.rel -> c.rel ≺i d.rel by
+      intro a b c d ⟨ac⟩ ⟨bd⟩
+      dsimp
+      apply propext
+      apply Iff.intro
+      intro ⟨ab⟩
+      apply Nonempty.intro
+      apply this <;> assumption
+      intro ⟨ab⟩
+      apply Nonempty.intro
+      apply this _ _ _ _ _ _ ab <;> (symm; assumption)
+    intro a b c d ac bd ab
+    apply PrincipalSegment.congr <;> assumption
+
+instance : IsPartialOrder Ordinal where
+  lt_iff_le_and_not_le := by
+    intro a b
+    induction a, b using ind₂ with | mk a b =>
+    show Nonempty _ ↔ Nonempty _ ∧ ¬Nonempty _
+    apply Iff.intro
+    intro ⟨h⟩
+    apply And.intro ⟨h⟩
+    intro ⟨g⟩
+    have := InitialSegment.antisymm h g
+    exact elim_empty <| h.congr this (RelIso.refl (rel := b.rel))
+    intro ⟨⟨h⟩, g⟩
+    rcases h.eqv_or_principal with surj | has_top
+    have ⟨eqv, eq⟩  := Equiv.ofBij ⟨h.inj, surj⟩
+    replace eq : eqv.toFun = h.toFun := eq
+    have : a.rel ≃r b.rel := by
+      refine ⟨eqv, ?_⟩
+      unfold resp_rel
+      intro x₀ x₁
+      rw [eq]
+      exact h.resp_rel
+    exfalso
+    apply g
+    apply Nonempty.intro
+    apply h.congr
+    assumption
+    symm; assumption
+    apply Nonempty.intro
+    refine ⟨h.toRelEmbedding, ?_⟩
+    assumption
+  le_refl a := by
+    induction a using ind
+    exact ⟨InitialSegment.refl _⟩
+  le_trans := by
+    intro a b c
+    induction a, b, c using ind₃
+    intro ⟨ab⟩ ⟨bc⟩
+    exact ⟨ab.trans bc⟩
+  le_antisymm := by
+    intro a b
+    induction a, b using ind₂
+    intro ⟨ab⟩ ⟨ba⟩
+    apply sound
+    apply InitialSegment.antisymm <;> assumption
 
 end Ordinal

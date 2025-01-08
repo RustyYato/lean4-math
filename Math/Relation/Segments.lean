@@ -207,4 +207,14 @@ instance [IsWellOrder s] : Subsingleton (r ≺i s) where
     apply coe_initial_seg_inj
     apply Subsingleton.allEq
 
+theorem irrefl {r : α → α → Prop} [IsWellOrder r] (f : r ≺i r) : False := by
+  have ⟨top, lt_top⟩ := f.exists_top
+  have h := (lt_top top).trans Set.mem_range
+  have : f top = top := InitialSegment.eq (↑f) (InitialSegment.refl r) top
+  have := h.mpr ⟨_, this.symm⟩
+  exact (wellFounded r).irrefl this
+
+instance (r : α → α → Prop) [IsWellOrder r] : IsEmpty (r ≺i r) :=
+  ⟨fun f => f.irrefl⟩
+
 end PrincipalSegment
