@@ -501,4 +501,16 @@ def empty_image : (∅: Set α).image f = ∅ := by
   have ⟨_, _, _⟩  := mem_image.mp h
   contradiction
 
+def has_min (r: α -> α -> Prop) (wf: WellFounded r) (s: Set α) (h: s.Nonempty):
+  ∃x ∈ s, ∀y ∈ s, ¬r y x := by
+  obtain ⟨x, mem⟩ := h
+  induction x using wf.induction with
+  | h x ih =>
+  by_cases h:∃y ∈ s, r y x
+  obtain ⟨y, y_in_s, ryx⟩ := h
+  exact ih y ryx y_in_s
+  refine ⟨x, mem, ?_⟩
+  intro y ymem
+  exact (h ⟨y, ⟨ymem, ·⟩⟩)
+
 end Set
