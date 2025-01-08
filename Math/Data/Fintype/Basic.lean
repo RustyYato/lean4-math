@@ -135,3 +135,28 @@ def Fintype.existsEmbedding_iff_card_le [Fintype α] [Fintype β] [DecidableEq �
   assumption
   apply Fintype.equivFin.symm
   apply Fintype.equivFin.symm
+
+private def List.collectNonempty [DecidableEq α] {β: α -> Sort*}
+  (f: ∀x: α, Nonempty (β x)) : ∀as: List α, Nonempty (∀x: α, x ∈ as -> β x) := by
+  intro as
+  induction as with
+  | nil => exact ⟨nofun⟩
+  | cons a as ih =>
+    obtain ⟨ih⟩ := ih
+    obtain ⟨fa⟩ := f a
+    refine ⟨?_⟩
+    intro x mem
+    refine if h:x = a then ?_ else ?_
+    rw [h]
+    assumption
+    apply ih
+    cases mem
+    contradiction
+    assumption
+
+def Fintype.axiomOfChoice [DecidableEq α] {β: α -> Sort*} [fs: Fintype α] (f: ∀x: α, Nonempty (β x)) : Nonempty (∀x, β x) := by
+  have ⟨f'⟩ := List.collectNonempty f fs.all
+  refine ⟨?_⟩
+  intro x
+  apply f'
+  apply fs.complete

@@ -53,6 +53,16 @@ def encode_inj [Encodable α] : Function.Injective (encode (α := α)) := by
 
 namespace Encodable
 
+instance (priority := 100) [Encodable α] : DecidableEq α :=
+  fun a b =>
+  if h:encode a = encode b then
+    .isTrue (encode_inj h)
+  else
+    .isFalse fun g => h (g ▸ rfl)
+
+-- the type of natural numbers which are in the range of `encode`
+def Encoding (α: Type*) [Encodable α] := { x: Nat // ∃a: α, encode a = x }
+
 def Embedding [Encodable α] : α ↪ Nat where
   toFun := encode
   inj := encode_inj
