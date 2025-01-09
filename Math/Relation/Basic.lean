@@ -73,4 +73,7 @@ theorem extensional_of_trichotomous_of_irrefl (r : α → α → Prop) [IsTricho
   ((@trichotomous _ r _ a b).resolve_left <| mt (H _).2 <| irrefl).resolve_right <| mt (H _).1
     <| irrefl
 
+
+def asymm [IsTrans r] [IsIrrefl r] : r a b -> r b a -> False := fun h g => irrefl (trans h g)
+
 end Relation

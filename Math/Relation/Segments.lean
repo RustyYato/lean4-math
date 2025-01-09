@@ -3,7 +3,7 @@ import Math.Data.Set.Basic
 
 open Relation
 
-variable {r: α -> α -> Prop} {s: β -> β -> Prop} {t: γ -> γ -> Prop}
+variable {α β: Type*} {r: α -> α -> Prop} {s: β -> β -> Prop} {t: γ -> γ -> Prop}
 
 def RelEmbedding.IsPrincipalTop (h: r ↪r s) (top: β): Prop := ∀b: β, s b top ↔ b ∈ Set.range h
 

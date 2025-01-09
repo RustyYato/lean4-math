@@ -3,7 +3,7 @@ import Math.Relation.Basic
 
 section
 
-variable {α β γ: Type*} (r: α -> α -> Prop) (s: β -> β -> Prop)
+variable {α β γ: Sort*} (r: α -> α -> Prop) (s: β -> β -> Prop)
 
 abbrev resp_rel (toFun: α -> β) := ∀{a b: α}, r a b ↔ s (toFun a) (toFun b)
 
@@ -12,7 +12,7 @@ structure RelHom where
   resp_rel: ∀{a b: α}, r a b -> s (toFun a) (toFun b)
 
 class IsRelHom
-  (F: Type*) {α β: Type*}
+  (F: Sort*) {α β: Sort*}
   (r: outParam <| α -> α -> Prop) (s: outParam <| β -> β -> Prop)
   [FunLike F α β]: Prop where
   resp_rel (f: F): ∀a b, r a b -> s (f a) (f b)
@@ -217,3 +217,7 @@ def Subtype.relEmbed {P: α -> Prop} (r: α -> α -> Prop) : (fun a b: Subtype P
 def ULift.relIso (r: α -> α -> Prop) : (fun a b: ULift α => r a.down b.down) ≃r r where
   toEquiv := ULift.equiv
   resp_rel := Iff.rfl
+
+def empty_reliso_empty {α β: Sort*} [IsEmpty α] [IsEmpty β] (r: α -> α -> Prop) (s: β -> β -> Prop) : r ≃r s where
+  toEquiv := empty_equiv_empty _ _
+  resp_rel {x} := (elim_empty x).elim
