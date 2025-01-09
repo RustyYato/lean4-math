@@ -658,4 +658,16 @@ def right_le_add (a b: Ordinal) : b ≤ a + b := by
   cases h
   assumption
 
+instance : IsLinearOrder Ordinal where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le
+  le_antisymm := le_antisymm
+  le_trans := le_trans
+  lt_or_le := by
+    intro a b
+    rcases le_total_of_le (a + b) a b (left_le_add _ _) (right_le_add _ _) with ab | ba
+    rcases lt_or_eq_of_le ab with ab | eq
+    left; assumption
+    right; rw [eq]
+    right; assumption
+
 end Ordinal
