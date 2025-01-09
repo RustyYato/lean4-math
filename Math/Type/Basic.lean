@@ -492,6 +492,9 @@ def Subtype.embed {P: α -> Prop} : Subtype P ↪ α where
     cases a; cases b
     congr
 
+def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) :=
+  Subtype.embed.inj
+
 def empty_equiv_empty (α β: Sort*) [IsEmpty α] [IsEmpty β] : α ≃ β where
   toFun x := (elim_empty x).elim
   invFun x := (elim_empty x).elim

@@ -1,6 +1,7 @@
 import Math.Type.Basic
 import Math.Function.Basic
 import Math.Order.Dual
+import Math.Relation.Basic
 
 class SUnion (α: Type*) (β: outParam <| Type*) where
   sUnion : α -> β
@@ -525,5 +526,25 @@ def mem_range' {f: α -> β} :
   f x ∈ Set.range f := by
   apply Set.mem_range.mpr
   exists x
+
+section min_elem
+
+variable (r: α -> α -> Prop) [Relation.IsWellFounded r]
+variable {s: Set α} (h: s.Nonempty)
+
+def exists_min_elem:
+  ∃x ∈ s, ∀y ∈ s, ¬r y x := by
+  obtain ⟨x, mem, spec⟩ := Relation.exists_min r h
+  refine ⟨x, mem, ?_⟩
+  intro y y_in_s ryx
+  apply spec
+  assumption
+  assumption
+
+noncomputable def min := Classical.choose (exists_min_elem r h)
+noncomputable def min_mem : min r h ∈ s := (Classical.choose_spec (exists_min_elem r h)).left
+noncomputable def not_lt_min : ∀y ∈ s, ¬r y (min r h) := (Classical.choose_spec (exists_min_elem r h)).right
+
+end min_elem
 
 end Set

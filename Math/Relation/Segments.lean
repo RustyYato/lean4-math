@@ -139,6 +139,90 @@ def congr (eqr: r₀ ≃r r₁) (eqs: s₀ ≃r s₁) (g: r₀ ≼i s₀): r₁ 
     rw [RelEmbedding.congr_apply]
     rw [eqr.coe_symm, ←eq, eqs.symm_coe]
 
+section collapse
+
+private noncomputable
+def collapse_helper [IsWellOrder s] (f: r ↪r s) : ∀ a, { b // ¬s (f a) b } := by
+  refine f.toRelHom.wf.wf.fix fun a ih => ?_
+  let S := Set.mk fun b => ∀a₀ h, s (ih a₀ h).1 b
+  have : f a ∈ S := by
+    intro a' h
+    have := (ih a' h).property
+    rcases Relation.trichotomous s (ih a' h) (f a) with s' | eq | s'
+    assumption
+    rw [eq] at this
+    have : ¬r a' a := (this <| f.resp_rel.mp ·)
+    contradiction
+    exfalso
+    apply this
+    apply Relation.trans _ s'
+    apply f.resp_rel.mp
+    assumption
+  have g: S.Nonempty := ⟨_, this⟩
+  refine ⟨S.min s g, ?_⟩
+  apply Set.not_lt_min s g
+  assumption
+
+private
+def collapse_helper_lt [IsWellOrder s] (f: r ↪r s) :
+∀a a', r a' a -> s (collapse_helper f a') (collapse_helper f a) := by
+  intro a
+  show (collapse_helper f a).1 ∈ Set.mk fun b => ∀ (a') (_ : r a' a), s (collapse_helper f a').1 b
+  unfold collapse_helper; rw [WellFounded.fix_eq]
+  dsimp only; apply Set.min_mem
+
+private
+theorem collapse_helper_not_lt [IsWellOrder s] (f : r ↪r s) (a : α) {b}
+    (h : ∀ a' (_ : r a' a), s (collapse_helper f a').1 b) : ¬s b (collapse_helper f a).1 := by
+  unfold collapse_helper; rw [WellFounded.fix_eq]
+  dsimp only
+  exact Set.not_lt_min _ _ _ h
+
+def collapse [IsWellOrder s] (f: Nonempty (r ↪r s)) : Nonempty (r ≼i s) := by
+  obtain ⟨f⟩ := f
+  have := f.wo
+  refine ⟨⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩⟩
+  intro a
+  exact (collapse_helper f a).val
+  intro x y eq
+  dsimp at eq
+  apply eq_of_not_lt_or_gt r
+  intro h
+  have := collapse_helper_lt f _ _ h
+  rw [eq] at this
+  exact irrefl this
+  intro h
+  have := collapse_helper_lt f _ _ h
+  rw [eq] at this
+  exact irrefl this
+  intro a b
+  dsimp
+  apply Iff.intro
+  apply collapse_helper_lt
+  intro h
+  rcases trichotomous r a b with ab | eq | ba
+  assumption
+  rw [eq] at h
+  exact (irrefl h).elim
+  exact (asymm h <| collapse_helper_lt _ _ _ ba).elim
+  intro a b h
+  replace h : s _ (collapse_helper _ _).val := h
+  apply Set.mem_range.mpr
+  show ∃_, _ = (collapse_helper _ _).val
+  let S := Set.mk fun a => ¬s (collapse_helper f a).val b
+  have : S.Nonempty := ⟨_, asymm h⟩
+  have ⟨a', a'_inS, a'_min⟩ := S.exists_min_elem r this
+  exists a'
+  apply flip (eq_of_not_lt_or_gt s _ _)
+  assumption
+  apply collapse_helper_not_lt
+  intro x rxa
+  apply Classical.byContradiction
+  intro g
+  apply a'_min _ g rxa
+
+end collapse
+
 end InitialSegment
 
 namespace PrincipalSegment
