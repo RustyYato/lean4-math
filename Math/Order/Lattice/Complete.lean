@@ -17,12 +17,7 @@ class IsCompleteSemiLatticeInf extends IsSemiLatticeInf α: Prop where
 
 export IsCompleteSemiLatticeInf (sInf_le le_sInf)
 
-class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α: Prop where
-  le_top: ∀x: α, x ≤ ⊤
-  bot_le: ∀x: α, ⊥ ≤ x
-
-export IsCompleteLattice (le_top bot_le)
-attribute [simp] bot_le le_top
+class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, LawfulBot α, LawfulTop α: Prop where
 
 instance [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (OrderDual α) where
   le_sSup := sInf_le (α := α)
@@ -253,14 +248,14 @@ def sSup_eq_bot : sSup s = ⊥ ↔ ∀x ∈ s, x = ⊥ := by
   rw [←h]
   apply le_sSup
   assumption
-  simp
+  apply bot_le
   intro h
   apply le_antisymm
   apply sSup_le
   intro x g
   rw [h x]
   assumption
-  simp
+  apply bot_le
 
 def sInf_eq_top : sInf s = ⊤ ↔ ∀x ∈ s, x = ⊤ :=
   sSup_eq_bot (α₀ := OrderDual α₀)
