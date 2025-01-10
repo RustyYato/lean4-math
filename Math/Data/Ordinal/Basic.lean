@@ -629,7 +629,7 @@ def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b �
   left; rw [eq]
   right; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
 
-def left_le_add (a b: Ordinal) : a ≤ a + b := by
+def le_add_left (a b: Ordinal) : a ≤ a + b := by
   induction a, b using ind₂ with | mk a b =>
   apply Nonempty.intro
   refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
@@ -645,7 +645,7 @@ def left_le_add (a b: Ordinal) : a ≤ a + b := by
   cases h
   apply Set.mem_range'
 
-def right_le_add (a b: Ordinal) : b ≤ a + b := by
+def le_add_right (a b: Ordinal) : b ≤ a + b := by
   induction a, b using ind₂ with | mk a b =>
   apply InitialSegment.collapse
   refine ⟨?_⟩
@@ -664,7 +664,7 @@ instance : IsLinearOrder Ordinal where
   le_trans := le_trans
   lt_or_le := by
     intro a b
-    rcases le_total_of_le (a + b) a b (left_le_add _ _) (right_le_add _ _) with ab | ba
+    rcases le_total_of_le (a + b) a b (le_add_left _ _) (le_add_right _ _) with ab | ba
     rcases lt_or_eq_of_le ab with ab | eq
     left; assumption
     right; rw [eq]
@@ -1159,5 +1159,123 @@ instance : IsLinearMinMaxOrder Ordinal where
    max_iff_le_right := by
     intro a b
     apply (max_eq_left_iff _ _).symm
+
+def add_zero (o: Ordinal) : o + 0 = o := by
+  cases o with | mk o =>
+  apply sound
+  symm
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  exact .inl
+  intro x
+  match x with
+  | .inl x => exact x
+  | .inr x => exact (elim_empty x).elim
+  intro; rfl
+  intro x
+  cases x
+  rfl
+  dsimp
+  contradiction
+  dsimp
+  intro x y
+  apply Iff.intro
+  apply Sum.Lex.inl
+  intro h
+  cases h
+  assumption
+
+def zero_add (o: Ordinal) : 0 + o = o := by
+  cases o with | mk o =>
+  apply sound
+  symm
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  exact .inr
+  intro x
+  match x with
+  | .inr x => exact x
+  | .inl x => exact (elim_empty x).elim
+  intro; rfl
+  intro x
+  cases x
+  dsimp
+  contradiction
+  rfl
+  dsimp
+  intro x y
+  apply Iff.intro
+  apply Sum.Lex.inr
+  intro h
+  cases h
+  assumption
+
+def IsLimitOrdinal (o: Ordinal) := ∀x, x + 1 ≠ o
+
+def lt_succ_self (a: Ordinal) : a < a + 1 := by
+  cases a with | mk a =>
+  refine ⟨⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩⟩
+  exact .inl
+  apply Sum.inl.inj
+  intro a b
+  apply Iff.intro
+  exact Sum.Lex.inl
+  intro h; cases h; assumption
+  refine ⟨?_, ?_⟩
+  unfold Pre.ofNat
+  exact .inr ⟨0⟩
+  intro x
+  rw [Set.mem_range]
+  apply Iff.intro
+  intro h
+  cases h
+  contradiction
+  refine ⟨_, rfl⟩
+  intro ⟨a, eq⟩
+  subst x
+  apply Sum.Lex.sep
+
+def lt_of_succ_le (a b: Ordinal) : a + 1 ≤ b -> a < b := by
+  intro h
+  apply lt_of_le_of_ne
+  apply le_trans _ h
+  apply le_add_left
+  intro g
+  rw [g] at h
+  exact lt_irrefl <| lt_of_lt_of_le (lt_succ_self _) h
+
+@[induction_eliminator]
+def transfiniteInduction
+  {motive: Ordinal -> Prop}
+  (limit: ∀o, o.IsLimitOrdinal -> (∀x < o, motive x) -> motive o)
+  (succ: ∀o, motive o -> motive (o+1)) (o: Ordinal):  motive o := by
+  by_cases h:∃x, x + 1 = o
+  have := succ _ (transfiniteInduction limit succ (Classical.choose h))
+  rw [Classical.choose_spec h] at this
+  exact this
+  apply limit
+  exact not_exists.mp h
+  intro _ _
+  apply transfiniteInduction limit succ
+termination_by o
+decreasing_by
+  apply lt_of_succ_le
+  rw [Classical.choose_spec h]
+  assumption
+
+def transfiniteInduction'
+  {motive: Ordinal -> Prop}
+  (zero: motive 0)
+  (limit: ∀o, 0 < o -> o.IsLimitOrdinal -> (∀x < o, motive x) -> motive o)
+  (succ: ∀o, motive o -> motive (o+1)) (o: Ordinal):  motive o := by
+  induction o with
+  | limit o olim ih =>
+    by_cases h:o=0
+    rw [h]; exact zero
+    apply limit
+    apply lt_of_le_of_ne
+    apply zero_le
+    symm; assumption
+    assumption
+    assumption
+  | succ => apply succ; assumption
 
 end Ordinal
