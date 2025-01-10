@@ -1,6 +1,7 @@
 import Math.Type.Notation
 import Math.Logic.Basic
 import Math.Order.Dual
+import Math.Relation.Basic
 
 class IsPreOrder (α: Type*) [LT α] [LE α]: Prop where
   lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
@@ -124,3 +125,10 @@ instance [NoMaxOrder α] : NoMinOrder (OrderDual α) where
     intro x
     have ⟨b, _⟩  := exists_gt x.get
     exists b
+
+instance : @Relation.IsTrans α (· < ·) where
+  trans := lt_trans
+instance : @Relation.IsTrans α (· ≤ ·) where
+  trans := le_trans
+instance : @Relation.IsIrrefl α (· < ·) where
+  irrefl := lt_irrefl

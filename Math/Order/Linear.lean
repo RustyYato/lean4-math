@@ -454,3 +454,14 @@ instance : IsLinearOrder Int where
     right; apply Int.le_of_lt; assumption
     right; subst b; apply Int.le_refl
 instance : IsDecidableLinearOrder Int where
+
+instance : @Relation.IsTrichotomous α (· < ·) where
+  tri a b := by
+    rcases lt_or_le a b with ab | ba
+    left; assumption
+    right
+    rcases lt_or_eq_of_le ba
+    right; assumption
+    left; symm; assumption
+
+def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomous α (· < ·))).tri

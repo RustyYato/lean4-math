@@ -670,4 +670,494 @@ instance : IsLinearOrder Ordinal where
     right; rw [eq]
     right; assumption
 
+inductive Pre.maxType {α β: Type u}
+  (r: α -> α -> Prop) (s: β -> β -> Prop)
+  [Relation.IsWellOrder r] [Relation.IsWellOrder s] where
+| inl (a: α) (h: ∀b, Ordinal.typein s b < Ordinal.typein r a)
+| inr (b: β) (h: ∀a, Ordinal.typein r a < Ordinal.typein s b)
+| mk  (a: α) (b: β) (h: Ordinal.typein r a = Ordinal.typein s b)
+
+namespace Pre.maxType
+
+variable {r: α -> α -> Prop} {s: β -> β -> Prop} [Relation.IsWellOrder r] [Relation.IsWellOrder s]
+
+def not_inl_and_inr
+  (a: α) (ha: ∀b₀, Ordinal.typein s b₀ < Ordinal.typein r a)
+  (b: β) (hb: ∀a₀, Ordinal.typein r a₀ < Ordinal.typein s b):
+  False := lt_irrefl <| lt_trans (ha b) (hb a)
+
+inductive LT : Pre.maxType r s -> Pre.maxType r s -> Prop where
+| inl : r a₀ a₁ -> LT (.inl a₀ h₀) (.inl a₁ h₁)
+| mk : r a₀ a₁ -> LT (.mk a₀ b₀ h₀) (.mk a₁ b₁ h₁)
+| inr : s b₀ b₁ -> LT (.inr b₀ h₀) (.inr b₁ h₁)
+| mk_inl : LT (mk _ _ _) (inl _ _)
+| mk_inr : LT (mk _ _ _) (inr _ _)
+
+def mk_acc : Acc Pre.maxType.LT (maxType.mk (r := r) (s := s) a b h) := by
+  induction a using Relation.wfInduction r generalizing b with
+  | h a ih =>
+  apply Acc.intro
+  intro _ lt
+  cases lt with
+  | mk =>
+  apply ih
+  assumption
+
+def inl_acc : Acc Pre.maxType.LT (maxType.inl (r := r) (s := s) a h) := by
+  induction a using Relation.wfInduction r with
+  | h a ih =>
+  apply Acc.intro
+  intro b lt
+  cases lt with
+  | mk_inl => apply mk_acc
+  | inl =>
+    rename_i a' ha' ha lt
+    apply ih
+    assumption
+def inr_acc : Acc Pre.maxType.LT (maxType.inr (r := r) (s := s) b h) := by
+  induction b using Relation.wfInduction s with
+  | h a ih =>
+  apply Acc.intro
+  intro b lt
+  cases lt with
+  | mk_inr => apply mk_acc
+  | inr =>
+    rename_i a' ha' ha lt
+    apply ih
+    assumption
+
+instance : Relation.IsWellOrder (Pre.maxType.LT (r := r) (s := s)) where
+  trans := by
+    intro a b c ab bc
+    cases ab <;> cases bc
+    any_goals apply LT.mk_inl
+    any_goals apply LT.mk_inr
+    apply LT.inl
+    apply Relation.trans <;> assumption
+    apply LT.mk
+    apply Relation.trans <;> assumption
+    apply LT.inr
+    apply Relation.trans <;> assumption
+  tri := by
+    intro a b
+    cases a <;> cases b
+    any_goals
+      rename_i ha _ hb
+      have := not_inl_and_inr _ ha _ hb
+      contradiction
+    rename_i a _ b _
+    rcases Relation.trichotomous r a b with ab | eq | ba
+    left; apply LT.inl; assumption
+    right; left; congr
+    right; right; apply LT.inl; assumption
+    right; right; apply LT.mk_inl
+    rename_i a _ b _
+    rcases Relation.trichotomous s a b with ab | eq | ba
+    left; apply LT.inr; assumption
+    right; left; congr
+    right; right; apply LT.inr; assumption
+    right; right; apply LT.mk_inr
+    left; apply LT.mk_inl
+    left; apply LT.mk_inr
+    rename_i a _ ha b _ hb
+    rcases Relation.trichotomous r a b with ab | eq | ba
+    left; apply LT.mk; assumption
+    right; left; congr
+    rw [←eq, ha] at hb
+    exact typein_inj s hb
+    right; right; apply LT.mk; assumption
+  wf := by
+    apply WellFounded.intro
+    intro x
+    cases x
+    apply inl_acc
+    apply inr_acc
+    apply mk_acc
+
+end Pre.maxType
+
+def Pre.max (a b: Pre) : Pre where
+  ty := Pre.maxType a.rel b.rel
+  rel := Pre.maxType.LT
+
+def Pre.max.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd: b.rel ≃r d.rel) : (a.max b).rel ≃r (c.max d).rel := by
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  · intro x
+    match x with
+    | .mk a₀ b₀ eq =>
+      refine .mk (ac a₀) (bd b₀) ?_
+      rw [Ordinal.typein_congr ac, Ordinal.typein_congr bd]
+      assumption
+    | .inl a₀ h =>
+      refine .inl (ac a₀) ?_
+      intro d₀
+      rw [Ordinal.typein_congr ac, ←Ordinal.typein_congr bd.symm]
+      apply h
+    | .inr b₀ h =>
+      refine .inr (bd b₀) ?_
+      intro c₀
+      rw [←Ordinal.typein_congr ac.symm, Ordinal.typein_congr bd]
+      apply h
+  · intro x
+    match x with
+    | .mk a₀ b₀ eq =>
+      refine .mk (ac.symm a₀) (bd.symm b₀) ?_
+      rw [Ordinal.typein_congr ac.symm, Ordinal.typein_congr bd.symm]
+      assumption
+    | .inl a₀ h =>
+      refine .inl (ac.symm a₀) ?_
+      intro d₀
+      rw [Ordinal.typein_congr ac.symm, ←Ordinal.typein_congr bd]
+      apply h
+    | .inr b₀ h =>
+      refine .inr (bd.symm b₀) ?_
+      intro c₀
+      rw [←Ordinal.typein_congr ac, Ordinal.typein_congr bd.symm]
+      apply h
+  · intro x
+    cases x <;> dsimp
+    congr; rw [ac.coe_symm]
+    congr; rw [bd.coe_symm]
+    congr; rw [ac.coe_symm]; rw [bd.coe_symm]
+  · intro x
+    cases x <;> dsimp
+    congr; rw [ac.symm_coe]
+    congr; rw [bd.symm_coe]
+    congr; rw [ac.symm_coe]; rw [bd.symm_coe]
+  · dsimp
+    intro x y
+    apply Iff.intro
+    · intro h
+      cases h <;> dsimp
+      apply maxType.LT.inl
+      apply ac.resp_rel.mp
+      assumption
+      apply maxType.LT.mk
+      apply ac.resp_rel.mp
+      assumption
+      apply maxType.LT.inr
+      apply bd.resp_rel.mp
+      assumption
+      apply maxType.LT.mk_inl
+      apply maxType.LT.mk_inr
+    · intro h
+      cases x <;> cases y <;> cases h
+      apply maxType.LT.inl
+      apply ac.resp_rel.mpr
+      assumption
+      apply maxType.LT.inr
+      apply bd.resp_rel.mpr
+      assumption
+      apply maxType.LT.mk_inl
+      apply maxType.LT.mk_inr
+      apply maxType.LT.mk
+      apply ac.resp_rel.mpr
+      assumption
+
+def max' : Ordinal -> Ordinal -> Ordinal := by
+  apply Quotient.lift₂ (fun a b => ⟦a.max b⟧)
+  intro a b c d ⟨ac⟩ ⟨bd⟩
+  apply sound
+  apply Pre.max.spec <;> assumption
+
+instance : Max Ordinal := ⟨Ordinal.max'⟩
+
+def max_comm' (a b: Ordinal) : max a b = max b a := by
+  induction a, b using ind₂ with | mk a b =>
+  apply sound
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  · intro x
+    match x with
+    | .mk a₀ b₀ eq =>
+      refine .mk b₀ a₀ ?_
+      symm; assumption
+    | .inl a₀ h =>
+      refine .inr a₀ ?_
+      assumption
+    | .inr b₀ h =>
+      refine .inl b₀ ?_
+      assumption
+  · intro x
+    match x with
+    | .mk a₀ b₀ eq =>
+      refine .mk b₀ a₀ ?_
+      symm; assumption
+    | .inl a₀ h =>
+      refine .inr a₀ ?_
+      assumption
+    | .inr b₀ h =>
+      refine .inl b₀ ?_
+      assumption
+  · intro x
+    cases x <;> rfl
+  · intro x
+    cases x <;> rfl
+  · dsimp
+    intro x y
+    apply Iff.intro
+    · intro h
+      cases h <;> dsimp
+      apply Pre.maxType.LT.inr
+      assumption
+      apply Pre.maxType.LT.mk
+      rename_i a₀ a₁ b₀ h₀ b₁ h₁ r
+      have := typein_lt_typein_iff.mpr r
+      rw [h₀, h₁] at this
+      apply typein_lt_typein_iff.mp
+      assumption
+      apply Pre.maxType.LT.inl
+      assumption
+      apply Pre.maxType.LT.mk_inr
+      apply Pre.maxType.LT.mk_inl
+    · intro h
+      cases x <;> cases y <;> cases h
+      apply Pre.maxType.LT.inl
+      assumption
+      apply Pre.maxType.LT.inr
+      assumption
+      apply Pre.maxType.LT.mk_inl
+      apply Pre.maxType.LT.mk_inr
+      apply Pre.maxType.LT.mk
+      rename_i a₀ a₁ b₀ b₁ h₀ h₁ r _
+      have := typein_lt_typein_iff.mpr r
+      rw [←h₀, h₁] at this
+      apply typein_lt_typein_iff.mp
+      assumption
+
+def Pre.minelem (p: Pre) (h: Nonempty p.ty) : ∃x: p.ty, ∀y, ¬p.rel y x := by
+  obtain ⟨x⟩ := h
+  have ⟨x, _, spec⟩ := Relation.exists_min (P := fun _ => True) p.rel ⟨x, True.intro⟩
+  exists x
+  intro y r
+  apply spec y r
+  exact True.intro
+
+def left_le_max' (a b: Ordinal) : a ≤ max a b := by
+
+  classical
+  induction a, b using ind₂ with | mk a b =>
+  apply Nonempty.intro
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  intro a₀
+  refine if h:∀b₀, typein b.rel b₀ < typein a.rel a₀ then ?_ else ?_
+  apply Pre.maxType.inl
+  assumption
+  rw [Classical.not_forall] at h
+  conv at h => { arg 1; intro; rw [←le_iff_not_lt] }
+  have : ∃x, typein a.rel a₀ = typein b.rel x := by
+    have ⟨x, le⟩ := h
+    exact typein_surj b.rel (typein a.rel a₀) (lt_of_le_of_lt le (typein_lt _ _))
+  apply Pre.maxType.mk a₀ (Classical.choose this)
+  exact Classical.choose_spec this
+  dsimp
+  intro x y eq; dsimp at eq
+  split at eq <;> split at eq <;> rename_i h₀ h₁
+  exact Pre.maxType.inl.inj eq
+  contradiction
+  contradiction
+  exact (Pre.maxType.mk.inj eq).left
+  dsimp
+  intro x y
+  apply Iff.intro
+  intro r
+  dsimp
+  split <;> split <;> rename_i h₀ h₁
+  apply Pre.maxType.LT.inl
+  assumption
+  exfalso
+  apply h₁
+  intro b₀
+  apply lt_trans
+  apply h₀
+  apply typein_lt_typein_iff.mpr
+  assumption
+  apply Pre.maxType.LT.mk_inl
+  apply Pre.maxType.LT.mk
+  assumption
+  dsimp
+  intro lt
+  split at lt <;> split at lt <;> rename_i h₀ h₁
+  cases lt
+  assumption
+  nomatch lt
+  clear lt
+  rw [Classical.not_forall] at h₀
+  obtain ⟨b₀, le⟩ := h₀
+  rw [←le_iff_not_lt] at le
+  apply typein_lt_typein_iff.mp
+  apply lt_of_le_of_lt
+  assumption
+  apply h₁
+  cases lt
+  assumption
+  intro x y h
+  replace h: y.LT (if _:_ then _ else _) := h
+  apply Set.mem_range.mpr
+  show ∃_, _ = if _:(∀_, _) then _ else _
+  split at h
+  cases h
+  rename_i a₀ _ _ _
+  exists a₀
+  rw [dif_pos]
+  rename_i a₀ b₀ _ _
+  exists a₀
+  rename_i h _
+  rw [dif_neg]
+  congr
+  have : ∃ x, typein a.rel a₀ = typein b.rel x := ⟨_, h⟩
+  have := h.symm.trans (Classical.choose_spec this)
+  exact typein_inj _ this
+  intro g
+  have := g b₀
+  rw [h] at this
+  exact lt_irrefl this
+  cases h
+  rename_i a₀ b₀ h₀ _ h₁
+  exists a₀
+  rw [dif_neg]
+  congr
+  have : ∃ x, typein a.rel a₀ = typein b.rel x := ⟨_, h₀⟩
+  apply typein_inj b.rel
+  rw [←Classical.choose_spec this]
+  symm; assumption
+  rename_i h _
+  intro g
+  apply h
+  intro y
+  apply lt_trans
+  apply g
+  apply typein_lt_typein_iff.mpr
+  assumption
+
+def max_eq_left_iff (a b: Ordinal) : max a b = a ↔ b ≤ a := by
+  apply Iff.intro
+  intro h
+  rw [←h, max_comm']
+  apply left_le_max'
+  induction a, b using ind₂ with | mk a b =>
+  intro ⟨le⟩
+  apply sound
+  classical
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  intro x
+  match x with
+  | .inr b₀ h =>
+    have := h (le b₀)
+    rw [typein_congr_initial le (a := b₀)] at this
+    exact (lt_irrefl this).elim
+  | .inl a₀ h => assumption
+  | .mk a₀ b₀ h => assumption
+  intro a₀
+  refine if h:a₀ ∈ Set.range le then ?_ else ?_
+  apply Pre.maxType.mk a₀ (Classical.choose <| Set.mem_range.mp h)
+  conv => { lhs; rw [Classical.choose_spec <| Set.mem_range.mp h] }
+  rw [typein_congr_initial]
+  apply Pre.maxType.inl a₀
+  intro b₀
+  apply lt_of_not_le
+  intro g
+  rw [Set.mem_range, not_exists] at h
+  rw [←typein_congr_initial le] at g
+  rcases lt_or_eq_of_le g with g | g
+  replace g := typein_lt_typein_iff.mp g
+  have ⟨b₁, eq⟩ := Set.mem_range.mp <| le.isInitial b₀ a₀ g
+  subst eq
+  exact h _ rfl
+  have eq := typein_inj _ g
+  subst eq
+  exact h _ rfl
+  · intro x
+    dsimp
+    cases x
+    dsimp
+    rw [dif_neg]
+    · intro mem
+      have ⟨b₀, eq⟩ := Set.mem_range.mp mem
+      subst eq
+      rename_i h
+      have := h b₀
+      rw [typein_congr_initial] at this
+      exact lt_irrefl this
+    dsimp
+    contradiction
+    dsimp
+    rw [dif_pos]
+    congr
+    rename_i a₀ b₀ _
+    have : ∃b', a₀ = le b' := by
+      exists b₀
+      apply typein_inj (r := a.rel)
+      rw [typein_congr_initial]
+      assumption
+    apply le.inj
+    show le _ = le _
+    rw [←Classical.choose_spec this]
+    apply typein_inj (r := a.rel)
+    rw [typein_congr_initial]
+    assumption
+    apply Set.mem_range.mpr
+    rename_i a₀ b₀ h
+    exists b₀
+    apply typein_inj (r := a.rel)
+    rw [typein_congr_initial]
+    assumption
+  · intro x
+    dsimp
+    by_cases x ∈ Set.range le
+    rw [dif_pos]
+    assumption
+    rw [dif_neg]
+    assumption
+  · intro x y
+    cases x <;> cases y
+    all_goals apply Iff.intro
+    all_goals intro h
+    any_goals
+      dsimp only
+      contradiction
+    any_goals
+      rename b.ty => b₀
+      rename ∀ (a_1 : a.ty), typein a.rel a_1 < typein b.rel b₀ => h'
+      have := lt_irrefl (cast (congrArg (fun _a => _a < typein b.rel b₀) (typein_congr_initial le)) (h' (le b₀)))
+      contradiction
+    cases h
+    assumption
+    apply Pre.maxType.LT.inl
+    assumption
+    dsimp at h
+    rename_i h₀ a₀ b₀ eq
+    have := lt_trans (h₀ b₀) (typein_lt_typein_iff.mpr h)
+    rw [eq] at this
+    have := lt_irrefl this
+    contradiction
+    rename_i b₀ _ _ _ _
+    rename ∀ (a_1 : a.ty), typein a.rel a_1 < typein b.rel b₀ => h'
+    have := lt_irrefl (cast (congrArg (fun _a => _a < typein b.rel b₀) (typein_congr_initial le)) (h' (le b₀)))
+    contradiction
+    dsimp
+    rename_i a₀ b₀ h₀ a₁ h₁
+    apply typein_lt_typein_iff.mp
+    rw [h₀]
+    apply h₁
+    apply Pre.maxType.LT.mk_inl
+    cases h
+    assumption
+    dsimp at h
+    apply Pre.maxType.LT.mk
+    assumption
+
+instance : IsLinearMinMaxOrder Ordinal where
+   min_iff_le_left := min_eq_left_iff
+   min_iff_le_right := by
+    intro a b
+    rw [min_comm']
+    exact min_eq_left_iff
+   max_iff_le_left := by
+    intro a b
+    rw [max_comm']
+    apply (max_eq_left_iff _ _).symm
+   max_iff_le_right := by
+    intro a b
+    apply (max_eq_left_iff _ _).symm
+
 end Ordinal
