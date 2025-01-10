@@ -486,6 +486,13 @@ def Fin.embedNat : Fin n ↪ Nat where
   toFun := Fin.val
   inj {_ _} := Fin.val_inj.mp
 
+def Fin.embedFin (h: n ≤ m) : Fin n ↪ Fin m where
+  toFun x := x.castLE h
+  inj := by
+    intro ⟨x, _⟩ ⟨y, _⟩ eq
+    cases eq
+    rfl
+
 def Subtype.embed {P: α -> Prop} : Subtype P ↪ α where
   toFun := Subtype.val
   inj {a b} eq := by
@@ -501,4 +508,30 @@ def empty_equiv_empty (α β: Sort*) [IsEmpty α] [IsEmpty β] : α ≃ β where
   leftInv x := (elim_empty x).elim
   rightInv x := (elim_empty x).elim
 
+def unique_eq_unique (α β: Sort*) [Subsingleton α] [Subsingleton β] [Inhabited α] [Inhabited β] : α ≃ β where
+  toFun _ := default
+  invFun _ := default
+  leftInv _ := Subsingleton.allEq _ _
+  rightInv _ := Subsingleton.allEq _ _
+
 def empty_inj [IsEmpty α] (f: α -> β) : Function.Injective f := fun x => (elim_empty x).elim
+
+def Option.congrEquiv (h: α ≃ β) : Option α ≃ Option β where
+  toFun
+  | .some x => .some (h x)
+  | .none => .none
+  invFun
+  | .some x => .some (h.symm x)
+  | .none => .none
+  leftInv := by
+    intro x
+    cases x
+    rfl
+    dsimp
+    rw [h.coe_symm]
+  rightInv := by
+    intro x
+    cases x
+    rfl
+    dsimp
+    rw [h.symm_coe]

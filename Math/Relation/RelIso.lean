@@ -165,6 +165,12 @@ def trans (h: r ≃r s) (g: s ≃r t) : r ≃r t where
 def coe_symm (h: r ≃r s) (x: α) : h.symm (h x) = x := h.leftInv _
 def symm_coe (h: r ≃r s) (x: β) : h (h.symm x) = x := h.rightInv _
 
+def symm_inj : Function.Injective (symm (r := r) (s := s)) := by
+  intro ⟨x, _⟩ ⟨y, _⟩ h
+  congr
+  apply Equiv.symm_inj
+  exact RelIso.mk.inj h
+
 end RelIso
 
 namespace RelIso
@@ -208,6 +214,10 @@ end
 
 def Fin.relEmbedNat : (· < (·: Fin n)) ↪r (· < (·: Nat)) where
   toEmbedding := Fin.embedNat
+  resp_rel := Iff.rfl
+
+def Fin.relEmbedFin (h: n ≤ m) : (· < (·: Fin n)) ↪r (· < (·: Fin m)) where
+  toEmbedding := Fin.embedFin h
   resp_rel := Iff.rfl
 
 def Subtype.relEmbed {P: α -> Prop} (r: α -> α -> Prop) : (fun a b: Subtype P => r a b) ↪r r where

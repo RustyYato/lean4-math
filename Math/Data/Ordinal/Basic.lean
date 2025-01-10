@@ -5,6 +5,8 @@ import Math.Relation.Segments
 import Math.Order.Linear
 import Math.AxiomBlame
 import Math.Data.Quotient.Basic
+import Math.Data.Set.Order.Bounds
+import Math.Data.Fintype.Basic
 
 namespace Ordinal
 
@@ -27,7 +29,7 @@ instance pre_setoid : Setoid Pre where
 @[pp_with_univ]
 def _root_.Ordinal := Quotient pre_setoid
 def mk : Pre -> Ordinal := Quotient.mk _
-local notation "⟦" x "⟧" => Ordinal.mk x
+scoped notation "⟦" x "⟧" => Ordinal.mk x
 @[cases_eliminator]
 def ind : {motive: Ordinal -> Prop} -> (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quotient.ind
 def ind₂ : {motive: Ordinal -> Ordinal -> Prop} -> (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) -> ∀a b, motive a b := Quotient.ind₂
@@ -97,6 +99,9 @@ instance : LT Ordinal.{u} where
     intro a b c d ac bd ab
     apply PrincipalSegment.congr <;> assumption
 
+instance : CoeSort Ordinal (Type _) where
+  coe a := { x // x < a }
+
 instance : IsPartialOrder Ordinal where
   lt_iff_le_and_not_le := by
     intro a b
@@ -147,18 +152,76 @@ instance : @Relation.IsWellOrder Nat (· < ·) where
   trans := Nat.lt_trans
   tri := Nat.lt_trichotomy
 
+def Pre.zero : Pre where
+  ty := PEmpty
+  rel := nofun
+  wo := {
+    trans := fun {x} => x.elim
+    tri := fun {x} => x.elim
+    wf := ⟨fun {x} => x.elim⟩
+  }
+
+def Pre.one : Pre where
+  ty := PUnit
+  rel _ _ := False
+  wo := {
+    trans := fun x => x.elim
+    tri := fun  _ _ => .inr (.inl rfl)
+    wf := by
+      refine ⟨?_⟩
+      intro x
+      apply Acc.intro
+      intro y f
+      contradiction
+  }
+
+def zero : Ordinal := ⟦Pre.zero⟧
+def one : Ordinal := ⟦Pre.one⟧
+
 def Pre.ofNat (n: Nat) : Pre where
   ty := Fin n
   rel a b := a < b
   wo := Fin.relEmbedNat.wo
 
-def Ordinal.ofNat (n: Nat) := ⟦Pre.ofNat n⟧
+def ofNat (n: Nat) := ⟦Pre.ofNat n⟧
 
-instance : OfNat Pre n := ⟨(Pre.ofNat n).lift⟩
-instance : OfNat Ordinal n := ⟨(Ordinal.ofNat n).lift⟩
+instance : NatCast Pre where
+  natCast x := (Pre.ofNat x).lift
+
+instance : NatCast Ordinal where
+  natCast x := (ofNat x).lift
+
+instance : OfNat Pre n := ⟨n⟩
+instance : OfNat Ordinal n := ⟨n⟩
 
 instance : IsEmpty (Pre.ofNat 0).ty := inferInstanceAs (IsEmpty (Fin 0))
+instance : IsEmpty Pre.zero.ty := inferInstanceAs (IsEmpty PEmpty)
 instance (p: Pre) [IsEmpty p.ty] : IsEmpty p.lift.ty := inferInstanceAs (IsEmpty (ULift p.ty))
+
+instance : Inhabited Pre.one.ty := inferInstanceAs (Inhabited PUnit)
+instance : Inhabited (Pre.ofNat 1).ty := inferInstanceAs (Inhabited (Fin 1))
+instance [Inhabited α] : Inhabited (ULift α) where
+  default := ⟨default⟩
+instance (p: Pre) [Inhabited p.ty] : Inhabited p.lift.ty := inferInstanceAs (Inhabited (ULift p.ty))
+instance : Subsingleton Pre.one.ty := inferInstanceAs (Subsingleton PUnit)
+instance : Subsingleton (Pre.ofNat 1).ty := inferInstanceAs (Subsingleton (Fin 1))
+instance (p: Pre) [Subsingleton p.ty] : Subsingleton p.lift.ty := inferInstanceAs (Subsingleton (ULift p.ty))
+
+def zero_eq : 0 = zero := by
+  apply sound
+  apply empty_reliso_empty
+
+def one_eq : 1 = one := by
+  apply sound
+  refine ⟨?_, ?_⟩
+  apply unique_eq_unique
+  intro a b
+  apply Iff.intro
+  intro h
+  rw [Subsingleton.allEq a b] at h
+  exact Fin.lt_irrefl _ h
+  intro
+  contradiction
 
 instance (p: Pre) : WellFoundedRelation p.ty where
   rel := p.rel
@@ -568,44 +631,6 @@ def mul : Ordinal -> Ordinal -> Ordinal := by
 
 instance : Add Ordinal := ⟨add⟩
 instance : Mul Ordinal := ⟨mul⟩
-
-def zero_le (o: Ordinal) : 0 ≤ o := by
-  induction o using ind with | mk o =>
-  apply Nonempty.intro
-  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
-  exact fun x => x.down.elim0
-  unfold Pre.ofNat
-  apply empty_inj
-  intro x; exact x.down.elim0
-  intro x; exact x.down.elim0
-
-def le_zero (o: Ordinal) : o ≤ 0 ↔ o = 0 := by
-  apply flip Iff.intro
-  · intro h
-    rw [h]
-  · cases o with | mk o =>
-    intro ⟨h⟩
-    apply sound
-    have eqv := (empty_reliso_empty (fun a b: Empty => a.elim) (Pre.ofNat 0).lift.rel)
-    replace h := h.congr .refl eqv.symm
-    apply RelIso.trans _ eqv
-    refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
-    intro x
-    exact h x
-    exact Empty.elim
-    intro x
-    exact (h x).elim
-    exact Empty.rec
-    intro x
-    exact (h x).elim
-
-def not_lt_zero (o: Ordinal) : ¬o < 0 := by
-  cases o with | mk o =>
-  intro ⟨h⟩
-  have eqv := (empty_reliso_empty (fun a b: Empty => a.elim) (Pre.ofNat 0).lift.rel)
-  replace h := h.congr .refl eqv.symm
-  have ⟨_, _⟩ := h.exists_top
-  contradiction
 
 def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b ≤ a := by
   suffices ∀a b, a < o -> b < o -> a ≤ b ∨ b ≤ a by
@@ -1160,54 +1185,6 @@ instance : IsLinearMinMaxOrder Ordinal where
     intro a b
     apply (max_eq_left_iff _ _).symm
 
-def add_zero (o: Ordinal) : o + 0 = o := by
-  cases o with | mk o =>
-  apply sound
-  symm
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
-  exact .inl
-  intro x
-  match x with
-  | .inl x => exact x
-  | .inr x => exact (elim_empty x).elim
-  intro; rfl
-  intro x
-  cases x
-  rfl
-  dsimp
-  contradiction
-  dsimp
-  intro x y
-  apply Iff.intro
-  apply Sum.Lex.inl
-  intro h
-  cases h
-  assumption
-
-def zero_add (o: Ordinal) : 0 + o = o := by
-  cases o with | mk o =>
-  apply sound
-  symm
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
-  exact .inr
-  intro x
-  match x with
-  | .inr x => exact x
-  | .inl x => exact (elim_empty x).elim
-  intro; rfl
-  intro x
-  cases x
-  dsimp
-  contradiction
-  rfl
-  dsimp
-  intro x y
-  apply Iff.intro
-  apply Sum.Lex.inr
-  intro h
-  cases h
-  assumption
-
 def IsLimitOrdinal (o: Ordinal) := ∀x, x + 1 ≠ o
 
 def lt_succ_self (a: Ordinal) : a < a + 1 := by
@@ -1241,6 +1218,44 @@ def lt_of_succ_le (a b: Ordinal) : a + 1 ≤ b -> a < b := by
   intro g
   rw [g] at h
   exact lt_irrefl <| lt_of_lt_of_le (lt_succ_self _) h
+
+def zero_le (o: Ordinal) : 0 ≤ o := by
+  induction o using ind with | mk o =>
+  apply Nonempty.intro
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  exact fun x => x.down.elim0
+  unfold Pre.ofNat
+  apply empty_inj
+  intro x; exact x.down.elim0
+  intro x; exact x.down.elim0
+
+def le_zero (o: Ordinal) : o ≤ 0 ↔ o = 0 := by
+  apply flip Iff.intro
+  · intro h
+    rw [h]
+  · cases o with | mk o =>
+    intro ⟨h⟩
+    apply sound
+    have eqv := (empty_reliso_empty (fun a b: Empty => a.elim) (Pre.ofNat 0).lift.rel)
+    replace h := h.congr .refl eqv.symm
+    apply RelIso.trans _ eqv
+    refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+    intro x
+    exact h x
+    exact Empty.elim
+    intro x
+    exact (h x).elim
+    exact Empty.rec
+    intro x
+    exact (h x).elim
+
+def not_lt_zero (o: Ordinal) : ¬o < 0 := by
+  cases o with | mk o =>
+  intro ⟨h⟩
+  have eqv := (empty_reliso_empty (fun a b: Empty => a.elim) (Pre.ofNat 0).lift.rel)
+  replace h := h.congr .refl eqv.symm
+  have ⟨_, _⟩ := h.exists_top
+  contradiction
 
 @[induction_eliminator]
 def transfiniteInduction
@@ -1277,5 +1292,354 @@ def transfiniteInduction'
     assumption
     assumption
   | succ => apply succ; assumption
+
+instance : Bot Ordinal := ⟨0⟩
+
+instance : LawfulBot Ordinal where
+  bot_le := zero_le
+
+open Classical in
+noncomputable instance : InfSet Ordinal where
+  sInf s := if h:s.Nonempty then s.min (· < ·) h else ⊥
+
+open Classical in
+noncomputable instance : SupSet Ordinal where
+  sSup s := if h:s.BoundedAbove then s.upperBounds.min (· < ·) h else ⊥
+
+def sSup_eq_sInf_upperbounds (s: Set Ordinal) (h: s.BoundedAbove) : sSup s = sInf s.upperBounds := by
+  simp [sSup, sInf]
+  unfold Set.BoundedAbove at *
+  rw [dif_pos h]
+
+def sInf_le (s: Set Ordinal) : ∀x ∈ s, sInf s ≤ x := by
+  intro x mem
+  dsimp [sInf]
+  rw [dif_pos ⟨_, mem⟩]
+  apply le_of_not_lt
+  apply Set.not_lt_min
+  assumption
+
+def le_sSup (s: Set Ordinal) (h: s.BoundedAbove) : ∀x ∈ s, x ≤ sSup s := by
+  intro x mem
+  dsimp [sSup]
+  rw [dif_pos h]
+  have := Set.min_mem (· < (·: Ordinal)) h
+  rw [Set.mem_upperBounds] at this
+  apply this
+  assumption
+
+def sInf_le' (s: Set Ordinal) (k: Ordinal) : (∀x ∈ s, x ≤ k) -> sInf s ≤ k := by
+  intro h
+  simp [sInf]
+  split
+  rename_i g
+  obtain ⟨x, mem⟩ := g
+  apply flip le_trans
+  apply h
+  assumption
+  apply le_of_not_lt
+  apply Set.not_lt_min
+  assumption
+  apply bot_le
+
+def le_sInf (s: Set Ordinal) (h: s.Nonempty) (k: Ordinal) : (∀x ∈ s, k ≤ x) -> k ≤ sInf s := by
+  intro g
+  simp [sInf]
+  rw [dif_pos h]
+  apply g
+  apply Set.min_mem
+
+def sSup_empty : sSup ∅ = (0: Ordinal) := by
+  have zero_in_upper_bounds: (0: Ordinal) ∈ Set.upperBounds ∅ := fun x h => (Set.not_mem_empty h).elim
+  have empty_bounded : (∅: Set Ordinal).BoundedAbove := ⟨0, zero_in_upper_bounds⟩
+  simp [sSup]
+  rw [dif_pos empty_bounded]
+  apply le_antisymm
+  apply le_of_not_lt
+  apply Set.not_lt_min
+  assumption
+  apply zero_le
+
+def le_sSup' (s: Set Ordinal) (h: s.BoundedAbove) : (∀x ∈ s.upperBounds, k ≤ x) -> k ≤ sSup s := by
+  intro g
+  rw [sSup_eq_sInf_upperbounds]
+  apply le_sInf <;> assumption
+  assumption
+
+def sSup_le (s: Set Ordinal) (h: s.BoundedAbove) (k: Ordinal) : (∀x ∈ s, x ≤ k) -> sSup s ≤ k := by
+  intro g
+  simp [sSup]
+  rw [dif_pos h]
+  obtain ⟨x, mem⟩ := h
+  apply le_of_not_lt
+  apply Set.not_lt_min
+  rw [Set.mem_upperBounds]
+  apply g
+
+def ofNat_le_ofNat (n m: Nat) : Ordinal.ofNat n ≤ Ordinal.ofNat m ↔ n ≤ m := by
+  apply Iff.intro
+  intro ⟨h⟩
+  have := Fintype.existsEmbedding_iff_card_le.mp ⟨h.toEmbedding⟩
+  rw [Fin.card_eq, Fin.card_eq] at this
+  assumption
+  intro h
+  refine ⟨Fin.relEmbedFin h, ?_⟩
+  intro a b g
+  replace g : b < a.castLE h := g
+  apply Set.mem_range.mpr
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  exact b.val
+  apply Nat.lt_trans
+  exact g
+  exact a.isLt
+  rfl
+
+def ofNat_lt_ofNat (n m: Nat) : Ordinal.ofNat n < Ordinal.ofNat m ↔ n < m := by
+  apply lt_iff_of_le_iff
+  apply ofNat_le_ofNat
+
+def natCast_le_natCast (n m: Nat) : (n: Ordinal) ≤ m ↔ n ≤ m := by
+  apply Iff.trans _ (ofNat_le_ofNat n m)
+  apply Iff.intro
+  intro ⟨h⟩
+  apply Nonempty.intro
+  apply h.congr
+  apply ULift.relIso
+  apply ULift.relIso
+  intro ⟨h⟩
+  apply Nonempty.intro
+  apply h.congr
+  apply (ULift.relIso _).symm
+  apply (ULift.relIso _).symm
+
+def natCast_lt_natCast (n m: Nat) : (n: Ordinal) < m ↔ n < m := by
+  apply lt_iff_of_le_iff
+  apply natCast_le_natCast
+
+def omega := type (· < (·: Nat))
+def omega' := omega.lift
+
+scoped notation "ω" => omega'
+
+def lt_omega (x: Ordinal) : x < ω -> ∃n: Nat, x = n := by
+  cases x with | mk X =>
+  intro ⟨h⟩
+  replace h := h.congr .refl (ULift.relIso _)
+  dsimp at h
+  obtain ⟨top, spec⟩ := h.exists_top
+  exists top
+  apply sound
+  apply flip RelIso.trans
+  symm; unfold Pre.lift; dsimp
+  apply (ULift.relIso _)
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  intro x
+  refine ⟨h x, ?_⟩
+  apply (spec _).mpr
+  apply Set.mem_range'
+  intro n
+  exact Classical.choose <| Set.mem_range.mp <| (spec n.val).mp n.isLt
+  intro x
+  dsimp
+  symm; apply h.inj
+  have : ∃ a', h x = h a' := Set.mem_range.mp ((spec (h x)).mp <| (spec (h x)).mpr Set.mem_range')
+  apply Classical.choose_spec this
+  intro x
+  dsimp
+  apply Fin.val_inj.mp
+  dsimp
+  have := Set.mem_range.mp ((spec x.val).mp x.isLt)
+  symm; apply Classical.choose_spec this
+  dsimp
+  exact h.resp_rel
+
+def zero_limit : IsLimitOrdinal 0 := by
+  intro x h
+  cases x with | mk x =>
+  rw [one_eq, zero_eq] at h
+  replace ⟨h⟩ := Quotient.exact h
+  have := h (.inr default)
+  contradiction
+
+def omega_limit : IsLimitOrdinal ω := by
+  intro x h
+  cases x with | mk x =>
+  rw [one_eq] at h
+  replace ⟨h⟩ := Quotient.exact h
+  unfold Pre.lift at h
+  dsimp at h
+  replace h := h.trans (ULift.relIso _)
+  generalize hx:h (.inr default) = x
+  match h₀:h.symm (x+1) with
+  | .inr _ =>
+    replace h₀: h.symm (x + 1) = (Sum.inr default) := h₀
+    rw [←h₀] at hx
+    rw [h.symm_coe] at hx
+    exact Nat.succ_ne_self _ hx
+  | .inl _ =>
+    have : (Pre.add _ _).rel (h.symm x) (h.symm (x + 1)) := h.symm.resp_rel.mp (Nat.lt_succ_self x)
+    rw [h₀, ←hx] at this
+    rw [h.coe_symm] at this
+    contradiction
+
+def OfNat_eq_cast (n: Nat) : OfNat.ofNat n = (n: Ordinal) := rfl
+
+inductive Pre.succRel (r: α -> α -> Prop) : Option α -> Option α -> Prop where
+| none x : succRel r (.some x) .none
+| some x y : r x y -> succRel r (.some x) (.some y)
+
+instance [Relation.IsTrans r] : Relation.IsTrans (Pre.succRel r) where
+  trans := by
+    intro a b c ab bc
+    cases ab <;> cases bc
+    apply Pre.succRel.none
+    apply Pre.succRel.some
+    apply Relation.trans <;> assumption
+instance [Relation.IsTrichotomous r] : Relation.IsTrichotomous (Pre.succRel r) where
+  tri := by
+    intro a b
+    cases a <;> cases b
+    right; left; rfl
+    right; right; apply Pre.succRel.none
+    left; apply Pre.succRel.none
+    rename_i a b
+    rcases Relation.trichotomous r a b with ab | eq | ba
+    left; apply Pre.succRel.some; assumption
+    right; left; congr
+    right; right; apply Pre.succRel.some; assumption
+instance [Relation.IsWellFounded r] : Relation.IsWellFounded (Pre.succRel r) where
+  wf := by
+    suffices ∀x, Acc (Pre.succRel r) (.some x) by
+      apply WellFounded.intro
+      intro x
+      apply Acc.intro
+      intro y r
+      cases r
+      apply this
+      apply this
+    intro x
+    induction x using Relation.wfInduction r with | h x ih =>
+    apply Acc.intro
+    intro y r
+    cases r
+    apply ih
+    assumption
+
+def Pre.succ (p: Pre) : Pre where
+  ty := Option p.ty
+  rel := Pre.succRel p.rel
+
+def Pre.succ.spec (a b: Pre) (h: a.rel ≃r b.rel) : a.succ.rel ≃r b.succ.rel where
+  toEquiv := Option.congrEquiv h.toEquiv
+  resp_rel := by
+    intro x y
+    apply Iff.intro
+    intro r
+    cases r
+    apply Pre.succRel.none
+    apply Pre.succRel.some
+    apply h.resp_rel.mp
+    assumption
+    intro r
+    cases x <;> cases y <;>
+    cases r
+    apply Pre.succRel.none
+    apply Pre.succRel.some
+    apply h.resp_rel.mpr
+    assumption
+
+def succ : Ordinal -> Ordinal := by
+  apply Quotient.lift (fun x => ⟦x.succ⟧)
+  intro a b ⟨ab⟩
+  apply sound
+  exact Pre.succ.spec _ _ ab
+
+def add_one_eq_succ (a: Ordinal) : a + 1 = a.succ := by
+  cases a with | mk A =>
+  symm
+  apply sound
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  intro x
+  match x with
+  | .some x => exact .inl x
+  | .none => exact .inr default
+  intro x
+  match x with
+  | .inl x => exact .some x
+  | .inr _ => exact .none
+  intro x
+  cases x <;> rfl
+  intro x
+  cases x
+  rfl
+  dsimp; congr
+  apply Subsingleton.allEq _ _
+  intro x y
+  cases x <;> cases y
+  all_goals apply Iff.intro
+  all_goals intro h
+  any_goals contradiction
+  apply Sum.Lex.sep
+  apply Pre.succRel.none
+  cases h
+  apply Sum.Lex.inl; assumption
+  cases h
+  apply Pre.succRel.some
+  assumption
+
+def succ_le_of_lt (a b: Ordinal) : a < b -> a + 1 ≤ b := by
+  rw [add_one_eq_succ]
+  induction a, b using ind₂ with | mk A B =>
+  intro ⟨h⟩
+  have ⟨top, spec⟩ := h.exists_top
+  have hx_lt_top : ∀x, B.rel (h x) top := by
+    intro x
+    exact (spec (h x)).mpr (Set.mem_range')
+  have hx_ne_top : ∀x, h x ≠ top := by
+    intro x eq
+    exact Relation.irrefl (eq ▸ hx_lt_top x)
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  intro x
+  match x with
+  | .some x => exact h x
+  | .none => exact top
+  intro x y eq
+  cases x <;> cases y <;> dsimp at eq
+  rfl
+  have := hx_ne_top _ eq.symm
+  contradiction
+  have := hx_ne_top _ eq
+  contradiction
+  rw [h.inj eq]
+  intro a₀ a₁
+  · apply Iff.intro
+    all_goals intro g; cases a₀ <;> cases a₁
+    any_goals contradiction
+    apply hx_lt_top
+    cases g
+    apply h.resp_rel.mp
+    assumption
+    have := Relation.irrefl g
+    contradiction
+    have := Relation.asymm g (hx_lt_top _)
+    contradiction
+    apply Pre.succRel.none
+    apply Pre.succRel.some
+    apply h.resp_rel.mpr
+    assumption
+  intro a b r
+  cases a
+  replace r : B.rel b top := r
+  have ⟨a, eq⟩ := Set.mem_range.mp <| (spec _).mp r
+  subst eq
+  apply Set.mem_range.mpr
+  exists .some a
+  rename_i a
+  replace r : B.rel b (h a) := r
+  replace r : B.rel b top := Relation.trans r (hx_lt_top _)
+  have ⟨a, eq⟩ := Set.mem_range.mp <| (spec _).mp r
+  subst eq
+  apply Set.mem_range.mpr
+  exists .some a
 
 end Ordinal
