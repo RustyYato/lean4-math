@@ -1,4 +1,4 @@
-import Math.Order.Lattice.Basic
+import Math.Order.Lattice.Complete
 import Math.Data.Set.Basic
 
 instance : LE (Set α) where
@@ -36,3 +36,30 @@ instance : IsLattice (Set α) where
     apply And.intro
     apply ka; assumption
     apply kb; assumption
+
+instance : Top (Set α) where
+  top := Set.univ _
+instance : Bot (Set α) where
+  bot := ∅
+
+instance : IsCompleteLattice (Set α) where
+  bot_le := Set.empty_sub
+  le_top := Set.sub_univ
+  le_sSup := by
+    intro s x
+    apply Set.sub_sUnion
+  sSup_le := by
+    intro k s h x mem
+    have ⟨s', s'_in_s, x_in_s'⟩ := Set.mem_sUnion.mp mem
+    apply h s' s'_in_s
+    assumption
+  sInf_le := by
+    intro s x mem y hy
+    exact Set.mem_sInter.mp hy x mem
+  le_sInf := by
+    intro k s h x hx
+    apply Set.mem_sInter.mpr
+    intro s' hs'
+    apply h
+    assumption
+    assumption

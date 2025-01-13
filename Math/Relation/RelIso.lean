@@ -127,17 +127,20 @@ def trans (h: r ↪r s) (g: s ↪r t) : r ↪r t where
   toEmbedding := Embedding.trans h.toEmbedding g.toEmbedding
   resp_rel := Iff.trans h.resp_rel g.resp_rel
 
-def wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s where
-  toIsWellFounded := h.toRelHom.wf
-  trans := by
-    intro a b c ab bc
-    exact h.resp_rel.mpr <| Relation.trans (h.resp_rel.mp ab) (h.resp_rel.mp bc)
+def tri (h: s ↪r r) [Relation.IsTrichotomous r] : Relation.IsTrichotomous s where
   tri := by
     intro a b
     rcases Relation.trichotomous r (h a) (h b) with ab | eq | ba
     left; exact h.resp_rel.mpr ab
     right; left; exact h.inj eq
     right; right; exact h.resp_rel.mpr ba
+
+def wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s where
+  toIsWellFounded := h.toRelHom.wf
+  toIsTrichotomous := h.tri
+  trans := by
+    intro a b c ab bc
+    exact h.resp_rel.mpr <| Relation.trans (h.resp_rel.mp ab) (h.resp_rel.mp bc)
 
 end RelEmbedding
 
