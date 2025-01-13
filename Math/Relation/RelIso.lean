@@ -230,4 +230,4 @@ def ULift.relIso (r: α -> α -> Prop) : (fun a b: ULift α => r a.down b.down) 
 
 def empty_reliso_empty {α β: Sort*} [IsEmpty α] [IsEmpty β] (r: α -> α -> Prop) (s: β -> β -> Prop) : r ≃r s where
   toEquiv := empty_equiv_empty _ _
-  resp_rel {x} := (elim_empty x).elim
+  resp_rel {x} := elim_empty x

@@ -4,7 +4,7 @@ import Math.Data.Like.Equiv
 class IsEmpty (α: Sort*): Prop where
   elim: α -> False
 
-def elim_empty [IsEmpty α] : α -> False := IsEmpty.elim
+def elim_empty [IsEmpty α] : α -> β := False.elim ∘ IsEmpty.elim
 
 instance : IsEmpty False := ⟨id⟩
 instance : IsEmpty PEmpty := ⟨PEmpty.elim⟩
@@ -41,13 +41,12 @@ instance : IsEmpty (Fin 0) where
   elim f := f.elim0
 
 instance [IsEmpty α] : Subsingleton α where
-  allEq x := (elim_empty x).elim
+  allEq x := elim_empty x
 
 instance [IsEmpty α] (β: α -> Sort*) : Subsingleton (∀x, β x) where
   allEq f g := by
     funext x
-    have := elim_empty x
-    contradiction
+    exact elim_empty x
 
 instance [IsEmpty α] : Subsingleton (α -> β) := inferInstance
 
@@ -120,8 +119,8 @@ def Equiv.trans (h: Equiv α β) (g: Equiv β γ) : Equiv α γ where
     rw [h.rightInv, g.rightInv]
 
 instance [IsEmpty α] : Embedding α β where
-  toFun x := (elim_empty x).elim
-  inj x := (elim_empty x).elim
+  toFun x := elim_empty x
+  inj x := elim_empty x
 
 def Equiv.coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
 def Equiv.symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
@@ -503,10 +502,10 @@ def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) 
   Subtype.embed.inj
 
 def empty_equiv_empty (α β: Sort*) [IsEmpty α] [IsEmpty β] : α ≃ β where
-  toFun x := (elim_empty x).elim
-  invFun x := (elim_empty x).elim
-  leftInv x := (elim_empty x).elim
-  rightInv x := (elim_empty x).elim
+  toFun x := elim_empty x
+  invFun x := elim_empty x
+  leftInv x := elim_empty x
+  rightInv x := elim_empty x
 
 def unique_eq_unique (α β: Sort*) [Subsingleton α] [Subsingleton β] [Inhabited α] [Inhabited β] : α ≃ β where
   toFun _ := default
@@ -514,7 +513,7 @@ def unique_eq_unique (α β: Sort*) [Subsingleton α] [Subsingleton β] [Inhabit
   leftInv _ := Subsingleton.allEq _ _
   rightInv _ := Subsingleton.allEq _ _
 
-def empty_inj [IsEmpty α] (f: α -> β) : Function.Injective f := fun x => (elim_empty x).elim
+def empty_inj [IsEmpty α] (f: α -> β) : Function.Injective f := fun x => elim_empty x
 
 def Option.congrEquiv (h: α ≃ β) : Option α ≃ Option β where
   toFun

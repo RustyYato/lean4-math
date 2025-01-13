@@ -476,6 +476,9 @@ def image_const_of_nonempty (a: Set α) (b: β) : a.Nonempty -> a.image (fun _ =
   intro h
   exists a'
 
+def nonempty_insert {a: Set α} {x: α} : (insert x a: Set α).Nonempty :=
+  ⟨x, Set.mem_insert.mpr (.inl rfl)⟩
+
 def nonempty_attach (a: Set α) : a.attach.Nonempty ↔ a.Nonempty := by
   apply Iff.intro
   intro ⟨⟨x, _⟩,  _⟩
@@ -526,6 +529,21 @@ def mem_range' {f: α -> β} :
   f x ∈ Set.range f := by
   apply Set.mem_range.mpr
   exists x
+
+def ssub_spec {a b: Set α} (h: a ⊂ b) : ∃x ∈ b, x ∉ a := by
+  apply Classical.byContradiction
+  intro g
+  rw [not_exists] at g
+  replace g := fun x => not_and.mp (g x)
+  apply h.left
+  apply sub_antisymm h.right
+  intro x mem
+  apply Classical.not_not.mp
+  apply g
+  assumption
+
+instance : IsEmpty (Elem (∅: Set α)) where
+  elim x := not_mem_empty x.property
 
 section min_elem
 

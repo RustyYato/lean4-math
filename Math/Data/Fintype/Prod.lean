@@ -31,7 +31,7 @@ instance {β: α -> Type _} [IsEmpty α] : Fintype ((x: α) × β x) where
   nodup := List.Pairwise.nil
   complete := by
     intro ⟨a, _⟩
-    have := elim_empty a
+    have := IsEmpty.elim a
     contradiction
 
 instance {β: α -> Type _} [h: ∀x, IsEmpty (β x)] : Fintype ((x: α) × β x) where

@@ -11,7 +11,7 @@ def add_zero (o: Ordinal) : o + 0 = o := by
   intro x
   match x with
   | .inl x => exact x
-  | .inr x => exact (elim_empty x).elim
+  | .inr x => exact (elim_empty x: False).elim
   intro; rfl
   intro x
   cases x
@@ -35,7 +35,7 @@ def zero_add (o: Ordinal) : 0 + o = o := by
   intro x
   match x with
   | .inr x => exact x
-  | .inl x => exact (elim_empty x).elim
+  | .inl x => exact (elim_empty x: False).elim
   intro; rfl
   intro x
   cases x

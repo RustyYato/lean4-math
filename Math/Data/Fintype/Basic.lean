@@ -26,7 +26,7 @@ instance [Inhabited α] [Subsingleton α] : Fintype α where
 instance [IsEmpty α] : Fintype α where
   all := []
   nodup := List.Pairwise.nil
-  complete a := (elim_empty a).elim
+  complete a := elim_empty a
 
 instance [Decidable α] : Inhabited (Decidable α) where
   default := inferInstance
