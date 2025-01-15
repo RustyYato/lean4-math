@@ -1,7 +1,7 @@
 import Math.Data.Poly.Basic
 import Math.Data.Set.Finite
 
-def Poly.finite_support [Zero α] (p: Poly α) : (Set.support p.coeffs).IsFinite := by
+def Poly.coeffs_finite_support [Zero α] (p: Poly α) : (Set.support p.coeffs).IsFinite := by
   cases p with
   | mk p deg =>
   induction deg using Quot.ind with

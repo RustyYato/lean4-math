@@ -385,3 +385,109 @@ def Fin.addNat_inj : Function.Injective (Fin.addNat · k (n := n)) := by
   dsimp at eq
   congr
   exact Nat.add_right_cancel eq
+
+def Fin.sum_eq_zero_of_each_eq_zero
+  [Add α] [Zero α] [IsAddZeroClass α]
+  (f: Fin n -> α)
+  (h: ∀x, f x = 0) : Fin.sum f = 0 := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    unfold sum
+    rw [ih, add_zero, h]
+    intro x
+    apply h
+
+def Fin.sum_eq_sum_of_prefix
+  [Add α] [Zero α] [IsAddZeroClass α]
+  (f: Fin n -> α)
+  (g: Fin m -> α)
+  (h₀: ∀x: Fin (min n m), f (x.castLE (Nat.min_le_left _ _)) = g (x.castLE (Nat.min_le_right _ _)))
+  (h₁: ∀x: Fin n, m ≤ x.val -> f x = 0)
+  (h₂: ∀x: Fin m, n ≤ x.val -> g x = 0): Fin.sum f = Fin.sum g := by
+  induction n generalizing m with
+  | zero =>
+    rw [sum, sum_eq_zero_of_each_eq_zero]
+    intro x
+    rw [h₂]
+    apply Nat.zero_le
+  | succ n ih =>
+    cases m with
+    | zero =>
+      symm; rw [sum, sum_eq_zero_of_each_eq_zero]
+      intro
+      rw [h₁]
+      apply Nat.zero_le
+    | succ m =>
+      rw [sum, sum]
+      congr 1
+      apply h₀ ⟨0, _⟩
+      apply Nat.lt_min.mpr
+      apply And.intro <;> apply Nat.zero_lt_succ
+      apply ih
+      · intro x
+        apply h₀ ⟨x.val+1, _⟩
+        rw [Nat.add_min_add_right]
+        apply Nat.add_lt_add_right
+        apply Fin.isLt
+      · intro x h
+        dsimp
+        rw [h₁]
+        apply Nat.succ_le_succ
+        assumption
+      · intro x h
+        dsimp
+        rw [h₂]
+        apply Nat.succ_le_succ
+        assumption
+
+def Fin.sum_strip_prefix
+  [IsAddLeftCancel α]
+  {f: Fin n -> α} {g: Fin m -> α} (k: Nat) (hkn: k ≤ n) (hkm: k ≤ m) :
+  (∀x: Fin k, f (x.castLE hkn) = g (x.castLE hkm)) ->
+  Fin.sum f = Fin.sum g ->
+  Fin.sum (fun x: Fin (n - k) => f <| (x.addNat k).cast (Nat.sub_add_cancel hkn)) = Fin.sum (fun x: Fin (m - k) => g <| (x.addNat k).cast (Nat.sub_add_cancel hkm)) := by
+  induction k generalizing n m with
+  | zero =>
+    intro pre
+    exact id
+  | succ k ih =>
+    intro pre eq
+    cases n with
+    | zero => contradiction
+    | succ n =>
+    cases m with
+    | zero => contradiction
+    | succ m =>
+      erw [sum, sum, pre ⟨0, Nat.zero_lt_succ _⟩] at eq
+      replace eq: g 0 + _ = g 0 + _ := eq
+      replace eq := add_left_cancel eq
+      replace ih := ih (n := n) (m := m) (f := f ∘ succ) (g := g ∘ succ) (Nat.le_of_succ_le_succ hkn) (Nat.le_of_succ_le_succ hkm)
+        ?_ eq
+      unfold Fin.cast
+      dsimp
+      unfold succ addNat Fin.cast at ih
+      dsimp at ih
+      suffices
+        (sum fun x: Fin ((n+1) - (k+1)) => f ⟨↑x + (k + 1), _⟩) = (sum fun x: Fin (n - k) => f ⟨↑x + k + 1, _⟩) ∧
+        (sum fun x: Fin ((m+1) - (k+1)) => g ⟨↑x + (k + 1), _⟩) = (sum fun x: Fin (m - k) => g ⟨↑x + k + 1, _⟩)
+        by
+        rw [this.left, this.right]
+        exact ih
+      apply And.intro
+      any_goals
+        apply Fin.sum_eq_sum_of_prefix
+        intro
+        unfold castLE
+        dsimp
+        rfl
+        all_goals
+          intro x h
+          have := Nat.lt_of_le_of_lt h x.isLt
+          rw [Nat.succ_sub_succ] at this
+          have := Nat.lt_irrefl _ this
+          contradiction
+      intro x
+      apply pre ⟨_, _⟩
+      apply Nat.succ_lt_succ
+      exact x.isLt

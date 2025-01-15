@@ -2,6 +2,8 @@ import Math.Function.Basic
 import Math.Data.Like.Func
 import Math.Data.StdNat.Find
 import Math.Relation.Basic
+import Math.Algebra.Ring
+import Math.Data.Fin.Basic
 
 def Poly.DegreeLe [Zero α] (f: Nat -> α) (bound: Nat) :=
   ∀n > bound, f n = 0
@@ -80,5 +82,223 @@ def degree_is_minimal (p: Poly α) : ∀x, Poly.DegreeLe p.coeffs x -> p.degree 
   exact (Poly.findDegree f h).snd.right
 
 end degree
+
+def ofCoeffs (coeffs: List α) : Poly α where
+  coeffs n := coeffs.getD n 0
+  has_degree := by
+    refine Squash.mk ⟨coeffs.length, ?_⟩
+    intro n h
+    dsimp
+    unfold List.getD
+    rw [List.get?_eq_none]
+    rfl
+    apply Nat.le_of_lt
+    assumption
+
+instance [Add α] [IsAddZeroClass α] : Add (Poly α) where
+  add a b := Poly.mk (fun n => a.coeffs n + b.coeffs n) <| by
+    match a, b with
+    | .mk a ha, .mk b hb =>
+    apply ha.lift
+    intro ⟨bound_a, ha⟩
+    apply hb.lift
+    intro ⟨bound_b, hb⟩
+    dsimp
+    apply Squash.mk
+    refine ⟨max bound_a bound_b, ?_⟩
+    intro n h
+    dsimp
+    rw [ha, hb, add_zero]
+    apply Nat.lt_of_le_of_lt _ h
+    apply Nat.le_max_right
+    apply Nat.lt_of_le_of_lt _ h
+    apply Nat.le_max_left
+
+instance [Add α] [Mul α] [IsAddZeroClass α] [IsMulZeroClass α] : Mul (Poly α) where
+  mul a b := Poly.mk (fun n => Fin.sum (n := n + 1) fun x => a.coeffs x.val * b.coeffs (n - x.val)) <| by
+    match a, b with
+    | .mk a ha, .mk b hb =>
+    apply ha.lift
+    intro ⟨bound_a, ha⟩
+    apply hb.lift
+    intro ⟨bound_b, hb⟩
+    dsimp
+    apply Squash.mk
+    refine ⟨bound_a + bound_b, ?_⟩
+    intro n h
+    dsimp
+    apply Fin.sum_eq_zero_of_each_eq_zero
+    intro x
+    if g:bound_a < x then
+      rw [ha, zero_mul]
+      assumption
+    else
+      rw [hb, mul_zero]
+      apply Nat.add_lt_add_iff_left.mp
+      show bound_a + bound_b < _
+      apply Nat.lt_of_lt_of_le h
+      rw [←Nat.add_sub_assoc, Nat.add_comm, Nat.add_sub_assoc]
+      apply Nat.le_add_right
+      apply Nat.le_of_not_lt
+      assumption
+      apply Nat.le_of_lt_succ
+      exact x.isLt
+
+instance [Neg α] [IsNegZeroClass α] : Neg (Poly α) where
+  neg p := by
+    apply Poly.mk (fun n => -p.coeffs n)
+    apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
+    intro ⟨bound, spec⟩
+    apply Squash.mk
+    refine ⟨bound, ?_⟩
+    intro n h
+    dsimp
+    rw [spec, neg_zero]
+    assumption
+
+instance [Add α] [SMul ℕ α] [IsAddMonoid α] : SMul ℕ (Poly α) where
+  smul k p := by
+    apply Poly.mk (fun n => k • p.coeffs n)
+    apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
+    intro ⟨bound, spec⟩
+    apply Squash.mk
+    refine ⟨bound, ?_⟩
+    intro n h
+    dsimp
+    rw [spec, nsmul_zero]
+    assumption
+
+instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass α] [IsSubNegMonoid α] : SMul ℤ (Poly α) where
+  smul k p := by
+    apply Poly.mk (fun n => k • p.coeffs n)
+    apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
+    intro ⟨bound, spec⟩
+    apply Squash.mk
+    refine ⟨bound, ?_⟩
+    intro n h
+    dsimp
+    rw [spec, zsmul_zero]
+    assumption
+
+instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass α] [IsSubNegMonoid α] : Sub (Poly α) where
+  sub a b := Poly.mk (fun n => a.coeffs n - b.coeffs n) <| by
+    match a, b with
+    | .mk a ha, .mk b hb =>
+    apply ha.lift
+    intro ⟨bound_a, ha⟩
+    apply hb.lift
+    intro ⟨bound_b, hb⟩
+    dsimp
+    apply Squash.mk
+    refine ⟨max bound_a bound_b, ?_⟩
+    intro n h
+    dsimp
+    rw [ha, hb, sub_zero]
+    apply Nat.lt_of_le_of_lt _ h
+    apply Nat.le_max_right
+    apply Nat.lt_of_le_of_lt _ h
+    apply Nat.le_max_left
+
+variable [One α] [Add α] [Mul α] [Pow α ℕ] [IsAddZeroClass α] [IsMulZeroClass α] [IsMonoid α]
+
+def eval (p: Poly α) (x: α) : α := by
+  apply Quot.liftOn p.has_degree _ _
+  intro ⟨bound, spec⟩
+  refine Fin.sum (n := bound+1) ?_
+  intro n
+  exact p.coeffs n.val * x ^ n.val
+  intro ⟨a, bound_a⟩ ⟨b, bound_b⟩ _
+  dsimp
+  cases p with
+  | mk  p h =>
+  dsimp
+  dsimp at bound_a bound_b
+  clear h
+  apply Fin.sum_eq_sum_of_prefix
+  intro; rfl
+  intro n b_le_n
+  rw [bound_b, zero_mul]
+  apply Nat.lt_of_le_of_lt _ b_le_n
+  apply Nat.le_refl
+  intro n a_le_n
+  rw [bound_a, zero_mul]
+  apply Nat.lt_of_le_of_lt _ a_le_n
+  apply Nat.le_refl
+
+instance : CoeFun (Poly α) (fun _ => α -> α) := ⟨eval⟩
+
+def Poly.ext_coeffs (a b: Poly α) : a.coeffs = b.coeffs -> a = b := by
+  intro h
+  cases a;cases b; congr
+  apply Subsingleton.helim
+  dsimp at h
+  rw [h]
+
+instance : IsAddZeroClass (Poly α) where
+  zero_add a := by
+    apply Poly.ext_coeffs
+    ext n
+    show 0 + _ = _
+    rw [zero_add]
+  add_zero a := by
+    apply Poly.ext_coeffs
+    ext n
+    show _ + 0 = _
+    rw [add_zero]
+
+instance [IsAddSemigroup α] : IsAddSemigroup (Poly α) where
+  add_assoc a b c := by
+    apply Poly.ext_coeffs
+    ext n
+    show _ + _ + _ = _
+    rw [add_assoc]
+    rfl
+
+instance [Neg α] [IsNegZeroClass α] : IsNegZeroClass (Poly α) where
+  neg_zero := by
+    apply Poly.ext_coeffs
+    ext n
+    show - 0 = _
+    rw [neg_zero]
+    rfl
+
+instance [SMul ℕ α] [IsAddMonoid α] : IsAddMonoid (Poly α) where
+  nsmul_zero p := by
+    apply Poly.ext_coeffs
+    ext n
+    show 0 • (p.coeffs n) = _
+    rw [zero_nsmul]
+    rfl
+  nsmul_succ := by
+    intro k p
+    apply Poly.ext_coeffs
+    ext n
+    show (k + 1) • (p.coeffs n) = _
+    rw [succ_nsmul]
+    rfl
+
+instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass α] [IsSubNegMonoid α] : IsSubNegMonoid (Poly α) where
+  sub_eq_add_neg p q := by
+    apply Poly.ext_coeffs
+    ext n
+    show p.coeffs n - q.coeffs n = p.coeffs n + -q.coeffs n
+    rw [sub_eq_add_neg]
+  zsmul_ofNat k p := by
+    apply Poly.ext_coeffs
+    ext n
+    show (k: ℤ) • p.coeffs n = _
+    apply zsmul_ofNat
+  zsmul_negSucc k p := by
+    apply Poly.ext_coeffs
+    ext n
+    show (Int.negSucc k) • p.coeffs n = _
+    apply zsmul_negSucc
+
+instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsAddGroup α] : IsAddGroup (Poly α) where
+  neg_add_cancel a := by
+    apply Poly.ext_coeffs
+    ext n
+    show -a.coeffs n + _ = 0
+    rw [neg_add_cancel]
 
 end Poly

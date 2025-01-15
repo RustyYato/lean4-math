@@ -50,6 +50,11 @@ variable [NatCast R] [IntCast R] [∀n, OfNat R (n+2)]
 variable (M: Type*) [Zero M] [Add M] [Sub M] [SMul ℕ M] [SMul ℤ M] [Neg M]
 variable [SMul R M]
 
+class IsNontrivial: Prop where
+  zero_ne_one: 0 ≠ (1: α)
+
+export IsNontrivial (zero_ne_one)
+
 class IsAddSemigroup: Prop where
   add_assoc (a b c: α) : a + b + c = a + (b + c)
 class IsSemigroup: Prop where
@@ -136,6 +141,9 @@ def one_mul [IsMulOneClass α₁] (a: α₁) : 1 * a = a := IsMulOneClass.one_mu
 def mul_one [IsMulOneClass α₁] (a: α₁) : a * 1 = a := IsMulOneClass.mul_one a
 def zero_mul [Zero α₁] [IsMulZeroClass α₁] (a: α₁) : 0 * a = 0 := IsMulZeroClass.zero_mul a
 def mul_zero [Zero α₁] [IsMulZeroClass α₁] (a: α₁) : a * 0 = 0 := IsMulZeroClass.mul_zero a
+
+def all_eq_zero_of_trivial [Zero α₁] [IsMulZeroClass α₁] [IsMulOneClass α₁] (triv: (0: α₁) = (1: α₁)) (a: α₁) : a = 0 := by
+  rw [←mul_one a, ←triv, mul_zero]
 
 def nsmulRec : ℕ -> α₀ -> α₀
 | 0, _ => 0
@@ -286,6 +294,9 @@ def zero_zsmul [IsSubNegMonoid α₀] (a: α₀) : (0: ℤ) • a = 0 := by
 def one_zsmul [IsSubNegMonoid α₀] (a: α₀) : (1: ℤ) • a = a := by
   have : 1 = Int.ofNat 1 := rfl
   rw [this, zsmul_ofNat, one_nsmul]
+
+def sub_zero [IsSubNegMonoid α₀] [IsNegZeroClass α₀] (a: α₀): a - 0 = a := by
+  rw [sub_eq_add_neg, neg_zero, add_zero]
 
 class IsSubtractionMonoid extends IsSubNegMonoid α, IsInvolutiveNeg α: Prop where
   neg_add_rev (a b: α) : -(a + b) = -b + -a
