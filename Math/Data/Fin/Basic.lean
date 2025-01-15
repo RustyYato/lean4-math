@@ -491,3 +491,45 @@ def Fin.sum_strip_prefix
       apply pre ⟨_, _⟩
       apply Nat.succ_lt_succ
       exact x.isLt
+
+def Fin.sum_pop [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α]
+  (f: Fin (n + 1) -> α) : Fin.sum f = Fin.sum (fun x: Fin n => f x.castSucc) + f (Fin.last _) := by
+  induction n with
+  | zero =>
+    simp [sum]
+    rw [zero_add, add_zero]
+  | succ n ih =>
+    rw [sum, ih, sum, ←add_assoc]
+    rfl
+
+def Fin.sum_rev [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (f: Fin n -> α) : Fin.sum f = Fin.sum (f ∘ Fin.rev) := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [sum, sum_pop, add_comm, ih]
+    congr
+    · ext x
+      dsimp
+      unfold rev succ castSucc castAdd castLE
+      dsimp
+      congr
+      rw [Nat.succ_sub]
+      apply Nat.le_of_lt_succ
+      apply Nat.succ_lt_succ
+      exact x.isLt
+    rw [Fin.rev_last]
+
+def Fin.sum_add_sum [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (f g: Fin n -> α) : Fin.sum f + Fin.sum g = Fin.sum (fun n => f n + g n) := by
+  induction n with
+  | zero =>
+    erw [add_zero]
+    rfl
+  | succ n ih =>
+    simp [sum]
+    rw [
+      ←add_assoc, add_comm _ (g 0),
+      ←add_assoc, add_comm (g 0),
+      add_assoc, ih (f ∘ succ) (g ∘ succ)]
+    rfl

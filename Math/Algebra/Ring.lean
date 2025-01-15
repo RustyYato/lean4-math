@@ -306,7 +306,7 @@ class IsDivisionMonoid extends IsDivInvMonoid α, IsInvolutiveInv α: Prop where
   inv_mul_rev (a b: α) : (a * b)⁻¹ = b⁻¹ * a⁻¹
   inv_eq_of_mul_left (a b: α) : a * b = 1 -> a⁻¹ = b
 
-def sub_neg_rev [IsSubtractionMonoid α₀] (a b: α₀) : -(a + b) = -b + -a := IsSubtractionMonoid.neg_add_rev a b
+def neg_add_rev [IsSubtractionMonoid α₀] (a b: α₀) : -(a + b) = -b + -a := IsSubtractionMonoid.neg_add_rev _ _
 def neg_eq_of_add_left [IsSubtractionMonoid α₀] {a b: α₀} : a + b = 0 -> -a = b := IsSubtractionMonoid.neg_eq_of_add_left a b
 def neg_eq_of_add_right [IsSubtractionMonoid α₀] {a b: α₀} : a + b = 0 -> a = -b := by
   intro h
@@ -486,7 +486,24 @@ class IsModule [IsSemiring R] [IsAddCommMagma M] [IsAddMonoid M] extends IsDistr
 
 class IsNonUnitalNonAssocSemiring extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α: Prop
 
+instance
+  [IsAddCommMagma α] [IsAddMonoid α]
+  [IsLeftDistrib α] [IsRightDistrib α]
+  [IsMulZeroClass α]
+  : IsNonUnitalNonAssocSemiring α where
+
 class IsNonAssocSemiring extends IsNonUnitalNonAssocSemiring α, IsMulOneClass α, IsAddMonoidWithOne α: Prop
+
+instance
+  [IsNonUnitalNonAssocSemiring α]
+  [IsMulOneClass α]
+  [IsAddMonoidWithOne α]
+  : IsNonAssocSemiring α where
+  natCast_zero := natCast_zero
+  natCast_succ := natCast_succ
+  ofNat_zero := IsAddMonoidWithOne.ofNat_zero
+  ofNat_one := IsAddMonoidWithOne.ofNat_one
+  ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
 instance [IsSemiring α] : IsNonAssocSemiring α where
   natCast_zero := natCast_zero
@@ -518,10 +535,6 @@ def natCast_mul [IsSemiring R₀] (a b: ℕ) : (NatCast.natCast (a * b): R₀) =
   induction b with
   | zero => rw [Nat.mul_zero, natCast_zero, mul_zero]
   | succ b ih => rw [Nat.mul_succ, natCast_add, natCast_succ, mul_add, mul_one, ih]
-
-def neg_add_rev [IsAddGroup α₀] (a b: α₀) : -(a + b) = -b + -a := by
-  apply neg_eq_of_add
-  rw [add_assoc, ←add_assoc b, add_neg_cancel, zero_add, add_neg_cancel]
 
 def intCast_zero [IsRing R₀] : (IntCast.intCast 0: R₀) = 0 := by
   have : 0 = Int.ofNat 0 := rfl
