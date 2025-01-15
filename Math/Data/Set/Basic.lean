@@ -545,6 +545,36 @@ def ssub_spec {a b: Set α} (h: a ⊂ b) : ∃x ∈ b, x ∉ a := by
 instance : IsEmpty (Elem (∅: Set α)) where
   elim x := not_mem_empty x.property
 
+def support_by (f: α -> β) (default: β): Set α := (Set.preimage {default} f)ᶜ
+def support (f: α -> β) [Zero β] := support_by f 0
+
+def mem_support_by {f: α -> β} {default: β}: ∀{x}, x ∈ support_by f default ↔ f x ≠ default := Iff.rfl
+def mem_support {f: α -> β} [Zero β]: ∀{x}, x ∈ support f ↔ f x ≠ 0 := Iff.rfl
+
+def support_by_const_default (default: β) :
+  Set.support_by (fun _: α => default) default = ∅ := by
+  apply ext_empty
+  intros x mem
+  contradiction
+
+def support_const_zero [Zero β] :
+  Set.support (fun _: α => (0: β)) = ∅ := support_by_const_default 0
+
+def support_by_const_ne_default {value default: β} (h: value ≠ default) :
+  Set.support_by (fun _: α => value) default = Set.univ _ := by
+  apply ext_univ
+  intro x
+  assumption
+
+def support_const_ne_zero [Zero β] {value: β} (h: value ≠ 0) :
+  Set.support (fun _: α => value) = Set.univ _ := support_by_const_ne_default h
+
+@[coe]
+def ofList (xs: List α) := Set.mk (· ∈ xs)
+
+instance : Coe (List α) (Set α) := ⟨ofList⟩
+
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]

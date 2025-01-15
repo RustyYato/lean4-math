@@ -136,7 +136,6 @@ instance {as: Set α} {f: α -> β} [ha: IsFinite as] : IsFinite (Set.image as f
   case inj =>
     intro ⟨x, xprop⟩ ⟨y, yprop⟩ eq
     simp at eq
-    replace eq := Subtype.mk.inj eq
     have ⟨_, h₀⟩ := Classical.choose_spec xprop
     have ⟨_, h₁⟩ := Classical.choose_spec yprop
     rw [←eq] at h₁
@@ -173,6 +172,19 @@ instance {as: Set α} [ha: IsFinite as] : IsFinite as.powerset := by
     rw [eqv.leftInv] at this
     apply this
     assumption
+
+open Classical in
+def IsFinite.ofSubset (s t: Set α) [h: t.IsFinite] (h: s ⊆ t) : s.IsFinite := by
+  apply IsFinite.ofEmbed (β := t)
+  apply Embedding.mk
+  case toFun =>
+    intro x
+    exact ⟨x.val, h _ x.property⟩
+  case inj =>
+    intro ⟨x, _⟩ ⟨y, _⟩ eq
+    cases eq
+    congr
+
 
 def IsFinite.induction {motive : Set α → Prop} (s : Set α) [h : s.IsFinite]
     (nil: motive ∅)
