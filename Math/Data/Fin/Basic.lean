@@ -378,3 +378,10 @@ def Fin.equivMul (n m: Nat) : Fin n × Fin m ≃ Fin (n * m) where
   rightInv x := by
     dsimp
     rw [Fin.pair_split_eq_self]
+
+def Fin.addNat_inj : Function.Injective (Fin.addNat · k (n := n)) := by
+  intro ⟨x, _⟩ ⟨y, _⟩ eq
+  replace eq := Fin.val_inj.mpr eq
+  dsimp at eq
+  congr
+  exact Nat.add_right_cancel eq
