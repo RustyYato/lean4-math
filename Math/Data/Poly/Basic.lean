@@ -227,6 +227,57 @@ def eval (p: Poly α) (x: α) : α := by
 
 instance : CoeFun (Poly α) (fun _ => α -> α) := ⟨eval⟩
 
+-- def ext_eval [IsAddLeftCancel α] (f g: Poly α) : (∀x, f x = g x) -> f = g := by
+--   intro h
+--   cases f with | mk f fbound =>
+--   cases g with | mk g gbound =>
+--   suffices f = g by
+--     congr 1
+--     apply Subsingleton.helim
+--     rw [this]
+--   ext x
+--   induction fbound using Quot.ind with | mk fbound =>
+--   induction gbound using Quot.ind with | mk gbound =>
+--   obtain ⟨bound_f, bound_f_spec⟩ := fbound
+--   obtain ⟨bound_g, bound_g_spec⟩ := gbound
+--   unfold eval at h
+--   dsimp [Quot.liftOn] at h
+--   induction x using Nat.strongRecOn with
+--   | ind x ih =>
+--     refine if hfx:bound_f < x then ?_ else ?_
+--     sorry
+--     refine if hgx:bound_g < x then ?_ else ?_
+--     sorry
+--     cases x with
+--     | zero =>
+--       have := h 0
+--       erw [Fin.sum, Fin.sum, npow_zero, mul_one, mul_one, Fin.sum_eq_zero_of_each_eq_zero,
+--         Fin.sum_eq_zero_of_each_eq_zero, add_zero, add_zero] at this
+--       exact this
+--       intro x
+--       dsimp
+--       rw [npow_succ, mul_zero, mul_zero]
+--       intro x
+--       dsimp
+--       rw [npow_succ, mul_zero, mul_zero]
+--     | succ x =>
+--       replace hfx := Nat.le_of_not_lt hfx
+--       replace hgx := Nat.le_of_not_lt hgx
+--       have h' := fun m => Fin.sum_strip_prefix x (by
+--         apply Nat.le_trans _ (Nat.le_trans hfx _)
+--         apply Nat.le_succ
+--         apply Nat.le_succ) (by
+--         apply Nat.le_trans _ (Nat.le_trans hgx _)
+--         apply Nat.le_succ
+--         apply Nat.le_succ) (by
+--         intro ⟨n, n_lt_x⟩
+--         dsimp
+--         rw [ih]
+--         apply Nat.lt_trans n_lt_x
+--         apply Nat.lt_succ_self) (h m)
+--       dsimp at h'
+--       sorry
+
 def Poly.ext_coeffs (a b: Poly α) : a.coeffs = b.coeffs -> a = b := by
   intro h
   cases a;cases b; congr
@@ -300,5 +351,13 @@ instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsAddGroup α] 
     ext n
     show -a.coeffs n + _ = 0
     rw [neg_add_cancel]
+
+instance [Add α] [IsAddZeroClass α] [IsAddCommMagma α] : IsAddCommMagma (Poly α) where
+  add_comm := by
+    intro p q
+    apply Poly.ext_coeffs
+    ext n
+    show p.coeffs n + q.coeffs n = q.coeffs n + p.coeffs n
+    rw [add_comm]
 
 end Poly
