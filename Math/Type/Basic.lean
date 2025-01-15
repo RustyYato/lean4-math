@@ -537,3 +537,9 @@ def Option.congrEquiv (h: α ≃ β) : Option α ≃ Option β where
     rfl
     dsimp
     rw [h.symm_coe]
+
+def Fin.equivSubtype (n: Nat) : Fin n ≃ Subtype (· < n) where
+  toFun | ⟨x, h⟩ => ⟨x, h⟩
+  invFun | ⟨x, h⟩ => ⟨x, h⟩
+  leftInv _ := rfl
+  rightInv _ := rfl

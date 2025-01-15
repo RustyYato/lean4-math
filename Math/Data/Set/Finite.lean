@@ -286,4 +286,15 @@ def IsFinite.spec (s: Set α) [h: s.IsFinite] : ∃s': List α, s'.Nodup ∧ ∀
     intro y
     rw [mem_insert, List.mem_cons, eqv]
 
+instance (n: Nat) : Set.IsFinite (Set.mk (· < n)) := by
+  apply IsFinite.intro n
+  exact (Fin.equivSubtype n).symm
+
+instance (n: Nat) : Set.IsFinite (Set.mk (· ≤ n)) := by
+  suffices Set.mk (· ≤ n) = Set.mk (· < (n + 1)) by
+    rw [this]
+    infer_instance
+  ext x
+  apply Nat.le_iff_lt_add_one
+
 end Set

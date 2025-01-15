@@ -12,7 +12,9 @@ structure Poly (α: Type*) [Zero α] where
 
 namespace Poly
 
-instance [Zero α] : Zero (Poly α) where
+variable [Zero α]
+
+instance : Zero (Poly α) where
   zero := {
     coeffs _ := 0
     has_degree := Squash.mk ⟨0, fun _ _ => rfl⟩
@@ -20,7 +22,7 @@ instance [Zero α] : Zero (Poly α) where
 
 section degree
 
-variable [Zero α] [BEq α] [LawfulBEq α]
+variable [BEq α] [LawfulBEq α]
 
 private
 def findDegree (f: Nat -> α) : (Σ'm: Nat, Poly.DegreeLe f m) -> Σ'm: Nat, Poly.DegreeLe f m ∧ ∀x, Poly.DegreeLe f x -> m ≤ x
