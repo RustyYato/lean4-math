@@ -193,9 +193,42 @@ instance {α: Sort*} {P: α -> Prop} [IsFinite α] : IsFinite (Subtype P) := by
   apply PLift.equiv.symm
   rfl
 
-instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∨ Q x)) := by
+instance {α: Sort*} {P Q: α -> Prop} [hp: IsFinite (Subtype P)] [hq: IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∨ Q x)) := by
+  obtain ⟨cardp, peqv⟩ := hp
+  obtain ⟨cardq, qeqv⟩ := hq
+  apply IsFinite.ofEmbedding (limit := cardp + cardq)
+  apply Embedding.mk
+  case toFun =>
+    intro ⟨x, h⟩
+    if g:P x then
+      exact (peqv ⟨x, g⟩).addNat cardq
+    else
+      exact (qeqv ⟨x, h.resolve_left g⟩).castLE (Nat.le_add_left _ _)
+  case inj =>
+    intro ⟨x, hx⟩ ⟨y, hy⟩ eq
+    dsimp at eq
+    split at eq <;> split at eq <;> rename_i gx gy
+    cases peqv.toFun_inj (Fin.addNat_inj eq)
+    rfl
+    replace eq := Fin.val_inj.mpr eq
+    dsimp at eq
+    have : qeqv ⟨y, Or.resolve_left hy gy⟩ < cardq := Fin.isLt _
+    rw [←eq] at this
+    have := Nat.not_le_of_lt this (Nat.le_add_left _ _)
+    contradiction
+    replace eq := Fin.val_inj.mpr eq
+    dsimp at eq
+    have : qeqv ⟨x, Or.resolve_left hx gx⟩ < cardq := Fin.isLt _
+    rw [eq] at this
+    have := Nat.not_le_of_lt this (Nat.le_add_left _ _)
+    contradiction
+    congr
+    replace eq := Fin.val_inj.mpr eq
+    dsimp at eq
+    replace eq := Fin.val_inj.mp eq
+    cases qeqv.toFun_inj eq
+    rfl
 
-  sorry
 instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
   apply IsFinite.ofEquiv' (Subtype fun x: Subtype P => Q x.val)
   apply Equiv.mk
@@ -207,3 +240,22 @@ instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype
     refine ⟨x, ?_, ?_⟩ <;> assumption
   case leftInv => intro ⟨x, _, _⟩; rfl
   case rightInv => intro ⟨⟨x, _⟩, _⟩; rfl
+
+instance [IsEmpty α] : IsFinite α := by
+  apply IsFinite.intro 0
+  apply empty_equiv_empty
+
+instance [Subsingleton α] [h: Nonempty α] : IsFinite α := by
+  obtain ⟨x⟩ := h
+  apply IsFinite.intro 1
+  apply Equiv.mk (fun _ => 0) (fun _ => x)
+  intro x
+  apply Subsingleton.allEq
+  intro x
+  apply Subsingleton.allEq
+
+instance [hs: Subsingleton α] : IsFinite α := by
+  by_cases h:Nonempty α
+  · infer_instance
+  · have := IsEmpty.ofNotNonempty h
+    infer_instance

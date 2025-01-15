@@ -50,6 +50,9 @@ instance [IsEmpty α] (β: α -> Sort*) : Subsingleton (∀x, β x) where
 
 instance [IsEmpty α] : Subsingleton (α -> β) := inferInstance
 
+def IsEmpty.ofNotNonempty (h: ¬Nonempty α) : IsEmpty α where
+  elim x := h ⟨x⟩
+
 structure Embedding (α β: Sort*) where
   toFun: α -> β
   inj: Function.Injective toFun
