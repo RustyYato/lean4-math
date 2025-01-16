@@ -68,6 +68,15 @@ def not_prime_and_composite (n: Nat) : IsPrime n -> IsComposite n -> False := by
     rw [Nat.mul_one, ←h] at this
     exact Nat.lt_irrefl _ this
 
+def prime_gt_one (h: IsPrime n) : 1 < n := by
+  have := notprime0
+  have := notprime1
+  match n with
+  | 0 => contradiction
+  | n + 2 =>
+  apply Nat.succ_lt_succ
+  apply Nat.zero_lt_succ
+
 inductive Classify: Nat -> Type where
 | unit: Classify 1
 | prime: IsPrime n -> Classify n
@@ -256,5 +265,65 @@ def prime_factor_pow {p: Nat} (hp: IsPrime p) :
       rcases prime_dvd_mul hp _ _ dvd with dvd | dvd
       exact (ih dvd).left
       assumption
+
+def gcd_eq_one_iff_no_common_prime_factor (a b: Nat):
+  gcd a b = 1 ↔ ∀k, Nat.IsPrime k -> k ∣ a -> k ∣ b -> False := by
+  apply Iff.intro
+  intro h k kprime ha hb
+  have := Nat.dvd_gcd ha hb
+  rw [h] at this
+  cases Nat.dvd_one.mp this
+  exact kprime.left rfl
+  intro nocomm
+  apply Decidable.byContradiction
+  intro h
+  apply nocomm (a.gcd b).minFac (minFac_prime _ h)
+  apply Nat.dvd_trans
+  apply minFac_dvd
+  apply Nat.gcd_dvd_left
+  apply Nat.dvd_trans
+  apply minFac_dvd
+  apply Nat.gcd_dvd_right
+
+def prime_dvd_of_dvd_pow (p a n: Nat) (h: IsPrime p) : p ∣ a ^ n -> p ∣ a := by
+  induction n with
+  | zero =>
+    intro g
+    rw [Nat.pow_zero] at g
+    cases Nat.dvd_one.mp g
+    have := notprime1
+    contradiction
+  | succ n ih =>
+    intro g
+    cases gcd_eq_one_or_dvd_of_prime h a <;> rename_i h'
+    exact ih <| Nat.dvd_left_of_dvd_of_gcd_eq_one p (a^n) a g h'
+    assumption
+
+def pow_gcd_pow (a b n: Nat) : (a ^ n).gcd (b ^ n) = (a.gcd b) ^ n := by
+  by_cases h:0 < a
+  have ⟨a₀, ha⟩ := Nat.gcd_dvd_left a b
+  have ⟨b₀, hb⟩ := Nat.gcd_dvd_right a b
+  have gcd_pos := Nat.gcd_pos_of_pos_left b h
+  have : gcd a₀ b₀ = 1 := by
+    apply Nat.mul_left_cancel gcd_pos
+    rw [←Nat.gcd_mul_left, ←ha, ←hb, Nat.mul_one]
+  conv => { lhs; rw [ha]; rhs; rw [hb] }
+  rw [Nat.mul_pow, Nat.mul_pow, Nat.gcd_mul_left]
+  suffices (a₀^n).gcd (b₀^n) = 1 by rw [this, Nat.mul_one]
+  · rw [gcd_eq_one_iff_no_common_prime_factor]
+    intro k k_prime k_dvd_apow k_dvd_bpow
+    have k_dvd_a := prime_dvd_of_dvd_pow _ _ _ k_prime k_dvd_apow
+    have k_dvd_b := prime_dvd_of_dvd_pow _ _ _ k_prime k_dvd_bpow
+    apply (gcd_eq_one_iff_no_common_prime_factor _ _).mp this
+    exact k_prime
+    assumption
+    assumption
+  by_cases hn:0 = n
+  subst n
+  rw [Nat.pow_zero, Nat.pow_zero, Nat.pow_zero]
+  rfl
+  cases Nat.le_zero.mp (Nat.le_of_not_lt h)
+  rw [Nat.zero_pow, Nat.gcd_zero_left, Nat.gcd_zero_left]
+  apply Nat.zero_lt_of_ne_zero; symm; assumption
 
 end Nat

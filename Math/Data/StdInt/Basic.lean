@@ -30,4 +30,17 @@ def natAbs_npow (a: Int) (n: Nat) : (a ^ n).natAbs = a.natAbs ^ n := by
   | succ n ih =>
     rw [Int.pow_succ, Nat.pow_succ, Int.natAbs_mul, ih]
 
+def ofNat_npow (a: Nat) (n: Nat) : ((a ^ n: Nat): Int) = (a: Int) ^ n := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [Int.pow_succ, Nat.pow_succ, Int.ofNat_mul, ih]
+
+def mul_pow (a b: Int) (n: Nat) : a ^ n * b ^ n = (a * b) ^ n := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [Int.pow_succ, Int.pow_succ, Int.pow_succ, ←ih]
+    ac_rfl
+
 end Int

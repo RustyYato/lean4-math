@@ -1,6 +1,7 @@
 import Math.Type.Notation
 import Math.Data.StdInt.Basic
 import Math.AxiomBlame
+import Math.Ops.Checked
 
 notation "ℕ" => Nat
 notation "ℤ" => Int
@@ -23,7 +24,9 @@ infixr:73 " • " => SMul.smul
 class Inv (α) where
   inv: α -> α
 
-postfix:max "⁻¹" => Inv.inv
+local postfix:max "⁻¹" => Inv.inv
+local syntax:max term noWs "⁻¹?" : term
+macro_rules | `($x⁻¹?) => `(CheckedInvert.checked_invert $x (by invert_tactic))
 
 variable (α: Type*) [Zero α] [One α] [Add α] [Mul α] [Sub α] [Div α]
 variable {α₀ α₁: Type*} [Zero α₀] [One α₁] [Add α₀] [Mul α₁] [Sub α₀] [Div α₁]
@@ -641,3 +644,9 @@ def mul_zsmul [IsAddGroup α₀]  [IsAddCommMagma α₀] (x y: ℤ) (a: α₀) :
   | zero => rw [Int.mul_zero, zero_zsmul, zsmul_zero]
   | succ y ih => rw [Int.mul_add, Int.mul_one, add_zsmul, add_zsmul, one_zsmul, zsmul_add, ih]
   | pred y ih => rw [Int.mul_sub, Int.mul_one, sub_zsmul, sub_zsmul, one_zsmul, zsmul_sub, ih]
+
+variable [CheckedInvert α (P := fun x => x ≠ 0)] [CheckedInvert α₀ (P := fun x => x ≠ 0)]
+
+class IsNonCommField extends IsRing α : Prop where
+  mul_inv_cancel: ∀(a: α) (h: a ≠ 0), a * a⁻¹? = 1
+class IsField extends IsNonCommField α, IsCommMagma α : Prop where

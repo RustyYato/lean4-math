@@ -979,18 +979,82 @@ def Rat.div_nonzero (a b: ℚ) (ha: a ≠ 0) (hb: b ≠ 0) : a /? b ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply Rat.div_nonzero <;> invert_tactic)
 
-def Rat.npow (a: ℚ) (n: Nat) : ℚ where
+def Fract.npow (a: Fract) (n: Nat) : Fract where
   num := a.num ^ n
   den := a.den ^ n
   den_pos := by
     refine Nat.pos_pow_of_pos n ?_
     exact a.den_pos
+
+instance : Pow Fract Nat where
+  pow := Fract.npow
+
+def Rat.npow (a: ℚ) (n: Nat) : ℚ where
+  toFract := a.toFract ^ n
   isReduced := by
-    unfold Fract.isReduced
-    dsimp
-    show (a.num ^ n).natAbs.gcd _ = _
+    show Fract.isReduced (Fract.npow _ _)
+    show (a.num ^ n).natAbs.gcd (a.den ^ n) = _
     rw [Int.natAbs_npow]
+    show (‖a.num‖^n).gcd _ = 1
+    rw [Nat.pow_gcd_pow, a.isReduced, Nat.one_pow]
 
+instance : Pow ℚ Nat where
+  pow := Rat.npow
 
+def Fract.zpow (a: Fract) : Int -> Fract
+| .ofNat n => a ^ n
+| .negSucc n =>
+  if h:a ≈ 0 then
+    0
+  else
+    a.inv h ^ (n + 1)
 
-    sorry
+instance : Pow Fract Int where
+  pow := Fract.zpow
+
+def Rat.zpow (a: ℚ) : Int -> ℚ
+| .ofNat n => a ^ n
+| .negSucc n =>
+  if h:a = 0 then
+    0
+  else
+    (a⁻¹) ^ (n + 1)
+
+instance : Pow ℚ Int where
+  pow := Rat.zpow
+
+def Fract.npow.spec (a b: Fract) (n: Nat) : a ≈ b -> a ^ n ≈ b ^ n := by
+  intro eq
+  replace eq : _ = _ := eq
+  show _ = _
+  show (a.num ^ n) * ↑(b.den ^ n) = (b.num ^ n) * ↑(a.den ^ n)
+  rw [Int.ofNat_npow, Int.ofNat_npow, Int.mul_pow, Int.mul_pow, eq]
+
+def Rat.mk_npow (a: Fract) (n: Nat) : ⟦a⟧ ^ n = ⟦a ^ n⟧ := by
+  apply Rat.toFract.inj
+  apply Fract.isReduced.spec
+  apply Rat.isReduced
+  apply Rat.isReduced
+  show (Rat.npow _ _).toFract ≈ _
+  apply Fract.trans _ (quot.exact' (Q := ℚ)).symm
+  unfold Rat.npow
+  dsimp
+  apply Fract.npow.spec
+  exact (quot.exact' (Q := ℚ))
+
+def Rat.mk_zpow (a: Fract) (n: Int) : ⟦a⟧ ^ n = ⟦a ^ n⟧ := by
+  cases n
+  apply Rat.mk_npow
+  show Rat.zpow _ _ = ⟦Fract.zpow _ _⟧
+  unfold Rat.zpow Fract.zpow
+  dsimp
+  split <;> rename_i h
+  rw [dif_pos]
+  rfl
+  exact quot.exact h
+  rw [dif_neg (by
+    intro g
+    apply h
+    exact quot.sound g)]
+  rw [mk_inv, mk_npow]
+  rfl
