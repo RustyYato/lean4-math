@@ -202,4 +202,25 @@ def generate (U: Set (Set α)) : Topology α where
   inter_open := Generate.IsOpen.inter
   sUnion_open := Generate.IsOpen.sUnion
 
+class Discrete (α: Type*) extends Topology α where
+  eq_bot: toTopology = ⊥
+
+instance : Topology Empty := ⊥
+instance : Discrete Empty := ⟨rfl⟩
+
+instance : Topology PEmpty := ⊥
+instance : Discrete PEmpty := ⟨rfl⟩
+
+instance : Topology PUnit := ⊥
+instance : Discrete PUnit := ⟨rfl⟩
+
+instance : Topology Bool := ⊥
+instance : Discrete Bool := ⟨rfl⟩
+
+instance : Topology ℕ := ⊥
+instance : Discrete ℕ := ⟨rfl⟩
+
+instance : Topology ℤ := ⊥
+instance : Discrete ℤ := ⟨rfl⟩
+
 end Topology
