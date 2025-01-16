@@ -1,19 +1,15 @@
 import Math.Data.Set.Basic
 
-class HasTopology (α: Type*) where
+class Topology (α: Type*) where
   IsOpen: Set α -> Prop
-
-open HasTopology in
-class IsTopologicalSpace (α: Type*) [HasTopology α]: Prop where
   univ_open: IsOpen (Set.univ α)
   inter_open: ∀{a b: Set α}, IsOpen a -> IsOpen b -> IsOpen (a ∩ b)
   sUnion_open: ∀{a: Set (Set α)}, (∀x ∈ a, IsOpen x) -> IsOpen (⋃ a)
 
-namespace TopologicalSpace
+namespace Topology
 
-variable [HasTopology α] [HasTopology β] [IsTopologicalSpace α] [IsTopologicalSpace β]
+variable [Topology α] [Topology β]
 
-def IsOpen : Set α -> Prop := HasTopology.IsOpen
 def IsClosed (s: Set α) : Prop := IsOpen sᶜ
 def IsClopen (s: Set α) : Prop := IsOpen s ∧ IsClosed s
 def IsLocallyClosed (s : Set α) : Prop := ∃ (x y : Set α), IsOpen x ∧ IsClosed y ∧ s = x ∩ y
@@ -23,8 +19,7 @@ def Interior (s : Set α) : Set α :=
 -- the smallest closed superset of s
 def Closure (s : Set α) : Set α :=
   ⋂ Set.mk fun x => IsClosed x ∧ s ⊆ x
--- the smallest closed superset of s
-def Frontier (s : Set α) : Set α :=
+def Border (s : Set α) : Set α :=
   Closure s \ Interior s
 def Dense (s: Set α) :=
   ∀x, x ∈ Closure s
@@ -35,9 +30,9 @@ class IsContinuous (f : α → β) : Prop where
   instead. -/
   isOpen_preimage : ∀s: Set β, IsOpen s → IsOpen (s.preimage f)
 
-def IsOpen.univ : IsOpen (Set.univ α) := IsTopologicalSpace.univ_open
-def IsOpen.inter {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∩ b) := IsTopologicalSpace.inter_open
-def IsOpen.sUnion {a: Set (Set α)} : (∀x ∈ a, IsOpen x) -> IsOpen (⋃a) := IsTopologicalSpace.sUnion_open
+def IsOpen.univ : IsOpen (Set.univ α) := Topology.univ_open
+def IsOpen.inter {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∩ b) := Topology.inter_open
+def IsOpen.sUnion {a: Set (Set α)} : (∀x ∈ a, IsOpen x) -> IsOpen (⋃a) := Topology.sUnion_open
 def IsOpen.preimage (f: α -> β) [IsContinuous f] : ∀s: Set β, IsOpen s → IsOpen (s.preimage f) := IsContinuous.isOpen_preimage
 def IsOpen.preimage' {f: α -> β} (h: IsContinuous f) : ∀s: Set β, IsOpen s → IsOpen (s.preimage f) := IsContinuous.isOpen_preimage
 
@@ -74,7 +69,7 @@ def Closure.univ : Closure (Set.univ α) = Set.univ α := by
   intro xs ⟨xs_closed, univ_sub_xs⟩
   cases Set.univ_sub _ univ_sub_xs
   apply Set.mem_univ
-def Frontier.univ : Frontier (Set.univ α) = ∅ := by
+def Border.univ : Border (Set.univ α) = ∅ := by
   apply Set.ext_empty
   intro x mem
   erw [Set.mem_sdiff, Closure.univ, Interior.univ] at mem
@@ -94,7 +89,7 @@ def Closure.empty : Closure (∅: Set α) = ∅ := by
   erw [Set.mem_sInter] at mem
   have := mem ∅ ⟨IsClosed.empty, Set.sub_refl _⟩
   contradiction
-def Frontier.empty : Frontier (∅: Set α) = ∅ := by
+def Border.empty : Border (∅: Set α) = ∅ := by
   apply Set.ext_empty
   intro x mem
   erw [Set.mem_sdiff, Closure.empty, Interior.empty] at mem
@@ -113,10 +108,7 @@ def IsContinuous.id : IsContinuous (@id α) where
     ext x
     apply Iff.trans Set.mem_preimage
     apply Iff.intro
-    intro ⟨a', a'_in_s, eq⟩
-    cases eq
-    assumption
-    intro h
-    exists x
+    exact _root_.id
+    exact _root_.id
 
-end TopologicalSpace
+end Topology
