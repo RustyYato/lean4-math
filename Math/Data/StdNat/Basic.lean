@@ -336,21 +336,21 @@ def triangle_inj : Function.Injective triangle := by
   have := triangle_strict_monotone _ _ ba
   rw [eq] at this; exact Nat.lt_irrefl _ this
 
-def triangle_of_eq_iff (a x: Nat) :
-  triangle_of a = x ↔ triangle x ≤ a ∧ a < triangle (x + 1) := by
-  apply Iff.intro
-  · intro h
-    subst x
-    unfold triangle_of
-    unfold triangle
-    apply And.intro
-    · apply Nat.div_le_of_le_mul
-      generalize hb:(8 * a + 1).sqrt = b
-      sorry
-    · sorry
-  · intro ⟨h, g⟩
-    apply triangle_inj
-    sorry
+-- def triangle_of_eq_iff (a x: Nat) :
+--   triangle_of a = x ↔ triangle x ≤ a ∧ a < triangle (x + 1) := by
+--   apply Iff.intro
+--   · intro h
+--     subst x
+--     unfold triangle_of
+--     unfold triangle
+--     apply And.intro
+--     · apply Nat.div_le_of_le_mul
+--       generalize hb:(8 * a + 1).sqrt = b
+--       sorry
+--     · sorry
+--   · intro ⟨h, g⟩
+--     apply triangle_inj
+--     sorry
 
 def pair (a b: Nat) :=
   (a + b) * (a + b + 1) / 2 + a
@@ -542,49 +542,49 @@ def div_lt_div (a b k: Nat) : 0 < k -> a + (k - 1) < b -> a / k < b / k := by
   assumption
   assumption
 
-def unpair_inj : Function.Injective unpair := by
-  suffices ∀{a b: Nat}, a < b -> unpair a ≠ unpair b by
-    intro a b eq
-    apply Decidable.byContradiction
-    intro h
-    rcases Nat.lt_or_gt_of_ne h with ab | ba
-    exact this ab eq
-    exact this ba eq.symm
-  intro a b a_lt_b
-  induction b generalizing a with
-  | zero => contradiction
-  | succ b ih =>
-    cases a with
-    | zero =>
-      intro h
-      sorry
-    | succ a =>
-      replace a_lt_b := Nat.lt_of_succ_lt_succ a_lt_b
+-- def unpair_inj : Function.Injective unpair := by
+--   suffices ∀{a b: Nat}, a < b -> unpair a ≠ unpair b by
+--     intro a b eq
+--     apply Decidable.byContradiction
+--     intro h
+--     rcases Nat.lt_or_gt_of_ne h with ab | ba
+--     exact this ab eq
+--     exact this ba eq.symm
+--   intro a b a_lt_b
+--   induction b generalizing a with
+--   | zero => contradiction
+--   | succ b ih =>
+--     cases a with
+--     | zero =>
+--       intro h
+--       sorry
+--     | succ a =>
+--       replace a_lt_b := Nat.lt_of_succ_lt_succ a_lt_b
 
 
 
-  -- unfold unpair
-  -- generalize ha₀:((8 * a + 1).sqrt - 1) / 2 = a₀
-  -- generalize hb₀:((8 * b + 1).sqrt - 1) / 2 = b₀
-  -- dsimp
-  -- intro h
-  -- have : ∀{a}, 1 ≤ (8 * a + 1).sqrt := by
-  --   intro a
-  --   apply Nat.succ_le_of_lt
-  --   apply Nat.sqrt_pos
-  --   apply Nat.zero_lt_succ
-  -- have ⟨h₀, h₁⟩ := Prod.mk.inj h; clear h
+--   -- unfold unpair
+--   -- generalize ha₀:((8 * a + 1).sqrt - 1) / 2 = a₀
+--   -- generalize hb₀:((8 * b + 1).sqrt - 1) / 2 = b₀
+--   -- dsimp
+--   -- intro h
+--   -- have : ∀{a}, 1 ≤ (8 * a + 1).sqrt := by
+--   --   intro a
+--   --   apply Nat.succ_le_of_lt
+--   --   apply Nat.sqrt_pos
+--   --   apply Nat.zero_lt_succ
+--   -- have ⟨h₀, h₁⟩ := Prod.mk.inj h; clear h
 
 
 
 
 
 
-  sorry
+--   sorry
 
-def unpair_pair' (z: Nat) : pair (unpair z).1 (unpair z).2 = z := by
-  apply unpair_inj
-  exact pair_unpair _ _
+-- def unpair_pair' (z: Nat) : pair (unpair z).1 (unpair z).2 = z := by
+--   apply unpair_inj
+--   exact pair_unpair _ _
 
 def unpair_pair (z: Nat) : pair (unpair z).1 (unpair z).2 = z := by
   generalize h:z.unpair=a'
@@ -663,5 +663,21 @@ def unpair_pair (z: Nat) : pair (unpair z).1 (unpair z).2 = z := by
   simp [Int.ofNat_sub le_z, Int.ofNat_sub le_w]
 
   sorry
+
+def mul_eq_one_iff {a b: Nat} : a * b = 1 ↔ a = 1 ∧ b = 1 := by
+  apply Iff.intro
+  · intro h
+    match a with
+    | 0 => rw [Nat.zero_mul] at h; contradiction
+    | 1 =>
+      rw [Nat.one_mul] at h
+      subst b
+      trivial
+    | a + 2 =>
+    match b with
+    | 0 => rw [Nat.mul_zero] at h; contradiction
+    | b + 1 => simp [Nat.mul_add, Nat.add_mul, ←Nat.add_assoc] at h
+  · intro ⟨h, g⟩
+    rw [h, g]
 
 end Nat
