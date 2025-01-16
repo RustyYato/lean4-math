@@ -350,6 +350,9 @@ def mul_inv_cancel [IsGroup α₁] (a: α₁): a * a⁻¹ = 1 := by
   conv => { lhs; lhs; rw [←inv_inv a] }
   rw [inv_mul_cancel]
 
+def sub_self [IsAddGroup α₀] (a: α₀) : a - a = 0 := by
+  rw [sub_eq_add_neg, add_neg_cancel]
+
 class IsLeftDistrib: Prop where
   left_distrib (k a b: α): k * (a + b) = k * a + k * b
 class IsRightDistrib: Prop where
@@ -443,6 +446,16 @@ instance [IsGroup α] : IsDivisionMonoid α where
     apply inv_eq_of_mul
     rw [mul_assoc, ←mul_assoc b, mul_inv_cancel, one_mul, mul_inv_cancel]
   inv_eq_of_mul_left _ _ := inv_eq_of_mul
+
+def sub_sub [IsAddGroup α₀] (a b c: α₀) : a - (b - c) = a + c - b := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, neg_add_rev, neg_neg, add_assoc]
+
+def eq_of_sub_eq_zero [IsAddGroup α₀] (a b: α₀) : a - b = 0 -> a = b := by
+  intro h
+  rw [sub_eq_add_neg] at h
+  have := neg_eq_of_add_right h
+  rw [neg_neg] at this
+  assumption
 
 def neg_mul_left [IsAddGroup R₀] [IsRightDistrib R₀] [IsMulZeroClass R₀] (a b: R₀) : -(a * b) = -a * b := by
   apply neg_eq_of_add

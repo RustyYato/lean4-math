@@ -87,3 +87,8 @@ instance : IsField ℚ where
     dsimp
     rw [dif_neg h]
     rfl
+
+instance : IsNontrivial ℚ where
+  zero_ne_one := by
+    intro h
+    contradiction
