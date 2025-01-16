@@ -24,4 +24,10 @@ induction i with
     apply pred
     assumption
 
+def natAbs_npow (a: Int) (n: Nat) : (a ^ n).natAbs = a.natAbs ^ n := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [Int.pow_succ, Nat.pow_succ, Int.natAbs_mul, ih]
+
 end Int

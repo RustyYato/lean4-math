@@ -1,7 +1,7 @@
 import Math.Data.StdInt.AbsoluteValue
 import Math.Data.QuotLike.Basic
 import Math.Data.StdNat.Gcd
-import Math.Data.StdInt.Induction
+import Math.Data.StdInt.Basic
 import Math.Ops.Checked
 
 structure Fract where
@@ -978,3 +978,19 @@ def Rat.div_nonzero (a b: ℚ) (ha: a ≠ 0) (hb: b ≠ 0) : a /? b ≠ 0 := by
 
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply Rat.div_nonzero <;> invert_tactic)
+
+def Rat.npow (a: ℚ) (n: Nat) : ℚ where
+  num := a.num ^ n
+  den := a.den ^ n
+  den_pos := by
+    refine Nat.pos_pow_of_pos n ?_
+    exact a.den_pos
+  isReduced := by
+    unfold Fract.isReduced
+    dsimp
+    show (a.num ^ n).natAbs.gcd _ = _
+    rw [Int.natAbs_npow]
+
+
+
+    sorry
