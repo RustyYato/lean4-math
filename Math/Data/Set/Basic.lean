@@ -574,6 +574,10 @@ def ofList (xs: List α) := Set.mk (· ∈ xs)
 
 instance : Coe (List α) (Set α) := ⟨ofList⟩
 
+instance : Top (Set α) where
+  top := Set.univ _
+instance : Bot (Set α) where
+  bot := ∅
 
 section min_elem
 

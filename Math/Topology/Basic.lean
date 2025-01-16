@@ -2,13 +2,13 @@ import Math.Data.Set.Basic
 
 class Topology (α: Type*) where
   IsOpen: Set α -> Prop
-  univ_open: IsOpen (Set.univ α)
+  univ_open: IsOpen ⊤
   inter_open: ∀{a b: Set α}, IsOpen a -> IsOpen b -> IsOpen (a ∩ b)
   sUnion_open: ∀{a: Set (Set α)}, (∀x ∈ a, IsOpen x) -> IsOpen (⋃ a)
 
 namespace Topology
 
-variable [Topology α] [Topology β]
+variable [Topology α] [Topology β] [Topology γ]
 
 def IsClosed (s: Set α) : Prop := IsOpen sᶜ
 def IsClopen (s: Set α) : Prop := IsOpen s ∧ IsClosed s
@@ -24,6 +24,14 @@ def Border (s : Set α) : Set α :=
 def Dense (s: Set α) :=
   ∀x, x ∈ Closure s
 def DenseRange {X : Type*} (f : X → α) := Dense (Set.range f)
+
+def OpenSets : Set (Set α) := Set.mk IsOpen
+def ClosedSets : Set (Set α) := Set.mk IsClosed
+
+def IsOpen.inj : Function.Injective (α := Topology α) (fun x => x.IsOpen) := by
+  intro a b eq
+  dsimp at eq
+  cases a; cases b; congr
 
 class IsContinuous (f : α → β) : Prop where
   /-- The preimage of an open set under a continuous function is an open set. Use `IsOpen.preimage`
@@ -101,6 +109,22 @@ def Dense.univ : Dense (Set.univ α) := by
   rw [Closure.univ]
   apply Set.mem_univ
 
+def IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
+  isOpen_preimage s sopen := by
+    by_cases h:x ∈ s
+    suffices s.preimage (fun _: α => x) = Set.univ α by
+      rw [this]
+      apply IsOpen.univ
+    apply Set.ext_univ
+    intro
+    assumption
+    suffices s.preimage (fun _: α => x) = ∅ by
+      rw [this]
+      apply IsOpen.empty
+    apply Set.ext_empty
+    intro
+    assumption
+
 def IsContinuous.id : IsContinuous (@id α) where
   isOpen_preimage s sopen := by
     suffices s.preimage (_root_.id ) = s by
@@ -110,5 +134,52 @@ def IsContinuous.id : IsContinuous (@id α) where
     apply Iff.intro
     exact _root_.id
     exact _root_.id
+
+def IsContinuous.comp (f: α -> β) (g: β -> γ) [IsContinuous f] [IsContinuous g] : IsContinuous (g ∘ f) where
+  isOpen_preimage s sopen := isOpen_preimage (f := f) _ <| isOpen_preimage (f := g) s sopen
+
+inductive Trivial.IsOpen: Set α -> Prop where
+| empty : Trivial.IsOpen ∅
+| univ : Trivial.IsOpen ⊤
+
+def trivial : Topology α where
+  IsOpen := Trivial.IsOpen
+  univ_open := .univ
+  inter_open := by
+    intro a b ha hb
+    cases ha <;> cases hb
+    all_goals
+      simp
+      try exact .empty
+    exact .univ
+  sUnion_open := by
+    intro s h
+    by_cases g:⊤ ∈ s
+    suffices ⋃ s = ⊤ by
+      rw [this]
+      exact .univ
+    apply Set.ext_univ
+    intro x
+    rw [Set.mem_sUnion]
+    exists ⊤
+    suffices ⋃ s = ∅ by
+      rw [this]
+      exact .empty
+    apply Set.ext_empty
+    intro x mem
+    rw [Set.mem_sUnion] at mem
+    obtain ⟨y, mem, x_in_y⟩ := mem
+    cases h _ mem <;> contradiction
+
+def discrete : Topology α where
+  IsOpen _ := True
+  univ_open := True.intro
+  inter_open _ _ := True.intro
+  sUnion_open _ := True.intro
+
+instance : Top (Topology α) where
+  top := .trivial
+instance : Bot (Topology α) where
+  bot := .discrete
 
 end Topology

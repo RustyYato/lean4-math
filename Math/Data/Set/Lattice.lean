@@ -37,11 +37,6 @@ instance : IsLattice (Set α) where
     apply ka; assumption
     apply kb; assumption
 
-instance : Top (Set α) where
-  top := Set.univ _
-instance : Bot (Set α) where
-  bot := ∅
-
 instance : IsCompleteLattice (Set α) where
   bot_le := Set.empty_sub
   le_top := Set.sub_univ
