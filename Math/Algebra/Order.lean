@@ -96,6 +96,30 @@ export IsOrderedAbsRing (intcast_abs neg_abs)
 
 section
 
+variable [IsAddMonoid α] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] [IsOrderedAbsAddMonoid α]
+
+def add_lt_add_left [IsAddLeftCancel β] (a b k: β) : a < b -> k + a < k + b := by
+  intro h
+  apply lt_of_le_of_ne
+  apply add_le_add_left
+  apply le_of_lt; assumption
+  intro g
+  rw [add_left_cancel g] at h
+  exact lt_irrefl h
+
+def add_lt_add_right [IsAddRightCancel β] (a b k: β) : a < b -> a + k < b + k := by
+  intro h
+  apply lt_of_le_of_ne
+  apply add_le_add_right
+  apply le_of_lt; assumption
+  intro g
+  rw [add_right_cancel g] at h
+  exact lt_irrefl h
+
+end
+
+section
+
 variable [IsMonoid α] [IsMonoid β] [AbsoluteValue α β] [IsOrderedAbsMonoid α]
 
 def abs_pow (a: α) (n: ℕ) : ‖a ^ n‖ = ‖a‖ ^ n := by

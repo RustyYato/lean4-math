@@ -26,3 +26,14 @@ instance : IsStrictOrderedRing ℚ where
     exact fun a b a_1 c a_2 => Rat.mul_le_mul_of_right_nonneg a b c a_2 a_1
   mul_pos := by
     exact fun a b a_1 a_2 => Rat.mul_pos a_1 a_2
+
+instance : IsOrderedAbsRing ℚ where
+  abs_nonneg := Rat.abs_nonneg
+  abs_zero := rfl
+  abs_le_abs_add_abs := Rat.abs_add_le_add_abs
+  nsmul_abs _ _ := Rat.abs_mul _ _
+  abs_one := rfl
+  mul_abs := Rat.abs_mul
+  natcast_abs _ := rfl
+  intcast_abs _ := rfl
+  neg_abs := Rat.abs_neg
