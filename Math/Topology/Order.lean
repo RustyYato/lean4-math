@@ -88,21 +88,6 @@ private def le_sSup : ∀ (s : Set (Topology α)) (x : Topology α), x ∈ s →
   intro Ts T T_in_Ts s s_in_sSup
   exact s_in_sSup T.OpenSets (Set.mem_image' T_in_Ts)
 
-instance : IsCompleteSemiLatticeSup (Topology α) where
-  sSup_le := sSup_le
-  le_sSup := le_sSup
-  le_sup_left a b := by
-    apply le_sSup
-    apply Set.mem_pair.mpr; left; rfl
-  le_sup_right a b := by
-    apply le_sSup
-    apply Set.mem_pair.mpr; right; rfl
-  sup_le := by
-    intro a b k ak bk
-    apply sSup_le
-    intro x mem
-    cases Set.mem_pair.mp mem <;> subst x <;> assumption
-
 private def sInf_le : ∀ (s : Set (Topology α)) (x : Topology α), x ∈ s → sInf s ≤ x := by
   intro Ts T T_in_Ts x x_open
   apply Generate.IsOpen.of
@@ -126,7 +111,20 @@ private def le_sInf : ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : T
   | inter => apply IsOpen.inter <;> assumption
   | sUnion => apply IsOpen.sUnion <;> assumption
 
-instance : IsCompleteSemiLatticeInf (Topology α) where
+instance : IsCompleteLattice (Topology α) where
+  sSup_le := sSup_le
+  le_sSup := le_sSup
+  le_sup_left a b := by
+    apply le_sSup
+    apply Set.mem_pair.mpr; left; rfl
+  le_sup_right a b := by
+    apply le_sSup
+    apply Set.mem_pair.mpr; right; rfl
+  sup_le := by
+    intro a b k ak bk
+    apply sSup_le
+    intro x mem
+    cases Set.mem_pair.mp mem <;> subst x <;> assumption
   sInf_le := sInf_le
   le_sInf := le_sInf
   inf_le_left := by
@@ -142,14 +140,5 @@ instance : IsCompleteSemiLatticeInf (Topology α) where
     apply le_sInf
     intro x mem
     cases Set.mem_pair.mp mem <;> subst x <;> assumption
-
-instance : IsCompleteLattice (Topology α) where
-  inf_le_left := inf_le_left
-  inf_le_right := inf_le_right
-  le_inf := le_inf
-  le_sSup := le_sSup
-  sSup_le := sSup_le
-  sInf_le := sInf_le
-  le_sInf := le_sInf
 
 end Topology
