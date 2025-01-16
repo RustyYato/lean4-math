@@ -1,5 +1,7 @@
 import Math.Algebra.Ring
-import Math.Order.Partial
+import Math.Order.Linear
+import Math.Ops.Abs
+import Math.Data.StdInt.AbsoluteValue
 
 variable (α: Type*) [LT α] [LE α] [Add α] [Zero α] [SMul ℕ α] [Mul α] [One α] [Pow α ℕ]
 variable {α₀: Type*} [LT α₀] [LE α₀] [Add α₀] [Zero α₀] [SMul ℕ α₀] [Mul α₀] [One α₀] [Pow α₀ ℕ]
@@ -60,3 +62,65 @@ class IsOrderedRing extends IsRing α, IsOrderedSemiring α where
 
 class IsStrictOrderedRing extends IsRing α, IsOrderedRing α, IsNontrivial α where
   mul_pos: ∀a b: α, 0 < a -> 0 < b -> 0 < a * b
+
+class IsLawfulAbs [AbsoluteValue α β] [LT β] [LE β] [Zero β] extends IsLinearOrder β where
+  abs_nonneg: ∀a: α, 0 ≤ ‖a‖
+
+variable [LT β] [LE β] [Zero β] [Add β] [SMul ℕ β] [One β] [Mul β] [Pow β ℕ]
+
+class IsOrderedAbsAddMonoid [IsAddMonoid α] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] extends IsLawfulAbs α where
+  abs_zero: ‖(0: α)‖ = 0
+  abs_le_abs_add_abs: ∀a b: α, ‖a + b‖ ≤ ‖a‖ + ‖b‖
+  nsmul_abs: ∀a: α, ∀n: Nat, ‖n • a‖ = n • ‖a‖
+
+class IsOrderedAbsMonoid [IsMonoid α] [IsMonoid β] [AbsoluteValue α β] extends IsLawfulAbs α where
+  abs_one: ‖(1: α)‖ = 1
+  mul_abs: ∀a b: α, ‖a * b‖ = ‖a‖ * ‖b‖
+
+export IsOrderedAbsAddMonoid (abs_zero abs_le_abs_add_abs nsmul_abs)
+
+export IsOrderedAbsMonoid (abs_one mul_abs)
+
+variable [Mul β] [One β] [Pow β ℕ] [NatCast β] [∀n, OfNat β (n + 2)]
+
+class IsOrderedAbsSemiring [IsSemiring α] [IsOrderedSemiring β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoid α, IsOrderedAbsMonoid α where
+  natcast_abs: ∀n: Nat, ‖(n: α)‖ = n
+
+export IsOrderedAbsSemiring (natcast_abs mul_abs)
+
+class IsOrderedAbsRing [IsRing α] [IsOrderedSemiring β] [AbsoluteValue α β] extends IsOrderedAbsSemiring α where
+  intcast_abs: ∀n: Int, ‖(n: α)‖ = ‖n‖
+  neg_abs: ∀a: α, ‖-a‖ = ‖a‖
+
+export IsOrderedAbsRing (intcast_abs neg_abs)
+
+section
+
+variable [IsMonoid α] [IsMonoid β] [AbsoluteValue α β] [IsOrderedAbsMonoid α]
+
+def abs_pow (a: α) (n: ℕ) : ‖a ^ n‖ = ‖a‖ ^ n := by
+  induction n with
+  | zero => rw [npow_zero, npow_zero, abs_one]
+  | succ n ih => rw [npow_succ, npow_succ, mul_abs, ih]
+
+end
+
+section
+
+variable [IsSemiring α] [IsOrderedSemiring β] [AbsoluteValue α β] [IsOrderedAbsSemiring α]
+
+end
+
+section
+
+variable [IsRing α] [IsOrderedSemiring β] [AbsoluteValue α β] [IsOrderedAbsRing α]
+
+def zsmul_abs: ∀a: α, ∀n: Int, ‖n • a‖ = ‖n‖ • ‖a‖ := by
+  intro a n
+  show _ = Int.natAbs _ • _
+  cases n with
+  | ofNat n => erw [zsmul_ofNat, Int.natAbs_ofNat, nsmul_abs]
+  | negSucc n => erw [Int.negSucc_eq, neg_zsmul, neg_abs, Int.natAbs_neg,
+      ←Int.ofNat_add, Int.natAbs_ofNat, zsmul_ofNat, nsmul_abs]
+
+end
