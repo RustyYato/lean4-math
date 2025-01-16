@@ -25,13 +25,20 @@ def Dense (s: Set α) :=
   ∀x, x ∈ Closure s
 def DenseRange {X : Type*} (f : X → α) := Dense (Set.range f)
 
-def OpenSets : Set (Set α) := Set.mk IsOpen
-def ClosedSets : Set (Set α) := Set.mk IsClosed
+def OpenSets (t: Topology α) : Set (Set α) := Set.mk IsOpen
+def ClosedSets (t: Topology α) : Set (Set α) := Set.mk IsClosed
 
 def IsOpen.inj : Function.Injective (α := Topology α) (fun x => x.IsOpen) := by
   intro a b eq
   dsimp at eq
   cases a; cases b; congr
+
+def OpenSets.inj : Function.Injective (α := Topology α) OpenSets := by
+  intro a b eq
+  apply IsOpen.inj
+  dsimp
+  apply Set.mk.inj
+  assumption
 
 class IsContinuous (f : α → β) : Prop where
   /-- The preimage of an open set under a continuous function is an open set. Use `IsOpen.preimage`
@@ -181,5 +188,18 @@ instance : Top (Topology α) where
   top := .trivial
 instance : Bot (Topology α) where
   bot := .discrete
+
+inductive Generate.IsOpen (U: Set (Set α)) : Set α -> Prop where
+| of : x ∈ U -> IsOpen U x
+| univ : IsOpen U ⊤
+| inter : IsOpen U a -> IsOpen U b -> IsOpen U (a ∩ b)
+| sUnion {s: Set (Set α)} : (∀x ∈ s, IsOpen U x) -> IsOpen U (⋃ s)
+
+-- the smallest Topology where all of the given sets are Open
+def generate (U: Set (Set α)) : Topology α where
+  IsOpen := Generate.IsOpen U
+  univ_open := Generate.IsOpen.univ
+  inter_open := Generate.IsOpen.inter
+  sUnion_open := Generate.IsOpen.sUnion
 
 end Topology

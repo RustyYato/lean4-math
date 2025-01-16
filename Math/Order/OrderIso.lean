@@ -11,6 +11,67 @@ def OrderIso (α β: Type*) [LE α] [LE β] :=
 infixl:25 " ↪o " => OrderEmbedding
 infixl:25 " ≃o " => OrderIso
 
+namespace OrderEmbedding
+
+instance : FunLike (α ↪o β) α β where
+  coe e := e.toFun
+  coe_inj := by
+    intro ⟨⟨_, _⟩, _⟩ ⟨⟨_, _⟩, _⟩ eq
+    congr
+
+instance : IsEmbeddingLike (α ↪o β) α β where
+  coe_inj e := e.inj
+
+@[refl]
+def refl [LE α] : α ↪o α where
+  toEmbedding := .refl
+  resp_rel := Iff.rfl
+
+def trans {_: LE α} {_: LE β} {_: LE γ} (h: α ↪o β) (g: β ↪o γ) : α ↪o γ where
+  toEmbedding := .trans h.toEmbedding g.toEmbedding
+  resp_rel := h.resp_rel.trans g.resp_rel
+
+def resp_le {_: LE α} {_: LE β} (h: α ↪o β) : ∀{a b: α}, a ≤ b ↔ h a ≤ h b := h.resp_rel
+
+def inducedIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
+  [IsPreOrder β]
+  (h: α ↪o β)
+  (resp_lt: ∀{a b: α}, a < b ↔ h a < h b)
+  : IsPreOrder α where
+  lt_iff_le_and_not_le := by
+    intro a b
+    rw [resp_lt, h.resp_le, h.resp_le]
+    apply lt_iff_le_and_not_le
+  le_refl _ := h.resp_le.mpr (le_refl _)
+  le_trans := by
+    intro a b c
+    iterate 3 rw [h.resp_le]
+    exact le_trans
+
+def inducedIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
+  [IsPartialOrder β]
+  [_root_.IsPreOrder α]
+  (h: α ↪o β)
+  : IsPartialOrder α where
+  le_antisymm := by
+    intro a b
+    iterate 2 rw [h.resp_le]
+    intro ab ba
+    have := le_antisymm ab ba
+    exact h.inj this
+
+def inducedIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
+  [_root_.IsPartialOrder β]
+  (h: α ↪o β)
+  (resp_lt: ∀{a b: α}, a < b ↔ h a < h b)
+  : _root_.IsPartialOrder α where
+  toIsPreOrder := h.inducedIsPreOrder resp_lt
+  le_antisymm :=
+    have := h.inducedIsPreOrder resp_lt
+    h.inducedIsPartialOrder.le_antisymm
+
+end OrderEmbedding
+
 namespace OrderIso
 
 @[refl]
@@ -27,14 +88,11 @@ def trans {_: LE α} {_: LE β} {_: LE γ} (h: α ≃o β) (g: β ≃o γ) : α 
   toEquiv := .trans h.toEquiv g.toEquiv
   resp_rel := h.resp_rel.trans g.resp_rel
 
-instance : FunLike (α ↪o β) α β where
-  coe e := e.toFun
-  coe_inj := by
-    intro ⟨⟨_, _⟩, _⟩ ⟨⟨_, _⟩, _⟩ eq
-    congr
-
-instance : IsEmbeddingLike (α ↪o β) α β where
-  coe_inj e := e.inj
+instance : Coe (α ≃o β) (α ↪o β) where
+  coe h := {
+    toEmbedding := h.toEmbedding
+    resp_rel := h.resp_rel
+  }
 
 instance : IsEquivLike (α ≃o β) α β where
   coe e := e.toFun
@@ -55,31 +113,17 @@ def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder α]
   (h: α ≃o β)
   (resp_lt: ∀{a b: α}, a < b ↔ h a < h b)
-  : IsPreOrder β where
-  lt_iff_le_and_not_le := by
+  : IsPreOrder β := OrderEmbedding.inducedIsPreOrder (α := β) (β := α) h.symm <| by
     intro a b
-    suffices ∀{a b: β}, a < b ↔ h.symm a < h.symm b by
-      rw [this, h.symm.resp_le, h.symm.resp_le]
-      exact lt_iff_le_and_not_le
-    intro a b
-    rw [←h.symm_coe a, ←h.symm_coe b, h.coe_symm, h.coe_symm, ←resp_lt]
-  le_refl _ := h.symm.resp_le.mpr (le_refl _)
-  le_trans := by
-    intro a b c
-    iterate 3 rw [h.symm.resp_le]
-    exact le_trans
+    show a < b ↔ h.symm a < h.symm b
+    conv => { lhs; rw [←h.symm_coe a, ←h.symm_coe b] }
+    apply resp_lt.symm
 
 def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPartialOrder α]
   [_root_.IsPreOrder β]
   (h: α ≃o β)
-  : IsPartialOrder β where
-  le_antisymm := by
-    intro a b
-    iterate 2 rw [h.symm.resp_le]
-    intro ab ba
-    have := le_antisymm ab ba
-    exact h.invFun_inj this
+  : IsPartialOrder β := OrderEmbedding.inducedIsPartialOrder (α := β) (β := α) h.symm
 
 def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsPartialOrder α]
