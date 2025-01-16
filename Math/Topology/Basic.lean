@@ -223,4 +223,54 @@ instance : Discrete ℕ := ⟨rfl⟩
 instance : Topology ℤ := ⊥
 instance : Discrete ℤ := ⟨rfl⟩
 
+def induced (f: α -> β) (t: Topology β) : Topology α where
+  IsOpen s := ∃ t, IsOpen t ∧ t.preimage f = s
+  univ_open := by
+    dsimp
+    exists ⊤
+    apply And.intro IsOpen.univ
+    rfl
+  inter_open := by
+    intro a b ⟨a', a'_open, ha⟩ ⟨b', b'_open, hb⟩
+    exists a' ∩ b'
+    apply And.intro
+    apply IsOpen.inter <;> assumption
+    show a'.preimage f ∩ b'.preimage f = _
+    congr
+  sUnion_open := by
+    intro S h
+    dsimp at h
+    let g := fun x (hx: x ∈ S) => Classical.choose (h x hx)
+    exists ⋃S.attach.image fun x => g x.val x.property
+    apply And.intro
+    apply IsOpen.sUnion
+    intro _ ⟨⟨x, mem⟩, mem', eq⟩
+    subst eq; clear mem'
+    dsimp
+    exact (Classical.choose_spec (h x mem)).left
+    have := fun x mem => (Classical.choose_spec (h x mem)).right
+    rw [Set.preimage_sUnion, Set.image_image]
+    show ⋃(S.attach.image fun _ => Set.preimage _ _) = _
+    conv => {
+      lhs; arg 1; arg 2; intro x
+      rw [this x.val x.property]
+    }
+    rw [Set.attach_image_val]
+
+def coinduced (f: α -> β) (t: Topology α) : Topology β where
+  IsOpen s := s.preimage f ∈ t.OpenSets
+  univ_open := IsOpen.univ
+  inter_open := IsOpen.inter
+  sUnion_open := by
+    intro s h
+    suffices (⋃s).preimage f = ⋃(s.image fun x => x.preimage f) by
+      rw [this]
+      apply IsOpen.sUnion
+      intro x ⟨s', mem, eq⟩
+      subst x
+      dsimp
+      apply h
+      assumption
+    rw [Set.preimage_sUnion]
+
 end Topology

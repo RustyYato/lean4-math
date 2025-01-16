@@ -582,6 +582,41 @@ instance : Top (Set α) where
 instance : Bot (Set α) where
   bot := ∅
 
+def preimage_sUnion (s: Set (Set α)) (f: β -> α) : (⋃s).preimage f = ⋃(s.image fun x => x.preimage f) := by
+  ext x
+  apply Iff.intro
+  intro ⟨s', s'_in_s, fx_in_s'⟩
+  exists s'.preimage f
+  apply And.intro _ fx_in_s'
+  apply Set.mem_image'
+  assumption
+  intro ⟨_, ⟨s', s'_in, eq⟩ , x_in_s'⟩
+  subst eq
+  dsimp at x_in_s'
+  exists s'
+
+def image_image (s: Set α) (f: α -> β) (g: β -> γ) : (s.image f).image g = s.image (g ∘ f) := by
+  ext x
+  apply Iff.intro
+  intro ⟨s', ⟨_, s'_in_s, eq⟩ , fx_in_s'⟩
+  subst x; subst eq
+  apply Set.mem_image'
+  assumption
+  intro ⟨_, _, eq⟩
+  subst eq
+  apply Set.mem_image'
+  apply Set.mem_image'
+  assumption
+
+def attach_image_val (s: Set α) : s.attach.image Subtype.val = s := by
+  ext x
+  apply Iff.intro
+  intro ⟨y, _, _⟩
+  subst x
+  exact y.property
+  intro mem
+  exists ⟨x, mem⟩
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]
