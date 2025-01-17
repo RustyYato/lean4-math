@@ -8,9 +8,9 @@ variable
 
 namespace IsPseudoMetricSpace
 
-def Ball (x: α) (d: β): Set α := Set.mk fun y => dist x y < d
+def Ball (x: α) (δ: β): Set α := Set.mk fun y => dist x y < δ
 
-def ball_sub (x: α) (d₀ d₁: β) (h: d₀ ≤ d₁) : Ball x d₀ ⊆ Ball x d₁ := by
+def ball_sub (x: α) (δ₀ δ₁: β) (h: δ₀ ≤ δ₁) : Ball x δ₀ ⊆ Ball x δ₁ := by
   intro y mem
   apply lt_of_lt_of_le
   assumption
@@ -23,7 +23,7 @@ namespace Topology
 def ofIsPseudoMetricSpace [IsPseudoMetricSpace α] : Topology α where
   -- a set is open if, forall points in the set, there is a ball with positive radius
   -- that is contained in the set
-  IsOpen s := ∀x ∈ s, ∃d > 0, IsPseudoMetricSpace.Ball x d ⊆ s
+  IsOpen s := ∀x ∈ s, ∃δ > 0, IsPseudoMetricSpace.Ball x δ ⊆ s
   univ_open := by
     dsimp
     intro x mem

@@ -662,9 +662,16 @@ variable [CheckedInvert α (P := fun x => x ≠ 0)] [CheckedInvert α₀ (P := f
 variable [CheckedDiv α (P := fun x => x ≠ 0)] [CheckedDiv α₀ (P := fun x => x ≠ 0)]
 
 class IsNonCommField extends IsRing α : Prop where
-  mul_inv_cancel: ∀(a: α) (h: a ≠ 0), a * a⁻¹? = 1
-  div_eq_mul_inv: ∀(a b: α) (h: b ≠ 0), a /? b = a * b⁻¹?
+  mul_inv?_cancel: ∀(a: α) (h: a ≠ 0), a * a⁻¹? = 1
+  div_eq_mul_inv?: ∀(a b: α) (h: b ≠ 0), a /? b = a * b⁻¹?
   zpow_ofNat (n: ℕ) (a: α) : a ^ (n: ℤ) = a ^ n
   zpow_negSucc (n: ℕ) (a: α) (h: a ≠ 0) : a ^ (Int.negSucc n) = (a⁻¹? ^ n.succ)
+
+export IsNonCommField (
+  mul_inv?_cancel
+  div_eq_mul_inv?
+  zpow_ofNat
+  zpow_negSucc
+)
 
 class IsField extends IsNonCommField α, IsCommMagma α : Prop where

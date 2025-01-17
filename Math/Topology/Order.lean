@@ -141,4 +141,56 @@ instance : IsCompleteLattice (Topology α) where
     intro x mem
     cases Set.mem_pair.mp mem <;> subst x <;> assumption
 
+def induced_compose {tγ : Topology γ} {f : α → β} {g : β → γ} :
+    (tγ.induced g).induced f = tγ.induced (g ∘ f) := by
+  apply Topology.IsOpen.inj
+  dsimp
+  funext s
+  apply propext
+  apply Iff.intro
+  exact fun ⟨_, ⟨s, hs, h₂⟩, h₁⟩ => h₁ ▸ h₂ ▸ ⟨s, hs, rfl⟩
+  exact fun ⟨s, hs, h⟩ => ⟨Set.preimage s g, ⟨s, hs, rfl⟩, h ▸ rfl⟩
+
+def coinduced_le_iff_le_induced {f : α → β} {tα : Topology α}
+    {tβ : Topology β} : tα.coinduced f ≤ tβ ↔ tα ≤ tβ.induced f :=
+  ⟨fun h _s ⟨_t, ht, hst⟩ => hst ▸ h _ ht, fun h s hs => h _ ⟨s, hs, rfl⟩⟩
+
+def continuous_iff_coinduced_le {t₁ : Topology α} {t₂ : Topology β} :
+    IsContinuous' t₁ t₂ f ↔ coinduced f t₁ ≤ t₂ := by
+    apply Iff.intro
+    intro h
+    exact h.1
+    exact IsContinuous.mk
+
+def continuous_iff_le_induced {t₁ : Topology α} {t₂ : Topology β} :
+    IsContinuous' t₁ t₂ f ↔ t₁ ≤ induced f t₂ := by
+    apply Iff.trans _ coinduced_le_iff_le_induced
+    exact continuous_iff_coinduced_le
+
+def continuous_induced_rng {g : γ → α} {t₂ : Topology β} {t₁ : Topology γ} :
+    IsContinuous' t₁ (induced f t₂) g ↔ IsContinuous' t₁ t₂ (f ∘ g) := by
+  simp only [continuous_iff_le_induced, induced_compose]
+
+def continuous_inf_rng {t₁ : Topology α} {t₂ t₃ : Topology β} :
+    IsContinuous' t₁  (t₂ ⊓ t₃) f ↔ IsContinuous' t₁ t₂ f ∧ IsContinuous' t₁ t₃ f := by
+  simp only [continuous_iff_coinduced_le, le_inf_iff]
+
+def continuous_sup_rng_left {t₁ : Topology α} {t₂ t₃ : Topology β} :
+    IsContinuous' t₁ t₂ f -> IsContinuous' t₁  (t₂ ⊔ t₃) f := by
+  simp only [continuous_iff_coinduced_le]
+  intro h
+  apply le_trans h
+  apply le_sup_left
+
+def continuous_sup_rng_right {t₁ : Topology α} {t₂ t₃ : Topology β} :
+    IsContinuous' t₁ t₃ f -> IsContinuous' t₁  (t₂ ⊔ t₃) f := by
+  simp only [continuous_iff_coinduced_le]
+  intro h
+  apply le_trans h
+  apply le_sup_right
+
+def continuous_sSup_dom {T : Set (Topology α)} {t₂ : Topology β} :
+    IsContinuous' (sSup T) t₂ f ↔ ∀ t ∈ T, IsContinuous' t t₂ f := by
+  simp only [continuous_iff_le_induced, sSup_le_iff]
+
 end Topology

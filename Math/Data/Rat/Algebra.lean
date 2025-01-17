@@ -78,8 +78,8 @@ instance : IsField ℚ where
     rw [Rat.mk_npow, Rat.mk_npow, Rat.mk_mul]
     apply quot.sound
     rfl
-  mul_inv_cancel := Rat.mul_inv_self
-  div_eq_mul_inv _ _ _ := rfl
+  mul_inv?_cancel := Rat.mul_inv_self
+  div_eq_mul_inv? _ _ _ := rfl
   zpow_ofNat _ _ := rfl
   zpow_negSucc a b h := by
     show Rat.zpow _ _ = Rat.npow _ _

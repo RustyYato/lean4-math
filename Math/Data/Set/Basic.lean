@@ -608,6 +608,54 @@ def image_image (s: Set α) (f: α -> β) (g: β -> γ) : (s.image f).image g = 
   apply Set.mem_image'
   assumption
 
+def preimage_preimage (s: Set α) (f: γ -> β) (g: β -> α) : (s.preimage g).preimage f = s.preimage (g ∘ f) := by
+  rfl
+
+def sub_image_preimage (s: Set α) (f: α -> β) : s ⊆ (s.image f).preimage f := by
+  intro x mem
+  exists x
+
+def image_preimage' (s: Set α) (f: α -> β) (h: ∀a b, f a = f b -> a ∈ s -> b ∈ s) : (s.image f).preimage f = s := by
+  ext x
+  rw [mem_preimage, mem_image]
+  apply Iff.intro
+  intro ⟨y, mem, eq⟩
+  apply h
+  symm; assumption
+  assumption
+  intro mem
+  exists x
+
+def image_preimage (s: Set α) (f: α -> β) (h: Function.Injective f) : (s.image f).preimage f = s := by
+  ext x
+  rw [mem_preimage, mem_image]
+  apply Iff.intro
+  intro ⟨y, mem, eq⟩
+  cases h eq
+  assumption
+  intro mem
+  exists x
+
+def image_inter' (A B: Set α) (f: α -> β) : (A ∩ B).image f ⊆ A.image f ∩ B.image f := by
+  intro b
+  intro ⟨a, ⟨a_in_A, a_in_B⟩, eq⟩
+  subst b
+  apply And.intro
+  exists a
+  exists a
+
+def image_inter (A B: Set α) (f: α -> β) (h: Function.Injective f) : (A ∩ B).image f = A.image f ∩ B.image f := by
+  ext b
+  simp [Set.mem_image, Set.mem_inter]
+  apply Iff.intro
+  apply image_inter'
+  intro ⟨⟨a₀, a₀_in_A, eq₀⟩ , ⟨a₁, a₁_in_B, eq₁⟩⟩
+  subst eq₀
+  cases h eq₁
+  exists a₀
+
+def preimage_inter (A B: Set β) (f: α -> β) : (A ∩ B).preimage f = A.preimage f ∩ B.preimage f := rfl
+
 def attach_image_val (s: Set α) : s.attach.image Subtype.val = s := by
   ext x
   apply Iff.intro
@@ -616,6 +664,44 @@ def attach_image_val (s: Set α) : s.attach.image Subtype.val = s := by
   exact y.property
   intro mem
   exists ⟨x, mem⟩
+
+def prod (a: Set α) (b: Set β) : Set (α × β) := Set.mk fun x => x.fst ∈ a ∧ x.snd ∈ b
+
+def image_empty : Set.image ∅ f = ∅ := by
+  apply ext_empty
+  intro x ⟨_, _, _⟩
+  contradiction
+
+def image_insert (a: α) (as: Set α) : (insert a as: Set α).image f = (insert (f a) (as.image f)) := by
+  ext x
+  apply Iff.intro
+  intro ⟨_, mem, _⟩
+  rw [mem_insert] at *
+  cases mem
+  left;
+  subst a
+  assumption
+  right
+  subst x
+  apply Set.mem_image'
+  assumption
+  rw [mem_insert]
+  intro mem
+  cases mem
+  subst x
+  apply Set.mem_image'
+  apply mem_insert.mpr
+  left; rfl
+  rename_i h
+  obtain ⟨y, _, _⟩ := h
+  exists y; subst x
+  apply And.intro _ rfl
+  rw [mem_insert]
+  right; assumption
+
+def image_pair (a b: α) : ({a, b}: Set α).image f = ({f a, f b}: Set _) := by
+  rw [image_insert, singleton_eq_insert_empty, image_insert, image_empty,
+    ←singleton_eq_insert_empty]
 
 section min_elem
 

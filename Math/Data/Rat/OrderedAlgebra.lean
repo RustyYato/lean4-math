@@ -7,6 +7,13 @@ instance : IsStrictOrderedRing ℚ where
     intro a b h c
     apply Rat.add_le_add_left.mp
     assumption
+  le_iff_nsmul_le := by
+    intro a b n npos
+    refine Rat.le_of_mul_left_pos ?_
+    rw [Rat.lt_def]
+    erw [Int.zero_mul, Int.mul_one]
+    apply Int.ofNat_pos.mpr
+    exact npos
   zero_le_one := by decide
   mul_nonneg := by
     intro a b ha hb

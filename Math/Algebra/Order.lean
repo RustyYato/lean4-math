@@ -8,9 +8,14 @@ variable {α₀: Type*} [LT α₀] [LE α₀] [Add α₀] [Zero α₀] [SMul ℕ
 
 class IsOrderedAddCommMonoid extends IsAddCommMagma α, IsAddMonoid α, IsPartialOrder α : Prop where
   add_le_add_left : ∀ a b : α, a ≤ b → ∀ c, c + a ≤ c + b
+  le_iff_nsmul_le: ∀a b: α, ∀n > 0, a ≤ b ↔ n • a ≤ n • b
 
 class IsOrderedCommMonoid extends IsCommMagma α, IsMonoid α, IsPartialOrder α : Prop where
   mul_le_mul_left : ∀ a b : α, a ≤ b → ∀ c, c * a ≤ c * b
+
+export IsOrderedAddCommMonoid (
+  le_iff_nsmul_le
+)
 
 def add_le_add_left [IsOrderedAddCommMonoid α₀] : ∀ a b : α₀, a ≤ b → ∀ c, c + a ≤ c + b := IsOrderedAddCommMonoid.add_le_add_left
 def add_le_add_right [IsOrderedAddCommMonoid α₀] : ∀ a b : α₀, a ≤ b → ∀ c, a + c ≤ b + c := by
@@ -86,7 +91,7 @@ variable [Mul β] [One β] [Pow β ℕ] [NatCast β] [∀n, OfNat β (n + 2)]
 class IsOrderedAbsSemiring [IsSemiring α] [IsOrderedSemiring β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoid α, IsOrderedAbsMonoid α where
   natcast_abs: ∀n: Nat, ‖(n: α)‖ = n
 
-export IsOrderedAbsSemiring (natcast_abs mul_abs)
+export IsOrderedAbsSemiring (natcast_abs)
 
 class IsOrderedAbsRing [IsRing α] [IsOrderedSemiring β] [AbsoluteValue α β] extends IsOrderedAbsSemiring α where
   intcast_abs: ∀n: Int, ‖(n: α)‖ = ‖n‖
@@ -115,6 +120,14 @@ def add_lt_add_right [IsAddRightCancel β] (a b k: β) : a < b -> a + k < b + k 
   intro g
   rw [add_right_cancel g] at h
   exact lt_irrefl h
+
+def add_lt_add [IsAddCancel β] (a b c d: β) : a < c -> b < d -> a + b < c + d := by
+  intro ac bd
+  apply lt_trans
+  apply add_lt_add_left
+  assumption
+  apply add_lt_add_right
+  assumption
 
 end
 

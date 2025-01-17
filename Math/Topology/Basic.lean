@@ -45,6 +45,8 @@ class IsContinuous (f : α → β) : Prop where
   instead. -/
   isOpen_preimage : ∀s: Set β, IsOpen s → IsOpen (s.preimage f)
 
+abbrev IsContinuous' (Tα) (Tβ) (f: α -> β) := @IsContinuous α β Tα Tβ f
+
 def IsOpen.univ : IsOpen (Set.univ α) := Topology.univ_open
 def IsOpen.inter {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∩ b) := Topology.inter_open
 def IsOpen.sUnion {a: Set (Set α)} : (∀x ∈ a, IsOpen x) -> IsOpen (⋃a) := Topology.sUnion_open
@@ -116,7 +118,7 @@ def Dense.univ : Dense (Set.univ α) := by
   rw [Closure.univ]
   apply Set.mem_univ
 
-def IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
+instance IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
   isOpen_preimage s sopen := by
     by_cases h:x ∈ s
     suffices s.preimage (fun _: α => x) = Set.univ α by
@@ -132,7 +134,7 @@ def IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
     intro
     assumption
 
-def IsContinuous.id : IsContinuous (@id α) where
+instance IsContinuous.id : IsContinuous (@id α) where
   isOpen_preimage s sopen := by
     suffices s.preimage (_root_.id ) = s by
       rw [this]; assumption
@@ -142,8 +144,14 @@ def IsContinuous.id : IsContinuous (@id α) where
     exact _root_.id
     exact _root_.id
 
-def IsContinuous.comp (f: α -> β) (g: β -> γ) [IsContinuous f] [IsContinuous g] : IsContinuous (g ∘ f) where
+instance IsContinuous.id' : IsContinuous (fun x: α => x) :=
+  IsContinuous.id
+
+instance IsContinuous.comp (f: α -> β) (g: β -> γ) [IsContinuous f] [IsContinuous g] : IsContinuous (g ∘ f) where
   isOpen_preimage s sopen := isOpen_preimage (f := f) _ <| isOpen_preimage (f := g) s sopen
+
+def IsContinuous.comp' {f: α -> β} {g: β -> γ} (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (g ∘ f) :=
+  inferInstance
 
 inductive Trivial.IsOpen: Set α -> Prop where
 | empty : Trivial.IsOpen ∅
@@ -202,6 +210,29 @@ def generate (U: Set (Set α)) : Topology α where
   inter_open := Generate.IsOpen.inter
   sUnion_open := Generate.IsOpen.sUnion
 
+def Generate.IsOpen.map (U: Set (Set α)) {tb: Topology β}:
+  Generate.IsOpen U s ->
+  ∀{f: β -> α},
+  (∀x ∈ U, Topology.IsOpen (x.preimage f)) ->
+  Topology.IsOpen (s.preimage f) := by
+  intro op t h
+  induction op with
+  | univ => apply Topology.IsOpen.univ
+  | inter =>
+    rw [Set.preimage_inter]
+    apply Topology.IsOpen.inter
+    assumption
+    assumption
+  | sUnion _ ih =>
+    rw [Set.preimage_sUnion]
+    apply Topology.IsOpen.sUnion
+    intro _ ⟨x, h, eq⟩
+    subst eq
+    exact ih x h
+  | of =>
+    apply h
+    assumption
+
 class Discrete (α: Type*) extends Topology α where
   eq_bot: toTopology = ⊥
 
@@ -217,11 +248,11 @@ instance : Discrete PUnit := ⟨rfl⟩
 instance : Topology Bool := ⊥
 instance : Discrete Bool := ⟨rfl⟩
 
-instance : Topology ℕ := ⊥
-instance : Discrete ℕ := ⟨rfl⟩
+instance : Topology Nat := ⊥
+instance : Discrete Nat := ⟨rfl⟩
 
-instance : Topology ℤ := ⊥
-instance : Discrete ℤ := ⟨rfl⟩
+instance : Topology Int := ⊥
+instance : Discrete Int := ⟨rfl⟩
 
 def induced (f: α -> β) (t: Topology β) : Topology α where
   IsOpen s := ∃ t, IsOpen t ∧ t.preimage f = s

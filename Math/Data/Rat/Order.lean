@@ -429,6 +429,23 @@ def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹ := 
   rw [zero_mul, mul_inv_self]
   decide
 
+def lt_of_mul_lt_mul_left_pos (a b k: ℚ) : 0 < k -> k * a < k * b -> a < b := by
+  intro k_pos h
+  have : k ≠ 0 := by
+    symm; apply ne_of_lt
+    assumption
+  rw [←mul_one a, ←mul_one b, ←mul_div_cancel (b := a) (a := k), ←mul_div_cancel (b := b) (a := k),
+    div_eq_mul_inv, div_eq_mul_inv, ←mul_assoc, ←mul_assoc, mul_one, mul_one]
+  apply mul_lt_mul_of_right_pos
+  apply (inv_pos _ _).mp
+  assumption
+  assumption
+  assumption
+
+def lt_of_mul_lt_mul_right_pos (a b k: ℚ) : 0 < k -> a * k < b * k -> a < b := by
+  rw [mul_comm _ k, mul_comm _ k]
+  apply lt_of_mul_lt_mul_left_pos
+
 def div_pos {a b: ℚ} : 0 < a -> (h: 0 < b) -> 0 < a /? b~(by
   symm; apply ne_of_lt; assumption) := by
   intro apos bpos
@@ -566,5 +583,20 @@ def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
   apply Int.ofNat_pos.mpr
   exact a.den_pos
   decide
+
+def abs_abs (a: ℚ) : ‖‖a‖‖ = ‖a‖ := by
+  rw [abs_def, if_neg]
+  apply not_lt_of_le
+  apply abs_nonneg
+
+def le_add_left_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ b + a := by
+  conv => { lhs; rw [←zero_add a] }
+  apply add_le_add_right.mp
+  assumption
+
+def le_add_right_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ a + b := by
+  rw [add_comm]
+  apply le_add_left_nonneg
+  assumption
 
 end Rat
