@@ -129,6 +129,22 @@ def add_lt_add [IsAddCancel β] (a b c d: β) : a < c -> b < d -> a + b < c + d 
   apply add_lt_add_right
   assumption
 
+def add_lt_add_of_lt_of_le [IsAddLeftCancel β] (a b c d: β) : a < c -> b ≤ d -> a + b < c + d := by
+  intro ac bd
+  apply lt_of_lt_of_le
+  apply add_lt_add_right
+  assumption
+  apply add_le_add_left
+  assumption
+
+def add_lt_add_of_le_of_lt [IsAddRightCancel β] (a b c d: β) : a ≤ c -> b < d -> a + b < c + d := by
+  intro ac bd
+  apply lt_of_le_of_lt
+  apply add_le_add_right
+  assumption
+  apply add_lt_add_left
+  assumption
+
 end
 
 section

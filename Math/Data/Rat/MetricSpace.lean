@@ -95,23 +95,43 @@ instance : Topology.IsContinuous (Prod.snd (α := ℚ) (β := ℚ)) where
     apply Rat.le_add_left_nonneg
     apply dist_nonneg
 
-def rat_prod_mk' {f : ℚ → ℚ} {g : ℚ → ℚ} [Topology α] (hf : Topology.IsContinuous f) (hg : Topology.IsContinuous g) :
-    Topology.IsContinuous fun x => (f x, g x) where
-    isOpen_preimage := by
-      intro S S_open x mem
-      rw [Set.mem_preimage] at mem
-      -- have := s.image
-      sorry
-
-
-def rat_prod_mk {f : ℚ × ℚ → ℚ} {g : ℚ × ℚ → ℚ} [Topology α] (hf : Topology.IsContinuous f) (hg : Topology.IsContinuous g) :
-    Topology.IsContinuous fun x => (f x, g x) where
+instance Rat.mk_prod_continuous (f: ℚ -> ℚ) (g: ℚ -> ℚ)
+  [cf: Topology.IsContinuous f]
+  [cg: Topology.IsContinuous g]: Topology.IsContinuous (fun x: ℚ => (f x, g x)) where
   isOpen_preimage := by
     intro S S_open x mem
     rw [Set.mem_preimage] at mem
-    have := hf.isOpen_preimage
-
-    sorry
+    have ⟨δ, δ_pos, sub⟩ := S_open _ mem
+    have ⟨δ₀, δ₀_pos, sub₀⟩ := cf.isOpen_preimage (IsPseudoMetricSpace.Ball (f x) (δ /? 2)) Topology.IsOpen.Ball x (by
+      show dist (f x) (f x) < δ /? 2
+      rw [dist_self]
+      apply div_pos
+      assumption
+      trivial)
+    have ⟨δ₁, δ₁_pos, sub₁⟩ := cg.isOpen_preimage (IsPseudoMetricSpace.Ball (g x) (δ /? 2)) Topology.IsOpen.Ball x (by
+      show dist (g x) (g x) < δ /? 2
+      rw [dist_self]
+      apply div_pos
+      assumption
+      trivial)
+    refine ⟨min δ₀ δ₁, ?_, ?_⟩
+    apply lt_min_iff.mpr
+    apply And.intro
+    assumption
+    assumption
+    intro y hy
+    apply sub
+    dsimp
+    show ‖_‖ + ‖_‖ < δ
+    dsimp
+    replace hy : ‖_‖ < min δ₀ δ₁ := hy
+    rw [lt_min_iff] at hy
+    have := sub₀  _  hy.left
+    have := sub₁  _  hy.right
+    rw [Rat.add_half δ]
+    apply add_lt_add
+    assumption
+    assumption
 
 def Rat.continuous_lemma (f: ℚ -> ℚ)
   (h: ∀ε > (0: ℚ), ∃δ > 0, ∀x₀ x₁: ℚ, ‖x₀ - x₁‖ < δ -> ‖f x₀ - f x₁‖ < ε) : Topology.IsContinuous f where
@@ -126,61 +146,20 @@ def Rat.continuous_lemma (f: ℚ -> ℚ)
     apply h
     assumption
 
--- def Rat.continuous₂_lemma (f: ℚ -> ℚ -> ℚ)
---   (h: ∀ε > (0: ℚ), ∃δ₀ > 0, ∃δ₁ > 0, ∀x₀ x₁ y₀ y₁: ℚ, ‖x₀ - x₁‖ < δ₀ -> ‖y₀ - y₁‖ < δ₀ -> ‖f x₀ y₀ - f x₁ y₁‖ < ε) : Topology.IsContinuous (Function.uncurry f) where
---   isOpen_preimage := by
---     intro s sopen
---     apply Topology.Generate.IsOpen.of
---     refine ⟨_, ⟨_, Set.mem_pair.mpr (.inl rfl), rfl⟩, s, sopen, ?_⟩
-
-
---     sorry
-
-instance Rat.add_continuous_left (x: ℚ) : Topology.IsContinuous (· + x) where
+instance Rat.add_continuous : Topology.IsContinuous (fun x: ℚ × ℚ => x.fst + x.snd) where
   isOpen_preimage := by
-    intro s o
-    intro a h
-    replace h: a + x ∈ s := h
-    obtain ⟨d, d_pos, ball⟩ := o (a + x) h
-    refine ⟨d, d_pos, ?_⟩
-    intro b mem
-    apply ball (b + x)
-    show ‖_‖ < d
-    rw [sub_eq_add_neg, neg_add_rev, ←add_assoc, add_assoc a, add_neg_cancel, add_zero, ←sub_eq_add_neg]
+    intro S S_open x mem
+    have ⟨δ, δ_pos, sub⟩  := S_open _ mem
+    refine ⟨δ, δ_pos, ?_⟩
+    intro y hy
+    apply sub
+    dsimp
+    show ‖_‖ < δ
+    rw [sub_eq_add_neg, neg_add_rev, add_assoc, ←add_assoc x.snd, add_comm _ (-y.fst), ←add_assoc]
+    apply lt_of_le_of_lt
+    apply abs_le_abs_add_abs
+    rw [←sub_eq_add_neg, ←sub_eq_add_neg]
     assumption
-
-instance Rat.add_continuous_right (x: ℚ) : Topology.IsContinuous (x + ·) := by
-  conv => { arg 1; intro; rw [add_comm] }
-  infer_instance
-
--- open Topology in
--- def Rat.add_continuous' : Topology.IsContinuous (· + (·: ℚ)) where
---   isOpen_preimage := by
---     intro s sopen
---     apply Generate.IsOpen.map
---     assumption
---     intro x mem
---     replace mem := Set.mem_sUnion.mp mem
---     obtain ⟨S, mem, x_in_S⟩ := mem
---     obtain ⟨S, mem, eq⟩  := mem
---     subst eq; rw [Set.mem_range] at mem
---     obtain ⟨q, eq⟩ := mem
---     subst eq
---     obtain ⟨Q, Q_open, eq⟩ := x_in_S
---     dsimp at Q; subst x
---     rw [Set.preimage_preimage, Function.comp_def]
---     dsimp
---     apply (Rat.add_continuous_left _).isOpen_preimage
---     assumption
-
-open Topology in
-def Rat.add_continuous : Topology.IsContinuous (fun x: ℚ × ℚ => x.fst + x.snd) where
-  isOpen_preimage := by
-    intro s sopen
-    apply Generate.IsOpen.of
-    refine ⟨_, ⟨_, Set.mem_pair.mpr (.inl rfl), rfl⟩, s, sopen, ?_⟩
-
-
 
 instance Rat.mul_continuous_left (x: ℚ) : Topology.IsContinuous (· * x) where
   isOpen_preimage := by
@@ -222,16 +201,18 @@ instance Rat.mul_continuous_right (x: ℚ) : Topology.IsContinuous (x * ·) := b
   conv => { arg 1; intro; rw [mul_comm] }
   infer_instance
 
-def Rat.add_continuous' (f g: ℚ -> ℚ) (cf: Topology.IsContinuous f) (cg: Topology.IsContinuous g) : Topology.IsContinuous (fun x => f x + g x) := by
-  apply Rat.add_continuous
-  -- inferInstance
-  -- Rat.lift_cont (· + ·) f g
+def Rat.add_continuous' (f g: ℚ -> ℚ) (cf: Topology.IsContinuous f) (cg: Topology.IsContinuous g) : Topology.IsContinuous (fun x => f x + g x) :=
+  (Rat.mk_prod_continuous f g).comp' Rat.add_continuous
 
 def Rat.mul_continuous (f g: ℚ -> ℚ) (cf: Topology.IsContinuous f) (cg: Topology.IsContinuous g) : Topology.IsContinuous (fun x => f x * g x) where
   isOpen_preimage := sorry
 
 instance (f g: ℚ -> ℚ) [cf: Topology.IsContinuous f] [cg: Topology.IsContinuous g] : Topology.IsContinuous (fun x => f x + g x) :=
-  Rat.add_continuous f g cf cg
+  Rat.add_continuous' f g cf cg
 
 instance (f g: ℚ -> ℚ) [cf: Topology.IsContinuous f] [cg: Topology.IsContinuous g] : Topology.IsContinuous (fun x => f x * g x) :=
   Rat.mul_continuous f g cf cg
+
+instance Rat.add_continuous_left (x: ℚ) : Topology.IsContinuous (· + x) := inferInstance
+instance Rat.add_continuous_right (x: ℚ) : Topology.IsContinuous (x + ·) :=
+  Rat.add_continuous' (fun _ => x) (fun x => x) inferInstance inferInstance

@@ -61,4 +61,25 @@ def ofIsPseudoMetricSpace [IsPseudoMetricSpace α] : Topology α where
     apply Set.sub_sUnion
     assumption
 
+def IsOpen.Ball
+  [IsMetricSpace α]
+  [Sub β] [SMul ℤ β] [Neg β] [IntCast β]
+  [IsOrderedRing β] :
+  (ofIsPseudoMetricSpace: Topology α).IsOpen (IsPseudoMetricSpace.Ball x δ) := by
+  intro y hy
+  exists δ - dist x y
+  apply And.intro
+  have := add_lt_add_of_lt_of_le (dist x y) (-dist x y) δ (-dist x y) ?_ (le_refl _)
+  rw [add_neg_cancel, ←sub_eq_add_neg] at this
+  assumption
+  assumption
+  intro z hz
+  replace hz: dist y z < _ := hz
+  show dist x z < δ
+  apply lt_of_le_of_lt
+  apply dist_triangle _ _ y
+  apply lt_of_lt_of_le
+  exact add_lt_add_of_le_of_lt (dist x y) (dist y z) (dist x y) (δ - dist x y) (le_refl _) hz
+  rw [add_comm, sub_add_cancel]
+
 end Topology

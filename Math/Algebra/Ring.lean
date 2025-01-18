@@ -447,8 +447,26 @@ instance [IsGroup α] : IsDivisionMonoid α where
     rw [mul_assoc, ←mul_assoc b, mul_inv_cancel, one_mul, mul_inv_cancel]
   inv_eq_of_mul_left _ _ := inv_eq_of_mul
 
+instance [IsAddGroup α] : IsAddRightCancel α where
+  add_right_cancel := by
+    intro a b k h
+    have : (a + k) - k = (b + k) - k := by rw [h]
+    rw [
+      sub_eq_add_neg, sub_eq_add_neg,
+      add_assoc, add_assoc, add_neg_cancel, add_zero, add_zero] at this
+    assumption
+
+instance [IsAddGroup α] [IsAddCommMagma α] : IsAddLeftCancel α where
+  add_left_cancel := by
+    intro a b k h
+    rw [add_comm k, add_comm k] at h
+    exact add_right_cancel h
+
 def sub_sub [IsAddGroup α₀] (a b c: α₀) : a - (b - c) = a + c - b := by
   rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, neg_add_rev, neg_neg, add_assoc]
+
+def sub_add_cancel [IsAddGroup α₀] (a b: α₀) : a - b + b = a := by
+  rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero]
 
 def eq_of_sub_eq_zero [IsAddGroup α₀] (a b: α₀) : a - b = 0 -> a = b := by
   intro h
