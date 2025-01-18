@@ -19,8 +19,8 @@ macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|left; invert_tactic_tr
 macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|right; invert_tactic_trivial)
 macro_rules | `(tactic|invert_tactic_trivial) => `(tactic|constructor <;> invert_tactic_trivial)
 
-syntax:max term noWs "⁻¹" : term
-macro_rules | `($x⁻¹) => `(CheckedInvert.checked_invert $x (by invert_tactic))
+syntax:max term noWs "⁻¹?" : term
+macro_rules | `($x⁻¹?) => `(CheckedInvert.checked_invert $x (by invert_tactic))
 
 syntax:70 term:70 " /? " term:71 : term
 macro_rules | `($x /? $y) => `(CheckedDiv.checked_div $x $y (by invert_tactic))
@@ -28,8 +28,8 @@ macro_rules | `($x /? $y) => `(CheckedDiv.checked_div $x $y (by invert_tactic))
 syntax:70 term:70 " %? " term:71 : term
 macro_rules | `($x %? $y) => `(CheckedMod.checked_mod $x $y (by invert_tactic))
 
-syntax:max term noWs "⁻¹" "~(" term ")" : term
-macro_rules | `($x⁻¹ ~($prf)) => `(CheckedInvert.checked_invert $x $prf)
+syntax:max term noWs "⁻¹?" "~(" term ")" : term
+macro_rules | `($x⁻¹? ~($prf)) => `(CheckedInvert.checked_invert $x $prf)
 
 syntax:70 term:70 " /? " term:71 "~(" term ")" : term
 macro_rules | `($x /? $y ~($prf)) => `(CheckedDiv.checked_div $x $y $prf)
@@ -61,4 +61,4 @@ def delab_checked_invert : Delab := do
   let expr ← getExpr
   let #[_, _, _, x, _] := expr.getAppArgs | failure
   let x ← delab x
-  `($x⁻¹)
+  `($x⁻¹?)

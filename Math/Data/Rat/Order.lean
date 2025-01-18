@@ -418,14 +418,14 @@ def mul_lt_mul_of_right_pos (a b k: ℚ) : 0 < k -> a < b -> a * k < b * k := by
   rw [mul_comm _ k, mul_comm _ k]
   apply mul_lt_mul_of_left_pos
 
-def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹ := by
+def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹? := by
   apply Iff.intro
   intro h
-  apply (lt_of_mul_right_pos (a := 0) (b := a⁻¹) (k := a) h).mpr
+  apply (lt_of_mul_right_pos (a := 0) (b := a⁻¹?) (k := a) h).mpr
   rw [zero_mul, inv_self_mul]
   decide
   intro h
-  apply (lt_of_mul_right_pos (a := 0) (b := a) (k := a⁻¹) h).mpr
+  apply (lt_of_mul_right_pos (a := 0) (b := a) (k := a⁻¹?) h).mpr
   rw [zero_mul, mul_inv_self]
   decide
 

@@ -24,9 +24,7 @@ infixr:73 " • " => SMul.smul
 class Inv (α) where
   inv: α -> α
 
-local postfix:max "⁻¹" => Inv.inv
-local syntax:max term noWs "⁻¹?" : term
-macro_rules | `($x⁻¹?) => `(CheckedInvert.checked_invert $x (by invert_tactic))
+postfix:max "⁻¹" => Inv.inv
 
 variable (α: Type*) [Zero α] [One α] [Add α] [Mul α] [Sub α] [Div α]
 variable {α₀ α₁: Type*} [Zero α₀] [One α₁] [Add α₀] [Mul α₁] [Sub α₀] [Div α₁]

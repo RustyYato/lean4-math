@@ -25,16 +25,6 @@ class HasNormalSubgroup (α: Type*) where
 
 infix:75 " ◀ " => HasNormalSubgroup.NormalSubgroup
 
-def Nat.sub_mul (a b k: Nat)  : (a - b) * k = a * k - b * k := by
-  induction a generalizing b with
-  | zero => simp
-  | succ a ih =>
-    cases b
-    simp
-    simp [ih, Nat.succ_mul]
-    rename_i b
-    rw [Nat.add_comm (b * k) k, Nat.sub_add_eq, Nat.add_sub_cancel]
-
 namespace Group
 
 local notation "𝟙" => One.one

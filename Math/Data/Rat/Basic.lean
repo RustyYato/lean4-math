@@ -481,9 +481,9 @@ instance : CheckedInvert ℚ (fun q => q ≠ 0) where
   checked_invert := Rat.inv
 
 @[simp]
-def Fract.inv.num (a: Fract) (h: ¬a ≈ 0) : (a⁻¹).num = a.num.sign * a.den := rfl
+def Fract.inv.num (a: Fract) (h: ¬a ≈ 0) : (a⁻¹?).num = a.num.sign * a.den := rfl
 @[simp]
-def Fract.inv.den (a: Fract) (h: ¬a ≈ 0) : (a⁻¹).den = ‖a.num‖ := rfl
+def Fract.inv.den (a: Fract) (h: ¬a ≈ 0) : (a⁻¹?).den = ‖a.num‖ := rfl
 
 @[simp]
 def Rat.eqv_nonzero (a: Fract) (h: ¬a ≈ 0) : ⟦a⟧ ≠ 0 := by
@@ -495,8 +495,8 @@ def Rat.eqv_nonzero (a: Fract) (h: ¬a ≈ 0) : ⟦a⟧ ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply Rat.eqv_nonzero <;> assumption)
 
-def Fract.div (a b: Fract) (h: ¬b ≈ 0) : Fract := a * b⁻¹
-def Rat.div (a b: ℚ) (h: b ≠ 0) : ℚ := a * b⁻¹
+def Fract.div (a b: Fract) (h: ¬b ≈ 0) : Fract := a * b⁻¹?
+def Rat.div (a b: ℚ) (h: b ≠ 0) : ℚ := a * b⁻¹?
 
 instance : CheckedDiv Fract (fun q => ¬q ≈ 0) where
   checked_div := Fract.div
@@ -576,7 +576,7 @@ def Rat.neg_sign (a: ℚ) : (-a).sign = -a.sign := by
   obtain ⟨⟨a, _, _ ⟩, _⟩ := a
   cases a using Int.cases <;> rfl
 
-def Fract.inv.spec (a b: Fract) (h₀: ¬a ≈ 0) (h₁: ¬b ≈ 0) : a ≈ b -> a⁻¹ ≈ b⁻¹ := by
+def Fract.inv.spec (a b: Fract) (h₀: ¬a ≈ 0) (h₁: ¬b ≈ 0) : a ≈ b -> a⁻¹? ≈ b⁻¹? := by
   intro eq
   have : a.num.sign = b.num.sign := by
     have : ⟦a⟧ = ⟦b⟧ := quot.sound eq
@@ -593,7 +593,7 @@ def Fract.inv.spec (a b: Fract) (h₀: ¬a ≈ 0) (h₁: ¬b ≈ 0) : a ≈ b ->
 
 @[simp]
 def Rat.mk_inv (a: Fract) (h: ¬a ≈ 0)  :
-  ⟦a⟧⁻¹ = ⟦a⁻¹⟧ := by
+  ⟦a⟧⁻¹? = ⟦a⁻¹?⟧ := by
   apply Rat.toFract.inj
   apply Fract.isReduced.spec
   apply Rat.isReduced
@@ -714,7 +714,7 @@ def Rat.mul_assoc (a b c: ℚ) : a * b * c = a * (b * c) := by
   simp [Int.add_mul]
   ac_rfl
 
-def Rat.div_eq_mul_inv (a b: ℚ) (h: b ≠ 0) : a /? b = a * b⁻¹ := rfl
+def Rat.div_eq_mul_inv (a b: ℚ) (h: b ≠ 0) : a /? b = a * b⁻¹? := rfl
 
 def Rat.mul_div_assoc (a b c: ℚ) (h: c ≠ 0) : a * b /? c = a * (b /? c) := by
   rw [div_eq_mul_inv, div_eq_mul_inv, mul_assoc]
@@ -818,7 +818,7 @@ def Rat.abs_neg (a: ℚ) : ‖-a‖ = ‖a‖ := by
 def Rat.abs_sub_comm (a b: ℚ) : ‖a - b‖ = ‖b - a‖ := by
   rw [←neg_sub, abs_neg]
 
-def Rat.mul_inv_self (a: ℚ) (h: a ≠ 0) : a * a⁻¹ = 1 := by
+def Rat.mul_inv_self (a: ℚ) (h: a ≠ 0) : a * a⁻¹? = 1 := by
   quot_ind a
   have : ¬a ≈ 0 := fun g => h (quot.sound g)
   simp [mk_inv _ this]
@@ -829,7 +829,7 @@ def Rat.mul_inv_self (a: ℚ) (h: a ≠ 0) : a * a⁻¹ = 1 := by
   erw [Int.one_mul, Int.mul_one, ←Int.mul_assoc, Int.mul_sign, Int.mul_comm]
   rfl
 
-def Rat.inv_self_mul (a: ℚ) (h: a ≠ 0) : a⁻¹ * a = 1 := by
+def Rat.inv_self_mul (a: ℚ) (h: a ≠ 0) : a⁻¹? * a = 1 := by
   rw [mul_comm, mul_inv_self]
 
 def Rat.div_self (a: ℚ) (h: a ≠ 0) : a /? a = 1 := by
@@ -872,7 +872,7 @@ def Rat.mul_cancel_right {a b k: ℚ} (h: k ≠ 0) : a = b ↔  a * k = b * k :=
   apply Iff.intro
   intro g; rw [g]
   intro g
-  have : (a * k) * k⁻¹ = (b * k) * k⁻¹ := by rw [g]
+  have : (a * k) * k⁻¹? = (b * k) * k⁻¹? := by rw [g]
   rwa [mul_assoc, mul_assoc, mul_inv_self, mul_one, mul_one] at this
 
 def Rat.mul_cancel_left {a b k: ℚ} (h: k ≠ 0) : a = b ↔ k * a = k * b := by
@@ -900,11 +900,11 @@ macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply Rat.mul_nonzero <;> invert_tactic)
 
 def Rat.inv_add_inv (a b: ℚ) (ha: a ≠ 0) (hb: b ≠ 0) :
-  a⁻¹ + b⁻¹ = (a + b) /? (a * b) := by
+  a⁻¹? + b⁻¹? = (a + b) /? (a * b) := by
   apply (mul_cancel_right _).mpr
   conv => { rhs; rw [mul_comm, mul_div_cancel] }
   rw [add_mul]
-  suffices (a⁻¹ * a) * b + (b⁻¹ * b) * a = a + b by
+  suffices (a⁻¹? * a) * b + (b⁻¹? * b) * a = a + b by
     rw [←this]
     ac_rfl
   rw [inv_self_mul, inv_self_mul, one_mul, one_mul, add_comm]
@@ -919,13 +919,13 @@ def Rat.neg_nonzero (a: ℚ) : a ≠ 0 -> (-a) ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply Rat.neg_nonzero <;> invert_tactic)
 
-def Rat.neg_inv (a: ℚ) (h: a ≠ 0) : -a⁻¹ = (-a)⁻¹ := by
+def Rat.neg_inv (a: ℚ) (h: a ≠ 0) : -a⁻¹? = (-a)⁻¹? := by
   apply (mul_cancel_left (k := (-a)) _).mpr
   rw [←neg_mul_right, ←neg_mul_left, mul_inv_self, mul_inv_self, neg_neg]
   invert_tactic
 
 def Rat.inv_sub_inv (a b: ℚ) (ha: a ≠ 0) (hb: b ≠ 0) :
-  a⁻¹ - b⁻¹ = (b - a) /? (a * b) := by
+  a⁻¹? - b⁻¹? = (b - a) /? (a * b) := by
   rw [sub_eq_add_neg, sub_eq_add_neg, neg_inv, inv_add_inv,
     div_eq_mul_inv, div_eq_mul_inv, ←sub_eq_add_neg, ←neg_sub,
     ←neg_mul_left, neg_mul_right, sub_eq_add_neg, neg_inv]
@@ -941,7 +941,7 @@ def Rat.abs_nonzero (a: ℚ) : a ≠ 0 -> ‖a‖ ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply Rat.abs_nonzero <;> invert_tactic)
 
-def Rat.abs_inv (a: ℚ) (ha: a ≠ 0)  : ‖a⁻¹‖ = ‖a‖⁻¹ := by
+def Rat.abs_inv (a: ℚ) (ha: a ≠ 0)  : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
   apply (mul_cancel_left _).mpr
   rw [mul_inv_self ‖a‖, ←abs_mul, mul_inv_self]
   rfl
@@ -950,14 +950,14 @@ def Rat.abs_inv (a: ℚ) (ha: a ≠ 0)  : ‖a⁻¹‖ = ‖a‖⁻¹ := by
 def Rat.abs_div (a b: ℚ) (hb: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
   rw [div_eq_mul_inv, div_eq_mul_inv, abs_mul, abs_inv]
 
-def Rat.inv_mul (a b: ℚ) (ha: a ≠ 0) (hb: b ≠ 0) : (a * b)⁻¹ = a⁻¹ * b⁻¹ := by
+def Rat.inv_mul (a b: ℚ) (ha: a ≠ 0) (hb: b ≠ 0) : (a * b)⁻¹? = a⁻¹? * b⁻¹? := by
   apply (mul_cancel_left _).mpr
   rw [mul_inv_self]
-  suffices 1 = a * a⁻¹ * (b * b⁻¹) by rw [this]; ac_rfl
+  suffices 1 = a * a⁻¹? * (b * b⁻¹?) by rw [this]; ac_rfl
   rw [mul_inv_self, mul_inv_self, mul_one]
   invert_tactic
 
-def Rat.inv_nonzero (a: ℚ) (ha: a ≠ 0) : a⁻¹ ≠ 0 := by
+def Rat.inv_nonzero (a: ℚ) (ha: a ≠ 0) : a⁻¹? ≠ 0 := by
   intro h
   apply ha
   have := eq_zero_of_num_eq_zero.mp h
@@ -1018,7 +1018,7 @@ def Rat.zpow (a: ℚ) : Int -> ℚ
   if h:a = 0 then
     0
   else
-    (a⁻¹) ^ (n + 1)
+    (a⁻¹?) ^ (n + 1)
 
 instance : Pow ℚ Int where
   pow := Rat.zpow

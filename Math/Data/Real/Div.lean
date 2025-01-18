@@ -3,7 +3,7 @@ import Math.Data.Real.Order
 local notation "⟦" f "⟧" => Real.mk f
 
 def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
-  is_cauchy_equiv (fun n => if h:a n = 0 then 0 else (a n)⁻¹) (fun n => if h:b n = 0 then 0 else (b n)⁻¹) := by
+  is_cauchy_equiv (fun n => if h:a n = 0 then 0 else (a n)⁻¹?) (fun n => if h:b n = 0 then 0 else (b n)⁻¹?) := by
   intro ab ε ε_pos
   have hb := IsPos.spec  _ _ ab ha
   obtain ⟨A, A_pos, ha⟩ := ha
@@ -37,7 +37,7 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
     assumption
     rw [←Rat.abs_inv, Rat.inv_mul, Rat.abs_mul,
       ←Rat.abs_of_pos _ (Rat.half_pos A_pos), ←Rat.abs_of_pos _ (Rat.half_pos B_pos)]
-    suffices ‖A/?2‖ *‖(a n)⁻¹‖ * (‖B/?2‖ * ‖(b m)⁻¹‖) < 1 by
+    suffices ‖A/?2‖ *‖(a n)⁻¹?‖ * (‖B/?2‖ * ‖(b m)⁻¹?‖) < 1 by
       apply lt_of_le_of_lt _ this
       assumption
       assumption
@@ -71,7 +71,7 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
   · apply Rat.mul_pos <;> apply Rat.half_pos <;> assumption
 
 def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
-  is_cauchy_equiv (fun n => if h:a n = 0 then 0 else (a n)⁻¹) (fun n => if h:b n = 0 then 0 else (b n)⁻¹) := by
+  is_cauchy_equiv (fun n => if h:a n = 0 then 0 else (a n)⁻¹?) (fun n => if h:b n = 0 then 0 else (b n)⁻¹?) := by
   intro ab ε ε_pos
   simp
   rcases pos_or_neg_of_abs_pos (abs_pos_of_non_zero ha) with apos | aneg
@@ -79,7 +79,7 @@ def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
   assumption
   assumption
   assumption
-  have ⟨δ, prf⟩: Eventually₂ fun n m => ‖(if h : (-a).seq n = 0 then 0 else ((-a).seq n)⁻¹) - if h : (-b).seq m = 0 then 0 else ((-b).seq m)⁻¹‖ < ε := by
+  have ⟨δ, prf⟩: Eventually₂ fun n m => ‖(if h : (-a).seq n = 0 then 0 else ((-a).seq n)⁻¹?) - if h : (-b).seq m = 0 then 0 else ((-b).seq m)⁻¹?‖ < ε := by
     apply inv.spec_pos
     assumption
     apply Quotient.exact
@@ -127,7 +127,7 @@ def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
     rw [←Rat.neg_neg (a n), g]; rfl
 
 def CauchySeq.inv (a: CauchySeq) (ha: ¬a ≈ 0) : CauchySeq where
-  seq n := if h:a n = 0 then 0 else (a n)⁻¹
+  seq n := if h:a n = 0 then 0 else (a n)⁻¹?
   is_cacuhy := by
     apply CauchySeq.inv.spec
     assumption
@@ -179,14 +179,14 @@ def inv (a: ℝ) : a ≠ 0 -> ℝ := by
 instance : CheckedInvert ℝ (fun x => x ≠ 0) := ⟨.inv⟩
 
 instance : CheckedDiv ℝ (fun x => x ≠ 0) where
-  checked_div a b h := a * b⁻¹
+  checked_div a b h := a * b⁻¹?
 
 instance : Min ℝ where
   min x y := (x + y - ‖x - y‖) /? 2
 instance : Max ℝ where
   max x y := (x + y + ‖x - y‖) /? 2
 
-def inv_self_mul (a: ℝ) (h: a ≠ 0) : a⁻¹ * a = 1 := by
+def inv_self_mul (a: ℝ) (h: a ≠ 0) : a⁻¹? * a = 1 := by
   induction a using ind with | mk a =>
   apply Quotient.sound
   apply CauchySeq.eventually_pointwise
@@ -202,10 +202,10 @@ def inv_self_mul (a: ℝ) (h: a ≠ 0) : a⁻¹ * a = 1 := by
   rw [Rat.inv_self_mul]
   rfl
 
-def mul_inv_self (a: ℝ) (h: a ≠ 0) : a * a⁻¹ = 1 := by
+def mul_inv_self (a: ℝ) (h: a ≠ 0) : a * a⁻¹? = 1 := by
   rw [mul_comm, inv_self_mul]
 
-def inv_pos (a: ℝ) (apos: a.IsPos) : (a⁻¹).IsPos := by
+def inv_pos (a: ℝ) (apos: a.IsPos) : (a⁻¹?).IsPos := by
   induction a using ind with | mk a =>
   obtain ⟨B, B_pos, δ, apos⟩ := apos
   have ⟨bound, one_le_bound, prf⟩  := a.upper_bound_with 1
