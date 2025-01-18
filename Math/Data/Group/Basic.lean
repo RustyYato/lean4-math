@@ -44,6 +44,9 @@ instance : Div g.ty where
 instance : Pow g.ty ℕ := ⟨flip npowRec⟩
 instance : Pow g.ty ℤ := ⟨flip zpowRec⟩
 
+instance : Inhabited g.ty where
+  default := 1
+
 @[simp]
 def mul'_eq {g: Group} (a b: g.ty) : g.mul' a b = a * b := rfl
 @[simp]
@@ -375,6 +378,11 @@ def IsoClass.Trivial: IsoClass := ⟦Group.Trivial⟧
 instance : One Group := ⟨.Trivial⟩
 instance : One IsoClass := ⟨.Trivial⟩
 
+instance : Subsingleton Trivial.ty :=
+  inferInstanceAs (Subsingleton PUnit)
+instance : Subsingleton (1: Group).ty :=
+  inferInstanceAs (Subsingleton PUnit)
+
 def eqv_gsub_eqv {a b c d: Group} : a ≈ c -> b ≈ d -> a ⊆ b -> c ⊆ d := by
   intro ⟨ac⟩ ⟨bd⟩ ⟨sub⟩
   exact ⟨sub.respIso ac bd⟩
@@ -663,6 +671,12 @@ def Trivial.IsSimple : IsSimple 1 := by
 def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
   apply Eq.mpr mk_IsSimple
   exact Group.Trivial.IsSimple
+
+def eq_trivial_of_subsingleton (a: Group) [Subsingleton a.ty] : a ≈ 1 := by
+  apply IsIsomorphic.intro (unique_eq_unique _ _)
+  apply Subsingleton.allEq
+  intros; apply Subsingleton.allEq
+  intros; apply Subsingleton.allEq
 
 end Group
 
