@@ -272,6 +272,12 @@ def Fin.equivOfEq (h: n = m) : Fin n ≃ Fin m where
   leftInv | ⟨_, _⟩ => rfl
   rightInv | ⟨_, _⟩ => rfl
 
+def Equiv.symm_trans_self (h: α ≃ β) : h.symm.trans h = Equiv.refl := by
+  apply Equiv.toFun_inj'
+  ext x
+  show h (h.symm x) = x
+  rw [h.symm_coe]
+
 def Equiv.heq_invFun_left {a: α ≃ β} {b: α₀ ≃ β} (h: HEq a b) : α = α₀ -> ∀x, HEq (a.invFun x) (b.invFun x) := by
   intro eq
   subst α₀
