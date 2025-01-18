@@ -193,4 +193,16 @@ def continuous_sSup_dom {T : Set (Topology α)} {t₂ : Topology β} :
     IsContinuous' (sSup T) t₂ f ↔ ∀ t ∈ T, IsContinuous' t t₂ f := by
   simp only [continuous_iff_le_induced, sSup_le_iff]
 
+instance [Subsingleton α] : Subsingleton (Topology α) where
+  allEq := by
+    intro a b
+    let topT := inferInstanceAs (Topology.Trivial α)
+    have bot_eq_top : ⊥ = (⊤: Topology α) := topT.eq_top
+    rw [show a = ⊥ from ?_, show b = ⊥ from ?_]
+    all_goals
+      apply le_antisymm
+      rw [bot_eq_top]
+      apply le_top
+      apply bot_le
+
 end Topology
