@@ -126,8 +126,8 @@ instance Rat.mk_prod_continuous (f: ℚ -> ℚ) (g: ℚ -> ℚ)
     dsimp
     replace hy : ‖_‖ < min δ₀ δ₁ := hy
     rw [lt_min_iff] at hy
-    have := sub₀  _  hy.left
-    have := sub₁  _  hy.right
+    have := sub₀ _ hy.left
+    have := sub₁ _ hy.right
     rw [Rat.add_half δ]
     apply add_lt_add
     assumption
@@ -160,6 +160,17 @@ instance Rat.add_continuous : Topology.IsContinuous (fun x: ℚ × ℚ => x.fst 
     apply abs_le_abs_add_abs
     rw [←sub_eq_add_neg, ←sub_eq_add_neg]
     assumption
+
+instance Rat.mul_continuous : Topology.IsContinuous (fun x: ℚ × ℚ => x.fst * x.snd) where
+  isOpen_preimage := by
+    intro S S_open x mem
+    have ⟨δ, δ_pos, sub⟩  := S_open _ mem
+    refine ⟨δ, δ_pos, ?_⟩
+    intro y hy
+    apply sub
+    dsimp
+    show ‖_‖ < δ
+    sorry
 
 instance Rat.mul_continuous_left (x: ℚ) : Topology.IsContinuous (· * x) where
   isOpen_preimage := by
@@ -204,14 +215,14 @@ instance Rat.mul_continuous_right (x: ℚ) : Topology.IsContinuous (x * ·) := b
 def Rat.add_continuous' (f g: ℚ -> ℚ) (cf: Topology.IsContinuous f) (cg: Topology.IsContinuous g) : Topology.IsContinuous (fun x => f x + g x) :=
   (Rat.mk_prod_continuous f g).comp' Rat.add_continuous
 
-def Rat.mul_continuous (f g: ℚ -> ℚ) (cf: Topology.IsContinuous f) (cg: Topology.IsContinuous g) : Topology.IsContinuous (fun x => f x * g x) where
+def Rat.mul_continuous' (f g: ℚ -> ℚ) (cf: Topology.IsContinuous f) (cg: Topology.IsContinuous g) : Topology.IsContinuous (fun x => f x * g x) where
   isOpen_preimage := sorry
 
 instance (f g: ℚ -> ℚ) [cf: Topology.IsContinuous f] [cg: Topology.IsContinuous g] : Topology.IsContinuous (fun x => f x + g x) :=
   Rat.add_continuous' f g cf cg
 
 instance (f g: ℚ -> ℚ) [cf: Topology.IsContinuous f] [cg: Topology.IsContinuous g] : Topology.IsContinuous (fun x => f x * g x) :=
-  Rat.mul_continuous f g cf cg
+  Rat.mul_continuous' f g cf cg
 
 instance Rat.add_continuous_left (x: ℚ) : Topology.IsContinuous (· + x) := inferInstance
 instance Rat.add_continuous_right (x: ℚ) : Topology.IsContinuous (x + ·) :=

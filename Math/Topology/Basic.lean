@@ -270,6 +270,9 @@ instance [Subsingleton α₀] : Trivial α₀ where
 instance : Topology Bool := ⊥
 instance : Discrete Bool := ⟨rfl⟩
 
+instance : Topology (Fin n) := ⊥
+instance : Discrete (Fin n) := ⟨rfl⟩
+
 instance : Topology Nat := ⊥
 instance : Discrete Nat := ⟨rfl⟩
 
