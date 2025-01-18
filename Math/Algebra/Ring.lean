@@ -2,29 +2,8 @@ import Math.Type.Notation
 import Math.Data.StdInt.Basic
 import Math.AxiomBlame
 import Math.Ops.Checked
-
-notation "ℕ" => Nat
-notation "ℤ" => Int
-
-class One (α) where
-  one: α
-
-instance (priority := 100) [OfNat α 1] : One α where
-  one := 1
-
-instance One.ofNat [One α] : OfNat α 1 := ⟨ One.one ⟩
-
-variable {a b c k: a₀}
-
-class SMul (M α) where
-  smul : M -> α -> α
-
-infixr:73 " • " => SMul.smul
-
-class Inv (α) where
-  inv: α -> α
-
-postfix:max "⁻¹" => Inv.inv
+import Math.Algebra.Notation
+import Math.Algebra.AddMul
 
 variable (α: Type*) [Zero α] [One α] [Add α] [Mul α] [Sub α] [Div α]
 variable {α₀ α₁: Type*} [Zero α₀] [One α₁] [Add α₀] [Mul α₁] [Sub α₀] [Div α₁]
@@ -61,26 +40,36 @@ class IsAddSemigroup: Prop where
 class IsSemigroup: Prop where
   mul_assoc (a b c: α) : a * b * c = a * (b * c)
 
-def add_assoc [IsAddSemigroup α₀] (a b c: α₀) : a + b + c = a + (b + c) := IsAddSemigroup.add_assoc a b c
-def mul_assoc [IsSemigroup α₁] (a b c: α₁) : a * b * c = a * (b * c) := IsSemigroup.mul_assoc a b c
+export IsAddSemigroup (add_assoc)
+export IsSemigroup (mul_assoc)
+
+instance [IsSemigroup α] : IsAddSemigroup (AddOfMul α) where
+  add_assoc := mul_assoc (α := α)
+instance [IsAddSemigroup α] : IsSemigroup (MulOfAdd α) where
+  mul_assoc := add_assoc (α := α)
 
 class IsAddCommMagma: Prop where
   add_comm (a b: α) : a + b = b + a
 class IsCommMagma: Prop where
   mul_comm (a b: α) : a * b = b * a
 
-def add_comm [IsAddCommMagma α₀] (a b: α₀) : a + b = b + a := IsAddCommMagma.add_comm a b
-def mul_comm [IsCommMagma α₁] (a b: α₁) : a * b = b * a := IsCommMagma.mul_comm a b
+export IsAddCommMagma (add_comm)
+export IsCommMagma (mul_comm)
+
+instance [IsCommMagma α] : IsAddCommMagma (AddOfMul α) where
+  add_comm := mul_comm (α := α)
+instance [IsAddCommMagma α] : IsCommMagma (MulOfAdd α) where
+  mul_comm := add_comm (α := α)
 
 class IsAddLeftCancel: Prop where
-  add_left_cancel (a b k: α): k + a = k + b -> a = b
+  add_left_cancel {a b k: α}: k + a = k + b -> a = b
 class IsAddRightCancel: Prop where
-  add_right_cancel (a b k: α): a + k = b + k -> a = b
+  add_right_cancel {a b k: α}: a + k = b + k -> a = b
 
 class IsLeftCancel: Prop where
-  mul_left_cancel (a b k: α): k * a = k * b -> a = b
+  mul_left_cancel {a b k: α}: k * a = k * b -> a = b
 class IsRightCancel: Prop where
-  mul_right_cancel (a b k: α): a * k = b * k -> a = b
+  mul_right_cancel {a b k: α}: a * k = b * k -> a = b
 
 class IsAddCancel extends IsAddLeftCancel α, IsAddRightCancel α: Prop
 class IsMulCancel extends IsLeftCancel α, IsRightCancel α: Prop
@@ -88,29 +77,38 @@ class IsMulCancel extends IsLeftCancel α, IsRightCancel α: Prop
 instance [IsAddLeftCancel α] [IsAddRightCancel α] : IsAddCancel α where
 instance [IsLeftCancel α] [IsRightCancel α] : IsMulCancel α where
 
-def add_left_cancel [IsAddLeftCancel α₀] {a b k: α₀}: k + a = k + b -> a = b := IsAddLeftCancel.add_left_cancel a b k
-def add_right_cancel [IsAddRightCancel α₀] {a b k: α₀}: a + k = b + k -> a = b := IsAddRightCancel.add_right_cancel a b k
+export IsAddLeftCancel (add_left_cancel)
+export IsAddRightCancel (add_right_cancel)
+export IsLeftCancel (mul_left_cancel)
+export IsRightCancel (mul_right_cancel)
 
-def mul_left_cancel [IsLeftCancel α₁] {a b k: α₁}: k * a = k * b -> a = b := IsLeftCancel.mul_left_cancel a b k
-def mul_right_cancel [IsRightCancel α₁] {a b k: α₁}: a * k = b * k -> a = b := IsRightCancel.mul_right_cancel a b k
+instance [IsLeftCancel α] : IsAddLeftCancel (AddOfMul α) where
+  add_left_cancel := mul_left_cancel (α := α)
+instance [IsRightCancel α] : IsAddRightCancel (AddOfMul α) where
+  add_right_cancel := mul_right_cancel (α := α)
+
+instance [IsAddLeftCancel α] : IsLeftCancel (MulOfAdd α) where
+  mul_left_cancel := add_left_cancel (α := α)
+instance [IsAddRightCancel α] : IsRightCancel (MulOfAdd α) where
+  mul_right_cancel := add_right_cancel (α := α)
 
 instance (priority := 50) IsAddCommMagma.toLeftCancel [IsAddCommMagma α] [IsAddRightCancel α] : IsAddLeftCancel α where
-  add_left_cancel a b k := by
+  add_left_cancel {a b k} := by
     rw [add_comm k, add_comm k]
     exact add_right_cancel
 
 instance (priority := 50) IsAddCommMagma.toRightCancel [IsAddCommMagma α] [IsAddLeftCancel α] : IsAddRightCancel α where
-  add_right_cancel a b k := by
+  add_right_cancel {a b k} := by
     rw [add_comm _ k, add_comm _ k]
     exact add_left_cancel
 
 instance (priority := 50) IsCommMagma.toLeftCancel [IsCommMagma α] [IsRightCancel α] : IsLeftCancel α where
-  mul_left_cancel a b k := by
+  mul_left_cancel {a b k} := by
     rw [mul_comm k, mul_comm k]
     exact mul_right_cancel
 
 instance (priority := 50) IsCommMagma.toRightCancel [IsCommMagma α] [IsLeftCancel α] : IsRightCancel α where
-  mul_right_cancel a b k := by
+  mul_right_cancel {a b k} := by
     rw [mul_comm _ k, mul_comm _ k]
     exact mul_left_cancel
 
@@ -124,6 +122,17 @@ class IsMulZeroClass: Prop where
   zero_mul (a: α): 0 * a = 0
   mul_zero (a: α): a * 0 = 0
 
+export IsAddZeroClass (zero_add add_zero)
+export IsMulZeroClass (zero_mul mul_zero)
+export IsMulOneClass (one_mul mul_one)
+
+instance [IsMulOneClass α] : IsAddZeroClass (AddOfMul α) where
+  add_zero := mul_one (α := α)
+  zero_add := one_mul (α := α)
+instance [IsAddZeroClass α] : IsMulOneClass (MulOfAdd α) where
+  mul_one := add_zero (α := α)
+  one_mul := zero_add (α := α)
+
 def IsAddZeroClass.ofAddCommMagma [IsAddCommMagma α₀] (h: ∀x: α₀, 0 + x = x) : IsAddZeroClass α₀ where
   zero_add := h
   add_zero x := by rw [add_comm]; apply h
@@ -136,13 +145,6 @@ def IsMulOneClass.ofCommMagma [IsCommMagma α₁] (h: ∀x: α₁, 1 * x = x) : 
   one_mul := h
   mul_one x := by rw [mul_comm]; apply h
 
-def zero_add [IsAddZeroClass α₀] (a: α₀) : 0 + a = a := IsAddZeroClass.zero_add a
-def add_zero [IsAddZeroClass α₀] (a: α₀) : a + 0 = a := IsAddZeroClass.add_zero a
-def one_mul [IsMulOneClass α₁] (a: α₁) : 1 * a = a := IsMulOneClass.one_mul a
-def mul_one [IsMulOneClass α₁] (a: α₁) : a * 1 = a := IsMulOneClass.mul_one a
-def zero_mul [Zero α₁] [IsMulZeroClass α₁] (a: α₁) : 0 * a = 0 := IsMulZeroClass.zero_mul a
-def mul_zero [Zero α₁] [IsMulZeroClass α₁] (a: α₁) : a * 0 = 0 := IsMulZeroClass.mul_zero a
-
 def all_eq_zero_of_trivial [Zero α₁] [IsMulZeroClass α₁] [IsMulOneClass α₁] (triv: (0: α₁) = (1: α₁)) (a: α₁) : a = 0 := by
   rw [←mul_one a, ←triv, mul_zero]
 
@@ -150,43 +152,45 @@ def nsmulRec : ℕ -> α₀ -> α₀
 | 0, _ => 0
 | n + 1, a => nsmulRec n a + a
 
-def npowRec : ℕ -> α₁ -> α₁
-| 0, _ => 1
-| n + 1, a => npowRec n a * a
+def npowRec : ℕ -> α₁ -> α₁ := nsmulRec (α₀ := AddOfMul α₁)
 
 class IsAddMonoid extends IsAddSemigroup α, IsAddZeroClass α: Prop where
-  nsmul_zero (a: α) : 0 • a = 0 := by intros; rfl
-  nsmul_succ (n: ℕ) (a: α) : (n + 1) • a = n • a + a := by intros; rfl
+  zero_nsmul (a: α) : 0 • a = 0 := by intros; rfl
+  succ_nsmul (n: ℕ) (a: α) : (n + 1) • a = n • a + a := by intros; rfl
 class IsMonoid extends IsSemigroup α, IsMulOneClass α: Prop where
   npow_zero (a: α) : a ^ 0 = 1 := by intros; rfl
   npow_succ (n: ℕ) (a: α) : a ^ (n + 1) = a ^ n * a := by intros; rfl
 
-def zero_nsmul [IsAddMonoid α₀] (a: α₀) : 0 • a = 0 := IsAddMonoid.nsmul_zero a
-def succ_nsmul [IsAddMonoid α₀] (n: ℕ) (a: α₀) : (n + 1) • a = n • a + a := IsAddMonoid.nsmul_succ n a
-def npow_zero [IsMonoid α₁] (a: α₁) : a ^ 0 = 1 := IsMonoid.npow_zero a
-def npow_succ [IsMonoid α₁] (n: ℕ) (a: α₁) : a ^ (n + 1) = a ^ n * a := IsMonoid.npow_succ n a
+export IsAddMonoid (zero_nsmul succ_nsmul)
+export IsMonoid (npow_zero npow_succ)
+
+instance [IsMonoid α] : IsAddMonoid (AddOfMul α) where
+  zero_nsmul := npow_zero (α := α)
+  succ_nsmul := npow_succ (α := α)
+instance [IsAddMonoid α] : IsMonoid (MulOfAdd α) where
+  npow_zero := zero_nsmul (α := α)
+  npow_succ := succ_nsmul (α := α)
+
+-- def zero_nsmul [IsAddMonoid α₀] (a: α₀) : 0 • a = 0 := IsAddMonoid.nsmul_zero a
+-- def succ_nsmul [IsAddMonoid α₀] (n: ℕ) (a: α₀) : (n + 1) • a = n • a + a := IsAddMonoid.nsmul_succ n a
+-- def npow_zero [IsMonoid α₁] (a: α₁) : a ^ 0 = 1 := IsMonoid.npow_zero a
+-- def npow_succ [IsMonoid α₁] (n: ℕ) (a: α₁) : a ^ (n + 1) = a ^ n * a := IsMonoid.npow_succ n a
 def nsmul_zero [IsAddMonoid α₀] (a: ℕ) : a • (0: α₀) = 0 := by
   induction a with
   | zero => rw [zero_nsmul]
   | succ a ih => rw [succ_nsmul, ih, add_zero]
-def one_npow [IsMonoid α₁] (a: ℕ) : (1: α₁) ^ a = 1 := by
-  induction a with
-  | zero => rw [npow_zero]
-  | succ a ih => rw [npow_succ, ih, mul_one]
+def one_npow [IsMonoid α₁] (a: ℕ) : (1: α₁) ^ a = 1 := nsmul_zero (α₀ := AddOfMul α₁) _
 
-def nsmul_one [IsAddMonoid α₀] (a: α₀) : 1 • a = a := by rw [succ_nsmul, zero_nsmul, zero_add]
-def one_snsmul [IsAddMonoid α₀] (a: α₀) : 1 • a = a := nsmul_one a
-def npow_one [IsMonoid α₁] (a: α₁) : a ^ 1 = a := by rw [npow_succ, npow_zero, one_mul]
+def one_nsmul [IsAddMonoid α₀] (a: α₀) : 1 • a = a := by rw [succ_nsmul, zero_nsmul, zero_add]
+def npow_one [IsMonoid α₁] (a: α₁) : a ^ 1 = a := one_nsmul (α₀ := AddOfMul α₁) _
 
 def nsmul_eq_nsmulRec [IsAddMonoid α₀] (n: ℕ) (a: α₀) : n • a = nsmulRec n a := by
   induction n with
   | zero => rw [zero_nsmul]; rfl
   | succ n ih => rw [succ_nsmul, ih]; rfl
 
-def npow_eq_npowRec [IsMonoid α₁] (n: ℕ) (a: α₁) : a ^ n = npowRec n a := by
-  induction n with
-  | zero => rw [npow_zero]; rfl
-  | succ n ih => rw [npow_succ, ih]; rfl
+def npow_eq_npowRec [IsMonoid α₁] (n: ℕ) (a: α₁) : a ^ n = npowRec n a :=
+  nsmul_eq_nsmulRec (α₀ := AddOfMul α₁) _ _
 
 def succ_nsmul' [IsAddMonoid α₀] (n: ℕ) (a: α₀) : (n + 1) • a = a + n • a := by
   have : IsAddSemigroup α₀ := IsAddMonoid.toIsAddSemigroup
@@ -194,23 +198,16 @@ def succ_nsmul' [IsAddMonoid α₀] (n: ℕ) (a: α₀) : (n + 1) • a = a + n 
   | zero =>
     rw [zero_nsmul, add_zero, succ_nsmul, zero_nsmul, zero_add]
   | succ n ih => rw [succ_nsmul n, ←add_assoc, ←ih, succ_nsmul (n + 1)]
-def npow_succ' [IsMonoid α₁] (n: ℕ) (a: α₁) : a ^ (n + 1) = a * a ^ n := by
-  have : IsSemigroup α₁ := IsMonoid.toIsSemigroup
-  induction n with
-  | zero =>
-    rw [npow_zero, mul_one, npow_succ, npow_zero, one_mul]
-  | succ n ih => rw [npow_succ n, ←mul_assoc, ←ih, npow_succ (n + 1)]
+def npow_succ' [IsMonoid α₁] (n: ℕ) (a: α₁) : a ^ (n + 1) = a * a ^ n :=
+  succ_nsmul' (α₀ := AddOfMul α₁) _ _
 
 def add_nsmul [IsAddMonoid α₀] (n m: ℕ) (a: α₀) : (n + m) • a = n • a + m • a := by
   have : IsAddSemigroup α₀ := IsAddMonoid.toIsAddSemigroup
   induction m with
   | zero => rw [Nat.add_zero, zero_nsmul, add_zero]
   | succ m ih => rw [Nat.add_succ, succ_nsmul, succ_nsmul, ←add_assoc, ih]
-def npow_add [IsMonoid α₁] (n m: ℕ) (a: α₁) : a ^ (n + m) = a ^ n * a ^ m := by
-  have : IsSemigroup α₁ := IsMonoid.toIsSemigroup
-  induction m with
-  | zero => rw [Nat.add_zero, npow_zero, mul_one]
-  | succ m ih => rw [Nat.add_succ, npow_succ, npow_succ, ←mul_assoc, ih]
+def npow_add [IsMonoid α₁] (n m: ℕ) (a: α₁) : a ^ (n + m) = a ^ n * a ^ m :=
+  add_nsmul (α₀ := AddOfMul α₁) _ _ _
 
 def nsmul_add [IsAddMonoid α₀] [IsAddCommMagma α₀] (n: ℕ) (x y: α₀) : n • (x + y) = n • x + n • y := by
   induction n with
@@ -218,42 +215,38 @@ def nsmul_add [IsAddMonoid α₀] [IsAddCommMagma α₀] (n: ℕ) (x y: α₀) :
   | succ n ih =>
     rw [succ_nsmul, ih, add_assoc, add_comm _ (x + y), ←add_assoc, ←add_assoc, ←succ_nsmul, add_assoc, ←succ_nsmul']
 
-def mul_npow [IsMonoid α₁] [IsCommMagma α₁] (n: ℕ) (x y: α₁) : (x * y) ^ n = x ^ n * y ^ n := by
-  induction n with
-  | zero => rw [npow_zero, npow_zero, npow_zero, mul_one]
-  | succ n ih =>
-    rw [npow_succ, ih, mul_assoc, mul_comm _ (x * y), ←mul_assoc, ←mul_assoc, ←npow_succ, mul_assoc, ←npow_succ']
+def mul_npow [IsMonoid α₁] [IsCommMagma α₁] (n: ℕ) (x y: α₁) : (x * y) ^ n = x ^ n * y ^ n :=
+  nsmul_add (α₀ := AddOfMul α₁) _ _ _
 
 def mul_nsmul [IsAddMonoid α₀] (n m: ℕ) (x: α₀) : (m * n) • x = m • n • x := by
   induction m with
   | zero => rw [Nat.zero_mul, zero_nsmul, zero_nsmul]
   | succ m ih => rw [succ_nsmul, Nat.succ_mul, add_nsmul, ih]
 
-def npow_mul [IsMonoid α₁] (n m: ℕ) (x: α₁) : x ^ (m * n) = (x ^ n) ^ m := by
-  induction m with
-  | zero => rw [Nat.zero_mul, npow_zero, npow_zero]
-  | succ m ih => rw [npow_succ, Nat.succ_mul, npow_add, ih]
-
-def one_nsmul [IsAddMonoid α₀] (x: α₀) : 1 • x = x := by rw [succ_nsmul, zero_nsmul, zero_add]
-
-def zsmulRec : ℤ -> α₀ -> α₀
-| .ofNat n, a => n • a
-| .negSucc n, a => -((n + 1) • a)
-
-def zpowRec : ℤ -> α₁ -> α₁
-| .ofNat n, a => a ^ n
-| .negSucc n, a => (a ^ (n + 1))⁻¹
+def npow_mul [IsMonoid α₁] (n m: ℕ) (x: α₁) : x ^ (m * n) = (x ^ n) ^ m :=
+  mul_nsmul (α₀ := AddOfMul α₁) _ _ _
 
 class IsInvolutiveNeg: Prop where
   neg_neg (a: α): - -a = a
 class IsInvolutiveInv: Prop where
   inv_inv (a: α): a⁻¹⁻¹ = a
 
-def neg_neg [IsInvolutiveNeg α₀] (a: α₀) : - -a = a := IsInvolutiveNeg.neg_neg a
-def inv_inv [IsInvolutiveInv α₁] (a: α₁) : a⁻¹⁻¹ = a := IsInvolutiveInv.inv_inv a
+export IsInvolutiveNeg (neg_neg)
+export IsInvolutiveInv (inv_inv)
+
+instance [IsInvolutiveInv α] : IsInvolutiveNeg (AddOfMul α) where
+  neg_neg := inv_inv (α := α)
+instance [IsInvolutiveNeg α] : IsInvolutiveInv (MulOfAdd α) where
+  inv_inv := neg_neg (α := α)
 
 def sub' (a b: α₀) : α₀ := a + -b
 def div' (a b: α₁) : α₁ := a * b⁻¹
+
+def zsmulRec : ℤ -> α₀ -> α₀
+| .ofNat n, a => n • a
+| .negSucc n, a => -((n + 1) • a)
+
+def zpowRec : ℤ -> α₁ -> α₁ := zsmulRec (α₀ := AddOfMul α₁)
 
 class IsSubNegMonoid extends IsAddMonoid α: Prop where
   sub_eq_add_neg (a b: α) : a - b = a + -b
@@ -265,99 +258,193 @@ class IsDivInvMonoid extends IsMonoid α: Prop where
   zpow_ofNat (n: ℕ) (a: α) : a ^ (n: ℤ) = a ^ n
   zpow_negSucc (n: ℕ) (a: α) : a ^ (Int.negSucc n) = (a ^ n.succ)⁻¹
 
-def sub_eq_add_neg [IsSubNegMonoid α₀] (a b: α₀) : a - b = a + -b := IsSubNegMonoid.sub_eq_add_neg a b
-def div_eq_mul_inv [IsDivInvMonoid α₁] (a b: α₁) : a / b = a * b⁻¹ := IsDivInvMonoid.div_eq_mul_inv a b
-def zsmul_ofNat [IsSubNegMonoid α₀] (n: ℕ) (a: α₀) : (Int.ofNat n) • a = n • a := IsSubNegMonoid.zsmul_ofNat n a
-def zpow_ofNat [IsDivInvMonoid α₁] (n: ℕ) (a: α₁) : a ^ (Int.ofNat n) = a ^ n := IsDivInvMonoid.zpow_ofNat n a
-def zsmul_negSucc [IsSubNegMonoid α₀] (n: ℕ) (a: α₀) : (Int.negSucc n) • a = -(n.succ • a) := IsSubNegMonoid.zsmul_negSucc n a
-def zpow_negSucc [IsDivInvMonoid α₁] (n: ℕ) (a: α₁) : a ^ (Int.negSucc n) = (a ^ n.succ)⁻¹ := IsDivInvMonoid.zpow_negSucc n a
+export IsSubNegMonoid (sub_eq_add_neg zsmul_ofNat zsmul_negSucc)
+export IsDivInvMonoid (div_eq_mul_inv zpow_ofNat zpow_negSucc)
 
-def zsmul_neg_one [IsSubNegMonoid α₀] (a: α₀) : (-1) • a = -a := by erw [zsmul_negSucc, nsmul_one]
-def zpow_neg_one [IsDivInvMonoid α₁] (a: α₁) : a ^ (-1) = a⁻¹ := by erw [zpow_negSucc, npow_one]
+instance [IsDivInvMonoid α] : IsSubNegMonoid (AddOfMul α) where
+  sub_eq_add_neg := div_eq_mul_inv (α := α)
+  zsmul_ofNat := zpow_ofNat (α := α)
+  zsmul_negSucc := zpow_negSucc (α := α)
+instance [IsSubNegMonoid α] : IsDivInvMonoid (MulOfAdd α) where
+  div_eq_mul_inv := sub_eq_add_neg (α := α)
+  zpow_ofNat := zsmul_ofNat (α := α)
+  zpow_negSucc := zsmul_negSucc (α := α)
+
+def neg_one_zsmul [IsSubNegMonoid α₀] (a: α₀) : (-1) • a = -a := by erw [zsmul_negSucc, one_nsmul]
+def zpow_neg_one [IsDivInvMonoid α₁] (a: α₁) : a ^ (-1) = a⁻¹ := neg_one_zsmul (α₀ := AddOfMul α₁) _
 
 class IsNegZeroClass: Prop where
   neg_zero: -(0: α) = 0
 class IsInvOneClass: Prop where
   inv_one: (1: α)⁻¹ = 1
 
-def neg_zero [IsNegZeroClass α₀] : -(0: α₀) = 0 := IsNegZeroClass.neg_zero
-def inv_one [IsInvOneClass α₁] : (1: α₁)⁻¹ = 1 := IsInvOneClass.inv_one
+export IsNegZeroClass (neg_zero)
+export IsInvOneClass (inv_one)
+
+instance [IsInvOneClass α] : IsNegZeroClass (AddOfMul α) where
+  neg_zero := inv_one (α := α)
+instance [IsNegZeroClass α] : IsInvOneClass (MulOfAdd α) where
+  inv_one := neg_zero (α := α)
 
 def zsmul_zero [IsSubNegMonoid α₀] [IsNegZeroClass α₀] (a: ℤ) : a • (0: α₀) = 0 := by
   cases a
-  rw [zsmul_ofNat, nsmul_zero]
+  erw [zsmul_ofNat, nsmul_zero]
   rw [zsmul_negSucc, nsmul_zero, neg_zero]
 
 def zero_zsmul [IsSubNegMonoid α₀] (a: α₀) : (0: ℤ) • a = 0 := by
   have : 0 = Int.ofNat 0 := rfl
-  rw [this, zsmul_ofNat, zero_nsmul]
+  erw [this, zsmul_ofNat, zero_nsmul]
 
 def one_zsmul [IsSubNegMonoid α₀] (a: α₀) : (1: ℤ) • a = a := by
   have : 1 = Int.ofNat 1 := rfl
-  rw [this, zsmul_ofNat, one_nsmul]
+  erw [this, zsmul_ofNat, one_nsmul]
+
+def one_zpow [IsDivInvMonoid α₁] [IsInvOneClass α₁] (a: ℤ) : (1: α₁) ^ a = 1 :=
+  zsmul_zero (α₀ := AddOfMul α₁) _
+
+def zpow_zero [IsDivInvMonoid α₁] (a: α₁) : a ^ (0: ℤ) = 1 :=
+  zero_zsmul (α₀ := AddOfMul α₁) _
+
+def zpow_one [IsDivInvMonoid α₁] (a: α₁) : a ^ (1: ℤ) = a :=
+  one_zsmul (α₀ := AddOfMul α₁) _
 
 def sub_zero [IsSubNegMonoid α₀] [IsNegZeroClass α₀] (a: α₀): a - 0 = a := by
   rw [sub_eq_add_neg, neg_zero, add_zero]
 
+def dov_one [IsDivInvMonoid α₁] [IsInvOneClass α₁] (a: α₁): a / 1 = a :=
+  sub_zero (α₀ := AddOfMul α₁) _
+
 class IsSubtractionMonoid extends IsSubNegMonoid α, IsInvolutiveNeg α: Prop where
   neg_add_rev (a b: α) : -(a + b) = -b + -a
-  neg_eq_of_add_left (a b: α) : a + b = 0 -> -a = b
+  neg_eq_of_add_left {a b: α} : a + b = 0 -> -a = b
 
 class IsDivisionMonoid extends IsDivInvMonoid α, IsInvolutiveInv α: Prop where
   inv_mul_rev (a b: α) : (a * b)⁻¹ = b⁻¹ * a⁻¹
-  inv_eq_of_mul_left (a b: α) : a * b = 1 -> a⁻¹ = b
+  inv_eq_of_mul_left {a b: α} : a * b = 1 -> a⁻¹ = b
 
-def neg_add_rev [IsSubtractionMonoid α₀] (a b: α₀) : -(a + b) = -b + -a := IsSubtractionMonoid.neg_add_rev _ _
-def neg_eq_of_add_left [IsSubtractionMonoid α₀] {a b: α₀} : a + b = 0 -> -a = b := IsSubtractionMonoid.neg_eq_of_add_left a b
+export IsSubtractionMonoid (neg_add_rev neg_eq_of_add_left)
+export IsDivisionMonoid (inv_mul_rev inv_eq_of_mul_left)
+
+instance [IsDivisionMonoid α] : IsSubtractionMonoid (AddOfMul α) where
+  neg_add_rev := inv_mul_rev (α := α)
+  neg_eq_of_add_left := inv_eq_of_mul_left (α := α)
+instance [IsSubtractionMonoid α] : IsDivisionMonoid (MulOfAdd α) where
+  inv_mul_rev := neg_add_rev (α := α)
+  inv_eq_of_mul_left := neg_eq_of_add_left (α := α)
+
 def neg_eq_of_add_right [IsSubtractionMonoid α₀] {a b: α₀} : a + b = 0 -> a = -b := by
   intro h
   rw [←neg_eq_of_add_left h, neg_neg]
-def inv_mul_rev [IsDivisionMonoid α₁] (a b: α₁) : (a * b)⁻¹ = b⁻¹ * a⁻¹ := IsDivisionMonoid.inv_mul_rev a b
-def inv_eq_of_mul_left [IsDivisionMonoid α₁] {a b: α₁} : a * b = 1 -> a⁻¹ = b := IsDivisionMonoid.inv_eq_of_mul_left a b
-def inv_eq_of_mul_right [IsDivisionMonoid α₁] {a b: α₁} : a * b = 1 -> a = b⁻¹ := by
-  intro h
-  rw [←inv_eq_of_mul_left h, inv_inv]
+def inv_eq_of_mul_right [IsDivisionMonoid α₁] {a b: α₁} : a * b = 1 -> a = b⁻¹ :=
+  neg_eq_of_add_right (α₀ := AddOfMul α₁)
 
 class IsAddGroup extends IsSubNegMonoid α: Prop where
   neg_add_cancel (a: α): -a + a = 0
 class IsGroup extends IsDivInvMonoid α: Prop where
   inv_mul_cancel (a: α): a⁻¹ * a = 1
 
+export IsAddGroup (neg_add_cancel)
+export IsGroup (inv_mul_cancel)
+
+instance [IsGroup α] : IsAddGroup (AddOfMul α) where
+  neg_add_cancel := inv_mul_cancel (α := α)
+instance [IsAddGroup α] : IsGroup (MulOfAdd α) where
+  inv_mul_cancel := neg_add_cancel (α := α)
+
 def left_neg_eq_right_neg [IsAddGroup α₀] { a b c: α₀ } (hba : b + a = 0) (hac : a + c = 0) : b = c := by
   rw [← zero_add c, ← hba, add_assoc, hac, add_zero b]
-def left_inv_eq_right_inv [IsGroup α₁] { a b c: α₁ } (hba : b * a = 1) (hac : a * c = 1) : b = c := by
-  rw [← one_mul c, ← hba, mul_assoc, hac, mul_one b]
-
-def neg_add_cancel [IsAddGroup α₀] (a: α₀): -a + a = 0 := IsAddGroup.neg_add_cancel a
-def inv_mul_cancel [IsGroup α₁] (a: α₁): a⁻¹ * a = 1 := IsGroup.inv_mul_cancel a
+def left_inv_eq_right_inv [IsGroup α₁] { a b c: α₁ } (hba : b * a = 1) (hac : a * c = 1) : b = c :=
+  left_neg_eq_right_neg (α₀ := AddOfMul α₁) hba hac
 
 private theorem neg_eq_of_add [IsAddGroup α₀] { a b: α₀ } (h : a + b = 0) : -a = b :=
   left_neg_eq_right_neg (neg_add_cancel a) h
-private theorem inv_eq_of_mul [IsGroup α₁] { a b: α₁ } (h : a * b = 1) : a⁻¹ = b :=
-  left_inv_eq_right_inv (inv_mul_cancel a) h
 
 instance IsAddGroup.toInvolutNeg [IsAddGroup α] : IsInvolutiveNeg α where
   neg_neg a := neg_eq_of_add (neg_add_cancel a)
 instance IsGroup.toInvolutInv [IsGroup α] : IsInvolutiveInv α where
-  inv_inv a := inv_eq_of_mul (inv_mul_cancel a)
+  inv_inv := neg_neg (α := AddOfMul α)
 
 def add_neg_cancel [IsAddGroup α₀] (a: α₀): a + -a = 0 := by
   conv => { lhs; lhs; rw [←neg_neg a] }
   rw [neg_add_cancel]
-def mul_inv_cancel [IsGroup α₁] (a: α₁): a * a⁻¹ = 1 := by
-  conv => { lhs; lhs; rw [←inv_inv a] }
-  rw [inv_mul_cancel]
+def mul_inv_cancel [IsGroup α₁] (a: α₁): a * a⁻¹ = 1 :=
+  add_neg_cancel (α₀ := AddOfMul α₁) _
 
 def sub_self [IsAddGroup α₀] (a: α₀) : a - a = 0 := by
   rw [sub_eq_add_neg, add_neg_cancel]
+def div_self [IsGroup α₁] (a: α₁) : a / a = 1 :=
+  sub_self (α₀ := AddOfMul α₁) _
+
+instance [IsAddGroup α] : IsSubtractionMonoid α where
+  neg_add_rev := by
+    intro a b
+    apply neg_eq_of_add
+    rw [add_assoc, ←add_assoc b, add_neg_cancel, zero_add, add_neg_cancel]
+  neg_eq_of_add_left := neg_eq_of_add
+
+instance [IsGroup α] : IsDivisionMonoid α where
+  inv_mul_rev := neg_add_rev (α := AddOfMul α)
+  inv_eq_of_mul_left := neg_eq_of_add_left (α := AddOfMul α)
+
+instance [IsAddGroup α] : IsAddRightCancel α where
+  add_right_cancel := by
+    intro a b k h
+    have : (a + k) - k = (b + k) - k := by rw [h]
+    rw [
+      sub_eq_add_neg, sub_eq_add_neg,
+      add_assoc, add_assoc, add_neg_cancel, add_zero, add_zero] at this
+    assumption
+
+instance [IsGroup α] : IsRightCancel α where
+  mul_right_cancel := add_right_cancel (α := AddOfMul α)
+
+instance [IsAddGroup α] : IsNegZeroClass α where
+  neg_zero := by
+    apply neg_eq_of_add
+    rw [add_zero]
+
+instance [IsGroup α] : IsInvOneClass α where
+  inv_one := neg_zero (α := AddOfMul α)
+
+def sub_sub [IsAddGroup α₀] (a b c: α₀) : a - (b - c) = a + c - b := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, neg_add_rev, neg_neg, add_assoc]
+
+def sub_add_cancel [IsAddGroup α₀] (a b: α₀) : a - b + b = a := by
+  rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero]
+
+def eq_of_sub_eq_zero [IsAddGroup α₀] {a b: α₀} : a - b = 0 -> a = b := by
+  intro h
+  rw [sub_eq_add_neg] at h
+  have := neg_eq_of_add_right h
+  rw [neg_neg] at this
+  assumption
+
+def div_div [IsGroup α₁] (a b c: α₁) : a / (b / c) = a * c / b :=
+  sub_sub (α₀ := AddOfMul α₁) _ _ _
+
+def div_mul_cancel [IsGroup α₁] (a b: α₁) : a / b * b = a :=
+  sub_add_cancel (α₀ := AddOfMul α₁) _ _
+
+def eq_of_div_eq_one [IsGroup α₁] {a b: α₁} : a / b = 1 -> a = b :=
+  eq_of_sub_eq_zero (α₀ := AddOfMul α₁)
+
+def neg_eq_neg_one_zsmul [IsAddGroup α₀] (a: α₀) : -a = -1 • a := by
+  have : -1 = Int.negSucc 0 := rfl
+  erw [this, zsmul_negSucc, one_nsmul]
+
+def inv_eq_zpow_neg_one [IsGroup α₁] (a: α₁) : a⁻¹ = a ^ (-1) :=
+  neg_eq_neg_one_zsmul (α₀ := AddOfMul α₁) _
 
 class IsLeftDistrib: Prop where
   left_distrib (k a b: α): k * (a + b) = k * a + k * b
 class IsRightDistrib: Prop where
   right_distrib (a b k: α): (a + b) * k = a * k + b * k
 
-def mul_add [IsLeftDistrib R] (k a b: R): k * (a + b) = k * a + k * b := IsLeftDistrib.left_distrib k a b
-def add_mul [IsRightDistrib R] (a b k: R): (a + b) * k = a * k + b * k := IsRightDistrib.right_distrib a b k
+export IsLeftDistrib (left_distrib)
+export IsRightDistrib (right_distrib)
+
+def mul_add [IsLeftDistrib R] (k a b: R): k * (a + b) = k * a + k * b := left_distrib k a b
+def add_mul [IsRightDistrib R] (a b k: R): (a + b) * k = a * k + b * k := right_distrib a b k
 
 instance (priority := 100) [IsCommMagma α] [IsLeftDistrib α] : IsRightDistrib α where
   right_distrib a b k := by
@@ -376,27 +463,23 @@ def intCastRec : ℤ -> α
 | .ofNat n => NatCast.natCast n
 | .negSucc n => -NatCast.natCast n.succ
 
-abbrev ofNat' α n [o: OfNat α n] := o.ofNat
-
 class IsAddMonoidWithOne extends IsAddMonoid α: Prop where
   natCast_zero : NatCast.natCast 0 = (0: α)
   natCast_succ (n: ℕ) : NatCast.natCast n.succ = NatCast.natCast n + (1: α)
-  ofNat_zero : ofNat' α 0 = 0
-  ofNat_one : ofNat' α 1 = 1
-  ofNat_eq_natCast (n: ℕ): ofNat' α (n + 2) = NatCast.natCast (n + 2)
+  ofNat_zero : OfNat.ofNat (α := α) 0 = 0
+  ofNat_one : OfNat.ofNat (α := α) 1 = 1
+  ofNat_eq_natCast (n: ℕ): OfNat.ofNat (α := α) (n + 2) = NatCast.natCast (n + 2)
 
-def natCast_zero [IsAddMonoidWithOne R₀] : NatCast.natCast 0 = (0: R₀) := IsAddMonoidWithOne.natCast_zero
-def natCast_succ [IsAddMonoidWithOne R₀] (n: ℕ) : NatCast.natCast n.succ = NatCast.natCast n + (1: R₀) := IsAddMonoidWithOne.natCast_succ n
-def natCast_one [IsAddMonoidWithOne R₀] : NatCast.natCast 1 = (1: R₀) := by
+export IsAddMonoidWithOne (natCast_zero natCast_succ ofNat_zero ofNat_one ofNat_eq_natCast)
+
+def natCast_one [IsAddMonoidWithOne R₀] : (NatCast.natCast 1: R₀) = 1 := by
   rw [natCast_succ, natCast_zero, zero_add]
-def ofNat_eq_natCast [IsAddMonoidWithOne R₀] (n: ℕ) : @OfNat.ofNat R₀ (n + 2) _ = NatCast.natCast (n + 2) := IsAddMonoidWithOne.ofNat_eq_natCast n
 
 class IsAddGroupWithOne extends IsAddGroup α, IsAddMonoidWithOne α: Prop where
   intCast_ofNat (n: ℕ) : IntCast.intCast n = (NatCast.natCast n: α)
   intCast_negSucc (n: ℕ) : IntCast.intCast (Int.negSucc n) = -(NatCast.natCast n.succ: α)
 
-def intCast_ofNat [IsAddGroupWithOne R₀] (n: ℕ) : IntCast.intCast (Int.ofNat n) = (NatCast.natCast n: R₀) := IsAddGroupWithOne.intCast_ofNat n
-def intCast_negSucc [IsAddGroupWithOne R₀] (n: ℕ) : IntCast.intCast (Int.negSucc n) = -(NatCast.natCast n.succ: R₀) := IsAddGroupWithOne.intCast_negSucc n
+export IsAddGroupWithOne (intCast_ofNat intCast_negSucc)
 
 class IsSemiring extends
   IsAddCommMagma α, IsAddMonoidWithOne α,
@@ -431,48 +514,6 @@ def sub_mul [IsRing R] (k a b: R): (a - b) * k = a * k - b * k := by
   apply neg_eq_of_add
   rw [←add_mul, add_neg_cancel, zero_mul]
 
-instance [IsAddGroup α] : IsSubtractionMonoid α where
-  neg_add_rev := by
-    intro a b
-    apply neg_eq_of_add
-    rw [add_assoc, ←add_assoc b, add_neg_cancel, zero_add, add_neg_cancel]
-  neg_eq_of_add_left _ _ := neg_eq_of_add
-
-instance [IsGroup α] : IsDivisionMonoid α where
-  inv_mul_rev := by
-    intro a b
-    apply inv_eq_of_mul
-    rw [mul_assoc, ←mul_assoc b, mul_inv_cancel, one_mul, mul_inv_cancel]
-  inv_eq_of_mul_left _ _ := inv_eq_of_mul
-
-instance [IsAddGroup α] : IsAddRightCancel α where
-  add_right_cancel := by
-    intro a b k h
-    have : (a + k) - k = (b + k) - k := by rw [h]
-    rw [
-      sub_eq_add_neg, sub_eq_add_neg,
-      add_assoc, add_assoc, add_neg_cancel, add_zero, add_zero] at this
-    assumption
-
-instance [IsAddGroup α] [IsAddCommMagma α] : IsAddLeftCancel α where
-  add_left_cancel := by
-    intro a b k h
-    rw [add_comm k, add_comm k] at h
-    exact add_right_cancel h
-
-def sub_sub [IsAddGroup α₀] (a b c: α₀) : a - (b - c) = a + c - b := by
-  rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, neg_add_rev, neg_neg, add_assoc]
-
-def sub_add_cancel [IsAddGroup α₀] (a b: α₀) : a - b + b = a := by
-  rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero]
-
-def eq_of_sub_eq_zero [IsAddGroup α₀] (a b: α₀) : a - b = 0 -> a = b := by
-  intro h
-  rw [sub_eq_add_neg] at h
-  have := neg_eq_of_add_right h
-  rw [neg_neg] at this
-  assumption
-
 def neg_mul_left [IsAddGroup R₀] [IsRightDistrib R₀] [IsMulZeroClass R₀] (a b: R₀) : -(a * b) = -a * b := by
   apply neg_eq_of_add
   rw [←add_mul, add_neg_cancel, zero_mul]
@@ -488,7 +529,7 @@ def nsmul_eq_natCast_mul [IsSemiring R₀] (n: ℕ) (x: R₀) : n • x = n * x 
 def zsmul_eq_intCast_mul [IsRing R₀] (n: ℤ) (x: R₀) : n • x = n * x := by
   cases n with
   | ofNat n =>
-    rw [zsmul_ofNat n, Int.cast, intCast_ofNat, nsmul_eq_natCast_mul]
+    erw [zsmul_ofNat n, Int.cast, intCast_ofNat, nsmul_eq_natCast_mul]
   | negSucc n =>
     rw [zsmul_negSucc, Int.cast, intCast_negSucc, nsmul_eq_natCast_mul, neg_mul_left]
 
@@ -508,13 +549,19 @@ class IsMulAction [IsMonoid R] : Prop where
   one_smul: ∀a: M, (1: R) • a = a
   mul_smul: ∀x y: R, ∀b: M, (x * y) • b = x • y • b
 
+export IsMulAction (one_smul mul_smul)
+
 class IsDistribMulAction [IsMonoid R] [IsAddMonoid M] extends IsMulAction R M : Prop where
   smul_zero: ∀a: R, a • (0: M) = 0
   smul_add: ∀a: R, ∀x y: M, a • (x + y) = a • x + a • y
 
+export IsDistribMulAction (smul_zero smul_add)
+
 class IsModule [IsSemiring R] [IsAddCommMagma M] [IsAddMonoid M] extends IsDistribMulAction R M: Prop where
   add_smul: ∀r s: R, ∀x: M, (r + s) • x = r • x + s • x
   zero_smul: ∀x: M, (0: R) • x = 0
+
+export IsModule (add_smul zero_smul)
 
 class IsNonUnitalNonAssocSemiring extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α: Prop
 
@@ -544,20 +591,6 @@ instance [IsSemiring α] : IsNonAssocSemiring α where
   ofNat_one := IsAddMonoidWithOne.ofNat_one
   ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
-instance [IsAddGroup α] : IsNegZeroClass α where
-  neg_zero := by
-    apply neg_eq_of_add
-    rw [add_zero]
-
-instance [IsGroup α] : IsInvOneClass α where
-  inv_one := by
-    apply inv_eq_of_mul
-    rw [mul_one]
-
-def neg_eq_neg_one_zsmul [IsAddGroup R₀] (a: R₀) : -a = -1 • a := by
-  have : -1 = Int.negSucc 0 := rfl
-  erw [this, zsmul_negSucc, one_nsmul]
-
 def natCast_add [IsSemiring R₀] (a b: ℕ) : (NatCast.natCast (a + b): R₀) = NatCast.natCast a + NatCast.natCast b := by
   induction b with
   | zero => rw [natCast_zero, Nat.add_zero, add_zero]
@@ -570,16 +603,14 @@ def natCast_mul [IsSemiring R₀] (a b: ℕ) : (NatCast.natCast (a * b): R₀) =
 
 def intCast_zero [IsRing R₀] : (IntCast.intCast 0: R₀) = 0 := by
   have : 0 = Int.ofNat 0 := rfl
-  rw [this, intCast_ofNat, natCast_zero]
+  erw [this, intCast_ofNat, natCast_zero]
 
 def intCast_succ [IsRing R₀] (a: ℤ) : (IntCast.intCast (a + 1): R₀) = IntCast.intCast a + 1 := by
   cases a with
   | ofNat a =>
     have : 1 = Int.ofNat 1 := rfl
-    rw [intCast_ofNat, this,
+    erw [this, intCast_ofNat,
       Int.ofNat_eq_coe,
-      Int.ofNat_eq_coe,
-      Int.ofNat_add_ofNat,
       ←Int.ofNat_eq_coe, intCast_ofNat, natCast_add, natCast_one]
   | negSucc a =>
     cases a with
@@ -621,7 +652,7 @@ def succ_zsmul [IsAddGroup α₀]  (x: ℤ) (a: α₀) : (x + 1) • a = x • a
   cases x with
   | ofNat x =>
     have : (1: ℤ) = ↑(1: ℕ) := rfl
-    rw [this, Int.ofNat_eq_coe, Int.ofNat_add_ofNat, ←Int.ofNat_eq_coe, ←Int.ofNat_eq_coe, zsmul_ofNat, zsmul_ofNat, succ_nsmul]
+    erw [this, Int.ofNat_eq_coe, Int.ofNat_add_ofNat, ←Int.ofNat_eq_coe, ←Int.ofNat_eq_coe, zsmul_ofNat, zsmul_ofNat, succ_nsmul]
   | negSucc x =>
   cases x with
   | zero =>

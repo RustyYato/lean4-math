@@ -462,13 +462,13 @@ instance [Neg α] [IsNegZeroClass α] : IsNegZeroClass (Poly α) where
     rfl
 
 instance [SMul ℕ α] [IsAddMonoid α] : IsAddMonoid (Poly α) where
-  nsmul_zero p := by
+  zero_nsmul p := by
     apply Poly.ext_coeffs
     ext n
     show 0 • (p.coeffs n) = _
     rw [zero_nsmul]
     rfl
-  nsmul_succ := by
+  succ_nsmul := by
     intro k p
     apply Poly.ext_coeffs
     ext n

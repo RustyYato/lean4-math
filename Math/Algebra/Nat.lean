@@ -21,8 +21,8 @@ instance : IsSemiring Nat where
   mul_one := Nat.mul_one
   left_distrib := Nat.mul_add
   right_distrib := Nat.add_mul
-  nsmul_zero := Nat.zero_mul
-  nsmul_succ := Nat.succ_mul
+  zero_nsmul := Nat.zero_mul
+  succ_nsmul := Nat.succ_mul
 
 instance : IsCommMagma Nat where
   mul_comm := Nat.mul_comm

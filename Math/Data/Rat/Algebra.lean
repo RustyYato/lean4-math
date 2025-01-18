@@ -65,8 +65,8 @@ instance : IsField ℚ where
   neg_add_cancel := Rat.neg_self_add
   intCast_ofNat _ := rfl
   intCast_negSucc _ := rfl
-  nsmul_zero := Rat.zero_mul
-  nsmul_succ := by
+  zero_nsmul := Rat.zero_mul
+  succ_nsmul := by
     intro n a
     show _ * _ = _ + _
     erw [Rat.natCast_add, Rat.add_mul, Rat.one_mul]

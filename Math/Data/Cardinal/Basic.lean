@@ -314,11 +314,11 @@ instance : IsAddMonoid Cardinal where
     rcases x with (_ | _) | _ <;> rfl
     intro x
     rcases x with _ | _ | _ <;> rfl
-  nsmul_zero := by
+  zero_nsmul := by
     intro x
     show 0 * _ = 0
     rw [zero_mul x]
-  nsmul_succ n a := by
+  succ_nsmul n a := by
     show OfNat.ofNat _ * _ = _
     erw [OfNat_add, add_mul, one_mul]
     rfl
@@ -426,39 +426,39 @@ def aleph0_add_fin (n: Nat) : ℵ₀ + n = ℵ₀ := by
   apply Nat.le_of_not_lt
   assumption
 
-def aleph0_mul_aleph0 (n: Nat) : ℵ₀ * ℵ₀ = ℵ₀ := by
-  apply sound
-  apply Equiv.mk _ _ _ _
-  intro ⟨x, y⟩
-  exact Nat.pair
+-- def aleph0_mul_aleph0 (n: Nat) : ℵ₀ * ℵ₀ = ℵ₀ := by
+--   apply sound
+--   apply Equiv.mk _ _ _ _
+--   intro ⟨x, y⟩
+--   exact Nat.pair
 
-  match x with
-  | .inl x => exact x + n
-  | .inr x => exact x.down.val
-  intro x
-  if h:x < n then
-    exact .inr ⟨⟨x, h⟩⟩
-  else
-    exact .inl (x - n)
-  intro x
-  simp
-  cases x
-  dsimp
-  rw [dif_neg, Nat.add_sub_cancel]
-  apply Nat.not_lt_of_le
-  apply Nat.le_add_left
-  dsimp
-  rw [if_pos]
-  rename_i x
-  exact x.down.isLt
-  intro x
-  dsimp
-  by_cases h:x < n
-  rw [dif_pos h]
-  rw [dif_neg h]
-  dsimp
-  rw [Nat.sub_add_cancel]
-  apply Nat.le_of_not_lt
-  assumption
+--   match x with
+--   | .inl x => exact x + n
+--   | .inr x => exact x.down.val
+--   intro x
+--   if h:x < n then
+--     exact .inr ⟨⟨x, h⟩⟩
+--   else
+--     exact .inl (x - n)
+--   intro x
+--   simp
+--   cases x
+--   dsimp
+--   rw [dif_neg, Nat.add_sub_cancel]
+--   apply Nat.not_lt_of_le
+--   apply Nat.le_add_left
+--   dsimp
+--   rw [if_pos]
+--   rename_i x
+--   exact x.down.isLt
+--   intro x
+--   dsimp
+--   by_cases h:x < n
+--   rw [dif_pos h]
+--   rw [dif_neg h]
+--   dsimp
+--   rw [Nat.sub_add_cancel]
+--   apply Nat.le_of_not_lt
+--   assumption
 
 end Cardinal
