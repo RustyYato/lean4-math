@@ -97,6 +97,16 @@ def Isomorphsism.inv_resp_mul (iso: Isomorphsism a b) (x y: b.ty) : iso.invFun (
   apply iso.toFun_inj
   rw [iso.resp_mul, iso.rightInv, iso.rightInv, iso.rightInv]
 
+instance : IsEquivLike (Isomorphsism a b) a.ty b.ty where
+  coe a := a.toEquiv
+  inv a := a.toEquiv.symm
+  leftInv a := a.leftInv
+  rightInv a := a.rightInv
+  inj a b eq eq' := by
+    cases a; cases b; dsimp at *; congr
+    apply Equiv.toFun_inj'
+    assumption
+
 inductive IsSubgroup (a b: Group): Prop where
 | ofSub (sub: SubgroupEmbedding a b)
 
