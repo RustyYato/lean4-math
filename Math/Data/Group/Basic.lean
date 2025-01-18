@@ -44,6 +44,13 @@ instance : Div g.ty where
 instance : Pow g.ty ℕ := ⟨flip npowRec⟩
 instance : Pow g.ty ℤ := ⟨flip zpowRec⟩
 
+@[simp]
+def mul'_eq {g: Group} (a b: g.ty) : g.mul' a b = a * b := rfl
+@[simp]
+def inv'_eq {g: Group} (a: g.ty) : g.inv' a = a⁻¹ := rfl
+@[simp]
+def one'_eq {g: Group} : g.one' = 1 := rfl
+
 def Group.mul_inv' {g: Group} (a: g.ty) : g.mul' a (g.inv' a) = 1 := by
   rw [←g.one_mul' (g.mul' a (g.inv' a))]
   conv => { lhs; rw [←g.inv_mul' (a⁻¹)] }
@@ -307,8 +314,8 @@ def IsSubgroup.trans {a b c: Group} : a ⊆ b -> b ⊆ c -> a ⊆ c := by
 def IsNormalSubgroup.refl (a: Group) : a ◀ a := (IsIsomorphic.refl a).IsNormalSubgroup
 
 @[refl]
-def subgroup_refl (a: Group) : a ⊆ a := IsSubgroup.refl _
-def subgroup_trans {a b c: Group} : a ⊆ b -> b ⊆ c -> a ⊆ c := IsSubgroup.trans
+def gsub_refl (a: Group) : a ⊆ a := IsSubgroup.refl _
+def gsub_trans {a b c: Group} : a ⊆ b -> b ⊆ c -> a ⊆ c := IsSubgroup.trans
 
 @[refl]
 def nsub_refl (a: Group) : a ◀ a := by
@@ -328,10 +335,246 @@ def eqv_trans {a b: Group} : a ≈ b -> b ≈ c -> a ≈ c := IsIsomorphic.trans
 def IsoClass := Quotient setoid
 def IsoClass.mk : Group -> IsoClass := Quotient.mk _
 
-local notation "⟦" a "⟧" => IsoClass.mk a
+scoped notation "⟦" a "⟧" => IsoClass.mk a
+
+@[induction_eliminator]
+def IsoClass.ind {motive: IsoClass -> Prop} (mk: ∀x, motive ⟦x⟧) : ∀g, motive g := Quotient.ind mk
+@[induction_eliminator]
+def IsoClass.ind₂ {motive: IsoClass -> IsoClass -> Prop} (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) : ∀a b, motive a b := Quotient.ind₂ mk
+@[induction_eliminator]
+def IsoClass.ind₃ {motive: IsoClass -> IsoClass -> IsoClass -> Prop} (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) : ∀a b c, motive a b c := by
+  intro a b c
+  induction a, b with | mk =>
+  induction c with | mk =>
+  apply mk
+@[induction_eliminator]
+def IsoClass.ind₄ {motive: IsoClass -> IsoClass -> IsoClass -> IsoClass -> Prop} (mk: ∀a b c d, motive ⟦a⟧ ⟦b⟧ ⟦c⟧ ⟦d⟧) : ∀a b c d, motive a b c d := by
+  intro a b c d
+  induction a, b with | mk =>
+  induction c, d with | mk =>
+  apply mk
 
 instance : Membership Group IsoClass where
   mem a b := a = ⟦b⟧
+
+end Group
+
+namespace Group
+
+def Trivial: Group where
+  ty := PUnit
+  mul' _ _ := ()
+  one' := ()
+  inv' _ := ()
+  mul_assoc' _ _ _ := rfl
+  one_mul' _ := rfl
+  inv_mul' _ := rfl
+
+def IsoClass.Trivial: IsoClass := ⟦Group.Trivial⟧
+
+instance : One Group := ⟨.Trivial⟩
+instance : One IsoClass := ⟨.Trivial⟩
+
+def eqv_gsub_eqv {a b c d: Group} : a ≈ c -> b ≈ d -> a ⊆ b -> c ⊆ d := by
+  intro ⟨ac⟩ ⟨bd⟩ ⟨sub⟩
+  exact ⟨sub.respIso ac bd⟩
+
+def eqv_gsub {a b k: Group} : a ≈ b -> a ⊆ k -> b ⊆ k := by
+  intro eqv a_sub_k
+  apply eqv_gsub_eqv
+  assumption
+  rfl
+  assumption
+
+def gsub_eqv {a b k: Group} : a ≈ b -> k ⊆ a -> k ⊆ b := by
+  intro eqv a_sub_k
+  apply eqv_gsub_eqv
+  rfl
+  assumption
+  assumption
+
+def eqv_nsub_eqv {a b c d: Group} : a ≈ c -> b ≈ d -> a ◀ b -> c ◀ d := by
+  intro ⟨ac⟩ ⟨bd⟩ ⟨ab⟩
+  exact ⟨ab.respIso ac bd⟩
+
+def eqv_nsub {a b k: Group} : a ≈ b -> a ◀ k -> b ◀ k := by
+  intro eqv a_sub_k
+  apply eqv_nsub_eqv
+  assumption
+  rfl
+  assumption
+
+def nsub_eqv {a b k: Group} : a ≈ b -> k ◀ a -> k ◀ b := by
+  intro eqv a_sub_k
+  apply eqv_nsub_eqv
+  rfl
+  assumption
+  assumption
+
+-- the trivial group is a subgroup of every group
+def one_nsub (a: Group) : 1 ◀ a := by
+  apply IsNormalSubgroup.intro ⟨fun _ => 1, _⟩
+  rfl
+  intros
+  simp
+  intros
+  rw [inv_one]
+  intro x y
+  dsimp
+  rw [one_mul]
+  intro a n
+  dsimp
+  apply Set.mem_range.mpr
+  exists 1
+  rw [mul_one, mul_inv_cancel]
+  intros x y eq
+  rfl
+
+-- the trivial group is a subgroup of every group
+def one_gsub (a: Group) : 1 ⊆ a := by
+  apply IsSubgroup.intro ⟨fun _ => 1, _⟩
+  rfl
+  intros
+  simp
+  intros
+  rw [inv_one]
+  intro x y
+  dsimp
+  rw [one_mul]
+  intros x y eq
+  rfl
+
+-- the only subgroup of the trivial subgroup is itself up to isomorphism
+def gsub_one (a: Group) : a ⊆ 1 -> a ∈ (1: IsoClass) := by
+  intro ⟨h, resp_one, resp_inv, resp_mul⟩
+  apply Quotient.sound
+  apply IsIsomorphic.intro
+  case a.eq =>
+    apply Equiv.mk (fun _ => 1) h.toFun
+    intro _
+    rfl
+    intro
+    simp
+    apply h.inj
+    rfl
+  rfl
+  intros; simp; rw [inv_one]
+  intros; simp; rw [one_mul]
+
+def IsoClass.IsSubgroup : IsoClass -> IsoClass -> Prop := by
+  apply Quotient.lift₂ Group.IsSubgroup
+  intros; ext
+  apply Iff.intro
+  apply eqv_gsub_eqv <;> assumption
+  apply eqv_gsub_eqv <;> (symm; assumption)
+
+def IsoClass.IsNormalSubgroup : IsoClass -> IsoClass -> Prop := by
+  apply Quotient.lift₂ Group.IsNormalSubgroup
+  intros; ext
+  apply Iff.intro
+  apply eqv_nsub_eqv <;> assumption
+  apply eqv_nsub_eqv <;> (symm; assumption)
+
+instance : HasSubset IsoClass where
+  Subset := IsoClass.IsSubgroup
+instance : HasNormalSubgroup IsoClass where
+  NormalSubgroup := IsoClass.IsNormalSubgroup
+
+def IsoClass.IsSubgroup.def {a b: IsoClass} :
+  a ⊆ b -> ∀a' ∈ a, ∃b' ∈ b, a' ⊆ b' := by
+  induction a, b with | mk a b =>
+  intro a_sub_b a' a'_in_a
+  replace a_eqv_a' := Quotient.exact a'_in_a
+  replace a_sub_b: a ⊆ b := a_sub_b
+  exists b
+  apply And.intro
+  rfl
+  apply eqv_gsub
+  assumption
+  assumption
+
+def IsoClass.IsNormalSubgroup.IsSubgroup {a b: IsoClass} : a ◀ b -> a ⊆ b := by
+  induction a, b with | mk a b =>
+  apply Group.IsNormalSubgroup.IsSubgroup
+
+-- the class trivial group is a normal subgroup of every group
+def IsoClass.one_nsub (a: IsoClass) : 1 ◀ a := by
+  induction a with | mk a =>
+  show 1 ◀ a
+  apply Group.one_nsub
+
+-- the class trivial group can embed into any other isomorphism classs
+def IsoClass.one_sub (a: IsoClass) : 1 ⊆ a := by
+  apply IsNormalSubgroup.IsSubgroup
+  apply one_nsub
+
+@[simp]
+def mul (a b: Group) : Group where
+  ty := a.ty × b.ty
+  one' := ⟨1, 1⟩
+  inv' | ⟨x, y⟩ => ⟨x⁻¹, y⁻¹⟩
+  mul' | ⟨a, b⟩, ⟨x, y⟩ => ⟨a * x, b * y⟩
+  mul_assoc' := by
+    intro ⟨a₀, a₁⟩ ⟨b₀, b₁⟩ ⟨c₀, c₁⟩
+    simp [mul_assoc]
+  one_mul' := by
+    intro ⟨a₀, a₁⟩
+    simp [one_mul]
+  inv_mul' := by
+    intro ⟨a₀, a₁⟩
+    simp [inv_mul_cancel]
+
+instance : Mul Group := ⟨.mul⟩
+
+def gmul_def (a b: Group) : a * b = a.mul b := rfl
+
+def gmul.spec (a b c d: Group) : a ≈ c -> b ≈ d -> a * b ≈ c * d := by
+  intro ⟨ac, ac_resp_one, ac_resp_inv, ac_resp_mul⟩
+  intro ⟨bd, bd_resp_one, bd_resp_inv, bd_resp_mul⟩
+  apply IsIsomorphic.intro (ac.toProd bd)
+  simp [Equiv.toProd]
+  erw [ac_resp_one, bd_resp_one]
+  rfl
+  intro ⟨x, y⟩
+  show (_, _) = (_, _)
+  congr
+  apply ac_resp_inv
+  apply bd_resp_inv
+  intro ⟨x₀, y₀⟩ ⟨x₁, y₁⟩
+  simp [Equiv.toProd]
+  congr
+  apply ac_resp_mul
+  apply bd_resp_mul
+
+def IsoClass.mul : IsoClass -> IsoClass -> IsoClass := by
+  apply Quotient.lift₂ (⟦· * ·⟧)
+  intros
+  apply Quot.sound
+  apply gmul.spec <;> assumption
+
+instance : Mul IsoClass := ⟨IsoClass.mul⟩
+
+def mk_mul (a b: Group) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
+
+def IsSimple (a: Group) : Prop := ∀n, n ◀ a -> n ≈ 1 ∨ n ≈ a
+
+def IsSimple.spec (a b: Group) : a ≈ b -> a.IsSimple -> b.IsSimple := by
+  intro eq asimp n norm
+  suffices n ≈ 1 ∨ n ≈ a by
+    cases this; left; assumption
+    right; apply eqv_trans; assumption; assumption
+  apply asimp
+  exact nsub_eqv eq.symm norm
+
+def IsoClass.IsSimple : IsoClass -> Prop := by
+  apply Quotient.lift Group.IsSimple
+  intros _ _ eq
+  ext
+  apply Iff.intro
+  apply IsSimple.spec; assumption
+  apply IsSimple.spec; symm; assumption
+
+def mk_IsSimple : ⟦a⟧.IsSimple = a.IsSimple := rfl
 
 end Group
 
