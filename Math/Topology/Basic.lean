@@ -236,14 +236,36 @@ def Generate.IsOpen.map (U: Set (Set α)) {tb: Topology β}:
 class Discrete (α: Type*) extends Topology α where
   eq_bot: toTopology = ⊥
 
-instance : Topology Empty := ⊥
-instance : Discrete Empty := ⟨rfl⟩
+class Trivial (α: Type*) extends Topology α where
+  eq_top: toTopology = ⊤
 
-instance : Topology PEmpty := ⊥
-instance : Discrete PEmpty := ⟨rfl⟩
-
-instance : Topology PUnit := ⊥
-instance : Discrete PUnit := ⟨rfl⟩
+instance [Subsingleton α₀] : Topology α₀ := ⊥
+instance [Subsingleton α₀] : Discrete α₀ := ⟨rfl⟩
+instance [Subsingleton α₀] : Trivial α₀ where
+  eq_top := by
+    apply Topology.IsOpen.inj
+    unfold instOfSubsingleton
+    ext x
+    have : x = ∅ ∨ x = ⊤ := by
+      by_cases h:x.Nonempty
+      right
+      apply Set.ext_univ
+      intro y
+      obtain ⟨y', _⟩  := h
+      rw [Subsingleton.allEq y y']
+      assumption
+      left; exact Set.not_nonempty x h
+    cases this <;> subst x
+    apply Iff.intro
+    intro h
+    exact @Topology.IsOpen.empty α₀ ⊤
+    intro
+    exact @Topology.IsOpen.empty α₀ ⊥
+    apply Iff.intro
+    intro h
+    exact @Topology.IsOpen.univ α₀ ⊤
+    intro
+    exact @Topology.IsOpen.univ α₀ ⊥
 
 instance : Topology Bool := ⊥
 instance : Discrete Bool := ⟨rfl⟩
@@ -305,3 +327,21 @@ def coinduced (f: α -> β) (t: Topology α) : Topology β where
     rw [Set.preimage_sUnion]
 
 end Topology
+
+def Topology.IsContinuous.bot_dom (f: α -> β) [Tα: Topology.Discrete α] [Tβ: Topology β] : IsContinuous f where
+  isOpen_preimage := by
+    cases Tα
+    rename_i eq_bot
+    cases eq_bot
+    intro s _
+    exact True.intro
+
+def Topology.IsContinuous.top_rng (f: α -> β) [Tα: Topology α] [Tβ: Topology.Trivial β] : IsContinuous f where
+  isOpen_preimage := by
+    cases Tβ
+    rename_i eq_top
+    cases eq_top
+    intro s o
+    cases o
+    apply IsOpen.empty
+    apply IsOpen.univ
