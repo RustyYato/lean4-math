@@ -576,6 +576,94 @@ def IsoClass.IsSimple : IsoClass -> Prop := by
 
 def mk_IsSimple : ⟦a⟧.IsSimple = a.IsSimple := rfl
 
+def Nontrivial (a: Group) := ∃x: a.ty, x ≠ 1
+def Nontrivial.spec (a b: Group) : a ≈ b -> a.Nontrivial -> b.Nontrivial := by
+  intro ⟨eqv, resp_one, resp_inv, resp_mul⟩ ⟨x, h⟩
+  exists eqv x
+  intro g
+  apply h
+  rw [←resp_one] at g
+  exact Equiv.toFun_inj _ g
+
+def Nontrivial_def (a: Group) : a.Nontrivial ↔ a ∉ IsoClass.Trivial := by
+  apply Iff.intro
+  intro ⟨x, eq⟩ g
+  have ⟨eqv, resp_one, resp_inv, resp_mul⟩ := Quotient.exact g
+  have := Equiv.invFun_inj eqv
+  unfold Function.Injective at this
+  have := @this x 1 rfl
+  contradiction
+  intro h
+  replace h : ¬a ≈ Trivial := by
+    intro g
+    apply h
+    apply Quot.sound
+    exact g.symm
+  let emb : (ty 1) ↪ a.ty := by
+    apply Embedding.mk (fun _ => 1)
+    intro x y eq; rfl
+  have : ¬Function.Surjective emb.toFun := by
+    intro surj
+    apply h
+    have ⟨eqv, eqv_eq⟩ := Equiv.ofBij ⟨emb.inj, surj⟩
+    apply IsIsomorphic.intro eqv.symm
+    rfl
+    intros; rfl
+    intros; rfl
+  replace ⟨x, this⟩ := Classical.not_forall.mp this
+  replace this := fun y => not_exists.mp this y
+  exists x
+  intro h
+  cases h
+  apply this ()
+  rfl
+
+def Trivial.notNontrivial : ¬Nontrivial 1 := by
+  intro ⟨_, h⟩
+  apply h rfl
+
+def IsoClass.Trivial.notNontrivial : ¬Nontrivial 1 := by
+  intro ⟨_, h⟩
+  apply h rfl
+
+def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
+  intro ⟨iso⟩
+  apply And.intro
+  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.invFun x).1), _, _⟩
+    rfl
+    any_goals try intro x; intros; rfl
+    intro x
+    simp [Equiv.symm]
+    show (iso.invFun 1).fst = _
+    rw [iso.inv_resp_one]
+    show 1 = x
+    symm
+    have : Prod.mk x 1 = (1: (a * b).ty) := by
+      apply iso.toFun_inj
+      rfl
+    exact (Prod.mk.inj this).left
+  · apply IsIsomorphic.intro ⟨(fun _ => ()), (fun x => (iso.invFun x).2), _, _⟩
+    rfl
+    any_goals try intro x; intros; rfl
+    intro x
+    simp [Equiv.symm]
+    show (iso.invFun 1).snd = _
+    rw [iso.inv_resp_one]
+    show 1 = x
+    symm
+    have : Prod.mk 1 x = (1: (a * b).ty) := by
+      apply iso.toFun_inj
+      rfl
+    exact (Prod.mk.inj this).right
+
+def Trivial.IsSimple : IsSimple 1 := by
+  intro x nsub_one; left; symm
+  exact Quotient.exact <| gsub_one _ (IsNormalSubgroup.IsSubgroup nsub_one)
+
+def IsoClass.Trivial.IsSimple : IsoClass.IsSimple 1 := by
+  apply Eq.mpr mk_IsSimple
+  exact Group.Trivial.IsSimple
+
 end Group
 
 end
