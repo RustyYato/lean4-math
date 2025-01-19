@@ -31,21 +31,23 @@ def Group.Generate.spec (a b: Group) (s₀: Set a.ty) (s₁: Set b.ty)
     intro g
     show b.GenerateFrom s₁ (h.toFun x)
     induction g
+    show b.GenerateFrom _ (h 1)
     rw [h.resp_one]
     apply GenerateFrom.one
     apply GenerateFrom.of
     apply (g _).mp
     assumption
-    rw [h.resp_mul]
+    rw [h.resp_mul']
     apply GenerateFrom.mul <;> assumption
-    rw [h.resp_inv]
+    rw [h.resp_inv']
     apply GenerateFrom.inv <;> assumption
     intro g
     rw [←h.leftInv x]
     generalize hx:h.toFun x = x
     rw [hx] at g; clear hx
     induction g
-    rw [h.inv_resp_one]
+    show a.GenerateFrom _ (h.symm 1)
+    rw [h.symm.resp_one]
     apply GenerateFrom.one
     apply GenerateFrom.of
     apply (g _).mpr
@@ -53,23 +55,23 @@ def Group.Generate.spec (a b: Group) (s₀: Set a.ty) (s₁: Set b.ty)
     show h.toFun _ ∈ _
     rw [h.rightInv x]
     assumption
-    rw [h.inv_resp_mul]
+    show a.GenerateFrom _ (h.symm _)
+    rw [h.symm.resp_mul]
     apply GenerateFrom.mul <;> assumption
-    rw [h.inv_resp_inv]
+    show a.GenerateFrom _ (h.symm _)
+    rw [h.symm.resp_inv]
     apply GenerateFrom.inv <;> assumption
-  resp_one := by
-    show Subtype.mk _ _ = ⟨_, _⟩
-    congr
-    exact h.resp_one
-  resp_mul := by
+  resp_mul' := by
     intro ⟨a, _⟩ ⟨b, _⟩
     show Subtype.mk _ _ = ⟨_, _⟩
     congr
+    show h _ = _
     rw [h.resp_mul]
     rfl
-  resp_inv := by
+  resp_inv' := by
     intro x
     show Subtype.mk _ _ = ⟨_, _⟩
     congr
+    show h _ = _
     rw [h.resp_inv]
     rfl

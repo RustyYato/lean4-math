@@ -47,15 +47,7 @@ def Permuatation.sub (g: Group) : SubgroupEmbedding g (Permuatation g.ty) where
     have := eq 1
     rw [one_mul, one_mul] at this
     assumption
-  resp_one := by
-    unfold to_perm
-    dsimp
-    apply Equiv.invFun_inj'
-    dsimp
-    ext x
-    rw [inv_one, mul_one]
-    rfl
-  resp_mul := by
+  resp_mul' := by
     intro a b
     apply Equiv.invFun_inj'
     ext x
@@ -63,7 +55,7 @@ def Permuatation.sub (g: Group) : SubgroupEmbedding g (Permuatation g.ty) where
     unfold Equiv.trans
     dsimp [to_perm]
     rw [inv_mul_rev, mul_assoc]
-  resp_inv := by
+  resp_inv' := by
     intro a
     apply Equiv.invFun_inj'
     ext x

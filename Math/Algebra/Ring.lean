@@ -103,14 +103,11 @@ instance (priority := 50) IsAddCommMagma.toRightCancel [IsAddCommMagma α] [IsAd
     exact add_left_cancel
 
 instance (priority := 50) IsCommMagma.toLeftCancel [IsCommMagma α] [IsRightCancel α] : IsLeftCancel α where
-  mul_left_cancel {a b k} := by
-    rw [mul_comm k, mul_comm k]
-    exact mul_right_cancel
+  mul_left_cancel :=
+    add_left_cancel (α := AddOfMul α)
 
 instance (priority := 50) IsCommMagma.toRightCancel [IsCommMagma α] [IsLeftCancel α] : IsRightCancel α where
-  mul_right_cancel {a b k} := by
-    rw [mul_comm _ k, mul_comm _ k]
-    exact mul_left_cancel
+  mul_right_cancel := add_right_cancel (α := AddOfMul α)
 
 class IsAddZeroClass: Prop where
   zero_add (a: α): 0 + a = a
@@ -397,6 +394,16 @@ instance [IsAddGroup α] : IsAddRightCancel α where
 
 instance [IsGroup α] : IsRightCancel α where
   mul_right_cancel := add_right_cancel (α := AddOfMul α)
+
+instance [IsAddGroup α] : IsAddLeftCancel α where
+  add_left_cancel := by
+    intro a b k h
+    have : -k + (k + a) = -k + (k + b) := by rw [h]
+    rw [←add_assoc, ←add_assoc, neg_add_cancel, zero_add, zero_add] at this
+    assumption
+
+instance [IsGroup α] : IsLeftCancel α where
+  mul_left_cancel := add_left_cancel (α := AddOfMul α)
 
 instance [IsAddGroup α] : IsNegZeroClass α where
   neg_zero := by

@@ -128,6 +128,10 @@ instance [IsEmpty α] : Embedding α β where
 def Equiv.coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
 def Equiv.symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
 
+def Equiv.inj (h: Equiv α β) : Function.Injective h := by
+  intro x y eq
+  exact h.toFun_inj eq
+
 def Equiv.symm_inj : Function.Injective (Equiv.symm (α := α) (β := β)) := by
   intro x y eq
   have : x.symm.symm = y.symm.symm := by rw [eq]
