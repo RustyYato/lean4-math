@@ -123,6 +123,10 @@ def IsoClass.fimul_eq_imul [Fintype ι] [DecidableEq ι] (f: ι -> IsoClass) : f
   rw [Quotient.mk_ilift, Quotient.mk_flift]
 
 def mk_mul (a b: Group) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
+def mk_imul (f: ι -> Group) : IsoClass.imul (fun x => ⟦f x⟧) = ⟦Group.imul f⟧ :=
+  Quotient.mk_ilift _ _ _
+def mk_fimul [Fintype ι] [DecidableEq ι] (f: ι -> Group) : IsoClass.fimul (fun x => ⟦f x⟧) = ⟦Group.imul f⟧ :=
+  Quotient.mk_flift _ _ _
 
 def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
   intro ⟨iso⟩
@@ -151,5 +155,46 @@ def of_gmul_eq_one (a b: Group) : a * b ≈ 1 -> a ≈ 1 ∧ b ≈ 1 := by
       apply iso.toFun_inj
       rfl
     exact (Prod.mk.inj this).right
+
+def gmul_eq_imul (a b: Group) : Isomorphsism (a * b) (imul fun x: Bool => bif x then a else b) where
+  toFun | (x, y) => fun
+    | true => x
+    | false => y
+  invFun f := (f true, f false)
+  leftInv := by
+    intro (x, y)
+    rfl
+  rightInv := by
+    intro f
+    dsimp
+    apply funext
+    intro x
+    cases x <;> rfl
+  resp_inv' := by
+    dsimp
+    intro (x, y)
+    dsimp
+    apply funext
+    intro z
+    cases z
+    rfl
+    rfl
+  resp_mul' := by
+    dsimp
+    intro (x₀, y₀) (x₁, y₁)
+    apply funext
+    intro z
+    cases z
+    rfl
+    rfl
+
+def IsoClass.gmul_eq_fimul (a b: IsoClass) :
+  a * b = fimul (fun x: Bool => bif x then a else b) := by
+  induction a, b with | mk a b=>
+  show _ = fimul fun x => ⟦bif x then a else b⟧
+  rw [mk_fimul]
+  apply Quotient.sound
+  refine ⟨?_⟩
+  apply gmul_eq_imul
 
 end Group
