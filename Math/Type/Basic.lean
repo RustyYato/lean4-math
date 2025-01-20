@@ -553,3 +553,38 @@ def Fin.equivSubtype (n: Nat) : Fin n ≃ Subtype (· < n) where
   invFun | ⟨x, h⟩ => ⟨x, h⟩
   leftInv _ := rfl
   rightInv _ := rfl
+
+def Fin.embed_reduce (emb: α ↪ Fin n) (x: Fin n) (h: ∀a, emb a ≠ x) : α ↪ Fin n.pred where
+  toFun a :=
+    if g:(emb a).val = n.pred then by
+      refine ⟨x.val, ?_⟩
+      apply Nat.lt_of_le_of_ne
+      apply Nat.le_of_lt_succ
+      rw [Nat.succ_pred]
+      exact x.isLt
+      intro h
+      exact Nat.not_lt_zero x.val (h ▸ x.isLt)
+      rw [←g, Fin.val_inj]
+      apply Ne.symm
+      apply h
+    else by
+      refine ⟨(emb a).val, ?_⟩
+      apply Nat.lt_of_le_of_ne
+      apply Nat.le_of_lt_succ
+      rw [Nat.succ_pred]
+      apply Fin.isLt
+      intro h
+      exact Nat.not_lt_zero x.val (h ▸ x.isLt)
+      assumption
+  inj := by
+    intro a b eq
+    dsimp at eq
+    split at eq <;> split at eq <;> rename_i g₀ g₁
+    exact emb.inj <| Fin.val_inj.mp (g₀.trans g₁.symm)
+    have := Fin.val_inj.mp (Fin.mk.inj eq)
+    have := h _ this.symm
+    contradiction
+    have := Fin.val_inj.mp (Fin.mk.inj eq)
+    have := h _ this
+    contradiction
+    exact emb.inj <| Fin.val_inj.mp (Fin.mk.inj eq)

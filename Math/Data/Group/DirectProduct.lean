@@ -1,8 +1,8 @@
 import Math.Data.Group.Basic
+import Math.Data.Quotient.Fintype
 
 namespace Group
 
-@[simp]
 def mul (a b: Group) : Group where
   ty := a.ty × b.ty
   one' := ⟨1, 1⟩
@@ -19,6 +19,27 @@ def mul (a b: Group) : Group where
     simp [inv_mul_cancel]
 
 instance : Mul Group := ⟨.mul⟩
+
+-- the direct indexed product of groups
+def imul {ι: Type*} (G: ι -> Group) : Group where
+  ty := ∀x: ι, (G x).ty
+  one' := fun x => 1
+  inv' f := fun x => (f x)⁻¹
+  mul' f g := fun x => f x * g x
+  mul_assoc' := by
+    intro a b c
+    dsimp
+    ext
+    rw [mul_assoc]
+  one_mul' := by
+    intro a
+    dsimp
+    ext
+    rw [one_mul]
+  inv_mul' := by
+    intro a
+    dsimp; ext
+    rw [inv_mul_cancel]
 
 def gmul_def (a b: Group) : a * b = a.mul b := rfl
 
@@ -39,6 +60,27 @@ def gmul.spec (a b c d: Group) : a ≈ c -> b ≈ d -> a * b ≈ c * d := by
   apply ac_resp_mul
   apply bd_resp_mul
 
+def imul.spec
+  (a b: ι -> Group)
+  (eq: ∀x, Isomorphsism (a x) (b x)): Isomorphsism (imul a) (imul b) where
+  toEquiv := Pi.congrEquiv Equiv.refl <| fun x => (eq x).toEquiv
+  resp_mul' := by
+    intro x y
+    show (fun z => (eq z) (x z * y z)) = _
+    conv => {
+      lhs; intro z
+      rw [(eq z).resp_mul]
+    }
+    rfl
+  resp_inv' := by
+    intro x
+    show (fun z => (eq z) (x z)⁻¹) = _
+    conv => {
+      lhs; intro z
+      rw [(eq z).resp_inv]
+    }
+    rfl
+
 def IsoClass.mul : IsoClass -> IsoClass -> IsoClass := by
   apply Quotient.lift₂ (⟦· * ·⟧)
   intros
@@ -46,6 +88,39 @@ def IsoClass.mul : IsoClass -> IsoClass -> IsoClass := by
   apply gmul.spec <;> assumption
 
 instance : Mul IsoClass := ⟨IsoClass.mul⟩
+
+noncomputable
+def IsoClass.imul (f: ι -> IsoClass) : IsoClass := by
+  refine Quotient.ilift ?_ ?_ f
+  intro f
+  exact ⟦Group.imul f⟧
+  intro g₀ g₁ eqv
+  apply Quotient.sound
+  refine ⟨?_⟩
+  apply imul.spec
+  intro x
+  apply Classical.choice
+  obtain ⟨eq⟩ := (eqv x)
+  exact ⟨eq⟩
+
+def IsoClass.fimul [Fintype ι] [DecidableEq ι] (f: ι -> IsoClass) : IsoClass := by
+  refine Quotient.flift ?_ ?_ f
+  intro f
+  exact ⟦Group.imul f⟧
+  intro g₀ g₁ eqv
+  replace eqv  := Fintype.axiomOfChoice (α := ι) <| fun x => by
+    obtain ⟨x⟩ := eqv x
+    exact ⟨x⟩
+  obtain ⟨eqv⟩ := eqv
+  apply Quotient.sound
+  refine ⟨?_⟩
+  apply imul.spec
+  exact eqv
+
+def IsoClass.fimul_eq_imul [Fintype ι] [DecidableEq ι] (f: ι -> IsoClass) : fimul f = imul f := by
+  induction f using Quotient.iind with | mk f =>
+  unfold imul fimul
+  rw [Quotient.mk_ilift, Quotient.mk_flift]
 
 def mk_mul (a b: Group) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
 
