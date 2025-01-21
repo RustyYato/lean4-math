@@ -8,6 +8,7 @@ import Math.Data.Quotient.Basic
 import Math.Data.Set.Order.Bounds
 import Math.Data.Fintype.Basic
 import Math.Relation.Induced
+import Math.Order.Lattice.ConditionallyComplete
 
 namespace Ordinal
 
@@ -1381,6 +1382,46 @@ def sSup_le (s: Set Ordinal) (h: s.BoundedAbove) (k: Ordinal) : (∀x ∈ s, x �
   apply Set.not_lt_min
   rw [Set.mem_upperBounds]
   apply g
+
+instance : Sup Ordinal where
+  sup := max
+instance : Inf Ordinal where
+  inf := min
+
+instance : IsConditionallyCompleteLattice Ordinal where
+  le_sup_left := le_max_left
+  le_sup_right := le_max_right
+  sup_le ha hb  := max_le_iff.mpr ⟨ha, hb⟩
+  inf_le_left := min_le_left
+  inf_le_right := min_le_right
+  le_inf ha hb := le_min_iff.mpr ⟨ha, hb⟩
+  le_csSup := by
+    intro s a h mem
+    simp [sSup]
+    rw [dif_pos h]
+    apply Set.min_mem (· < (·: Ordinal)) h
+    assumption
+  le_csInf := by
+    intro s a h mem
+    apply mem
+    simp [sInf]
+    rw [dif_pos h]
+    apply Set.min_mem
+  csInf_le := by
+    intros s a h mem
+    simp [sInf]
+    split
+    apply le_of_not_lt
+    intro g
+    exact Set.not_lt_min (· < (·: Ordinal)) _ _ mem g
+    apply bot_le
+  csSup_le := by
+    intro s a h g
+    simp [sSup]
+    rw [dif_pos ⟨_, g⟩]
+    apply le_of_not_lt
+    intro g'
+    exact Set.not_lt_min (· < (·: Ordinal)) _ _ g g'
 
 def ofNat_le_ofNat (n m: Nat) : Ordinal.ofNat n ≤ Ordinal.ofNat m ↔ n ≤ m := by
   apply Iff.intro
