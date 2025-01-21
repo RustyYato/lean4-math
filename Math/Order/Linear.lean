@@ -464,4 +464,33 @@ instance : @Relation.IsTrichotomous α (· < ·) where
     right; assumption
     left; symm; assumption
 
+instance : @Relation.IsTrichotomous α (· ≤ ·) where
+  tri a b := by
+    rcases lt_or_le a b with ab | ba
+    left; apply le_of_lt; assumption
+    right; right; assumption
+
 def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomous α (· < ·))).tri
+
+instance [IsPartialOrder α] [Relation.IsTrichotomous (· < (·: α))] : IsLinearOrder α where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le
+  le_antisymm := le_antisymm
+  le_trans := le_trans
+  lt_or_le := by
+    intro a b
+    rcases Relation.trichotomous (· < ·) a b with lt | eq | gt
+    left; assumption
+    right; rw [eq]
+    right; apply le_of_lt; assumption
+
+instance [IsPartialOrder α] [Relation.IsTrichotomous (· ≤ (·: α))] : IsLinearOrder α where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le
+  le_antisymm := le_antisymm
+  le_trans := le_trans
+  lt_or_le := by
+    intro a b
+    rcases Relation.trichotomous (· ≤ ·) a b with lt | eq | gt
+    cases lt_or_eq_of_le lt
+    left; assumption; rename_i h; right; rw[h]
+    right; rw [eq]
+    right; assumption

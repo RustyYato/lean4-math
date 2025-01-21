@@ -215,3 +215,19 @@ def le_ciSup {f : ι → α} (H : BoundedAbove (range f)) (c : ι) : f c ≤ iSu
 
 def ciInf_le {f : ι → α} (H : BoundedBelow (range f)) (c : ι) : iInf f ≤ f c :=
   csInf_le H Set.mem_range'
+
+def not_mem_of_lt_csInf {x : α} {s : Set α} (h : x < sInf s) (hs : BoundedBelow s) : x ∉ s :=
+  fun hx => lt_irrefl (lt_of_lt_of_le h (csInf_le hs hx))
+
+def not_mem_of_csSup_lt {x : α} {s : Set α} (h : sSup s < x) (hs : BoundedAbove s) : x ∉ s :=
+  not_mem_of_lt_csInf (α := OrderDual α) h hs
+
+namespace Set
+
+theorem IsGLB.csInf_eq (H : IsGLB s a) (ne : s.Nonempty) : sInf s = a :=
+  (isGLB_csInf ne ⟨a, H.1⟩).unique H
+
+def IsLeast.csInf_eq (H : IsLeast s a) : sInf s = a :=
+  H.isGLB.csInf_eq H.nonempty
+
+end Set

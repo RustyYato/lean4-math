@@ -1,4 +1,4 @@
-import Math.Order.Lattice.Basic
+import Math.Order.Lattice.ConditionallyComplete
 import Math.Data.Set.Basic
 import Math.Data.Set.TopBot
 
@@ -34,6 +34,12 @@ instance [IsCompleteLattice α] : IsCompleteLattice (OrderDual α) where
   sSup_le := sSup_le
   sInf_le := sInf_le
   le_sInf := le_sInf
+
+instance [IsCompleteLattice α] : IsConditionallyCompleteLattice α where
+  le_csInf _ := le_sInf _ _
+  le_csSup _ := le_sSup _ _
+  csSup_le _ := sSup_le _ _
+  csInf_le _ := sInf_le _ _
 
 section
 

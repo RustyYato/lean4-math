@@ -162,4 +162,30 @@ def exists_min {P: α -> Prop} (r: α -> α -> Prop) [IsWellFounded r] (h: ∃x,
   intro y
   exact not_and.mp (not_exists.mp h y)
 
+instance (f: α -> β) {r: β -> β -> Prop} [IsWellFounded r] : IsWellFounded (fun x y => r (f x) (f y)) where
+  wf := by
+    apply WellFounded.intro
+    intro a
+    generalize h:f a = b
+    induction b using wfInduction r generalizing a with | h b ih =>
+    subst b
+    apply Acc.intro
+    intro a' ra
+    exact ih (f a') ra _ rfl
+
+noncomputable
+def argMin (f: α -> β) (r: β -> β -> Prop) [IsWellFounded r] [h: Nonempty α]: α :=
+  Classical.choose <|
+    have ⟨a⟩ := h
+    exists_min (fun x y => r (f x) (f y)) (P := fun _ => True) ⟨a, True.intro⟩
+
+def not_lt_argMin (a : α) (f: α -> β) {r: β -> β -> Prop} [IsWellFounded r] :
+  have : Nonempty α := ⟨a⟩
+  ¬r (f a) (f (argMin f r)) := by
+    have := exists_min (fun x y => r (f x) (f y)) (P := fun _ => True) ⟨a, True.intro⟩
+    have ⟨_, spec⟩ := Classical.choose_spec this
+    intro h h
+    have := spec _ h
+    contradiction
+
 end Relation

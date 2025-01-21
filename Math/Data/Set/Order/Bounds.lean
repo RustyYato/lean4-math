@@ -126,4 +126,41 @@ def BoundedBelow.singleton (a: α) : BoundedBelow {a} := by
   cases mem
   rfl
 
+def allBoundedAbove [LE α] [Top α] [LawfulTop α] (s: Set α) : Set.BoundedAbove s := by
+  exists ⊤
+  intro x mem
+  apply le_top
+
+def allBoundedBelow [LE α] [Bot α] [LawfulBot α] (s: Set α) : Set.BoundedBelow s := by
+  exists ⊥
+  intro x mem
+  apply bot_le
+
+section
+
+variable [IsPartialOrder α] {a b: α}
+
+def IsLeast.unique (Ha : IsLeast s a) (Hb : IsLeast s b) : a = b :=
+  le_antisymm (Ha.right _ Hb.left) (Hb.right _ Ha.left)
+
+def IsLeast.isLeast_iff_eq (Ha : IsLeast s a) : IsLeast s b ↔ a = b :=
+  Iff.intro Ha.unique fun h => h ▸ Ha
+
+def IsGreatest.unique (Ha : IsGreatest s a) (Hb : IsGreatest s b) : a = b :=
+  IsLeast.unique (α := OrderDual α) Ha Hb
+
+def IsGreatest.isGreatest_iff_eq (Ha : IsGreatest s a) : IsGreatest s b ↔ a = b :=
+  Iff.intro Ha.unique fun h => h ▸ Ha
+
+def IsLUB.unique (Ha : IsLUB s a) (Hb : IsLUB s b) : a = b :=
+  IsLeast.unique Ha Hb
+
+def IsGLB.unique (Ha : IsGLB s a) (Hb : IsGLB s b) : a = b :=
+  IsGreatest.unique Ha Hb
+
+def IsLeast.nonempty (h: IsLeast s a) : s.Nonempty := ⟨a, h.left⟩
+def IsGreatest.nonempty (h: IsGreatest s a) : s.Nonempty := ⟨a, h.left⟩
+
+end
+
 end Set
