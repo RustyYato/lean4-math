@@ -1,4 +1,4 @@
-import Math.Type.Notation
+import Math.Type.Basic
 import Math.Logic.Basic
 import Math.Order.Dual
 import Math.Relation.Basic
@@ -132,3 +132,26 @@ instance : @Relation.IsTrans α (· ≤ ·) where
   trans := le_trans
 instance : @Relation.IsIrrefl α (· < ·) where
   irrefl := lt_irrefl
+
+namespace Pi
+
+variable {β: α -> Sort _}
+
+instance [∀x, LE (β x)] : LE (∀x, β x) where
+  le f g := ∀x, f x ≤ g x
+
+instance [∀x, LE (β x)] : LT (∀x, β x) where
+  lt f g := f ≤ g ∧ ¬g ≤ f
+
+instance [∀x, LE (β x)] [∀x, LT (β x)] [∀x, IsPreOrder (β x)] : IsPreOrder (∀x, β x) where
+  lt_iff_le_and_not_le := Iff.rfl
+  le_refl := by
+    intro f x
+    apply le_refl
+  le_trans := by
+    intro a b c ab bc x
+    apply le_trans
+    apply ab
+    apply bc
+
+end Pi

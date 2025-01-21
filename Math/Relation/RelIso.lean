@@ -234,3 +234,26 @@ def ULift.relIso (r: α -> α -> Prop) : (fun a b: ULift α => r a.down b.down) 
 def empty_reliso_empty {α β: Sort*} [IsEmpty α] [IsEmpty β] (r: α -> α -> Prop) (s: β -> β -> Prop) : r ≃r s where
   toEquiv := empty_equiv_empty _ _
   resp_rel {x} := elim_empty x
+
+def Fin.gt_reqv_lt : (· > (·: Fin n)) ≃r (· < (·: Fin n)) where
+  toFun := Fin.rev
+  invFun := Fin.rev
+  leftInv := by
+    intro x
+    rw [Fin.rev_rev]
+  rightInv := by
+    intro x
+    rw [Fin.rev_rev]
+  resp_rel := by
+    intro x y
+    dsimp
+    exact Iff.symm rev_lt_rev
+
+instance : @Relation.IsWellFounded Nat (· < ·) where
+  wf := Nat.lt_wfRel.wf
+
+instance : @Relation.IsWellFounded (Fin n) (· < ·) :=
+  Fin.relEmbedNat.toRelHom.wf
+
+instance : @Relation.IsWellFounded (Fin n) (· > ·) :=
+  Fin.gt_reqv_lt.toRelHom.wf

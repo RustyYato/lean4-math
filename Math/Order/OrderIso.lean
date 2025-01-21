@@ -3,11 +3,16 @@ import Math.Order.Partial
 
 variable {α β: Type*} [LE α] [LT α] [LE β] [LT β]
 
+def OrderHom (α β: Type*) [LE α] [LE β] :=
+  @RelHom α β (· ≤ ·) (· ≤ ·)
+
 def OrderEmbedding (α β: Type*) [LE α] [LE β] :=
   @RelEmbedding α β (· ≤ ·) (· ≤ ·)
 
 def OrderIso (α β: Type*) [LE α] [LE β] :=
   @RelIso α β (· ≤ ·) (· ≤ ·)
+
+infixl:25 " →o " => OrderHom
 infixl:25 " ↪o " => OrderEmbedding
 infixl:25 " ≃o " => OrderIso
 
@@ -103,6 +108,12 @@ instance : IsEquivLike (α ≃o β) α β where
     intro ⟨⟨_, _, _, _⟩, _⟩ ⟨⟨_, _, _, _⟩, _⟩ _ _
     congr
 
+instance : FunLike (α →o β) α β where
+  coe e := e.toFun
+  coe_inj := by
+    intro ⟨_, _⟩ ⟨_, _⟩ eq
+    congr
+
 def coe_symm (h: α ≃o β) (x: α) : h.symm (h x) = x := h.leftInv _
 def symm_coe (h: α ≃o β) (x: β) : h (h.symm x) = x := h.rightInv _
 
@@ -147,3 +158,54 @@ def orderIsoCongr {_: LE α} {_: LE β} (h: α ≃o β) : OrderDual α ≃o Orde
   resp_rel := h.resp_rel
 
 end OrderDual
+
+instance [LE β] : LE (α ↪ β) where
+  le f g := f.toFun ≤ g.toFun
+
+instance [LE β] : LT (α ↪ β) where
+  lt f g := f.toFun < g.toFun
+
+instance [LE β] : LE (α ↪o β) where
+  le f g := f.toFun ≤ g.toFun
+
+instance [LE β] : LT (α ↪o β) where
+  lt f g := f.toFun < g.toFun
+
+instance [LE β] : LE (α →o β) where
+  le f g := f.toFun ≤ g.toFun
+
+instance [LE β] : LT (α →o β) where
+  lt f g := f.toFun < g.toFun
+
+def Embedding.oemb_fun : (α ↪ β) ↪o (α -> β) where
+  toFun := Embedding.toFun
+  inj :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  resp_rel := Iff.rfl
+
+instance [IsPreOrder β] : IsPreOrder (α ↪ β) :=
+  Embedding.oemb_fun.inducedIsPreOrder Iff.rfl
+
+instance [IsPartialOrder β] : IsPartialOrder (α ↪ β) :=
+  Embedding.oemb_fun.inducedIsPartialOrder
+
+def OrderHom.oemb_fun : (α →o β) ↪o (α -> β) where
+  toFun := RelHom.toFun
+  inj :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  resp_rel := Iff.rfl
+
+instance [IsPreOrder β] : IsPreOrder (α →o β) :=
+  OrderHom.oemb_fun.inducedIsPreOrder Iff.rfl
+
+instance [IsPartialOrder β] : IsPartialOrder (α →o β) :=
+  OrderHom.oemb_fun.inducedIsPartialOrder
+
+def OrderEmbedding.oemb_fun : (α ↪o β) ↪o (α ↪ β) where
+  toFun := RelEmbedding.toEmbedding
+  inj :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  resp_rel := Iff.rfl
+
+instance [IsPreOrder β] : IsPreOrder (α ↪o β) :=
+  OrderEmbedding.oemb_fun.inducedIsPreOrder Iff.rfl
+
+instance [IsPartialOrder β] : IsPartialOrder (α ↪o β) :=
+  OrderEmbedding.oemb_fun.inducedIsPartialOrder

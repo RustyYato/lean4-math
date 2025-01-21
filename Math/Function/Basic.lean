@@ -93,4 +93,25 @@ def hfunext {α α' : Sort u} {β : α → Sort v} {β' : α' → Sort v} {f : �
   funext a
   exact eq_of_heq (this a)
 
+open Classical in
+noncomputable def invFun {α : Sort u} {β} [Nonempty α] (f : α → β) : β → α :=
+  fun y => if h:(∃ x, f x = y) then Classical.choose h else Classical.choice inferInstance
+
+def invFun_eq (h : ∃ a, f a = b) :
+  have := nonempty_of_exists h
+  f (invFun f b) = b := by
+  simp only [invFun, dif_pos h, h.choose_spec]
+
+def apply_invFun_apply {α β : Sort*} {f : α → β} {a : α} :
+    f (@invFun _ _ ⟨a⟩ f (f a)) = f a := invFun_eq ⟨_, rfl⟩
+
+def leftinverse_of_invFun [Nonempty α] {f: α -> β} (hf: Injective f) : IsLeftInverse (invFun f) f := by
+  intro x
+  apply hf
+  exact apply_invFun_apply (α := α) (f := f) (a := x)
+
+def IsLeftInverse.comp_eq_id (h: IsLeftInverse f g) : f ∘ g = id := by
+  ext x
+  apply h
+
 end Function

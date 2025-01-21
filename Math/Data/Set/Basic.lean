@@ -130,11 +130,8 @@ def mem_image {a: Set α} {f: α -> β} : ∀{x}, x ∈ a.image f ↔ ∃a' ∈ 
 def mem_image' {a: Set α} {f: α -> β} (h: x ∈ a) : f x ∈ a.image f := by
   apply mem_image.mpr
   exists x
-def range (f: α -> β) : Set β := image (univ _) f
-def mem_range {f: α -> β} : ∀{x}, x ∈ range f ↔ ∃a', x = f a' := by
-  intro x
-  apply Iff.trans mem_image
-  simp [mem_univ]
+def range (f: α -> β) : Set β := mk fun x => ∃a', x = f a'
+def mem_range {f: α -> β} : ∀{x}, x ∈ range f ↔ ∃a', x = f a' := Iff.rfl
 
 def powerset (a: Set α) : Set (Set α) := mk fun x => x ⊆ a
 def mem_powerset {a: Set α} : ∀{x}, x ∈ a.powerset ↔ x ⊆ a := Iff.refl _
@@ -595,6 +592,16 @@ def preimage_sUnion (s: Set (Set α)) (f: β -> α) : (⋃s).preimage f = ⋃(s.
   dsimp at x_in_s'
   exists s'
 
+def image_id (s: Set α) : s.image id = s := by
+  ext x
+  rw [mem_image]
+  apply Iff.intro
+  intro ⟨_, _, eq⟩
+  cases eq
+  assumption
+  intro
+  exists x
+
 def image_image (s: Set α) (f: α -> β) (g: β -> γ) : (s.image f).image g = s.image (g ∘ f) := by
   ext x
   apply Iff.intro
@@ -702,6 +709,78 @@ def image_insert (a: α) (as: Set α) : (insert a as: Set α).image f = (insert 
 def image_pair (a b: α) : ({a, b}: Set α).image f = ({f a, f b}: Set _) := by
   rw [image_insert, singleton_eq_insert_empty, image_insert, image_empty,
     ←singleton_eq_insert_empty]
+
+def compl_subset_compl {s t: Set α} : sᶜ ⊆ tᶜ ↔ t ⊆ s := by
+  apply Iff.intro
+  intro h x mem
+  exact Classical.not_not.mp (h x · mem)
+  intro h x mem mem'
+  apply mem
+  apply h
+  assumption
+
+def image_subset {a b : Set α} (f : α → β) (h : a ⊆ b) : a.image f ⊆ b.image f := by
+  intro x ⟨y, mem, eq⟩
+  subst eq
+  apply Set.mem_image'
+  apply h
+  assumption
+
+open Classical in
+def compl_injective {a b: Set α} : aᶜ = bᶜ -> a = b := by
+  intro h
+  ext x
+  apply Decidable.not_iff_not.mp
+  rw [←mem_compl, h]
+  rfl
+
+open Classical in
+noncomputable
+def piecewise (s: Set α) (f g: α -> β) : α -> β :=
+  fun x => if x ∈ s then f x else g x
+
+def range_iff_surjective (f: α -> β) : Set.range f = ⊤ ↔ Function.Surjective f := by
+  apply Iff.intro
+  intro eq x
+  have : x ∈ range f := by rw [eq]; trivial
+  obtain ⟨a, eq⟩ := this
+  exact ⟨a, eq.symm⟩
+  intro h
+  ext x
+  apply Iff.intro; intro; trivial
+  intro
+  obtain ⟨a, eq⟩ := h x
+  exact ⟨a, eq.symm⟩
+
+def range_piecewise (s: Set α) (f: α -> β) (g: α -> β)  :
+  Set.range (s.piecewise f g) = s.image f ∪ sᶜ.image g := by
+  ext x
+  rw [Set.mem_union, Set.mem_image, Set.mem_image]
+  apply Iff.intro
+  intro ⟨y, eq⟩
+  subst x
+  unfold piecewise
+  by_cases h:y ∈ s
+  left
+  refine ⟨_, h, ?_⟩
+  rw [if_pos h]
+  right
+  refine ⟨_, h, ?_⟩
+  rw [if_neg h]
+  intro h
+  unfold piecewise
+  rcases h with ⟨y, mem, eq⟩ | ⟨y, mem, eq⟩
+  exists y
+  dsimp; rw [if_pos mem]; assumption
+  exists y
+  dsimp; rw [if_neg mem]; assumption
+
+def union_compl (s: Set α) : s ∪ sᶜ = ⊤ := by
+  ext x; classical
+  rw [Set.mem_union, Set.mem_compl]
+  apply Iff.intro <;> intro
+  trivial
+  exact Decidable.or_not_self _
 
 section min_elem
 

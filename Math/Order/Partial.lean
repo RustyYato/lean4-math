@@ -28,3 +28,17 @@ instance [IsPartialOrder α] : IsPartialOrder (OrderDual α) where
   le_antisymm := by
     intro a b ab ba
     apply le_antisymm (α := α) <;> assumption
+
+namespace Pi
+
+variable {β: α -> Sort _}
+
+instance [∀x, LE (β x)] [∀x, LT (β x)] [∀x, IsPartialOrder (β x)] : IsPartialOrder (∀x, β x) where
+  le_antisymm := by
+    intro a b ab ba
+    ext x
+    apply le_antisymm
+    apply ab
+    apply ba
+
+end Pi

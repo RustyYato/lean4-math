@@ -21,7 +21,8 @@ def Cardinal := Quotient type_setoid
 namespace Cardinal
 
 def mk : Type u -> Cardinal.{u} := Quotient.mk _
-local notation "⟦" x "⟧" => Cardinal.mk x
+scoped notation "⟦" x "⟧" => Cardinal.mk x
+@[induction_eliminator]
 def ind {motive: Cardinal -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quotient.ind
 def ind₂ {motive: Cardinal -> Cardinal -> Prop} : (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) -> ∀a b, motive a b := Quotient.ind₂
 def ind₃ {motive: Cardinal -> Cardinal -> Cardinal -> Prop} : (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) -> ∀a b c, motive a b c := by

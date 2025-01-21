@@ -39,6 +39,16 @@ instance {α: Sort*} [IsEmpty α] : IsEmpty (PLift α) where
   elim f := (by cases f <;> (rename_i f; exact elim_empty f))
 instance : IsEmpty (Fin 0) where
   elim f := f.elim0
+def Function.isEmpty (f: α -> β) [IsEmpty β] : IsEmpty α where
+  elim x := elim_empty (f x)
+
+def Function.empty [IsEmpty α] : α -> β := elim_empty
+def Function.empty_inj [IsEmpty α] {f: α -> β} : Function.Injective f := by
+  intro x; exact elim_empty x
+def Function.empty_surj [IsEmpty β] {f: α -> β} : Function.Surjective f := by
+  intro x; exact elim_empty x
+def Function.empty_bij [IsEmpty α] [IsEmpty β] : Function.Bijective (empty (α := α) (β := β)) :=
+  ⟨empty_inj, empty_surj⟩
 
 instance [IsEmpty α] : Subsingleton α where
   allEq x := elim_empty x
@@ -588,3 +598,21 @@ def Fin.embed_reduce (emb: α ↪ Fin n) (x: Fin n) (h: ∀a, emb a ≠ x) : α 
     have := h _ this
     contradiction
     exact emb.inj <| Fin.val_inj.mp (Fin.mk.inj eq)
+
+instance [IsEmpty α] : Subsingleton (Option α) where
+  allEq := by
+    intro a b
+    cases a; cases b
+    rfl
+    rename_i x
+    exact elim_empty x
+    rename_i x
+    exact elim_empty x
+
+def empty_or_nonempty {motive: Sort u -> Prop} (empty: ∀t, IsEmpty t -> motive t) (nonempty: ∀t, Nonempty t -> motive t) : ∀t, motive t := by
+  intro t
+  by_cases h:Nonempty t
+  apply nonempty
+  assumption
+  apply empty
+  exact IsEmpty.ofNotNonempty h

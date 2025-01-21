@@ -7,6 +7,7 @@ import Math.AxiomBlame
 import Math.Data.Quotient.Basic
 import Math.Data.Set.Order.Bounds
 import Math.Data.Fintype.Basic
+import Math.Relation.Induced
 
 namespace Ordinal
 
@@ -694,6 +695,11 @@ instance : IsLinearOrder Ordinal where
     left; assumption
     right; rw [eq]
     right; assumption
+
+instance : @Relation.IsTrichotomous Ordinal (· < ·) where
+  tri := lt_trichotomy
+
+instance : @Relation.IsWellOrder Ordinal (· < ·) where
 
 inductive Pre.maxType {α β: Type u}
   (r: α -> α -> Prop) (s: β -> β -> Prop)
@@ -1421,6 +1427,24 @@ def omega' := omega.lift
 
 scoped notation "ω" => omega'
 
+def ofNat_lt_omega (n: Nat) : ofNat n < ω := by
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  intro x
+  exact ⟨x.val⟩
+  intro ⟨x, _⟩ ⟨y, _⟩ eq
+  cases eq
+  rfl
+  rfl
+  exists ⟨n⟩
+  intro ⟨x⟩
+  rw [Set.mem_range]
+  apply Iff.intro
+  intro lt
+  exists ⟨x, lt⟩
+  intro ⟨y, eq⟩
+  cases eq
+  exact y.isLt
+
 def lt_omega (x: Ordinal) : x < ω -> ∃n: Nat, x = n := by
   cases x with | mk X =>
   intro ⟨h⟩
@@ -1641,5 +1665,595 @@ def succ_le_of_lt (a b: Ordinal) : a < b -> a + 1 ≤ b := by
   subst eq
   apply Set.mem_range.mpr
   exists .some a
+
+def succ_lt_succ_of_lt {a b: Ordinal} : a < b -> a + 1 < b + 1 := by
+  intro h
+  induction a, b using ind₂ with | mk a b =>
+  rw [add_one_eq_succ, add_one_eq_succ]
+  obtain ⟨h⟩ := h
+  have ⟨top, top_spec⟩ := h.exists_top
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  intro x
+  match x with
+  | .none => exact .some top
+  | .some x => exact .some (h x)
+  intro x y eq
+  dsimp at eq
+  cases x <;> cases y
+  rfl
+  dsimp at eq
+  replace eq := Option.some.inj eq
+  have := (top_spec top).mpr (by rw [eq]; apply Set.mem_range')
+  have := Relation.irrefl this
+  contradiction
+  dsimp at eq
+  replace eq := Option.some.inj eq
+  have := (top_spec top).mpr (by rw [←eq]; apply Set.mem_range')
+  have := Relation.irrefl this
+  contradiction
+  rw [h.inj (Option.some.inj eq)]
+  · intro x y
+    dsimp
+    apply Iff.intro
+    intro h
+    cases h
+    apply Pre.succRel.some
+    apply (top_spec _).mpr
+    apply Set.mem_range'
+    apply Pre.succRel.some
+    apply h.resp_rel.mp
+    assumption
+    intro g
+    cases x <;> cases y <;> cases g
+    rename_i h
+    have := Relation.irrefl h
+    contradiction
+    rename_i h
+    have := Relation.asymm h <| (top_spec _).mpr Set.mem_range'
+    contradiction
+    apply Pre.succRel.none
+    apply Pre.succRel.some
+    apply h.resp_rel.mpr
+    assumption
+  dsimp
+  · if g:∃new_top: b.ty, b.rel top new_top then
+      have ⟨new_top, top_lt, new_top_min⟩ := Relation.exists_min b.rel g
+      exists new_top
+      intro x
+      apply Iff.intro
+      intro g
+      cases g
+      apply Set.mem_range.mpr
+      rename_i x lt_newtop
+      rcases Relation.trichotomous b.rel x top with lt_top | eq_top | top_lt
+      have ⟨a, eq⟩ := Set.mem_range.mp ((top_spec x).mp lt_top)
+      exists a
+      rw [eq]; rfl
+      exists .none
+      rw [eq_top]
+      rfl
+      have := new_top_min _ lt_newtop
+      contradiction
+      intro i
+      replace ⟨i, eq⟩ := Set.mem_range.mp i
+      subst eq
+      cases i
+      apply Pre.succRel.some
+      assumption
+      apply Pre.succRel.some
+      apply Relation.trans _ top_lt
+      apply (top_spec _).mpr
+      apply Set.mem_range'
+    else
+      exists .none
+      intro x
+      apply Iff.intro
+      intro g
+      cases g
+      apply Set.mem_range.mpr
+      rename_i x
+      rcases Relation.trichotomous b.rel x top with lt_top | eq_top | top_lt
+      have ⟨a, eq⟩ := Set.mem_range.mp ((top_spec x).mp lt_top)
+      exists a
+      rw [eq]; rfl
+      exists .none
+      rw [eq_top]
+      rfl
+      have := g ⟨_, top_lt⟩
+      contradiction
+      intro i
+      replace ⟨i, eq⟩ := Set.mem_range.mp i
+      subst eq
+      cases i
+      apply Pre.succRel.none
+      apply Pre.succRel.none
+
+def Option.get_inj (a b: Option α) (ha: a.isSome) (hb: b.isSome) :
+  a.get ha = b.get hb -> a = b := by
+  intro h
+  have : some (a.get ha) = some (b.get hb) := by
+    rw [h]
+  rw [Option.some_get, Option.some_get] at this
+  assumption
+
+def lt_of_succ_lt_succ {a b: Ordinal} : a + 1 < b + 1 -> a < b := by
+  intro h
+  induction a, b using ind₂ with | mk a b =>
+  rw [add_one_eq_succ, add_one_eq_succ] at h
+  obtain ⟨h⟩ := h
+  have ⟨top, top_spec⟩ := h.exists_top
+  have h_ne_none : ∀x, h (some x) ≠ .none := by
+    intro x g
+    have := (top_spec (h (some x))).mpr Set.mem_range'
+    rw [g] at this
+    contradiction
+  have h_issome : ∀x, (h (some x)).isSome := by
+    intro x
+    apply Option.isSome_iff_ne_none.mpr
+    apply h_ne_none
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  intro x
+  refine (h x).get (h_issome _)
+  intro x y
+  intro eq
+  exact Option.some.inj (h.inj (Option.get_inj _ _ _ _ eq))
+  intro x y
+  dsimp
+  apply Iff.intro
+  intro r
+  have: Pre.succRel b.rel (h (some x)) (h (some y)) := h.resp_rel.mp (Pre.succRel.some _ _ r)
+  rw [←Option.some_get (h_issome x), ←Option.some_get (h_issome y)] at this
+  cases this
+  assumption
+  intro r
+  replace r := (Pre.succRel.some _ _ r)
+  rw [Option.some_get, Option.some_get] at r
+  have := h.resp_rel.mpr r
+  cases this
+  assumption
+  sorry
+  -- refine ⟨(h .none).get ?_, ?_⟩
+
+
+
+  -- rw [←h.resp_rel]
+
+
+
+def succ_lt_succ {a b: Ordinal} : a + 1 < b + 1 ↔ a < b := by
+  apply Iff.intro
+  · intro h
+    sorry
+  · apply succ_lt_succ_of_lt
+
+def succ_le_succ {a b: Ordinal} : a + 1 ≤ b + 1 ↔ a ≤ b := by
+  apply le_iff_of_lt_iff
+  apply succ_lt_succ
+
+def le_of_lt_succ {a b: Ordinal} (h: a < b + 1) : a ≤ b := by
+  exact succ_le_succ.mp (succ_le_of_lt _ _ h)
+
+def exists_limit (o: Ordinal) : ∃x: Ordinal, x ≤ o ∧ x.IsLimitOrdinal ∧ ∀y ≤ o, y.IsLimitOrdinal -> y ≤ x := by
+  induction o with
+  | limit o lim ih =>
+    refine ⟨o, ?_, lim, ?_⟩
+    rfl
+    intro y _ lim
+    assumption
+  | succ o ih =>
+    obtain ⟨x, x_le_o, x_limit, spec⟩ := ih
+    exists x
+    apply And.intro
+    apply le_trans x_le_o
+    apply le_of_lt
+    apply lt_succ_self
+    apply And.intro x_limit
+    intro y h ylim
+    rcases lt_or_eq_of_le h with h | h
+    exact spec _ (le_of_lt_succ h) ylim
+    subst y
+    have := ylim _ rfl
+    contradiction
+
+noncomputable
+def limit (o: Ordinal) : Ordinal :=
+  Classical.choose (exists_limit o)
+
+def limit_le (o: Ordinal) : limit o ≤ o :=
+  (Classical.choose_spec (exists_limit o)).left
+
+def limit_is_limit_ord (o: Ordinal) : (limit o).IsLimitOrdinal :=
+  (Classical.choose_spec (exists_limit o)).right.left
+
+def limit_is_max_limit_ord (o: Ordinal) : ∀x ≤ o, x.IsLimitOrdinal -> x ≤ limit o :=
+  (Classical.choose_spec (exists_limit o)).right.right
+
+def exists_min {P: Ordinal -> Prop} (h: ∃o, P o) : ∃o, P o ∧ ∀x < o, ¬P x :=
+  Relation.exists_min (α := Ordinal) (· < ·) h
+
+noncomputable
+def min_of {P: Ordinal -> Prop} (h: ∃o, P o) : Ordinal :=
+  Classical.choose (exists_min h)
+
+def min_of_spec {P: Ordinal -> Prop} (h: ∃o, P o) : P (min_of h) :=
+  (Classical.choose_spec (exists_min h)).left
+
+def min_of_is_min {P: Ordinal -> Prop} (h: ∃o, P o) : ∀o < min_of h, ¬P o :=
+  (Classical.choose_spec (exists_min h)).right
+
+@[ext]
+def ext (a b: Ordinal): (∀x, x < a ↔ x < b) -> a = b := by
+  intro h
+  rcases lt_trichotomy a b with ab | eq | ba
+  have := lt_irrefl <| (h a).mpr ab
+  contradiction
+  assumption
+  have := lt_irrefl <| (h b).mp ba
+  contradiction
+
+@[pp_with_univ]
+def ord.{u}: Ordinal.{u+1} := Ordinal.type (α := Ordinal.{u}) (· < ·)
+
+def ULift.down_inj {a b: ULift α} : a.down = b.down -> a = b := by
+  cases a ; cases b; intro eq
+  congr
+
+def ULift.up_inj {a b: α} : ULift.up.{_, v} a = ⟨b⟩ -> a = b := by
+  intro eq
+  cases eq
+  rfl
+
+def lt_typein (r: α -> α -> Prop) [Relation.IsWellOrder r] :
+  ∀o, o < typein r x -> ∃y: α, o = typein r y ∧ r y x := by
+  intro o lt
+  have ⟨y, eq⟩ := typein_surj r o (lt_trans lt (typein_lt r _))
+  subst eq
+  exists y
+  apply And.intro rfl
+  apply typein_lt_typein_iff.mp
+  assumption
+
+def lift_lt_ord.{u} (o: Ordinal.{u}): Ordinal.lift.{u, u+1} o < ord.{u} := by
+  induction o using ind with | mk o =>
+  apply lt_of_not_le
+  intro ⟨h⟩
+  have proj : ∀x: o.ty, (h (typein o.rel x)).down = x := by
+    intro x
+    induction x using Relation.wfInduction o.rel with
+    | h x ih =>
+    apply Relation.eq_of_not_lt_or_gt o.rel
+    intro hx
+    replace eq := ih  _ hx
+    replace eq :=  h.inj (ULift.down_inj eq)
+    replace eq := typein_inj _ eq
+    rw [eq] at hx
+    exact Relation.irrefl hx
+    intro hx
+    have ⟨x', eq⟩  := Set.mem_range.mp <| h.isInitial _ ⟨x⟩ hx
+    have : x = (h x').down := by
+      replace eq : _ = h x' := eq
+      rw [←eq]
+    subst x; clear eq
+    replace hx := h.resp_rel.mpr hx
+    have ⟨x', eq, lt⟩ := lt_typein _ _ hx
+    subst eq
+    have := ih _ lt
+    rw [this] at hx
+    exact lt_irrefl hx
+  have eq := proj (h ⟦o⟧).down
+  have lt : o.rel (h _).down (h ⟦o⟧).down := h.resp_rel.mp (typein_lt o.rel (h ⟦o⟧).down)
+  rw [eq] at lt
+  exact Relation.irrefl lt
+
+def sSup_lift_bounded (s: Set Ordinal.{u}) : (s.image lift.{u, u+1}).BoundedAbove := by
+  exists ord.{u}
+  intro x ⟨s, mem, eq⟩
+  subst eq
+  apply le_of_lt
+  apply lift_lt_ord
+
+noncomputable
+def sSup_lift.{u} (s: Set Ordinal.{u}) : Ordinal.{u+1} :=
+  (s.image lift.{u, u+1}).upperBounds.min (· < ·) (sSup_lift_bounded s)
+
+open Classical in
+def sSup_lift_eq_sSup (s: Set Ordinal) : sSup_lift s = sSup (s.image lift.{u,u+1}) := by
+  show _ = if h:_ then _ else _
+  rw [dif_pos (sSup_lift_bounded s)]
+  rfl
+
+def lift_eq (o: Ordinal) : o.lift = o := by
+  cases o with | mk o =>
+  apply sound
+  apply ULift.relIso
+
+-- omega is the first infinite ordinal
+def omega_le_of_ne_finite (o: Ordinal) : (∀n, ofNat n ≠ o) -> ω ≤ o := by
+  intro h
+  apply le_of_not_lt
+  intro g
+  have ⟨n, eq⟩ := lt_omega _ g
+  refine h n ?_
+  rw [eq]
+  show ofNat _ = (ofNat n).lift
+  rw [lift_eq]
+
+def ofNat_succ (n: Nat) : (ofNat n).succ = ofNat n.succ := by
+  apply sound
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
+  intro x
+  match x with
+  | .some x => exact x.castSucc
+  | .none => exact Fin.last _
+  intro x
+  if h:x = Fin.last _ then
+    exact .none
+  else
+    refine .some ⟨x.val, ?_⟩
+    apply Nat.lt_of_le_of_ne
+    apply Nat.le_of_lt_succ
+    exact x.isLt
+    rw [←Fin.val_inj] at h
+    exact h
+  intro x
+  dsimp
+  cases x <;> dsimp
+  rw [dif_pos rfl]
+  rw [if_neg]
+  intro h
+  rename_i x
+  rw [←Fin.val_inj] at h
+  have := x.isLt
+  erw [h] at this
+  exact lt_irrefl this
+  intro x
+  dsimp
+  by_cases h:x = Fin.last _
+  rw [dif_pos h]
+  subst x; rfl
+  rw [dif_neg h]
+  rfl
+  intro x y
+  dsimp
+  have : ∀x: Fin n, Fin.castSucc x < Fin.last _ := by
+    intro x
+    exact x.isLt
+  cases x <;> cases y
+  all_goals apply Iff.intro <;> intro h
+  any_goals contradiction
+  dsimp at h
+  have := lt_irrefl (α := Nat) h
+  contradiction
+  dsimp at h
+  have := lt_irrefl <| lt_trans (α := Nat) h (this _)
+  contradiction
+  apply this
+  apply Pre.succRel.none
+  dsimp
+  cases h
+  assumption
+  apply Pre.succRel.some
+  assumption
+
+-- any ordinal lt than a finite ordinal is also finite
+def le_ofNat (n: Nat) (o: Ordinal) : o ≤ ofNat n -> ∃m, o = ofNat m := by
+  intro h
+  induction n with
+  | zero =>
+    rw [←lift_eq (ofNat 0)] at h
+    cases (le_zero _).mp h
+    exists 0
+    rw [←lift_eq (ofNat 0)]
+    rfl
+  | succ n ih =>
+    rw [←ofNat_succ, ←add_one_eq_succ] at h
+    rcases lt_or_eq_of_le h with h | h
+    exact ih (le_of_lt_succ h)
+    exists n+1
+    rw [←ofNat_succ, ←add_one_eq_succ]
+    assumption
+
+def lt_succ_of_le {a b: Ordinal} (h: a ≤ b) : a < b.succ := by
+  cases a, b using ind₂ with | mk a b =>
+  obtain ⟨h⟩ := h
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  repeat sorry
+
+-- omega is precisely the supremum of all the naturals
+example : sSup (Set.range Ordinal.ofNat) = ω := by
+  have : ω ∈ (Set.range Ordinal.ofNat).upperBounds := by
+    intro x ⟨n, eq⟩
+    subst x
+    apply le_of_lt
+    apply ofNat_lt_omega
+  have : (Set.range Ordinal.ofNat).BoundedAbove := ⟨_, this⟩
+  apply le_antisymm
+  apply sSup_le
+  assumption
+  intro x mem
+  obtain ⟨n, eq⟩ := Set.mem_range.mp mem
+  subst x
+  apply le_of_lt
+  apply ofNat_lt_omega
+  apply omega_le_of_ne_finite
+  intro n h
+  have : ofNat n < sSup (Set.range ofNat) := by
+    apply lt_of_lt_of_le
+    apply lt_succ_self
+    rw [add_one_eq_succ, ofNat_succ]
+    apply le_sSup
+    assumption
+    apply Set.mem_range'
+  rw [h] at this
+  exact lt_irrefl this
+
+def succ_lift (o: Ordinal) : Ordinal.lift.{u, v} o.succ = (Ordinal.lift.{u, v} o).succ := by
+  cases o with | mk o =>
+  apply sound
+  apply RelIso.trans
+  apply ULift.relIso
+  apply flip RelIso.trans
+  apply Pre.succ.spec
+  symm; apply ULift.relIso
+  rfl
+
+def lift_inj {x y: Ordinal} : Ordinal.lift.{u, v} x = Ordinal.lift.{u, v} y -> x = y := by
+  intro eq
+  cases x with | mk x =>
+  cases y with | mk y =>
+  obtain ⟨eq⟩ := Quotient.exact eq
+  apply sound
+  apply RelIso.trans
+  apply (ULift.relIso _).symm
+  apply flip RelIso.trans
+  apply (ULift.relIso _)
+  assumption
+
+def lift_lt_iff {x y: Ordinal} :
+  Ordinal.lift.{u, v} x < Ordinal.lift.{u, v} y ↔ x < y := by
+  cases x with | mk x =>
+  cases y with | mk y =>
+  apply Iff.intro
+  intro ⟨h⟩
+  refine ⟨?_⟩
+  apply h.congr
+  apply ULift.relIso
+  apply ULift.relIso
+  intro ⟨h⟩
+  refine ⟨?_⟩
+  apply h.congr
+  apply (ULift.relIso _).symm
+  apply (ULift.relIso _).symm
+
+def lift_le_iff {x y: Ordinal} :
+  Ordinal.lift.{u, v} x ≤ Ordinal.lift.{u, v} y ↔ x ≤ y := by
+  apply le_iff_of_lt_iff
+  apply lift_lt_iff
+
+def Pre.le_type {A: Pre.{u}} {B: Pre.{max u v}} (h: B.rel ≼i A.rel): Pre.{u} where
+  ty := Subtype (· ∈ Set.range h)
+  rel := Subtype.inducedRelation h.toEmbedding B.rel
+  wo := (Subtype.inducedEquiv h.toEmbedding B.rel).symm.toRelEmbedding.wo
+
+def le_lift {x: Ordinal.{u}} {y: Ordinal.{max u v}} :
+  y ≤ Ordinal.lift.{u, v} x -> ∃z, y = Ordinal.lift.{u, v} z := by
+  cases x, y using ind₂ with | mk x y =>
+  intro ⟨h⟩
+  replace h := h.congr .refl (ULift.relIso _)
+  refine ⟨⟦Pre.le_type h⟧, ?_⟩
+  apply sound
+  apply flip RelIso.trans
+  unfold Pre.lift
+  dsimp
+  apply (ULift.relIso _).symm
+  exact Subtype.inducedEquiv h.toEmbedding y.rel
+
+-- ord.{u} is the smallest ordinal in u+1 which is larger than all ordinals in u
+def ord_is_minimal (o: Ordinal.{u+1}) : (∀x: Ordinal.{u}, Ordinal.lift.{u, u+1} x ≤ o) -> ord.{u} ≤ o := by
+  intro h
+  cases o with | mk o =>
+  have ord_eq_typein : ∀x: Ordinal.{u}, ∃y, Ordinal.lift.{u, u+1} x = typein o.rel y := by
+    intro x
+    have := h x.succ
+    rw [succ_lift, ←add_one_eq_succ] at this
+    replace this := lt_of_succ_le _ _ this
+    exact typein_surj _ _ this
+
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  · intro x
+    exact Classical.choose (ord_eq_typein x)
+  · intro x y eq
+    dsimp at eq
+    have := Classical.choose_spec (ord_eq_typein x)
+    rw [eq, ←Classical.choose_spec (ord_eq_typein y)] at this
+    exact lift_inj this
+  · intro x y
+    dsimp
+    have hx := Classical.choose_spec (ord_eq_typein x)
+    have hy := Classical.choose_spec (ord_eq_typein y)
+    rw [←typein_lt_typein_iff (r := o.rel), ←hx, ←hy]
+    symm
+    exact lift_lt_iff
+  · intro x y r
+    replace r : o.rel y (Classical.choose (ord_eq_typein x)) := r
+    refine ⟨?_, ?_⟩
+    replace r := typein_lt_typein_iff.mpr r
+    rw [←Classical.choose_spec (ord_eq_typein x)] at r
+    exact Classical.choose (le_lift (le_of_lt r))
+    dsimp
+    show _ = Classical.choose _
+    replace r := typein_lt_typein_iff.mpr r
+    rw [←Classical.choose_spec (ord_eq_typein x)] at r
+    replace r := le_lift (le_of_lt r)
+    have : ∃ y_1: o.ty, Ordinal.lift.{u, u+1} (Classical.choose r) = typein o.rel y_1 := by
+      apply ord_eq_typein
+    apply typein_inj (r := o.rel)
+    rw [←Classical.choose_spec this]
+    have  := Classical.choose_spec r
+    assumption
+
+-- def ord_eq (s: Set Ordinal.{u}) :
+--   (∀x, sSup_lift s ≠ Ordinal.lift.{u,u+1} x) ->
+--   sSup_lift s = ord.{u} := by
+--   intro h
+
+--   sorry
+
+-- def ord_eq_sSup : sSup_lift ⊤ = ord.{u} := by
+--   ext X
+--   apply Iff.intro
+--   · intro h
+--     have : ¬_ := (Set.not_lt_min (· < (·: Ordinal)) (sSup_lift_bounded ⊤) _ · h)
+--     replace := Classical.not_forall.mp this
+--     obtain ⟨y, this⟩ := this
+--     rw [not_imp] at this
+--     obtain ⟨⟨y, mem, eq⟩ , x_lt_y⟩ := this
+--     replace x_lt_y := lt_of_not_le x_lt_y
+--     clear mem; subst eq
+--     apply lt_trans x_lt_y
+--     apply lift_lt_ord
+--   · intro h
+--     induction X using ind with | mk X =>
+--     obtain ⟨h⟩ := h
+--     have ⟨top, top_spec⟩ := h.exists_top
+--     rw [sSup_lift_eq_sSup]
+--     apply flip lt_of_lt_of_le
+--     apply le_sSup
+--     apply sSup_lift_bounded
+--     refine ⟨top, ?_⟩
+--     apply And.intro
+--     trivial
+--     rfl
+--     replace top_spec := fun y => top_spec y
+--     dsimp at top_spec
+--     induction top using ind with | mk top =>
+--     refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+--     intro x
+--     have := ((top_spec (h x)).mpr Set.mem_range')
+--     exact ⟨Classical.choose (typein_surj _ _ this)⟩
+--     intro x y eq
+--     dsimp at eq
+--     replace eq := ULift.up_inj eq
+--     have hx := typein_surj top.rel (h x) ((top_spec (h x)).mpr Set.mem_range')
+--     have hy := typein_surj top.rel (h y) ((top_spec (h y)).mpr Set.mem_range')
+--     replace this : Classical.choose hx = Classical.choose hy := eq
+--     replace this : typein top.rel (Classical.choose hx) = typein top.rel (Classical.choose hy) := by rw [this]
+--     rw [←Classical.choose_spec hx, ←Classical.choose_spec hy] at this
+--     exact h.inj this
+--     intro x y
+--     dsimp
+--     have hx := typein_surj top.rel (h x) ((top_spec (h x)).mpr Set.mem_range')
+--     have hy := typein_surj top.rel (h y) ((top_spec (h y)).mpr Set.mem_range')
+--     -- apply Iff.intro
+--     apply Iff.trans _ typein_lt_typein_iff
+--     rw [←Classical.choose_spec hx, ←Classical.choose_spec hy]
+--     exact h.resp_rel
+--     refine ⟨?_, ?_⟩
+--     have := sSup (Set.range h)
+--     -- have := sSup_le
+--     sorry
+--     unfold RelEmbedding.IsPrincipalTop
+--     dsimp
+--     sorry
 
 end Ordinal
