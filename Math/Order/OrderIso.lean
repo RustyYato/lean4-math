@@ -209,3 +209,12 @@ instance [IsPreOrder β] : IsPreOrder (α ↪o β) :=
 
 instance [IsPartialOrder β] : IsPartialOrder (α ↪o β) :=
   OrderEmbedding.oemb_fun.inducedIsPartialOrder
+
+def OrderEmbedding.toLtRelEmbedding
+  [IsPreOrder α] [IsPreOrder β]
+  (h: α ↪o β) : @RelEmbedding α β (· < ·) (· < ·) where
+  toFun := h
+  inj := h.inj
+  resp_rel := by
+    intro x y; dsimp
+    rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, h.resp_le, h.resp_le]

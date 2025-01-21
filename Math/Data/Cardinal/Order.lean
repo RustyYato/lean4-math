@@ -190,7 +190,15 @@ noncomputable def oemb_ord : OrderEmbedding Cardinal Ordinal where
     obtain ⟨g'⟩ := g'
     exact ⟨g'.toEmbedding⟩
 
+noncomputable def remb_ord_lt : @RelEmbedding Cardinal Ordinal (· < ·) (· < ·) :=
+  oemb_ord.toLtRelEmbedding
+
 instance : @Relation.IsTrichotomous Cardinal (· ≤ ·) := oemb_ord.tri
 instance : IsLinearOrder Cardinal := instLOofPOofLEtri
+
+instance : @Relation.IsWellOrder Cardinal (· < ·) := remb_ord_lt.wo
+
+noncomputable def initseg_ord : @InitialSegment Cardinal Ordinal (· < ·) (· < ·) :=
+  Classical.choice (InitialSegment.collapse ⟨remb_ord_lt⟩)
 
 end Cardinal
