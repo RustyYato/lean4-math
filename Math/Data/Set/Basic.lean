@@ -780,6 +780,18 @@ def union_compl (s: Set α) : s ∪ sᶜ = ⊤ := by
   trivial
   exact Decidable.or_not_self _
 
+def sub_insert {s: Set α} {x: α} : s ⊆ insert x s := by
+  intro x
+  rw [mem_insert]
+  exact .inr
+
+def sdiff_sub {a b: Set α} (h: a ⊆ b) : a \ b = ∅ := by
+  apply Set.ext_empty
+  intro x ⟨r₀, r₁⟩
+  have := h _ r₀
+  contradiction
+def sdiff_self (a: Set α) : a \ a = ∅ := sdiff_sub (sub_refl _)
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]

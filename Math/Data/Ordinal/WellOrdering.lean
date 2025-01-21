@@ -1,229 +1,374 @@
 import Math.Data.Ordinal.Basic
-
-
-namespace WellOrdering
+import Math.Order.Zorn
 
 open Classical
 
-private noncomputable def to_ord_func (α: Type u) (o: Ordinal.{u}) : Option α :=
-  -- the set of all values that have already been assigned to smaller ordinals
-  let assigned := Set.mk fun x => ∃o', ∃_: o' < o, to_ord_func α o' = .some x
-  -- if there is a value that hasn't yet been assigned, assign it
-  if h:assignedᶜ.Nonempty then .some (Classical.choose h) else .none
-termination_by o
-
-private def set_of_lt (α: Type _) (a: Ordinal): Set α :=
-  Set.mk fun x => ∃o', ∃_: o' < a, to_ord_func α o' = .some x
+private
+structure SubWellOrder (α: Type*) where
+  intro ::
+  set: Set α
+  rel: α -> α -> Prop
+  wo: Relation.IsWellOrder (set.Induced rel)
 
 private
-def to_ord_func_inj : ∀x y, to_ord_func α x = to_ord_func α y -> (to_ord_func α x).isSome -> x = y := by
-  intro a b eq ha
-  have hb : (to_ord_func α b).isSome := by
-    rw [←eq]
+structure SubWellOrder.LE (a b : SubWellOrder α) : Prop where
+  sub: a.set ⊆ b.set
+  resp_rel: ∀x y: a.set, a.rel x y ↔ b.rel x y
+  init: ∀x: a.set, ∀y: (b.set \ a.set: Set _), b.rel x y
+
+private
+instance : LE (SubWellOrder α) where
+  le := SubWellOrder.LE
+
+private
+instance : LT (SubWellOrder α) where
+  lt a b := a ≤ b ∧ ¬b ≤ a
+
+private
+instance : IsPreOrder (SubWellOrder α) where
+  lt_iff_le_and_not_le := Iff.rfl
+  le_refl a := ⟨Set.sub_refl _, fun _ _ => Iff.rfl, fun x y => by
+    rw [Set.sdiff_self] at y
+    have := y.property
+    contradiction⟩
+  le_trans := by
+    intro a b c ab bc
+    refine ⟨Set.sub_trans ab.sub bc.sub, ?_, ?_⟩
+    intro x y
+    apply Iff.trans (ab.resp_rel _ _)
+    apply bc.resp_rel ⟨_, _⟩ ⟨_, _⟩
+    apply ab.sub
+    exact x.property
+    apply ab.sub
+    exact y.property
+    intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
+    dsimp
+    by_cases hby:y ∈ b.set
+    apply (bc.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp (ab.init ⟨x, hx⟩ ⟨y, hby, hy'⟩)
+    apply ab.sub; assumption
     assumption
-  unfold to_ord_func at eq ha hb
-  dsimp at eq ha hb
-  replace eq : (if h:((set_of_lt α a)ᶜ).Nonempty then _ else _) =
-    (if h:((set_of_lt α b)ᶜ).Nonempty then _ else _) := eq
-  replace ha : Option.isSome (if h:((set_of_lt α a)ᶜ).Nonempty then _ else _) := ha
-  replace hb : Option.isSome (if h:((set_of_lt α b)ᶜ).Nonempty then _ else _) := hb
+    apply bc.init ⟨x, ab.sub _ hx⟩ ⟨y, hy, ?_⟩
+    assumption
 
-  have ha' : ((set_of_lt α a)ᶜ).Nonempty := by
-    apply Classical.byContradiction
-    intro h
-    rw [dif_neg h] at ha
+private def RelWithTop (r: α -> α -> Prop) (top: α) (a b: α): Prop :=
+  if a = top then False
+  else if b = top then True
+  else r a b
+
+private
+def SubWellOrder.insert_wo (top: α) (s: Set α) (h: top ∉ s) {r: α -> α -> Prop} [Relation.IsWellOrder (s.Induced r)] :
+  Relation.IsWellOrder ((insert top s).Induced (RelWithTop r top)) where
+  wf := by
+    apply WellFounded.intro
+    intro ⟨a, mema⟩
+    replace mema := Set.mem_insert.mp mema
+    have : ∀x: s, Acc (Set.Induced (RelWithTop r top) (insert top s)) ⟨x, Set.mem_insert.mpr (.inr x.property)⟩ := by
+      intro x
+      induction x using Relation.wfInduction (Set.Induced r s) with
+      | h x ih =>
+      obtain ⟨x, mem⟩ := x
+      apply Acc.intro
+      intro y g
+      unfold Set.Induced RelWithTop at g
+      split at g
+      contradiction
+      split at g
+      dsimp at *; subst x
+      contradiction
+      apply ih ⟨y.val, _⟩
+      assumption
+      have hy := y.property
+      rw [Set.mem_insert] at hy
+      apply hy.resolve_left _
+      intro eq
+      contradiction
+    rcases mema with eq | mema
+    · subst a
+      apply Acc.intro
+      intro ⟨b, memb⟩ g
+      unfold Set.Induced RelWithTop at g
+      dsimp at g
+      split at g
+      contradiction
+      rename_i bne
+      rw [Set.mem_insert] at memb
+      replace memb := memb.resolve_left bne
+      apply this ⟨_, _⟩
+      assumption
+    · apply this ⟨_, _⟩
+      assumption
+  trans := by
+    unfold Set.Induced RelWithTop
+    intro a b c ab bc
+    by_cases ha:a.val=top
+    rw [if_pos ha] at *
     contradiction
-  have hb' : ((set_of_lt α b)ᶜ).Nonempty := by
-    apply Classical.byContradiction
-    intro h
-    rw [dif_neg h] at hb
+    rw [if_neg ha] at *
+    by_cases hb:b.val=top
+    rw [if_pos hb] at *
     contradiction
-
-  rw [dif_pos ha', dif_pos hb'] at eq
-  replace eq := Option.some.inj eq
-  have ha'': choose ha' ∉ set_of_lt α a := Classical.choose_spec ha'
-  have hb'': choose hb' ∉ set_of_lt α b := Classical.choose_spec hb'
-  replace ha'' := fun x => not_exists.mp (not_exists.mp ha'' x)
-  replace hb'' := fun x => not_exists.mp (not_exists.mp hb'' x)
-  apply Relation.eq_of_not_lt_or_gt (α := Ordinal) (· < ·)
-  · intro ab
-    apply hb'' _ ab
-    unfold to_ord_func
+    rw [if_neg hb] at *
+    by_cases hc:c.val=top
+    rw [if_pos hc] at *
+    trivial
+    rw [if_neg hc] at *
+    let a': s := ⟨a.val, ?_⟩
+    let b': s := ⟨b.val, ?_⟩
+    let c': s := ⟨c.val, ?_⟩
+    show Set.Induced r s a' c'
+    apply Relation.trans (r := Set.Induced r s)
+    show Set.Induced r s a' b'
+    exact ab
+    exact bc
+    apply (Set.mem_insert.mp c.property).resolve_left
+    assumption
+    apply (Set.mem_insert.mp b.property).resolve_left
+    assumption
+    apply (Set.mem_insert.mp a.property).resolve_left
+    assumption
+  tri := by
+    intro ⟨a, ha⟩ ⟨b, hb⟩
+    rw [Set.mem_insert] at ha hb
+    unfold Set.Induced RelWithTop
     dsimp
-    show (if h : ((set_of_lt α a)ᶜ).Nonempty then Option.some (choose h) else Option.none) = _
-    rw [dif_pos ha']
-    congr
-  · conv at hb'' => { intro; intro; rw [←eq] }
-    intro ba
-    apply ha'' _ ba
-    unfold to_ord_func
+    rcases ha <;> rcases hb
+    subst a; subst b
+    right; left; congr
+    subst a
+    right; right
+    rw [if_neg, if_pos rfl]
+    trivial
+    intro h; subst b
+    contradiction
+    subst b
+    left
+    rw [if_neg, if_pos rfl]
+    trivial
+    intro h; subst a
+    contradiction
+    rename_i ha hb
+    have nha: a ≠ top := by intro; subst a; contradiction
+    have nhb: b ≠ top := by intro; subst b; contradiction
+    rcases Relation.trichotomous (Set.Induced r s) ⟨a, ha⟩ ⟨b, hb⟩ with ab | eq | ba
+    left; rwa [if_neg nha, if_neg nhb]
+    cases eq; right; left; congr
+    right; right; rwa [if_neg nha, if_neg nhb]
+
+private
+def SubWellOrder.sunion_rel (S: Set (SubWellOrder α)) (a b: α) : Prop :=
+  ∃s ∈ S, a ∈ s.set ∧ b ∈ s.set ∧ s.rel a b
+
+private
+def SubWellOrder.total (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·)) : ∀a b: S, a.val ≤ b.val ∨ b.val ≤ a.val := by
+  intro a b
+  rcases h.tri a b with le | eq | ge
+  left; assumption
+  left; rw [eq]
+  right; assumption
+
+private
+def SubWellOrder.sUnion_wo (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·)) :
+  Relation.IsWellOrder ((⋃S.image SubWellOrder.set).Induced (SubWellOrder.sunion_rel S)) where
+  wf := by
+    apply WellFounded.intro
+    intro ⟨x, _, ⟨s, mem_in_S, eq⟩, hx⟩
+    subst eq
+    have := s.wo
+    have := Relation.wfInduction (C := fun x => Acc (Set.Induced (sunion_rel S) (⋃S.image set)) ⟨x.val, Set.mem_sUnion.mpr ⟨_, Set.mem_image.mpr ⟨_, mem_in_S, rfl⟩, x.property⟩⟩) (Set.Induced s.rel s.set)
+    apply this ⟨_, _⟩ _; clear this
+    assumption
+    clear hx x this
+    intro ⟨x, hx⟩ ih
+    apply Acc.intro
+    intro ⟨y, hy⟩ ⟨s', s'_in_S, y_in_s', x_in_s', hxy⟩
+    dsimp at *
+    rcases total S h ⟨_, mem_in_S⟩ ⟨_, s'_in_S⟩ with ss' | s's
+    · by_cases hy':y ∈ s.set
+      apply ih ⟨_, _⟩
+      unfold Set.Induced; dsimp;
+      apply (ss'.resp_rel ⟨_, _⟩ ⟨_, _⟩).mpr
+      repeat assumption
+      have := ss'.init ⟨_, hx⟩ ⟨_, y_in_s', hy'⟩
+      dsimp at this
+      have _ := s'.wo
+      have := Relation.asymm (r := Set.Induced s'.rel s'.set) (a := ⟨_, x_in_s'⟩) (b := ⟨_, y_in_s'⟩) this hxy
+      contradiction
+    · have := s's.sub _ y_in_s'
+      apply ih ⟨_, _⟩
+      unfold Set.Induced; dsimp;
+      apply (s's.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
+      repeat assumption
+  trans := by
+    intro a b c ⟨s₀, s₀_in_S, as₀, bs₀, ab⟩ ⟨s₁, s₁_in_S, bs₁, cs₁, bc⟩
+    rcases total S h ⟨_, s₀_in_S⟩ ⟨_, s₁_in_S⟩ with le | ge
+    · dsimp at le
+      refine ⟨_, s₁_in_S, ?_, ?_,? _⟩
+      apply le.sub; assumption
+      assumption
+      apply s₁.wo.trans (a := ⟨_, _⟩) (b := ⟨_, _⟩) (c := ⟨_, _⟩) _ bc
+      apply le.sub; assumption
+      assumption
+      assumption
+      apply (le.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
+      assumption
+      assumption
+      assumption
+    · dsimp at ge
+      refine ⟨_, s₀_in_S, ?_, ?_,? _⟩
+      assumption
+      apply ge.sub; assumption
+      apply s₀.wo.trans (a := ⟨_, _⟩) (b := ⟨_, _⟩) (c := ⟨_, _⟩) ab _
+      assumption
+      apply ge.sub; assumption
+      apply ge.sub; assumption
+      apply (ge.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
+      assumption
+      assumption
+      assumption
+  tri := by
+    intro ⟨a, _, ⟨s₀, s₀_in_S, eqa⟩, ha⟩ ⟨b, _, ⟨s₁, s₁_in_S, eqb⟩, hb⟩
+    subst eqa; subst eqb
+    unfold Set.Induced sunion_rel
     dsimp
-    show (if h : ((set_of_lt α b)ᶜ).Nonempty then Option.some (choose h) else Option.none) = _
-    rw [dif_pos hb', eq]
+    rcases total S h ⟨_, s₀_in_S⟩ ⟨_, s₁_in_S⟩ with le | ge
+    · dsimp at le
+      rcases s₁.wo.tri ⟨a, le.sub _ ha⟩ ⟨b, hb⟩ with lt | eq | gt
+      left
+      refine ⟨_, s₁_in_S, ?_, ?_,? _⟩
+      apply le.sub; assumption
+      assumption
+      assumption
+      cases eq
+      right; left; rfl
+      right; right;
+      refine ⟨_, s₁_in_S, ?_, ?_,? _⟩
+      assumption
+      apply le.sub; assumption
+      assumption
+    · dsimp at ge
+      rcases s₀.wo.tri ⟨a, ha⟩ ⟨b, ge.sub _ hb⟩ with lt | eq | gt
+      left
+      refine ⟨_, s₀_in_S, ?_, ?_,? _⟩
+      assumption
+      apply ge.sub; assumption
+      assumption
+      cases eq
+      right; left; rfl
+      right; right;
+      refine ⟨_, s₀_in_S, ?_, ?_,? _⟩
+      apply ge.sub; assumption
+      assumption
+      assumption
 
-noncomputable
-def to_ord_func_bool₀ (o: Ordinal.{0}) : Option Bool :=
-  if o = 0 then false
-  else if o = 1 then true
-  else .none
-
-noncomputable
-def to_ord_func_bool₁ (o: Ordinal.{0}) : Option Bool :=
-  if o = 0 then true
-  else if o = 1 then false
-  else .none
-
-example : to_ord_func Bool = to_ord_func_bool₀ ∨ to_ord_func Bool = to_ord_func_bool₁ := by
-  cases h:to_ord_func Bool 0
-  unfold to_ord_func at h
-  dsimp at h
-  split at h
-  contradiction
-  rename_i g
-  have := fun x => Classical.not_not.mp ((not_exists.mp g) x)
-  have ⟨of, lt₀, eq₀⟩ := this false
-  have := Ordinal.not_lt_zero _ lt₀
-  contradiction
-  rename_i b
-  cases b
-  · left
-    have g : to_ord_func Bool 1 = some true := by
-      unfold to_ord_func
-      dsimp
-      have : (set_of_lt Bool 1)ᶜ = {true} := sorry
-      rw [←set_of_lt, this]
-      have : Set.Nonempty {true} := ⟨_, Set.mem_singleton.mpr rfl⟩
-      rw [dif_pos this]
-      congr
-      exact Set.mem_singleton.mp (Classical.choose_spec this)
-    apply funext
+def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
+  have ⟨⟨s, r, h⟩, spec⟩ := Zorn.preorder (α := SubWellOrder α) ?_
+  suffices s = ⊤ by
+    subst s
+    exists r
+    suffices r ↪r Set.Induced r ⊤ from this.wo
+    refine ⟨⟨?_, ?_⟩, ?_⟩
     intro x
-    unfold to_ord_func_bool₀
-    split; subst x
-    assumption
-    split; subst x
-    assumption
-    unfold to_ord_func
-    dsimp
-    rw [dif_neg]
-    intro ⟨x, eq⟩
-    apply eq; clear eq
-    cases x
-    exists 0
-    refine ⟨?_, h⟩
-    apply lt_of_le_of_ne
-    -- apply le_of_lt_succ
-    repeat sorry
-  sorry
-
-
-
-private
-def to_ord_func_surj {α: Type u} : ∀a: α, ∃o: Ordinal.{u}, a = to_ord_func α o := by
-  intro a
-  apply Classical.byContradiction
-  rw [not_exists]
-  intro h
-  -- have all_nonempty : ∀x: Ordinal, (set_of_lt α x)ᶜ.Nonempty := by
-  --   intro x
-  --   exists a
-  --   intro ⟨_, _, g⟩
-  --   exact h _ g.symm
-  -- let emb_ord_in_α : Ordinal.{u} ↪ α := {
-  --   toFun o := (to_ord_func α o).get <| by
-  --     unfold to_ord_func
-  --     rw [dif_pos]
-  --     rfl
-  --     apply all_nonempty
-  --   inj := by
-  --     intro x y eq
-  --     exact to_ord_func_inj _ _ (Option.get_inj _ _ _ _ eq) <| by
-  --       unfold to_ord_func
-  --       rw [dif_pos]
-  --       rfl
-  --       apply all_nonempty
-  -- }
-  -- have emb_α_in_ord : α ↪ Ordinal.{u} := {
-  --   toFun a :=
-  -- }
-
-
-  -- let eqv : Ordinal.{u} ≃ ((Set.range (to_ord_func α) \ ({Option.none}: Set _): Set _)) := {
-  --   toFun o := ⟨to_ord_func α o, Set.mem_range', by
-  --     intro g
-  --     rw [Set.mem_singleton] at g
-  --     unfold to_ord_func at g
-  --     rw [dif_pos] at g
-  --     contradiction
-  --     apply all_nonempty⟩
-  --   invFun x := Classical.choose x.property.left
-  --   leftInv := by
-  --     intro x
-  --     dsimp
-  --     have : WellOrdering.to_ord_func α x ∈ Set.range (WellOrdering.to_ord_func α) :=
-  --       Set.mem_range'
-  --     symm
-  --     apply to_ord_func_inj _ _ (Classical.choose_spec this)
-  --     unfold to_ord_func
-  --     rw [dif_pos]
-  --     rfl
-  --     apply all_nonempty
-  --   rightInv := by
-  --     intro ⟨x, hx⟩
-  --     dsimp
-  --     congr; symm
-  --     exact Classical.choose_spec hx.left
-  -- }
-
-
-  -- unfold to_ord_func at h
-  -- dsimp at h
-  -- replace h : ∀x, a ≠ choose (this x) := by
-  --   intro x
-  --   have := h x
-  --   rw [dif_pos] at this
-  --   intro h
-  --   apply this
-  --   congr
-  -- have a_notin_range_choose : a ∉ Set.range fun x => Classical.choose (this x) := by
-  --   intro mem
-  --   obtain ⟨_, _⟩ := mem
-  --   apply h
-  --   assumption
-  sorry
-
-def order {α: Type u} (a b: α) : Prop :=
-  ∃oa ob: Ordinal.{u}, to_ord_func α oa = a ∧ to_ord_func α ob = b ∧ oa < ob
-
-noncomputable
-def order_embed_ord {α: Type u} : order (α := α) ↪r (· < (·: Ordinal.{u})) where
-  toFun x := Classical.choose (to_ord_func_surj x)
-  inj := by
+    exact ⟨x, True.intro⟩
     intro x y eq
-    dsimp at eq
-    have hx := Classical.choose_spec (to_ord_func_surj x)
-    have hy := Classical.choose_spec (to_ord_func_surj y)
-    rw [←eq] at hy
-    exact Option.some.inj (hx.trans hy.symm)
-  resp_rel := by
-    intro a b
+    cases eq
+    rfl
+    rfl
+  · apply Set.ext_univ
+    intro top
+    apply Classical.byContradiction
+    intro mem
+    let swo : SubWellOrder α := ⟨insert top s, RelWithTop r top, SubWellOrder.insert_wo _ _ mem⟩
+    have := spec swo ⟨Set.sub_insert, fun x y => ?_, ?_⟩
+    have := Set.sub_antisymm this.sub Set.sub_insert
+    have : top ∈ s := by
+      dsimp at this
+      rw [←this, Set.mem_insert]
+      left; rfl
+    contradiction
+    show _ ↔ RelWithTop _ _ _ _
+    unfold RelWithTop
     apply Iff.intro
-    intro ⟨oa, ob, oa_spec, ob_spec, oa_lt_ob⟩
-    dsimp
-    have ha := Classical.choose_spec (to_ord_func_surj a)
-    have hb := Classical.choose_spec (to_ord_func_surj b)
-    have := to_ord_func_inj _ _ (oa_spec.trans ha) (by rw [oa_spec]; rfl)
-    rw [←this]
-    have := to_ord_func_inj _ _ (ob_spec.trans hb) (by rw [ob_spec]; rfl)
-    rw [←this]
-    assumption
-    dsimp
-    intro h
-    refine ⟨_, _, ?_, ?_, h⟩
-    symm; apply Classical.choose_spec (to_ord_func_surj a)
-    symm; apply Classical.choose_spec (to_ord_func_surj b)
+    · intro hxy
+      rw [if_neg, if_neg]
+      assumption
+      intro
+      subst top
+      have := y.property
+      contradiction
+      intro
+      subst top
+      have := x.property
+      contradiction
+    · intro hxy
+      rw [if_neg, if_neg] at hxy
+      assumption
+      intro h; subst top
+      have := y.property
+      contradiction
+      intro h; subst top
+      have := x.property
+      contradiction
+    · intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
+      dsimp
+      replace hy: y ∈ insert _ _ := hy
+      rw [Set.mem_insert] at hy
+      cases hy
+      subst y
+      show RelWithTop _ _ _ _
+      unfold RelWithTop
+      rw [if_neg, if_pos rfl]
+      trivial
+      intro h
+      subst x
+      contradiction
+      contradiction
+  · intro S c
+    refine ⟨⟨?_, ?_, ?_⟩, ?_⟩
+    exact ⋃S.image SubWellOrder.set
+    exact SubWellOrder.sunion_rel S
+    exact SubWellOrder.sUnion_wo S c
+    intro s mem
+    refine ⟨?_, ?_, ?_⟩
+    · apply Set.sub_sUnion
+      apply Set.mem_image'
+      assumption
+    · intro x y
+      apply Iff.intro
+      · intro r
+        dsimp
+        exists s
+        refine ⟨?_, ?_, ?_, ?_⟩
+        assumption
+        exact x.property
+        exact y.property
+        assumption
+      · intro ⟨s', s'_in_S, hx, hy, hxy⟩
+        rcases c.tri ⟨_, mem⟩ ⟨_, s'_in_S⟩ with rxy | eq | ryx
+        · apply (rxy.resp_rel _ _).mpr
+          assumption
+        · cases eq
+          assumption
+        · apply (ryx.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
+          assumption
+          assumption
+          assumption
+    · intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
+      dsimp at hy
+      dsimp [SubWellOrder.sunion_rel]
+      obtain ⟨_, ⟨s', s'_in_S, eq⟩, hy⟩ := hy
+      subst eq
+      rcases total S c ⟨s', s'_in_S⟩ ⟨s, mem⟩ with le | ge
+      have := le.sub _ hy
+      contradiction
+      dsimp at ge
+      refine ⟨_, s'_in_S, ?_, ?_, ?_⟩
+      · apply ge.sub
+        assumption
+      · assumption
+      · apply ge.init ⟨_, _⟩ ⟨_, _, _⟩
+        assumption
+        assumption
+        assumption
 
-instance : Relation.IsWellOrder (order (α := α)) :=
-  order_embed_ord.wo
-
-end WellOrdering
+def order (α: Type*): α -> α -> Prop := choose (SubWellOrder.exists_wo α)
+instance : Relation.IsWellOrder (order α) := choose_spec (SubWellOrder.exists_wo α)
