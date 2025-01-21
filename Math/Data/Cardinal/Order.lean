@@ -75,6 +75,10 @@ instance : Nonempty (Set.preimage {c} Ordinal.card) := by
   cases c with | mk c =>
   exact ⟨Ordinal.type (WellOrdering.order c), rfl⟩
 
+instance : Nonempty (Set.range (fun x: Set.preimage {c} Ordinal.card => x.val)) := by
+  apply Set.nonempty_elem
+  apply Set.nonempty_range
+
 -- ord is the smallest ordinal that has cardinality as c
 noncomputable
 def ord (c: Cardinal): Ordinal := iInf fun x: Set.preimage {c} Ordinal.card => x.val
@@ -177,27 +181,16 @@ noncomputable def oemb_ord : OrderEmbedding Cardinal Ordinal where
         rw [ord_inj h]
     induction a, b using ind₂ with | mk a b =>
     intro ⟨⟨h⟩, g⟩
+    apply lt_of_not_le
+    intro g'
+    apply g; clear g
+    have ⟨ar, awo, eqa⟩ := ord_eq a
+    have ⟨br, bwo, eqb⟩ := ord_eq b
+    rw [eqa, eqb] at g'
+    obtain ⟨g'⟩ := g'
+    exact ⟨g'.toEmbedding⟩
 
-
-    sorry
-
-instance : IsLinearOrder Cardinal where
-  lt_iff_le_and_not_le := Iff.rfl
-  le_antisymm := le_antisymm
-  le_trans := le_trans
-  lt_or_le := by
-    intro a b
-    by_cases h:b ≤ a
-    right; assumption
-    left
-    induction a, b using ind₂ with | mk a b =>
-    apply And.intro _ h
-    replace h : (b ↪ a) -> False := by
-      intro g
-      apply h
-      apply Nonempty.intro
-      assumption
-    apply Nonempty.intro
-    sorry
+instance : @Relation.IsTrichotomous Cardinal (· ≤ ·) := oemb_ord.tri
+instance : IsLinearOrder Cardinal := instLOofPOofLEtri
 
 end Cardinal

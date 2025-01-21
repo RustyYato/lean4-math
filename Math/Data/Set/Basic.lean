@@ -845,6 +845,13 @@ def nonempty_image {s: Set ι} (h: Nonempty s) (f : ι → α) : (s.image f).Non
   obtain ⟨x, h⟩ := h
   refine ⟨f x, Set.mem_image' h⟩
 
+def of_nonempty_elem {s: Set α} [h: _root_.Nonempty s] : s.Nonempty := by
+  obtain ⟨x, h⟩ := h
+  exact ⟨x, h⟩
+def nonempty_elem {s: Set α} (h: s.Nonempty) : _root_.Nonempty s := by
+  obtain ⟨x, h⟩ := h
+  exact ⟨x, h⟩
+
 def forall_mem_range {p : α → Prop} : (∀ a ∈ range f, p a) ↔ ∀ i, p (f i) := by
   apply Iff.intro
   intro h x

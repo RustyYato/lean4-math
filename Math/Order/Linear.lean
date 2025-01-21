@@ -472,7 +472,7 @@ instance : @Relation.IsTrichotomous α (· ≤ ·) where
 
 def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomous α (· < ·))).tri
 
-instance [IsPartialOrder α] [Relation.IsTrichotomous (· < (·: α))] : IsLinearOrder α where
+instance instLOofPOofLTtri [IsPartialOrder α] [Relation.IsTrichotomous (· < (·: α))] : IsLinearOrder α where
   lt_iff_le_and_not_le := lt_iff_le_and_not_le
   le_antisymm := le_antisymm
   le_trans := le_trans
@@ -483,7 +483,7 @@ instance [IsPartialOrder α] [Relation.IsTrichotomous (· < (·: α))] : IsLinea
     right; rw [eq]
     right; apply le_of_lt; assumption
 
-instance [IsPartialOrder α] [Relation.IsTrichotomous (· ≤ (·: α))] : IsLinearOrder α where
+instance instLOofPOofLEtri [IsPartialOrder α] [Relation.IsTrichotomous (· ≤ (·: α))] : IsLinearOrder α where
   lt_iff_le_and_not_le := lt_iff_le_and_not_le
   le_antisymm := le_antisymm
   le_trans := le_trans
