@@ -1,6 +1,8 @@
 import Math.Data.Ordinal.Basic
 import Math.Order.Zorn
 
+namespace WellOrdering
+
 open Classical
 
 private
@@ -372,3 +374,5 @@ def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWell
 
 def order (α: Type*): α -> α -> Prop := choose (SubWellOrder.exists_wo α)
 instance : Relation.IsWellOrder (order α) := choose_spec (SubWellOrder.exists_wo α)
+
+end WellOrdering

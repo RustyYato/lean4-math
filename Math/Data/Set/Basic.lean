@@ -479,6 +479,9 @@ def image_const_of_nonempty (a: Set α) (b: β) : a.Nonempty -> a.image (fun _ =
 def nonempty_insert {a: Set α} {x: α} : (insert x a: Set α).Nonempty :=
   ⟨x, Set.mem_insert.mpr (.inl rfl)⟩
 
+def nonempty_singleton (x: α) : ({x}: Set α).Nonempty :=
+  ⟨x, Set.mem_singleton.mpr rfl⟩
+
 def nonempty_attach (a: Set α) : a.attach.Nonempty ↔ a.Nonempty := by
   apply Iff.intro
   intro ⟨⟨x, _⟩,  _⟩
@@ -568,6 +571,18 @@ def support_by_const_ne_default {value default: β} (h: value ≠ default) :
 
 def support_const_ne_zero [Zero β] {value: β} (h: value ≠ 0) :
   Set.support (fun _: α => value) = Set.univ _ := support_by_const_ne_default h
+
+def insert_eq (a: α) (as: Set α) : insert a as = ({a}: Set α) ∪ as := rfl
+
+def nonempty_union_left {s t: Set α} (h: Nonempty s) : Nonempty (s ∪ t) := by
+  obtain ⟨x, h⟩ := h
+  exists x
+  left; assumption
+
+def nonempty_union_right {s t: Set α} (h: Nonempty t) : Nonempty (s ∪ t) := by
+  obtain ⟨x, h⟩ := h
+  exists x
+  right; assumption
 
 @[coe]
 def ofList (xs: List α) := Set.mk (· ∈ xs)
@@ -791,6 +806,63 @@ def sdiff_sub {a b: Set α} (h: a ⊆ b) : a \ b = ∅ := by
   have := h _ r₀
   contradiction
 def sdiff_self (a: Set α) : a \ a = ∅ := sdiff_sub (sub_refl _)
+
+def image_eq_range (f : α → β) (s : Set α) : s.image f = range fun x : s => f x := by
+  ext x
+  apply Iff.intro
+  intro ⟨x, mem, eq⟩
+  subst eq
+  rw [Set.mem_range]
+  exists  ⟨_, mem⟩
+  intro ⟨⟨x, mem⟩, eq⟩
+  subst eq
+  apply Set.mem_image'
+  assumption
+
+def range_comp' (g : α → β) (f : ι → α) : range (g ∘ f) = (range f).image g := by
+  ext x
+  apply Iff.intro
+  intro ⟨x, eq⟩
+  subst eq
+  apply Set.mem_image'
+  apply Set.mem_range'
+  intro ⟨_, ⟨_, eq₀⟩, eq₁⟩
+  subst eq₁; subst eq₀
+  apply Set.mem_range'
+
+def iSup_range' [SupSet α] (g : β → α) (f : ι → β) : iSup (fun b : range f => g b) = iSup (fun i => g (f i)) := by
+  rw [iSup, iSup, ← image_eq_range, ←range_comp']
+  rfl
+
+def sSup_image' [SupSet α] {s : Set β} {f : β → α} : sSup (s.image f) = iSup fun a : s => f a := by
+  rw [iSup, image_eq_range]
+
+def nonempty_range  [h : _root_.Nonempty ι] (f : ι → α) : (range f).Nonempty := by
+  obtain ⟨x⟩ := h
+  refine ⟨f x, Set.mem_range'⟩
+
+def nonempty_image {s: Set ι} (h: Nonempty s) (f : ι → α) : (s.image f).Nonempty := by
+  obtain ⟨x, h⟩ := h
+  refine ⟨f x, Set.mem_image' h⟩
+
+def forall_mem_range {p : α → Prop} : (∀ a ∈ range f, p a) ↔ ∀ i, p (f i) := by
+  apply Iff.intro
+  intro h x
+  apply h
+  apply Set.mem_range'
+  intro h x ⟨_, eq⟩; subst eq
+  apply h
+
+def forall_mem_image {f : α → β} {s : Set α} {p : β → Prop} :
+    (∀ y ∈ s.image f, p y) ↔ ∀ ⦃x⦄, x ∈ s → p (f x) := by
+    apply Iff.intro
+    intro h x me
+    apply h
+    apply Set.mem_image'
+    assumption
+    intro h y ⟨_, _, eq⟩; subst eq
+    apply h
+    assumption
 
 section min_elem
 

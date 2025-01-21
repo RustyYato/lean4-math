@@ -97,4 +97,33 @@ def isLUB_Iic (a: α) : IsLUB (Iic a) a := (isGreatest_Iic a).isLUB
 def isLUB_Ioc (h: a < b) : IsLUB (Ioc a b) b := (isGreatest_Ioc h).isLUB
 def isLUB_Icc (h: a ≤ b) : IsLUB (Icc a b) b := (isGreatest_Icc h).isLUB
 
+def isLUB_le_iff (h : IsLUB s a) : a ≤ b ↔ b ∈ upperBounds s := by
+  rw [h.upperBounds_eq]
+  rfl
+
+def le_isGLB_iff (h : IsGLB s a) : b ≤ a ↔ b ∈ lowerBounds s :=
+  isLUB_le_iff (α := OrderDual α) h
+
+def BoundedAbove.empty : BoundedAbove (∅: Set α) := by
+  exists a
+  intro x mem
+  contradiction
+
+def BoundedAbove.singleton (a: α) : BoundedAbove {a} := by
+  exists a
+  intro x mem
+  cases mem
+  rfl
+
+def BoundedBelow.empty : BoundedBelow (∅: Set α) := by
+  exists a
+  intro x mem
+  contradiction
+
+def BoundedBelow.singleton (a: α) : BoundedBelow {a} := by
+  exists a
+  intro x mem
+  cases mem
+  rfl
+
 end Set
