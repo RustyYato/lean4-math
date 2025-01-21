@@ -1216,7 +1216,7 @@ def lt_succ_self (a: Ordinal) : a < a + 1 := by
   subst x
   apply Sum.Lex.sep
 
-def lt_of_succ_le (a b: Ordinal) : a + 1 ≤ b -> a < b := by
+def lt_of_succ_le {a b: Ordinal} : a + 1 ≤ b -> a < b := by
   intro h
   apply lt_of_le_of_ne
   apply le_trans _ h
@@ -1776,62 +1776,115 @@ def Option.get_inj (a b: Option α) (ha: a.isSome) (hb: b.isSome) :
   rw [Option.some_get, Option.some_get] at this
   assumption
 
-def lt_of_succ_lt_succ {a b: Ordinal} : a + 1 < b + 1 -> a < b := by
-  intro h
-  induction a, b using ind₂ with | mk a b =>
-  rw [add_one_eq_succ, add_one_eq_succ] at h
+def lt_succ_of_le {a b: Ordinal} (h: a ≤ b) : a < b.succ := by
+  cases a, b using ind₂ with | mk a b =>
   obtain ⟨h⟩ := h
-  have ⟨top, top_spec⟩ := h.exists_top
-  have h_ne_none : ∀x, h (some x) ≠ .none := by
-    intro x g
-    have := (top_spec (h (some x))).mpr Set.mem_range'
-    rw [g] at this
-    contradiction
-  have h_issome : ∀x, (h (some x)).isSome := by
-    intro x
-    apply Option.isSome_iff_ne_none.mpr
-    apply h_ne_none
   refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
   intro x
-  refine (h x).get (h_issome _)
-  intro x y
-  intro eq
-  exact Option.some.inj (h.inj (Option.get_inj _ _ _ _ eq))
-  intro x y
+  exact .some (h x)
+  apply Function.Injective.comp
+  apply Option.some.inj
+  exact h.inj
   dsimp
+  intro x y
   apply Iff.intro
   intro r
-  have: Pre.succRel b.rel (h (some x)) (h (some y)) := h.resp_rel.mp (Pre.succRel.some _ _ r)
-  rw [←Option.some_get (h_issome x), ←Option.some_get (h_issome y)] at this
-  cases this
+  apply Pre.succRel.some
+  apply h.resp_rel.mp
   assumption
   intro r
-  replace r := (Pre.succRel.some _ _ r)
-  rw [Option.some_get, Option.some_get] at r
-  have := h.resp_rel.mpr r
-  cases this
+  cases r
+  apply h.resp_rel.mpr
   assumption
-  sorry
-  -- refine ⟨(h .none).get ?_, ?_⟩
+  by_cases g:Function.Surjective h
+  exists .none
+  intro x
+  apply Iff.intro
+  intro r
+  cases r
+  rename_i b₀
+  obtain ⟨a₀, eq⟩  := g b₀
+  subst b₀
+  apply Set.mem_range'
+  intro ⟨a₀, eq⟩
+  subst x
+  apply Pre.succRel.none
+  have ⟨b₀, hb₀⟩ := Classical.not_forall.mp g
+  replace ⟨b₀, hb₀, b₀_min⟩ := Relation.exists_min b.rel (P := fun b₀ => b₀ ∉ Set.range h) ⟨b₀, hb₀⟩
+  exists b₀
+  intro b₁
+  apply Iff.intro
+  intro r
+  cases r
+  rename_i b₁ r
+  have ⟨a₀, _⟩ := Classical.not_not.mp (b₀_min b₁ r)
+  subst b₁
+  apply Set.mem_range'
+  intro ⟨a₀, eq⟩
+  subst b₁
+  apply Pre.succRel.some
+  rcases Relation.trichotomous b.rel (h a₀) b₀ with lt | eq | gt
+  assumption
+  subst b₀
+  have := hb₀ Set.mem_range'
+  contradiction
+  have := hb₀ (h.isInitial _ _ gt)
+  contradiction
 
+def le_of_lt_succ {a b: Ordinal} (h: a < b + 1) : a ≤ b := by
+  rw [add_one_eq_succ] at h
+  cases a, b using ind₂ with | mk a b =>
+  obtain ⟨h⟩ := h
+  have ⟨top, top_spec⟩ := h.exists_top
+  have h_issome : ∀x, (h x).isSome := by
+    have := (Iff.not_iff_not (top_spec .none)).mp (nomatch ·)
+    intro x
+    cases g:h x
+    rw [←g] at this
+    have := this Set.mem_range'
+    contradiction
+    rfl
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  intro x
+  exact (h x).get (h_issome _)
+  intro x y eq
+  exact h.inj (Option.get_inj _ _ _ _ eq)
+  intro x y; dsimp
+  apply Iff.intro
+  intro r
+  suffices Pre.succRel b.rel (.some <| (h x).get (h_issome _)) (.some <| (h y).get (h_issome _)) by
+    cases this
+    assumption
+  rw [Option.some_get, Option.some_get]
+  apply h.resp_rel.mp
+  assumption
+  intro r
+  replace r := Pre.succRel.some _ _ r
+  rw [Option.some_get, Option.some_get] at r
+  apply h.resp_rel.mpr
+  assumption
+  intro x y r
+  dsimp at r
+  replace r : b.rel y ((h x).get (h_issome _)) := r
+  have := Pre.succRel.some _ _ r
+  rw [Option.some_get] at this
+  have ⟨a₀, eq⟩ := h.init _ _ this
+  refine ⟨a₀, ?_⟩
+  apply Option.some.inj
+  erw [eq, Option.some_get]
 
-
-  -- rw [←h.resp_rel]
-
-
+def lt_of_succ_lt_succ {a b: Ordinal} : a + 1 < b + 1 -> a < b := by
+  intro h
+  exact lt_of_succ_le (le_of_lt_succ h)
 
 def succ_lt_succ {a b: Ordinal} : a + 1 < b + 1 ↔ a < b := by
   apply Iff.intro
-  · intro h
-    sorry
+  · apply lt_of_succ_lt_succ
   · apply succ_lt_succ_of_lt
 
 def succ_le_succ {a b: Ordinal} : a + 1 ≤ b + 1 ↔ a ≤ b := by
   apply le_iff_of_lt_iff
   apply succ_lt_succ
-
-def le_of_lt_succ {a b: Ordinal} (h: a < b + 1) : a ≤ b := by
-  exact succ_le_succ.mp (succ_le_of_lt _ _ h)
 
 def exists_limit (o: Ordinal) : ∃x: Ordinal, x ≤ o ∧ x.IsLimitOrdinal ∧ ∀y ≤ o, y.IsLimitOrdinal -> y ≤ x := by
   induction o with
@@ -2058,12 +2111,6 @@ def le_ofNat (n: Nat) (o: Ordinal) : o ≤ ofNat n -> ∃m, o = ofNat m := by
     rw [←ofNat_succ, ←add_one_eq_succ]
     assumption
 
-def lt_succ_of_le {a b: Ordinal} (h: a ≤ b) : a < b.succ := by
-  cases a, b using ind₂ with | mk a b =>
-  obtain ⟨h⟩ := h
-  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
-  repeat sorry
-
 -- omega is precisely the supremum of all the naturals
 example : sSup (Set.range Ordinal.ofNat) = ω := by
   have : ω ∈ (Set.range Ordinal.ofNat).upperBounds := by
@@ -2160,7 +2207,7 @@ def Pre.lt_of_succ_le {a: Pre.{u}} {b: Pre.{v}} (h: a.succ.rel ≼i b.rel) : Non
     apply (ULift.relIso _).symm
     apply (ULift.relIso _).symm
   rw [succ_lift, ←add_one_eq_succ] at this
-  have ⟨h⟩ := Ordinal.lt_of_succ_le ⟦a⟧.lift (Ordinal.lift.{v, max u v} ⟦b⟧) this
+  have ⟨h⟩ := Ordinal.lt_of_succ_le this
   refine ⟨h.congr ?_ ?_⟩
   apply (ULift.relIso _)
   apply (ULift.relIso _)
