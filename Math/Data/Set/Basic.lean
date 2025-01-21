@@ -800,4 +800,6 @@ noncomputable def not_lt_min : ∀y ∈ s, ¬r y (min r h) := (Classical.choose_
 
 end min_elem
 
+instance : @Relation.IsTrans (Set α) (· ⊆ ·) := ⟨sub_trans⟩
+
 end Set
