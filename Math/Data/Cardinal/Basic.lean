@@ -22,18 +22,21 @@ namespace Cardinal
 
 def mk : Type u -> Cardinal.{u} := Quotient.mk _
 scoped notation "⟦" x "⟧" => Cardinal.mk x
-@[induction_eliminator]
+@[cases_eliminator]
 def ind {motive: Cardinal -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quotient.ind
+@[cases_eliminator]
 def ind₂ {motive: Cardinal -> Cardinal -> Prop} : (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) -> ∀a b, motive a b := Quotient.ind₂
+@[cases_eliminator]
 def ind₃ {motive: Cardinal -> Cardinal -> Cardinal -> Prop} : (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) -> ∀a b c, motive a b c := by
   intro h a b c
-  induction a, b using ind₂
-  induction c using ind
+  cases a, b
+  cases c
   apply h
+@[cases_eliminator]
 def ind₄ {motive: Cardinal -> Cardinal -> Cardinal -> Cardinal -> Prop} : (mk: ∀a b c d, motive ⟦a⟧ ⟦b⟧ ⟦c⟧ ⟦d⟧) -> ∀a b c d, motive a b c d := by
   intro h a b c d
-  induction a, b using ind₂
-  induction c, d using ind₂
+  cases a, b
+  cases c, d
   apply h
 def sound {a b: Type u} : a ≃ b -> ⟦a⟧ = ⟦b⟧ := Quotient.sound ∘ Nonempty.intro
 def exact {a b: Type u} : ⟦a⟧ = ⟦b⟧ -> Nonempty (a ≃ b) := Quotient.exact
@@ -88,7 +91,7 @@ instance : NatCast Cardinal where
 
 @[simp]
 def lift_add (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.add b = (a.add b).lift := by
-  induction a, b using ind₂ with | mk a b =>
+  cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
   symm; apply ULift.equiv
@@ -98,7 +101,7 @@ def lift_add (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.add b = (a.add b).lift
 
 @[simp]
 def add_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.add b.lift = (a.add b).lift := by
-  induction a, b using ind₂ with | mk a b =>
+  cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
   symm; apply ULift.equiv
@@ -108,7 +111,7 @@ def add_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.add b.lift = (a.add b).lift
 
 @[simp]
 def lift_mul (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.mul b = (a.mul b).lift := by
-  induction a, b using ind₂ with | mk a b =>
+  cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
   symm; apply ULift.equiv
@@ -118,7 +121,7 @@ def lift_mul (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.mul b = (a.mul b).lift
 
 @[simp]
 def mul_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.mul b.lift = (a.mul b).lift := by
-  induction a, b using ind₂ with | mk a b =>
+  cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
   symm; apply ULift.equiv
@@ -128,7 +131,7 @@ def mul_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.mul b.lift = (a.mul b).lift
 
 @[simp]
 def lift_pow (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.pow b = (a.pow b).lift := by
-  induction a, b using ind₂ with | mk a b =>
+  cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
   symm; apply ULift.equiv
@@ -138,7 +141,7 @@ def lift_pow (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.pow b = (a.pow b).lift
 
 @[simp]
 def pow_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.pow b.lift = (a.pow b).lift := by
-  induction a, b using ind₂ with | mk a b =>
+  cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
   symm; apply ULift.equiv
@@ -148,7 +151,7 @@ def pow_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.pow b.lift = (a.pow b).lift
 
 @[simp]
 def lift_lift (a: Cardinal.{u}) : (Cardinal.lift.{max u v, w} (Cardinal.lift.{u, v} a)) = Cardinal.lift.{u, max v w} a := by
-  induction a using ind with | mk a =>
+  cases a with | mk a =>
   apply sound
   apply Equiv.trans
   apply ULift.equiv
@@ -208,20 +211,20 @@ def OfNat_pow (n m: Nat) : (OfNat.ofNat (n ^ m): Cardinal) = OfNat.ofNat n ^ OfN
 
 instance : IsAddCommMagma Cardinal where
   add_comm (a b: Cardinal) := by
-    induction a, b using ind₂ with | mk a b =>
+    cases a, b with | mk a b =>
     apply sound
     exact Sum.equivComm
 
 instance : IsCommMagma Cardinal where
   mul_comm (a b: Cardinal) := by
-    induction a, b using ind₂ with | mk a b =>
+    cases a, b with | mk a b =>
     apply sound
     exact Prod.equivComm
 
 instance : IsAddZeroClass Cardinal := by
   apply IsAddZeroClass.ofAddCommMagma
   intro a
-  induction a using ind with | mk a =>
+  cases a with | mk a =>
   show (lift _).add _ = _
   rw [lift_add]
   apply sound
@@ -243,7 +246,7 @@ instance : IsAddZeroClass Cardinal := by
 instance : IsMulZeroClass Cardinal := by
   apply IsMulZeroClass.ofCommMagma
   intro a
-  induction a using ind with | mk a =>
+  cases a with | mk a =>
   show (lift _).mul _ = _
   rw [lift_mul]
   apply sound
@@ -262,7 +265,7 @@ instance : IsMulZeroClass Cardinal := by
 instance : IsMulOneClass Cardinal := by
   apply IsMulOneClass.ofCommMagma
   intro a
-  induction a using ind with | mk a =>
+  cases a with | mk a =>
   show (lift _).mul _ = _
   rw [lift_mul]
   apply sound
@@ -280,7 +283,7 @@ instance : IsMulOneClass Cardinal := by
 
 instance : IsLeftDistrib Cardinal where
   left_distrib k a b := by
-    induction a, b, k using ind₃ with | mk A B K =>
+    cases a, b, k with | mk A B K =>
     apply sound
     apply Equiv.mk _ _ _ _
     intro ⟨k, x⟩
@@ -298,7 +301,7 @@ instance : IsLeftDistrib Cardinal where
 
 instance : IsAddMonoid Cardinal where
   add_assoc a b c := by
-    induction a, b, c using ind₃ with | mk a b c =>
+    cases a, b, c with | mk A B C =>
     apply sound
     apply Equiv.mk _ _ _ _
     intro h
@@ -326,7 +329,7 @@ instance : IsAddMonoid Cardinal where
 
 instance : IsMonoid Cardinal where
   mul_assoc a b c := by
-    induction a, b, c using ind₃ with | mk a b c =>
+    cases a, b, c with | mk A B C =>
     apply sound
     apply Equiv.mk _ _ _ _
     intro ⟨⟨a, b⟩, c⟩
@@ -338,7 +341,7 @@ instance : IsMonoid Cardinal where
     intro ⟨a, b, c⟩
     rfl
   npow_zero a := by
-    induction a using ind with | mk a =>
+    cases a with | mk A =>
     apply sound
     apply Equiv.mk _ _ _ _
     intro h
@@ -350,7 +353,7 @@ instance : IsMonoid Cardinal where
     intro x
     apply Subsingleton.allEq
   npow_succ n a := by
-    induction a using ind with | mk a =>
+    cases a with | mk A =>
     apply sound
     apply Equiv.trans
     apply Function.congrEquiv
