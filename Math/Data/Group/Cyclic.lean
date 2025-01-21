@@ -50,7 +50,7 @@ def sub_cyclic (hn: n ≠ 0) (g: Group) (h: g ⊆ NatAddMod n hn) : ∃m: Nat, g
       obtain ⟨h⟩ := h
       exists 0
       refine ⟨?_⟩
-      apply Isomorphsism.mk _ _ _ _
+      refine ⟨?_, ?_, ?_⟩
       apply Equiv.mk _ _ _ _
       intro
       exact 1
@@ -62,7 +62,6 @@ def sub_cyclic (hn: n ≠ 0) (g: Group) (h: g ⊆ NatAddMod n hn) : ∃m: Nat, g
       apply Subsingleton.allEq _ _
       intro
       apply Subsingleton.allEq _ _
-      rfl
       intro x
       dsimp
       rw [inv_one]
@@ -77,20 +76,19 @@ def sub_cyclic (hn: n ≠ 0) (g: Group) (h: g ⊆ NatAddMod n hn) : ∃m: Nat, g
         replace spec : eq.toFun = h.toFun := spec
         refine ⟨?_⟩
         apply Isomorphsism.mk eq
-        rw [spec, h.resp_one]
         intro x
-        rw [spec, h.resp_inv]
+        rw [spec, h.resp_inv']
         intro x y
-        rw [spec, h.resp_mul]
+        rw [spec, h.resp_mul']
       · apply ih (nomatch ·)
         replace hf := Classical.not_forall.mp hf
         obtain ⟨x, hf⟩ := hf
-        replace hf: ∀y, h.toFun y ≠ x := not_exists.mp hf
+        replace hf: ∀y, x ≠ h.toFun y := not_exists.mp hf
         refine ⟨?_⟩
-        apply SubgroupEmbedding.mk _ _ _ _
-        apply Fin.embed_reduce h.toEmbedding x hf
+        apply SubgroupEmbedding.mk _ _ _
+        apply Fin.embed_reduce h.toEmbedding x (fun x => Ne.symm (hf x))
         unfold Fin.embed_reduce
         dsimp
-
+        sorry
         sorry
 end Group

@@ -743,14 +743,12 @@ def range_iff_surjective (f: α -> β) : Set.range f = ⊤ ↔ Function.Surjecti
   apply Iff.intro
   intro eq x
   have : x ∈ range f := by rw [eq]; trivial
-  obtain ⟨a, eq⟩ := this
-  exact ⟨a, eq.symm⟩
+  assumption
   intro h
   ext x
   apply Iff.intro; intro; trivial
   intro
-  obtain ⟨a, eq⟩ := h x
-  exact ⟨a, eq.symm⟩
+  apply h
 
 def range_piecewise (s: Set α) (f: α -> β) (g: α -> β)  :
   Set.range (s.piecewise f g) = s.image f ∪ sᶜ.image g := by

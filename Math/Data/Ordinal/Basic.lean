@@ -2192,6 +2192,50 @@ def ord_is_minimal (o: Ordinal.{u+1}) : (∀x: Ordinal.{u}, Ordinal.lift.{u, u+1
     have  := Classical.choose_spec r
     assumption
 
+-- -- ord.{u} is the smallest ordinal in u+1 which is larger than all ordinals in u
+-- def lt_ord (o: Ordinal.{u+1}) : o < ord.{u} -> ∃o', o = Ordinal.lift.{u, u+1} o' := by
+--   intro h
+--   cases o with | mk o =>
+--   have ord_eq_typein : ∀x: Ordinal.{u}, ∃y, Ordinal.lift.{u, u+1} x = typein o.rel y := by
+--     intro x
+--     have := h x.succ
+--     rw [succ_lift, ←add_one_eq_succ] at this
+--     replace this := lt_of_succ_le _ _ this
+--     exact typein_surj _ _ this
+
+--   refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+--   · intro x
+--     exact Classical.choose (ord_eq_typein x)
+--   · intro x y eq
+--     dsimp at eq
+--     have := Classical.choose_spec (ord_eq_typein x)
+--     rw [eq, ←Classical.choose_spec (ord_eq_typein y)] at this
+--     exact lift_inj this
+--   · intro x y
+--     dsimp
+--     have hx := Classical.choose_spec (ord_eq_typein x)
+--     have hy := Classical.choose_spec (ord_eq_typein y)
+--     rw [←typein_lt_typein_iff (r := o.rel), ←hx, ←hy]
+--     symm
+--     exact lift_lt_iff
+--   · intro x y r
+--     replace r : o.rel y (Classical.choose (ord_eq_typein x)) := r
+--     refine ⟨?_, ?_⟩
+--     replace r := typein_lt_typein_iff.mpr r
+--     rw [←Classical.choose_spec (ord_eq_typein x)] at r
+--     exact Classical.choose (le_lift (le_of_lt r))
+--     dsimp
+--     show _ = Classical.choose _
+--     replace r := typein_lt_typein_iff.mpr r
+--     rw [←Classical.choose_spec (ord_eq_typein x)] at r
+--     replace r := le_lift (le_of_lt r)
+--     have : ∃ y_1: o.ty, Ordinal.lift.{u, u+1} (Classical.choose r) = typein o.rel y_1 := by
+--       apply ord_eq_typein
+--     apply typein_inj (r := o.rel)
+--     rw [←Classical.choose_spec this]
+--     have  := Classical.choose_spec r
+--     assumption
+
 -- def ord_eq (s: Set Ordinal.{u}) :
 --   (∀x, sSup_lift s ≠ Ordinal.lift.{u,u+1} x) ->
 --   sSup_lift s = ord.{u} := by

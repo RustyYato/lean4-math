@@ -113,17 +113,16 @@ def eqv_or_principal [IsWellOrder s] (h: r ≼i s) :
   apply Iff.intro
   intro sb'b
   apply Set.mem_range.mpr
-  obtain ⟨a, eq⟩ := ih b' sb'b
-  exact ⟨a, eq.symm⟩
+  exact ih b' sb'b
   intro mem
   have ⟨a, eq⟩ := Set.mem_range.mp mem
   subst b'
   rcases trichotomous s (h a) b with ab | eq | ba
   assumption
-  have := f _ eq
+  have := f _ eq.symm
   contradiction
   have ⟨a', eq⟩ := Set.mem_range.mp <| h.isInitial _ _ ba
-  have := f _ eq.symm
+  have := f _ eq
   contradiction
 
 def congr (eqr: r₀ ≃r r₁) (eqs: s₀ ≃r s₁) (g: r₀ ≼i s₀): r₁ ≼i s₁ where

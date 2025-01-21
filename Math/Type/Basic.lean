@@ -167,10 +167,12 @@ def Equiv.invFun_inj' : Function.Injective (Equiv.invFun (α := α) (β := β)) 
 def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x = f := by
   have ⟨finv, finvdef⟩ := b.Surjective.exists_inv
   refine ⟨?_, ?_⟩
-  apply Equiv.mk f finv _ finvdef
+  apply Equiv.mk f finv _ _
   intro x
   apply b.Injective
-  rw [finvdef]
+  rw [←finvdef]
+  intro x
+  symm; apply finvdef
   rfl
 
 def Embedding.comp (b: β ↪ γ) (a: α ↪ β) : α ↪ γ where

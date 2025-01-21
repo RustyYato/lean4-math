@@ -8,7 +8,7 @@ variable {g₀ g₁: β -> α} {f₀ f₁: α -> β}
 @[reducible]
 def Injective: Prop := ∀⦃x y⦄, f x = f y -> x = y
 @[reducible]
-def Surjective: Prop := ∀b, ∃a, f a = b
+def Surjective: Prop := ∀b, ∃a, b = f a
 @[reducible]
 def Bijective: Prop := Injective f ∧ Surjective f
 @[reducible]
@@ -22,7 +22,7 @@ variable {g: β -> α} {f: α -> β}
 def Bijective.Injective : Bijective f -> Injective f := And.left
 def Bijective.Surjective : Bijective f -> Surjective f := And.right
 
-def Surjective.exists_inv : Surjective f -> ∃g: β -> α, ∀x, f (g x) = x :=
+def Surjective.exists_inv : Surjective f -> ∃g: β -> α, ∀x, x = f (g x) :=
   Classical.axiomOfChoice
 
 def Injective.comp {f: α₀ -> α₁} {g: α₁ -> α₂} : Function.Injective g ->  Function.Injective f -> Function.Injective (g ∘ f) := by

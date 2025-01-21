@@ -32,7 +32,7 @@ def IsFinite.ofEmbedding {limit: Nat} (emb: α ↪ Fin limit) : IsFinite α := b
         intro elem
         let out := emb elem
         if g:out ≤ missing then
-          have : out < missing := lt_of_le_of_ne g (not_in_range _)
+          have : out < missing := lt_of_le_of_ne g (Ne.symm (not_in_range _))
           apply Fin.mk out.val
           apply lt_of_lt_of_le
           exact this
@@ -52,7 +52,7 @@ def IsFinite.ofEmbedding {limit: Nat} (emb: α ↪ Fin limit) : IsFinite α := b
         · rename_i h g
           unfold Fin.pred Fin.subNat at eq
           replace eq := Fin.mk.inj eq
-          have : emb x < missing := (lt_of_le_of_ne h (not_in_range x))
+          have : emb x < missing := (lt_of_le_of_ne h (Ne.symm (not_in_range _)))
           replace := Fin.lt_def.mp this
           rw [eq] at this
           replace this := Nat.succ_lt_succ this
@@ -67,7 +67,7 @@ def IsFinite.ofEmbedding {limit: Nat} (emb: α ↪ Fin limit) : IsFinite α := b
         · rename_i g h
           unfold Fin.pred Fin.subNat at eq
           replace eq := Fin.mk.inj eq
-          have : emb y < missing := (lt_of_le_of_ne h (not_in_range y))
+          have : emb y < missing := (lt_of_le_of_ne h (Ne.symm (not_in_range _)))
           replace := Fin.lt_def.mp this
           rw [←eq] at this
           replace this := Nat.succ_lt_succ this
