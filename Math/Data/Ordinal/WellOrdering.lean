@@ -6,15 +6,14 @@ namespace WellOrdering
 open Classical
 
 private noncomputable def to_ord_func (α: Type u) (o: Ordinal.{u}) : Option α :=
-  let f: ∀s: Set α, s.Nonempty -> α := fun _ h => Classical.choose h
   -- the set of all values that have already been assigned to smaller ordinals
   let assigned := Set.mk fun x => ∃o', ∃_: o' < o, to_ord_func α o' = .some x
   -- if there is a value that hasn't yet been assigned, assign it
-  if h:(assignedᶜ).Nonempty then .some (f _ h) else .none
+  if h:assignedᶜ.Nonempty then .some (Classical.choose h) else .none
 termination_by o
 
 private def set_of_lt (α: Type _) (a: Ordinal): Set α :=
-  (Set.mk fun x => ∃o', ∃_: o' < a, to_ord_func α o' = .some x)
+  Set.mk fun x => ∃o', ∃_: o' < a, to_ord_func α o' = .some x
 
 private
 def to_ord_func_inj : ∀x y, to_ord_func α x = to_ord_func α y -> (to_ord_func α x).isSome -> x = y := by
@@ -117,27 +116,66 @@ example : to_ord_func Bool = to_ord_func_bool₀ ∨ to_ord_func Bool = to_ord_f
     repeat sorry
   sorry
 
+
+
 private
 def to_ord_func_surj {α: Type u} : ∀a: α, ∃o: Ordinal.{u}, a = to_ord_func α o := by
   intro a
-  let s := Set.mk fun o: Ordinal => a ∈ set_of_lt α o
-  let x := Ordinal.sSup_lift s
-  by_cases h:∃y: Ordinal, x = Ordinal.lift.{u, u+1} y
-  sorry
-  · rw [not_exists] at h
-    have : x = Ordinal.ord.{u} := by
-
-      sorry
-    sorry
-
-  -- apply Classical.byContradiction
-  -- rw [not_exists]
-  -- intro h
-  -- have : ∀x: Ordinal, (set_of_lt α x)ᶜ.Nonempty := by
+  apply Classical.byContradiction
+  rw [not_exists]
+  intro h
+  -- have all_nonempty : ∀x: Ordinal, (set_of_lt α x)ᶜ.Nonempty := by
   --   intro x
   --   exists a
   --   intro ⟨_, _, g⟩
   --   exact h _ g.symm
+  -- let emb_ord_in_α : Ordinal.{u} ↪ α := {
+  --   toFun o := (to_ord_func α o).get <| by
+  --     unfold to_ord_func
+  --     rw [dif_pos]
+  --     rfl
+  --     apply all_nonempty
+  --   inj := by
+  --     intro x y eq
+  --     exact to_ord_func_inj _ _ (Option.get_inj _ _ _ _ eq) <| by
+  --       unfold to_ord_func
+  --       rw [dif_pos]
+  --       rfl
+  --       apply all_nonempty
+  -- }
+  -- have emb_α_in_ord : α ↪ Ordinal.{u} := {
+  --   toFun a :=
+  -- }
+
+
+  -- let eqv : Ordinal.{u} ≃ ((Set.range (to_ord_func α) \ ({Option.none}: Set _): Set _)) := {
+  --   toFun o := ⟨to_ord_func α o, Set.mem_range', by
+  --     intro g
+  --     rw [Set.mem_singleton] at g
+  --     unfold to_ord_func at g
+  --     rw [dif_pos] at g
+  --     contradiction
+  --     apply all_nonempty⟩
+  --   invFun x := Classical.choose x.property.left
+  --   leftInv := by
+  --     intro x
+  --     dsimp
+  --     have : WellOrdering.to_ord_func α x ∈ Set.range (WellOrdering.to_ord_func α) :=
+  --       Set.mem_range'
+  --     symm
+  --     apply to_ord_func_inj _ _ (Classical.choose_spec this)
+  --     unfold to_ord_func
+  --     rw [dif_pos]
+  --     rfl
+  --     apply all_nonempty
+  --   rightInv := by
+  --     intro ⟨x, hx⟩
+  --     dsimp
+  --     congr; symm
+  --     exact Classical.choose_spec hx.left
+  -- }
+
+
   -- unfold to_ord_func at h
   -- dsimp at h
   -- replace h : ∀x, a ≠ choose (this x) := by
@@ -147,8 +185,12 @@ def to_ord_func_surj {α: Type u} : ∀a: α, ∃o: Ordinal.{u}, a = to_ord_func
   --   intro h
   --   apply this
   --   congr
-  --   sorry
-  -- sorry
+  -- have a_notin_range_choose : a ∉ Set.range fun x => Classical.choose (this x) := by
+  --   intro mem
+  --   obtain ⟨_, _⟩ := mem
+  --   apply h
+  --   assumption
+  sorry
 
 def order {α: Type u} (a b: α) : Prop :=
   ∃oa ob: Ordinal.{u}, to_ord_func α oa = a ∧ to_ord_func α ob = b ∧ oa < ob

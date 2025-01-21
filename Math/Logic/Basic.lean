@@ -18,3 +18,11 @@ def contrapositive {P Q: Prop} (f: P -> Q) : ¬Q -> ¬P := by
   apply nq
   apply f
   assumption
+
+def Option.get_inj (a b: Option α) (ha: a.isSome) (hb: b.isSome) :
+  a.get ha = b.get hb -> a = b := by
+  intro h
+  have : some (a.get ha) = some (b.get hb) := by
+    rw [h]
+  rw [Option.some_get, Option.some_get] at this
+  assumption

@@ -1768,14 +1768,6 @@ def succ_lt_succ_of_lt {a b: Ordinal} : a < b -> a + 1 < b + 1 := by
       apply Pre.succRel.none
       apply Pre.succRel.none
 
-def Option.get_inj (a b: Option α) (ha: a.isSome) (hb: b.isSome) :
-  a.get ha = b.get hb -> a = b := by
-  intro h
-  have : some (a.get ha) = some (b.get hb) := by
-    rw [h]
-  rw [Option.some_get, Option.some_get] at this
-  assumption
-
 def lt_succ_of_le {a b: Ordinal} (h: a ≤ b) : a < b.succ := by
   cases a, b using ind₂ with | mk a b =>
   obtain ⟨h⟩ := h
