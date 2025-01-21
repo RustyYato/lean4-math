@@ -5,18 +5,26 @@ namespace WellOrdering
 
 open Classical
 
+-- the type of partially defined well orderings over α
 private
 structure SubWellOrder (α: Type*) where
   intro ::
-  set: Set α
+  -- the domain that this well ordering is defined over
+  domain: Set α
+  -- the underlying well ordering
   rel: α -> α -> Prop
-  wo: Relation.IsWellOrder (set.Induced rel)
+  -- proof that the relation is a well ordering over the domain
+  wo: Relation.IsWellOrder (domain.Induced rel)
 
+-- a sub-well-order A ≤ B when A is the initial segment of B
+-- which is stated like so instead of using `InitialSegment`
+-- to make it easy to show that the relation doesn't change
+-- over the domain.
 private
 structure SubWellOrder.LE (a b : SubWellOrder α) : Prop where
-  sub: a.set ⊆ b.set
-  resp_rel: ∀x y: a.set, a.rel x y ↔ b.rel x y
-  init: ∀x: a.set, ∀y: (b.set \ a.set: Set _), b.rel x y
+  sub: a.domain ⊆ b.domain
+  resp_rel: ∀x y: a.domain, a.rel x y ↔ b.rel x y
+  init: ∀x: a.domain, ∀y: (b.domain \ a.domain: Set _), b.rel x y
 
 private
 instance : LE (SubWellOrder α) where
@@ -26,6 +34,9 @@ private
 instance : LT (SubWellOrder α) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
+-- we can prove that the given ordering forms a PreOrder over the sub-well-orderings
+-- this isn't a PartialOrder, since the behavior of `rel` isn't specified outside
+-- the `domain`, so we can't prove `le_antisymm`
 private
 instance : IsPreOrder (SubWellOrder α) where
   lt_iff_le_and_not_le := Iff.rfl
@@ -45,13 +56,14 @@ instance : IsPreOrder (SubWellOrder α) where
     exact y.property
     intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
     dsimp
-    by_cases hby:y ∈ b.set
+    by_cases hby:y ∈ b.domain
     apply (bc.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp (ab.init ⟨x, hx⟩ ⟨y, hby, hy'⟩)
     apply ab.sub; assumption
     assumption
     apply bc.init ⟨x, ab.sub _ hx⟩ ⟨y, hy, ?_⟩
     assumption
 
+-- insert a new element into the ordering, by making it the top element
 private def RelWithTop (r: α -> α -> Prop) (top: α) (a b: α): Prop :=
   if a = top then False
   else if b = top then True
@@ -156,9 +168,13 @@ def SubWellOrder.insert_wo (top: α) (s: Set α) (h: top ∉ s) {r: α -> α -> 
     cases eq; right; left; congr
     right; right; rwa [if_neg nha, if_neg nhb]
 
+-- take the supremum of the orderings by picking any relation in the set
+-- this only works for chains `S`, but that's all we care about.
+-- For chains, it doesn't matter which ordering is picked, since
+-- they are all guaranteed to give the same results
 private
 def SubWellOrder.sunion_rel (S: Set (SubWellOrder α)) (a b: α) : Prop :=
-  ∃s ∈ S, a ∈ s.set ∧ b ∈ s.set ∧ s.rel a b
+  ∃s ∈ S, a ∈ s.domain ∧ b ∈ s.domain ∧ s.rel a b
 
 private
 def SubWellOrder.total (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·)) : ∀a b: S, a.val ≤ b.val ∨ b.val ≤ a.val := by
@@ -170,13 +186,13 @@ def SubWellOrder.total (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·)) : �
 
 private
 def SubWellOrder.sUnion_wo (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·)) :
-  Relation.IsWellOrder ((⋃S.image SubWellOrder.set).Induced (SubWellOrder.sunion_rel S)) where
+  Relation.IsWellOrder ((⋃S.image domain).Induced (SubWellOrder.sunion_rel S)) where
   wf := by
     apply WellFounded.intro
     intro ⟨x, _, ⟨s, mem_in_S, eq⟩, hx⟩
     subst eq
     have := s.wo
-    have := Relation.wfInduction (C := fun x => Acc (Set.Induced (sunion_rel S) (⋃S.image set)) ⟨x.val, Set.mem_sUnion.mpr ⟨_, Set.mem_image.mpr ⟨_, mem_in_S, rfl⟩, x.property⟩⟩) (Set.Induced s.rel s.set)
+    have := Relation.wfInduction (C := fun x => Acc (Set.Induced (sunion_rel S) (⋃S.image domain)) ⟨x.val, Set.mem_sUnion.mpr ⟨_, Set.mem_image.mpr ⟨_, mem_in_S, rfl⟩, x.property⟩⟩) (Set.Induced s.rel s.domain)
     apply this ⟨_, _⟩ _; clear this
     assumption
     clear hx x this
@@ -185,7 +201,7 @@ def SubWellOrder.sUnion_wo (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·))
     intro ⟨y, hy⟩ ⟨s', s'_in_S, y_in_s', x_in_s', hxy⟩
     dsimp at *
     rcases total S h ⟨_, mem_in_S⟩ ⟨_, s'_in_S⟩ with ss' | s's
-    · by_cases hy':y ∈ s.set
+    · by_cases hy':y ∈ s.domain
       apply ih ⟨_, _⟩
       unfold Set.Induced; dsimp;
       apply (ss'.resp_rel ⟨_, _⟩ ⟨_, _⟩).mpr
@@ -193,7 +209,7 @@ def SubWellOrder.sUnion_wo (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·))
       have := ss'.init ⟨_, hx⟩ ⟨_, y_in_s', hy'⟩
       dsimp at this
       have _ := s'.wo
-      have := Relation.asymm (r := Set.Induced s'.rel s'.set) (a := ⟨_, x_in_s'⟩) (b := ⟨_, y_in_s'⟩) this hxy
+      have := Relation.asymm (r := Set.Induced s'.rel s'.domain) (a := ⟨_, x_in_s'⟩) (b := ⟨_, y_in_s'⟩) this hxy
       contradiction
     · have := s's.sub _ y_in_s'
       apply ih ⟨_, _⟩
@@ -263,7 +279,11 @@ def SubWellOrder.sUnion_wo (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·))
       assumption
 
 def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
+  -- use Zorn's lemma to show that there exists a maximal well ordering
   have ⟨⟨s, r, h⟩, spec⟩ := Zorn.preorder (α := SubWellOrder α) ?_
+  -- this maximal well ordering must cover the entire domain
+  -- since if it doesn't, then we can construct a larger well ordering
+  -- by simply adding any element that wasn't covered before
   suffices s = ⊤ by
     subst s
     exists r
@@ -324,9 +344,11 @@ def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWell
       subst x
       contradiction
       contradiction
+  -- every chain has a maximal element since we can take the supremum sub-well-ordering
+  -- of any set of sub-well orderings, which we have shown to be a sub-well-ordering
   · intro S c
     refine ⟨⟨?_, ?_, ?_⟩, ?_⟩
-    exact ⋃S.image SubWellOrder.set
+    exact ⋃S.image domain
     exact SubWellOrder.sunion_rel S
     exact SubWellOrder.sUnion_wo S c
     intro s mem
@@ -351,9 +373,7 @@ def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWell
         · cases eq
           assumption
         · apply (ryx.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
-          assumption
-          assumption
-          assumption
+          repeat assumption
     · intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
       dsimp at hy
       dsimp [SubWellOrder.sunion_rel]
@@ -368,9 +388,7 @@ def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWell
         assumption
       · assumption
       · apply ge.init ⟨_, _⟩ ⟨_, _, _⟩
-        assumption
-        assumption
-        assumption
+        repeat assumption
 
 def order (α: Type*): α -> α -> Prop := choose (SubWellOrder.exists_wo α)
 instance : Relation.IsWellOrder (order α) := choose_spec (SubWellOrder.exists_wo α)
