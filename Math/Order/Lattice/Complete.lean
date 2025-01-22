@@ -5,41 +5,35 @@ import Math.Data.Set.TopBot
 variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 
-class IsCompleteSemiLatticeSup extends IsSemiLatticeSup α: Prop where
-  le_sSup: ∀s: Set α, ∀x ∈ s, x ≤ sSup s
+class IsCompleteSemiLatticeSup extends IsLawfulSupSet α, IsSemiLatticeSup α: Prop where
   sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> sSup s ≤ k
 
-export IsCompleteSemiLatticeSup (le_sSup sSup_le)
+export IsCompleteSemiLatticeSup (sSup_le)
 
-class IsCompleteSemiLatticeInf extends IsSemiLatticeInf α: Prop where
-  sInf_le: ∀s: Set α, ∀x ∈ s, sInf s ≤ x
+class IsCompleteSemiLatticeInf extends IsLawfulInfSet α, IsSemiLatticeInf α: Prop where
   le_sInf: ∀k: α, ∀s: Set α, (∀x ∈ s, k ≤ x) -> k ≤ sInf s
 
-export IsCompleteSemiLatticeInf (sInf_le le_sInf)
+export IsCompleteSemiLatticeInf (le_sInf)
 
 class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, IsLawfulBot α, IsLawfulTop α: Prop where
 
 instance [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (Opposite α) where
-  le_sSup := sInf_le (α := α)
   sSup_le := le_sInf (α := α)
 
 instance [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf (Opposite α) where
-  sInf_le := le_sSup (α := α)
   le_sInf := sSup_le (α := α)
 
 instance [IsCompleteLattice α] : IsCompleteLattice (Opposite α) where
   le_top := bot_le (α := α)
   bot_le := le_top (α := α)
-  le_sSup := le_sSup
   sSup_le := sSup_le
-  sInf_le := sInf_le
   le_sInf := le_sInf
 
 instance [IsCompleteLattice α] : IsConditionallyCompleteLattice α where
   le_csInf _ := le_sInf _ _
-  le_csSup _ := le_sSup _ _
+  le_csSup _ := le_sSup
   csSup_le _ := sSup_le _ _
-  csInf_le _ := sInf_le _ _
+  csInf_le _ := sInf_le
 
 section
 
@@ -300,6 +294,8 @@ def instIsCompleteSemiLatticeSup
     exact g _ mem
 
 def instIsCompleteSemiLatticeInf
+  {α}
+  [LE α] [LT α] [Inf α] [InfSet α]
   [LE β] [LT β] [Inf β] [InfSet β]
   [IsCompleteSemiLatticeInf α]
   [IsSemiLatticeInf β]
@@ -351,26 +347,82 @@ instance
     apply le_sSup
     exact mem
 
--- instance
---   {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithTop α) where
---   sInf_le := by
---     intro s x mem
---     simp [sInf]
---     split <;> rename_i h
---     rcases h with h | h
---     cases Set.mem_singleton.mp <| h _ mem
---     rfl
---     · cases x
---       rfl
---       rename_i x
---       exfalso
+def sInf_sdiff_top [IsCompleteSemiLatticeInf α₀] [IsLawfulTop α₀] (s: Set α₀) :
+  sInf s = sInf (s \ {⊤}) := by
+  apply le_antisymm
+  apply sInf_le_sInf
+  intro x; exact And.left
+  apply le_sInf
+  intro x mem
+  if h:x = ⊤ then
+    subst x
+    apply le_top
+  else
+    apply sInf_le
+    apply And.intro
+    assumption
+    assumption
 
---       -- replace ⟨k, h⟩ := Classical.not_forall.mp <| not_exists.mp h x
---       -- have ⟨k_in_s, x_not_le_k⟩ := not_imp.mp h
---       sorry
---     cases x
---     apply WithTop.LE.top
---     apply WithTop.LE.of
---     apply sInf_le
---     exact mem
---   le_sInf := sorry
+def sSup_sdiff_bot [IsCompleteSemiLatticeSup α₀] [IsLawfulBot α₀] (s: Set α₀) :
+  sSup s = sSup (s \ {⊥}) := sInf_sdiff_top (α₀ := Opposite α₀) s
+
+instance {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithTop α) where
+  le_sInf := by
+    intro k s h
+    cases k
+    suffices s ⊆ {⊤} by
+      simp [sInf]
+      rw [if_pos]
+      left; assumption
+    intro x mem
+    apply le_antisymm
+    apply le_top
+    apply h
+    assumption
+    rename_i y
+    apply le_trans
+    apply WithTop.LE.of
+    apply le_sInf _ (s.preimage WithTop.of)
+    intro x mem
+    cases h x mem
+    assumption
+    simp [sInf]
+    split
+    apply le_top
+    rfl
+
+instance {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithTop α) where
+  sSup_le := by
+    intro k s h
+    simp [sSup]
+    split <;> rename_i g
+    rcases g with g | g
+    apply h
+    assumption
+    have := not_exists.mp g
+    conv at this => {
+      intro x; rw [Set.mem_upperBounds]
+      conv => { arg 1; intro y; rw [Set.mem_preimage] }
+      rw [Classical.not_forall]
+      arg 1; intro y
+      rw [not_imp]
+    }
+    cases k
+    apply le_top
+    rename_i x
+    have ⟨x', x'_mem, not_le⟩ := this x
+    cases h x' x'_mem
+    contradiction
+    cases k
+    apply le_top
+    apply WithTop.LE.of
+    apply sSup_le
+    intro x mem
+    cases h _ mem
+    assumption
+
+instance {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithBot α) :=
+  WithBot.orderIsoWithTop.instIsCompleteSemiLatticeInf fun _ => rfl
+
+instance {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithBot α) :=
+  WithBot.orderIsoWithTop.instIsCompleteSemiLatticeSup fun _ => rfl

@@ -1,6 +1,6 @@
-import Math.Data.Set.Basic
 import Math.Order.TopBot
 import Math.Data.Set.Order.Bounds
+import Math.Order.OrderIso.Set
 
 namespace OrderIso
 
@@ -31,5 +31,54 @@ instance instSupSetWithBot [SupSet α] [LE α] : SupSet (WithBot α) :=
   WithBot.orderIsoWithTop.instSupSet
 instance instInfSetWithBot [InfSet α] [LE α] : InfSet (WithBot α) :=
   WithBot.orderIsoWithTop.instInfSet
+
+private
+def WithBot.sSup_def [SupSet α] [_root_.LE α] (s: Set (WithBot α)) : sSup s = (
+  WithBot.orderIsoWithTop.symm (sSup (s.preimage WithBot.orderIsoWithTop.symm))
+) := rfl
+
+instance [SupSet α] [LE α] [IsLawfulSupSet α] : IsLawfulSupSet (WithTop α) where
+  le_sSup := by
+    intro s x mem
+    simp [sSup]
+    cases x
+    rw [if_pos (.inl mem)]
+    apply WithTop.LE.top
+    split
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply le_sSup
+    assumption
+
+instance [InfSet α] [LE α] [IsLawfulInfSet α] : IsLawfulInfSet (WithTop α) where
+  sInf_le := by
+    intro s x mem
+    simp [sInf]
+    split <;> rename_i h
+    rcases h with h | h
+    cases Set.mem_singleton.mp <| h _ mem
+    apply le_top
+    · cases x
+      apply le_top
+      rename_i x
+      exfalso
+      apply h
+      exists ↑(sInf (s.preimage WithTop.of))
+      intro y hy
+      cases y
+      apply le_top
+      apply WithTop.LE.of
+      apply sInf_le (α := α) (s := s.preimage WithTop.of) hy
+    cases x
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply sInf_le
+    exact mem
+
+instance [InfSet α] [LE α] [IsLawfulInfSet α] : IsLawfulInfSet (WithBot α) :=
+  WithBot.orderIsoWithTop.instIsLawfulInfSet fun _ => rfl
+
+instance [SupSet α] [LE α] [IsLawfulSupSet α] : IsLawfulSupSet (WithBot α) :=
+  WithBot.orderIsoWithTop.instIsLawfulSupSet <| fun _ => rfl
 
 end

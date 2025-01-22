@@ -228,3 +228,23 @@ instance [LE α] [LT α] [IsPartialOrder α] : IsPartialOrder (WithTop α) where
 
 instance [LE α] [LT α] [IsPartialOrder α] : IsPartialOrder (WithBot α) :=
   WithBot.orderIsoWithTop.symm.instIsPartialOrder
+
+instance [LE α] : IsLawfulTop (WithTop α) where
+  le_top := WithTop.LE.top
+instance [LE α] : IsLawfulBot (WithBot α) where
+  bot_le := WithBot.LE.bot
+
+instance [LE α] [Bot α] [IsLawfulBot α] : IsLawfulBot (WithTop α) where
+  bot_le := by
+    intro x
+    cases x
+    apply le_top
+    apply WithTop.LE.of
+    apply bot_le
+instance [LE α] [Top α] [IsLawfulTop α] : IsLawfulTop (WithBot α) where
+  le_top := by
+    intro x
+    cases x
+    apply bot_le
+    apply WithBot.LE.of
+    apply le_top

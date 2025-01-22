@@ -1,7 +1,6 @@
 import Math.Order.Lattice.Basic
 import Math.Data.Set.Basic
 import Math.Data.Set.TopBot
-import Math.Order.Lattice.Set
 
 open Set hiding Nonempty
 

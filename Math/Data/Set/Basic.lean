@@ -19,6 +19,15 @@ postfix:max "ᶜ" => SetComplement.scompl
 structure Set (α: Type u) where
   Mem : α -> Prop
 
+class SupSet (α: Type*) where
+  sSup: Set α -> α
+
+class InfSet (α: Type*) where
+  sInf: Set α -> α
+
+export SupSet (sSup)
+export InfSet (sInf)
+
 namespace Set
 
 instance {α} : Membership α (Set α) := ⟨Set.Mem⟩
@@ -26,6 +35,32 @@ instance {α} : HasSubset (Set α) where
   Subset a b := ∀x ∈ a, x ∈ b
 instance {α} : HasSSubset (Set α) where
   SSubset a b := a ≠ b ∧ a ⊆ b
+
+abbrev Elem (a: Set α) := { x // x ∈ a }
+
+instance {α: Type u} : CoeSort (Set α) (Type u) := ⟨Set.Elem⟩
+
+end Set
+
+class IsLawfulSupSet (α: Type*) [LE α] [SupSet α] where
+  le_sSup: ∀{s: Set α} {x: α}, x ∈ s -> x ≤ sSup s
+class IsLawfulInfSet (α: Type*) [LE α] [InfSet α] where
+  sInf_le: ∀{s: Set α} {x: α}, x ∈ s -> sInf s ≤ x
+
+export IsLawfulSupSet (le_sSup)
+export IsLawfulInfSet (sInf_le)
+
+instance [InfSet α] : SupSet αᵒᵖ where
+  sSup := sInf (α := α)
+instance [SupSet α] : InfSet αᵒᵖ where
+  sInf := sSup (α := α)
+
+instance [LE α] [InfSet α] [IsLawfulInfSet α] : IsLawfulSupSet αᵒᵖ where
+  le_sSup := sInf_le (α := α)
+instance [LE α] [SupSet α] [IsLawfulSupSet α] : IsLawfulInfSet αᵒᵖ where
+  sInf_le := le_sSup (α := α)
+
+namespace Set
 
 def univ α : Set α := .mk fun _ => True
 def empty α : Set α := .mk fun _ => False
@@ -75,6 +110,41 @@ def sub_antisymm {a b: Set α} : a ⊆ b -> b ⊆ a -> a = b := by
   apply Iff.intro
   apply ab
   apply ba
+
+def univ_sub (a: Set α) : univ α ⊆ a -> a = univ α := by
+  intro sub
+  apply ext_univ
+  intro x
+  apply sub
+  apply mem_univ
+
+@[simp]
+def sub_univ (s: Set α) : s ⊆ univ α := by
+  intros _ _
+  apply mem_univ
+
+def sub_empty (s: Set α) : s ⊆ ∅ -> s = ∅ := ext_empty s
+@[simp]
+def empty_sub (s: Set α) : ∅ ⊆ s := fun _ mem => (not_mem_empty mem).elim
+
+section Order
+
+instance : LE (Set α) where
+  le a b := a ⊆ b
+instance : LT (Set α) where
+  lt a b := a ≤ b ∧ ¬b ≤ a
+
+instance : Bot (Set α) where
+  bot := ∅
+instance : Top (Set α) where
+  top := Set.univ _
+
+instance : IsLawfulBot (Set α) where
+  bot_le := Set.empty_sub
+instance : IsLawfulTop (Set α) where
+  le_top := Set.sub_univ
+
+end Order
 
 def union (a b: Set α) : Set α := mk fun x => x ∈ a ∨ x ∈ b
 instance : Union (Set α) := ⟨.union⟩
@@ -133,6 +203,12 @@ def mem_image' {a: Set α} {f: α -> β} (h: x ∈ a) : f x ∈ a.image f := by
 def range (f: α -> β) : Set β := mk fun x => ∃a', x = f a'
 def mem_range {f: α -> β} : ∀{x}, x ∈ range f ↔ ∃a', x = f a' := Iff.rfl
 
+def preimage_id (s: Set α) : s.preimage id = s := rfl
+def preimage_id' (s: Set α) (f: α -> α) : (∀x, f x = x) -> s.preimage f = s := by
+  intro h
+  rw [funext (g := id) h]
+  rfl
+
 def powerset (a: Set α) : Set (Set α) := mk fun x => x ⊆ a
 def mem_powerset {a: Set α} : ∀{x}, x ∈ a.powerset ↔ x ⊆ a := Iff.refl _
 
@@ -152,9 +228,6 @@ def empty_compl : ∅ᶜ = Set.univ α := by
   contradiction
 
 def Nonempty (a: Set α) := ∃x, x ∈ a
-abbrev Elem (a: Set α) := { x // x ∈ a }
-
-instance {α: Type u} : CoeSort (Set α) (Type u) := ⟨Set.Elem⟩
 
 instance : Singleton α (Set α) where
   singleton a := mk fun x => x = a
@@ -166,20 +239,6 @@ def mem_insert {a: α} {as: Set α}: ∀{x}, x ∈ Insert.insert a as ↔ x = a 
 
 end Set
 
-class SupSet (α: Type*) where
-  sSup: Set α -> α
-
-class InfSet (α: Type*) where
-  sInf: Set α -> α
-
-export SupSet (sSup)
-export InfSet (sInf)
-
-instance [InfSet α] : SupSet (Opposite α) where
-  sSup := sInf (α := α)
-instance [SupSet α] : InfSet (Opposite α) where
-  sInf := sSup (α := α)
-
 def iSup [SupSet α] (s: ι -> α) : α := sSup (Set.range s)
 def iInf [InfSet α] (s: ι -> α) : α := sInf (Set.range s)
 
@@ -187,6 +246,11 @@ instance : SupSet (Set α) where
   sSup x := ⋃x
 instance : InfSet (Set α) where
   sInf x := ⋂x
+
+instance : IsLawfulSupSet (Set α) where
+  le_sSup := Set.sub_sUnion _ _
+instance : IsLawfulInfSet (Set α) where
+  sInf_le := Set.sInter_sub _ _
 
 namespace Set
 
@@ -210,22 +274,6 @@ instance : SDiff (Set α) where
   sdiff a b := a ∩ bᶜ
 
 def mem_sdiff {a b: Set α} : ∀{x}, x ∈ a \ b ↔ x ∈ a ∧ x ∉ b := by rfl
-
-def univ_sub (a: Set α) : univ α ⊆ a -> a = univ α := by
-  intro sub
-  apply ext_univ
-  intro x
-  apply sub
-  apply mem_univ
-
-@[simp]
-def sub_univ (s: Set α) : s ⊆ univ α := by
-  intros _ _
-  apply mem_univ
-
-def sub_empty (s: Set α) : s ⊆ ∅ -> s = ∅ := ext_empty s
-@[simp]
-def empty_sub (s: Set α) : ∅ ⊆ s := fun _ mem => (not_mem_empty mem).elim
 
 def compl_compl (s: Set α) : sᶜᶜ = s := by
   ext x
@@ -588,11 +636,6 @@ def nonempty_union_right {s t: Set α} (h: Nonempty t) : Nonempty (s ∪ t) := b
 def ofList (xs: List α) := Set.mk (· ∈ xs)
 
 instance : Coe (List α) (Set α) := ⟨ofList⟩
-
-instance : Top (Set α) where
-  top := Set.univ _
-instance : Bot (Set α) where
-  bot := ∅
 
 def preimage_sUnion (s: Set (Set α)) (f: β -> α) : (⋃s).preimage f = ⋃(s.image fun x => x.preimage f) := by
   ext x

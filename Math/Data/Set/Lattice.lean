@@ -1,11 +1,6 @@
 import Math.Order.Lattice.Complete
 import Math.Data.Set.Basic
 
-instance : LE (Set α) where
-  le a b := a ⊆ b
-instance : LT (Set α) where
-  lt a b := a ≤ b ∧ ¬b ≤ a
-
 instance : IsPartialOrder (Set α) where
   lt_iff_le_and_not_le := Iff.rfl
   le_antisymm := Set.sub_antisymm
