@@ -5,35 +5,27 @@ import Math.Order.TopBot
 variable (α: Type*) [Sup α] [Inf α] [LE α] [LT α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [LE α₀] [LT α₀]
 
-class IsSemiLatticeSup extends IsPartialOrder α: Prop where
-  le_sup_left: ∀a b: α, a ≤ a ⊔ b
-  le_sup_right: ∀a b: α, b ≤ a ⊔ b
+class IsSemiLatticeSup extends IsLawfulSup α, IsPartialOrder α: Prop where
   sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
 
-class IsSemiLatticeInf extends IsPartialOrder α: Prop where
-  inf_le_left: ∀a b: α, a ⊓ b ≤ a
-  inf_le_right: ∀a b: α, a ⊓ b ≤ b
+class IsSemiLatticeInf extends IsLawfulInf α, IsPartialOrder α: Prop where
   le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
 
+export IsSemiLatticeSup (sup_le)
+export IsSemiLatticeInf (le_inf)
+
 instance [IsSemiLatticeSup α] : IsSemiLatticeInf (Opposite α) where
-  inf_le_left := IsSemiLatticeSup.le_sup_left (α := α)
-  inf_le_right := IsSemiLatticeSup.le_sup_right (α := α)
-  le_inf := IsSemiLatticeSup.sup_le (α := α)
+  le_inf := sup_le (α := α)
 
 instance [IsSemiLatticeInf α] : IsSemiLatticeSup (Opposite α) where
-  le_sup_left := IsSemiLatticeInf.inf_le_left (α := α)
-  le_sup_right := IsSemiLatticeInf.inf_le_right (α := α)
-  sup_le := IsSemiLatticeInf.le_inf (α := α)
+  sup_le := le_inf (α := α)
+
+attribute [simp] le_sup_left le_sup_right
+attribute [simp] inf_le_left inf_le_right
 
 section
 
 variable [IsSemiLatticeSup α₀]
-
-@[simp]
-def le_sup_left: ∀a b: α₀, a ≤ a ⊔ b := IsSemiLatticeSup.le_sup_left
-@[simp]
-def le_sup_right: ∀a b: α₀, b ≤ a ⊔ b := IsSemiLatticeSup.le_sup_right
-def sup_le: ∀{a b k: α₀}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k := IsSemiLatticeSup.sup_le
 
 @[simp]
 def sup_le_iff : ∀{a b k: α₀}, a ⊔ b ≤ k ↔ a ≤ k ∧ b ≤ k := by
@@ -113,12 +105,6 @@ end
 section
 
 variable [IsSemiLatticeInf α₀]
-
-@[simp]
-def inf_le_left: ∀a b: α₀, a ⊓ b ≤ a := IsSemiLatticeInf.inf_le_left
-@[simp]
-def inf_le_right: ∀a b: α₀, a ⊓ b ≤ b := IsSemiLatticeInf.inf_le_right
-def le_inf: ∀{a b k: α₀}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b := IsSemiLatticeInf.le_inf
 
 @[simp]
 def le_inf_iff : ∀{a b k: α₀}, k ≤ a ⊓ b ↔ k ≤ a ∧ k ≤ b :=
