@@ -1302,7 +1302,7 @@ def transfiniteInduction'
 
 instance : Bot Ordinal := ⟨0⟩
 
-instance : LawfulBot Ordinal where
+instance : IsLawfulBot Ordinal where
   bot_le := zero_le
 
 open Classical in

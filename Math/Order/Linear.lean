@@ -440,7 +440,7 @@ instance : IsDecidableLinearOrder Nat where
 
 instance : Bot Nat where
   bot := 0
-instance : LawfulBot Nat where
+instance : IsLawfulBot Nat where
   bot_le := Nat.zero_le
 
 instance : IsLinearOrder Int where

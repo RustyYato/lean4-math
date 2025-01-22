@@ -39,14 +39,14 @@ instance (priority := 100) bot_nonempty (α : Type*) [Bot α] : Nonempty α :=
 
 attribute [match_pattern] Bot.bot Top.top
 
-class LawfulTop (α: Type*) [LE α] [Top α]: Prop where
+class IsLawfulTop (α: Type*) [LE α] [Top α]: Prop where
   le_top: ∀x: α, x ≤ ⊤
 
-class LawfulBot (α: Type*) [LE α] [Bot α]: Prop where
+class IsLawfulBot (α: Type*) [LE α] [Bot α]: Prop where
   bot_le: ∀x: α, ⊥ ≤ x
 
-export LawfulTop (le_top)
-export LawfulBot (bot_le)
+export IsLawfulTop (le_top)
+export IsLawfulBot (bot_le)
 
 instance [Inf α] : Sup (Opposite α) where
   sup a b := .mk (a.get ⊓ b.get)
@@ -58,7 +58,7 @@ instance [Top α] : Bot (Opposite α) where
 instance [Bot α] : Top (Opposite α) where
   top := .mk ⊥
 
-instance [LE α] [Top α] [LawfulTop α] : LawfulBot (Opposite α) where
+instance [LE α] [Top α] [IsLawfulTop α] : IsLawfulBot (Opposite α) where
   bot_le := le_top (α := α)
-instance [LE α] [Bot α] [LawfulBot α] : LawfulTop (Opposite α) where
+instance [LE α] [Bot α] [IsLawfulBot α] : IsLawfulTop (Opposite α) where
   le_top := bot_le (α := α)

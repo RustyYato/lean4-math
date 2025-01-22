@@ -13,7 +13,7 @@ instance : Max Name := inferInstanceAs (Max Nat)
 instance : Min Name := inferInstanceAs (Min Nat)
 instance : IsDecidableLinearOrder Name := inferInstanceAs (IsDecidableLinearOrder Nat)
 instance : Bot Name := inferInstanceAs (Bot Nat)
-instance : LawfulBot Name := inferInstanceAs (LawfulBot Nat)
+instance : IsLawfulBot Name := inferInstanceAs (IsLawfulBot Nat)
 def Name.step : Name -> Name := Nat.succ
 def Name.lt_step (x: Name) : x < x.step := Nat.lt_succ_self _
 attribute [irreducible] Name

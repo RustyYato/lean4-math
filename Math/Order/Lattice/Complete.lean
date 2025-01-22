@@ -17,7 +17,7 @@ class IsCompleteSemiLatticeInf extends IsSemiLatticeInf α: Prop where
 
 export IsCompleteSemiLatticeInf (sInf_le le_sInf)
 
-class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, LawfulBot α, LawfulTop α: Prop where
+class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, IsLawfulBot α, IsLawfulTop α: Prop where
 
 instance [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (Opposite α) where
   le_sSup := sInf_le (α := α)

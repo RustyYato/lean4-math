@@ -10,10 +10,10 @@ instance : LE (Topology α) where
 instance : LT (Topology α) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-instance : LawfulBot (Topology α) where
+instance : IsLawfulBot (Topology α) where
   bot_le _ := Set.sub_univ _
 
-instance : LawfulTop (Topology α) where
+instance : IsLawfulTop (Topology α) where
   le_top T := by
     intro s h
     cases h

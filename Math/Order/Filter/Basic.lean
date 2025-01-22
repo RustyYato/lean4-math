@@ -17,13 +17,13 @@ instance : Membership α (Filter α) where
   mem F U := U ∈ F.set
 
 @[simp]
-def top_mem [Top α] [LawfulTop α]: ⊤ ∈ f := by
+def top_mem [Top α] [IsLawfulTop α]: ⊤ ∈ f := by
   have ⟨x, x_in_sets⟩ := f.nonempty
   apply mem_upward
   assumption
   apply le_top
 
-instance [Top α] [LawfulTop α] : Inhabited f.set where
+instance [Top α] [IsLawfulTop α] : Inhabited f.set where
   default := ⟨⊤, top_mem⟩
 
 def set_inj : Function.Injective (Filter.set (α := α)) := by

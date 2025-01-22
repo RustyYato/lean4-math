@@ -126,12 +126,12 @@ def BoundedBelow.singleton (a: α) : BoundedBelow {a} := by
   cases mem
   rfl
 
-def allBoundedAbove [LE α] [Top α] [LawfulTop α] (s: Set α) : Set.BoundedAbove s := by
+def allBoundedAbove [LE α] [Top α] [IsLawfulTop α] (s: Set α) : Set.BoundedAbove s := by
   exists ⊤
   intro x mem
   apply le_top
 
-def allBoundedBelow [LE α] [Bot α] [LawfulBot α] (s: Set α) : Set.BoundedBelow s := by
+def allBoundedBelow [LE α] [Bot α] [IsLawfulBot α] (s: Set α) : Set.BoundedBelow s := by
   exists ⊥
   intro x mem
   apply bot_le
