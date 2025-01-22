@@ -3,63 +3,75 @@ import Math.Function.Basic
 import Math.Order.Partial
 import Math.Order.Lattice.Complete
 
-structure Filter (α: Type*) [LE α] [Inf α] [LawfulInf α] where
-  set: Set α
-  nonempty: set.Nonempty
-  mem_upward : ∀{x}, x ∈ set -> ∀{y}, x ≤ y -> y ∈ set
-  mem_inf: ∀{x y}, x ∈ set -> y ∈ set -> x ⊓ y ∈ set
+structure Filter (α: Type*) where
+  sets: Set (Set α)
+  sets_nonempty: sets.Nonempty
+  sets_of_superset {x y} : x ∈ sets → x ⊆ y → y ∈ sets
+  inter_sets {x y}: x ∈ sets -> y ∈ sets -> x ∩ y ∈ sets
 
 namespace Filter
 
-variable {α: Type*} [LE α] [Inf α] [LawfulInf α] {f g: Filter α} {s t: α}
+instance {α : Type*} : Membership (Set α) (Filter α) :=
+  ⟨fun F U => U ∈ F.sets⟩
 
-instance : Membership α (Filter α) where
-  mem F U := U ∈ F.set
+variable {α: Type*} {f g: Filter α} {s t: Set α}
 
 @[simp]
-def top_mem [Top α] [IsLawfulTop α]: ⊤ ∈ f := by
-  have ⟨x, x_in_sets⟩ := f.nonempty
-  apply mem_upward
+def univ_mem: ⊤ ∈ f := by
+  have ⟨x, x_in_sets⟩ := f.sets_nonempty
+  apply Filter.sets_of_superset
   assumption
-  apply le_top
+  apply Set.sub_univ
 
-instance [Top α] [IsLawfulTop α] : Inhabited f.set where
-  default := ⟨⊤, top_mem⟩
+instance : Inhabited f.sets where
+  default := ⟨⊤, univ_mem⟩
 
-def set_inj : Function.Injective (Filter.set (α := α)) := by
+def sets_inj : Function.Injective (Filter.sets (α := α)) := by
   intro x y h
   cases x; cases y
   congr
 
-def mem_set : ∀x, x ∈ f ↔ x ∈ f.set := by
+def mem_sets : ∀x, x ∈ f ↔ x ∈ f.sets := by
   intro x
   rfl
 
 @[ext]
-def ext : (∀{x}, x ∈ f ↔ x ∈ g) -> f = g := by
+def ext : (∀x, x ∈ f ↔ x ∈ g) -> f = g := by
   intro h
-  apply set_inj
+  apply sets_inj
   ext
   apply h
 
-protected def copy (f : Filter α) (S : Set α) (hmem : ∀{s}, s ∈ S ↔ s ∈ f) : Filter α := by
-  have : S = f.set := Set.ext _ _ (fun _ => hmem)
-  refine ⟨S, ?_, ?_, ?_⟩
-  rw [this]; exact f.nonempty
-  rw [this]; exact f.mem_upward
-  rw [this]; exact f.mem_inf
+def coext : (∀x, xᶜ ∈ f ↔ xᶜ ∈ g) -> f = g := by
+  intro h
+  ext x
+  have := h (xᶜ)
+  rw [Set.compl_compl] at this
+  assumption
 
-def copy_eq {S} (hmem : ∀{s}, s ∈ S ↔ s ∈ f) : f.copy S hmem = f := Filter.ext hmem
+def mem_of_superset {x y : Set α} (hx : x ∈ f) (hxy : x ⊆ y) : y ∈ f :=
+  f.sets_of_superset hx hxy
+
+def inter_mem {x y : Set α} (hx : x ∈ f) (hxy : y ∈ f) : x ∩ y ∈ f :=
+  f.inter_sets hx hxy
+
+protected def copy (f : Filter α) (S : Set (Set α)) (hmem : ∀ s, s ∈ S ↔ s ∈ f) : Filter α where
+  sets := S
+  sets_nonempty := ⟨⊤, (hmem _).mpr (univ_mem )⟩
+  sets_of_superset h hsub := (hmem _).2 <| mem_of_superset ((hmem _).1 h) hsub
+  inter_sets h₁ h₂ := (hmem _).2 <| inter_mem ((hmem _).1 h₁) ((hmem _).1 h₂)
+
+def copy_eq {S} (hmem : ∀ s, s ∈ S ↔ s ∈ f) : f.copy S hmem = f := Filter.ext hmem
 @[simp] def mem_copy {S hmem} : s ∈ f.copy S hmem ↔ s ∈ S := Iff.rfl
 
 @[simp]
-theorem inter_mem_iff : s ⊓ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
+theorem inter_mem_iff {s t : Set α} : s ∩ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
   apply Iff.intro
   intro h
   apply And.intro
-  apply mem_upward
+  apply mem_of_superset
   assumption
-  apply inf_le_left
+  apply Set.inter_sub_left
   apply mem_of_superset
   assumption
   apply Set.inter_sub_right
@@ -114,9 +126,9 @@ def join (fs : Filter (Filter α)) : Filter α where
   sets_nonempty := by
     obtain ⟨x, x_in_fs⟩ := fs.sets_nonempty
     replace x_in_fs: x ∈ fs := x_in_fs
-    refine ⟨Set.univ _, ?_⟩
+    refine ⟨⊤, ?_⟩
     rw [Set.mk_mem]
-    have : (Set.mk fun t: Filter α => Set.univ α ∈ t) = Set.univ _ := by
+    have : (Set.mk fun t: Filter α => ⊤ ∈ t) = ⊤ := by
       apply Set.ext_univ
       intro f
       apply univ_mem
@@ -180,14 +192,14 @@ section Generate
 /-- `GenerateSets g s`: `s` is in the filter closure of `g`. -/
 inductive GenerateSets (g : Set (Set α)) : Set α → Prop
   | basic {s : Set α} : s ∈ g → GenerateSets g s
-  | univ : GenerateSets g (Set.univ _)
+  | univ : GenerateSets g (⊤)
   | superset {s t : Set α} : GenerateSets g s → s ⊆ t → GenerateSets g t
   | inter {s t : Set α} : GenerateSets g s → GenerateSets g t → GenerateSets g (s ∩ t)
 
 /-- `generate g` is the largest filter containing the sets `g`. -/
 def generate (g : Set (Set α)) : Filter α where
-  sets := Set.mk fun s => GenerateSets g s
-  sets_nonempty := ⟨Set.univ _, GenerateSets.univ⟩
+  sets := Set.mk (GenerateSets g)
+  sets_nonempty := ⟨⊤, GenerateSets.univ⟩
   sets_of_superset := GenerateSets.superset
   inter_sets := GenerateSets.inter
 
@@ -328,9 +340,9 @@ def sInf (fs: Set (Filter α)) :=
 --   sets := Set.mk fun s => ∃f: fs -> Set α, ∃g: ∀x, (f x) ∈ x.val, s = ⋂(fs.attach.image f)
 --   sets_nonempty := by
 --     by_cases hfs:fs.Nonempty
---     exists Set.univ _
+--     exists ⊤
 --     simp
---     exists (fun _ => Set.univ _)
+--     exists (fun _ => ⊤)
 --     apply And.intro
 --     intro
 --     apply univ_mem
@@ -339,8 +351,8 @@ def sInf (fs: Set (Filter α)) :=
 --     rw [Set.nonempty_attach]
 --     assumption
 --     cases Set.not_nonempty _ hfs
---     exists Set.univ _
---     refine ⟨fun _ => (Set.univ _), ?_, ?_⟩
+--     exists ⊤
+--     refine ⟨fun _ => (⊤), ?_, ?_⟩
 --     intro h
 --     have := Set.not_mem_empty h.property
 --     contradiction
@@ -394,55 +406,77 @@ instance : Sup (Filter α) where
 def mem_inf_iff {a b: Filter α} : ∀{x}, x ∈ a ⊓ b ↔ ∃xa ∈ a, ∃xb ∈ b, x = xa ∩ xb := by
   intro x
   show _  ∈ sInf _ ↔ _
-  rw [mem_sets]
-  unfold sInf
-  simp
+  rw [sInf]
   apply Iff.intro
-  intro ⟨f, g,_⟩; subst x
-  exists f ⟨_, Set.mem_pair.mpr (.inl rfl)⟩
-  apply And.intro
-  apply g ⟨_, _⟩
-  exists f ⟨_, Set.mem_pair.mpr (.inr rfl)⟩
-  apply And.intro
-  apply g ⟨_, _⟩
-  rfl
-  intro ⟨xa, xa_in_a, xb, xb_in_b, eq⟩
-  by_cases hab:a = b
-  subst b
-  exists (fun _ => x)
-  apply And.intro
-  intro y
-  simp
-  have : y.val = a := by
-    cases y.property <;> (rename_i h; rw [Set.mem_singleton.mpr h])
-  rw [this]
-  subst x
-  apply inter_mem
-  assumption
-  assumption
-  simp
-  have : ∀x: ({a, b}: Set _), ∃y, y = xa ∧ x.val = a ∨ y = xb ∧ x.val = b := (fun x => by
-    cases Set.mem_pair.mp x.property <;> rename_i h
-    exists xa
-    left; trivial
-    exists xb
-    right; trivial)
-  replace := Classical.axiomOfChoice this
-  obtain ⟨f, g⟩ := this
-  exists f
-  apply And.intro
-  intro y
-  · rcases g y with ⟨_,h⟩ | ⟨_,h⟩
-    subst xa; rw [h]; assumption
-    subst xb; rw [h]; assumption
-  rw [eq]
-  rcases g ⟨_, Set.mem_pair.mpr (.inl rfl)⟩ with ⟨hf,h⟩ | ⟨hf,h⟩
-  rcases g ⟨_, Set.mem_pair.mpr (.inr rfl)⟩ with ⟨hf',h'⟩ | ⟨hf',h'⟩
-  have := hab h'.symm
-  contradiction
-  rw [hf, hf']
-  have := hab h
-  contradiction
+  · intro hx
+    induction hx with
+    | basic hx =>
+      rename_i s
+      obtain ⟨f, spec, eq⟩ := hx
+      rw [Set.pair_attach, Set.pair_image, Set.sInter_pair] at eq
+      subst s
+      refine ⟨f ⟨a, ?_⟩, ?_, f ⟨b, ?_⟩, ?_, rfl⟩
+      simp
+      apply spec ⟨_, _⟩
+      simp
+      apply spec ⟨_, _⟩
+    | univ => refine ⟨⊤, ?_, ⊤, ?_⟩ <;> simp
+    | superset mem sub ih =>
+      rename_i s t
+      obtain ⟨xa, xa_mem, xb, xb_mem, eq⟩ := ih
+      subst eq
+      refine ⟨xa ∪ t, ?_, xb ∪ t, ?_, ?_⟩
+      apply mem_of_superset
+      assumption
+      apply Set.sub_union_left
+      apply mem_of_superset
+      assumption
+      apply Set.sub_union_left
+      rw [←Set.union_inter_right, Set.union_of_sub_left]
+      assumption
+    | inter mem₀ mem₁ ih₀ ih₁ =>
+      obtain ⟨xa₀, xa₀_mem, xb₀, xb₀_mem, eq⟩ := ih₀; subst eq
+      obtain ⟨xa₁, xa₁_mem, xb₁, xb₁_mem, eq⟩ := ih₁; subst eq
+      refine ⟨xa₀ ∩ xa₁, ?_, xb₀ ∩ xb₁, ?_, ?_⟩
+      apply inter_mem <;> assumption
+      apply inter_mem <;> assumption
+      ac_rfl
+  · intro ⟨xa, hxa, xb, hxb, eq⟩
+    subst eq
+    if h:a = b then
+      subst b
+      have : ({a, a}: Set _) = {a} := by ext; simp
+      rw [show  ({a, a}: Set _) = {a} from by ext; simp]
+      apply GenerateSets.basic
+      refine ⟨fun _ => xa ∩ xb, ?_⟩
+      apply And.intro
+      intro ⟨x, hx⟩; subst x
+      dsimp
+      apply inter_mem
+      assumption
+      assumption
+      simp
+    else
+      apply GenerateSets.basic
+      refine ⟨?_, ?_⟩
+      intro ⟨x, _⟩
+      if x = a then
+        exact xa
+      else
+        exact xb
+      apply And.intro
+      dsimp
+      intro ⟨x, hx⟩
+      rw [Set.mem_pair] at hx
+      dsimp
+      split
+      subst x
+      assumption
+      cases hx; contradiction; subst x
+      assumption
+      simp
+      rw [if_neg]
+      apply Ne.symm; assumption
 
 def mem_inf_left {a b: Filter α} {s: Set α} : s ∈ a -> s ∈ a ⊓ b
 | h => mem_inf_iff.mpr ⟨s, h, _, univ_mem, by simp⟩
@@ -454,7 +488,7 @@ def mem_inf_of_inter {a b: Filter α} {s t: Set α} : s ∈ a -> t ∈ b -> s �
 | h, g => mem_inf_iff.mpr ⟨_, h, _, g, by simp⟩
 
 def top α: Filter α where
-  sets := {Set.univ _}
+  sets := {⊤}
   sets_nonempty := ⟨_, Set.mem_singleton.mpr rfl⟩
   inter_sets := by
     intro x y hx hy
@@ -467,8 +501,8 @@ def top α: Filter α where
     simp [Set.mem_singleton]
 
 def bot α: Filter α where
-  sets := Set.univ _
-  sets_nonempty := ⟨_, Set.mem_univ (Set.univ _)⟩
+  sets := ⊤
+  sets_nonempty := ⟨_, Set.mem_univ (⊤)⟩
   inter_sets := by
     intro x y hx hy
     apply Set.mem_univ
@@ -479,9 +513,9 @@ def bot α: Filter α where
 instance : Top (Filter α) := ⟨top _⟩
 instance : Bot (Filter α) := ⟨bot _⟩
 
-def mem_top (x: Set α) : x ∈ (⊤: Filter α) ↔ x = Set.univ _ := Set.mem_singleton
+def mem_top (x: Set α) : x ∈ (⊤: Filter α) ↔ x = ⊤ := Set.mem_singleton
 
-instance : IsCompleteLattice (Filter α) where
+-- instance : IsCompleteLattice (Filter α) where
 
 end Lattice
 

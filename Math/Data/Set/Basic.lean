@@ -68,9 +68,14 @@ def empty α : Set α := .mk fun _ => False
 instance : EmptyCollection (Set α) where
   emptyCollection := empty α
 
+instance : Bot (Set α) where
+  bot := ∅
+instance : Top (Set α) where
+  top := Set.univ _
+
 instance : Nonempty (Set α) := ⟨∅⟩
 
-def mem_univ : ∀x, x ∈ Set.univ α := fun _ => True.intro
+def mem_univ : ∀x, x ∈ (⊤: Set α) := fun _ => True.intro
 def not_mem_empty : ∀{x}, ¬x ∈ Set.empty α := False.elim
 
 @[ext]
@@ -92,7 +97,7 @@ def ext_univ (a: Set α) : (∀x: α, x ∈ a) -> a = univ _ := by
   simp [h]
   apply mem_univ
 
-def univ_eq_empty_of_isempty [IsEmpty α] : Set.univ α = Set.empty α := by
+def univ_eq_empty_of_isempty [IsEmpty α] : ⊤ = Set.empty α := by
   ext x
   exact (IsEmpty.elim x).elim
 
@@ -111,7 +116,7 @@ def sub_antisymm {a b: Set α} : a ⊆ b -> b ⊆ a -> a = b := by
   apply ab
   apply ba
 
-def univ_sub (a: Set α) : univ α ⊆ a -> a = univ α := by
+def univ_sub (a: Set α) : ⊤ ⊆ a -> a = ⊤ := by
   intro sub
   apply ext_univ
   intro x
@@ -119,7 +124,7 @@ def univ_sub (a: Set α) : univ α ⊆ a -> a = univ α := by
   apply mem_univ
 
 @[simp]
-def sub_univ (s: Set α) : s ⊆ univ α := by
+def sub_univ (s: Set α) : s ⊆ ⊤ := by
   intros _ _
   apply mem_univ
 
@@ -133,11 +138,6 @@ instance : LE (Set α) where
   le a b := a ⊆ b
 instance : LT (Set α) where
   lt a b := a ≤ b ∧ ¬b ≤ a
-
-instance : Bot (Set α) where
-  bot := ∅
-instance : Top (Set α) where
-  top := Set.univ _
 
 instance : IsLawfulBot (Set α) where
   bot_le := Set.empty_sub
@@ -174,7 +174,7 @@ def sUnion_empty : ⋃(∅: Set (Set α)) = ∅ := by
   contradiction
 
 @[simp]
-def sInter_empty : ⋂(∅: Set (Set α)) = univ _ := by
+def sInter_empty : ⋂(∅: Set (Set α)) = ⊤ := by
   apply ext_univ
   intro x
   rw [mem_sInter]
@@ -217,12 +217,12 @@ instance : SetComplement (Set α) where
   scompl := compl
 def mem_compl {a: Set α} : ∀{x}, x ∈ aᶜ ↔ x ∉ a := Iff.refl _
 
-def univ_compl : (Set.univ α)ᶜ = ∅ := by
+def univ_compl : (⊤: Set α)ᶜ = ∅ := by
   apply ext_empty
   intro x h
   exact h True.intro
 
-def empty_compl : ∅ᶜ = Set.univ α := by
+def empty_compl : ∅ᶜ = (⊤: Set α) := by
   apply ext_univ
   intro x h
   contradiction
@@ -231,10 +231,12 @@ def Nonempty (a: Set α) := ∃x, x ∈ a
 
 instance : Singleton α (Set α) where
   singleton a := mk fun x => x = a
+@[simp]
 def mem_singleton {a: α}: ∀{x}, x ∈ ({a}: Set α) ↔ x = a := Iff.refl _
 
 instance : Insert α (Set α) where
   insert a x := {a} ∪ x
+@[simp]
 def mem_insert {a: α} {as: Set α}: ∀{x}, x ∈ Insert.insert a as ↔ x = a ∨ x ∈ as := Iff.refl _
 
 end Set
@@ -356,22 +358,48 @@ def union_sub (a b k: Set α) : (a ⊆ k ∧ b ⊆ k) ↔ a ∪ b ⊆ k := by
   exact h _ (.inr hb)
 
 @[simp]
-def univ_inter (a: Set α) : univ α ∩ a = a := by
+def univ_inter (a: Set α) : ⊤ ∩ a = a := by
   ext x
   simp [mem_inter, mem_univ]
 @[simp]
-def inter_univ (a: Set α) : a ∩ univ α = a := by
+def inter_univ (a: Set α) : a ∩ ⊤ = a := by
   ext x
   simp [mem_inter, mem_univ]
 
 @[simp]
-def univ_union (a: Set α) : univ α ∪ a = univ α := by
+def univ_union (a: Set α) : ⊤ ∪ a = ⊤ := by
   ext x
   simp [mem_union, mem_univ]
 @[simp]
-def union_univ (a: Set α) : a ∪ Set.univ α = univ α := by
+def union_univ (a: Set α) : a ∪ ⊤ = ⊤ := by
   ext x
   simp [mem_union, mem_univ]
+
+def union_of_sub_left {a b: Set α} (h: a ⊆ b) : a ∪ b = b := by
+  ext x
+  rw [mem_union]
+  apply Iff.intro _ .inr
+  intro g
+  cases g
+  apply h; assumption
+  assumption
+
+def union_of_sub_right {a b: Set α} (h: a ⊆ b) : b ∪ a = b := by
+  rw [union_comm]
+  apply union_of_sub_left
+  assumption
+
+def inter_of_sub_left {a b: Set α} (h: a ⊆ b) : a ∩ b = a := by
+  ext x
+  rw [mem_inter]
+  apply Iff.intro And.left
+  intro g; apply And.intro g
+  apply h; assumption
+
+def inter_of_sub_right {a b: Set α} (h: a ⊆ b) : b ∩ a = a := by
+  rw [inter_comm]
+  apply inter_of_sub_left
+  assumption
 
 @[simp]
 def empty_inter (a: Set α) : ∅ ∩ a = ∅ := by
@@ -484,6 +512,11 @@ def pair_image (a b: α) (f: α -> β) : Set.image {a, b} f = {f a, f b} := by
   simp [mem_pair, mem_image]
 
 @[simp]
+def singleton_image (a: α) (f: α -> β) : Set.image {a} f = {f a} := by
+  ext x
+  simp [mem_image]
+
+@[simp]
 def sInter_pair (a b: Set α) : ⋂({a, b}: Set _) = a ∩ b := by
   ext x
   simp
@@ -493,7 +526,7 @@ def sUnion_pair (a b: Set α) : ⋃({a, b}: Set _) = a ∪ b := by
   ext x
   simp
 
-def attach (s: Set α) : Set s := .univ _
+def attach (s: Set α) : Set s := ⊤
 
 def mem_attach {s: Set α} : ∀{x}, x ∈ s.attach ↔ x.val ∈ s := by
   intro x
@@ -507,6 +540,12 @@ def pair_attach {a b: α} : ({a, b}: Set α).attach = {⟨a, mem_pair.mpr (.inl 
   cases mem_pair.mp mem
   subst x; left; rfl
   subst x; right; rfl
+
+@[simp]
+def singleton_attach (a: α) : Set.attach {a} = {⟨a, mem_singleton.mpr rfl⟩ } := by
+  ext x
+  cases x
+  simp [mem_attach]
 
 @[simp]
 def inter_self (a: Set α) : a ∩ a = a := by
@@ -612,13 +651,13 @@ def support_const_zero [Zero β] :
   Set.support (fun _: α => (0: β)) = ∅ := support_by_const_default 0
 
 def support_by_const_ne_default {value default: β} (h: value ≠ default) :
-  Set.support_by (fun _: α => value) default = Set.univ _ := by
+  Set.support_by (fun _: α => value) default = ⊤ := by
   apply ext_univ
   intro x
   assumption
 
 def support_const_ne_zero [Zero β] {value: β} (h: value ≠ 0) :
-  Set.support (fun _: α => value) = Set.univ _ := support_by_const_ne_default h
+  Set.support (fun _: α => value) = ⊤ := support_by_const_ne_default h
 
 def insert_eq (a: α) (as: Set α) : insert a as = ({a}: Set α) ∪ as := rfl
 
