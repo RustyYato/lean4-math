@@ -22,12 +22,12 @@ def mem_upperBounds {s: Set α} : ∀{x}, x ∈ upperBounds s ↔ ∀a ∈ s, a 
 
 variable {a b x: α} {s: Set α}
 
-def BoundedAbove.dual (h: BoundedAbove s) : BoundedBelow (s.preimage OrderDual.get) := h
-def BoundedBelow.dual (h: BoundedBelow s) : BoundedAbove (s.preimage OrderDual.get) := h
-def IsLeast.dual (h: IsLeast s x) : IsGreatest (s.preimage OrderDual.get) (OrderDual.mk x) := h
-def IsGreatest.dual (h: IsGreatest s x) : IsLeast (s.preimage OrderDual.get) (OrderDual.mk x) := h
-def IsLUB.dual (h: IsLUB s x) : IsGLB (s.preimage OrderDual.get) (OrderDual.mk x) := h
-def IsGLB.dual (h: IsGLB s x) : IsLUB (s.preimage OrderDual.get) (OrderDual.mk x) := h
+def BoundedAbove.dual (h: BoundedAbove s) : BoundedBelow (s.preimage Opposite.get) := h
+def BoundedBelow.dual (h: BoundedBelow s) : BoundedAbove (s.preimage Opposite.get) := h
+def IsLeast.dual (h: IsLeast s x) : IsGreatest (s.preimage Opposite.get) (Opposite.mk x) := h
+def IsGreatest.dual (h: IsGreatest s x) : IsLeast (s.preimage Opposite.get) (Opposite.mk x) := h
+def IsLUB.dual (h: IsLUB s x) : IsGLB (s.preimage Opposite.get) (Opposite.mk x) := h
+def IsGLB.dual (h: IsGLB s x) : IsLUB (s.preimage Opposite.get) (Opposite.mk x) := h
 
 def upperBounds_mono_mem ⦃a b⦄ (hab : a ≤ b) : a ∈ upperBounds s → b ∈ upperBounds s :=
   fun ha _ h => le_trans (ha _ h) hab
@@ -81,7 +81,7 @@ def isLeast_Ico (h: a < b) : IsLeast (Ico a b) a := by
   intros; assumption
 
 def isGreatest_Iic (a: α) : IsGreatest (Iic a) a :=
-  IsLeast.dual (isLeast_Ici (OrderDual.mk a))
+  IsLeast.dual (isLeast_Ici (Opposite.mk a))
 
 def isGreatest_Icc (h: a ≤ b) : IsGreatest (Icc a b) b := by
   apply And.intro <;> simp [mem_upperBounds, h]
@@ -102,7 +102,7 @@ def isLUB_le_iff (h : IsLUB s a) : a ≤ b ↔ b ∈ upperBounds s := by
   rfl
 
 def le_isGLB_iff (h : IsGLB s a) : b ≤ a ↔ b ∈ lowerBounds s :=
-  isLUB_le_iff (α := OrderDual α) h
+  isLUB_le_iff (α := Opposite α) h
 
 def BoundedAbove.empty : BoundedAbove (∅: Set α) := by
   exists a
@@ -147,7 +147,7 @@ def IsLeast.isLeast_iff_eq (Ha : IsLeast s a) : IsLeast s b ↔ a = b :=
   Iff.intro Ha.unique fun h => h ▸ Ha
 
 def IsGreatest.unique (Ha : IsGreatest s a) (Hb : IsGreatest s b) : a = b :=
-  IsLeast.unique (α := OrderDual α) Ha Hb
+  IsLeast.unique (α := Opposite α) Ha Hb
 
 def IsGreatest.isGreatest_iff_eq (Ha : IsGreatest s a) : IsGreatest s b ↔ a = b :=
   Iff.intro Ha.unique fun h => h ▸ Ha

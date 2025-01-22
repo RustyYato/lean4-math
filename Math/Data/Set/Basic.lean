@@ -1,6 +1,6 @@
 import Math.Type.Basic
 import Math.Function.Basic
-import Math.Order.Dual
+import Math.Order.Notation
 import Math.Relation.Basic
 
 class SUnion (α: Type*) (β: outParam <| Type*) where
@@ -175,9 +175,9 @@ class InfSet (α: Type*) where
 export SupSet (sSup)
 export InfSet (sInf)
 
-instance [InfSet α] : SupSet (OrderDual α) where
+instance [InfSet α] : SupSet (Opposite α) where
   sSup := sInf (α := α)
-instance [SupSet α] : InfSet (OrderDual α) where
+instance [SupSet α] : InfSet (Opposite α) where
   sInf := sSup (α := α)
 
 def iSup [SupSet α] (s: ι -> α) : α := sSup (Set.range s)

@@ -3,75 +3,63 @@ import Math.Function.Basic
 import Math.Order.Partial
 import Math.Order.Lattice.Complete
 
-structure Filter (α: Type*) where
-  sets: Set (Set α)
-  sets_nonempty: sets.Nonempty
-  sets_of_superset {x y} : x ∈ sets → x ⊆ y → y ∈ sets
-  inter_sets {x y}: x ∈ sets -> y ∈ sets -> x ∩ y ∈ sets
+structure Filter (α: Type*) [LE α] [Inf α] [LawfulInf α] where
+  set: Set α
+  nonempty: set.Nonempty
+  mem_upward : ∀{x}, x ∈ set -> ∀{y}, x ≤ y -> y ∈ set
+  mem_inf: ∀{x y}, x ∈ set -> y ∈ set -> x ⊓ y ∈ set
 
 namespace Filter
 
-instance {α : Type*} : Membership (Set α) (Filter α) :=
-  ⟨fun F U => U ∈ F.sets⟩
+variable {α: Type*} [LE α] [Inf α] [LawfulInf α] {f g: Filter α} {s t: α}
 
-variable {α: Type*} {f g: Filter α} {s t: Set α}
+instance : Membership α (Filter α) where
+  mem F U := U ∈ F.set
 
 @[simp]
-def univ_mem: Set.univ α ∈ f := by
-  have ⟨x, x_in_sets⟩ := f.sets_nonempty
-  apply Filter.sets_of_superset
+def top_mem [Top α] [LawfulTop α]: ⊤ ∈ f := by
+  have ⟨x, x_in_sets⟩ := f.nonempty
+  apply mem_upward
   assumption
-  apply Set.sub_univ
+  apply le_top
 
-instance : Inhabited f.sets where
-  default := ⟨Set.univ _, univ_mem⟩
+instance [Top α] [LawfulTop α] : Inhabited f.set where
+  default := ⟨⊤, top_mem⟩
 
-def sets_inj : Function.Injective (Filter.sets (α := α)) := by
+def set_inj : Function.Injective (Filter.set (α := α)) := by
   intro x y h
   cases x; cases y
   congr
 
-def mem_sets : ∀x, x ∈ f ↔ x ∈ f.sets := by
+def mem_set : ∀x, x ∈ f ↔ x ∈ f.set := by
   intro x
   rfl
 
 @[ext]
-def ext : (∀x, x ∈ f ↔ x ∈ g) -> f = g := by
+def ext : (∀{x}, x ∈ f ↔ x ∈ g) -> f = g := by
   intro h
-  apply sets_inj
+  apply set_inj
   ext
   apply h
 
-def coext : (∀x, xᶜ ∈ f ↔ xᶜ ∈ g) -> f = g := by
-  intro h
-  ext x
-  have := h (xᶜ)
-  rw [Set.compl_compl] at this
-  assumption
+protected def copy (f : Filter α) (S : Set α) (hmem : ∀{s}, s ∈ S ↔ s ∈ f) : Filter α := by
+  have : S = f.set := Set.ext _ _ (fun _ => hmem)
+  refine ⟨S, ?_, ?_, ?_⟩
+  rw [this]; exact f.nonempty
+  rw [this]; exact f.mem_upward
+  rw [this]; exact f.mem_inf
 
-def mem_of_superset {x y : Set α} (hx : x ∈ f) (hxy : x ⊆ y) : y ∈ f :=
-  f.sets_of_superset hx hxy
-
-def inter_mem {x y : Set α} (hx : x ∈ f) (hxy : y ∈ f) : x ∩ y ∈ f :=
-  f.inter_sets hx hxy
-
-protected def copy (f : Filter α) (S : Set (Set α)) (hmem : ∀ s, s ∈ S ↔ s ∈ f) : Filter α where
-  sets := S
-  sets_nonempty := ⟨Set.univ _, (hmem _).mpr (univ_mem )⟩
-  sets_of_superset h hsub := (hmem _).2 <| mem_of_superset ((hmem _).1 h) hsub
-  inter_sets h₁ h₂ := (hmem _).2 <| inter_mem ((hmem _).1 h₁) ((hmem _).1 h₂)
-
-def copy_eq {S} (hmem : ∀ s, s ∈ S ↔ s ∈ f) : f.copy S hmem = f := Filter.ext hmem
+def copy_eq {S} (hmem : ∀{s}, s ∈ S ↔ s ∈ f) : f.copy S hmem = f := Filter.ext hmem
 @[simp] def mem_copy {S hmem} : s ∈ f.copy S hmem ↔ s ∈ S := Iff.rfl
 
 @[simp]
-theorem inter_mem_iff {s t : Set α} : s ∩ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
+theorem inter_mem_iff : s ⊓ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
   apply Iff.intro
   intro h
   apply And.intro
-  apply mem_of_superset
+  apply mem_upward
   assumption
-  apply Set.inter_sub_left
+  apply inf_le_left
   apply mem_of_superset
   assumption
   apply Set.inter_sub_right

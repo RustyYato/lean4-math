@@ -20,7 +20,7 @@ instance : LawfulTop (Topology α) where
     apply IsOpen.empty
     apply IsOpen.univ
 
-def orderEmbedSet : OrderEmbedding (Topology α) (OrderDual (Set (Set α))) where
+def orderEmbedSet : OrderEmbedding (Topology α) (Opposite (Set (Set α))) where
   toFun t := t.OpenSets
   inj := Topology.OpenSets.inj
   resp_rel := Iff.rfl

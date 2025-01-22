@@ -105,7 +105,7 @@ def subset (S : Set (Set α))
 def superset (S : Set (Set α))
     (h : ∀ c ⊆ S, Set.IsChain (· ⊆ ·) c → ∃ lb ∈ S, ∀ s ∈ c, lb ⊆ s) :
     ∃ m ∈ S, ∀ a ∈ S, a ⊆ m → a = m := by
-    apply partialorder_in (α := OrderDual (Set α)) S
+    apply partialorder_in (α := Opposite (Set α)) S
     intro s sub c
     apply h
     assumption

@@ -1,6 +1,6 @@
 import Math.Type.Basic
 import Math.Logic.Basic
-import Math.Order.Dual
+import Math.Order.Notation
 import Math.Relation.Basic
 
 class IsPreOrder (α: Type*) [LT α] [LE α]: Prop where
@@ -60,7 +60,7 @@ def lt_of_le_of_lt : a ≤ b -> b < c -> a < c := by
 
 def lt_asymm : a < b -> b < a -> False := (lt_irrefl <| lt_trans · ·)
 
-instance [IsPreOrder α] : IsPreOrder (OrderDual α) where
+instance [IsPreOrder α] : IsPreOrder (Opposite α) where
   lt_iff_le_and_not_le := by
     intro a b
     apply Iff.trans (lt_iff_le_and_not_le (α := α))
@@ -95,32 +95,32 @@ instance {P: α -> Prop} : LT (Subtype P) where
 instance {P: α -> Prop} : LE (Subtype P) where
   le a b := a.val ≤ b.val
 
-instance [DenselyOrdered α] : DenselyOrdered (OrderDual α) where
+instance [DenselyOrdered α] : DenselyOrdered (Opposite α) where
   dense := by
     intro a b a_lt_b
     have h := dense (α := α) _ _ a_lt_b
     obtain ⟨x, _, _⟩ := h
     exists x
 
-instance [NoBotOrder α] : NoTopOrder (OrderDual α) where
+instance [NoBotOrder α] : NoTopOrder (Opposite α) where
   exists_not_le := by
     intro x
     have ⟨b, _⟩ := exists_not_ge x.get
     exists b
 
-instance [NoTopOrder α] : NoBotOrder (OrderDual α) where
+instance [NoTopOrder α] : NoBotOrder (Opposite α) where
   exists_not_ge := by
     intro x
     have ⟨b, _⟩ := exists_not_le x.get
     exists b
 
-instance [NoMinOrder α] : NoMaxOrder (OrderDual α) where
+instance [NoMinOrder α] : NoMaxOrder (Opposite α) where
   exists_gt := by
     intro x
     have ⟨b, _⟩ := exists_lt x.get
     exists b
 
-instance [NoMaxOrder α] : NoMinOrder (OrderDual α) where
+instance [NoMaxOrder α] : NoMinOrder (Opposite α) where
   exists_lt := by
     intro x
     have ⟨b, _⟩  := exists_gt x.get

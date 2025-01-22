@@ -17,7 +17,7 @@ class IsConditionallyCompleteLattice extends IsLattice α: Prop where
 
 export IsConditionallyCompleteLattice (le_csSup csSup_le csInf_le le_csInf)
 
-instance [IsConditionallyCompleteLattice α] : IsConditionallyCompleteLattice (OrderDual α) where
+instance [IsConditionallyCompleteLattice α] : IsConditionallyCompleteLattice (Opposite α) where
   le_csSup := csInf_le (α := α)
   csSup_le := le_csInf (α := α)
   csInf_le := le_csSup (α := α)
@@ -38,7 +38,7 @@ def csSup_le_csSup (ht : BoundedAbove t) (hs : s.Nonempty) (h : s ⊆ t) : sSup 
   csSup_le hs fun _ ha => le_csSup ht (h _ ha)
 
 def csInf_le_csInf (ht : BoundedBelow t) (hs : s.Nonempty) (h : s ⊆ t) : sInf t ≤ sInf s :=
-  csSup_le_csSup (α := OrderDual α) ht hs h
+  csSup_le_csSup (α := Opposite α) ht hs h
 
 def le_csSup_iff (h : BoundedAbove s) (hs : s.Nonempty) :
     a ≤ sSup s ↔ ∀ b, b ∈ upperBounds s → a ≤ b := by
@@ -51,7 +51,7 @@ def le_csSup_iff (h : BoundedAbove s) (hs : s.Nonempty) :
   exact le_csSup h
 
 def csInf_le_iff (h : BoundedBelow s) (hs : s.Nonempty) : sInf s ≤ a ↔ ∀ b ∈ lowerBounds s, b ≤ a :=
-  le_csSup_iff (α := OrderDual α) h hs
+  le_csSup_iff (α := Opposite α) h hs
 
 def isLUB_csSup (ne : s.Nonempty) (H : BoundedAbove s) : IsLUB s (sSup s) :=
   ⟨fun _ => le_csSup H, fun _ => csSup_le ne⟩
@@ -66,21 +66,21 @@ def isLUB_ciSup_set {f : β → α} {s : Set β} (H : BoundedAbove (s.image f)) 
   exact isLUB_csSup (nonempty_image Hne _) H
 
 def isGLB_csInf (ne : s.Nonempty) (H : BoundedBelow s) : IsGLB s (sInf s) :=
-  isLUB_csSup (α := OrderDual α) ne H
+  isLUB_csSup (α := Opposite α) ne H
 
 def isGLB_ciInf [Nonempty ι] {f : ι → α} (H : BoundedBelow (range f)) :
-    IsGLB (range f) (iInf f) := isLUB_ciSup (α := OrderDual α) H
+    IsGLB (range f) (iInf f) := isLUB_ciSup (α := Opposite α) H
 
 def isGLB_ciInf_set {f : β → α} {s : Set β} (H : BoundedBelow (s.image f)) (Hne : s.Nonempty) :
     IsGLB (s.image f) (iInf fun i : s => f i) :=
-  isLUB_ciSup_set (α := OrderDual α) H Hne
+  isLUB_ciSup_set (α := Opposite α) H Hne
 
 def ciSup_le_iff [Nonempty ι] {f : ι → α} {a : α} (hf : BoundedAbove (range f)) :
     iSup f ≤ a ↔ ∀ i, f i ≤ a :=
   (isLUB_le_iff <| isLUB_ciSup hf).trans forall_mem_range
 
 def le_ciInf_iff [Nonempty ι] {f : ι → α} {a : α} (hf : BoundedBelow (range f)) :
-    a ≤ iInf f ↔ ∀ i, a ≤ f i := ciSup_le_iff (α := OrderDual α) hf
+    a ≤ iInf f ↔ ∀ i, a ≤ f i := ciSup_le_iff (α := Opposite α) hf
 
 def ciSup_set_le_iff {ι : Type*} {s : Set ι} {f : ι → α} {a : α} (hs : s.Nonempty)
     (hf : BoundedAbove (s.image f)) : iSup (fun i : s => f i) ≤ a ↔ ∀ i ∈ s, f i ≤ a :=
@@ -88,7 +88,7 @@ def ciSup_set_le_iff {ι : Type*} {s : Set ι} {f : ι → α} {a : α} (hs : s.
 
 def le_ciInf_set_iff {ι : Type*} {s : Set ι} {f : ι → α} {a : α} (hs : s.Nonempty)
     (hf : BoundedBelow (s.image f)) : (a ≤ iInf fun i : s => f i) ↔ ∀ i ∈ s, a ≤ f i :=
-  ciSup_set_le_iff (α := OrderDual α) hs hf
+  ciSup_set_le_iff (α := Opposite α) hs hf
 
 def csSup_le_iff (hb : BoundedAbove s) (hs : s.Nonempty) : sSup s ≤ a ↔ ∀ b ∈ s, b ≤ a :=
   isLUB_le_iff (isLUB_csSup hs hb)
@@ -100,7 +100,7 @@ def lt_csSup_of_lt (hs : BoundedAbove s) (ha : a ∈ s) (h : b < a) : b < sSup s
   lt_of_lt_of_le h (le_csSup hs ha)
 
 def csInf_lt_of_lt : BoundedBelow s → a ∈ s → a < b → sInf s < b :=
-  lt_csSup_of_lt (α := OrderDual α)
+  lt_csSup_of_lt (α := Opposite α)
 
 def csSup_singleton (a : α) : sSup {a} = a := by
   apply le_antisymm
@@ -117,7 +117,7 @@ def csSup_singleton (a : α) : sSup {a} = a := by
   rfl
 
 def csInf_singleton (a : α) : sInf {a} = a :=
-  csSup_singleton (α := OrderDual α) a
+  csSup_singleton (α := Opposite α) a
 
 def csSup_union (hs : BoundedAbove s) (sne : s.Nonempty) (ht : BoundedAbove t) (tne : t.Nonempty) :
   sSup (s ∪ t) = sSup s ⊔ sSup t := by
@@ -161,7 +161,7 @@ def csSup_union (hs : BoundedAbove s) (sne : s.Nonempty) (ht : BoundedAbove t) (
   apply Set.sub_union_right
 
 def csInf_union (hs : BoundedBelow s) (sne : s.Nonempty) (ht : BoundedBelow t) (tne : t.Nonempty) :
-  sInf (s ∪ t) = sInf s ⊓ sInf t := csSup_union (α := OrderDual α) hs sne ht tne
+  sInf (s ∪ t) = sInf s ⊓ sInf t := csSup_union (α := Opposite α) hs sne ht tne
 
 def csSup_insert {a: α} {as: Set α} (ha: BoundedAbove as) (ne: as.Nonempty) : sSup (insert a as) = a ⊔ sSup as := by
   rw [insert_eq, csSup_union, csSup_singleton]
@@ -171,7 +171,7 @@ def csSup_insert {a: α} {as: Set α} (ha: BoundedAbove as) (ne: as.Nonempty) : 
   assumption
 
 def csInf_insert {a: α} {as: Set α} (ha: BoundedBelow as) (ne: as.Nonempty) : sInf (insert a as) = a ⊓ sInf as :=
-  csSup_insert (α := OrderDual α) ha ne
+  csSup_insert (α := Opposite α) ha ne
 
 def csSup_pair (a b : α) : sSup {a, b} = a ⊔ b := by
   rw [csSup_insert, csSup_singleton]
@@ -179,7 +179,7 @@ def csSup_pair (a b : α) : sSup {a, b} = a ⊔ b := by
   exact Set.nonempty_singleton _
 
 def csInf_pair (a b : α) : sInf {a, b} = a ⊓ b :=
-  csSup_pair (α := OrderDual α) a b
+  csSup_pair (α := Opposite α) a b
 
 def csSup_inter_le (hs: BoundedAbove s) (ht: BoundedAbove t) (ne : (s ∩ t).Nonempty):
   sSup (s ∩ t) ≤ sSup s ⊓ sSup t := by
@@ -202,13 +202,13 @@ def csSup_inter_le (hs: BoundedAbove s) (ht: BoundedAbove t) (ne : (s ∩ t).Non
 
 def le_csInf_inter (hs: BoundedBelow s) (ht: BoundedBelow t) (ne : (s ∩ t).Nonempty):
   sInf s ⊔ sInf t ≤ sInf (s ∩ t) :=
-  csSup_inter_le (α := OrderDual α) hs ht ne
+  csSup_inter_le (α := Opposite α) hs ht ne
 
 def ciSup_le [Nonempty ι] {f : ι → α} {c : α} (H : ∀ x, f x ≤ c) : iSup f ≤ c :=
   csSup_le (nonempty_range f) (by rwa [mem_upperBounds, forall_mem_range])
 
 def le_ciInf [Nonempty ι] {f : ι → α} {c : α} (H : ∀ x, c ≤ f x) : c ≤ iInf f :=
-  ciSup_le (α := OrderDual α) H
+  ciSup_le (α := Opposite α) H
 
 def le_ciSup {f : ι → α} (H : BoundedAbove (range f)) (c : ι) : f c ≤ iSup f :=
   le_csSup H Set.mem_range'
@@ -220,7 +220,7 @@ def not_mem_of_lt_csInf {x : α} {s : Set α} (h : x < sInf s) (hs : BoundedBelo
   fun hx => lt_irrefl (lt_of_lt_of_le h (csInf_le hs hx))
 
 def not_mem_of_csSup_lt {x : α} {s : Set α} (h : sSup s < x) (hs : BoundedAbove s) : x ∉ s :=
-  not_mem_of_lt_csInf (α := OrderDual α) h hs
+  not_mem_of_lt_csInf (α := Opposite α) h hs
 
 namespace Set
 

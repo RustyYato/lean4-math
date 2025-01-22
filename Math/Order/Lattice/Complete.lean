@@ -19,15 +19,15 @@ export IsCompleteSemiLatticeInf (sInf_le le_sInf)
 
 class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, LawfulBot α, LawfulTop α: Prop where
 
-instance [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (OrderDual α) where
+instance [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (Opposite α) where
   le_sSup := sInf_le (α := α)
   sSup_le := le_sInf (α := α)
 
-instance [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf (OrderDual α) where
+instance [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf (Opposite α) where
   sInf_le := le_sSup (α := α)
   le_sInf := sSup_le (α := α)
 
-instance [IsCompleteLattice α] : IsCompleteLattice (OrderDual α) where
+instance [IsCompleteLattice α] : IsCompleteLattice (Opposite α) where
   le_top := bot_le (α := α)
   bot_le := le_top (α := α)
   le_sSup := le_sSup
@@ -116,22 +116,22 @@ variable [IsCompleteSemiLatticeInf α₀] {s t : Set α₀} {a b : α₀}
 
 @[simp]
 def le_sInf_iff : a ≤ sInf s ↔ ∀b ∈ s, a ≤ b :=
-  sSup_le_iff (α₀ := OrderDual α₀)
+  sSup_le_iff (α₀ := Opposite α₀)
 
 @[simp]
 def sInf_singleton : sInf ({ x }: Set α₀) = x :=
-  sSup_singleton (α₀ := OrderDual α₀)
+  sSup_singleton (α₀ := Opposite α₀)
 
 @[simp]
 def sInf_union : sInf (s ∪ t) = sInf s ⊓ sInf t :=
-  sSup_union (α₀ := OrderDual α₀)
+  sSup_union (α₀ := Opposite α₀)
 
 @[simp]
 def sInf_insert : sInf (insert a s) = a ⊓ sInf s :=
-  sSup_insert (α₀ := OrderDual α₀)
+  sSup_insert (α₀ := Opposite α₀)
 
 def sInf_le_sInf (h: s ⊆ t) : sInf t ≤ sInf s :=
-  sSup_le_sSup (α₀ := OrderDual α₀) h
+  sSup_le_sSup (α₀ := Opposite α₀) h
 
 def le_sInf_empty : ∀x: α₀, x ≤ (sInf ∅) := by
   intro x
@@ -164,11 +164,11 @@ def sSup_univ [IsCompleteLattice α] : sSup (Set.univ α) = (⊤: α) := by
 
 @[simp]
 def sInf_empty [IsCompleteLattice α] : sInf ∅ = (⊤: α) :=
-  sSup_empty (α := OrderDual α)
+  sSup_empty (α := Opposite α)
 
 @[simp]
 def sInf_univ [IsCompleteLattice α] : sInf (Set.univ α) = (⊥: α) :=
-  sSup_univ (α := OrderDual α)
+  sSup_univ (α := Opposite α)
 
 def sInf_le_sSup (h: s.Nonempty) : sInf s ≤ sSup s := by
   obtain ⟨x, mem⟩ := h
@@ -189,7 +189,7 @@ def sSup_inter_le : sSup (s ∩ t) ≤ sSup s ⊓ sSup t := by
 
 @[simp]
 def le_sInf_inter : sInf s ⊔ sInf t ≤ sInf (s ∩ t) :=
-  sSup_inter_le (α₀ := OrderDual α₀)
+  sSup_inter_le (α₀ := Opposite α₀)
 
 @[simp]
 def bot_sup : ⊥ ⊔ a = a := by
@@ -217,19 +217,19 @@ def sup_top : a ⊔ ⊤ = ⊤ := by
 
 @[simp]
 def bot_inf : ⊥ ⊓ a = ⊥ :=
-  top_sup (α₀ := OrderDual α₀)
+  top_sup (α₀ := Opposite α₀)
 
 @[simp]
 def inf_bot : a ⊓ ⊥ = ⊥ :=
-  sup_top (α₀ := OrderDual α₀)
+  sup_top (α₀ := Opposite α₀)
 
 @[simp]
 def top_inf : ⊤ ⊓ a = a :=
-  bot_sup (α₀ := OrderDual α₀)
+  bot_sup (α₀ := Opposite α₀)
 
 @[simp]
 def inf_top : a ⊓ ⊤ = a :=
-  sup_bot (α₀ := OrderDual α₀)
+  sup_bot (α₀ := Opposite α₀)
 
 @[simp]
 def sSup_insert_bot : sSup (insert ⊥ s) = sSup s := by
@@ -264,7 +264,7 @@ def sSup_eq_bot : sSup s = ⊥ ↔ ∀x ∈ s, x = ⊥ := by
   apply bot_le
 
 def sInf_eq_top : sInf s = ⊤ ↔ ∀x ∈ s, x = ⊤ :=
-  sSup_eq_bot (α₀ := OrderDual α₀)
+  sSup_eq_bot (α₀ := Opposite α₀)
 
 end
 
@@ -306,10 +306,10 @@ def instIsCompleteSemiLatticeInf
   (h: β ≃o α)
   (hs: ∀s: Set β, sInf s = h.symm (sInf (s.preimage h.symm)))
   : IsCompleteSemiLatticeInf β :=
-  let h': OrderDual β ≃o OrderDual α := OrderDual.orderIsoCongr h
+  let h': Opposite β ≃o Opposite α := Opposite.orderIsoCongr h
   have := instIsCompleteSemiLatticeSup h' hs
   inferInstanceAs (
-    IsCompleteSemiLatticeInf (OrderDual (OrderDual β))
+    IsCompleteSemiLatticeInf (Opposite (Opposite β))
   )
 
 end OrderIso

@@ -1,4 +1,5 @@
 import Math.Type.Notation
+import Math.Data.Opposite
 
 variable (α: Type*)
 
@@ -44,5 +45,20 @@ class LawfulTop (α: Type*) [LE α] [Top α]: Prop where
 class LawfulBot (α: Type*) [LE α] [Bot α]: Prop where
   bot_le: ∀x: α, ⊥ ≤ x
 
-def le_top [LE α] [Top α] [LawfulTop α] (x: α) : x ≤ ⊤ := LawfulTop.le_top _
-def bot_le [LE α] [Bot α] [LawfulBot α] (x: α) : ⊥ ≤ x := LawfulBot.bot_le _
+export LawfulTop (le_top)
+export LawfulBot (bot_le)
+
+instance [Inf α] : Sup (Opposite α) where
+  sup a b := .mk (a.get ⊓ b.get)
+instance [Sup α] : Inf (Opposite α) where
+  inf a b := .mk (a.get ⊔ b.get)
+
+instance [Top α] : Bot (Opposite α) where
+  bot := .mk ⊤
+instance [Bot α] : Top (Opposite α) where
+  top := .mk ⊥
+
+instance [LE α] [Top α] [LawfulTop α] : LawfulBot (Opposite α) where
+  bot_le := le_top (α := α)
+instance [LE α] [Bot α] [LawfulBot α] : LawfulTop (Opposite α) where
+  le_top := bot_le (α := α)

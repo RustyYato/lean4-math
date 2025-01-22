@@ -19,6 +19,6 @@ def BoundedAbove.insert {a: α} {as: Set α} (h: BoundedAbove as) : BoundedAbove
   assumption
 
 def BoundedBelow.insert {a: α} {as: Set α} (h: BoundedBelow as) : BoundedBelow (insert a as) :=
-  BoundedAbove.insert (α := OrderDual α) h
+  BoundedAbove.insert (α := Opposite α) h
 
 end Set

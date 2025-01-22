@@ -143,9 +143,9 @@ instance [NoMinOrder α] : NoMinOrder (Iic a) where
     exact y_lt_x
 
 instance [NoMaxOrder α] : NoMaxOrder (Ioi a) :=
-  inferInstanceAs (NoMaxOrder (α := OrderDual (Iio (OrderDual.mk a))))
+  inferInstanceAs (NoMaxOrder (α := Opposite (Iio (Opposite.mk a))))
 
 instance [NoMaxOrder α] : NoMaxOrder (Ici a) :=
-  inferInstanceAs (NoMaxOrder (α := OrderDual (Iic (OrderDual.mk a))))
+  inferInstanceAs (NoMaxOrder (α := Opposite (Iic (Opposite.mk a))))
 
 end Set

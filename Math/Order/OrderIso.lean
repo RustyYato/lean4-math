@@ -148,16 +148,16 @@ def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
 
 end OrderIso
 
-namespace OrderDual
+namespace Opposite
 
-def orderIsoCongr {_: LE α} {_: LE β} (h: α ≃o β) : OrderDual α ≃o OrderDual β where
+def orderIsoCongr {_: LE α} {_: LE β} (h: α ≃o β) : Opposite α ≃o Opposite β where
   toFun := h
   invFun := h.symm
   leftInv := h.leftInv
   rightInv := h.rightInv
   resp_rel := h.resp_rel
 
-end OrderDual
+end Opposite
 
 instance [LE β] : LE (α ↪ β) where
   le f g := f.toFun ≤ g.toFun

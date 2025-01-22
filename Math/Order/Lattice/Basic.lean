@@ -15,12 +15,12 @@ class IsSemiLatticeInf extends IsPartialOrder α: Prop where
   inf_le_right: ∀a b: α, a ⊓ b ≤ b
   le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
 
-instance [IsSemiLatticeSup α] : IsSemiLatticeInf (OrderDual α) where
+instance [IsSemiLatticeSup α] : IsSemiLatticeInf (Opposite α) where
   inf_le_left := IsSemiLatticeSup.le_sup_left (α := α)
   inf_le_right := IsSemiLatticeSup.le_sup_right (α := α)
   le_inf := IsSemiLatticeSup.sup_le (α := α)
 
-instance [IsSemiLatticeInf α] : IsSemiLatticeSup (OrderDual α) where
+instance [IsSemiLatticeInf α] : IsSemiLatticeSup (Opposite α) where
   le_sup_left := IsSemiLatticeInf.inf_le_left (α := α)
   le_sup_right := IsSemiLatticeInf.inf_le_right (α := α)
   sup_le := IsSemiLatticeInf.le_inf (α := α)
@@ -122,37 +122,37 @@ def le_inf: ∀{a b k: α₀}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b := IsSemiLatt
 
 @[simp]
 def le_inf_iff : ∀{a b k: α₀}, k ≤ a ⊓ b ↔ k ≤ a ∧ k ≤ b :=
-  sup_le_iff (α₀ := OrderDual α₀)
+  sup_le_iff (α₀ := Opposite α₀)
 
 def inf_idemp: ∀a: α₀, a ⊓ a = a :=
-  sup_idemp (α₀ := OrderDual α₀)
+  sup_idemp (α₀ := Opposite α₀)
 
 def inf_comm: ∀a b: α₀, a ⊓ b = b ⊓ a :=
-  sup_comm (α₀ := OrderDual α₀)
+  sup_comm (α₀ := Opposite α₀)
 
 def inf_assoc: ∀a b c: α₀, a ⊓ b ⊓ c = a ⊓ (b ⊓ c) :=
-  sup_assoc (α₀ := OrderDual α₀)
+  sup_assoc (α₀ := Opposite α₀)
 
 instance : @Std.Commutative α₀ (· ⊓ ·) := ⟨inf_comm⟩
 instance : @Std.Associative α₀ (· ⊓ ·) := ⟨inf_assoc⟩
 instance : @Std.IdempotentOp α₀ (· ⊓ ·) := ⟨inf_idemp⟩
 
 def of_inf_eq_right {a b: α₀} : a ⊓ b = b -> b ≤ a :=
-  of_sup_eq_right (α₀ := OrderDual α₀)
+  of_sup_eq_right (α₀ := Opposite α₀)
 def of_inf_eq_left {a b: α₀} : a ⊓ b = a -> a ≤ b :=
-  of_sup_eq_left (α₀ := OrderDual α₀)
+  of_sup_eq_left (α₀ := Opposite α₀)
 
 def inf_eq_right {a b: α₀} : a ⊓ b = b ↔ b ≤ a :=
-  sup_eq_right (α₀ := OrderDual α₀)
+  sup_eq_right (α₀ := Opposite α₀)
 def inf_eq_left {a b: α₀} : a ⊓ b = a ↔ a ≤ b :=
-  sup_eq_left (α₀ := OrderDual α₀)
+  sup_eq_left (α₀ := Opposite α₀)
 
 end
 
 /-- A lattice is a join-semilattice which is also a meet-semilattice. -/
 class IsLattice extends IsSemiLatticeSup α, IsSemiLatticeInf α, IsPartialOrder α: Prop where
 
-instance [IsLattice α] : IsLattice (OrderDual α) where
+instance [IsLattice α] : IsLattice (Opposite α) where
   toIsSemiLatticeSup := inferInstance
   inf_le_left := inf_le_left
   inf_le_right := inf_le_right

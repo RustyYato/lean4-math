@@ -24,7 +24,7 @@ def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
   assumption
   contradiction
 
-instance [IsPartialOrder α] : IsPartialOrder (OrderDual α) where
+instance [IsPartialOrder α] : IsPartialOrder (Opposite α) where
   le_antisymm := by
     intro a b ab ba
     apply le_antisymm (α := α) <;> assumption

@@ -79,7 +79,7 @@ instance [Inf α] : Inf (WithBot α) where
   | ⊥, _ | _, ⊥ => ⊥
   | .of a, .of b => .of (a ⊓ b)
 
-def WithTop.orderIsoWithBot [_root_.LE α] : WithTop α ≃o OrderDual (WithBot (OrderDual α)) where
+def WithTop.orderIsoWithBot [_root_.LE α] : WithTop α ≃o Opposite (WithBot (Opposite α)) where
   toFun
   | ⊤ => .mk ⊥
   | .of x => .mk (.of (.mk x))
@@ -143,19 +143,19 @@ def WithTop.orderIsoCongr [_root_.LE α] [_root_.LE β] (h: α ≃o β) : WithTo
     exact h.resp_rel.mpr r
 
 def WithBot.orderIsoCongr [_root_.LE α] [_root_.LE β] (h: α ≃o β) : WithBot α ≃o WithBot β := by
-  show (OrderDual (OrderDual (WithBot (OrderDual (OrderDual α))))) ≃o (OrderDual (OrderDual (WithBot (OrderDual (OrderDual β)))))
-  apply OrderDual.orderIsoCongr
+  show (Opposite (Opposite (WithBot (Opposite (Opposite α))))) ≃o (Opposite (Opposite (WithBot (Opposite (Opposite β)))))
+  apply Opposite.orderIsoCongr
   apply OrderIso.trans
   apply WithTop.orderIsoWithBot.symm
   apply flip OrderIso.trans
   apply WithTop.orderIsoWithBot
   apply WithTop.orderIsoCongr
-  apply OrderDual.orderIsoCongr
+  apply Opposite.orderIsoCongr
   assumption
 
-def WithBot.orderIsoWithTop [_root_.LE α] : WithBot α ≃o OrderDual (WithTop (OrderDual α)) := by
+def WithBot.orderIsoWithTop [_root_.LE α] : WithBot α ≃o Opposite (WithTop (Opposite α)) := by
   apply flip OrderIso.trans
-  apply OrderDual.orderIsoCongr
+  apply Opposite.orderIsoCongr
   symm
   apply WithTop.orderIsoWithBot
   rfl
