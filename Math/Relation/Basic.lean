@@ -21,6 +21,11 @@ def trans (x: ReflTransGen r a b) (y: ReflTransGen r b c) : ReflTransGen r a c :
 
 end Relation.ReflTransGen
 
+class IsLawfulLT (α: Type _) [LT α] [LE α]: Prop where
+  lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
+
+export IsLawfulLT (lt_iff_le_and_not_le)
+
 namespace Relation
 
 variable (rel: α -> α -> Prop)
@@ -31,6 +36,19 @@ class IsWellFounded: Prop where
 def wellFounded [inst: IsWellFounded rel] := inst.wf
 def wfInduction [inst: IsWellFounded rel] := @WellFounded.induction _ _ inst.wf
 def acc [inst: IsWellFounded rel] : ∀x, Acc rel x := (wellFounded rel).apply
+
+class IsRefl: Prop where
+  refl (a): rel a a
+export IsRefl (refl)
+attribute [refl] IsRefl.refl
+
+class IsAntisymm: Prop where
+  antisymm: rel a b -> rel b a -> a = b
+export IsAntisymm (antisymm)
+
+class IsTotal: Prop where
+  total (a b): rel a b ∨ rel b a
+def total [IsTotal rel] : ∀(a b: α), rel a b ∨ rel b a := IsTotal.total
 
 class IsTrans: Prop where
   trans: ∀{a b c}, rel a b -> rel b c -> rel a c
@@ -52,7 +70,8 @@ def eq_of_not_lt_or_gt [IsTrichotomous rel] : ∀a b, ¬rel a b -> ¬rel b a -> 
 
 class IsIrrefl: Prop where
   irrefl: ∀{a}, ¬rel a a
-def irrefl [IsIrrefl r] : ∀{a}, ¬r a a := IsIrrefl.irrefl
+
+export IsIrrefl (irrefl)
 
 instance IsWellFounded.toIsIrrefl [wf: IsWellFounded rel] : IsIrrefl rel where
   irrefl := wf.wf.irrefl
@@ -66,7 +85,8 @@ instance IsWellOrder.toIsIrrefl [wo: IsWellOrder rel] : IsIrrefl rel where
 class IsSymmetric: Prop where
   symm: ∀{a b}, rel a b -> rel b a
 
-def symm [IsSymmetric r] : ∀{a b}, r a b -> r b a := IsSymmetric.symm
+export IsSymmetric (symm)
+
 def symm_iff [IsSymmetric r] : ∀{a b}, r a b ↔ r b a := Iff.intro symm symm
 
 instance {r: β -> β -> Prop} (f: α -> β) [IsSymmetric r] : IsSymmetric (fun x y => r (f x) (f y)) where
@@ -187,5 +207,18 @@ def not_lt_argMin (a : α) (f: α -> β) {r: β -> β -> Prop} [IsWellFounded r]
     intro h h
     have := spec _ h
     contradiction
+
+instance [IsTrichotomous rel] [IsRefl rel] : IsTotal rel where
+  total a b := by
+    rcases trichotomous rel a b with ab | eq | ba
+    left; assumption
+    left; rw [eq]
+    right; assumption
+
+instance [IsTotal rel] : IsTrichotomous rel where
+  tri a b := by
+    rcases total rel a b with ab | ba
+    left; assumption
+    right; right; assumption
 
 end Relation

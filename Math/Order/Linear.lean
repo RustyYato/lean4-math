@@ -1,18 +1,16 @@
 import Math.Order.Partial
 
-class IsLinearOrder (α: Type*) [LT α] [LE α]: Prop where
-  lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
+class IsLinearOrder (α: Type*) [LT α] [LE α] extends IsLawfulLT α: Prop where
   le_antisymm: ∀{a b: α}, a ≤ b -> b ≤ a -> a = b
   lt_or_le: ∀a b: α, a < b ∨ b ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
 
 instance [LT α] [LE α] [IsLinearOrder α] : IsPartialOrder α where
-  lt_iff_le_and_not_le := IsLinearOrder.lt_iff_le_and_not_le
   le_antisymm := IsLinearOrder.le_antisymm
   le_refl := by
     intro a
     rcases IsLinearOrder.lt_or_le a a with r | r
-    exact (IsLinearOrder.lt_iff_le_and_not_le.mp r).left
+    exact (lt_iff_le_and_not_le.mp r).left
     assumption
   le_trans := IsLinearOrder.le_trans
 
@@ -438,6 +436,11 @@ instance : IsLinearOrder Nat where
   le_trans := Nat.le_trans
 instance : IsDecidableLinearOrder Nat where
 
+instance : Bot Bool where
+  bot := false
+instance : IsLawfulBot Bool where
+  bot_le := Bool.false_le
+
 instance : Bot Nat where
   bot := 0
 instance : IsLawfulBot Nat where
@@ -464,11 +467,11 @@ instance : @Relation.IsTrichotomous α (· < ·) where
     right; assumption
     left; symm; assumption
 
-instance : @Relation.IsTrichotomous α (· ≤ ·) where
-  tri a b := by
+instance : @Relation.IsTotal α (· ≤ ·) where
+  total a b := by
     rcases lt_or_le a b with ab | ba
     left; apply le_of_lt; assumption
-    right; right; assumption
+    right; assumption
 
 def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomous α (· < ·))).tri
 

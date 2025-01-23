@@ -4,8 +4,7 @@ import Math.Order.Notation
 import Math.Relation.Basic
 import Math.Order.Monotone
 
-class IsPreOrder (α: Type*) [LT α] [LE α]: Prop where
-  lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
+class IsPreOrder (α: Type*) [LT α] [LE α] extends IsLawfulLT α: Prop where
   le_refl: ∀a: α, a ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
 
@@ -14,7 +13,6 @@ variable [LT α] [LE α] [IsPreOrder α]
 
 @[refl, simp]
 def le_refl: ∀a: α, a ≤ a := IsPreOrder.le_refl
-def lt_iff_le_and_not_le: a < b ↔ a ≤ b ∧ ¬b ≤ a := IsPreOrder.lt_iff_le_and_not_le
 def le_trans: a ≤ b -> b ≤ c -> a ≤ c := IsPreOrder.le_trans
 
 def le_of_lt: a < b -> a ≤ b := fun h => (lt_iff_le_and_not_le.mp h).left
@@ -125,6 +123,8 @@ instance : @Relation.IsTrans α (· ≤ ·) where
   trans := le_trans
 instance : @Relation.IsIrrefl α (· < ·) where
   irrefl := lt_irrefl
+instance : @Relation.IsRefl α (· ≤ ·) where
+  refl := le_refl
 
 namespace Pi
 

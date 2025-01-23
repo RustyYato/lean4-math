@@ -24,6 +24,9 @@ def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
   assumption
   contradiction
 
+instance : @Relation.IsAntisymm α (· ≤ ·) where
+  antisymm := le_antisymm
+
 instance [IsPartialOrder α] : IsPartialOrder αᵒᵖ where
   le_antisymm := by
     intro a b ab ba
