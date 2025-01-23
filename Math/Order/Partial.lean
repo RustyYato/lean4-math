@@ -3,6 +3,10 @@ import Math.Order.Preorder
 class IsPartialOrder (α: Type*) [LT α] [LE α] extends IsPreOrder α: Prop where
   le_antisymm: ∀{a b: α}, a ≤ b -> b ≤ a -> a = b
 
+-- do not use this in bounds directly, this is only meant to be used to create a PreOrder
+-- for example, via `GaloisConnection`
+class PartialOrder (α: Type*) extends LT α, LE α, IsPartialOrder α
+
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [IsPartialOrder α]
 

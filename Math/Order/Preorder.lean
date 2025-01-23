@@ -8,6 +8,10 @@ class IsPreOrder (α: Type*) [LT α] [LE α] extends IsLawfulLT α: Prop where
   le_refl: ∀a: α, a ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
 
+-- do not use this in bounds directly, this is only meant to be used to create a PreOrder
+-- for example, via `GaloisConnection`
+class PreOrder (α: Type*) extends LT α, LE α, IsPreOrder α
+
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [IsPreOrder α]
 

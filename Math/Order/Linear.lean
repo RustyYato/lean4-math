@@ -5,6 +5,10 @@ class IsLinearOrder (α: Type*) [LT α] [LE α] extends IsLawfulLT α: Prop wher
   lt_or_le: ∀a b: α, a < b ∨ b ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
 
+-- do not use this in bounds directly, this is only meant to be used to create a PreOrder
+-- for example, via `GaloisConnection`
+class LinearOrder (α: Type*) extends LT α, LE α, IsLinearOrder α
+
 instance [LT α] [LE α] [IsLinearOrder α] : IsPartialOrder α where
   le_antisymm := IsLinearOrder.le_antisymm
   le_refl := by
@@ -72,6 +76,10 @@ class IsLinearMinMaxOrder (α: Type*) [LT α] [LE α] [Min α] [Max α] extends 
     apply le_of_lt
     apply lt_of_not_le
     assumption
+
+-- do not use this in bounds directly, this is only meant to be used to create a PreOrder
+-- for example, via `GaloisConnection`
+class LinearMinMaxOrder (α: Type*) extends LT α, LE α, Min α, Max α, IsLinearMinMaxOrder α
 
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [IsLinearOrder α] [Min α] [Max α] [IsLinearMinMaxOrder α]
@@ -397,6 +405,10 @@ class IsDecidableLinearOrder (α: Type _) [LE α] [LT α] [Min α] [Max α] exte
     apply And.intro <;> rfl)
   min_def (a b: α): min a b = if a ≤ b then a else b := by intros; rfl
   max_def (a b: α): max a b = if a ≤ b then b else a := by intros; rfl
+
+-- do not use this in bounds directly, this is only meant to be used to create a PreOrder
+-- for example, via `GaloisConnection`
+class DecidableLinearOrder (α: Type*) extends LT α, LE α, Min α, Max α, IsDecidableLinearOrder α
 
 instance : Subsingleton (IsDecidableLinearOrder α) where
   allEq a b := by
