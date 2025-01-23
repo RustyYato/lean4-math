@@ -976,3 +976,18 @@ end min_elem
 instance : @Relation.IsTrans (Set α) (· ⊆ ·) := ⟨sub_trans⟩
 
 end Set
+
+namespace Function
+
+def InjectiveOn (f: α -> β) (s: Set α) : Prop :=
+  ∀⦃x y: α⦄, x ∈ s -> y ∈ s -> f x = f y -> x = y
+
+def InjectiveOn_univ_iff_Injective :
+  Function.InjectiveOn f ⊤ ↔ Function.Injective f := by
+  apply Iff.intro
+  intro h x y
+  apply h <;> trivial
+  intro h x y _ _
+  apply h
+
+end Function

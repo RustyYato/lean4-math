@@ -286,112 +286,8 @@ end Generate
 
 section Lattice
 
--- def inf (a b: Filter α) : Filter α where
---   sets := Set.mk fun x => ∃a' ∈ a, ∃b' ∈ b, x = a' ∩ b'
---   sets_nonempty := by
---     have ⟨a', a'_mem⟩  := a.sets_nonempty
---     have ⟨b', b'_mem⟩  := b.sets_nonempty
---     refine ⟨a' ∩ b', ?_⟩
---     exists a'
---     apply And.intro a'_mem
---     exists b'
---   sets_of_superset := by
---     intro x y memx xsuby
---     obtain ⟨a', a'_in_a, b', b'_in_b, x_eq⟩  := memx
---     subst x
---     exists a' ∪ y
---     apply And.intro
---     apply mem_of_superset
---     assumption
---     apply Set.sub_union_left
---     exists b' ∪ y
---     apply And.intro
---     apply mem_of_superset
---     assumption
---     apply Set.sub_union_left
---     rw [←Set.union_inter_right]
---     apply Set.sub_antisymm
---     apply Set.sub_union_right
---     apply (Set.union_sub _ _ _).mp
---     apply And.intro
---     assumption
---     rfl
---   inter_sets := by
---     intro x y hx hy
---     obtain ⟨xa, xa_in_a, xb, xb_in_b, xeq⟩ := hx
---     obtain ⟨ya, ya_in_a, yb, yb_in_b, yeq⟩ := hy
---     subst x; subst y
---     exists xa ∩ ya
---     apply And.intro
---     apply inter_mem
---     assumption
---     assumption
---     exists xb ∩ yb
---     apply And.intro
---     apply inter_mem
---     assumption
---     assumption
---     ac_rfl
-
 def sInf (fs: Set (Filter α)) :=
   Filter.generate (Set.mk fun s => ∃f: fs -> Set α, (∀x, (f x) ∈ x.val) ∧ s = ⋂(fs.attach.image f))
-
--- def sInf (fs: Set (Filter α)) : Filter α where
---   sets := Set.mk fun s => ∃f: fs -> Set α, ∃g: ∀x, (f x) ∈ x.val, s = ⋂(fs.attach.image f)
---   sets_nonempty := by
---     by_cases hfs:fs.Nonempty
---     exists ⊤
---     simp
---     exists (fun _ => ⊤)
---     apply And.intro
---     intro
---     apply univ_mem
---     rw [Set.image_const_of_nonempty]
---     simp
---     rw [Set.nonempty_attach]
---     assumption
---     cases Set.not_nonempty _ hfs
---     exists ⊤
---     refine ⟨fun _ => (⊤), ?_, ?_⟩
---     intro h
---     have := Set.not_mem_empty h.property
---     contradiction
---     simp
---   sets_of_superset := by
---     intro x y hx x_sub_y
-
---     obtain ⟨f, g, _⟩ := hx; subst x
---     refine ⟨?_, ?_, ?_⟩
---     intro elem
---     let x := f elem
---     have := g elem
-
-
-
-
-
---     -- intro x y hx hy
---     -- have hx := Set.mem_sInter.mp hx
---     -- apply Set.mem_sInter.mpr
---     -- intro z hz
---     -- have ⟨f, f_in_a, eq⟩ := Set.mem_image.mp hz
---     -- subst eq
---     -- apply mem_of_superset
---     -- apply hx
---     -- assumption
---     -- assumption
---   inter_sets := by
---     sorry
---     -- intro x y hx hy
---     -- have hx := Set.mem_sInter.mp hx
---     -- have hy := Set.mem_sInter.mp hy
---     -- apply Set.mem_sInter.mpr
---     -- intro z hz
---     -- have ⟨f, f_in_a, eq⟩ := Set.mem_image.mp hz
---     -- subst eq
---     -- apply inter_mem
---     -- apply hx; assumption
---     -- apply hy; assumption
 
 instance : SupSet (Filter α) where
   sSup := join ∘ 𝓟
@@ -515,7 +411,70 @@ instance : Bot (Filter α) := ⟨bot _⟩
 
 def mem_top (x: Set α) : x ∈ (⊤: Filter α) ↔ x = ⊤ := Set.mem_singleton
 
--- instance : IsCompleteLattice (Filter α) where
+instance : IsCompleteLattice (Filter α) where
+  bot_le := by
+    intro f x mem
+    trivial
+  le_top := by
+    intro f x mem
+    cases mem
+    apply univ_mem
+  le_sup_left := by
+    intro f g x mem
+    apply mem
+    simp
+  le_sup_right := by
+    intro f g x mem
+    apply mem
+    simp
+  sup_le := by
+    intro f g x fle gle k mem i memi
+    simp
+    simp at memi
+    cases memi <;> subst i
+    apply fle; assumption
+    apply gle; assumption
+  inf_le_left := by
+    intro f g s mems
+    rw [mem_inf_iff]
+    refine ⟨_, mems, _, univ_mem, ?_⟩
+    simp
+  inf_le_right := by
+    intro f g s mems
+    rw [mem_inf_iff]
+    refine ⟨_, univ_mem, _, mems, ?_⟩
+    simp
+  le_inf := by
+    intro a b k ka kb s mems
+    rw [mem_inf_iff] at mems
+    obtain ⟨xa, hxa, xb, hxb, eq⟩ := mems
+    subst s
+    apply inter_mem
+    apply ka; assumption
+    apply kb; assumption
+  le_sSup := by
+    intro U x memx s mems
+    apply mems
+    assumption
+  sSup_le := by
+    intro k U h x mem
+    intro f mme
+    apply h
+    assumption
+    assumption
+  sInf_le := by
+    intro U f mem s mems
+    erw [mem_generate_iff]
+    refine ⟨?_, ?_, ?_, ?_⟩
+    exact {s}
+    · intro x mem; subst x
+      simp
+      refine ⟨?_, ?_, ?_⟩
+
+      sorry
+    infer_instance
+    rw [Set.sInter_singleton]
+  le_sInf := sorry
 
 end Lattice
 

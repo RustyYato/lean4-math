@@ -24,7 +24,7 @@ def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
   assumption
   contradiction
 
-instance [IsPartialOrder α] : IsPartialOrder (Opposite α) where
+instance [IsPartialOrder α] : IsPartialOrder αᵒᵖ where
   le_antisymm := by
     intro a b ab ba
     apply le_antisymm (α := α) <;> assumption
@@ -42,3 +42,61 @@ instance [∀x, LE (β x)] [∀x, LT (β x)] [∀x, IsPartialOrder (β x)] : IsP
     apply ba
 
 end Pi
+
+variable {β γ: Type*} {x y z: β} {f: α -> β} {g: β -> γ }
+variable [LT β] [LE β] [IsPartialOrder β]
+variable [LT γ] [LE γ] [IsPartialOrder γ]
+
+namespace Monotone
+
+def ofStrict (mf: StrictMonotone f) : Monotone f := by
+  intro x y h
+  rcases lt_or_eq_of_le h with h | h
+  apply le_of_lt
+  apply mf
+  assumption
+  rw [h]
+
+end Monotone
+
+namespace MonotoneOn
+
+def ofStrict (mf: StrictMonotoneOn f s) : MonotoneOn f s := by
+  intro x y hx hy h
+  rcases lt_or_eq_of_le h with h | h
+  apply le_of_lt
+  apply mf
+  assumption
+  assumption
+  assumption
+  rw [h]
+
+end MonotoneOn
+
+namespace StrictMonotoneOn
+
+def ofMonoInj [IsPreOrder α] (m: MonotoneOn f s) (h: Function.InjectiveOn f s) : StrictMonotoneOn f s := by
+  intro x y hx hy hxy
+  apply lt_of_le_of_ne
+  apply m
+  assumption
+  assumption
+  apply le_of_lt
+  assumption
+  intro g
+  rw [h hx hy g] at hxy
+  exact lt_irrefl hxy
+
+end StrictMonotoneOn
+
+namespace StrictMonotone
+
+def ofMonoInj [IsPreOrder α] (m: Monotone f) (h: Function.Injective f) : StrictMonotone f := by
+  rw [←StrictMonotone.iffOnUniv]
+  rw [←Monotone.iffOnUniv] at m
+  rw [←Function.InjectiveOn_univ_iff_Injective] at h
+  apply StrictMonotoneOn.ofMonoInj
+  assumption
+  assumption
+
+end StrictMonotone

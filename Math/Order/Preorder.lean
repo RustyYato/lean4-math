@@ -2,6 +2,7 @@ import Math.Type.Basic
 import Math.Logic.Basic
 import Math.Order.Notation
 import Math.Relation.Basic
+import Math.Order.Monotone
 
 class IsPreOrder (α: Type*) [LT α] [LE α]: Prop where
   lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
@@ -59,14 +60,6 @@ def lt_of_le_of_lt : a ≤ b -> b < c -> a < c := by
   assumption
 
 def lt_asymm : a < b -> b < a -> False := (lt_irrefl <| lt_trans · ·)
-
-instance [IsPreOrder α] : IsPreOrder (Opposite α) where
-  lt_iff_le_and_not_le := by
-    intro a b
-    apply Iff.trans (lt_iff_le_and_not_le (α := α))
-    rfl
-  le_refl := le_refl (α := α)
-  le_trans := flip (le_trans (α := α))
 
 class DenselyOrdered (α : Type*) [LT α] : Prop where
   dense : ∀ a₁ a₂ : α, a₁ < a₂ → ∃ a, a₁ < a ∧ a < a₂
@@ -154,4 +147,22 @@ instance [∀x, LE (β x)] [∀x, LT (β x)] [∀x, IsPreOrder (β x)] : IsPreOr
     apply ab
     apply bc
 
+instance [IsPreOrder α] : IsPreOrder αᵒᵖ where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := α)
+  le_refl := le_refl (α := α)
+  le_trans := flip (le_trans (α := α))
+
 end Pi
+
+variable {β γ: Type*} {x y z: β} {f: α -> β} {g: β -> γ }
+variable [LT β] [LE β] [IsPreOrder β]
+variable [LT γ] [LE γ] [IsPreOrder γ]
+
+variable {s t: Set α}
+
+namespace Monotone
+
+def const (x: β) : Monotone (fun _: α => x) :=
+  fun _ _ _ => le_refl _
+
+end Monotone

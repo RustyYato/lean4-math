@@ -494,3 +494,35 @@ instance instLOofPOofLEtri [IsPartialOrder α] [Relation.IsTrichotomous (· ≤ 
     left; assumption; rename_i h; right; rw[h]
     right; rw [eq]
     right; assumption
+
+
+variable {β γ: Type*} {x y z: β} {f: α -> β} {g: β -> γ }
+variable [LT β] [LE β]
+variable [LT γ] [LE γ]
+
+namespace StrictMonotoneOn
+
+def InjectiveOn [IsPreOrder β] (m: StrictMonotoneOn f s) : Function.InjectiveOn f s := by
+  intro x y hx hy hxy
+  rcases lt_trichotomy x y with h | h | h
+  have := m hx hy h
+  rw [hxy] at this
+  have := lt_irrefl this
+  contradiction
+  assumption
+  have := m hy hx h
+  rw [hxy] at this
+  have := lt_irrefl this
+  contradiction
+
+end StrictMonotoneOn
+
+namespace StrictMonotone
+
+def Injective [IsPreOrder β] (m: StrictMonotone f) : Function.Injective f := by
+  rw [←StrictMonotone.iffOnUniv] at m
+  rw [←Function.InjectiveOn_univ_iff_Injective]
+  apply StrictMonotoneOn.InjectiveOn
+  assumption
+
+end StrictMonotone
