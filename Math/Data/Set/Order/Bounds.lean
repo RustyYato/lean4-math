@@ -179,3 +179,18 @@ def IsGreatest.nonempty (h: IsGreatest s a) : s.Nonempty := ⟨a, h.left⟩
 end
 
 end Set
+
+namespace Monotone
+
+variable [LE α] [LE β] [LT α] [LT β] {f: α -> β} [IsPreOrder β]
+variable {s: Set α}
+
+def map_bounded_above (m: Monotone f) (b: Set.BoundedAbove s) : Set.BoundedAbove (s.image f) := by
+  obtain ⟨x, h⟩ := b
+  exists f x
+  intro x ⟨_, _, eq⟩; subst eq
+  apply m
+  apply h
+  assumption
+
+end Monotone

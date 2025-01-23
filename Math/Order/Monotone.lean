@@ -54,3 +54,8 @@ def StrictMonotone.iffOnUniv : StrictMonotoneOn f ⊤ ↔ StrictMonotone f := by
   apply m <;> trivial
   intro m x y _ _
   apply m
+
+def Monotone.dual (m: Monotone f) : Monotone (Opposite.mk ∘ f ∘ Opposite.get) := by
+  intro x y le
+  apply m
+  assumption
