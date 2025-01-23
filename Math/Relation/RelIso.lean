@@ -96,6 +96,10 @@ instance : IsRelHom (r ≃r s) r s where
 
 namespace RelHom
 
+def comp (h: r →r s) (g: s →r t) : r →r t where
+  toFun := g ∘ h
+  resp_rel := g.resp_rel ∘ h.resp_rel
+
 def acc (f : r →r s) (a : α) : Acc s (f a) → Acc r a := by
   generalize fa_def:f a = fa
   intro acc
@@ -257,3 +261,60 @@ instance : @Relation.IsWellFounded (Fin n) (· < ·) :=
 
 instance : @Relation.IsWellFounded (Fin n) (· > ·) :=
   Fin.gt_reqv_lt.toRelHom.wf
+
+namespace Relation
+
+def ofMappedTransGen [IsTrans s] (h: TransGen r a b) (g: r →r s) : s (g a) (g b) := by
+  induction h with
+  | single =>
+    apply g.resp_rel
+    assumption
+  | tail x xs ih =>
+    apply trans ih
+    apply g.resp_rel
+    assumption
+
+def ofMappedReflTransGen [IsRefl s] [IsTrans s] (h: ReflTransGen r a b) (g: r →r s) : s (g a) (g b) := by
+  induction h with
+  | refl => rfl
+  | cons x xs ih =>
+    apply trans _ ih
+    apply g.resp_rel
+    assumption
+
+def ofMappedEquivGen [IsRefl s] [IsSymmetric s] [IsTrans s] (h: EquivGen r a b) (g: r →r s) : s (g a) (g b) := by
+  induction h with
+  | single =>
+    apply g.resp_rel
+    assumption
+  | refl => rfl
+  | symm _ _ =>
+    apply symm
+    assumption
+  | trans => apply trans <;> assumption
+
+def TransGen.RelHom : r →r TransGen r where
+  toFun := id
+  resp_rel := TransGen.single
+
+def ReflTransGen.RelHom : r →r ReflTransGen r where
+  toFun := id
+  resp_rel := ReflTransGen.single
+
+def EquivGen.RelHom : r →r EquivGen r where
+  toFun := id
+  resp_rel := EquivGen.single
+
+def TransGen.congrRelHom (h: r →r s) : TransGen r →r TransGen s where
+  toFun := h
+  resp_rel := (ofMappedTransGen · (RelHom.comp h TransGen.RelHom))
+
+def ReflTransGen.congrRelHom (h: r →r s) : ReflTransGen r →r ReflTransGen s where
+  toFun := h
+  resp_rel := (ofMappedReflTransGen · (RelHom.comp h ReflTransGen.RelHom))
+
+def EquivGen.congrRelHom (h: r →r s) : EquivGen r →r EquivGen s where
+  toFun := h
+  resp_rel := (ofMappedEquivGen · (RelHom.comp h EquivGen.RelHom))
+
+end Relation

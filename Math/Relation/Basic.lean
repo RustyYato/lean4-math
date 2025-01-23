@@ -4,6 +4,12 @@ inductive Relation.ReflTransGen (r: α -> α -> Prop) : α -> α -> Prop where
 | refl : ReflTransGen r a a
 | cons : r a b -> ReflTransGen r b c -> ReflTransGen r a c
 
+inductive Relation.EquivGen (r: α -> α -> Prop) : α -> α -> Prop where
+| single : r a b -> EquivGen r a b
+| refl : EquivGen r a a
+| symm : EquivGen r a b -> EquivGen r b a
+| trans : EquivGen r a b -> EquivGen r b c -> EquivGen r a c
+
 namespace Relation.ReflTransGen
 
 def single (x: r a b) : ReflTransGen r a b := by
@@ -106,6 +112,45 @@ instance : IsTrans (TransGen r) where
   trans := TransGen.trans
 instance : IsTrans (ReflTransGen r) where
   trans := ReflTransGen.trans
+instance : IsTrans (EquivGen rel) where
+  trans := .trans
+
+instance : IsRefl (ReflTransGen rel) where
+  refl _ := .refl
+instance : IsRefl (EquivGen rel) where
+  refl _ := .refl
+
+instance : IsSymmetric (EquivGen rel) where
+  symm := .symm
+
+instance [IsSymmetric rel] : IsSymmetric (ReflTransGen rel) where
+  symm := by
+    intro a b h
+    induction h with
+    | refl => exact .refl
+    | cons a as ih =>
+      apply ih.trans
+      apply ReflTransGen.single
+      apply symm
+      assumption
+
+instance [IsSymmetric rel] : IsSymmetric (TransGen rel) where
+  symm := by
+    intro a b h
+    induction h with
+    | single =>
+      apply TransGen.single
+      apply symm
+      assumption
+    | tail a as ih =>
+      apply TransGen.trans
+      apply TransGen.single
+      apply symm
+      assumption
+      assumption
+
+instance [IsRefl rel] : IsRefl (TransGen rel) where
+  refl a := TransGen.single (refl a)
 
 instance [IsWellFounded r] [IsWellFounded s] : IsWellFounded (Sum.Lex r s) where
   wf := Sum.lex_wf (wellFounded r) (wellFounded s)
@@ -220,5 +265,33 @@ instance [IsTotal rel] : IsTrichotomous rel where
     rcases total rel a b with ab | ba
     left; assumption
     right; right; assumption
+
+def equiv [IsRefl rel] [IsSymmetric rel] [IsTrans rel] : Equivalence rel where
+  refl := refl
+  symm := symm
+  trans := trans
+
+def setoid [IsRefl rel] [IsSymmetric rel] [IsTrans rel] : Setoid α where
+  r := rel
+  iseqv := equiv rel
+
+def ofTransGen [IsTrans r] (h: TransGen r a b) : r a b := by
+  induction h with
+  | single => assumption
+  | tail x xs ih => apply trans <;> assumption
+
+def ofReflTransGen [IsRefl r] [IsTrans r] (h: ReflTransGen r a b) : r a b := by
+  induction h with
+  | refl => rfl
+  | cons x xs ih => apply trans <;> assumption
+
+def ofEquivGen [IsRefl r] [IsSymmetric r] [IsTrans r] (h: EquivGen r a b) : r a b := by
+  induction h with
+  | single => assumption
+  | refl => rfl
+  | symm _ _ =>
+    apply symm
+    assumption
+  | trans => apply trans <;> assumption
 
 end Relation
