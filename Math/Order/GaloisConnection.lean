@@ -1,8 +1,7 @@
-import Math.Order.Preorder
 import Math.Order.OrderIso
 import Math.Data.Set.Order.Bounds
 
-variable [LT α] [LE α] [LT β] [LE β] [Sup α] [Sup β] [Inf α] [Inf β] [Top α] [Bot α] [Top β] [Bot β]
+variable {α β : Type*} [LT α] [LE α] [LT β] [LE β]
 
 def GaloisConnection (l: α -> β) (u: β -> α) :=
   ∀a b, l a ≤ b ↔ a ≤ u b
@@ -28,7 +27,20 @@ section PreOrder
 
 variable [IsPreOrder α] [IsPreOrder β]
 
-protected def dual : GaloisConnection
+def monotoneIntro (hu : Monotone u) (hl : Monotone l) (hul : ∀ a, a ≤ u (l a))
+    (hlu : ∀ a, l (u a) ≤ a) : GaloisConnection l u := by
+  intro a b
+  apply Iff.intro
+  intro h
+  apply le_trans (hul _)
+  apply hu
+  assumption
+  intro h
+  apply le_trans (hl _)
+  apply hlu
+  assumption
+
+def dual : GaloisConnection
   (Opposite.mk ∘ u ∘ Opposite.get)
   (Opposite.mk ∘ l ∘ Opposite.get) := fun a b => (gc b a).symm
 
@@ -141,9 +153,9 @@ def l_eq {x : α} {z : β} : l x = z ↔ ∀ y, z ≤ y ↔ x ≤ u y := gc.dual
 
 end IsPartialOrder
 
-section LawfuTop
+section LawfulTop
 
-variable [IsPartialOrder α] [IsPreOrder β] [IsLawfulTop α] [IsLawfulTop β]
+variable [IsPartialOrder α] [IsPreOrder β] [Top α] [Top β] [IsLawfulTop α] [IsLawfulTop β]
 
 def u_eq_top {x} : u x = ⊤ ↔ l ⊤ ≤ x := by
   rw [gc.u_eq]
@@ -158,21 +170,35 @@ def u_eq_top {x} : u x = ⊤ ↔ l ⊤ ≤ x := by
 
 def u_top : u ⊤ = ⊤ := gc.u_eq_top.mpr (le_top _)
 
-end LawfuTop
+abbrev instLawfulTop (gc : GaloisConnection l u) : LawfulTop α where
+  top := u ⊤
+  le_top x := by
+    show _ ≤ u ⊤
+    apply gc.le_u
+    apply le_top
 
-section LawfuTop
+end LawfulTop
 
-variable [IsPreOrder α] [IsPartialOrder β] [IsLawfulBot α] [IsLawfulBot β]
+section LawfulBot
+
+variable [IsPreOrder α] [IsPartialOrder β] [Bot α] [Bot β] [IsLawfulBot α] [IsLawfulBot β]
 
 def l_eq_bot {x} : l x = ⊥ ↔ x ≤ u ⊥ := gc.dual.u_eq_top
 
 def l_bot : l ⊥ = ⊥ := gc.dual.u_top
 
-end LawfuTop
+abbrev instLawfulBot (gc : GaloisConnection l u) : LawfulBot β where
+  bot := l ⊥
+  bot_le x := by
+    show l ⊥ ≤ _
+    apply gc.l_le
+    apply bot_le
+
+end LawfulBot
 
 section SemiLatticeSup
 
-variable [IsSemiLatticeSup α] [IsSemiLatticeSup β]
+variable [Sup α] [Sup β] [IsSemiLatticeSup α] [IsSemiLatticeSup β]
 
 def l_sup : l (a₁ ⊔ a₂) = l a₁ ⊔ l a₂ := by
   apply le_antisymm
@@ -194,10 +220,107 @@ end SemiLatticeSup
 
 section SemiLatticeInf
 
-variable [IsSemiLatticeInf α] [IsSemiLatticeInf β]
+variable [Inf α] [Inf β] [IsSemiLatticeInf α] [IsSemiLatticeInf β]
 
 def u_inf : u (a₁ ⊓ a₂) = u a₁ ⊓ u a₂ := gc.dual.l_sup
 
 end SemiLatticeInf
 
 end GaloisConnection
+
+structure GaloisInsertion (l : α → β) (u : β → α) where
+  gc : GaloisConnection l u
+  le_l_u : ∀ x, x ≤ l (u x)
+  choice : ∀ x : α, u (l x) ≤ x → β := fun x _ => l x
+  choice_eq : ∀ a h, choice a h = l a := by intros; rfl
+
+structure GaloisCoinsertion (l : α → β) (u : β → α) where
+  gc : GaloisConnection l u
+  u_l_le : ∀ x, u (l x) ≤ x
+  choice : ∀ x : β, x ≤ l (u x) → α
+  choice_eq : ∀ a h, choice a h = u a
+
+section GaloisInsertion
+
+variable [IsPreOrder α] [IsPreOrder β]  {l : α → β} {u : β → α}
+
+abbrev GaloisInsertion.dual (gi: GaloisInsertion l u) : GaloisCoinsertion
+  (Opposite.mk ∘ u ∘ Opposite.get)
+  (Opposite.mk ∘ l ∘ Opposite.get) where
+  choice := gi.choice
+  gc := gi.gc.dual
+  u_l_le := gi.le_l_u
+  choice_eq := gi.choice_eq
+
+abbrev GaloisCoinsertion.dual (gi: GaloisCoinsertion l u) : GaloisInsertion
+  (Opposite.mk ∘ u ∘ Opposite.get)
+  (Opposite.mk ∘ l ∘ Opposite.get) where
+  choice := gi.choice
+  gc := gi.gc.dual
+  le_l_u := gi.u_l_le
+  choice_eq := gi.choice_eq
+
+abbrev GaloisInsertion.monotoneIntro (hu : Monotone u) (hl : Monotone l) (hul : ∀ a, a ≤ u (l a)) (hlu : ∀ b, l (u b) = b) : GaloisInsertion l u where
+  gc := .monotoneIntro hu hl hul (fun x => le_of_eq (hlu x))
+  le_l_u := fun x => by rw [hlu]
+
+/-- Makes a Galois insertion from an order-preserving bijection. -/
+abbrev OrderIso.toGaloisInsertion (oi : α ≃o β) :
+    GaloisInsertion oi oi.symm where
+  gc := oi.toGaloisConnection
+  le_l_u g := le_of_eq (oi.rightInv g).symm
+
+/-- Make a `GaloisInsertion l u` from a `GaloisConnection l u` such that `∀ b, b ≤ l (u b)` -/
+abbrev GaloisConnection.toGaloisInsertion (gc : GaloisConnection l u) (h : ∀ b, b ≤ l (u b)) : GaloisInsertion l u where
+  gc := gc
+  le_l_u := h
+
+abbrev GaloisInsertion.instLawfulTop [Top α] [IsLawfulTop α] (gi : GaloisInsertion l u) : LawfulTop β where
+  top := gi.choice ⊤ (le_top _)
+  le_top x := by
+    show _ ≤ gi.choice ⊤ (le_top _)
+    rw [gi.choice_eq]
+    apply le_trans
+    apply gi.le_l_u
+    apply gi.gc.monotone_l
+    apply le_top
+
+abbrev GaloisCoinsertion.instLawfulBot [Bot β] [IsLawfulBot β] (gi : GaloisCoinsertion l u) : LawfulBot α :=
+    have := gi.dual.instLawfulTop
+    inferInstanceAs (LawfulBot αᵒᵖᵒᵖ)
+
+abbrev GaloisInsertion.instLawfulSup [Sup α] [IsLawfulSup α] (gi: GaloisInsertion l u) : LawfulSup β where
+  sup a b := l (u a ⊔ u b)
+  le_sup_left := by
+    intro x y
+    show x ≤ l _
+    apply le_trans
+    apply gi.le_l_u
+    apply gi.gc.monotone_l
+    apply le_sup_left
+  le_sup_right := by
+    intro x y
+    show y ≤ l _
+    apply le_trans
+    apply gi.le_l_u
+    apply gi.gc.monotone_l
+    apply le_sup_right
+
+-- abbrev GaloisCoinsertion.instSemilatticeSup [IsPartialOrder α] [SemiLatticeInf β] (gi: GaloisCoinsertion l u) : SemiLatticeInf α where
+--   toLawfulInf := gi.instLawfulInf
+--   -- inf := sorry
+
+-- abbrev GaloisCoinsertion.instLawfulInf [IsPartialOrder β] [Inf β] [IsLawfulInf β] (gi: GaloisCoinsertion l u) : LawfulInf α where
+--   inf a b := u (l a ⊓ l b)
+--   inf_le_left := by
+--     intro x y
+--     show u _ ≤ _
+
+--     sorry
+--   inf_le_right := sorry
+
+-- abbrev GaloisCoinsertion.instSemilatticeSup [IsPartialOrder α] [SemiLatticeInf β] (gi: GaloisCoinsertion l u) : SemiLatticeInf α where
+--   toLawfulInf := gi.instLawfulInf
+--   -- inf := sorry
+
+end GaloisInsertion

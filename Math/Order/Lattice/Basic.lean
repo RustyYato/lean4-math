@@ -2,26 +2,46 @@ import Math.Order.Partial
 import Math.Order.Notation
 import Math.Order.TopBot
 
-variable (α: Type*) [Sup α] [Inf α] [LE α] [LT α]
+variable (α: Type*) [LE α] [LT α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [LE α₀] [LT α₀]
 
-class IsSemiLatticeSup extends IsLawfulSup α, IsPartialOrder α: Prop where
+class IsSemiLatticeSup  [Sup α] extends IsLawfulSup α, IsPartialOrder α: Prop where
   sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
 
-class IsSemiLatticeInf extends IsLawfulInf α, IsPartialOrder α: Prop where
+class IsSemiLatticeInf [Inf α] extends IsLawfulInf α, IsPartialOrder α: Prop where
+  le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
+
+class SemiLatticeSup extends LawfulSup α, IsPartialOrder α where
+  sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
+
+class SemiLatticeInf extends LawfulInf α, IsPartialOrder α where
   le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
 
 export IsSemiLatticeSup (sup_le)
 export IsSemiLatticeInf (le_inf)
 
-instance [IsSemiLatticeSup α] : IsSemiLatticeInf (Opposite α) where
+instance [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
   le_inf := sup_le (α := α)
 
-instance [IsSemiLatticeInf α] : IsSemiLatticeSup (Opposite α) where
+instance [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeSup αᵒᵖ where
+  sup_le := le_inf (α := α)
+
+instance [h: SemiLatticeSup α] : IsSemiLatticeSup α where
+  sup_le := h.sup_le
+
+instance [h: SemiLatticeInf α] : IsSemiLatticeInf α where
+  le_inf := h.le_inf
+
+instance [SemiLatticeSup α] : SemiLatticeInf αᵒᵖ where
+  le_inf := sup_le (α := α)
+
+instance [SemiLatticeInf α] : SemiLatticeSup αᵒᵖ where
   sup_le := le_inf (α := α)
 
 attribute [simp] le_sup_left le_sup_right
 attribute [simp] inf_le_left inf_le_right
+
+variable (α: Type*) [Sup α] [Inf α] [LE α] [LT α]
 
 section
 
