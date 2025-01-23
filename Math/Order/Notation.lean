@@ -135,3 +135,6 @@ instance [LE α] [LawfulInf α] : LawfulSup αᵒᵖ where
 instance [LE α] [LawfulSup α] : LawfulInf αᵒᵖ where
   inf_le_left := le_sup_left (α := α)
   inf_le_right := le_sup_right (α := α)
+
+instance [Top α] : Nonempty α := ⟨⊤⟩
+instance [Bot α] : Nonempty α := ⟨⊥⟩

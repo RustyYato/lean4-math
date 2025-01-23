@@ -160,6 +160,26 @@ def WithBot.orderIsoWithTop [_root_.LE α] : WithBot α ≃o Opposite (WithTop (
   apply WithTop.orderIsoWithBot
   rfl
 
+instance [LE α] : IsLawfulTop (WithTop α) where
+  le_top := WithTop.LE.top
+instance [LE α] : IsLawfulBot (WithBot α) where
+  bot_le := WithBot.LE.bot
+
+instance [LE α] [Bot α] [IsLawfulBot α] : IsLawfulBot (WithTop α) where
+  bot_le := by
+    intro x
+    cases x
+    apply le_top
+    apply WithTop.LE.of
+    apply bot_le
+instance [LE α] [Top α] [IsLawfulTop α] : IsLawfulTop (WithBot α) where
+  le_top := by
+    intro x
+    cases x
+    apply bot_le
+    apply WithBot.LE.of
+    apply le_top
+
 instance [LE α] [LT α] [IsPreOrder α] : IsPreOrder (WithTop α) where
   lt_iff_le_and_not_le := by
     intro a b
@@ -199,24 +219,39 @@ instance [LE α] [LT α] [IsPreOrder α] : IsPreOrder (WithTop α) where
     apply WithTop.LE.of
     apply le_trans <;> assumption
 
-instance [LE α] [LT α] [IsPreOrder α] : IsPreOrder (WithBot α) :=
-  WithBot.orderIsoWithTop.symm.instIsPreOrder (by
+instance [LE α] [LT α] [IsLawfulLT α] : IsLawfulLT (WithBot α) where
+  lt_iff_le_and_not_le := by
     intro a b
     apply Iff.intro
     intro h
     cases h
-    exact WithBot.LT.bot _
-    rename_i r
-    exact WithBot.LT.of r
+    apply And.intro
+    exact WithBot.LE.bot _
     intro h
-    cases a; cases b
     contradiction
-    show ⊥ < _
-    exact WithTop.LT.top _
-    cases b
+    rename_i h
+    rw [lt_iff_le_and_not_le] at h
+    obtain ⟨h, g⟩ := h
+    apply And.intro
+    apply WithBot.LE.of
+    assumption
+    intro h; apply g
+    cases h; assumption
+    intro ⟨h, g⟩
+    cases h
+    cases b; have := g (bot_le _)
     contradiction
-    cases h; rename_i h
-    exact WithTop.LT.of h)
+    apply WithBot.LT.bot
+    apply WithBot.LT.of
+    rw [lt_iff_le_and_not_le]
+    apply And.intro
+    assumption
+    intro h; apply g
+    apply WithBot.LE.of
+    assumption
+
+instance [LE α] [LT α] [IsPreOrder α] : IsPreOrder (WithBot α) :=
+  WithBot.orderIsoWithTop.symm.instIsPreOrder
 
 instance [LE α] [LT α] [IsPartialOrder α] : IsPartialOrder (WithTop α) where
   le_antisymm := by
@@ -228,23 +263,3 @@ instance [LE α] [LT α] [IsPartialOrder α] : IsPartialOrder (WithTop α) where
 
 instance [LE α] [LT α] [IsPartialOrder α] : IsPartialOrder (WithBot α) :=
   WithBot.orderIsoWithTop.symm.instIsPartialOrder
-
-instance [LE α] : IsLawfulTop (WithTop α) where
-  le_top := WithTop.LE.top
-instance [LE α] : IsLawfulBot (WithBot α) where
-  bot_le := WithBot.LE.bot
-
-instance [LE α] [Bot α] [IsLawfulBot α] : IsLawfulBot (WithTop α) where
-  bot_le := by
-    intro x
-    cases x
-    apply le_top
-    apply WithTop.LE.of
-    apply bot_le
-instance [LE α] [Top α] [IsLawfulTop α] : IsLawfulTop (WithBot α) where
-  le_top := by
-    intro x
-    cases x
-    apply bot_le
-    apply WithBot.LE.of
-    apply le_top

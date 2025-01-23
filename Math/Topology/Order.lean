@@ -25,10 +25,11 @@ def orderEmbedSet : OrderEmbedding (Topology α) (Opposite (Set (Set α))) where
   inj := Topology.OpenSets.inj
   resp_rel := Iff.rfl
 
+instance : IsLawfulLT (Topology α) where
+  lt_iff_le_and_not_le := Iff.rfl
+
 instance : IsPreOrder (Topology α) :=
-  orderEmbedSet.inducedIsPreOrder <| by
-    intros
-    rfl
+  orderEmbedSet.inducedIsPreOrder
 instance : IsPartialOrder (Topology α) :=
   orderEmbedSet.inducedIsPartialOrder
 
@@ -113,7 +114,7 @@ private def le_sInf : ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : T
 
 instance : IsCompleteLattice (Topology α) where
   sSup_le := sSup_le
-  le_sSup := le_sSup
+  le_sSup := le_sSup _ _
   le_sup_left a b := by
     apply le_sSup
     apply Set.mem_pair.mpr; left; rfl
@@ -125,7 +126,7 @@ instance : IsCompleteLattice (Topology α) where
     apply sSup_le
     intro x mem
     cases Set.mem_pair.mp mem <;> subst x <;> assumption
-  sInf_le := sInf_le
+  sInf_le := sInf_le _ _
   le_sInf := le_sInf
   inf_le_left := by
     intro a b

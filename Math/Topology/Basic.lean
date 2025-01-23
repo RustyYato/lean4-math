@@ -57,7 +57,7 @@ def IsOpen.empty : IsOpen (∅: Set α) := by
   rw [←Set.sUnion_empty]
   apply sUnion; intros; contradiction
 
-def IsClosed.univ : IsClosed (Set.univ α) := by
+def IsClosed.univ : IsClosed (⊤: Set α) := by
   unfold IsClosed
   rw [Set.univ_compl]
   exact IsOpen.empty

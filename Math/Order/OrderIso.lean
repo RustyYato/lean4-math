@@ -40,13 +40,9 @@ def resp_le {_: LE α} {_: LE β} (h: α ↪o β) : ∀{a b: α}, a ≤ b ↔ h 
 
 def inducedIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder β]
+  [IsLawfulLT α]
   (h: α ↪o β)
-  (resp_lt: ∀{a b: α}, a < b ↔ h a < h b)
   : IsPreOrder α where
-  lt_iff_le_and_not_le := by
-    intro a b
-    rw [resp_lt, h.resp_le, h.resp_le]
-    apply lt_iff_le_and_not_le
   le_refl _ := h.resp_le.mpr (le_refl _)
   le_trans := by
     intro a b c
@@ -67,13 +63,15 @@ def inducedIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
 
 def inducedIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsPartialOrder β]
+  [IsLawfulLT α]
   (h: α ↪o β)
-  (resp_lt: ∀{a b: α}, a < b ↔ h a < h b)
   : _root_.IsPartialOrder α where
-  toIsPreOrder := h.inducedIsPreOrder resp_lt
-  le_antisymm :=
-    have := h.inducedIsPreOrder resp_lt
-    h.inducedIsPartialOrder.le_antisymm
+  toIsPreOrder := h.inducedIsPreOrder
+  le_antisymm := by
+    intro a b
+    rw [h.resp_le, h.resp_le]
+    intro ab ba
+    exact h.inj (le_antisymm ab ba)
 
 end OrderEmbedding
 
@@ -122,29 +120,21 @@ def symm_resp_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: β}, a ≤ b �
 
 def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder α]
-  (h: α ≃o β)
-  (resp_lt: ∀{a b: α}, a < b ↔ h a < h b)
-  : IsPreOrder β := OrderEmbedding.inducedIsPreOrder (α := β) (β := α) h.symm <| by
-    intro a b
-    show a < b ↔ h.symm a < h.symm b
-    conv => { lhs; rw [←h.symm_coe a, ←h.symm_coe b] }
-    apply resp_lt.symm
+  [IsLawfulLT β]
+  (h: α ≃o β): IsPreOrder β :=
+  OrderEmbedding.inducedIsPreOrder (α := β) (β := α) h.symm
 
 def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPartialOrder α]
   [_root_.IsPreOrder β]
-  (h: α ≃o β)
-  : IsPartialOrder β := OrderEmbedding.inducedIsPartialOrder (α := β) (β := α) h.symm
+  (h: α ≃o β): IsPartialOrder β :=
+  OrderEmbedding.inducedIsPartialOrder (α := β) (β := α) h.symm
 
 def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsPartialOrder α]
-  (h: α ≃o β)
-  (resp_lt: ∀{a b: α}, a < b ↔ h a < h b)
-  : _root_.IsPartialOrder β where
-  toIsPreOrder := h.instIsPreOrder resp_lt
-  le_antisymm :=
-    have := h.instIsPreOrder resp_lt
-    h.instIsPartialOrder.le_antisymm
+  [IsLawfulLT β]
+  (h: α ≃o β): _root_.IsPartialOrder β :=
+  OrderEmbedding.inducedIsPartialOrder' (α := β) (β := α) h.symm
 
 end OrderIso
 
@@ -182,8 +172,15 @@ def Embedding.oemb_fun : (α ↪ β) ↪o (α -> β) where
   inj :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
   resp_rel := Iff.rfl
 
+instance : IsLawfulLT (α ↪ β) where
+  lt_iff_le_and_not_le := Iff.rfl
+instance : IsLawfulLT (α ↪o β) where
+  lt_iff_le_and_not_le := Iff.rfl
+instance : IsLawfulLT (α →o β) where
+  lt_iff_le_and_not_le := Iff.rfl
+
 instance [IsPreOrder β] : IsPreOrder (α ↪ β) :=
-  Embedding.oemb_fun.inducedIsPreOrder Iff.rfl
+  Embedding.oemb_fun.inducedIsPreOrder
 
 instance [IsPartialOrder β] : IsPartialOrder (α ↪ β) :=
   Embedding.oemb_fun.inducedIsPartialOrder
@@ -194,7 +191,7 @@ def OrderHom.oemb_fun : (α →o β) ↪o (α -> β) where
   resp_rel := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α →o β) :=
-  OrderHom.oemb_fun.inducedIsPreOrder Iff.rfl
+  OrderHom.oemb_fun.inducedIsPreOrder
 
 instance [IsPartialOrder β] : IsPartialOrder (α →o β) :=
   OrderHom.oemb_fun.inducedIsPartialOrder
@@ -205,7 +202,7 @@ def OrderEmbedding.oemb_fun : (α ↪o β) ↪o (α ↪ β) where
   resp_rel := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α ↪o β) :=
-  OrderEmbedding.oemb_fun.inducedIsPreOrder Iff.rfl
+  OrderEmbedding.oemb_fun.inducedIsPreOrder
 
 instance [IsPartialOrder β] : IsPartialOrder (α ↪o β) :=
   OrderEmbedding.oemb_fun.inducedIsPartialOrder

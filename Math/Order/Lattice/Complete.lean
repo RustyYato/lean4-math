@@ -102,6 +102,12 @@ def le_sSup_univ : ∀x: α₀, x ≤ sSup (Set.univ _) := by
   apply le_sSup
   apply Set.mem_univ
 
+@[simp]
+def sSup_empty [IsLawfulBot α₀] : sSup ∅ = (⊥: α₀) := by
+  apply le_antisymm
+  apply sSup_empty_le
+  apply bot_le
+
 end
 
 section
@@ -138,6 +144,10 @@ def sInf_univ_le : ∀x: α₀, sInf (Set.univ _) ≤ x := by
   apply sInf_le
   apply Set.mem_univ
 
+@[simp]
+def sInf_empty [IsLawfulTop α₀] : sInf ∅ = (⊤: α₀) :=
+  sSup_empty (α₀ := Opposite α₀)
+
 end
 
 section
@@ -145,20 +155,10 @@ section
 variable [IsCompleteLattice α₀] {s t : Set α₀} {a b : α₀}
 
 @[simp]
-def sSup_empty [IsCompleteLattice α] : sSup ∅ = (⊥: α) := by
-  apply le_antisymm
-  apply sSup_empty_le
-  apply bot_le
-
-@[simp]
 def sSup_univ [IsCompleteLattice α] : sSup (Set.univ α) = (⊤: α) := by
   apply le_antisymm
   apply le_top
   apply le_sSup_univ
-
-@[simp]
-def sInf_empty [IsCompleteLattice α] : sInf ∅ = (⊤: α) :=
-  sSup_empty (α := Opposite α)
 
 @[simp]
 def sInf_univ [IsCompleteLattice α] : sInf (Set.univ α) = (⊥: α) :=
@@ -184,46 +184,6 @@ def sSup_inter_le : sSup (s ∩ t) ≤ sSup s ⊓ sSup t := by
 @[simp]
 def le_sInf_inter : sInf s ⊔ sInf t ≤ sInf (s ∩ t) :=
   sSup_inter_le (α₀ := Opposite α₀)
-
-@[simp]
-def bot_sup : ⊥ ⊔ a = a := by
-  apply le_antisymm
-  apply sup_le
-  apply bot_le
-  rfl
-  simp
-
-@[simp]
-def sup_bot : a ⊔ ⊥ = a := by
-  simp [sup_comm a]
-
-@[simp]
-def top_sup : ⊤ ⊔ a = ⊤ := by
-  apply le_antisymm
-  apply sup_le
-  rfl
-  apply le_top
-  simp
-
-@[simp]
-def sup_top : a ⊔ ⊤ = ⊤ := by
-  simp [sup_comm a]
-
-@[simp]
-def bot_inf : ⊥ ⊓ a = ⊥ :=
-  top_sup (α₀ := Opposite α₀)
-
-@[simp]
-def inf_bot : a ⊓ ⊥ = ⊥ :=
-  sup_top (α₀ := Opposite α₀)
-
-@[simp]
-def top_inf : ⊤ ⊓ a = a :=
-  bot_sup (α₀ := Opposite α₀)
-
-@[simp]
-def inf_top : a ⊓ ⊤ = a :=
-  sup_bot (α₀ := Opposite α₀)
 
 @[simp]
 def sSup_insert_bot : sSup (insert ⊥ s) = sSup s := by

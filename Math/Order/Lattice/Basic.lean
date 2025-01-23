@@ -120,6 +120,44 @@ def lt_sup_right {a b k: α₀} : k < b -> k < a ⊔ b := by
   rw [sup_comm]
   apply lt_sup_left
 
+def sup_le_sup {a b c d: α₀} :
+  a ≤ c ->
+  b ≤ d ->
+  a ⊔ b ≤ c ⊔ d := by
+  intro ac bd
+  apply sup_le
+  apply le_trans _ (le_sup_left _ _)
+  assumption
+  apply le_trans _ (le_sup_right _ _)
+  assumption
+
+variable [Top α₀] [Bot α₀] [IsLawfulBot α₀] [IsLawfulTop α₀]
+variable {a: α₀}
+
+@[simp]
+def bot_sup : ⊥ ⊔ a = a := by
+  apply le_antisymm
+  apply sup_le
+  apply bot_le
+  rfl
+  simp
+
+@[simp]
+def sup_bot : a ⊔ ⊥ = a := by
+  simp [sup_comm a]
+
+@[simp]
+def top_sup : ⊤ ⊔ a = ⊤ := by
+  apply le_antisymm
+  apply sup_le
+  rfl
+  apply le_top
+  simp
+
+@[simp]
+def sup_top : a ⊔ ⊤ = ⊤ := by
+  simp [sup_comm a]
+
 end
 
 section
@@ -152,6 +190,28 @@ def inf_eq_right {a b: α₀} : a ⊓ b = b ↔ b ≤ a :=
   sup_eq_right (α₀ := Opposite α₀)
 def inf_eq_left {a b: α₀} : a ⊓ b = a ↔ a ≤ b :=
   sup_eq_left (α₀ := Opposite α₀)
+
+def inf_le_inf {a b c d: α₀} :
+  a ≤ c -> b ≤ d -> a ⊓ b ≤ c ⊓ d := sup_le_sup (α₀ := α₀ᵒᵖ)
+
+variable [Top α₀] [Bot α₀] [IsLawfulBot α₀] [IsLawfulTop α₀]
+variable {a: α₀}
+
+@[simp]
+def bot_inf : ⊥ ⊓ a = ⊥ :=
+  top_sup (α₀ := Opposite α₀)
+
+@[simp]
+def inf_bot : a ⊓ ⊥ = ⊥ :=
+  sup_top (α₀ := Opposite α₀)
+
+@[simp]
+def top_inf : ⊤ ⊓ a = a :=
+  bot_sup (α₀ := Opposite α₀)
+
+@[simp]
+def inf_top : a ⊓ ⊤ = a :=
+  sup_bot (α₀ := Opposite α₀)
 
 end
 
