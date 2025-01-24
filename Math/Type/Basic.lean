@@ -453,6 +453,9 @@ def ULift.equiv : ULift α ≃ α where
   leftInv | ⟨_⟩ => rfl
   rightInv _ := rfl
 
+def ULift.equivCongr (h: α ≃ β) : ULift α ≃ ULift β :=
+  (ULift.equiv.trans h).trans ULift.equiv.symm
+
 def PLift.equiv : PLift α ≃ α where
   toFun | ⟨x⟩ => x
   invFun x := ⟨x⟩
@@ -667,3 +670,9 @@ def Embedding.DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
 def Option.embed : α ↪ Option α where
   toFun := some
   inj _ _ := Option.some.inj
+
+def Option.swapULift.{u} : ULift.{u} (Option α) ≃ Option (ULift.{u} α) where
+  toFun x := x.down.map ULift.up
+  invFun x := ⟨x.map ULift.down⟩
+  leftInv := by intro ⟨x⟩; cases x <;> rfl
+  rightInv := by intro x; cases x <;> rfl

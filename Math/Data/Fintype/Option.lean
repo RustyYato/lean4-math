@@ -26,3 +26,26 @@ def Option.card_eq [f: Fintype α] [fo: Fintype (Option α)] :  card (Option α)
   congr 1
   rw [List.length_map]
   rfl
+
+def Option.equivFinSucc : Fin (Nat.succ n) ≃ Option (Fin n) where
+  toFun x := if h:x = 0 then .none else .some (x.pred h)
+  invFun
+  | .some x => x.succ
+  | .none => 0
+  leftInv := by
+    intro x
+    dsimp
+    if h:x = 0 then rw [dif_pos h]; exact h.symm else
+    rw [dif_neg h]
+    dsimp
+    rw [Fin.succ_pred]
+  rightInv := by
+    intro x
+    cases x
+    rfl
+    dsimp
+    rw [dif_neg]
+    rw [Fin.pred_succ]
+    intro h
+    have := Fin.succ_ne_zero _ h
+    contradiction
