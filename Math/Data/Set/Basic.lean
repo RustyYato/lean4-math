@@ -47,6 +47,15 @@ class IsLawfulSupSet (α: Type*) [LE α] [SupSet α] where
 class IsLawfulInfSet (α: Type*) [LE α] [InfSet α] where
   sInf_le: ∀{s: Set α} {x: α}, x ∈ s -> sInf s ≤ x
 
+-- do not use this in bounds directly, this is only meant to be used to create a LawfulSupSet
+-- for example, via `GaloisConnection`
+class LawfulSupSet (α: Type*) [LE α] extends SupSet α where
+  le_sSup: ∀{s: Set α} {x: α}, x ∈ s -> x ≤ sSup s
+-- do not use this in bounds directly, this is only meant to be used to create a LawfulInfSet
+-- for example, via `GaloisConnection`
+class LawfulInfSet (α: Type*) [LE α] extends InfSet α where
+  sInf_le: ∀{s: Set α} {x: α}, x ∈ s -> sInf s ≤ x
+
 export IsLawfulSupSet (le_sSup)
 export IsLawfulInfSet (sInf_le)
 
@@ -58,6 +67,16 @@ instance [SupSet α] : InfSet αᵒᵖ where
 instance [LE α] [InfSet α] [IsLawfulInfSet α] : IsLawfulSupSet αᵒᵖ where
   le_sSup := sInf_le (α := α)
 instance [LE α] [SupSet α] [IsLawfulSupSet α] : IsLawfulInfSet αᵒᵖ where
+  sInf_le := le_sSup (α := α)
+
+instance [LE α] [h: LawfulSupSet α] : IsLawfulSupSet α where
+  le_sSup := h.le_sSup (α := α)
+instance [LE α] [h: LawfulInfSet α] : IsLawfulInfSet α where
+  sInf_le := h.sInf_le (α := α)
+
+instance [LE α] [LawfulInfSet α] : LawfulSupSet αᵒᵖ where
+  le_sSup := sInf_le (α := α)
+instance [LE α] [LawfulSupSet α] : LawfulInfSet αᵒᵖ where
   sInf_le := le_sSup (α := α)
 
 namespace Set

@@ -11,11 +11,16 @@ class IsSemiLatticeSup  [Sup α] extends IsLawfulSup α, IsPartialOrder α: Prop
 class IsSemiLatticeInf [Inf α] extends IsLawfulInf α, IsPartialOrder α: Prop where
   le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
 
+class IsLattice [Sup α] [Inf α] extends IsSemiLatticeSup α, IsSemiLatticeInf α, IsPartialOrder α: Prop where
+
 class SemiLatticeSup extends LawfulSup α, IsPartialOrder α where
   sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
 
 class SemiLatticeInf extends LawfulInf α, IsPartialOrder α where
   le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
+
+class Lattice extends SemiLatticeSup α, SemiLatticeInf α where
+  mk' ::
 
 export IsSemiLatticeSup (sup_le)
 export IsSemiLatticeInf (le_inf)
@@ -25,6 +30,12 @@ instance [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
 
 instance [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeSup αᵒᵖ where
   sup_le := le_inf (α := α)
+
+instance [Sup α] [Inf α] [IsLattice α] : IsLattice αᵒᵖ where
+  toIsSemiLatticeSup := inferInstance
+  inf_le_left := inf_le_left
+  inf_le_right := inf_le_right
+  le_inf := le_inf
 
 instance [h: SemiLatticeSup α] : IsSemiLatticeSup α where
   sup_le := h.sup_le
@@ -37,6 +48,15 @@ instance [SemiLatticeSup α] : SemiLatticeInf αᵒᵖ where
 
 instance [SemiLatticeInf α] : SemiLatticeSup αᵒᵖ where
   sup_le := le_inf (α := α)
+
+instance [Lattice α] : IsLattice α where
+  le_inf := le_inf
+
+instance [Lattice α] : Lattice αᵒᵖ where
+  le_inf := le_inf
+
+instance [h: SemiLatticeSup α] [g: SemiLatticeInf α] : Lattice α where
+  le_inf := g.le_inf
 
 attribute [simp] le_sup_left le_sup_right
 attribute [simp] inf_le_left inf_le_right
@@ -214,15 +234,6 @@ def inf_top : a ⊓ ⊤ = a :=
   sup_bot (α₀ := Opposite α₀)
 
 end
-
-/-- A lattice is a join-semilattice which is also a meet-semilattice. -/
-class IsLattice extends IsSemiLatticeSup α, IsSemiLatticeInf α, IsPartialOrder α: Prop where
-
-instance [IsLattice α] : IsLattice (Opposite α) where
-  toIsSemiLatticeSup := inferInstance
-  inf_le_left := inf_le_left
-  inf_le_right := inf_le_right
-  le_inf := le_inf
 
 section
 

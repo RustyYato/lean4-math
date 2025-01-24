@@ -1,5 +1,6 @@
 import Math.Order.OrderIso
 import Math.Data.Set.Order.Bounds
+import Math.Order.Lattice.Complete
 
 variable {α β : Type*} [LT α] [LE α] [LT β] [LE β]
 
@@ -306,21 +307,96 @@ abbrev GaloisInsertion.instLawfulSup [Sup α] [IsLawfulSup α] (gi: GaloisInsert
     apply gi.gc.monotone_l
     apply le_sup_right
 
--- abbrev GaloisCoinsertion.instSemilatticeSup [IsPartialOrder α] [SemiLatticeInf β] (gi: GaloisCoinsertion l u) : SemiLatticeInf α where
---   toLawfulInf := gi.instLawfulInf
---   -- inf := sorry
+abbrev GaloisCoinsertion.instLawfulInf [Inf β] [IsLawfulInf β] [IsPreOrder β] (gi: GaloisCoinsertion l u) : LawfulInf α :=
+  have := gi.dual.instLawfulSup (β := αᵒᵖ) (α := βᵒᵖ)
+  inferInstanceAs (LawfulInf αᵒᵖᵒᵖ)
 
--- abbrev GaloisCoinsertion.instLawfulInf [IsPartialOrder β] [Inf β] [IsLawfulInf β] (gi: GaloisCoinsertion l u) : LawfulInf α where
---   inf a b := u (l a ⊓ l b)
---   inf_le_left := by
---     intro x y
---     show u _ ≤ _
+abbrev GaloisInsertion.instSemilatticeSup [Sup α] [IsPartialOrder β] [IsSemiLatticeSup α] (gi: GaloisInsertion l u) : SemiLatticeSup β where
+  sup a b := l (u a ⊔ u b)
+  le_sup_left := by
+    intro x y
+    apply le_trans
+    apply gi.le_l_u
+    apply gi.gc.monotone_l
+    apply le_sup_left
+  le_sup_right := by
+    intro x y
+    apply le_trans
+    apply gi.le_l_u
+    apply gi.gc.monotone_l
+    apply le_sup_right
+  sup_le := by
+    intro a b k ka kb
+    apply gi.gc.l_le
+    apply sup_le
+    apply gi.gc.monotone_u
+    assumption
+    apply gi.gc.monotone_u
+    assumption
 
---     sorry
---   inf_le_right := sorry
+abbrev GaloisInsertion.instSemilatticeInf [Inf α] [IsPartialOrder β] [IsSemiLatticeInf α] (gi: GaloisInsertion l u) : SemiLatticeInf β where
+  inf a b := gi.choice (u a ⊓ u b) (by
+    apply le_inf
+    apply gi.gc.monotone_u
+    apply gi.gc.l_le
+    apply inf_le_left
+    apply gi.gc.monotone_u
+    apply gi.gc.l_le
+    apply inf_le_right)
+  inf_le_left := by
+    intro x y
+    show gi.choice _ _ ≤ _
+    rw [gi.choice_eq]
+    apply gi.gc.l_le
+    apply inf_le_left
+  inf_le_right := by
+    intro x y
+    show gi.choice _ _ ≤ _
+    rw [gi.choice_eq]
+    apply gi.gc.l_le
+    apply inf_le_right
+  le_inf := by
+    intro a b k ka kb
+    show _ ≤ gi.choice _ _
+    rw [gi.choice_eq]
+    apply le_trans
+    apply gi.le_l_u
+    apply gi.gc.monotone_l
+    apply le_inf
+    apply gi.gc.monotone_u
+    assumption
+    apply gi.gc.monotone_u
+    assumption
 
--- abbrev GaloisCoinsertion.instSemilatticeSup [IsPartialOrder α] [SemiLatticeInf β] (gi: GaloisCoinsertion l u) : SemiLatticeInf α where
---   toLawfulInf := gi.instLawfulInf
---   -- inf := sorry
+abbrev GaloisCoinsertion.instSemilatticeSup [Sup β] [IsPartialOrder α] [IsSemiLatticeSup β] (gi: GaloisCoinsertion l u) : SemiLatticeSup α :=
+  have := gi.dual.instSemilatticeInf (β := αᵒᵖ) (α := βᵒᵖ)
+  inferInstanceAs (SemiLatticeSup αᵒᵖᵒᵖ)
+
+abbrev GaloisCoinsertion.instSemilatticeInf [Inf β] [IsPartialOrder α] [IsSemiLatticeInf β] (gi: GaloisCoinsertion l u) : SemiLatticeInf α :=
+  have := gi.dual.instSemilatticeSup (β := αᵒᵖ) (α := βᵒᵖ)
+  inferInstanceAs (SemiLatticeInf αᵒᵖᵒᵖ)
+
+abbrev GaloisInsertion.instLattice [Inf α] [Sup α] [IsPartialOrder β] [IsLattice α] (gi: GaloisInsertion l u) : Lattice β :=
+  have := gi.instSemilatticeSup
+  have := gi.instSemilatticeInf
+  inferInstance
+
+abbrev GaloisCoinsertion.instLattice [Inf β] [Sup β] [IsPartialOrder α] [IsLattice β] (gi: GaloisCoinsertion l u) : Lattice α :=
+  have := gi.instSemilatticeSup
+  have := gi.instSemilatticeInf
+  inferInstance
+
+abbrev GaloisInsertion.liftCompleteLattice
+  [Sup α] [Inf α] [SupSet α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α]
+  [IsPartialOrder β] (gi : GaloisInsertion l u) : CompleteLattice β :=
+  { gi.instLawfulTop, gi.gc.instLawfulBot, gi.instLattice with
+    sSup := fun s => l (sSup (s.image u))
+    sSup_le := fun s => sorry -- (gi.isLUB_of_u_image (isLUB_sSup _)).2
+    le_sSup := fun s => sorry -- (gi.isLUB_of_u_image (isLUB_sSup _)).1
+    sInf := fun s =>
+      gi.choice (sInf (s.image u)) <| (isGLB_sInf _).2 <|
+          gi.gc.monotone_u.mem_lowerBounds_image (gi.isGLB_of_u_image <| isGLB_sInf _).1
+    sInf_le := fun s => by dsimp; rw [gi.choice_eq]; exact (gi.isGLB_of_u_image (isGLB_sInf _)).1
+    le_sInf := fun s => by dsimp; rw [gi.choice_eq]; exact (gi.isGLB_of_u_image (isGLB_sInf _)).2 }
 
 end GaloisInsertion

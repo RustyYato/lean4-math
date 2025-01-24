@@ -2,6 +2,8 @@ import Math.Order.Lattice.ConditionallyComplete
 import Math.Data.Set.Basic
 import Math.Data.Set.TopBot
 
+section
+
 variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 
@@ -17,23 +19,59 @@ export IsCompleteSemiLatticeInf (le_sInf)
 
 class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, IsLawfulBot α, IsLawfulTop α: Prop where
 
-instance [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (Opposite α) where
+class CompleteSemiLatticeSup extends LawfulSupSet α, SemiLatticeSup α where
+  sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> sSup s ≤ k
+class CompleteSemiLatticeInf extends LawfulInfSet α, SemiLatticeInf α where
+  le_sInf: ∀k: α, ∀s: Set α, (∀x ∈ s, k ≤ x) -> k ≤ sInf s
+class CompleteLattice extends CompleteSemiLatticeSup α, CompleteSemiLatticeInf α, LawfulTop α, LawfulBot α where
+  mk' ::
+
+end
+
+variable (α: Type*) [LE α] [LT α] [IsPartialOrder α]
+
+def CompleteLattice.mk [CompleteSemiLatticeSup α] [h: CompleteSemiLatticeInf α] [LawfulTop α] [LawfulBot α] : CompleteLattice α where
+  le_inf := h.le_inf
+  le_sInf := h.le_sInf
+
+instance [Inf α] [InfSet α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup αᵒᵖ where
   sSup_le := le_sInf (α := α)
 
-instance [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf (Opposite α) where
+instance [Sup α] [SupSet α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf αᵒᵖ where
   le_sInf := sSup_le (α := α)
 
-instance [IsCompleteLattice α] : IsCompleteLattice (Opposite α) where
+instance [Sup α] [SupSet α] [Inf α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α] : IsCompleteLattice αᵒᵖ where
   le_top := bot_le (α := α)
   bot_le := le_top (α := α)
   sSup_le := sSup_le
   le_sInf := le_sInf
 
-instance [IsCompleteLattice α] : IsConditionallyCompleteLattice α where
+instance [Sup α] [SupSet α] [Inf α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α] : IsConditionallyCompleteLattice α where
   le_csInf _ := le_sInf _ _
   le_csSup _ := le_sSup
   csSup_le _ := sSup_le _ _
   csInf_le _ := sInf_le
+
+instance [h: CompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup α where
+  le_sSup := h.le_sSup
+  sSup_le := h.sSup_le
+instance [h: CompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf α where
+  le_sInf := h.le_sInf
+  sInf_le := h.sInf_le
+instance [h: CompleteLattice α] : IsCompleteLattice α where
+  le_sSup := h.le_sSup
+  sSup_le := h.sSup_le
+  le_sInf := h.le_sInf
+  sInf_le := h.sInf_le
+
+instance [h: CompleteSemiLatticeInf α] : CompleteSemiLatticeSup αᵒᵖ where
+  sSup_le := le_sInf (α := α)
+instance [h: CompleteSemiLatticeSup α] : CompleteSemiLatticeInf αᵒᵖ where
+  le_sInf := sSup_le (α := α)
+instance [h: CompleteLattice α] : CompleteLattice αᵒᵖ := CompleteLattice.mk _
+
+variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
+variable {α₀: Type*} [Sup α₀] [Inf α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 
 section
 
