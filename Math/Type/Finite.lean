@@ -120,6 +120,19 @@ def IsFinite.ofEmbed {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ↪ β) : 
   rfl
   assumption
 
+open Classical in
+instance : IsFinite Prop := by
+  apply IsFinite.ofEquiv' Bool
+  refine ⟨?_, ?_, ?_, ?_⟩
+  intro p
+  exact decide p
+  intro x
+  exact ↑x
+  intro x
+  apply decide_eq_true_eq
+  intro x
+  simp
+
 instance (α: Sort*) [IsFinite α] : IsFinite (PLift α) :=
   IsFinite.ofEquiv PLift.equiv
 instance (α: Type*) [IsFinite α] : IsFinite (ULift α) :=
