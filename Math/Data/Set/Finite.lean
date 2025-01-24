@@ -4,11 +4,25 @@ import Math.Type.Finite
 
 namespace Set
 
+open Classical
+
 -- a set is finite if there exists an embedding from elements of the set to Fin n for some n
 abbrev IsFinite (a: Set α): Prop := _root_.IsFinite a.Elem
 
 -- a set is co-finite if the complement is finite
 abbrev IsCoFinite (a: Set α): Prop := IsFinite aᶜ
+
+instance [ha: _root_.IsFinite α] : _root_.IsFinite (Set α) := by
+  apply IsFinite.ofEmbed (α -> Bool)
+  refine ⟨?_, ?_⟩
+  intro s a
+  exact decide (a ∈ s)
+  intro x y eq
+  dsimp at eq
+  replace eq := congrFun eq
+  conv at eq => { intro; rw [decide_eq_decide] }
+  ext a
+  rw [eq]
 
 def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty (a.Elem ≃ Fin card) :=
   _root_.IsFinite.existsEquiv a.Elem
@@ -27,7 +41,6 @@ def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) 
   subst x
   exact Nat.not_lt_of_le (Nat.le_add_left _ _) xLt
 
-open Classical in
 instance [ha: IsFinite a] [hb: IsFinite b] : IsFinite (a ∪ b) := by
   have := Fintype.ofIsFinite a
   have := Fintype.ofIsFinite b
@@ -35,7 +48,6 @@ instance [ha: IsFinite a] [hb: IsFinite b] : IsFinite (a ∪ b) := by
   have : Fintype ((a ∪ b).Elem) := inferInstanceAs (Fintype (Subtype fun x => x ∈ a ∨ x ∈ b))
   infer_instance
 
-open Classical in
 instance [ha: IsFinite a] : IsFinite (a ∩ b) := by
   have := Fintype.ofIsFinite a
   unfold Set.Elem at *
@@ -142,38 +154,25 @@ instance {as: Set α} {f: α -> β} [ha: IsFinite as] : IsFinite (Set.image as f
     congr
     rw [h₀, h₁]
 
-open Classical in
 instance {as: Set α} [ha: IsFinite as] : IsFinite as.powerset := by
-  let card := _root_.IsFinite.card as.Elem
-  have eqv: as.Elem ≃ Fin card := _root_.IsFinite.toEquiv as.Elem
-  apply IsFinite.ofEmbedding (limit := 2 ^ card)
-  apply Embedding.mk
-  case toFun =>
-    intro x
-    apply Fin.mk <| Fin.powTwoSum fun y: Fin card => (eqv.invFun y).val ∈ x.val
-    apply Fin.powTwoSum_lt
-  case inj =>
-    intro x y eq
-    simp at eq
-    have := congrFun (Fin.powTwoSum_inj eq)
-    simp at this
-    cases x with | mk x xprop =>
-    cases y with | mk y yprop =>
-    congr
-    ext z
-    apply Iff.intro
-    intro mem_x
-    have := (this (eqv.toFun ⟨_, xprop _ mem_x⟩)).mp
-    rw [eqv.leftInv] at this
-    apply this
-    assumption
-    intro mem_y
-    have := (this (eqv.toFun ⟨_, yprop _ mem_y⟩)).mpr
-    rw [eqv.leftInv] at this
-    apply this
-    assumption
+  apply IsFinite.ofEmbed (Set as)
+  refine ⟨?_, ?_⟩
+  intro ⟨x, hx⟩
+  exact x.preimage Subtype.val
+  apply Function.Injective.comp
+  apply Set.mk.inj
+  intro x y eq
+  replace eq := congrFun eq
+  dsimp at eq
+  ext a
+  apply Iff.intro
+  intro h; apply (eq ⟨a, _⟩).mp
+  assumption
+  apply x.property; assumption
+  intro h; apply (eq ⟨a, _⟩).mpr
+  assumption
+  apply y.property; assumption
 
-open Classical in
 def IsFinite.ofSubset (s t: Set α) [h: t.IsFinite] (h: s ⊆ t) : s.IsFinite := by
   apply IsFinite.ofEmbed (β := t)
   apply Embedding.mk
@@ -184,7 +183,6 @@ def IsFinite.ofSubset (s t: Set α) [h: t.IsFinite] (h: s ⊆ t) : s.IsFinite :=
     intro ⟨x, _⟩ ⟨y, _⟩ eq
     cases eq
     congr
-
 
 def IsFinite.induction {motive : Set α → Prop} (s : Set α) [h : s.IsFinite]
     (nil: motive ∅)

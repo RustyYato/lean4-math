@@ -228,6 +228,9 @@ def preimage_id' (s: Set α) (f: α -> α) : (∀x, f x = x) -> s.preimage f = s
   rw [funext (g := id) h]
   rfl
 
+def preimage_preimage (s: Set α) (f: γ -> β) (g: β -> α) : (s.preimage g).preimage f = s.preimage (g ∘ f) := by
+  rfl
+
 def powerset (a: Set α) : Set (Set α) := mk fun x => x ⊆ a
 def mem_powerset {a: Set α} : ∀{x}, x ∈ a.powerset ↔ x ⊆ a := Iff.refl _
 
@@ -730,9 +733,6 @@ def image_image (s: Set α) (f: α -> β) (g: β -> γ) : (s.image f).image g = 
   apply Set.mem_image'
   apply Set.mem_image'
   assumption
-
-def preimage_preimage (s: Set α) (f: γ -> β) (g: β -> α) : (s.preimage g).preimage f = s.preimage (g ∘ f) := by
-  rfl
 
 def sub_image_preimage (s: Set α) (f: α -> β) : s ⊆ (s.image f).preimage f := by
   intro x mem
