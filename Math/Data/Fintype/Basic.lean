@@ -5,6 +5,7 @@ import Math.Data.Fintype.Sum
 import Math.Data.Fintype.Prod
 import Math.Data.Fintype.Subtype
 import Math.Data.Fintype.Option
+import Math.Data.Fintype.Prop
 
 instance [Fintype α] [Fintype β] : Fintype (Except α β) := Fintype.ofEquiv Except.equivSum
 
