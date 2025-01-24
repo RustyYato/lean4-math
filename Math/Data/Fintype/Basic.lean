@@ -41,18 +41,19 @@ instance [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] : Fintype (
 instance [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] : Fintype (α ≃ β) :=
   Fintype.ofEquiv Equiv.equivSubtype
 
+def Fintype.embedding_of_card_le [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
+  (h: card α ≤ card β) : α ↪ β := (Fin.embedFin h).congr equivFin.symm equivFin.symm
+
+def Fintype.equiv_of_card_eq [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
+  (h: card α = card β) : α ≃ β := equivFin.trans <| (Fin.equivOfEq h).trans equivFin.symm
+
 def Fintype.existsEmbedding_iff_card_le' :
   Nonempty (Fin n ↪ Fin m) ↔ n ≤ m := by
   apply Iff.symm (Iff.intro _ _)
   · intro h
-    apply Nonempty.intro
-    apply Embedding.mk _ _
-    intro x
-    apply x.castLE _
-    assumption
-    intro _ _ eq
-    dsimp at eq
-    exact Fin.val_inj.mp (Fin.mk.inj eq)
+    have := embedding_of_card_le (α := Fin n) (β := Fin m)
+    rw [Fin.card_eq, Fin.card_eq] at this
+    exact ⟨this h⟩
   induction m generalizing n with
   | zero =>
     intro ⟨emb⟩
@@ -122,20 +123,10 @@ def Fintype.existsEmbedding_iff_card_le' :
 
 def Fintype.existsEmbedding_iff_card_le [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] :
   Nonempty (α ↪ β) ↔ card α ≤ card β := by
-  apply Iff.trans _ Fintype.existsEmbedding_iff_card_le'
-  apply Iff.intro
-  intro ⟨emb⟩
-  apply Nonempty.intro
-  apply Embedding.congr
-  assumption
-  apply Fintype.equivFin
-  apply Fintype.equivFin
-  intro ⟨emb⟩
-  apply Nonempty.intro
-  apply Embedding.congr
-  assumption
-  apply Fintype.equivFin.symm
-  apply Fintype.equivFin.symm
+  apply flip Iff.intro
+  intro h; exact ⟨embedding_of_card_le h⟩
+  intro ⟨h⟩
+  exact Fintype.existsEmbedding_iff_card_le'.mp ⟨h.congr equivFin equivFin⟩
 
 private def List.collectNonempty [DecidableEq α] {β: α -> Sort*}
   (f: ∀x: α, Nonempty (β x)) : ∀as: List α, Nonempty (∀x: α, x ∈ as -> β x) := by
