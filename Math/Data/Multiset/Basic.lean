@@ -39,6 +39,10 @@ def mem (x: α) : Multiset α -> Prop := Quot.lift (x ∈ ·) <| by
 
 instance : Membership α (Multiset α) := ⟨flip mem⟩
 
+def Nodup : Multiset α -> Prop := Quot.lift (·.Nodup) <| by
+  intro x y eq
+  exact propext eq.nodup_iff
+
 def MinCountBy (P: α -> Prop) (n: Nat) : Multiset α -> Prop := Quot.lift (List.MinCountBy P · n) <| by
   intro x y eq
   dsimp
@@ -1010,6 +1014,136 @@ def eraseP_sub {P: α -> Bool} {ms: Multiset α} {h: ∀x y, x ∈ ms -> y ∈ m
       apply MinCount.head
       apply ih
       assumption
+
+@[ext]
+def ext (a b: Multiset α) : (h: ∀{x n}, a.MinCount x n ↔ b.MinCount x n) -> a = b := by
+  intro h
+  induction a, b using ind₂ with | mk a b =>
+  apply Quotient.sound
+  apply List.MinCount.iff_perm.mpr
+  assumption
+
+def dedup [DecidableEq α] : Multiset α -> Multiset α := by
+  apply Quotient.lift
+  case f =>
+    intro as
+    exact ⟦as.dedup⟧
+  case a =>
+    intro a b perm
+    apply Quotient.sound
+    apply List.ext_nodup
+    apply List.nodup_dedup
+    apply List.nodup_dedup
+    intro x
+    rw [←List.mem_dedup, ←List.mem_dedup]
+    apply perm.mem_iff
+
+def nodup_dedup [DecidableEq α] (as: Multiset α) : as.dedup.Nodup := by
+  cases as with | mk as =>
+  apply List.nodup_dedup
+
+def mem_dedup [DecidableEq α] (x: α) (as: Multiset α) : x ∈ as ↔ x ∈ as.dedup := by
+  cases as with | mk as =>
+  apply List.mem_dedup
+
+def filter (f: α -> Bool) : Multiset α -> Multiset α := by
+  apply Quotient.lift
+  case f =>
+    intro as
+    exact ⟦as.filter f⟧
+  case a =>
+    intro a b eq
+    apply Quotient.sound
+    induction eq with
+    | nil => apply List.Perm.nil
+    | cons x perm ih =>
+      rename_i as bs
+      unfold List.filter
+      split
+      apply List.Perm.cons
+      assumption
+      assumption
+    | trans _ _ ih₀ ih₁ => exact ih₀.trans ih₁
+    | swap =>
+      unfold List.filter
+      unfold List.filter
+      rename_i x y as
+      cases f x <;> cases f y <;> simp
+      apply List.Perm.refl
+      apply List.Perm.cons
+      apply List.Perm.refl
+      apply List.Perm.cons
+      apply List.Perm.refl
+      apply List.Perm.swap
+
+def nodup_filter (f: α -> Bool) (as: Multiset α) : as.Nodup -> (as.filter f).Nodup := by
+  intro h
+  cases as
+  apply List.nodup_filter
+  assumption
+
+def mem_filter {f: α -> Bool} {as: Multiset α} : ∀{x}, x ∈ as.filter f ↔ x ∈ as ∧ f x := by
+  intro h
+  cases as
+  apply List.mem_filter
+
+def mem_map {f: α -> β} {as: Multiset α} : ∀{x}, x ∈ as.map f ↔ ∃a ∈ as, f a = x := by
+  intro h
+  cases as
+  apply List.mem_map
+
+def mem_flatten {as: Multiset (Multiset α)} : ∀{x}, x ∈ as.flatten ↔ ∃a ∈ as, x ∈ a := by
+  intro x
+  induction as with
+  | nil =>
+    apply Iff.intro
+    intro x
+    contradiction
+    intro ⟨_, _, _⟩
+    contradiction
+  | cons a as ih =>
+    rw [flatten_cons, mem_append]
+    apply Iff.intro
+    intro h
+    cases h
+    exists a
+    apply And.intro
+    apply mem_cons.mpr; left; rfl
+    assumption
+    rename_i h
+    have ⟨a, ha, hx⟩ := ih.mp h
+    exists a
+    apply And.intro
+    apply mem_cons.mpr; right; assumption
+    assumption
+    intro ⟨a, ha, hx⟩
+    rw [mem_cons] at ha
+    cases ha; subst a
+    left; assumption
+    right
+    apply ih.mpr
+    exists a
+
+def mem_flatMap {f: α -> Multiset β} {as: Multiset α} : ∀{x}, x ∈ as.flatMap f ↔ ∃a ∈ as, x ∈ f a := by
+  intro x
+  unfold flatMap
+  erw [mem_flatten]
+  apply Iff.intro
+  intro ⟨a, memha , hx⟩
+  rw [mem_map] at memha
+  obtain ⟨a, ha, eq⟩ := memha; subst eq
+  exists a
+  intro ⟨a, ha, hx⟩
+  exists f a
+  apply And.intro
+  rw [mem_map]
+  exists a
+  assumption
+
+instance [DecidableEq α] (as: Multiset α) : Decidable (x ∈ as) := by
+  apply as.recOnSubsingleton (motive := fun _ => _)
+  intro
+  infer_instance
 
 -- theorem flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
 --   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by

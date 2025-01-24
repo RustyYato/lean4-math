@@ -596,3 +596,72 @@ def List.nodup_dedup [DecidableEq α] (as: List α) : as.dedup.Nodup := by
     apply List.Pairwise.cons
     intro x m h; subst x; contradiction
     assumption
+
+def List.mincount_le_one_iff_nodup {as: List α} :
+  as.Nodup ↔ ∀{x: α} {n: Nat}, as.MinCount x n -> n ≤ 1 := by
+  induction as with
+  | nil =>
+    apply Iff.intro
+    intro h x n c
+    replace c : List.MinCount [] x n := c
+    cases c
+    apply Nat.zero_le
+    intro
+    apply List.Pairwise.nil
+  | cons a as ih =>
+    apply Iff.intro
+    intro h
+    cases h
+    rename_i has ha
+    intro x n c
+    cases c
+    apply ih.mp
+    assumption
+    assumption
+    · apply Nat.succ_le_succ
+      subst x
+      have : a ∉ as := (ha a · rfl)
+      apply Decidable.byContradiction
+      intro h
+      replace h := Nat.lt_of_not_le h
+      rename_i n _
+      match n with
+      | n + 1 =>
+      rename_i c
+      have : List.MinCount _ _ _ := c.reduce (m := 1) (Nat.succ_le_succ (Nat.zero_le _))
+      rw [←List.mem_iff_MinCount_one] at this
+      contradiction
+    intro h
+    apply List.Pairwise.cons
+    intro x hx
+    intro h; subst x
+    rw [List.mem_iff_MinCount_one] at hx
+    have := h hx.head
+    contradiction
+    apply ih.mpr
+    intro x n c
+    apply h
+    apply c.cons
+
+def List.ext_nodup (as: List α) (bs: List α) (ha: as.Nodup) (hb: bs.Nodup) :
+  (h: ∀{x}, x ∈ as ↔ x ∈ bs) -> as ≈ bs := by
+  intro h
+  apply List.MinCount.iff_perm.mpr
+  intro x n
+  match n with
+  | 0 =>
+    apply Iff.intro <;> intro
+    apply List.MinCount.zero
+    apply List.MinCount.zero
+  | 1 =>
+    rw [←List.mem_iff_MinCount_one, ←List.mem_iff_MinCount_one]
+    apply h
+  | n + 2 =>
+    rw [List.mincount_le_one_iff_nodup] at ha hb
+    apply Iff.intro
+    intro c
+    have := ha c
+    contradiction
+    intro c
+    have := hb c
+    contradiction
