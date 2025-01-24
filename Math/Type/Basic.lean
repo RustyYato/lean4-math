@@ -618,3 +618,52 @@ def empty_or_nonempty {motive: Sort u -> Prop} (empty: ∀t, IsEmpty t -> motive
   assumption
   apply empty
   exact IsEmpty.ofNotNonempty h
+
+def Embedding.ofOptionEmbed (emb: Option α ↪ Option β) : α ↪ β where
+  toFun a :=
+    match h:emb a with
+    | .some x => x
+    | .none => (emb .none).get <| by
+      cases g:emb .none
+      have := emb.inj (h.trans g.symm)
+      contradiction
+      rfl
+  inj := by
+    intro x y eq
+    dsimp at eq
+    split at eq <;> split at eq
+    rename_i h₀ _ h₁
+    subst eq
+    exact Option.some.inj <| emb.inj (h₀.trans h₁.symm)
+    subst eq
+    rename_i h₀ h₁
+    rw [Option.some_get] at h₁
+    have := emb.inj h₁; contradiction
+    rename_i h₀ eq h₁; subst eq
+    rw [Option.some_get] at h₁
+    have := emb.inj h₁; contradiction
+    rename_i h₀ h₁
+    exact Option.some.inj <| emb.inj (h₀.trans h₁.symm)
+
+def Embedding.toOptionEmbed (emb: α ↪ β) : Option α ↪ Option β where
+  toFun
+  | .some x => emb x
+  | .none => .none
+  inj := by
+    intro x y eq
+    dsimp at eq
+    split at eq <;> split at eq
+    rw [emb.inj <| Option.some.inj eq]
+    contradiction
+    contradiction
+    rfl
+
+def Embedding.DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
+  fun a b =>
+  match inferInstanceAs (Decidable (emb a = emb b)) with
+  | .isTrue h => .isTrue (emb.inj h)
+  | .isFalse h => .isFalse fun g => h (g ▸ rfl)
+
+def Option.embed : α ↪ Option α where
+  toFun := some
+  inj _ _ := Option.some.inj

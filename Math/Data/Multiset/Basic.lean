@@ -43,6 +43,11 @@ def Nodup : Multiset α -> Prop := Quot.lift (·.Nodup) <| by
   intro x y eq
   exact propext eq.nodup_iff
 
+def length : Multiset α -> Nat := by
+  apply Quot.lift List.length
+  intros _ _ eq
+  apply eq.length_eq
+
 def MinCountBy (P: α -> Prop) (n: Nat) : Multiset α -> Prop := Quot.lift (List.MinCountBy P · n) <| by
   intro x y eq
   dsimp

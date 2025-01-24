@@ -217,7 +217,7 @@ def total_aux (cs: ChainClosure r s)
     intro h
     apply g
     apply Set.sub_trans h
-    apply le_sSup s
+    apply sub_sUnion
     assumption
 
 def eq_or_succ_sub_of_sub

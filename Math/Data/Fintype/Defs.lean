@@ -1,10 +1,16 @@
-import Math.Data.List.Basic
 import Math.Type.Basic
+import Math.Data.Finset.Basic
 
 class Fintype (α: Type _) where
   all: List α
   nodup: all.Nodup
   complete: ∀x, x ∈ all
+
+def Finset.univ (α: Type _) [f: Fintype α] : Finset α where
+  val := Multiset.mk f.all
+  property := f.nodup
+
+def Finset.mem_univ [f: Fintype α] : ∀x, x ∈ Finset.univ α := f.complete
 
 def Fintype.perm (a b: Fintype α) : a.all.Perm b.all := by
   cases a with | mk a anodup acomplete =>
