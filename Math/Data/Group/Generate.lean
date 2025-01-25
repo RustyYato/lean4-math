@@ -23,9 +23,13 @@ def Group.Generate (src: Group) (s: Set src.ty) : Group where
     dsimp; congr; rw [inv_mul_cancel]
 
 def Group.Generate.spec (a b: Group) (s₀: Set a.ty) (s₁: Set b.ty)
-  (h: Isomorphsism a b) (g: ∀x, x ∈ s₀ ↔ h x ∈ s₁) :
+  (h: Isomorphsism a b) (g: s₀ = s₁.preimage h) :
   Isomorphsism (Group.Generate a s₀) (Group.Generate b s₁) where
   toEquiv := Subtype.congrEquiv h.toEquiv <| by
+    have g' : s₁ = s₀.preimage h.symm := by
+      rw [g, Set.preimage_preimage, Set.preimage_id']
+      intro x
+      simp [h.symm_coe]
     intro x
     apply Iff.intro
     intro g
@@ -35,7 +39,8 @@ def Group.Generate.spec (a b: Group) (s₀: Set a.ty) (s₁: Set b.ty)
     rw [h.resp_one]
     apply GenerateFrom.one
     apply GenerateFrom.of
-    apply (g _).mp
+    rename_i h₀
+    rw [g] at h₀
     assumption
     rw [h.resp_mul']
     apply GenerateFrom.mul <;> assumption
@@ -50,10 +55,8 @@ def Group.Generate.spec (a b: Group) (s₀: Set a.ty) (s₁: Set b.ty)
     rw [h.symm.resp_one]
     apply GenerateFrom.one
     apply GenerateFrom.of
-    apply (g _).mpr
-    rename_i x _
-    show h.toFun _ ∈ _
-    rw [h.rightInv x]
+    rename_i h₀
+    rw [g'] at h₀
     assumption
     show a.GenerateFrom _ (h.symm _)
     rw [h.symm.resp_mul]
