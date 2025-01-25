@@ -1,4 +1,4 @@
-import Math.Data.QuotLike.Basic
+import Math.Data.Quotient.Basic
 import Math.Type.Notation
 import Math.Data.Set.Basic
 
@@ -62,7 +62,6 @@ def Equiv.to_right : ∀{a b}, Equiv a b -> ∀b₀: b.Type, ∃a₀: a.Type, (a
 
 def _root_.ZfSet := Quotient setoid
 def mk : Pre -> ZfSet := Quot.mk Equiv
-instance : QuotientLike setoid ZfSet where
 
 local notation "⟦" a "⟧" => mk a
 
@@ -502,12 +501,13 @@ def Pre.image (f: Pre.{u} -> Pre.{u}): Pre.{u} -> Pre.{u}
 
 def cast_eqv: a ≈ b -> a zf≈ b := id
 
+noncomputable
 def image (f: ZfSet.{u} -> ZfSet.{u}): ZfSet.{u} -> ZfSet.{u} := by
   apply Quotient.lift (fun _ => ⟦_⟧) _
   intro p
   apply p.image
   intro h
-  exact unwrapQuot (f ⟦h⟧)
+  exact Quotient.out (f ⟦h⟧)
   simp
   intro a b eq
   cases a with | intro a amem =>
@@ -520,8 +520,8 @@ def image (f: ZfSet.{u} -> ZfSet.{u}): ZfSet.{u} -> ZfSet.{u} := by
     exists b₀
     apply Quotient.exact (s := setoid)
     unfold Quotient.mk
-    show QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧)) = QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧))
-    rw [mk_unwrapQuot, mk_unwrapQuot]
+    show Quotient.mk _ (Quotient.out (f ⟦_⟧)) = Quotient.mk _ (Quotient.out (f ⟦_⟧))
+    rw [Quotient.out_spec, Quotient.out_spec]
     congr 1
     exact Quotient.sound prf
   · intro b₀
@@ -530,8 +530,8 @@ def image (f: ZfSet.{u} -> ZfSet.{u}): ZfSet.{u} -> ZfSet.{u} := by
     exists a₀
     apply Quotient.exact (s := setoid)
     unfold Quotient.mk
-    show QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧)) = QuotLike.mk (self := instQuotLikeQuot) (unwrapQuot (f ⟦_⟧))
-    rw [mk_unwrapQuot, mk_unwrapQuot]
+    show Quotient.mk _ (Quotient.out (f ⟦_⟧)) = Quotient.mk _ (Quotient.out (f ⟦_⟧))
+    rw [Quotient.out_spec, Quotient.out_spec]
     congr 1
     exact Quotient.sound prf
 
@@ -546,17 +546,16 @@ def mem_image {a: ZfSet} {f: ZfSet -> ZfSet} : ∀{x}, x ∈ a.image f ↔ ∃a�
   apply And.intro
   apply Pre.mem_def
   simp only [Pre.image, Pre.Mem] at prf
-  have := quot.sound (Q := ZfSet) prf
-  rw [mk_unwrapQuot] at this
-  simp [QuotLike.mk] at this
+  have := Quotient.sound prf
+  rw [Quotient.out_spec] at this
   assumption
   intro ⟨a₀, a₀_in_a, x_eq⟩
   induction a₀ using ind with | mk a₀ =>
   obtain ⟨a₁, a₁prf⟩ := a₀_in_a
   refine ⟨a₁, ?_⟩
   simp [Pre.image, Pre.Mem]
-  apply quot.exact (Q := ZfSet)
-  erw [mk_unwrapQuot]
+  apply Quotient.exact
+  erw [Quotient.out_spec]
   apply x_eq.trans
   congr 1
   apply Quotient.sound
