@@ -79,19 +79,24 @@ class IsIrrefl: Prop where
 
 export IsIrrefl (irrefl)
 
-instance IsWellFounded.toIsIrrefl [wf: IsWellFounded rel] : IsIrrefl rel where
+instance [wf: IsWellFounded rel] : IsIrrefl rel where
   irrefl := wf.wf.irrefl
 
 class IsWellOrder extends IsWellFounded rel, IsTrans rel, IsTrichotomous rel: Prop where
 instance [IsWellFounded rel] [IsTrans rel] [IsTrichotomous rel] : IsWellOrder rel where
 
-instance IsWellOrder.toIsIrrefl [wo: IsWellOrder rel] : IsIrrefl rel where
+instance [wo: IsWellOrder rel] : IsIrrefl rel where
   irrefl := wo.wf.irrefl
 
 class IsSymmetric: Prop where
   symm: ∀{a b}, rel a b -> rel b a
 
 export IsSymmetric (symm)
+
+class IsAsymm: Prop where
+  asymm: ∀{a b}, rel a b -> rel b a -> False
+
+export IsAsymm (asymm)
 
 def symm_iff [IsSymmetric r] : ∀{a b}, r a b ↔ r b a := Iff.intro symm symm
 
@@ -212,7 +217,11 @@ instance [IsTrichotomous r] [IsTrichotomous s] : IsTrichotomous (Prod.Lex r s) w
       right; right; apply Prod.Lex.right; assumption
     right; right; apply Prod.Lex.left; assumption
 
-def asymm [IsTrans r] [IsIrrefl r] : r a b -> r b a -> False := fun h g => irrefl (trans h g)
+instance [IsTrans r] [IsIrrefl r] : IsAsymm r where
+  asymm := fun h g => irrefl (trans h g)
+
+instance [IsWellFounded r] : IsAsymm r where
+  asymm h g := asymm (TransGen.single h) (TransGen.single g)
 
 def exists_min {P: α -> Prop} (r: α -> α -> Prop) [IsWellFounded r] (h: ∃x, P x) : ∃x, P x ∧ ∀y, r y x -> ¬P y := by
   obtain ⟨x, px⟩ := h

@@ -972,6 +972,8 @@ def forall_mem_image {f : α → β} {s : Set α} {p : β → Prop} :
     apply h
     assumption
 
+def sdiff_eq_inter_compl (a b: Set α) : a \ b = a ∩ bᶜ := rfl
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]

@@ -1,9 +1,12 @@
 import Math.Data.Quotient.Basic
 import Math.Type.Notation
 import Math.Data.Set.Basic
+import Math.Relation.Basic
+import Math.Tactics.PPWithUniv
 
 namespace ZfSet
 
+@[pp_with_univ]
 inductive Pre where
 | intro (α: Type*) (mem: α -> Pre)
 
@@ -60,18 +63,23 @@ def Equiv.to_left : ∀{a b}, Equiv a b -> ∀a₀: a.Type, ∃b₀: b.Type, (a.
 def Equiv.to_right : ∀{a b}, Equiv a b -> ∀b₀: b.Type, ∃a₀: a.Type, (a.Mem a₀) ≈ (b.Mem b₀)
 | .intro _ _, .intro _ _, ⟨_, r⟩ => r
 
+@[pp_with_univ]
 def _root_.ZfSet := Quotient setoid
 def mk : Pre -> ZfSet := Quot.mk Equiv
 
 local notation "⟦" a "⟧" => mk a
 
+@[cases_eliminator]
 def ind : {motive: ZfSet -> Prop} -> (mk: ∀x, motive ⟦x⟧) -> ∀x, motive x := Quotient.ind
+@[cases_eliminator]
 def ind₂ : {motive: ZfSet -> ZfSet -> Prop} -> (mk: ∀x y, motive ⟦x⟧ ⟦y⟧) -> ∀x y, motive x y := Quotient.ind₂
+@[cases_eliminator]
 def ind₃ : {motive: ZfSet -> ZfSet -> ZfSet -> Prop} -> (mk: ∀x y z, motive ⟦x⟧ ⟦y⟧ ⟦z⟧) -> ∀x y z, motive x y z := by
   intro motive h x y z
   induction x, y using ind₂ with | mk x y =>
   induction z using ind with | mk z =>
   apply h
+@[cases_eliminator]
 def ind₄ : {motive: ZfSet -> ZfSet -> ZfSet -> ZfSet -> Prop} -> (mk: ∀w x y z, motive ⟦w⟧ ⟦x⟧ ⟦y⟧ ⟦z⟧) -> ∀w x y z, motive w x y z := by
   intro motive h w x y z
   induction w, x using ind₂ with | mk w x =>
@@ -152,6 +160,54 @@ def ext (a b: ZfSet) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
 @[refl]
 def sub_refl (a: ZfSet) : a ⊆ a := fun _ => id
 def sub_trans {a b c: ZfSet} : a ⊆ b -> b ⊆ c -> a ⊆ c := fun ab bc x h => bc x (ab x h)
+def sub_antisym {a b: ZfSet} : a ⊆ b -> b ⊆ a -> a = b := by
+  intro ab ba
+  ext x
+  apply Iff.intro
+  apply ab
+  apply ba
+
+@[coe]
+def toSet (s: ZfSet) : Set ZfSet := Set.mk (· ∈ s)
+
+def toSet_mem (s: ZfSet) : ∀{x}, x ∈ s ↔ x ∈ s.toSet := Iff.rfl
+
+def toSet_inj : Function.Injective toSet := by
+  intro x y eq
+  ext z
+  simp [toSet_mem, eq]
+
+def Pre.equivAcc {a b: Pre} (h: a zf≈ b) : Acc (· ∈ ·) ⟦a⟧ -> Acc (· ∈ ·) ⟦b⟧ := by
+  induction a generalizing b with
+  | intro α αmem ih =>
+    cases b with | intro β βmem =>
+    intro acc
+    apply Acc.intro
+    intro b mem
+    cases b with | mk b =>
+    obtain ⟨b₀, b₀eqv⟩: ∃b₀, b zf≈ βmem b₀ := mem
+    have ⟨a₀, a₀eqv⟩ := h.right b₀
+    apply ih
+    apply flip Equiv.trans
+    symm; exact b₀eqv
+    assumption
+    apply acc.inv
+    exists a₀
+
+instance : @Relation.IsWellFounded ZfSet (· ∈ ·) where
+  wf := by
+    apply WellFounded.intro
+    intro a
+    cases a with | mk a =>
+    induction a with
+    | intro α αmem ih =>
+    apply Acc.intro
+    intro b
+    cases b with | mk b =>
+    intro mem
+    obtain ⟨a, eqv⟩: ∃a, b zf≈ αmem a := mem
+    apply Pre.equivAcc eqv.symm
+    apply ih
 
 def Pre.lift.{u, v} : Pre.{u} -> Pre.{max u v}
 | .intro a amem => .intro (ULift a) (fun x => (amem x.down).lift)
@@ -266,6 +322,10 @@ def mem_union {a b: ZfSet} : ∀{x}, x ∈ a ∪ b ↔ x ∈ a ∨ x ∈ b := by
   obtain ⟨x, prf⟩ := h
   exists .inr x
 
+def toSet_union (a b: ZfSet) : (a ∪ b).toSet = a.toSet ∪ b.toSet := by
+  ext x
+  simp [mem_union, Set.mem_union, toSet]
+
 def union_comm (a b: ZfSet) : a ∪ b = b ∪ a := by
   ext x; simp [mem_union, or_comm]
 
@@ -364,6 +424,10 @@ instance : Inter ZfSet := ⟨inter⟩
 
 def mem_inter {a b: ZfSet} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := mem_sep
 
+def toSet_inter (a b: ZfSet) : (a ∩ b).toSet = a.toSet ∩ b.toSet := by
+  ext x
+  simp [mem_inter, Set.mem_inter, toSet]
+
 def inter_comm (a b: ZfSet) : a ∩ b = b ∩ a := by
   ext x
   simp [mem_inter, and_comm]
@@ -387,6 +451,14 @@ def inter_sub_right (a b: ZfSet) : a ∩ b ⊆ b := by
   intro x
   simp [mem_inter]
 
+def left_sub_union (a b: ZfSet) : a ⊆ a ∪ b := by
+  intro x
+  rw [mem_union]; exact .inl
+
+def right_sub_union (a b: ZfSet) : b ⊆ a ∪ b := by
+  intro x
+  rw [mem_union]; exact .inr
+
 def sdiff (a b: ZfSet) := a.sep (· ∉ b)
 
 instance : SDiff ZfSet := ⟨sdiff⟩
@@ -396,6 +468,10 @@ def mem_sdiff {a b: ZfSet} : ∀{x}, x ∈ a \ b ↔ x ∈ a ∧ x ∉ b := by
   show x ∈ sdiff a b ↔ _
   unfold sdiff
   exact mem_sep
+
+def toSet_sdiff (a b: ZfSet) : (a \ b).toSet = a.toSet \ b.toSet := by
+  ext x
+  simp [mem_sdiff, Set.mem_sdiff, toSet]
 
 def empty_sdiff (a: ZfSet) : ∅ \ a = ∅ := by
   ext; simp [mem_sdiff]
@@ -408,15 +484,15 @@ def sdiff_sub_left (a b: ZfSet) : a \ b ⊆ a := by
   simp [mem_sdiff]
   intros; assumption
 
-def Pre.singleton (a: Pre) : Pre := .intro PUnit (fun _ => a)
+def Pre.singleton (a: Pre.{u}) : Pre.{u} := .intro PUnit (fun _ => a)
 instance : Singleton Pre Pre := ⟨.singleton⟩
-def singleton : ZfSet -> ZfSet := by
+def singleton : ZfSet.{u} -> ZfSet.{u} := by
   apply Quotient.lift (⟦{·}⟧)
   intros a b  eq
   apply Quotient.sound
   apply And.intro
-  intro; refine ⟨(), eq⟩
-  intro; refine ⟨(), eq⟩
+  intro; refine ⟨.unit, eq⟩
+  intro; refine ⟨.unit, eq⟩
 instance : Singleton ZfSet ZfSet := ⟨.singleton⟩
 
 def mem_singleton {a: ZfSet} : ∀{x: ZfSet}, x ∈ ({a}: ZfSet) ↔ x = a := by
@@ -426,14 +502,18 @@ def mem_singleton {a: ZfSet} : ∀{x: ZfSet}, x ∈ ({a}: ZfSet) ↔ x = a := by
   intro ⟨h, prf⟩
   exact Quotient.sound prf
   intro h
-  exact ⟨(), Quotient.exact h⟩
+  exact ⟨.unit, Quotient.exact h⟩
 
-def insert (a b: ZfSet) := { a } ∪ b
+protected def insert (a b: ZfSet.{u}) := { a } ∪ b
 
-instance : Insert ZfSet ZfSet  := ⟨.insert⟩
+instance : Insert ZfSet.{u} ZfSet.{u}  := ⟨.insert⟩
 
-def mem_insert {a b: ZfSet} : ∀{x}, x ∈ Insert.insert a b ↔ x = a ∨ x ∈ b := by
-  simp [Insert.insert, mem_union, mem_singleton, insert]
+def mem_insert {a b: ZfSet} : ∀{x}, x ∈ insert a b ↔ x = a ∨ x ∈ b := by
+  simp [insert, mem_union, mem_singleton, ZfSet.insert]
+
+def toSet_insert (a b: ZfSet) : (insert a b).toSet = insert a b.toSet := by
+  ext x
+  simp [mem_insert, toSet]
 
 def mem_pair {a b: ZfSet} : ∀{x}, x ∈ ({a, b}: ZfSet) ↔ x = a ∨ x = b := by
   simp [mem_insert, mem_singleton]
