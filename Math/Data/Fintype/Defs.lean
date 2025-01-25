@@ -1,5 +1,6 @@
 import Math.Type.Basic
 import Math.Data.Finset.Basic
+import Math.Data.Set.Basic
 
 class Fintype (α: Type _) where
   all: List α
@@ -11,6 +12,24 @@ def Finset.univ (α: Type _) [f: Fintype α] : Finset α where
   property := f.nodup
 
 def Finset.mem_univ [f: Fintype α] : ∀x, x ∈ Finset.univ α := f.complete
+
+instance [Fintype α] [DecidableEq α] : SetComplement (Finset α) where
+  scompl f := Finset.univ _ \ f
+
+def Finset.compl (α: Type _) [f: Fintype α] : Finset α where
+  val := Multiset.mk f.all
+  property := f.nodup
+
+def Finset.mem_compl [Fintype α] [DecidableEq α] (f: Finset α) :
+  ∀{x}, x ∈ fᶜ ↔ x ∉ f := by
+  intro x
+  show x ∈ Finset.univ _ \ f ↔ _
+  simp [mem_sdiff, mem_univ]
+
+@[simp]
+def Finset.compl_compl [Fintype α] [DecidableEq α] (f: Finset α) : fᶜᶜ = f := by
+  ext x
+  simp [mem_compl]
 
 def Fintype.perm (a b: Fintype α) : a.all.Perm b.all := by
   cases a with | mk a anodup acomplete =>
