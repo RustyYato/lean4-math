@@ -9,6 +9,29 @@ structure ZfSet.IsOrdinal (set: ZfSet): Prop where
   trans: ∀{x}, x ∈ set -> x ⊆ set
   total: ∀{x y}, x ∈ set -> y ∈ set -> x ∈ y ∨ x = y ∨ y ∈ x
 
+def ZfSet.IsOrdinal.ofEquiv.{u, v} (a: ZfSet.{u}) (b: ZfSet.{v}) (hab: a zf= b) (g: a.IsOrdinal): b.IsOrdinal where
+  trans := by
+    intro x hxa z hzx
+    replace hxb : b.mem x := hxa
+    replace hzx : x.mem z := hzx
+    have hxa := hxb.congr hab.symm .refl
+    rw [ZfSet.mem.spec] at hxa
+    obtain ⟨a', a'_in_a, a'_eqv_x⟩ := hxa
+    have := ZfSet.sub.ofSubset (g.trans a'_in_a) z (hzx.congr a'_eqv_x.symm .refl)
+    exact this.congr hab .refl
+  total := by
+    intro x y hxb hyb
+    have ⟨x₀, x₀_in_a, x₀_eqv_x⟩ := ZfSet.mem.spec.mp <| hxb.congr hab.symm .refl
+    have ⟨y₀, y₀_in_a, y₀_eqv_y⟩ := ZfSet.mem.spec.mp <| hyb.congr hab.symm .refl
+    rcases g.total x₀_in_a y₀_in_a with lt | eq | gt
+    left; apply lt.congr <;> assumption
+    right; left
+    apply eq_of_eqv
+    apply x₀_eqv_x.symm.trans
+    rw [eq]
+    assumption
+    right; right; apply gt.congr <;> assumption
+
 @[pp_with_univ]
 structure Ordinal where
   ofZfSet ::
@@ -116,6 +139,11 @@ def mem_set {a: ZfSet} (b: Ordinal) (ha: a ∈ b.set) : a.IsOrdinal where
     intro x y hx hy
     apply b.total
     all_goals apply b.trans <;> assumption
+
+def _root_.ZfSet.IsOrdinal.ofMem.{u,v} (a: ZfSet.{u}) (b: ZfSet.{v}) (hab: b.mem a) (g: b.IsOrdinal): a.IsOrdinal := by
+  rw [mem.spec] at hab
+  obtain ⟨b', b'_in_b, b'_eqv_a⟩ := hab
+  exact (mem_set (.mk g) b'_in_b).ofEquiv _ _ b'_eqv_a
 
 def lt_of_le_of_not_le' (B A: Ordinal) : B ≤ A -> ¬A ≤ B -> B < A := by
   intro BA AB
@@ -307,5 +335,49 @@ instance : IsLinearMinMaxOrder Ordinal where
     intro h
     rw [←h]
     apply right_sub_union
+
+def zero : Ordinal where
+  set := ∅
+  trans := by
+    intro _ h; exact (not_mem_empty _ h).elim
+  total := by
+    intro _ _ h; exact (not_mem_empty _ h).elim
+
+def ofNat : Nat -> Ordinal
+| 0 => zero
+| n + 1 => (ofNat n).succ
+
+def lift (o: Ordinal.{u}): Ordinal.{max u v} where
+  set := o.set.lift
+  trans := by
+    intro x hxo z hzx
+    cases o with | ofZfSet o otrans ototal =>
+    dsimp at *
+    cases o with | mk o =>
+    cases o with | intro O Omem =>
+    cases x with | mk x =>
+    cases x with | intro X Xmem =>
+    cases z with | mk z =>
+    cases z with | intro Z Zmem =>
+    have lift_eqv := Pre.lift.spec.{u, v} (Pre.intro O Omem)
+    obtain ⟨olx, xeqvolx⟩ := hxo
+    have ⟨ox, oeqvolx⟩ := lift_eqv.to_right olx
+    have xeqvox := xeqvolx.trans oeqvolx.symm'
+    obtain ⟨x, zeqvx⟩ := hzx
+    have ⟨o, zeqvo⟩ := (xeqvolx.trans oeqvolx.symm').to_left x
+    replace zeqvo := zeqvx.trans zeqvo
+    have ⟨oz, ozeqv⟩ := otrans (x := ⟦(Pre.intro O Omem).Mem ox⟧) ⟨_, .refl' _⟩
+      ⟦((Pre.intro O Omem).Mem ox).Mem o⟧ ⟨_, .refl' _⟩
+    have ⟨oz', ozeqvoz'⟩ := lift_eqv.to_left oz
+    have := zeqvo.trans (ozeqv.trans ozeqvoz')
+    exists oz'
+  total := by
+    intro x y memx memy
+    rw [mem_lift] at memx memy
+    have hx := IsOrdinal.ofMem _ _ memx o.toIsOrdinal
+    have hy := IsOrdinal.ofMem _ _ memy o.toIsOrdinal
+    apply total'
+    assumption
+    assumption
 
 end Ordinal

@@ -15,13 +15,19 @@ def Equiv : Pre -> Pre -> Prop
   (∀a, ∃b, Equiv (αmem a) (βmem b)) ∧
   (∀b, ∃a, Equiv (αmem a) (βmem b))
 
-infix:50 " zf≈ " => Equiv
+scoped infix:50 " zf≈ " => Equiv
 
 def Pre.«Type» : Pre -> Type _
 | .intro a _ => a
 
 def Pre.Mem : ∀(s: Pre), s.Type -> Pre
 | .intro _ mem => mem
+
+def Equiv.mk : ∀a b: Pre,
+  (∀a₀, ∃b₀, Equiv (a.Mem a₀) (b.Mem b₀)) ->
+  (∀b₀, ∃a₀, Equiv (a.Mem a₀) (b.Mem b₀)) ->
+  a zf≈ b
+| .intro _ _, .intro _ _ => And.intro
 
 @[refl]
 def Equiv.refl' : ∀(a: Pre), a zf≈ a
@@ -58,16 +64,16 @@ instance setoid : Setoid Pre where
   r := Equiv
   iseqv := ⟨Equiv.refl', Equiv.symm', Equiv.trans⟩
 
-def Equiv.to_left : ∀{a b}, Equiv a b -> ∀a₀: a.Type, ∃b₀: b.Type, (a.Mem a₀) ≈ (b.Mem b₀)
+def Equiv.to_left : ∀{a b}, a zf≈ b -> ∀a₀: a.Type, ∃b₀: b.Type, (a.Mem a₀) zf≈ (b.Mem b₀)
 | .intro _ _, .intro _ _, ⟨l, _⟩ => l
-def Equiv.to_right : ∀{a b}, Equiv a b -> ∀b₀: b.Type, ∃a₀: a.Type, (a.Mem a₀) ≈ (b.Mem b₀)
+def Equiv.to_right : ∀{a b}, a zf≈ b -> ∀b₀: b.Type, ∃a₀: a.Type, (a.Mem a₀) zf≈ (b.Mem b₀)
 | .intro _ _, .intro _ _, ⟨_, r⟩ => r
 
 @[pp_with_univ]
 def _root_.ZfSet := Quotient setoid
 def mk : Pre -> ZfSet := Quot.mk Equiv
 
-local notation "⟦" a "⟧" => mk a
+scoped notation "⟦" a "⟧" => mk a
 
 @[cases_eliminator]
 def ind : {motive: ZfSet -> Prop} -> (mk: ∀x, motive ⟦x⟧) -> ∀x, motive x := Quotient.ind
@@ -91,30 +97,104 @@ def Equiv.refl : ∀(a: Pre), a ≈ a := Equiv.refl'
 @[symm]
 def Equiv.symm : ∀{a b}, a zf≈ b -> b ≈ a := Equiv.symm'
 
+def Pre.mem (a b: Pre): Prop :=
+  ∃a₀: a.Type, b zf≈ a.Mem a₀
+
+def Pre.mem.spec :  ∀(a₀ b₀ a₁ b₁: Pre), a₀ zf≈ a₁ -> b₀ zf≈ b₁ -> a₀.mem b₀ -> a₁.mem b₁ := by
+  intro a₀ b₀ a₁ b₁ aeq beq ⟨a₂, b₀_eqv_a⟩
+  have := aeq.to_left
+  have ⟨a₂', prf⟩ := aeq.to_left a₂
+  exists a₂'
+  apply Equiv.trans _ prf
+  apply Equiv.trans beq.symm'
+  assumption
+
 -- constrain membership to be in a single universe for better universe inference
 instance : Membership Pre.{u} Pre.{u} where
-  mem a b := ∃a₀: a.Type, b ≈ a.Mem a₀
+  mem := Pre.mem
 
-instance : Membership ZfSet ZfSet where
-  mem := by
-    apply Quotient.lift₂ Membership.mem
-    suffices ∀(a₀ b₀ a₁ b₁: Pre) (aeq: a₀ ≈ a₁) (beq: b₀ ≈ b₁), b₀ ∈ a₀ -> b₁ ∈ a₁ by
-      intro a₀ b₀ a₁ b₁ aeq beq
-      ext; apply Iff.intro
-      apply this <;> assumption
-      apply this <;> (symm; assumption)
-    intro a₀ b₀ a₁ b₁ aeq beq ⟨a₂, b₀_eqv_a⟩
-    have ⟨a₂', prf⟩ := aeq.to_left a₂
-    exists a₂'
-    apply beq.symm.trans
-    apply Equiv.trans _ prf
-    assumption
+def eqv : ZfSet.{u} -> ZfSet.{v} -> Prop := by
+  apply Quotient.lift₂ (· zf≈ ·)
+  intro a b c d ac bd
+  apply propext; apply Iff.intro
+  intro h
+  exact ac.symm.trans <| h.trans bd
+  intro h
+  exact ac.trans <| h.trans bd.symm
+
+scoped infix:50 " zf= " => eqv
+
+def mem : ZfSet.{u} -> ZfSet.{v} -> Prop := by
+  apply Quotient.lift₂ Pre.mem
+  intro a b c d ac bd
+  apply propext; apply Iff.intro
+  apply Pre.mem.spec; assumption; assumption
+  apply Pre.mem.spec; symm; assumption; symm; assumption
+
+def sub.{u, v, w} (a: ZfSet.{u}) (b: ZfSet.{v}) : Prop :=
+  ∀x: ZfSet.{w}, a.mem x -> b.mem x
+
+def eqv.trans {a b c: ZfSet} : a zf= b -> b zf= c -> a zf= c := by
+  cases a, b, c with | mk a b c =>
+  apply Equiv.trans
+
+@[symm]
+def eqv.symm {a b: ZfSet} : a zf= b -> b zf= a := by
+  cases a, b with | mk a b =>
+  apply Equiv.symm'
+
+@[refl]
+def eqv.refl {a: ZfSet} : a zf= a := by
+  cases a with | mk a =>
+  apply Equiv.refl
+
+def mem.congr {a b c d: ZfSet} : a zf= c -> b zf= d -> a.mem b -> c.mem d := by
+  cases a, b, c, d with | mk  =>
+  apply Pre.mem.spec
+
+def sub.congr {a b c d: ZfSet} : a zf= c -> b zf= d -> sub.{_, _, u} a b -> sub.{_, _, u} c d := by
+  intro ac bd h z hz
+  exact (h _ (hz.congr ac.symm .refl)).congr bd .refl
+
+instance : Membership ZfSet.{u} ZfSet.{u} where
+  mem := mem
+
+def mem.spec : mem a b ↔ ∃a' ∈ a, a' zf= b := by
+  cases a, b with | mk a b =>
+  apply Iff.intro
+  intro ⟨a₀, eqv⟩
+  exists ⟦a.Mem a₀⟧
+  apply And.intro
+  exact ⟨_, .refl' _⟩
+  symm; assumption
+  intro ⟨a', mem, eqv⟩
+  cases a' with | mk a' =>
+  obtain ⟨a₀, eqv'⟩ := mem
+  exists a₀
+  have: b zf≈ a' := eqv.symm
+  apply this.trans
+  assumption
 
 instance : HasSubset Pre where
   Subset a b := ∀x ∈ a, x ∈ b
 
 instance : HasSubset ZfSet where
   Subset a b := ∀x ∈ a, x ∈ b
+
+def mem.ofMem {a b: ZfSet} : a ∈ b -> b.mem a := id
+
+def sub.ofSubset {a b: ZfSet} : a ⊆ b -> sub.{_, _, u} a b := by
+  intro h z ha
+  rw [mem.spec] at *
+  have ⟨z', z'_in_a, z'_eqv_z⟩ := ha
+  have := h _ z'_in_a
+  exists z'
+
+def eq_of_eqv {a b: ZfSet} : a zf= b -> a = b := by
+  intro eqv
+  cases a, b with | mk a b =>
+  apply Quotient.sound
+  assumption
 
 @[simp]
 def mk_mem (a b: Pre) : (⟦a⟧ ∈ ⟦b⟧) = (a ∈ b) := rfl
@@ -228,6 +308,23 @@ def lift.{u, v} : ZfSet.{u} -> ZfSet.{max u v} := by
   apply Quotient.sound
   apply (Pre.lift.spec a).symm'.trans
   apply Equiv.trans _ (Pre.lift.spec b)
+  assumption
+
+def mem_lift (s: ZfSet.{u}) : ∀{x: ZfSet.{max u v}}, x ∈ s.lift ↔ s.mem x := by
+  intro x
+  cases x, s with | mk x s =>
+  cases s with | intro S Smem =>
+  have s₀_eqv_lift := Pre.lift.spec.{u, v} (Pre.intro S Smem)
+  apply Iff.intro
+  intro ⟨s₀, eqv⟩
+  have ⟨s, _⟩ := s₀_eqv_lift.to_right s₀
+  exists s
+  apply eqv.trans
+  symm; assumption
+  intro ⟨s₀, eqv⟩
+  have ⟨s, _⟩ := s₀_eqv_lift.to_left s₀
+  exists s
+  apply eqv.trans
   assumption
 
 instance : EmptyCollection Pre where
@@ -626,6 +723,7 @@ def mem_image {a: ZfSet} {f: ZfSet -> ZfSet} : ∀{x}, x ∈ a.image f ↔ ∃a�
   apply And.intro
   apply Pre.mem_def
   simp only [Pre.image, Pre.Mem] at prf
+  replace prf : x ≈ Quotient.out _ := prf
   have := Quotient.sound prf
   rw [Quotient.out_spec] at this
   assumption
@@ -634,6 +732,7 @@ def mem_image {a: ZfSet} {f: ZfSet -> ZfSet} : ∀{x}, x ∈ a.image f ↔ ∃a�
   obtain ⟨a₁, a₁prf⟩ := a₀_in_a
   refine ⟨a₁, ?_⟩
   simp [Pre.image, Pre.Mem]
+  show x ≈ _
   apply Quotient.exact
   erw [Quotient.out_spec]
   apply x_eq.trans
