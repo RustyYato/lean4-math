@@ -327,6 +327,22 @@ def mem_lift (s: ZfSet.{u}) : ∀{x: ZfSet.{max u v}}, x ∈ s.lift ↔ s.mem x 
   apply eqv.trans
   assumption
 
+def sub_lift.{u, v} (s: ZfSet.{u}) : ∀{x: ZfSet.{max u v}}, x ⊆ s.lift ↔ sub.{_, _, max u v} x s := by
+  intro x
+  apply Iff.intro
+  intro h y
+  rw [mem.spec]
+  intro ⟨x', x'_in_x, x'_eqv_y⟩
+  have := h x' x'_in_x
+  rw [mem_lift] at this
+  apply this.congr
+  rfl; assumption
+  intro h y hy
+  rw [mem_lift]
+  replace z := h  y hy
+  assumption
+
+
 instance : EmptyCollection Pre where
   emptyCollection := .intro PEmpty PEmpty.elim
 

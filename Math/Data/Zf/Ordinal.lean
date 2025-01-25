@@ -350,27 +350,13 @@ def ofNat : Nat -> Ordinal
 def lift (o: Ordinal.{u}): Ordinal.{max u v} where
   set := o.set.lift
   trans := by
-    intro x hxo z hzx
-    cases o with | ofZfSet o otrans ototal =>
-    dsimp at *
-    cases o with | mk o =>
-    cases o with | intro O Omem =>
-    cases x with | mk x =>
-    cases x with | intro X Xmem =>
-    cases z with | mk z =>
-    cases z with | intro Z Zmem =>
-    have lift_eqv := Pre.lift.spec.{u, v} (Pre.intro O Omem)
-    obtain ⟨olx, xeqvolx⟩ := hxo
-    have ⟨ox, oeqvolx⟩ := lift_eqv.to_right olx
-    have xeqvox := xeqvolx.trans oeqvolx.symm'
-    obtain ⟨x, zeqvx⟩ := hzx
-    have ⟨o, zeqvo⟩ := (xeqvolx.trans oeqvolx.symm').to_left x
-    replace zeqvo := zeqvx.trans zeqvo
-    have ⟨oz, ozeqv⟩ := otrans (x := ⟦(Pre.intro O Omem).Mem ox⟧) ⟨_, .refl' _⟩
-      ⟦((Pre.intro O Omem).Mem ox).Mem o⟧ ⟨_, .refl' _⟩
-    have ⟨oz', ozeqvoz'⟩ := lift_eqv.to_left oz
-    have := zeqvo.trans (ozeqv.trans ozeqvoz')
-    exists oz'
+    intro x hxo
+    rw [mem_lift, mem.spec] at hxo
+    obtain ⟨o', o'_in_o, o'_eqv_x⟩ := hxo
+    rw [sub_lift]
+    intro y hy
+    have := (hy.congr o'_eqv_x.symm .refl)
+    exact sub.ofSubset (o.trans o'_in_o) _ this
   total := by
     intro x y memx memy
     rw [mem_lift] at memx memy
@@ -379,5 +365,9 @@ def lift (o: Ordinal.{u}): Ordinal.{max u v} where
     apply total'
     assumption
     assumption
+
+instance : OfNat Ordinal.{u} n := ⟨ofNat n⟩
+
+def zero_le (o: Ordinal) : 0 ≤ o := empty_sub _
 
 end Ordinal
