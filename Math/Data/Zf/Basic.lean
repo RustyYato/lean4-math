@@ -342,7 +342,6 @@ def sub_lift.{u, v} (s: ZfSet.{u}) : ∀{x: ZfSet.{max u v}}, x ⊆ s.lift ↔ s
   replace z := h  y hy
   assumption
 
-
 instance : EmptyCollection Pre where
   emptyCollection := .intro PEmpty PEmpty.elim
 
@@ -350,6 +349,8 @@ instance : EmptyCollection ZfSet where
   emptyCollection := ⟦∅⟧
 
 instance : Nonempty ZfSet := ⟨∅⟩
+
+protected def Nonempty (a: ZfSet) : Prop := ∃x, x ∈ a
 
 @[simp]
 def not_mem_empty : ∀x, x ∉ (∅: ZfSet) := by
@@ -617,12 +618,14 @@ def mem_singleton {a: ZfSet} : ∀{x: ZfSet}, x ∈ ({a}: ZfSet) ↔ x = a := by
   intro h
   exact ⟨.unit, Quotient.exact h⟩
 
-protected def insert (a b: ZfSet.{u}) := { a } ∪ b
+instance : Insert Pre.{u} Pre.{u} where
+  insert a b := { a } ∪ b
 
-instance : Insert ZfSet.{u} ZfSet.{u}  := ⟨.insert⟩
+instance : Insert ZfSet.{u} ZfSet.{u} where
+  insert a b := { a } ∪ b
 
 def mem_insert {a b: ZfSet} : ∀{x}, x ∈ insert a b ↔ x = a ∨ x ∈ b := by
-  simp [insert, mem_union, mem_singleton, ZfSet.insert]
+  simp [insert, mem_union, mem_singleton]
 
 def toSet_insert (a b: ZfSet) : (insert a b).toSet = insert a b.toSet := by
   ext x
@@ -755,5 +758,182 @@ def mem_image {a: ZfSet} {f: ZfSet -> ZfSet} : ∀{x}, x ∈ a.image f ↔ ∃a�
   congr 1
   apply Quotient.sound
   assumption
+
+def Pre.sUnion (a: Pre) : Pre :=
+ .intro (Σx: a.Type, (a.Mem x).Type) fun ⟨x, x'⟩ => (a.Mem x).Mem x'
+
+def Pre.sUnion.spec (a b: Pre) (h: a zf≈ b) : a.sUnion zf≈ b.sUnion := by
+  cases a with | intro A Amem =>
+  cases b with | intro B Bmem =>
+  apply And.intro <;> dsimp
+  intro ⟨a, a'⟩
+  have ⟨b, eqv₀⟩ := h.to_left a
+  have ⟨b', eqv₁⟩ := eqv₀.to_left a'
+  exists ⟨b, b'⟩
+  intro ⟨b, b'⟩
+  have ⟨a, eqv₀⟩ := h.to_right b
+  have ⟨a', eqv₁⟩ := eqv₀.to_right b'
+  exists ⟨a, a'⟩
+
+instance : SUnion Pre Pre where
+  sUnion := Pre.sUnion
+
+instance : SUnion ZfSet ZfSet where
+  sUnion := by
+    apply Quotient.lift (⟦·.sUnion⟧)
+    intro a b eq
+    apply Quotient.sound
+    apply Pre.sUnion.spec
+    assumption
+
+instance : SInter ZfSet ZfSet where
+  sInter a := (⋃a).sep fun x => ∀a' ∈ a, x ∈ a'
+
+def mem_sUnion {a: ZfSet} : ∀{x}, x ∈ ⋃a ↔ ∃a' ∈ a, x ∈ a' := by
+  intro x
+  cases a, x with | mk A X =>
+  apply Iff.intro
+  intro ⟨⟨a, a'⟩, eqv⟩
+  exists ⟦A.Mem a⟧
+  apply And.intro
+  exact ⟨_, .refl' _⟩
+  exists a'
+  intro ⟨a', ha', hx⟩
+  cases a' with | mk A' =>
+  obtain ⟨a, eqv⟩ := ha'
+  obtain ⟨a', eqv'⟩ := hx
+  have ⟨a₀, eqv₀⟩ := eqv.to_left a'
+  exists ⟨a, a₀⟩
+  exact eqv'.trans eqv₀
+
+def mem_sInter {a: ZfSet} (h: a.Nonempty) : ∀{x}, x ∈ ⋂a ↔ ∀a' ∈ a, x ∈ a' := by
+  intro x
+  simp [SInter.sInter]
+  rw [mem_sep, mem_sUnion]
+  apply Iff.intro
+  intro ⟨g₀, g₁⟩
+  assumption
+  intro g
+  obtain ⟨x, mem⟩ := h
+  apply And.intro
+  refine ⟨_, mem, ?_⟩
+  apply g; assumption
+  assumption
+
+def insert_nonempty {a b: ZfSet} : (insert a b).Nonempty :=
+  ⟨_, mem_insert.mpr (.inl rfl)⟩
+
+def Pre.range (f: ι -> Pre) : Pre :=
+  .intro ι <| fun x => f x
+
+noncomputable def range (f: ι -> ZfSet) : ZfSet :=
+  ⟦Pre.range (fun x => (f x).out)⟧
+
+def mem_range {f: ι -> ZfSet} : ∀{x}, x ∈ range f ↔ ∃i, x = f i := by
+  intro x
+  cases x with | mk x =>
+  apply Iff.intro
+  intro ⟨i, eqv⟩
+  exists i
+  apply (Quotient.sound eqv).trans
+  simp [Pre.range, Pre.Mem]
+  rw [Quotient.out_spec]
+  intro ⟨i, eqv⟩
+  exists i
+  apply Quotient.exact (s := setoid)
+  simp [Pre.range, Pre.Mem]
+  rw [Quotient.out_spec]
+  assumption
+
+def Pre.succ (s: Pre) := insert s s
+def succ (s: ZfSet) := insert s s
+
+def mk_succ (s: Pre) : ⟦.succ s⟧ = ⟦s⟧.succ := rfl
+
+def Pre.ofNat : Nat -> Pre
+| 0 => ∅
+| .succ n => (ofNat n).succ
+
+def ofNat : Nat -> ZfSet
+| 0 => ∅
+| .succ n => (ofNat n).succ
+
+def mk_ofNat (n: Nat) : ofNat n = ⟦.ofNat n⟧ := by
+  induction n with
+  | zero => rfl
+  | succ n ih => rw [ofNat, Pre.ofNat, mk_succ, ih]
+
+def Pre.omega : Pre := .intro (ULift Nat) (.ofNat ∘ ULift.down)
+def omega : ZfSet := ⟦.omega⟧
+
+def mem_ofNat : ∀{x}, x ∈ ofNat n ↔ ∃m < n, x = ofNat m := by
+  intro x
+  induction n with
+  | zero =>
+    apply Iff.intro
+    intro mem
+    have := not_mem_empty _ mem
+    contradiction
+    intro ⟨_, _, _⟩
+    contradiction
+  | succ n ih =>
+    rw [ofNat, succ, mem_insert]
+    apply Iff.intro
+    intro h
+    rcases h with h | h
+    exists n
+    apply And.intro
+    apply Nat.lt_succ_self
+    assumption
+    have ⟨m, mLt, eq⟩ := ih.mp h
+    refine ⟨m, ?_, eq⟩
+    apply Nat.lt_trans mLt
+    apply Nat.lt_succ_self
+    intro ⟨m, mLt, eq⟩
+    rcases Nat.lt_or_eq_of_le (Nat.le_of_lt_succ mLt) with h | h
+    right; apply ih.mpr; exists m
+    left; subst n; assumption
+
+def ofNat_inj : ∀{n m: Nat}, ofNat n = ofNat m ↔ n = m := by
+  intro n m
+  apply flip Iff.intro
+  intro h; rw [h]
+  intro eq
+  rcases Nat.lt_trichotomy n m with lt | eq | gt
+  have := mem_ofNat.mpr ⟨n, lt, rfl⟩; rw [eq] at this
+  have := Relation.irrefl (rel := (· ∈ ·)) this
+  contradiction
+  assumption
+  have := mem_ofNat.mpr ⟨m, gt, rfl⟩; rw [eq] at this
+  have := Relation.irrefl (rel := (· ∈ ·)) this
+  contradiction
+
+def ofNat_mem_ofNat : ∀{n m}, ofNat n ∈ ofNat m ↔ n < m := by
+  intro n m
+  rw [mem_ofNat]
+  apply Iff.intro
+  intro ⟨k, kLt, eq⟩
+  cases ofNat_inj.mp eq
+  assumption
+  intro
+  exists n
+
+def mem_omega : ∀{x}, x ∈ omega ↔ ∃n, x = ofNat n := by
+  intro x
+  cases x with | mk x =>
+  apply flip Iff.intro
+  intro ⟨n, eqv⟩
+  rw [eqv]; clear eqv
+  rw [mk_ofNat]
+  exists ⟨n⟩
+  intro ⟨⟨n⟩, eqv⟩
+  exists n
+  rw [mk_ofNat]
+  apply Quotient.sound
+  exact eqv
+
+def ofNat_mem_omega : ofNat n ∈ omega := by
+  rw [mem_omega]
+  exists n
 
 end ZfSet

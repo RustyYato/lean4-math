@@ -343,9 +343,24 @@ def zero : Ordinal where
   total := by
     intro _ _ h; exact (not_mem_empty _ h).elim
 
-def ofNat : Nat -> Ordinal
-| 0 => zero
-| n + 1 => (ofNat n).succ
+def ofNat (n: Nat) : Ordinal where
+  set := .ofNat n
+  trans := by
+    intro x hx y hy
+    rw [mem_ofNat] at hx
+    obtain ⟨x, xLt, eq⟩ := hx; subst eq
+    rw [mem_ofNat] at hy
+    obtain ⟨y, yLt, eq⟩ := hy; subst eq
+    rw [mem_ofNat]
+    refine ⟨y, ?_, rfl⟩
+    apply Nat.lt_trans <;> assumption
+  total := by
+    intro x y hx hy
+    rw [mem_ofNat] at hx hy
+    obtain ⟨x, xLt, eq⟩ := hx; subst eq
+    obtain ⟨y, yLt, eq⟩ := hy; subst eq
+    rw [ofNat_mem_ofNat, ofNat_mem_ofNat, ofNat_inj]
+    apply Nat.lt_trichotomy
 
 def lift (o: Ordinal.{u}): Ordinal.{max u v} where
   set := o.set.lift
@@ -369,5 +384,142 @@ def lift (o: Ordinal.{u}): Ordinal.{max u v} where
 instance : OfNat Ordinal.{u} n := ⟨ofNat n⟩
 
 def zero_le (o: Ordinal) : 0 ≤ o := empty_sub _
+
+def IsLimit (o: Ordinal) : Prop := ∀x: Ordinal, x.succ ≠ o
+def IsLimit.zero : IsLimit 0 := by
+  intro x h
+  have := lt_succ_self x
+  rw [h] at this
+  have := not_lt_of_le (zero_le x)
+  contradiction
+
+protected def sSup.{u} (s: ZfSet.{u}) (h: ∀x ∈ s, IsOrdinal x) : Ordinal where
+  set := ⋃ s
+  trans := by
+    intro x hx y hy
+    rw [mem_sUnion] at *
+    obtain ⟨s', hs', x_in_s'⟩ := hx
+    have := (h _ hs').trans x_in_s' _ hy
+    exists s'
+  total := by
+    intro x y hx hy
+    rw [mem_sUnion] at hx hy
+    apply total'
+    obtain ⟨s', hs', hx⟩ := hx
+    apply mem_set (.mk _) hx
+    apply h
+    assumption
+    obtain ⟨s', hs', hy⟩ := hy
+    apply mem_set (.mk _) hy
+    apply h
+    assumption
+
+protected def sInf.{u} (s: ZfSet.{u}) (sne: s.Nonempty) (h: ∀x ∈ s, IsOrdinal x) : Ordinal where
+  set := ⋂ s
+  trans := by
+    intro x hx
+    rw [mem_sInter] at hx
+    intro y hy
+    rw [mem_sInter]
+    intro z hz
+    have x_in_z := hx z hz
+    apply (h _ hz).trans
+    assumption
+    assumption
+    assumption
+    assumption
+  total := by
+    intro x y hx hy
+    have ⟨z, z_in_s⟩ := sne
+    rw [mem_sInter] at hx hy
+    apply total'
+    apply mem_set (.mk _) <| hx z _
+    apply h; assumption
+    assumption
+    apply mem_set (.mk _) <| hy z _
+    apply h; assumption
+    assumption
+    assumption
+    assumption
+
+def mem_le_sSup (s: ZfSet) {hs: ∀x ∈ s, IsOrdinal x} (x: Ordinal) (h: x.set ∈ s) : x ≤ Ordinal.sSup s hs := by
+  intro z hx
+  unfold Ordinal.sSup
+  rw [mem_sUnion]
+  exists x
+
+def sSup_le (s: ZfSet) {hs: ∀x ∈ s, IsOrdinal x} (k: Ordinal) (h: ∀x ∈ s, x ⊆ k.set) : Ordinal.sSup s hs ≤ k := by
+  intro x hz
+  erw [mem_sUnion] at hz
+  obtain ⟨s', s'_in_s, x_in_s'⟩ := hz
+  apply h
+  assumption
+  assumption
+
+def sInf_le_mem (s: ZfSet) {hs: ∀x ∈ s, IsOrdinal x} (x: Ordinal) (h: x.set ∈ s) : Ordinal.sInf s ⟨_, h⟩ hs ≤ x := by
+  intro z hz
+  unfold Ordinal.sInf at hz
+  rw [mem_sInter] at hz
+  apply hz
+  assumption
+  exact ⟨_, h⟩
+
+def le_sInf (s: ZfSet) (h: s.Nonempty) {hs: ∀x ∈ s, IsOrdinal x} (k: Ordinal) (g: ∀x ∈ s, k.set ⊆ x) : k ≤ Ordinal.sInf s h hs := by
+  intro x memk
+  erw [mem_sInter h]
+  intro s' hs'
+  have s'_ord := hs _ hs'
+  exact g _ hs' _ memk
+
+protected noncomputable def iSup (f: ι -> Ordinal) : Ordinal :=
+  Ordinal.sSup (ZfSet.range (fun x => (f x).set)) <| by
+    intro x mem
+    rw [mem_range] at mem
+    obtain ⟨i, eq⟩ := mem
+    subst x
+    apply Ordinal.toIsOrdinal
+
+def omega : Ordinal where
+  set := .omega
+  trans := by
+    intro x hx y hy
+    rw [mem_omega] at hx; obtain ⟨n, eq⟩ := hx; subst eq
+    rw [mem_ofNat] at hy; obtain ⟨m, _, eq⟩ := hy; subst eq
+    exact ofNat_mem_omega
+  total := by
+    intro x y hx hy
+    rw [mem_omega] at hx hy
+    obtain ⟨x, eq⟩ := hx; subst eq
+    obtain ⟨y, eq⟩ := hy; subst eq
+    rw [ofNat_mem_ofNat, ofNat_mem_ofNat, ofNat_inj]
+    apply Nat.lt_trichotomy
+
+scoped notation "ω" => omega
+
+def lt_omega : ∀{x}, x < ω ↔ ∃n, x = ofNat n := by
+  intro x
+  apply Iff.intro
+  intro h
+  replace h: x.set ∈ omega.set := h
+  erw [ZfSet.mem_omega] at h
+  obtain ⟨n, eq⟩ := h
+  exists n
+  apply embedZfSet.inj
+  assumption
+  intro ⟨n, eq⟩
+  rw [eq]
+  apply ofNat_mem_omega
+
+def IsLimit.omega : IsLimit ω := by
+  intro x h
+  have := lt_succ_self x
+  rw [h] at this
+  rw [lt_omega] at this
+  obtain ⟨n, eq⟩ := this
+  subst x
+  replace h: ofNat (n + 1) = ω := h
+  have : ofNat (n + 2) < ω := lt_omega.mpr ⟨_, rfl⟩
+  rw [←h] at this
+  exact lt_asymm (lt_succ_self (ofNat (n + 1))) this
 
 end Ordinal
