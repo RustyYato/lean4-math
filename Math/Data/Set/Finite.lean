@@ -7,10 +7,10 @@ namespace Set
 open Classical
 
 -- a set is finite if there exists an embedding from elements of the set to Fin n for some n
-abbrev IsFinite (a: Set α): Prop := _root_.IsFinite a.Elem
+protected abbrev IsFinite (a: Set α): Prop := _root_.IsFinite a.Elem
 
 -- a set is co-finite if the complement is finite
-abbrev IsCoFinite (a: Set α): Prop := IsFinite aᶜ
+protected abbrev IsCoFinite (a: Set α): Prop := Set.IsFinite aᶜ
 
 instance [ha: _root_.IsFinite α] : _root_.IsFinite (Set α) := by
   apply IsFinite.ofEmbed (α -> Bool)
@@ -27,7 +27,7 @@ instance [ha: _root_.IsFinite α] : _root_.IsFinite (Set α) := by
 def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty (a.Elem ≃ Fin card) :=
   _root_.IsFinite.existsEquiv a.Elem
 
-instance IsFinite.ofFin (x: Set (Fin n)) : x.IsFinite := by
+instance Set.IsFinite.ofFin (x: Set (Fin n)) : x.IsFinite := by
   unfold Set.IsFinite Set.Elem
   exact inferInstance
 
@@ -41,20 +41,20 @@ def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) 
   subst x
   exact Nat.not_lt_of_le (Nat.le_add_left _ _) xLt
 
-instance [ha: IsFinite a] [hb: IsFinite b] : IsFinite (a ∪ b) := by
+instance [ha: Set.IsFinite a] [hb: Set.IsFinite b] : Set.IsFinite (a ∪ b) := by
   have := Fintype.ofIsFinite a
   have := Fintype.ofIsFinite b
   unfold Set.Elem at *
   have : Fintype ((a ∪ b).Elem) := inferInstanceAs (Fintype (Subtype fun x => x ∈ a ∨ x ∈ b))
   infer_instance
 
-instance [ha: IsFinite a] : IsFinite (a ∩ b) := by
+instance [ha: Set.IsFinite a] : Set.IsFinite (a ∩ b) := by
   have := Fintype.ofIsFinite a
   unfold Set.Elem at *
   have : Fintype ((a ∩ b).Elem) := inferInstanceAs (Fintype (Subtype fun x => x ∈ a ∧ x ∈ b))
   infer_instance
 
-instance [hb: IsFinite b] : IsFinite (a ∩ b) := by
+instance [hb: Set.IsFinite b] : Set.IsFinite (a ∩ b) := by
   rw [Set.inter_comm]
   exact inferInstance
 
@@ -64,7 +64,7 @@ def Set.elem_val_eq_of_elem_heq (a b: Set α) (c: a.Elem) (d: b.Elem) : a = b ->
   cases heq
   rfl
 
-def Set.IsFinite.sUnion (a: Set (Set α)) [ha: IsFinite a] (hx: ∀x: a, IsFinite x.val) : IsFinite (⋃ a) := by
+def IsFinite.sUnion (a: Set (Set α)) [ha: Set.IsFinite a] (hx: ∀x: a, Set.IsFinite x.val) : Set.IsFinite (⋃ a) := by
   apply _root_.IsFinite.ofEmbed (Σa': a, a'.val)
   apply Embedding.mk
   case toFun =>
@@ -95,7 +95,7 @@ def Set.IsFinite.sUnion (a: Set (Set α)) [ha: IsFinite a] (hx: ∀x: a, IsFinit
     dsimp at beq
     congr
 
-def Set.IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, IsFinite x) : IsFinite (⋂ a) := by
+def IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, Set.IsFinite x) : Set.IsFinite (⋂ a) := by
   obtain ⟨a', a'_in_a, lim, eqv⟩ := hx
   apply IsFinite.ofEmbedding (limit := lim)
   apply Embedding.congr _ (by rfl) eqv
@@ -111,7 +111,7 @@ def Set.IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, IsFinite x) : IsFinit
     cases h
     rfl
 
-instance : IsFinite (∅: Set α) := by
+instance : Set.IsFinite (∅: Set α) := by
   apply IsFinite.intro 0
   apply Equiv.mk
   case toFun => intro x; exact x.property.elim
@@ -119,7 +119,7 @@ instance : IsFinite (∅: Set α) := by
   case leftInv => intro x; exact x.property.elim
   case rightInv => intro x; exact x.elim0
 
-instance : IsFinite ({a}: Set α) := by
+instance : Set.IsFinite ({a}: Set α) := by
   apply IsFinite.intro 1
   apply Equiv.mk
   case toFun =>
@@ -135,10 +135,10 @@ instance : IsFinite ({a}: Set α) := by
     intro _
     apply Subsingleton.allEq
 
-instance {a: α} {as: Set α} [IsFinite as] : IsFinite (Insert.insert a as) :=
-  inferInstanceAs (IsFinite ({ a } ∪ as))
+instance {a: α} {as: Set α} [IsFinite as] : Set.IsFinite (Insert.insert a as) :=
+  inferInstanceAs (Set.IsFinite ({ a } ∪ as))
 
-instance {as: Set α} {f: α -> β} [ha: IsFinite as] : IsFinite (Set.image as f) := by
+instance {as: Set α} {f: α -> β} [ha: Set.IsFinite as] : Set.IsFinite (Set.image as f) := by
   apply IsFinite.ofEmbed as
   apply Embedding.mk
   case toFun =>
@@ -154,7 +154,7 @@ instance {as: Set α} {f: α -> β} [ha: IsFinite as] : IsFinite (Set.image as f
     congr
     rw [h₀, h₁]
 
-instance {as: Set α} [ha: IsFinite as] : IsFinite as.powerset := by
+instance {as: Set α} [ha: Set.IsFinite as] : Set.IsFinite as.powerset := by
   apply IsFinite.ofEmbed (Set as)
   refine ⟨?_, ?_⟩
   intro ⟨x, hx⟩
@@ -262,7 +262,7 @@ def IsFinite.induction {motive : Set α → Prop} (s : Set α) [h : s.IsFinite]
         rw [eqv.rightInv]
 
 def IsFinite.spec (s: Set α) [h: s.IsFinite] : ∃s': List α, s'.Nodup ∧ ∀x, x ∈ s ↔ x ∈ s' := by
-  induction s using IsFinite.induction with
+  induction s using Set.IsFinite.induction with
   | nil =>
     exists []
     apply And.intro
@@ -294,5 +294,9 @@ instance (n: Nat) : Set.IsFinite (Set.mk (· ≤ n)) := by
     infer_instance
   ext x
   apply Nat.le_iff_lt_add_one
+
+instance [IsFinite α] (s: Set α) : Set.IsFinite s := by
+  apply IsFinite.ofEmbed α
+  exact Subtype.embed
 
 end Set
