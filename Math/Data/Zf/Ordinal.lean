@@ -70,6 +70,10 @@ instance : Coe Ordinal ZfSet where
 instance : @Relation.IsWellFounded Ordinal (· < ·) :=
   embedZfSet.toRelHom.wf
 
+instance : WellFoundedRelation Ordinal where
+  rel a b := a < b
+  wf := Relation.wellFounded _
+
 def succ (o: Ordinal) : Ordinal where
   set := insert o.set o.set
   trans := by
@@ -385,11 +389,12 @@ instance : OfNat Ordinal.{u} n := ⟨ofNat n⟩
 
 def zero_le (o: Ordinal) : 0 ≤ o := empty_sub _
 
-def IsLimit (o: Ordinal) : Prop := ∀x: Ordinal, x.succ ≠ o
+def IsLimit (o: Ordinal) : Prop := ∀x: Ordinal, o ≠ x.succ
+def IsSuccLimit (o: Ordinal) : Prop := 0 < o ∧ o.IsLimit
 def IsLimit.zero : IsLimit 0 := by
   intro x h
   have := lt_succ_self x
-  rw [h] at this
+  rw [←h] at this
   have := not_lt_of_le (zero_le x)
   contradiction
 
@@ -510,16 +515,141 @@ def lt_omega : ∀{x}, x < ω ↔ ∃n, x = ofNat n := by
   rw [eq]
   apply ofNat_mem_omega
 
-def IsLimit.omega : IsLimit ω := by
+def ofNat_lt_omega : ofNat n < omega := ofNat_mem_omega
+
+def IsSuccLimit.omega : IsSuccLimit ω := by
+  apply And.intro ofNat_lt_omega
   intro x h
   have := lt_succ_self x
-  rw [h] at this
+  rw [←h] at this
   rw [lt_omega] at this
   obtain ⟨n, eq⟩ := this
   subst x
-  replace h: ofNat (n + 1) = ω := h
+  replace h: ω = ofNat (n + 1) := h
   have : ofNat (n + 2) < ω := lt_omega.mpr ⟨_, rfl⟩
-  rw [←h] at this
+  rw [h] at this
   exact lt_asymm (lt_succ_self (ofNat (n + 1))) this
+
+def IsLimit.omega : IsLimit ω := IsSuccLimit.omega.right
+
+def not_between_succ {a b: Ordinal} : b < a -> a < b.succ -> False := by
+  intro ba abs
+  have : a.set ∈ insert b.set b.set := abs
+  rw [mem_insert] at this
+  rcases this with h | h
+  cases embedZfSet.inj h
+  exact lt_irrefl ba
+  exact lt_asymm ba h
+
+def le_of_lt_succ {a b: Ordinal} : a < b.succ -> a ≤ b := by
+  intro h x hx
+  have xord := mem_set _ hx
+  let x' := mk xord
+  have : x ∈ insert _ _ := lt_trans (a := x') hx h
+  rw [mem_insert] at this
+  cases this
+  subst x
+  have := not_between_succ hx h
+  contradiction
+  assumption
+
+def lt_succ_of_le {a b: Ordinal} : a ≤ b -> a < b.succ := by
+  intro h
+  apply lt_of_le_of_lt h
+  apply lt_succ_self
+
+def lt_succ {a b: Ordinal} : a < b.succ ↔ a ≤ b := by
+  apply Iff.intro
+  apply le_of_lt_succ
+  apply lt_succ_of_le
+
+def succ_le_of_lt {a b: Ordinal} : a < b -> a.succ ≤ b := by
+  intro h x mem
+  rw [succ, mem_insert] at mem
+  cases mem; subst x
+  assumption
+  apply b.trans
+  assumption
+  assumption
+
+def lt_of_succ_le {a b: Ordinal} : a.succ ≤ b -> a < b := by
+  intro h
+  apply lt_of_not_le
+  intro g
+  exact not_lt_of_le (le_trans h g) (lt_succ_self _)
+
+def succ_le {a b: Ordinal} : a.succ ≤ b ↔ a < b := by
+  apply Iff.intro
+  apply lt_of_succ_le
+  apply succ_le_of_lt
+
+def succ_lt_succ {a b: Ordinal} : a < b ↔ a.succ < b.succ := by
+  rw [lt_succ, succ_le]
+def succ_le_succ {a b: Ordinal} : a ≤ b ↔ a.succ ≤ b.succ := by
+  rw [succ_le, lt_succ]
+
+def succ.inj : Function.Injective succ := by
+  intro a b eq
+  apply le_antisymm
+  apply le_of_lt_succ
+  rw [←eq]; apply lt_succ_self
+  apply le_of_lt_succ
+  rw [eq]; apply lt_succ_self
+
+open Classical in
+noncomputable
+def transfiniteRecursion
+  {motive: Ordinal.{u} -> Sort u}
+  (zero: motive 0)
+  (limit: ∀o: Ordinal, o.IsSuccLimit -> (∀x, x < o -> motive x) -> motive o)
+  (succ: ∀o, motive o -> motive o.succ) (o: Ordinal): motive o :=
+  if h:0 = o then
+    h ▸ zero
+  else if g:∃o': Ordinal, o = o'.succ then
+    Classical.choose_spec g ▸ (succ _ (transfiniteRecursion zero limit succ _))
+  else
+    limit _ (by
+      rw [not_exists] at g
+      apply And.intro
+      apply lt_of_le_of_ne
+      apply zero_le
+      assumption
+      assumption) (fun x h => (transfiniteRecursion zero limit succ x))
+termination_by o
+decreasing_by
+  conv => { rhs; rw [Classical.choose_spec g] }
+  apply lt_succ_self
+  assumption
+
+section
+
+variable {motive: Ordinal.{u} -> Sort u}
+  {zero: motive 0}
+  {limit: ∀o: Ordinal, o.IsSuccLimit -> (∀x, x < o -> motive x) -> motive o}
+  {succ: ∀o, motive o -> motive o.succ}
+
+def transfiniteRecursion_zero :
+  transfiniteRecursion zero limit succ 0 = zero := by
+  rw [transfiniteRecursion, dif_pos rfl]
+
+def transfiniteRecursion_succ (o: Ordinal) :
+  transfiniteRecursion zero limit succ o.succ = (succ o (transfiniteRecursion zero limit succ o)) := by
+  rw [transfiniteRecursion, dif_neg, dif_pos ⟨_, rfl⟩]
+  apply cast_eq_of_heq'
+  have : ∃ o': Ordinal, o.succ = o'.succ := ⟨_, rfl⟩
+  have : Ordinal.succ (Classical.choose this) = o.succ := by
+    rw [←Classical.choose_spec this]
+  rw [Ordinal.succ.inj this]
+  apply IsLimit.zero
+
+def transfiniteRecursion_limit (o: Ordinal) (h: o.IsSuccLimit) :
+  transfiniteRecursion zero limit succ o = limit o h (fun x _ => transfiniteRecursion zero limit succ x) := by
+  rw [transfiniteRecursion, dif_neg, dif_neg]
+  rw [not_exists]
+  apply h.right
+  intro h; subst o
+  exact lt_irrefl h.left
+
+end
 
 end Ordinal
