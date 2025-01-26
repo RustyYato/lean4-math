@@ -759,6 +759,85 @@ def mem_image {a: ZfSet} {f: ZfSet -> ZfSet} : ∀{x}, x ∈ a.image f ↔ ∃a�
   apply Quotient.sound
   assumption
 
+def Pre.attach_image (p: Pre.{u}) (f: ∀x ∈ p, Pre.{u}): Pre.{u} :=
+  .intro p.Type (fun x => f (p.Mem x) ⟨_, .refl' _⟩)
+
+private def hcongrFun
+  {β₀ β₁: α -> Prop}
+  (f: ∀x, β₀ x -> γ) (g: ∀x, β₁ x -> γ):
+  β₀ = β₁ -> HEq f g -> ∀x y h₀ h₁, x = y -> f x h₀ = g y h₁ := by
+  intro eq heq
+  cases eq; cases heq
+  intro x y _ _ _; subst y
+  rfl
+
+noncomputable
+def attach_image (s: ZfSet) (f: ∀x ∈ s, ZfSet.{u}): ZfSet.{u} := by
+  revert f
+  apply Quotient.hrecOn s (motive := fun s => _) _ _
+  intro s f
+  refine ⟦Pre.attach_image s ?_⟧
+  intro x mem
+  exact (f ⟦x⟧ mem).out
+  intro A B eq
+  apply Function.hfunext
+  rw [Quotient.sound eq]
+  intro ha hb heq
+  apply heq_of_eq
+  apply Quotient.sound
+  unfold Pre.attach_image
+  apply And.intro
+  intro a
+  have ⟨b, eqv⟩ := eq.to_left a
+  exists b
+  dsimp
+  apply Quotient.exact (s := setoid)
+  rw [Quotient.out_spec, Quotient.out_spec]
+  apply hcongrFun (f := ha) (g := hb)
+  rw [Quotient.sound eq]
+  assumption
+  exact Quotient.sound eqv
+  intro b
+  have ⟨a, eqv⟩ := eq.to_right b
+  exists a
+  dsimp
+  apply Quotient.exact (s := setoid)
+  rw [Quotient.out_spec, Quotient.out_spec]
+  apply hcongrFun (f := ha) (g := hb)
+  rw [Quotient.sound eq]
+  assumption
+  exact Quotient.sound eqv
+
+def mem_attach_image {s: ZfSet} {f: ∀x ∈ s, ZfSet} : ∀{x}, x ∈ s.attach_image f ↔ ∃s', ∃h: s' ∈ s, x = f s' h := by
+  intro x
+  cases s, x with | mk S X =>
+  apply Iff.intro
+  intro ⟨s, X_eq⟩
+  refine  ⟨⟦S.Mem s⟧, ?_, ?_⟩
+  exact ⟨_, .refl' _⟩
+  apply (Quotient.sound X_eq).trans
+  unfold Pre.attach_image Pre.Mem; dsimp
+  rw [Quotient.out_spec]
+  intro ⟨s, s_in_S, eq⟩
+  cases s with | mk S' =>
+  obtain ⟨s, eqv⟩ := s_in_S
+  refine ⟨?_, ?_⟩
+  assumption
+  apply Quotient.exact (s := setoid)
+  apply eq.trans
+  erw [Quotient.out_spec]
+  congr 1
+  exact Quotient.sound eqv
+
+def attach_image_empty : attach_image ∅ f = ∅ := by
+  ext x
+  rw [mem_attach_image]
+  apply Iff.intro
+  intro ⟨_, h, _⟩
+  exact (not_mem_empty _ h).elim
+  intro h
+  exact (not_mem_empty _ h).elim
+
 def Pre.sUnion (a: Pre) : Pre :=
  .intro (Σx: a.Type, (a.Mem x).Type) fun ⟨x, x'⟩ => (a.Mem x).Mem x'
 
@@ -819,6 +898,15 @@ def mem_sInter {a: ZfSet} (h: a.Nonempty) : ∀{x}, x ∈ ⋂a ↔ ∀a' ∈ a, 
   refine ⟨_, mem, ?_⟩
   apply g; assumption
   assumption
+
+def sUnion_empty : ⋃ (∅: ZfSet) = ∅ := by
+  ext
+  rw [mem_sUnion]
+  apply Iff.intro
+  intro ⟨_, h, _⟩
+  exact (not_mem_empty _ h).elim
+  intro h
+  exact (not_mem_empty _ h).elim
 
 def insert_nonempty {a b: ZfSet} : (insert a b).Nonempty :=
   ⟨_, mem_insert.mpr (.inl rfl)⟩

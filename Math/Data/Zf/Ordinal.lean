@@ -461,6 +461,17 @@ def sSup_le (s: ZfSet) {hs: ∀x ∈ s, IsOrdinal x} (k: Ordinal) (h: ∀x ∈ s
   assumption
   assumption
 
+def lt_sSup {s: ZfSet} {h} : ∀{x: Ordinal}, x < Ordinal.sSup s h ↔ ∃s': Ordinal, s'.set ∈ s ∧ x < s' := by
+  intro x
+  show x.set ∈ _ ↔ _
+  erw [mem_sUnion]
+  show (∃s', _) ↔ _
+  apply Iff.intro
+  intro ⟨s', g, _⟩
+  exists mk (h s' g)
+  intro ⟨s', g, _⟩
+  exists s'
+
 def sInf_le_mem (s: ZfSet) {hs: ∀x ∈ s, IsOrdinal x} (x: Ordinal) (h: x.set ∈ s) : Ordinal.sInf s ⟨_, h⟩ hs ≤ x := by
   intro z hz
   unfold Ordinal.sInf at hz
@@ -476,13 +487,53 @@ def le_sInf (s: ZfSet) (h: s.Nonempty) {hs: ∀x ∈ s, IsOrdinal x} (k: Ordinal
   have s'_ord := hs _ hs'
   exact g _ hs' _ memk
 
-protected noncomputable def iSup (f: ι -> Ordinal) : Ordinal :=
+protected noncomputable def iSup (f: ι -> Ordinal.{u}) : Ordinal.{u} :=
   Ordinal.sSup (ZfSet.range (fun x => (f x).set)) <| by
     intro x mem
     rw [mem_range] at mem
     obtain ⟨i, eq⟩ := mem
     subst x
     apply Ordinal.toIsOrdinal
+
+noncomputable def oSup (o: Ordinal.{u}) (f: ∀x < o, Ordinal.{u}) : Ordinal.{u} :=
+  Ordinal.sSup (o.set.attach_image (fun x h => (f (.mk (mem_set o h)) h).set)) <| by
+    intro x mem
+    rw [mem_attach_image] at mem
+    obtain ⟨i, _, eq⟩ := mem
+    subst x
+    apply Ordinal.toIsOrdinal
+
+def le_iSup (f: ι -> Ordinal) : ∀i, f i ≤ Ordinal.iSup f := by
+  intro i x hx
+  erw [mem_sUnion]
+  exists (f i)
+  apply And.intro
+  rw [mem_range]; exists i
+  assumption
+
+def iSup_le (f: ι -> Ordinal) (k: Ordinal) (h: ∀i, f i ≤ k) : Ordinal.iSup f ≤ k := by
+  apply sSup_le
+  intro x hx
+  rw [mem_range] at hx
+  obtain ⟨i, eq⟩ := hx; subst eq
+  apply h
+
+def le_oSup {o: Ordinal} (f: ∀x < o, Ordinal) : ∀x h, f x h ≤ Ordinal.oSup o f := by
+  intro i hi x hx
+  erw [mem_sUnion]
+  exists f i hi
+  apply And.intro
+  rw [mem_attach_image]
+  exists i
+  exists hi
+  assumption
+
+def oSup_le {o: Ordinal} (f: ∀x < o, Ordinal) (k: Ordinal) (h: ∀i h, f i h ≤ k) : Ordinal.oSup o f ≤ k := by
+  apply sSup_le
+  intro x hx
+  rw [mem_attach_image] at hx
+  obtain ⟨i, _, eq⟩ := hx; subst eq
+  apply h
 
 def omega : Ordinal where
   set := .omega
@@ -599,14 +650,15 @@ def succ.inj : Function.Injective succ := by
 open Classical in
 noncomputable
 def transfiniteRecursion
-  {motive: Ordinal.{u} -> Sort u}
+  {motive: Ordinal.{u} -> Sort v}
   (zero: motive 0)
-  (limit: ∀o: Ordinal, o.IsSuccLimit -> (∀x, x < o -> motive x) -> motive o)
-  (succ: ∀o, motive o -> motive o.succ) (o: Ordinal): motive o :=
+  (succ: ∀o: Ordinal.{u}, motive o -> motive o.succ)
+  (limit: ∀o: Ordinal.{u}, o.IsSuccLimit -> (∀x: Ordinal.{u}, x < o -> motive x) -> motive o)
+  (o: Ordinal.{u}): motive o :=
   if h:0 = o then
     h ▸ zero
   else if g:∃o': Ordinal, o = o'.succ then
-    Classical.choose_spec g ▸ (succ _ (transfiniteRecursion zero limit succ _))
+    Classical.choose_spec g ▸ (succ _ (transfiniteRecursion zero succ limit _))
   else
     limit _ (by
       rw [not_exists] at g
@@ -614,7 +666,7 @@ def transfiniteRecursion
       apply lt_of_le_of_ne
       apply zero_le
       assumption
-      assumption) (fun x h => (transfiniteRecursion zero limit succ x))
+      assumption) (fun x h => (transfiniteRecursion zero succ limit x))
 termination_by o
 decreasing_by
   conv => { rhs; rw [Classical.choose_spec g] }
@@ -623,17 +675,18 @@ decreasing_by
 
 section
 
-variable {motive: Ordinal.{u} -> Sort u}
+variable
+  {motive: Ordinal.{u} -> Sort v}
   {zero: motive 0}
-  {limit: ∀o: Ordinal, o.IsSuccLimit -> (∀x, x < o -> motive x) -> motive o}
-  {succ: ∀o, motive o -> motive o.succ}
+  {succ: ∀o: Ordinal.{u}, motive o -> motive o.succ}
+  {limit: ∀o: Ordinal.{u}, o.IsSuccLimit -> (∀x: Ordinal.{u}, x < o -> motive x) -> motive o}
 
 def transfiniteRecursion_zero :
-  transfiniteRecursion zero limit succ 0 = zero := by
+  transfiniteRecursion zero succ limit 0 = zero := by
   rw [transfiniteRecursion, dif_pos rfl]
 
 def transfiniteRecursion_succ (o: Ordinal) :
-  transfiniteRecursion zero limit succ o.succ = (succ o (transfiniteRecursion zero limit succ o)) := by
+  transfiniteRecursion zero succ limit o.succ = (succ o (transfiniteRecursion zero succ limit o)) := by
   rw [transfiniteRecursion, dif_neg, dif_pos ⟨_, rfl⟩]
   apply cast_eq_of_heq'
   have : ∃ o': Ordinal, o.succ = o'.succ := ⟨_, rfl⟩
@@ -643,7 +696,7 @@ def transfiniteRecursion_succ (o: Ordinal) :
   apply IsLimit.zero
 
 def transfiniteRecursion_limit (o: Ordinal) (h: o.IsSuccLimit) :
-  transfiniteRecursion zero limit succ o = limit o h (fun x _ => transfiniteRecursion zero limit succ x) := by
+  transfiniteRecursion zero succ limit o = limit o h (fun x _ => transfiniteRecursion zero succ limit x) := by
   rw [transfiniteRecursion, dif_neg, dif_neg]
   rw [not_exists]
   apply h.right
@@ -651,5 +704,165 @@ def transfiniteRecursion_limit (o: Ordinal) (h: o.IsSuccLimit) :
   exact lt_irrefl h.left
 
 end
+
+@[ext]
+def ext (a b: Ordinal) : (∀x, x < a ↔ x < b) -> a = b := by
+  intro h
+  apply embedZfSet.inj
+  ext
+  apply Iff.intro
+  intro g
+  apply (h (mk _)).mp
+  assumption
+  apply mem_set
+  assumption
+  intro g
+  apply (h (mk _)).mpr
+  assumption
+  apply mem_set
+  assumption
+
+def oSup_id : oSup o (fun x _ => x) = Ordinal.sSup o.set (fun _ h => mem_set _ h) := by
+  unfold oSup
+  dsimp
+  congr
+  ext x
+  rw [mem_attach_image]
+  apply Iff.intro
+  intro ⟨_, _, _⟩
+  subst x; assumption
+  intro hx
+  exists x; exists hx
+
+@[simp]
+def zero_set : (0: Ordinal).set = ∅ := rfl
+
+def zero_lt_of_ne_zero {o: Ordinal} : o ≠ 0 -> 0 < o := by
+  intro h
+  apply lt_of_le_of_ne
+  apply zero_le
+  symm; assumption
+
+open Classical in
+def oSup_const : oSup o (fun _ _ => x) = if o = 0 then 0 else x := by
+  unfold oSup
+  dsimp
+  congr
+  split
+  subst o
+  apply embedZfSet.inj
+  simp [Ordinal.sSup, embedZfSet, attach_image_empty]
+  rw [zero_set, attach_image_empty, sUnion_empty]
+  rename_i h
+  replace h := zero_lt_of_ne_zero h
+  apply le_antisymm
+  apply sSup_le
+  intro y hy z hz
+  rw [mem_attach_image] at hy
+  obtain ⟨o', o'_in_o, eq⟩ := hy; subst eq
+  assumption
+  intro y hy
+  erw [mem_sUnion]
+  exists x
+  apply And.intro _ hy
+  rw [mem_attach_image]
+  exists ∅
+  exists h
+
+def limit_succ_lt_of_lt (h: IsLimit o) : x < o -> x.succ < o := by
+  intro g
+  rw [lt_iff_not_le]
+  intro i
+  cases lt_or_eq_of_le i
+  have := not_between_succ g
+  contradiction
+  have := h x; contradiction
+
+def sSup_self_limit (h: IsLimit o) : Ordinal.sSup o.set (fun _ h => mem_set _ h) = o := by
+  ext x
+  rw [lt_sSup]
+  apply Iff.intro
+  intro ⟨s, h , hs⟩
+  apply lt_trans hs
+  assumption
+  intro hx
+  exists x.succ
+  apply And.intro
+  apply limit_succ_lt_of_lt
+  assumption
+  assumption
+  apply lt_succ_self
+
+noncomputable
+instance : Add Ordinal where
+  add a b :=
+    transfiniteRecursion
+      (motive := fun _ => Ordinal)
+      a
+      (fun _ ih => ih.succ)
+      (fun x _ ih => oSup x (fun y h => ih y h))
+      b
+
+noncomputable
+instance : Mul Ordinal where
+  mul a b :=
+    transfiniteRecursion
+      (motive := fun _ => Ordinal)
+      0
+      (fun _ ih => ih + a)
+      (fun x _ ih => oSup x (fun y h => ih y h))
+      b
+
+def add_zero (a: Ordinal) : a + 0 = a := by
+  show transfiniteRecursion _ _ _ _ = _
+  rw [transfiniteRecursion_zero]
+
+def add_succ (a b: Ordinal) : a + b.succ = (a + b).succ := by
+  show transfiniteRecursion _ _ _ _ = _
+  rw [transfiniteRecursion_succ]
+  rfl
+
+def add_limit (a b: Ordinal) (h: b.IsSuccLimit) : a + b = oSup b (fun x _ => (a + x)) := by
+  show transfiniteRecursion _ _ _ _ = _
+  rw [transfiniteRecursion_limit]
+  rfl
+  assumption
+
+def mul_zero (a: Ordinal) : a * 0 = 0 := by
+  show transfiniteRecursion _ _ _ _ = _
+  rw [transfiniteRecursion_zero]
+
+def mul_succ (a b: Ordinal) : a * b.succ = a * b + a := by
+  show transfiniteRecursion _ _ _ _ = _
+  rw [transfiniteRecursion_succ]
+  rfl
+
+def mul_limit (a b: Ordinal) (h: b.IsSuccLimit) : a * b = oSup b (fun x _ => (a * x)) := by
+  show transfiniteRecursion _ _ _ _ = _
+  rw [transfiniteRecursion_limit]
+  rfl
+  assumption
+
+def zero_add (b: Ordinal) : 0 + b = b := by
+  induction b using transfiniteRecursion with
+  | zero => rw [add_zero]
+  | succ o ih => rw [add_succ, ih]
+  | limit o lim ih =>
+    rw [add_limit _ _ lim]
+    conv => { lhs; arg 2; intro x hx; rw [ih _ hx] }
+    rw [oSup_id, sSup_self_limit]
+    exact lim.right
+
+def zero_mul (b: Ordinal) : 0 * b = 0 := by
+  induction b using transfiniteRecursion with
+  | zero => rw [mul_zero]
+  | succ o ih => rw [mul_succ, add_zero, ih]
+  | limit o lim ih =>
+    rw [mul_limit _ _ lim]
+    conv => { lhs; arg 2; intro x hx; rw [ih _ hx] }
+    rw [oSup_const, if_neg]
+    apply Ne.symm
+    apply ne_of_lt
+    exact lim.left
 
 end Ordinal
