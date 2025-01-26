@@ -389,6 +389,8 @@ instance : OfNat Ordinal.{u} n := ⟨ofNat n⟩
 
 def zero_le (o: Ordinal) : 0 ≤ o := empty_sub _
 
+def not_lt_zero (o: Ordinal) : ¬o < 0 := not_lt_of_le (zero_le _)
+
 def IsLimit (o: Ordinal) : Prop := ∀x: Ordinal, o ≠ x.succ
 def IsSuccLimit (o: Ordinal) : Prop := 0 < o ∧ o.IsLimit
 def IsLimit.zero : IsLimit 0 := by
@@ -793,6 +795,12 @@ def sSup_self_limit (h: IsLimit o) : Ordinal.sSup o.set (fun _ h => mem_set _ h)
   assumption
   apply lt_succ_self
 
+def sSup_eq_zero (h: Ordinal.sSup s hs = 0): ∀x ∈ s, x = ∅ := by
+  intro x hx
+  have : x ⊆ _ := mem_le_sSup s (hs := hs) (mk (hs x hx)) hx
+  rw [h] at this
+  exact (sub_empty_iff _).mp this
+
 noncomputable
 instance : Add Ordinal where
   add a b :=
@@ -864,5 +872,71 @@ def zero_mul (b: Ordinal) : 0 * b = 0 := by
     apply Ne.symm
     apply ne_of_lt
     exact lim.left
+
+def add_lt_add_right {a b k: Ordinal} : a < b -> k + a < k + b := by
+  intro lt
+  induction b using transfiniteRecursion with
+  | zero =>
+    have := not_lt_zero _ lt
+    contradiction
+  | succ b ih =>
+    rw [lt_succ] at lt
+    rcases lt_or_eq_of_le lt with lt | eq
+    rw [add_succ]
+    apply lt_trans
+    apply ih
+    assumption
+    apply lt_succ_self
+    subst b
+    rw [add_succ]
+    apply lt_succ_self
+  | limit b blim ih =>
+    rw [add_limit _ _ blim]
+    erw [oSup, lt_sSup]
+    exists k + a.succ
+    apply And.intro
+    · rw [mem_attach_image]
+      refine ⟨a.succ, ?_, ?_⟩
+      apply limit_succ_lt_of_lt
+      exact blim.right
+      assumption
+      rfl
+    rw [add_succ]
+    apply lt_succ_self
+
+def of_add_eq_zero {a b: Ordinal} : a + b = 0 -> a = 0 ∧ b = 0 := by
+  intro h
+  induction b using transfiniteRecursion with
+  | zero => rw [add_zero] at h; trivial
+  | succ b ih =>
+    rw [add_succ] at h
+    have := lt_succ_self (a + b); rw [h] at this
+    have := not_lt_of_le (zero_le (a + b)); contradiction
+  | limit b blim ih =>
+    rw [add_limit _ _ blim] at h
+    sorry
+
+def of_mul_eq_zero {a b: Ordinal} : a * b = 0 -> a = 0 ∨ b = 0 := by
+  induction b using transfiniteRecursion with
+  | zero =>
+    intro
+    right; rfl
+  | succ b ih =>
+    rw [mul_succ]
+    intro h
+    exact .inl (of_add_eq_zero h).right
+  | limit b blim ih =>
+    rw [mul_limit _ _ blim]
+    intro h
+    left
+    have := sSup_eq_zero h
+    conv at this => {
+      intro x
+      rw [mem_attach_image]
+      dsimp
+    }
+
+
+    sorry
 
 end Ordinal
