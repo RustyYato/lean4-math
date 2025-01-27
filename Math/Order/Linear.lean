@@ -82,14 +82,13 @@ class IsLinearMinMaxOrder (α: Type*) [LT α] [LE α] [Min α] [Max α] extends 
 class LinearMinMaxOrder (α: Type*) extends LT α, LE α, Min α, Max α, IsLinearMinMaxOrder α
 
 variable {α: Type*} {a b c d: α}
-variable [LT α] [LE α] [IsLinearOrder α] [Min α] [Max α] [IsLinearMinMaxOrder α]
+variable [LT α] [LE α] [Min α] [Max α]
+
+section
+
+variable [IsLinearOrder α]
 
 def lt_or_le: ∀a b: α, a < b ∨ b ≤ a := IsLinearOrder.lt_or_le
-
-def min_iff_le_left: a ≤ b ↔ min a b = a := IsLinearMinMaxOrder.min_iff_le_left
-def min_iff_le_right: b ≤ a ↔ min a b = b := IsLinearMinMaxOrder.min_iff_le_right
-def max_iff_le_left: a ≤ b ↔ max a b = b := IsLinearMinMaxOrder.max_iff_le_left
-def max_iff_le_right: b ≤ a ↔ max a b = a := IsLinearMinMaxOrder.max_iff_le_right
 
 def le_total: ∀a b: α, a ≤ b ∨ b ≤ a := by
   intro a b
@@ -154,6 +153,15 @@ def compare_linear (a b: α) : a < b ∨ a = b ∨ b < a := by
   cases lt_or_eq_of_le h
   right; assumption
   left; symm; assumption
+
+end
+
+variable [IsLinearMinMaxOrder α]
+
+def min_iff_le_left: a ≤ b ↔ min a b = a := IsLinearMinMaxOrder.min_iff_le_left
+def min_iff_le_right: b ≤ a ↔ min a b = b := IsLinearMinMaxOrder.min_iff_le_right
+def max_iff_le_left: a ≤ b ↔ max a b = b := IsLinearMinMaxOrder.max_iff_le_left
+def max_iff_le_right: b ≤ a ↔ max a b = a := IsLinearMinMaxOrder.max_iff_le_right
 
 def min_le_iff : min a b ≤ k ↔ a ≤ k ∨ b ≤ k := by
   apply Iff.intro

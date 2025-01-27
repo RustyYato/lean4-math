@@ -157,7 +157,7 @@ instance Rat.add_continuous : Topology.IsContinuous (fun x: ℚ × ℚ => x.fst 
     show ‖_‖ < δ
     rw [sub_eq_add_neg, neg_add_rev, add_assoc, ←add_assoc x.snd, add_comm _ (-y.fst), ←add_assoc]
     apply lt_of_le_of_lt
-    apply abs_le_abs_add_abs
+    apply abs_add_le_add_abs
     rw [←sub_eq_add_neg, ←sub_eq_add_neg]
     assumption
 

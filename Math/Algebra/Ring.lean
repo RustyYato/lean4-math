@@ -413,6 +413,9 @@ instance [IsAddGroup α] : IsNegZeroClass α where
 instance [IsGroup α] : IsInvOneClass α where
   inv_one := neg_zero (α := AddOfMul α)
 
+def neg_sub [IsAddGroup α₀] (a b: α₀) : -(a - b) = b - a := by
+  rw [sub_eq_add_neg, neg_add_rev, neg_neg, ←sub_eq_add_neg]
+
 def sub_sub [IsAddGroup α₀] (a b c: α₀) : a - (b - c) = a + c - b := by
   rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, neg_add_rev, neg_neg, add_assoc]
 
@@ -426,6 +429,8 @@ def eq_of_sub_eq_zero [IsAddGroup α₀] {a b: α₀} : a - b = 0 -> a = b := by
   rw [neg_neg] at this
   assumption
 
+def inv_div [IsGroup α₁] (a b: α₁) : (a / b)⁻¹ = b / a :=
+  neg_sub (α₀ := AddOfMul α₁) _ _
 def div_div [IsGroup α₁] (a b c: α₁) : a / (b / c) = a * c / b :=
   sub_sub (α₀ := AddOfMul α₁) _ _ _
 

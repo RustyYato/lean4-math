@@ -754,20 +754,20 @@ def pair_unpair (a b: Nat) : unpair (pair a b) = ⟨a, b⟩ := by
 
 --   sorry
 
--- def mul_eq_one_iff {a b: Nat} : a * b = 1 ↔ a = 1 ∧ b = 1 := by
---   apply Iff.intro
---   · intro h
---     match a with
---     | 0 => rw [Nat.zero_mul] at h; contradiction
---     | 1 =>
---       rw [Nat.one_mul] at h
---       subst b
---       trivial
---     | a + 2 =>
---     match b with
---     | 0 => rw [Nat.mul_zero] at h; contradiction
---     | b + 1 => simp [Nat.mul_add, Nat.add_mul, ←Nat.add_assoc] at h
---   · intro ⟨h, g⟩
---     rw [h, g]
+def mul_eq_one_iff {a b: Nat} : a * b = 1 ↔ a = 1 ∧ b = 1 := by
+  apply Iff.intro
+  · intro h
+    match a with
+    | 0 => rw [Nat.zero_mul] at h; contradiction
+    | 1 =>
+      rw [Nat.one_mul] at h
+      subst b
+      trivial
+    | a + 2 =>
+    match b with
+    | 0 => rw [Nat.mul_zero] at h; contradiction
+    | b + 1 => simp [Nat.mul_add, Nat.add_mul, ←Nat.add_assoc] at h
+  · intro ⟨h, g⟩
+    rw [h, g]
 
 end Nat

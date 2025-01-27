@@ -36,8 +36,8 @@ instance : IsStrictOrderedRing ℚ where
 
 instance : IsOrderedAbsRing ℚ where
   abs_nonneg := Rat.abs_nonneg
-  abs_zero := rfl
-  abs_le_abs_add_abs := Rat.abs_add_le_add_abs
+  abs_zero := Rat.eq_zero_iff_abs_eq_zero.symm
+  abs_add_le_add_abs := Rat.abs_add_le_add_abs
   nsmul_abs _ _ := Rat.abs_mul _ _
   abs_one := rfl
   mul_abs := Rat.abs_mul
