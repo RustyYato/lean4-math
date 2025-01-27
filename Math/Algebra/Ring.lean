@@ -267,6 +267,15 @@ instance [IsSubNegMonoid α] : IsDivInvMonoid (MulOfAdd α) where
   zpow_ofNat := zsmul_ofNat (α := α)
   zpow_negSucc := zsmul_negSucc (α := α)
 
+instance [IsDivInvMonoid α] : IsSubNegMonoid (AddOfMul α) where
+  sub_eq_add_neg := div_eq_mul_inv (α := α)
+  zsmul_ofNat := zpow_ofNat (α := α)
+  zsmul_negSucc := zpow_negSucc (α := α)
+instance [IsSubNegMonoid α] : IsDivInvMonoid (MulOfAdd α) where
+  div_eq_mul_inv := sub_eq_add_neg (α := α)
+  zpow_ofNat := zsmul_ofNat (α := α)
+  zpow_negSucc := zsmul_negSucc (α := α)
+
 def neg_one_zsmul [IsSubNegMonoid α₀] (a: α₀) : (-1) • a = -a := by erw [zsmul_negSucc, one_nsmul]
 def zpow_neg_one [IsDivInvMonoid α₁] (a: α₁) : a ^ (-1) = a⁻¹ := neg_one_zsmul (α₀ := AddOfMul α₁) _
 
