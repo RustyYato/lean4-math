@@ -186,3 +186,13 @@ def Fintype.axiomOfChoice [DecidableEq α] {β: α -> Sort*} [fs: Fintype α] (f
   intro x
   apply f'
   apply fs.complete
+
+def Fintype.subsingleton [f: Fintype α] (h: card α ≤ 1) : Subsingleton α where
+  allEq := by
+    intro a b
+    match f with
+    | .mk [] _ c => have := c a; contradiction
+    | .mk [x] _ c =>
+      cases List.mem_singleton.mp (c a)
+      cases List.mem_singleton.mp (c b)
+      rfl

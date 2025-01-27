@@ -303,4 +303,51 @@ def ofEquivGen [IsRefl r] [IsSymmetric r] [IsTrans r] (h: EquivGen r a b) : r a 
     assumption
   | trans => apply trans <;> assumption
 
+
+instance (s: Setoid α) : IsRefl s.r := ⟨s.refl⟩
+instance (s: Setoid α) : IsSymmetric s.r := ⟨s.symm⟩
+instance (s: Setoid α) : IsTrans s.r := ⟨s.trans⟩
+
+abbrev relAnd (r s: α -> α -> Prop) (x y: α): Prop := r x y ∧ s x y
+abbrev relOr (r s: α -> α -> Prop) (x y: α): Prop := r x y ∨ s x y
+
+infixl:90 " ∧r " => relAnd
+infixl:90 " ∨r " => relOr
+
+instance {r s: α -> α -> Prop} [IsRefl r] [IsRefl s] : IsRefl (r ∧r s) where
+  refl _ := ⟨refl _, refl _⟩
+
+instance {r s: α -> α -> Prop} [IsRefl r] : IsRefl (r ∨r s) where
+  refl _ := .inl (refl _)
+
+instance {r s: α -> α -> Prop} [IsRefl s] : IsRefl (r ∨r s) where
+  refl _ := .inr (refl _)
+
+instance {r s: α -> α -> Prop} [IsSymmetric r] [IsSymmetric s] : IsSymmetric (r ∧r s) where
+  symm t := ⟨symm t.1, symm t.2⟩
+
+instance {r s: α -> α -> Prop} [IsSymmetric r] [IsSymmetric s] : IsSymmetric (r ∨r s) where
+  symm
+  | .inl t => .inl (symm t)
+  | .inr t => .inr (symm t)
+
+instance {r s: α -> α -> Prop} [IsTrans r] [IsTrans s] : IsTrans (r ∧r s) where
+  trans t₀ t₁ := ⟨trans t₀.1 t₁.1, trans t₀.2 t₁.2⟩
+
+instance : @IsRefl α (· = ·) where
+  refl := .refl
+instance : @IsSymmetric α (· = ·) where
+  symm := .symm
+instance : @IsTrans α (· = ·) where
+  trans := .trans
+
+abbrev trivial: α -> α -> Prop := fun _ _ => True
+
+instance : @IsRefl α trivial where
+  refl _ := True.intro
+instance : @IsSymmetric α trivial where
+  symm _ := True.intro
+instance : @IsTrans α trivial where
+  trans _ _ := True.intro
+
 end Relation

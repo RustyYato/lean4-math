@@ -676,3 +676,33 @@ def Option.swapULift.{u} : ULift.{u} (Option α) ≃ Option (ULift.{u} α) where
   invFun x := ⟨x.map ULift.down⟩
   leftInv := by intro ⟨x⟩; cases x <;> rfl
   rightInv := by intro x; cases x <;> rfl
+
+def Equiv.swap [DecidableEq α] (a b: α) : α ≃ α where
+  toFun x :=
+    if x = a then b
+    else if x = b then a
+    else x
+  invFun x :=
+    if x = a then b
+    else if x = b then a
+    else x
+  leftInv := by
+    intro x
+    dsimp
+    split; rw [if_pos rfl]
+    split
+    subst a; assumption
+    symm; assumption
+    split
+    rw [if_pos rfl]; symm; assumption
+    rfl
+  rightInv := by
+    intro x
+    dsimp
+    split; rw [if_pos rfl]
+    split
+    subst a; assumption
+    symm; assumption
+    split
+    rw [if_pos rfl]; symm; assumption
+    rfl

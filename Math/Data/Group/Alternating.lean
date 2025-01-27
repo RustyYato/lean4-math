@@ -1,4 +1,4 @@
-import Math.Data.Group.Basic
+ import Math.Data.Group.Basic
 
 -- has one swap
 private def has_one_swap (a b: Fin n ≃ Fin n): Prop :=
@@ -138,5 +138,39 @@ private def to_perm {g: Group} (a: g.ty) : g.ty ≃ g.ty where
     intro b
     dsimp
     rw [mul_assoc, inv_mul_cancel, mul_one]
+
+def even_perm_3_simple : (EvenPermuatation 3).IsSimple := by
+  intro x ⟨nsub⟩
+  sorry
+
+private
+def count_inversions (eqv: Fin n ≃ Fin n) := Fin.sum (n := n) fun x =>
+  Fin.sum (n := x.val) fun y => if eqv x < eqv (y.castLE (Nat.le_of_lt x.isLt)) then 1 else 0
+
+instance (eqv: Fin n ≃ Fin n) : Decidable (even_perm eqv) :=
+  if h:count_inversions eqv % 2 = 0 then
+    .isTrue <| by
+      induction n using Nat.strongRecOn with
+      | ind n ih =>
+      cases n with
+      | zero =>
+        have : Subsingleton (Fin 0 ≃ Fin 0) := Fintype.subsingleton (by decide)
+        rw [this.allEq eqv]
+        apply even_perm.refl
+      | succ n =>
+      cases n with
+      | zero =>
+        have : Subsingleton (Fin 1 ≃ Fin 1) := Fintype.subsingleton (by decide)
+        rw [this.allEq eqv]
+        apply even_perm.refl
+      | succ n =>
+        replace h := Nat.dvd_of_mod_eq_zero h
+        rw [Group.count_inversions, Fin.sum_pop] at h
+
+        let x := eqv.symm (Fin.last _)
+        have := Equiv.swap (Fin.last n)
+        sorry
+  else
+    .isFalse sorry
 
 end Group
