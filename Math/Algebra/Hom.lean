@@ -220,7 +220,7 @@ infixr:25 " →*ₙ " => MonoidHom
 infixr:25 " →+ " => AddGroupHom
 infixr:25 " →* " => GroupHom
 
-infixr:25 " →+ₙ* " => RingHom
+infixr:25 " →+ₙ* " => SemiringHom
 infixr:25 " →+* " => RingHom
 
 end

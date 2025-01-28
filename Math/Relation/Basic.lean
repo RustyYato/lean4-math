@@ -93,6 +93,8 @@ class IsSymmetric: Prop where
 
 export IsSymmetric (symm)
 
+class IsEquiv extends IsRefl rel, IsSymmetric rel, IsTrans rel: Prop where
+
 class IsAsymm: Prop where
   asymm: ∀{a b}, rel a b -> rel b a -> False
 
