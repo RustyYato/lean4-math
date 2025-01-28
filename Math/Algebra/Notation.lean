@@ -16,6 +16,8 @@ class SMul (M α) where
 
 infixr:73 " • " => SMul.smul
 
+instance [Mul α] : SMul α α := ⟨(· * ·)⟩
+
 class Inv (α) where
   inv: α -> α
 
