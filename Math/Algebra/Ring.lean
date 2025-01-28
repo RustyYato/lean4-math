@@ -588,6 +588,11 @@ class IsModule [IsSemiring R] [IsAddCommMagma M] [IsAddMonoid M] extends IsDistr
 
 export IsModule (add_smul zero_smul)
 
+class IsSMulComm (R S A: Type*) [SMul R A] [SMul S A]: Prop where
+  smul_comm: ∀(r: R) (s: S) (x: A), r • s • x = s • r • x
+
+export IsSMulComm (smul_comm)
+
 class IsNonUnitalNonAssocSemiring extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α: Prop
 
 instance

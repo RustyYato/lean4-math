@@ -53,3 +53,39 @@ def LinearMap.comp (f: B →ₗ[R] C) (g: A →ₗ[R] B) : A →ₗ[R] C where
   toFun := f.toFun ∘ g.toFun
   resp_add { _ _ } := by dsimp; rw [g.resp_add, f.resp_add]
   resp_smul { _ _ } := by dsimp; rw [g.resp_smul, f.resp_smul]
+
+variable [One R] [Mul R] [Pow R ℕ] [IsMonoid R]
+    [Zero B] [SMul ℕ B] [IsAddMonoid B]
+    [IsAddCommMagma B] [IsDistribMulAction R B]
+    [IsSMulComm R R B]
+
+instance : Add (A →ₗ[R] B) where
+  add f g := {
+    toFun x := f x + g x
+    resp_add := by
+      intro x y
+      dsimp
+      rw [resp_add, resp_add]
+      rw [←add_assoc, add_assoc (f x), add_comm (f y), ←add_assoc, add_assoc]
+    resp_smul := by
+      intro r x
+      dsimp
+      rw [resp_smul, resp_smul, smul_add]
+  }
+
+instance : SMul R (A →ₗ[R] B) where
+  smul r f := {
+    toFun x := r • f x
+    resp_add := by
+      intro x y; dsimp
+      rw [resp_add, smul_add]
+    resp_smul := by
+      intro r x
+      dsimp
+      rw [resp_smul, smul_comm]
+  }
+
+variable [IsAddCommMagma B] [IsAddSemigroup B]
+
+/-- A shorthand for the type of `R`-bilinear `Nₗ`-valued maps on `M`. -/
+abbrev BilinMap : Type _ := A →ₗ[R] A →ₗ[R] B

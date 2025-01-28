@@ -92,4 +92,14 @@ instance : IsAlgebra R R where
   commutes := mul_comm
   smul_def _ _ := rfl
 
+variable [Zero S] [One S] [Add S] [Mul S] [SMul ℕ S] [Pow S ℕ] [NatCast S] [∀n, OfNat S (n + 2)]
+  [SMul S A]
+
+instance [AlgebraMap R A] [IsAlgebra R A] [AlgebraMap S A] [IsAlgebra S A] : IsSMulComm R S A where
+  smul_comm := by
+    intro r s x
+    simp [smul_def, ←mul_assoc]
+    congr 1
+    apply commutes
+
 end Algebra
