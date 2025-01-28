@@ -10,9 +10,12 @@ variable [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [
 variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R] [IsRing R]
 
 variable [Zero S] [One S] [Add S] [Mul S] [Pow S ℕ] [SMul ℕ S] [NatCast S] [∀n, OfNat S (n + 2)] [IsSemiring S]
-variable [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
+variable [Sub S] [Neg S] [SMul ℤ S] [IntCast S] [IsRing S]
+variable [SMul S R]
 
 section Rel
+
+variable [AlgebraMap S R] [IsAlgebra S R]
 
 inductive Rel (r: R -> R -> Prop): R -> R -> Prop where
 | of : r a b -> Rel r a b
@@ -266,7 +269,7 @@ private def zsmul (n: Int) : RingQuot r -> RingQuot r := by
     apply Quot.sound
     assumption
 
-private def smul (n: S) : RingQuot r -> RingQuot r := by
+private def smul [AlgebraMap S R] [IsAlgebra S R] (n: S) : RingQuot r -> RingQuot r := by
   apply Quot.lift (⟦n • ·⟧)
   intro a b r
   apply Quot.sound
@@ -287,7 +290,7 @@ instance : Sub (RingQuot r) := ⟨sub⟩
 instance : Pow (RingQuot r) ℕ := ⟨flip npow⟩
 instance : SMul ℕ (RingQuot r) := ⟨nsmul⟩
 instance : SMul ℤ (RingQuot r) := ⟨zsmul⟩
-instance : SMul S (RingQuot r) := ⟨smul⟩
+instance [AlgebraMap S R] [IsAlgebra S R] : SMul S (RingQuot r) := ⟨smul⟩
 
 @[simp]
 def mk_zero : 0 = (⟦0⟧: RingQuot r) := rfl
@@ -308,7 +311,7 @@ def mk_nsmul {n: Nat} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 @[simp]
 def mk_zsmul {n: Int} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 @[simp]
-def mk_smul {n: S} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
+def mk_smul [AlgebraMap S R] [IsAlgebra S R] {n: S} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 
 @[cases_eliminator]
 def ind {motive: RingQuot r -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quot.ind
@@ -432,7 +435,7 @@ instance instIsRing : IsRing (RingQuot r) where
   intCast_negSucc := by
     simp [IntCast.intCast, NatCast.natCast, intCast_negSucc]
 
-instance : AlgebraMap S (RingQuot r) where
+instance [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
   toFun s := ⟦algebraMap s⟧
   resp_zero := by
     simp
@@ -447,7 +450,14 @@ instance : AlgebraMap S (RingQuot r) where
     intro a b
     simp [resp_mul]
 
-instance instIsAlgebra : IsAlgebra S (RingQuot r) where
+instance [h: RingAlgebraMap S R] [IsAlgebra S R] : RingAlgebraMap S (RingQuot r) where
+  resp_neg := by
+    intro x
+    show ⟦_⟧ = ⟦-_⟧
+    congr
+    apply h.resp_neg
+
+instance instIsAlgebra [AlgebraMap S R] [IsAlgebra S R] : IsAlgebra S (RingQuot r) where
   commutes := by
     intro s x
     cases x with| mk x=>
@@ -555,10 +565,80 @@ def lift_mkSemiringHom_apply (f : R →+ₙ* T) {r : R → R → Prop} (w : ∀ 
 def lift_mkRingHom_apply (f : R →+* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
     liftRing ⟨f, w⟩ (mkRingHom r x) = f x := rfl
 
-def mkAlgHom (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
+variable (S: Type*) [Zero S] [One S] [Add S] [Mul S] [Pow S ℕ] [SMul ℕ S] [NatCast S] [∀n, OfNat S (n + 2)] [IsSemiring S]
+variable [Sub S] [Neg S] [SMul ℤ S] [IntCast S] [IsRing S]
+variable [SMul S R]
+
+def mkAlgHom [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
   toSemiringHom := mkSemiringHom _
   resp_algebraMap _ := rfl
 
+def mkAlgHom_surj [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : Function.Surjective (mkAlgHom S r) := by
+  apply mkSemiringHom_surj
+
+variable [Zero A] [One A] [Add A] [Mul A] [Pow A ℕ] [SMul ℕ A] [NatCast A] [∀n, OfNat A (n + 2)] [IsSemiring A]
+variable [Zero B] [One B] [Add B] [Mul B] [Pow B ℕ] [SMul ℕ B] [NatCast B] [∀n, OfNat B (n + 2)] [IsSemiring B]
+  [SMul S A] [SMul S B] [AlgebraMap S A] [AlgebraMap S B] [IsAlgebra S A] [IsAlgebra S B]
+
+def preLiftAlgHom {s : A → A → Prop} {f : A →ₐ[S] B}
+  (h : ∀ ⦃x y⦄, s x y → f x = f y) : RingQuot s →ₐ[S] B where
+  toFun := by
+    apply Quot.lift f
+    intro a b r
+    induction r with
+    | of =>
+      apply h
+      assumption
+    | add_left =>
+      rw [resp_add, resp_add]
+      congr
+    | mul_left =>
+      rw [resp_mul, resp_mul]
+      congr
+    | mul_right =>
+      rw [resp_mul, resp_mul]
+      congr
+  resp_zero := resp_zero _
+  resp_one := resp_one _
+  resp_algebraMap := resp_algebraMap _
+  resp_add := by
+    intro a b
+    cases a, b
+    apply resp_add
+  resp_mul := by
+    intro a b
+    cases a, b
+    apply resp_mul
+
+def liftAlgHom {s : A → A → Prop} :
+  { f : A →ₐ[S] B // ∀ ⦃x y⦄, s x y → f x = f y } ≃ (RingQuot s →ₐ[S] B) where
+  toFun f := preLiftAlgHom S f.property
+  invFun f := ⟨f.comp (mkAlgHom S s), by
+    intro x y r
+    show f _ = f _
+    congr 1
+    apply mkSemiringHom_rel
+    assumption⟩
+  leftInv _ := rfl
+  rightInv f := by
+    apply DFunLike.ext
+    rintro ⟨x⟩
+    rfl
+
+@[simp]
+def liftAlgHom_mkAlgHom_apply (f : A →ₐ[S] B) {s : A → A → Prop}
+    (w : ∀ ⦃x y⦄, s x y → f x = f y) (x) : (liftAlgHom S ⟨f, w⟩) ((mkAlgHom S s) x) = f x := rfl
+
+@[ext 1100]
+def ringQuot_ext {s : A → A → Prop} (f g : RingQuot s →ₐ[S] B)
+    (w : f.comp (mkAlgHom S s) = g.comp (mkAlgHom S s)) : f = g := by
+  apply DFunLike.ext
+  intro x
+  rcases mkAlgHom_surj S s x with ⟨x, rfl⟩
+  show (f.comp (mkAlgHom S s)) x = _
+  rw [w]; rfl
+
 attribute [irreducible] instZero instOne add mul neg sub npow nsmul zsmul mkSemiringHom mkRingHom preLiftSemiring preLiftRing liftSemiring liftRing
+  preLiftAlgHom liftAlgHom
 
 end RingQuot

@@ -508,6 +508,14 @@ def ι_inj [IsNontrivial R] : Function.Injective (ι R (X := X)) := by
   rw [eq, h₁] at h₀
   exact zero_ne_one h₀
 
+@[simp]
+def lift_symm_apply (F : FreeAlgebra R X →ₐ[R] A) : (lift R).symm F = F ∘ ι R := rfl
+
+def hom_ext {f g : FreeAlgebra R X →ₐ[R] A}
+    (w : (f : FreeAlgebra R X → A) ∘ ι R = (g : FreeAlgebra R X → A) ∘ ι R) : f = g := by
+  rw [← lift_symm_apply, ← lift_symm_apply] at w
+  exact (lift R).invFun_inj w
+
 /-- The left-inverse of `algebraMap`. -/
 def algebraMapInv : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 0)
 

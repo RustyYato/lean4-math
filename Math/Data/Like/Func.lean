@@ -50,6 +50,8 @@ def congr {f g : F} {x y : α} (h₁ : f = g) (h₂ : x = y) : f x = g y :=
 def congrArg (f : F) {x y : α} (h₂ : x = y) : f x = f y :=
   _root_.congrArg _ h₂
 
+def coe_apply (f: F) {x: α} : DFunLike.coe f x = f x := rfl
+
 def comp (f: A -> B) (h: Function.Injective f) [fl: FunLike B α β] : FunLike A α β where
   coe := fl.coe ∘ f
   coe_inj := by
