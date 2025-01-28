@@ -353,3 +353,52 @@ instance : @IsTrans α trivial where
   trans _ _ := True.intro
 
 end Relation
+
+namespace Quot
+
+private def rel {r : α -> α -> Prop} (q₁ q₂ : Quot r) : Prop := by
+  apply Quot.liftOn q₁ _ _
+  intro x₁
+  apply Quot.liftOn q₂ _ _
+  intro x₂
+  exact Relation.EquivGen r x₁ x₂
+  intro a b req
+  apply propext
+  apply Iff.intro
+  intro h
+  apply h.trans
+  apply Relation.EquivGen.single
+  assumption
+  intro h
+  apply h.trans
+  apply Relation.EquivGen.symm
+  apply Relation.EquivGen.single
+  assumption
+  intro a b eq
+  apply propext
+  induction q₂ using Quot.ind
+  rename_i x₂
+  show Relation.EquivGen _ _ _ ↔ Relation.EquivGen _ _ _
+  apply Iff.intro
+  intro h
+  apply Relation.EquivGen.trans _ h
+  apply Relation.EquivGen.symm
+  apply Relation.EquivGen.single
+  assumption
+  intro h
+  apply Relation.EquivGen.trans _ h
+  apply Relation.EquivGen.single
+  assumption
+
+private def rel.refl {r : α -> α -> Prop} (q : Quot r) : rel q q := by
+  induction q using Quot.ind
+  apply Relation.EquivGen.refl
+
+private def rel_of_eq {r : α -> α -> Prop} {q₁ q₂ : Quot r} : q₁ = q₂ → rel q₁ q₂ :=
+  fun h => Eq.ndrecOn h (rel.refl q₁)
+
+def exact {r: α -> α -> Prop} {x y: α} : Quot.mk r x = Quot.mk r y -> Relation.EquivGen r x y := by
+  intro h
+  exact Quot.rel_of_eq h
+
+end Quot
