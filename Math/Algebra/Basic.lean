@@ -8,10 +8,17 @@ variable [Zero A] [One A] [Add A] [Mul A] [SMul ℕ A] [Pow A ℕ] [NatCast A] [
 
 class AlgebraMap extends R →+ₙ* A where
 
+class  RingAlgebraMap [Neg R] [Neg A] extends AlgebraMap R A , R →+* A where
+
 def algebraMap
   {R A: Type*}
   [Zero R] [Zero R] [One R] [Add R] [Mul R]
   [Zero A] [Zero A] [One A] [Add A] [Mul A] [f: AlgebraMap R A] : R →+ₙ* A := f.toSemiringHom
+
+def algebraMapᵣ
+  {R A: Type*}
+  [Zero R] [Zero R] [One R] [Add R] [Mul R] [Neg R]
+  [Zero A] [Zero A] [One A] [Add A] [Mul A] [Neg A] [f: RingAlgebraMap R A] : R →+* A := f.toRingHom
 
 variable [IsCommMagma R] [IsSemiring R] [IsSemiring A]
 

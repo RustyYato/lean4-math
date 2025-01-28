@@ -83,7 +83,8 @@ namespace FreeAlgebra
 open Free.Algebra Relation
 
 variable {R X: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
+  [IsCommMagma R]
+variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R]
 
 def ofPre : Pre R X -> FreeAlgebra R X := Quotient.mk _
 
@@ -166,6 +167,7 @@ instance : Pow (FreeAlgebra R X) ℕ where
       assumption
 
 instance : NatCast (FreeAlgebra R X) := ⟨fun n => ⟦.scalar n⟧⟩
+instance : IntCast (FreeAlgebra R X) := ⟨fun n => ⟦.scalar n⟧⟩
 instance : OfNat (FreeAlgebra R X) n := ⟨n⟩
 instance : Zero (FreeAlgebra R X) := ⟨⟦.scalar 0⟧⟩
 instance : One (FreeAlgebra R X) := ⟨⟦.scalar 1⟧⟩
@@ -187,6 +189,27 @@ instance : AlgebraMap R (FreeAlgebra R X) where
 
 instance : SMul R (FreeAlgebra R X) where
   smul x y := algebraMap x * y
+
+instance : Neg (FreeAlgebra R X) where
+  neg x := (-1: R) • x
+
+instance : Sub (FreeAlgebra R X) where
+  sub a b := a + -b
+
+instance : SMul ℤ (FreeAlgebra R X) where
+  smul := zsmulRec
+
+instance [IsRing R] : RingAlgebraMap R (FreeAlgebra R X) where
+  resp_neg := by
+    intro x
+    show ⟦_⟧ = ⟦_⟧
+    symm
+    apply Eq.trans
+    symm
+    apply Quot.sound
+    apply Rel.mul_scalar
+    rw [←neg_mul_left, one_mul]
+    rfl
 
 instance : IsAddCommMagma (FreeAlgebra R X) where
   add_comm a b := by
@@ -237,7 +260,7 @@ instance : IsSemigroup (FreeAlgebra R X) where
     apply Quotient.sound
     apply Rel.mul_assoc
 
-instance : IsSemiring (FreeAlgebra R X) where
+instance [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
   natCast_zero := by
     show ⟦_⟧ = ⟦_⟧
     congr
@@ -284,6 +307,24 @@ instance : IsAlgebra R (FreeAlgebra R X) where
   smul_def := by
     intro r x
     rfl
+
+instance [IsRing R] : IsRing (FreeAlgebra R X) where
+  sub_eq_add_neg _ _ := rfl
+  zsmul_ofNat _ _ := rfl
+  zsmul_negSucc _ _ := rfl
+  intCast_ofNat _ := by
+    simp [IntCast.intCast, intCast_ofNat]
+    rfl
+  intCast_negSucc n := by
+    simp [IntCast.intCast, intCast_negSucc]
+    show algebraMapᵣ (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMapᵣ (R := R) (A := FreeAlgebra R X) _
+    rw [resp_neg]
+  neg_add_cancel a := by
+    induction a with | mk a =>
+    simp [Neg.neg, smul_def]
+    conv => { lhs; rhs; rw [←one_mul ⟦a⟧] }
+    rw [←add_mul, ←resp_one (algebraMap (R := R) (A := FreeAlgebra R X)),
+      ←resp_add, neg_add_cancel, resp_zero, zero_mul]
 
 instance : Inhabited (FreeAlgebra R X) := ⟨0⟩
 
