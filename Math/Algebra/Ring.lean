@@ -145,6 +145,10 @@ def IsMulOneClass.ofCommMagma [IsCommMagma α₁] (h: ∀x: α₁, 1 * x = x) : 
 def all_eq_zero_of_trivial [Zero α₁] [IsMulZeroClass α₁] [IsMulOneClass α₁] (triv: (0: α₁) = (1: α₁)) (a: α₁) : a = 0 := by
   rw [←mul_one a, ←triv, mul_zero]
 
+def subsingleton_of_trivial [Zero α₁] [IsMulZeroClass α₁] [IsMulOneClass α₁] (triv: (0: α₁) = (1: α₁)) : Subsingleton α₁ where
+allEq a b := by
+  rw [all_eq_zero_of_trivial triv a, all_eq_zero_of_trivial triv b]
+
 def nsmulRec : ℕ -> α₀ -> α₀
 | 0, _ => 0
 | n + 1, a => nsmulRec n a + a

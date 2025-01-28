@@ -1,4 +1,4 @@
-import Math.Algebra.Hom
+import Math.Algebra.RingHom
 
 section
 
