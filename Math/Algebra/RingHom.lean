@@ -236,52 +236,63 @@ variable [Zero β] [One β] [Add β] [Sub β] [Neg β] [Mul β] [Div β] [Inv β
 variable [ZeroHomClass F α β] [OneHomClass F α β] [AddHomClass F α β] [MulHomClass F α β]
   [NegHomClass F α β] [InvHomClass F α β]
 
+@[coe]
 def toZeroHom (f: F): ZeroHom α β where
   toFun := f
   resp_zero := resp_zero f
 
+@[coe]
 def toOneHom (f: F): OneHom α β where
   toFun := f
   resp_one := resp_one f
 
+@[coe]
 def toAddHom (f: F): AddHom α β where
   toFun := f
   resp_add := resp_add f
 
+@[coe]
 def toMulHom (f: F): MulHom α β where
   toFun := f
   resp_mul := resp_mul f
 
+@[coe]
 def toNegHom (f: F): NegHom α β where
   toFun := f
   resp_neg := resp_neg f
 
+@[coe]
 def toInvHom (f: F): InvHom α β where
   toFun := f
   resp_inv := resp_inv f
 
+@[coe]
 def toAddMonoidHom (f: F) : AddMonoidHom α β where
   toFun := f
   resp_zero := resp_zero f
   resp_add := resp_add f
 
+@[coe]
 def toMonoidHom (f: F) : MonoidHom α β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
 
+@[coe]
 def toAddGroupHom (f: F) : AddGroupHom α β where
   toFun := f
   resp_zero := resp_zero f
   resp_add := resp_add f
   resp_neg := resp_neg f
 
+@[coe]
 def toGroupHom (f: F) : GroupHom α β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
   resp_inv := resp_inv f
 
+@[coe]
 def toSemiringHom (f: F) : SemiringHom α β where
   toFun := f
   resp_one := resp_one f
@@ -289,6 +300,7 @@ def toSemiringHom (f: F) : SemiringHom α β where
   resp_zero := resp_zero f
   resp_add := resp_add f
 
+@[coe]
 def toRingHom (f: F) : RingHom α β where
   toFun := f
   resp_one := resp_one f

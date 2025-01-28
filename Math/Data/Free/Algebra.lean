@@ -1,5 +1,5 @@
 import Math.Algebra.Ring
-import Math.Algebra.Basic
+import Math.Algebra.Hom
 import Math.Relation.RelIso
 
 namespace Free.Algebra
@@ -287,8 +287,18 @@ instance : IsAlgebra R (FreeAlgebra R X) where
 
 instance : Inhabited (FreeAlgebra R X) := ⟨0⟩
 
-def ι (R: Type*) [Zero R] [One R] [Add R] [Mul R] [SMul ℕ R] [Pow R ℕ] [NatCast R] [∀n, OfNat R (n + 2)]
-   : X → FreeAlgebra R X := fun m ↦ ⟦.of m⟧
+end FreeAlgebra
+
+namespace FreeAlgebra
+
+open Free.Algebra
+
+variable (R: Type*) {X: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
+  [IsCommMagma R] [IsSemiring R]
+variable {A: Type*} [Zero A] [One A] [Add A] [Mul A] [Pow A ℕ] [SMul ℕ A] [NatCast A] [∀n, OfNat A (n + 2)]
+  [IsCommMagma A] [IsSemiring A] [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
+
+def ι : X → FreeAlgebra R X := fun m ↦ ⟦.of m⟧
 
 def liftFun {A : Type*}
   [Zero A] [One A] [Add A] [Mul A] [SMul ℕ A] [Pow A ℕ] [NatCast A] [∀n, OfNat A (n + 2)]
@@ -303,16 +313,7 @@ def liftFun {A : Type*}
   | .nsmul n a => n • liftFun f a
   | .npow a n => (liftFun f a) ^ n
 
-end FreeAlgebra
-
-namespace FreeAlgebra
-
-open Free.Algebra
-
-variable {R X: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
-
-@[elab_as_elim, induction_eliminator]
+@[induction_eliminator, elab_as_elim]
 def induction {motive: FreeAlgebra R X -> Prop}
   (grade0: ∀r: R, motive (algebraMap r))
   (grade1: ∀x, motive (ι R x))
@@ -357,6 +358,147 @@ def induction {motive: FreeAlgebra R X -> Prop}
       assumption
       assumption
 
+def liftAux (f: X -> A) : FreeAlgebra R X →ₐ[R] A where
+  toFun := by
+    apply Quotient.lift (liftFun R f)
+    intro a b eq
+    induction eq with
+    | refl => rfl
+    | symm => symm; assumption
+    | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
+    | add_scalar => apply resp_add
+    | mul_scalar => apply resp_mul
+    | central_scalar => apply IsAlgebra.commutes
+    | zero_nsmul =>
+      show 0 • _ = algebraMap _
+      rw [zero_nsmul]; symm
+      apply resp_zero
+    | succ_nsmul => apply succ_nsmul
+    | npow_zero =>
+      show _ ^ 0 = algebraMap _
+      rw [npow_zero]; symm
+      apply resp_one
+    | npow_succ => apply npow_succ
+    | add_assoc => apply add_assoc
+    | add_comm => apply add_comm
+    | add_zero =>
+      show _ + algebraMap 0 = _
+      rw [resp_zero, add_zero]
+    | mul_assoc => apply mul_assoc
+    | one_mul =>
+      show algebraMap 1 * _ = _
+      rw [resp_one, one_mul]
+    | mul_one =>
+      show _ * algebraMap 1 = _
+      rw [resp_one, mul_one]
+    | zero_mul =>
+      show algebraMap 0 * _ = algebraMap 0
+      rw [resp_zero, zero_mul]
+    | mul_zero =>
+      show _ * algebraMap 0 = algebraMap 0
+      rw [resp_zero, mul_zero]
+    | mul_add => apply mul_add
+    | add_mul => apply add_mul
+    | add_congr =>
+      show _ + _ = _ + _
+      congr
+    | mul_congr =>
+      show _ * _ = _ * _
+      congr
+
+  resp_one := resp_one _
+  resp_zero := resp_zero _
+  resp_add := by
+    intro x y
+    induction x, y using ind₂ with | mk x y =>
+    rfl
+  resp_mul := by
+    intro x y
+    induction x, y using ind₂ with | mk x y =>
+    rfl
+  resp_algebraMap _ := rfl
+
+def lift : (X -> A) ≃ (FreeAlgebra R X →ₐ[R] A) where
+  toFun := liftAux R
+  invFun f := f ∘ ι R
+  leftInv := by
+    intro f
+    dsimp
+    ext x
+    rfl
+  rightInv := by
+    intro f
+    dsimp
+    apply DFunLike.ext
+    intro x
+    induction x with
+    | grade1 => rfl
+    | grade0 => simp [resp_algebraMap]
+    | add =>
+      simp [resp_add]
+      congr
+    | mul =>
+      simp [resp_mul]
+      congr
+
+end FreeAlgebra
+
+namespace FreeAlgebra
+
+variable {R: Type*} {X: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
+  [IsCommMagma R] [IsSemiring R]
+variable {A: Type*} [Zero A] [One A] [Add A] [Mul A] [Pow A ℕ] [SMul ℕ A] [NatCast A] [∀n, OfNat A (n + 2)]
+  [IsCommMagma A] [IsSemiring A] [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
+
+@[simp]
+def ι_comp_lift (f : X → A) : (lift R f : FreeAlgebra R X → A) ∘ ι R = f := rfl
+
+@[simp]
+def lift_ι_apply (f : X → A) (x) : lift R f (ι R x) = f x := rfl
+
+open Classical in
+def ι_inj [IsNontrivial R] : Function.Injective (ι R (X := X)) := by
+  intro x y eq
+  apply byContradiction
+  intro h
+  let f : FreeAlgebra R X →ₐ[R] R := lift _ <| fun z => if x = z then (1: R) else 0
+  have h₀ : f (ι R x) = 1 := if_pos rfl
+  have h₁ : f (ι R y) = 0 := if_neg h
+  rw [eq, h₁] at h₀
+  exact zero_ne_one h₀
+
+/-- The left-inverse of `algebraMap`. -/
+def algebraMapInv : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 0)
+
+def algebraMap.leftInverse : Function.IsLeftInverse algebraMapInv (algebraMap (A := FreeAlgebra R X)) := fun _ => rfl
+
+def algebraMap_inj : Function.Injective (algebraMap (R := R) (A := FreeAlgebra R X)) := algebraMap.leftInverse.Injective
+
+def ι_ne_algebraMap [IsNontrivial R] (x: X) (y: R) : ι R x ≠ algebraMap y := by
+  intro h
+  let f₀ : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 0)
+  let f₁ : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 1)
+  have h₀ : f₀ (ι R x) = 0 := rfl
+  have h₁ : f₁ (ι R x) = 1 := rfl
+  rw [h] at h₀ h₁
+  replace h₀: y = 0 := h₀
+  replace h₁: y = 1 := h₁
+  rw [h₀] at h₁
+  exact zero_ne_one h₁
+
+@[simp]
+theorem ι_ne_zero [IsNontrivial R] (x : X) : ι R x ≠ 0 :=
+  ι_ne_algebraMap x _
+
+@[simp]
+theorem ι_ne_one [IsNontrivial R] (x : X) : ι R x ≠ 1 :=
+  ι_ne_algebraMap x _
+
 attribute [irreducible] ι
+
+instance [Subsingleton R] : Subsingleton (FreeAlgebra R X) :=
+  subsingleton_of_trivial <| by
+    show algebraMap (0: R) = (algebraMap (1: R): FreeAlgebra R X)
+    rw [Subsingleton.allEq 0 1]
 
 end FreeAlgebra
