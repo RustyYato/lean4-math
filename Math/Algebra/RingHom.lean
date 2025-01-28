@@ -191,7 +191,7 @@ instance : OneHomClass (SemiringHom α β) α β where
 instance : MulHomClass (SemiringHom α β) α β where
   resp_mul f := f.resp_mul
 
-structure RingHom extends AddGroupHom α β, MonoidHom α β where
+structure RingHom extends SemiringHom α β, NegHom α β where
 
 instance : FunLike (RingHom α β) α β where
   coe f := f.toFun
@@ -385,5 +385,25 @@ def resp_ofNat
   (f: F) (n: Nat) : f (OfNat.ofNat (n + 2)) = OfNat.ofNat (n + 2) := by
   rw [ofNat_eq_natCast, resp_natCast]
   symm; apply ofNat_eq_natCast
+
+end
+
+section
+
+variable {α β γ: Type*}
+variable [Zero α] [One α] [Add α] [Sub α] [Neg α] [Mul α] [Div α] [Inv α] [SMul ℕ α] [Pow α ℕ] [SMul ℤ α] [Pow α ℤ] [NatCast α] [IntCast α] [∀n, OfNat α (n + 2)]
+variable [Zero β] [One β] [Add β] [Sub β] [Neg β] [Mul β] [Div β] [Inv β] [SMul ℕ β] [Pow β ℕ] [SMul ℤ β] [Pow β ℤ] [NatCast β] [IntCast β] [∀n, OfNat β (n + 2)]
+variable [Zero γ] [One γ] [Add γ] [Sub γ] [Neg γ] [Mul γ] [Div γ] [Inv γ] [SMul ℕ γ] [Pow γ ℕ] [SMul ℤ γ] [Pow γ ℤ] [NatCast γ] [IntCast γ] [∀n, OfNat γ (n + 2)]
+
+def SemiringHom.comp (a: SemiringHom β γ) (b: SemiringHom α β) : SemiringHom α γ where
+  toFun := a.toFun ∘ b.toFun
+  resp_zero := by dsimp; rw [b.resp_zero, a.resp_zero]
+  resp_one := by dsimp; rw [b.resp_one, a.resp_one]
+  resp_add { _ _ } := by dsimp; rw [b.resp_add, a.resp_add]
+  resp_mul { _ _ } := by dsimp; rw [b.resp_mul, a.resp_mul]
+
+def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : RingHom α γ where
+  toSemiringHom := a.toSemiringHom.comp b.toSemiringHom
+  resp_neg { _ } := by dsimp [SemiringHom.comp]; rw [b.resp_neg, a.resp_neg]
 
 end

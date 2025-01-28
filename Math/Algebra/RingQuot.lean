@@ -1,4 +1,4 @@
-import Math.Algebra.Basic
+import Math.Algebra.Hom
 import Math.Relation.Basic
 
 open Relation
@@ -489,6 +489,76 @@ def mkRingHom_surj : Function.Surjective (mkRingHom r) := by
   cases x with | mk x =>
   exists x
 
-attribute [irreducible] instZero instOne add mul neg sub npow nsmul zsmul mkSemiringHom mkRingHom
+variable [Zero T] [One T] [Add T] [Mul T] [Pow T ℕ] [SMul ℕ T] [NatCast T] [∀n, OfNat T (n + 2)] [IsSemiring T]
+variable [Sub T] [Neg T] [SMul ℤ T] [IntCast T] [IsRing T]
+
+private def preLiftSemiring {r : R → R → Prop} {f : R →+ₙ* T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : RingQuot r →+ₙ* T where
+  toFun := by
+    apply Quot.lift f
+    intro _ _ r
+    induction r with
+    | of r => exact h r
+    | add_left _ r' => rw [resp_add, resp_add, r']
+    | mul_left _ r' => rw [resp_mul, resp_mul, r']
+    | mul_right _ r' => rw [resp_mul, resp_mul, r']
+  resp_zero := resp_zero f
+  resp_one := resp_one f
+  resp_add := by
+    rintro ⟨x⟩ ⟨y⟩
+    apply resp_add
+  resp_mul := by
+    rintro ⟨x⟩ ⟨y⟩
+    apply resp_mul
+
+private def preLiftRing {r : R → R → Prop} {f : R →+* T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : RingQuot r →+* T where
+  toSemiringHom := preLiftSemiring h
+  resp_neg := by
+    rintro ⟨x⟩
+    show f (-x) = -f _
+    apply resp_neg
+
+def liftSemiring: {f: R →+ₙ* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuot r →+ₙ* T) where
+  toFun f := preLiftSemiring f.property
+  invFun f := {
+    val := f.comp (mkSemiringHom r)
+    property { x y } eq := by
+      show f (mkSemiringHom _ _) = f (mkSemiringHom _ _)
+      rw [mkSemiringHom_rel eq]
+  }
+  leftInv _ := rfl
+  rightInv f := by
+    dsimp
+    apply DFunLike.ext
+    rintro ⟨x⟩
+    rfl
+
+def liftRing: {f: R →+* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuot r →+* T) where
+  toFun f := preLiftRing f.property
+  invFun f := {
+    val := f.comp (mkRingHom r)
+    property { x y } eq := by
+      show f (mkRingHom _ _) = f (mkRingHom _ _)
+      rw [mkRingHom_rel eq]
+  }
+  leftInv _ := rfl
+  rightInv f := by
+    dsimp
+    apply DFunLike.ext
+    rintro ⟨x⟩
+    rfl
+
+@[simp]
+def lift_mkSemiringHom_apply (f : R →+ₙ* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
+    liftSemiring ⟨f, w⟩ (mkSemiringHom r x) = f x := rfl
+
+@[simp]
+def lift_mkRingHom_apply (f : R →+* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
+    liftRing ⟨f, w⟩ (mkRingHom r x) = f x := rfl
+
+def mkAlgHom (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
+  toSemiringHom := mkSemiringHom _
+  resp_algebraMap _ := rfl
+
+attribute [irreducible] instZero instOne add mul neg sub npow nsmul zsmul mkSemiringHom mkRingHom preLiftSemiring preLiftRing liftSemiring liftRing
 
 end RingQuot
