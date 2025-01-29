@@ -37,7 +37,6 @@ end Instances
 section ι
 
 variable (R: Type*) [SemiringOps R] [IsCommMagma R] [IsSemiring R]
--- variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R] [IsRing R]
 variable {M : Type*} [AddMonoidOps M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsModule R M]
 variable {A: Type*} {X: Type*} [SemiringOps A] [IsCommMagma A] [IsSemiring A] [SMul R A] [AlgebraMap R A]
 

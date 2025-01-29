@@ -425,3 +425,23 @@ def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : RingHom α γ where
   resp_neg { _ } := by dsimp [SemiringHom.comp]; rw [b.resp_neg, a.resp_neg]
 
 end
+
+def natCast_AddMonoidHom [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : ℕ →+ₙ α where
+  toFun n := n
+  resp_zero := natCast_zero
+  resp_add := by
+    dsimp
+    intro x y
+    rw [natCast_add]
+
+def intCast_AddGroupHom [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ℤ →+ α where
+  toFun n := n
+  resp_zero := intCast_zero
+  resp_add := by
+    dsimp
+    intro x y
+    rw [intCast_add]
+  resp_neg := by
+    dsimp
+    intro x
+    simp [intCast_neg]

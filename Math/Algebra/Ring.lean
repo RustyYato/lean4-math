@@ -456,6 +456,90 @@ def neg_eq_neg_one_zsmul [AddGroupOps α] [IsAddGroup α] (a: α) : -a = -1 • 
 def inv_eq_zpow_neg_one [GroupOps α] [IsGroup α] (a: α) : a⁻¹ = a ^ (-1) :=
   neg_eq_neg_one_zsmul (α := AddOfMul α) _
 
+def succ_zsmul [AddGroupOps α] [IsAddGroup α] (x: ℤ) (a: α) : (x + 1) • a = x • a + a := by
+  cases x with
+  | ofNat x =>
+    have : (1: ℤ) = ↑(1: ℕ) := rfl
+    erw [this, Int.ofNat_eq_coe, Int.ofNat_add_ofNat, ←Int.ofNat_eq_coe, ←Int.ofNat_eq_coe, zsmul_ofNat, zsmul_ofNat, succ_nsmul]
+  | negSucc x =>
+  cases x with
+  | zero =>
+    have : Int.negSucc 0 = -1 := rfl
+    rw [this, Int.add_left_neg, zero_zsmul, ←neg_eq_neg_one_zsmul, neg_add_cancel]
+  | succ x =>
+    have : (1: ℤ) = ↑(1: ℕ) := rfl
+    rw [this, Int.negSucc_add_ofNat, Int.subNatNat_of_lt, Nat.succ_sub_succ, Nat.sub_zero, Nat.add_one, Nat.pred_succ]
+    rw [zsmul_negSucc, zsmul_negSucc, succ_nsmul' x.succ, neg_add_rev, add_assoc, neg_add_cancel, add_zero]
+    apply Nat.succ_lt_succ
+    apply Nat.zero_lt_succ
+
+def pred_zsmul [AddGroupOps α] [IsAddGroup α] (x: ℤ) (a: α) : (x - 1) • a = x • a - a := by
+  conv in x • a => {
+    rw [←Int.sub_add_cancel x 1]
+  }
+  rw [succ_zsmul, sub_eq_add_neg _ a, add_assoc, add_neg_cancel, add_zero]
+
+def add_zsmul [AddGroupOps α] [IsAddGroup α] (x y: ℤ) (a: α) : (x + y) • a = x • a + y • a := by
+  induction y using Int.induction with
+  | zero => rw [Int.add_zero, zero_zsmul, add_zero]
+  | succ y ih => rw [←Int.add_assoc, succ_zsmul, succ_zsmul, ←add_assoc, ih]
+  | pred y ih => rw [←Int.add_sub_assoc, pred_zsmul, pred_zsmul, sub_eq_add_neg (y • a) a, ←add_assoc, ih, ←sub_eq_add_neg]
+
+def neg_zsmul [AddGroupOps α] [IsAddGroup α] (x: ℤ) (a: α) : (-x) • a = -(x • a) := by
+  symm
+  apply neg_eq_of_add
+  rw [←add_zsmul, Int.add_right_neg, zero_zsmul]
+
+def zsmul_add [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a + b) = x • a + x • b := by
+  induction x using Int.induction with
+  | zero => rw [zero_zsmul, zero_zsmul, zero_zsmul, add_zero]
+  | succ y ih => rw [succ_zsmul, ih, add_comm a b, add_assoc, ←add_assoc (y • b), ←succ_zsmul, add_comm _ a, ←add_assoc, ←succ_zsmul]
+  | pred y ih => rw [pred_zsmul, ih, sub_eq_add_neg, neg_add_rev a b, add_assoc, ←add_assoc (y • b), ←sub_eq_add_neg _ b, ←pred_zsmul, add_comm _ (-a), ←add_assoc, ←sub_eq_add_neg, ←pred_zsmul]
+
+def zsmul_neg [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a: α) : x • (-a) = -(x • a) := by
+  symm
+  apply neg_eq_of_add
+  rw [←zsmul_add, add_neg_cancel, zsmul_zero]
+
+def zsmul_sub [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a - b) = x • a - x • b := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, zsmul_add, zsmul_neg]
+
+def sub_zsmul [AddGroupOps α] [IsAddGroup α] (x y: ℤ) (a: α) : (x - y) • a = x • a - y • a := by
+  rw [Int.sub_eq_add_neg, sub_eq_add_neg, add_zsmul, neg_zsmul]
+
+def mul_zsmul [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x y: ℤ) (a: α) : (x * y) • a = x • y • a := by
+  induction y using Int.induction with
+  | zero => rw [Int.mul_zero, zero_zsmul, zsmul_zero]
+  | succ y ih => rw [Int.mul_add, Int.mul_one, add_zsmul, add_zsmul, one_zsmul, zsmul_add, ih]
+  | pred y ih => rw [Int.mul_sub, Int.mul_one, sub_zsmul, sub_zsmul, one_zsmul, zsmul_sub, ih]
+
+def succ_zpow [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (x + 1) = a ^ x * a :=
+  succ_zsmul (α := AddOfMul α) _ _
+
+def pred_zpow [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (x - 1) = a ^ x / a :=
+  pred_zsmul (α := AddOfMul α) _ _
+
+def add_zpow [GroupOps α] [IsGroup α] (x y: ℤ) (a: α) : a ^ (x + y) = a ^ x * a ^ y :=
+  add_zsmul (α := AddOfMul α) _ _ _
+
+def neg_zpow [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (-x) = (a ^ x)⁻¹ :=
+  neg_zsmul (α := AddOfMul α) _ _
+
+def zpow_add [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a * b) ^ x = a ^ x * b ^ x :=
+  zsmul_add (α := AddOfMul α) _ _ _
+
+def zpow_inv [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
+  zsmul_neg (α := AddOfMul α) _ _
+
+def zpow_div [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a / b) ^ x = a ^ x / b ^ x :=
+  zsmul_sub (α := AddOfMul α) _ _ _
+
+def sub_zpow [GroupOps α] [IsGroup α] (x y: ℤ) (a: α) : a ^ (x - y) = a ^ x / a ^ y :=
+  sub_zsmul (α := AddOfMul α) _ _ _
+
+def mul_zpow [GroupOps α] [IsGroup α]  [IsCommMagma α] (x y: ℤ) (a: α) : a ^ (x * y) = (a ^ y) ^ x :=
+  mul_zsmul (α := AddOfMul α) _ _ _
+
 class IsLeftDistrib (α: Type*) [Add α] [Mul α]: Prop where
   left_distrib (k a b: α): k * (a + b) = k * a + k * b
 class IsRightDistrib (α: Type*) [Add α] [Mul α]: Prop where
@@ -500,8 +584,16 @@ class IsAddMonoidWithOne (α: Type*) [AddMonoidWithOneOps α] extends IsAddMonoi
 
 export IsAddMonoidWithOne (natCast_zero natCast_succ ofNat_zero ofNat_one ofNat_eq_natCast)
 
+def natCast_eq_nsmul_one [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] (n: Nat) : (n: α) = n • 1  := by
+  induction n with
+  | zero => rw [zero_nsmul, natCast_zero]
+  | succ n ih => rw [natCast_succ, ih, succ_nsmul]
+
 def natCast_one [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : ((1: Nat): α) = 1 := by
   rw [natCast_succ, natCast_zero, zero_add]
+
+def natCast_add [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] (a b: ℕ) : ((a + b: Nat): α) = a + b := by
+  simp [natCast_eq_nsmul_one, add_nsmul]
 
 class AddGroupWithOneOps (α: Type*) extends AddGroupOps α, AddMonoidWithOneOps α, IntCast α where
 
@@ -512,6 +604,36 @@ class IsAddGroupWithOne (α: Type*) [AddGroupWithOneOps α] extends IsAddGroup �
   intCast_negSucc (n: ℕ) : (Int.negSucc n) = -(n.succ: α)
 
 export IsAddGroupWithOne (intCast_ofNat intCast_negSucc)
+
+def intCast_eq_zsmul_one [AddGroupWithOneOps α] [IsAddGroupWithOne α] (n: Int) : (n: α) = n • 1  := by
+  cases n with
+  | ofNat n => rw [Int.ofNat_eq_coe, intCast_ofNat, natCast_eq_nsmul_one, zsmul_ofNat]
+  | negSucc n => rw [intCast_negSucc, zsmul_negSucc, natCast_eq_nsmul_one]
+
+def intCast_zero [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ((0: Int): α) = 0 := by
+  have : 0 = Int.ofNat 0 := rfl
+  erw [this, intCast_ofNat, natCast_zero]
+
+def intCast_one [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ((1: Int): α) = 1 := by
+  have : 1 = Int.ofNat 1 := rfl
+  erw [this, intCast_ofNat, natCast_one]
+
+def intCast_succ [AddGroupWithOneOps α] [IsAddGroupWithOne α] (a: ℤ) : ((a + 1: Int): α) = a + 1 := by
+  rw [intCast_eq_zsmul_one, intCast_eq_zsmul_one, add_zsmul, one_zsmul]
+
+def intCast_pred [AddGroupWithOneOps α] [IsAddGroupWithOne α] (a: ℤ) : ((a - 1: Int): α) = a - 1 := by
+  rw [intCast_eq_zsmul_one, intCast_eq_zsmul_one, sub_zsmul, one_zsmul]
+
+def intCast_add [AddGroupWithOneOps α] [IsAddGroupWithOne α] (a b: ℤ) : ((a + b: Int): α) = a + b := by
+  simp only [intCast_eq_zsmul_one, add_zsmul]
+
+def intCast_neg [AddGroupWithOneOps α] [IsAddGroupWithOne α] (a: ℤ) : ((-a: Int): α) = -a := by
+  symm
+  apply neg_eq_of_add
+  rw [←intCast_add, Int.add_right_neg, intCast_zero]
+
+def intCast_sub [AddGroupWithOneOps α] [IsAddGroupWithOne α] (a b: ℤ) : ((a - b: Int): α) = a - b := by
+  rw [Int.sub_eq_add_neg, intCast_add, intCast_neg, sub_eq_add_neg]
 
 class SemiringOps (α: Type*) extends AddMonoidWithOneOps α, MonoidOps α where
 instance [AddMonoidWithOneOps α] [MonoidOps α] : SemiringOps α where
@@ -534,6 +656,9 @@ def mul_natCast_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : x *
   induction r with
   | zero => rw [natCast_zero, mul_zero, zero_nsmul]
   | succ r ih => rw [natCast_succ, mul_add, mul_one, succ_nsmul, ih]
+
+def natCast_mul [SemiringOps α] [IsSemiring α] (a b: ℕ) : ((a * b: Nat): α) = a * b := by
+  rw [natCast_mul_eq_nsmul, natCast_eq_nsmul_one, mul_nsmul, natCast_eq_nsmul_one]
 
 class RingOps (α: Type*) extends SemiringOps α, AddGroupWithOneOps α where
 instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where
@@ -595,6 +720,9 @@ def mul_intCast_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : x * r = r �
   induction r with
   | ofNat r => erw [intCast_ofNat, zsmul_ofNat, mul_natCast_eq_nsmul]
   | negSucc r => rw [intCast_negSucc, zsmul_negSucc, ←neg_mul_right, mul_natCast_eq_nsmul]
+
+def intCast_mul [RingOps α] [IsRing α] (a b: ℤ) : ((a * b: Int): α) = (a: α) * (b: α) := by
+  rw [intCast_mul_eq_zsmul, intCast_eq_zsmul_one, mul_zsmul, intCast_eq_zsmul_one]
 
 def add_one_mul [Mul α] [Add α] [One α] [IsMulOneClass α] [IsRightDistrib α] (a b: α) : (a + 1) * b = a * b + b := by rw [add_mul, one_mul]
 def mul_add_one [Mul α] [Add α] [One α] [IsMulOneClass α] [IsLeftDistrib α] (a b: α) : a * (b + 1) = a * b + a := by rw [mul_add, mul_one]
@@ -660,124 +788,6 @@ instance [SemiringOps α] [IsSemiring α] : IsNonAssocSemiring α where
   ofNat_zero := IsAddMonoidWithOne.ofNat_zero
   ofNat_one := IsAddMonoidWithOne.ofNat_one
   ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
-
-def natCast_add [SemiringOps α] [IsSemiring α] (a b: ℕ) : ((a + b: Nat): α) = a + b := by
-  induction b with
-  | zero => rw [natCast_zero, Nat.add_zero, add_zero]
-  | succ b ih => rw [Nat.add_succ, natCast_succ, natCast_succ, ←add_assoc, ih]
-
-def natCast_mul [SemiringOps α] [IsSemiring α] (a b: ℕ) : ((a * b: Nat): α) = a * b := by
-  induction b with
-  | zero => rw [Nat.mul_zero, natCast_zero, mul_zero]
-  | succ b ih => rw [Nat.mul_succ, natCast_add, natCast_succ, mul_add, mul_one, ih]
-
-def intCast_zero [RingOps α] [IsRing α] : ((0: Int): α) = 0 := by
-  have : 0 = Int.ofNat 0 := rfl
-  erw [this, intCast_ofNat, natCast_zero]
-
-def intCast_one [RingOps α] [IsRing α] : ((1: Int): α) = 1 := by
-  have : 1 = Int.ofNat 1 := rfl
-  erw [this, intCast_ofNat, natCast_one]
-
-def intCast_succ [RingOps α] [IsRing α] (a: ℤ) : ((a + 1: Int): α) = a + 1 := by
-  cases a with
-  | ofNat a =>
-    have : 1 = Int.ofNat 1 := rfl
-    erw [this, intCast_ofNat,
-      Int.ofNat_eq_coe,
-      ←Int.ofNat_eq_coe, intCast_ofNat, natCast_add, natCast_one]
-  | negSucc a =>
-    cases a with
-    | zero =>
-      suffices ((0: Int): α) = (Int.negSucc 0) + 1 from this
-      rw [intCast_zero, intCast_negSucc, natCast_one, neg_add_cancel]
-    | succ a =>
-      suffices ((Int.negSucc a): α) = (Int.negSucc (a + 1)) + 1 from this
-      rw [intCast_negSucc, intCast_negSucc, natCast_succ (a + 1),]
-      apply neg_eq_of_add
-      rw [neg_add_rev, add_assoc, add_comm _ 1, ←add_assoc (-1), neg_add_cancel, zero_add, add_neg_cancel]
-def intCast_pred [RingOps α] [IsRing α] (a: ℤ) : ((a - 1: Int): α) = a - 1 := by
-  suffices ((a - 1: Int): α) = ((a - 1: Int) + 1) - 1 by
-    rw [←intCast_succ, Int.sub_add_cancel] at this
-    exact this
-  rw [sub_eq_add_neg _ (1: α), add_assoc, add_neg_cancel, add_zero]
-
-def intCast_add [RingOps α] [IsRing α] (a b: ℤ) : ((a + b: Int): α) = a + b := by
-  induction b using Int.induction with
-  | zero => rw [intCast_zero, Int.add_zero, add_zero]
-  | succ b ih => rw [←Int.add_assoc, intCast_succ, intCast_succ, ih, add_assoc]
-  | pred b ih => rw [←Int.add_sub_assoc, intCast_pred, intCast_pred, ih, sub_eq_add_neg, add_assoc, sub_eq_add_neg]
-
-def intCast_neg [RingOps α] [IsRing α] (a: ℤ) : ((-a: Int): α) = -a := by
-  symm
-  apply neg_eq_of_add
-  rw [←intCast_add, Int.add_right_neg, intCast_zero]
-
-def intCast_sub [RingOps α] [IsRing α] (a b: ℤ) : ((a - b: Int): α) = a - b := by
-  rw [Int.sub_eq_add_neg, intCast_add, intCast_neg, sub_eq_add_neg]
-
-def intCast_mul [RingOps α] [IsRing α] (a b: ℤ) : ((a * b: Int): α) = a * b := by
-  induction b using Int.induction with
-  | zero => rw [Int.mul_zero, intCast_zero, mul_zero]
-  | succ b ih => rw [Int.mul_add, Int.mul_one, intCast_succ, mul_add, intCast_add, ih, mul_one]
-  | pred b ih => rw [Int.mul_sub, Int.mul_one, intCast_pred, mul_sub, intCast_sub, ih, mul_one]
-
-def succ_zsmul [AddGroupOps α] [IsAddGroup α]  (x: ℤ) (a: α) : (x + 1) • a = x • a + a := by
-  cases x with
-  | ofNat x =>
-    have : (1: ℤ) = ↑(1: ℕ) := rfl
-    erw [this, Int.ofNat_eq_coe, Int.ofNat_add_ofNat, ←Int.ofNat_eq_coe, ←Int.ofNat_eq_coe, zsmul_ofNat, zsmul_ofNat, succ_nsmul]
-  | negSucc x =>
-  cases x with
-  | zero =>
-    have : Int.negSucc 0 = -1 := rfl
-    rw [this, Int.add_left_neg, zero_zsmul, ←neg_eq_neg_one_zsmul, neg_add_cancel]
-  | succ x =>
-    have : (1: ℤ) = ↑(1: ℕ) := rfl
-    rw [this, Int.negSucc_add_ofNat, Int.subNatNat_of_lt, Nat.succ_sub_succ, Nat.sub_zero, Nat.add_one, Nat.pred_succ]
-    rw [zsmul_negSucc, zsmul_negSucc, succ_nsmul' x.succ, neg_add_rev, add_assoc, neg_add_cancel, add_zero]
-    apply Nat.succ_lt_succ
-    apply Nat.zero_lt_succ
-
-def pred_zsmul [AddGroupOps α] [IsAddGroup α]  (x: ℤ) (a: α) : (x - 1) • a = x • a - a := by
-  conv in x • a => {
-    rw [←Int.sub_add_cancel x 1]
-  }
-  rw [succ_zsmul, sub_eq_add_neg _ a, add_assoc, add_neg_cancel, add_zero]
-
-def add_zsmul [AddGroupOps α] [IsAddGroup α] (x y: ℤ) (a: α) : (x + y) • a = x • a + y • a := by
-  induction y using Int.induction with
-  | zero => rw [Int.add_zero, zero_zsmul, add_zero]
-  | succ y ih => rw [←Int.add_assoc, succ_zsmul, succ_zsmul, ←add_assoc, ih]
-  | pred y ih => rw [←Int.add_sub_assoc, pred_zsmul, pred_zsmul, sub_eq_add_neg (y • a) a, ←add_assoc, ih, ←sub_eq_add_neg]
-
-def neg_zsmul [AddGroupOps α] [IsAddGroup α] (x: ℤ) (a: α) : (-x) • a = -(x • a) := by
-  symm
-  apply neg_eq_of_add
-  rw [←add_zsmul, Int.add_right_neg, zero_zsmul]
-
-def zsmul_add [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a + b) = x • a + x • b := by
-  induction x using Int.induction with
-  | zero => rw [zero_zsmul, zero_zsmul, zero_zsmul, add_zero]
-  | succ y ih => rw [succ_zsmul, ih, add_comm a b, add_assoc, ←add_assoc (y • b), ←succ_zsmul, add_comm _ a, ←add_assoc, ←succ_zsmul]
-  | pred y ih => rw [pred_zsmul, ih, sub_eq_add_neg, neg_add_rev a b, add_assoc, ←add_assoc (y • b), ←sub_eq_add_neg _ b, ←pred_zsmul, add_comm _ (-a), ←add_assoc, ←sub_eq_add_neg, ←pred_zsmul]
-
-def zsmul_neg [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a: α) : x • (-a) = -(x • a) := by
-  symm
-  apply neg_eq_of_add
-  rw [←zsmul_add, add_neg_cancel, zsmul_zero]
-
-def zsmul_sub [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a - b) = x • a - x • b := by
-  rw [sub_eq_add_neg, sub_eq_add_neg, zsmul_add, zsmul_neg]
-
-def sub_zsmul [AddGroupOps α] [IsAddGroup α] (x y: ℤ) (a: α) : (x - y) • a = x • a - y • a := by
-  rw [Int.sub_eq_add_neg, sub_eq_add_neg, add_zsmul, neg_zsmul]
-
-def mul_zsmul [AddGroupOps α] [IsAddGroup α]  [IsAddCommMagma α] (x y: ℤ) (a: α) : (x * y) • a = x • y • a := by
-  induction y using Int.induction with
-  | zero => rw [Int.mul_zero, zero_zsmul, zsmul_zero]
-  | succ y ih => rw [Int.mul_add, Int.mul_one, add_zsmul, add_zsmul, one_zsmul, zsmul_add, ih]
-  | pred y ih => rw [Int.mul_sub, Int.mul_one, sub_zsmul, sub_zsmul, one_zsmul, zsmul_sub, ih]
 
 class FieldOps (α: Type*) extends RingOps α,
   Pow α ℤ,
