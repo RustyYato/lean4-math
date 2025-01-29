@@ -5,15 +5,11 @@ open Relation
 
 namespace RingQuot
 
-variable [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)] [IsSemiring R]
-
-variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R] [IsRing R]
-
-variable [Zero S] [One S] [Add S] [Mul S] [Pow S ℕ] [SMul ℕ S] [NatCast S] [∀n, OfNat S (n + 2)] [IsSemiring S]
-variable [Sub S] [Neg S] [SMul ℤ S] [IntCast S] [IsRing S]
-variable [SMul S R]
-
 section Rel
+
+section
+
+variable [SemiringOps S] [SemiringOps R] [SMul S R] [IsSemiring R]
 
 variable [AlgebraMap S R] [IsAlgebra S R]
 
@@ -28,20 +24,6 @@ variable {r: R -> R -> Prop}
 def Rel.add_right ⦃a b c : R⦄ (h : Rel r b c) : Rel r (a + b) (a + c) := by
   rw [add_comm a b, add_comm a c]
   exact Rel.add_left h
-
-variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R] [IsRing R]
-
-def Rel.neg ⦃a b : R⦄ (h : Rel r a b) : Rel r (-a) (-b) := by
-  rw [neg_eq_neg_one_zsmul, zsmul_eq_intCast_mul,
-    neg_eq_neg_one_zsmul b, zsmul_eq_intCast_mul]
-  apply Rel.mul_right
-  assumption
-
-def Rel.sub_left ⦃a b c : R⦄ (h : Rel r a b) :
-    Rel r (a - c) (b - c) := by simp only [sub_eq_add_neg, h.add_left]
-
-def Rel.sub_right ⦃a b c : R⦄ (h : Rel r b c) :
-    Rel r (a - b) (a - c) := by simp only [sub_eq_add_neg, h.neg.add_right]
 
 def Rel.smul (k : S) ⦃a b : R⦄ (h : Rel r a b) : Rel r (k • a) (k • b) := by
   rw [smul_def, smul_def]
@@ -140,17 +122,36 @@ def eqvgen_mul : EquivGen (Rel r) a c -> EquivGen (Rel r) b d -> EquivGen (Rel r
     apply ih₁
     apply EquivGen.refl
 
+end
+
+variable [RingOps S] [RingOps R] [SMul S R] [IsRing R]
+
+variable [AlgebraMap S R] [IsAlgebra S R]
+
+def Rel.neg ⦃a b : R⦄ (h : Rel r a b) : Rel r (-a) (-b) := by
+  rw [neg_eq_neg_one_zsmul, zsmul_eq_intCast_mul,
+    neg_eq_neg_one_zsmul b, zsmul_eq_intCast_mul]
+  apply Rel.mul_right
+  assumption
+
+def Rel.sub_left ⦃a b c : R⦄ (h : Rel r a b) : Rel r (a - c) (b - c) := by
+      rw [sub_eq_add_neg]
+      simp only [sub_eq_add_neg, h.add_left]
+
+def Rel.sub_right ⦃a b c : R⦄ (h : Rel r b c) :
+    Rel r (a - b) (a - c) := by simp only [sub_eq_add_neg, h.neg.add_right]
+
 end Rel
 
-def _root_.RingQuot (r: R -> R -> Prop) := Quot (Rel r)
+def _root_.RingQuot [SemiringOps R] (r: R -> R -> Prop) := Quot (Rel r)
 
 variable {r: R -> R -> Prop}
 
-def mk : R -> RingQuot r := Quot.mk _
+def mk [SemiringOps R] : R -> RingQuot r := Quot.mk _
 
 scoped notation "⟦" x "⟧" => mk x
 
-private def add : RingQuot r → RingQuot r → RingQuot r := by
+private def add [SemiringOps R] [IsSemiring R] : RingQuot r → RingQuot r → RingQuot r := by
   apply Quot.lift
   case f =>
     intro a
@@ -171,7 +172,7 @@ private def add : RingQuot r → RingQuot r → RingQuot r := by
     apply Rel.add_left
     assumption
 
-private def mul : RingQuot r → RingQuot r → RingQuot r := by
+private def mul [SemiringOps R] : RingQuot r → RingQuot r → RingQuot r := by
   apply Quot.lift
   case f =>
     intro a
@@ -192,7 +193,7 @@ private def mul : RingQuot r → RingQuot r → RingQuot r := by
     apply Rel.mul_left
     assumption
 
-private def neg : RingQuot r → RingQuot r := by
+private def neg [RingOps R] [IsRing R] : RingQuot r → RingQuot r := by
   apply Quot.lift
   case f =>
     intro a
@@ -203,7 +204,7 @@ private def neg : RingQuot r → RingQuot r := by
     apply Rel.neg
     assumption
 
-private def sub : RingQuot r → RingQuot r → RingQuot r := by
+private def sub [RingOps R] [IsRing R] : RingQuot r → RingQuot r → RingQuot r := by
   apply Quot.lift
   case f =>
     intro a
@@ -227,7 +228,7 @@ private def sub : RingQuot r → RingQuot r → RingQuot r := by
     apply Rel.add_left
     assumption
 
-private def npow (n: Nat) : RingQuot r -> RingQuot r := by
+private def npow [SemiringOps R] [IsSemiring R] (n: Nat) : RingQuot r -> RingQuot r := by
   apply Quot.lift (⟦· ^ n⟧)
   intro a b eq
   induction n with
@@ -240,7 +241,7 @@ private def npow (n: Nat) : RingQuot r -> RingQuot r := by
     apply Quot.sound
     assumption
 
-private def nsmul (n: Nat) : RingQuot r -> RingQuot r := by
+private def nsmul [SemiringOps R] [IsSemiring R] (n: Nat) : RingQuot r -> RingQuot r := by
   apply Quot.lift (⟦n • ·⟧)
   intro a b eq
   induction n with
@@ -252,7 +253,7 @@ private def nsmul (n: Nat) : RingQuot r -> RingQuot r := by
     apply Quot.sound
     assumption
 
-private def zsmul (n: Int) : RingQuot r -> RingQuot r := by
+private def zsmul [RingOps R] [IsRing R] (n: Int) : RingQuot r -> RingQuot r := by
   apply Quot.lift (⟦n • ·⟧)
   intro a b eq
   cases n with
@@ -269,74 +270,85 @@ private def zsmul (n: Int) : RingQuot r -> RingQuot r := by
     apply Quot.sound
     assumption
 
-private def smul [AlgebraMap S R] [IsAlgebra S R] (n: S) : RingQuot r -> RingQuot r := by
+private def smul [SemiringOps R] [SemiringOps S] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (n: S) : RingQuot r -> RingQuot r := by
   apply Quot.lift (⟦n • ·⟧)
   intro a b r
   apply Quot.sound
   apply Rel.smul
   assumption
 
-instance : NatCast (RingQuot r) := ⟨(⟦·⟧)⟩
-instance : IntCast (RingQuot r) := ⟨(⟦·⟧)⟩
-instance [OfNat R n] : OfNat (RingQuot r) n := ⟨⟦OfNat.ofNat n⟧⟩
+instance [SemiringOps R] : NatCast (RingQuot r) := ⟨(⟦·⟧)⟩
+instance [RingOps R] : IntCast (RingQuot r) := ⟨(⟦·⟧)⟩
+instance [SemiringOps R] [OfNat R n] : OfNat (RingQuot r) n := ⟨⟦OfNat.ofNat n⟧⟩
 
-instance instZero : Zero (RingQuot r) := ⟨⟦0⟧⟩
-instance instOne : One (RingQuot r) := ⟨⟦1⟧⟩
+instance instZero [SemiringOps R] : Zero (RingQuot r) := ⟨⟦0⟧⟩
+instance instOne [SemiringOps R] : One (RingQuot r) := ⟨⟦1⟧⟩
 
-instance : Add (RingQuot r) := ⟨add⟩
-instance : Mul (RingQuot r) := ⟨mul⟩
-instance : Neg (RingQuot r) := ⟨neg⟩
-instance : Sub (RingQuot r) := ⟨sub⟩
-instance : Pow (RingQuot r) ℕ := ⟨flip npow⟩
-instance : SMul ℕ (RingQuot r) := ⟨nsmul⟩
-instance : SMul ℤ (RingQuot r) := ⟨zsmul⟩
-instance [AlgebraMap S R] [IsAlgebra S R] : SMul S (RingQuot r) := ⟨smul⟩
+instance [SemiringOps R] [IsSemiring R] : Add (RingQuot r) := ⟨add⟩
+instance [SemiringOps R] : Mul (RingQuot r) := ⟨mul⟩
+instance [RingOps R] [IsRing R] : Neg (RingQuot r) := ⟨neg⟩
+instance [RingOps R] [IsRing R] : Sub (RingQuot r) := ⟨sub⟩
+instance [SemiringOps R] [IsSemiring R] : Pow (RingQuot r) ℕ := ⟨flip npow⟩
+instance [SemiringOps R] [IsSemiring R] : SMul ℕ (RingQuot r) := ⟨nsmul⟩
+instance [RingOps R] [IsRing R] : SMul ℤ (RingQuot r) := ⟨zsmul⟩
+instance [SemiringOps R] [SemiringOps S] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] : SMul S (RingQuot r) := ⟨smul⟩
+
+instance instSemiringOps [SemiringOps R] [IsSemiring R] : SemiringOps (RingQuot r) where
+instance instRingOps [RingOps R] [IsRing R] : RingOps (RingQuot r) where
 
 @[simp]
-def mk_zero : 0 = (⟦0⟧: RingQuot r) := rfl
+def mk_zero [SemiringOps R] : 0 = (⟦0⟧: RingQuot r) := rfl
 @[simp]
-def mk_one : 1 = (⟦1⟧: RingQuot r) := rfl
+def mk_one [SemiringOps R] : 1 = (⟦1⟧: RingQuot r) := rfl
 @[simp]
-def mk_add : (⟦a⟧ + ⟦b⟧: RingQuot r) = ⟦a + b⟧ := rfl
+def mk_add [SemiringOps R] [IsSemiring R] : (⟦a⟧ + ⟦b⟧: RingQuot r) = ⟦a + b⟧ := rfl
 @[simp]
-def mk_neg : (-⟦a⟧: RingQuot r) = ⟦-a⟧ := rfl
+def mk_neg [RingOps R] [IsRing R] : (-⟦a⟧: RingQuot r) = ⟦-a⟧ := rfl
 @[simp]
-def mk_sub : (⟦a⟧ - ⟦b⟧: RingQuot r) = ⟦a - b⟧ := rfl
+def mk_sub [RingOps R] [IsRing R] : (⟦a⟧ - ⟦b⟧: RingQuot r) = ⟦a - b⟧ := rfl
 @[simp]
-def mk_mul : (⟦a⟧ * ⟦b⟧: RingQuot r) = ⟦a * b⟧ := rfl
+def mk_mul [SemiringOps R] : (⟦a⟧ * ⟦b⟧: RingQuot r) = ⟦a * b⟧ := rfl
 @[simp]
-def mk_npow {n: Nat} : (⟦a⟧ ^ n: RingQuot r) = ⟦a ^ n⟧ := rfl
+def mk_npow [SemiringOps R] [IsSemiring R] {n: Nat} : (⟦a⟧ ^ n: RingQuot r) = ⟦a ^ n⟧ := rfl
 @[simp]
-def mk_nsmul {n: Nat} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
+def mk_nsmul [SemiringOps R] [IsSemiring R] {n: Nat} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 @[simp]
-def mk_zsmul {n: Int} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
+def mk_zsmul [RingOps R] [IsRing R] {n: Int} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 @[simp]
-def mk_smul [AlgebraMap S R] [IsAlgebra S R] {n: S} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
+def mk_smul [SemiringOps R] [SemiringOps S] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] {n: S} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 
 @[cases_eliminator]
-def ind {motive: RingQuot r -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quot.ind
+def ind [SemiringOps R] {motive: RingQuot r -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quot.ind
 @[cases_eliminator]
-def ind₂ {motive: RingQuot r -> RingQuot r -> Prop} : (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) -> ∀a b, motive a b := by
+def ind₂ [SemiringOps R] {motive: RingQuot r -> RingQuot r -> Prop} : (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) -> ∀a b, motive a b := by
   intro h a b
   cases a; cases b
   apply h
 @[cases_eliminator]
-def ind₃ {motive: RingQuot r -> RingQuot r -> RingQuot r -> Prop} : (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) -> ∀a b c, motive a b c := by
+def ind₃ [SemiringOps R] {motive: RingQuot r -> RingQuot r -> RingQuot r -> Prop} : (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) -> ∀a b c, motive a b c := by
   intro h a b c
   cases a, b; cases c
   apply h
 @[cases_eliminator]
-def ind₄ {motive: RingQuot r -> RingQuot r -> RingQuot r -> RingQuot r -> Prop} : (mk: ∀a b c d, motive ⟦a⟧ ⟦b⟧ ⟦c⟧ ⟦d⟧) -> ∀a b c d, motive a b c d := by
+def ind₄ [SemiringOps R] {motive: RingQuot r -> RingQuot r -> RingQuot r -> RingQuot r -> Prop} : (mk: ∀a b c d, motive ⟦a⟧ ⟦b⟧ ⟦c⟧ ⟦d⟧) -> ∀a b c d, motive a b c d := by
   intro h a b c d
   cases a, b; cases c, d
   apply h
 
-instance : IsAddCommMagma (RingQuot r) where
+instance [SemiringOps R] [IsSemiring R] : IsAddCommMagma (RingQuot r) where
   add_comm a b := by
     cases a, b
     simp [add_comm]
 
-instance : IsAddMonoid (RingQuot r) where
+instance [SemiringOps R] [IsSemiring R] : SemiringOps (RingQuot r) where
+instance [RingOps R] [IsRing R] : RingOps (RingQuot r) where
+
+instance [SemiringOps R] [IsSemiring R] [IsCommMagma R] : IsCommMagma (RingQuot r) where
+  mul_comm a b := by
+    cases a, b
+    simp [mul_comm]
+
+instance instIsSemiring [SemiringOps R] [IsSemiring R] : IsSemiring (RingQuot r) where
   add_assoc a b c := by
     cases a, b, c
     simp [add_assoc]
@@ -346,33 +358,6 @@ instance : IsAddMonoid (RingQuot r) where
   add_zero a := by
     cases a
     simp [add_zero]
-  zero_nsmul a := by
-    cases a
-    simp [zero_nsmul]
-  succ_nsmul n a := by
-    cases a
-    simp [succ_nsmul]
-
-instance : IsAddGroup (RingQuot r) where
-  sub_eq_add_neg a b := by
-    cases a, b
-    simp [sub_eq_add_neg]
-  neg_add_cancel a := by
-    cases a
-    simp [neg_add_cancel]
-  zsmul_ofNat n a := by
-    cases a
-    simp [zsmul_ofNat]
-  zsmul_negSucc n a := by
-    cases a
-    simp [zsmul_negSucc]
-
-instance [IsCommMagma R] : IsCommMagma (RingQuot r) where
-  mul_comm a b := by
-    cases a, b
-    simp [mul_comm]
-
-instance : IsMonoid (RingQuot r) where
   mul_assoc a b c := by
     cases a, b, c
     simp [mul_assoc]
@@ -388,8 +373,12 @@ instance : IsMonoid (RingQuot r) where
   npow_succ n a := by
     cases a
     simp [npow_succ]
-
-instance instIsSemiring : IsSemiring (RingQuot r) where
+  zero_nsmul a := by
+    cases a
+    simp [zero_nsmul]
+  succ_nsmul n a := by
+    cases a
+    simp [succ_nsmul]
   natCast_zero := by
     show ⟦_⟧ = ⟦_⟧
     simp [natCast_zero]
@@ -399,7 +388,8 @@ instance instIsSemiring : IsSemiring (RingQuot r) where
   ofNat_zero := rfl
   ofNat_one := rfl
   ofNat_eq_natCast n := by
-    simp [OfNat.ofNat,  NatCast.natCast, ofNat_eq_natCast]
+    show ⟦_⟧ = ⟦_⟧
+    simp [ofNat_eq_natCast]
   zero_mul a := by
     cases a
     simp [zero_mul]
@@ -412,30 +402,28 @@ instance instIsSemiring : IsSemiring (RingQuot r) where
   right_distrib a b c := by
     cases a, b, c
     simp [add_mul]
-  npow_zero a := by
-    cases a
-    simp [npow_zero]
-  npow_succ n a := by
-    cases a
-    simp [npow_succ]
 
-instance instIsRing : IsRing (RingQuot r) where
-  sub_eq_add_neg := sub_eq_add_neg
+instance instIsRing [RingOps R] [IsRing R] : IsRing (RingQuot r) where
+  sub_eq_add_neg a b := by
+    cases a, b
+    simp [sub_eq_add_neg]
+  neg_add_cancel a := by
+    cases a
+    simp [neg_add_cancel]
   zsmul_ofNat n a := by
     cases a
     simp [zsmul_ofNat]
   zsmul_negSucc n a := by
     cases a
     simp [zsmul_negSucc]
-  neg_add_cancel a := by
-    cases a
-    simp [neg_add_cancel]
   intCast_ofNat n := by
-    simp [IntCast.intCast, NatCast.natCast, intCast_ofNat]
-  intCast_negSucc := by
-    simp [IntCast.intCast, NatCast.natCast, intCast_negSucc]
+    show ⟦_⟧ = ⟦_⟧
+    rw [intCast_ofNat]
+  intCast_negSucc _ := by
+    show ⟦_⟧ = -⟦_⟧
+    simp [intCast_negSucc]
 
-instance [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
+instance [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
   toFun s := ⟦algebraMap s⟧
   resp_zero := by
     simp
@@ -450,14 +438,14 @@ instance [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
     intro a b
     simp [resp_mul]
 
-instance [h: RingAlgebraMap S R] [IsAlgebra S R] : RingAlgebraMap S (RingQuot r) where
+instance [RingOps R] [RingOps S] [SMul S R] [IsRing R] [h: RingAlgebraMap S R] [IsAlgebra S R] : RingAlgebraMap S (RingQuot r) where
   resp_neg := by
     intro x
     show ⟦_⟧ = ⟦-_⟧
     congr
     apply h.resp_neg
 
-instance instIsAlgebra [AlgebraMap S R] [IsAlgebra S R] : IsAlgebra S (RingQuot r) where
+instance instIsAlgebra [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [AlgebraMap S R] [IsAlgebra S R] : IsAlgebra S (RingQuot r) where
   commutes := by
     intro s x
     cases x with| mk x=>
@@ -471,14 +459,14 @@ instance instIsAlgebra [AlgebraMap S R] [IsAlgebra S R] : IsAlgebra S (RingQuot 
     congr
     apply smul_def
 
-def mkSemiringHom (r: R -> R -> Prop) : R →+ₙ* RingQuot r where
+def mkSemiringHom [SemiringOps R] [IsSemiring R] (r: R -> R -> Prop) : R →+ₙ* RingQuot r where
   toFun := (⟦·⟧)
   resp_zero := rfl
   resp_one := rfl
   resp_mul := rfl
   resp_add := rfl
 
-def mkRingHom (r: R -> R -> Prop) : R →+* RingQuot r where
+def mkRingHom [RingOps R] [IsRing R] (r: R -> R -> Prop) : R →+* RingQuot r where
   toFun := (⟦·⟧)
   resp_zero := rfl
   resp_one := rfl
@@ -486,23 +474,20 @@ def mkRingHom (r: R -> R -> Prop) : R →+* RingQuot r where
   resp_add := rfl
   resp_neg := rfl
 
-def mkSemiringHom_rel (w: r x y) : mkSemiringHom r x = mkSemiringHom r y := Quot.sound (Rel.of w)
-def mkRingHom_rel (w: r x y) : mkRingHom r x = mkRingHom r y := Quot.sound (Rel.of w)
+def mkSemiringHom_rel [SemiringOps R] [IsSemiring R] (w: r x y) : mkSemiringHom r x = mkSemiringHom r y := Quot.sound (Rel.of w)
+def mkRingHom_rel [RingOps R] [IsRing R] (w: r x y) : mkRingHom r x = mkRingHom r y := Quot.sound (Rel.of w)
 
-def mkSemiringHom_surj : Function.Surjective (mkSemiringHom r) := by
+def mkSemiringHom_surj [SemiringOps R] [IsSemiring R] : Function.Surjective (mkSemiringHom r) := by
   intro x
   cases x with | mk x =>
   exists x
 
-def mkRingHom_surj : Function.Surjective (mkRingHom r) := by
+def mkRingHom_surj [RingOps R] [IsRing R] : Function.Surjective (mkRingHom r) := by
   intro x
   cases x with | mk x =>
   exists x
 
-variable [Zero T] [One T] [Add T] [Mul T] [Pow T ℕ] [SMul ℕ T] [NatCast T] [∀n, OfNat T (n + 2)] [IsSemiring T]
-variable [Sub T] [Neg T] [SMul ℤ T] [IntCast T] [IsRing T]
-
-private def preLiftSemiring {r : R → R → Prop} {f : R →+ₙ* T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : RingQuot r →+ₙ* T where
+private def preLiftSemiring [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T] {r : R → R → Prop} {f : R →+ₙ* T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : RingQuot r →+ₙ* T where
   toFun := by
     apply Quot.lift f
     intro _ _ r
@@ -520,14 +505,14 @@ private def preLiftSemiring {r : R → R → Prop} {f : R →+ₙ* T} (h : ∀ �
     rintro ⟨x⟩ ⟨y⟩
     apply resp_mul
 
-private def preLiftRing {r : R → R → Prop} {f : R →+* T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : RingQuot r →+* T where
+private def preLiftRing [RingOps R] [IsRing R] [RingOps T] [IsRing T] {r : R → R → Prop} {f : R →+* T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : RingQuot r →+* T where
   toSemiringHom := preLiftSemiring h
   resp_neg := by
     rintro ⟨x⟩
     show f (-x) = -f _
     apply resp_neg
 
-def liftSemiring: {f: R →+ₙ* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuot r →+ₙ* T) where
+def liftSemiring [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T]: {f: R →+ₙ* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuot r →+ₙ* T) where
   toFun f := preLiftSemiring f.property
   invFun f := {
     val := f.comp (mkSemiringHom r)
@@ -542,7 +527,7 @@ def liftSemiring: {f: R →+ₙ* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (
     rintro ⟨x⟩
     rfl
 
-def liftRing: {f: R →+* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuot r →+* T) where
+def liftRing [RingOps R] [IsRing R] [RingOps T] [IsRing T]: {f: R →+* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuot r →+* T) where
   toFun f := preLiftRing f.property
   invFun f := {
     val := f.comp (mkRingHom r)
@@ -558,29 +543,25 @@ def liftRing: {f: R →+* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuo
     rfl
 
 @[simp]
-def lift_mkSemiringHom_apply (f : R →+ₙ* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
+def lift_mkSemiringHom_apply [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T] (f : R →+ₙ* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
     liftSemiring ⟨f, w⟩ (mkSemiringHom r x) = f x := rfl
 
 @[simp]
-def lift_mkRingHom_apply (f : R →+* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
+def lift_mkRingHom_apply [RingOps R] [IsRing R] [RingOps T] [IsRing T] (f : R →+* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
     liftRing ⟨f, w⟩ (mkRingHom r x) = f x := rfl
 
-variable (S: Type*) [Zero S] [One S] [Add S] [Mul S] [Pow S ℕ] [SMul ℕ S] [NatCast S] [∀n, OfNat S (n + 2)] [IsSemiring S]
-variable [Sub S] [Neg S] [SMul ℤ S] [IntCast S] [IsRing S]
-variable [SMul S R]
-
-def mkAlgHom [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
+def mkAlgHom (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
   toSemiringHom := mkSemiringHom _
   resp_algebraMap _ := rfl
 
-def mkAlgHom_surj [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : Function.Surjective (mkAlgHom S r) := by
+variable (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
+   [SemiringOps A] [IsSemiring A] [AlgebraMap S A] [SMul S A] [IsAlgebra S A]
+   [SemiringOps B] [IsSemiring B] [AlgebraMap S B] [SMul S B] [IsAlgebra S B]
+
+def mkAlgHom_surj (r: R -> R -> Prop) : Function.Surjective (mkAlgHom S r) := by
   apply mkSemiringHom_surj
 
-variable [Zero A] [One A] [Add A] [Mul A] [Pow A ℕ] [SMul ℕ A] [NatCast A] [∀n, OfNat A (n + 2)] [IsSemiring A]
-variable [Zero B] [One B] [Add B] [Mul B] [Pow B ℕ] [SMul ℕ B] [NatCast B] [∀n, OfNat B (n + 2)] [IsSemiring B]
-  [SMul S A] [SMul S B] [AlgebraMap S A] [AlgebraMap S B] [IsAlgebra S A] [IsAlgebra S B]
-
-def preLiftAlgHom {s : A → A → Prop} {f : A →ₐ[S] B}
+def preLiftAlgHom {s : A → A → Prop} {f : A →ₐ[S] B }
   (h : ∀ ⦃x y⦄, s x y → f x = f y) : RingQuot s →ₐ[S] B where
   toFun := by
     apply Quot.lift f

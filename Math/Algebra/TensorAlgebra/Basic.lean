@@ -19,43 +19,27 @@ end TensorAlgebra
 
 namespace TensorAlgebra
 
-variable {R: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
-variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R] [IsRing R]
-variable {M : Type*} [Zero M] [Add M] [SMul ℕ M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsModule R M]
-
 section Instances
 
-instance : Zero (TensorAlgebra R M) := inferInstanceAs (Zero (RingQuot (Rel R M)))
-instance : One (TensorAlgebra R M) := inferInstanceAs (One (RingQuot (Rel R M)))
-instance : Add (TensorAlgebra R M) := inferInstanceAs (Add (RingQuot (Rel R M)))
-instance : Sub (TensorAlgebra R M) := inferInstanceAs (Sub (RingQuot (Rel R M)))
-instance : Neg (TensorAlgebra R M) := inferInstanceAs (Neg (RingQuot (Rel R M)))
-instance : Mul (TensorAlgebra R M) := inferInstanceAs (Mul (RingQuot (Rel R M)))
-instance : SMul ℕ (TensorAlgebra R M) := inferInstanceAs (SMul ℕ (RingQuot (Rel R M)))
-instance : SMul ℤ (TensorAlgebra R M) := inferInstanceAs (SMul ℤ (RingQuot (Rel R M)))
-instance : SMul R (TensorAlgebra R M) := inferInstanceAs (SMul R (RingQuot (Rel R M)))
-instance : Pow (TensorAlgebra R M) ℕ := inferInstanceAs (Pow (RingQuot (Rel R M)) ℕ)
-instance : AlgebraMap R (TensorAlgebra R M) := inferInstanceAs (AlgebraMap R (RingQuot (Rel R M)))
-instance : RingAlgebraMap R (TensorAlgebra R M) := inferInstanceAs (RingAlgebraMap R (RingQuot (Rel R M)))
-instance : NatCast (TensorAlgebra R M) := inferInstanceAs (NatCast (RingQuot (Rel R M)))
-instance : IntCast (TensorAlgebra R M) := inferInstanceAs (IntCast (RingQuot (Rel R M)))
-instance : OfNat (TensorAlgebra R M) n := inferInstanceAs (OfNat (RingQuot (Rel R M)) n)
-instance : IsSemiring (TensorAlgebra R M) := inferInstanceAs (IsSemiring (RingQuot (Rel R M)))
-instance : IsRing (TensorAlgebra R M) := inferInstanceAs (IsRing (RingQuot (Rel R M)))
-instance : IsAlgebra R (TensorAlgebra R M) := inferInstanceAs (IsAlgebra R (RingQuot (Rel R M)))
+variable {R M : Type*} [AddMonoidOps M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M]
+
+instance [SemiringOps R] [IsSemiring R] : SemiringOps (TensorAlgebra R M) := RingQuot.instSemiringOps
+instance [RingOps R] [IsRing R] : RingOps (TensorAlgebra R M) := RingQuot.instRingOps
+instance [SemiringOps R] [IsSemiring R] [IsModule R M] : SMul R (TensorAlgebra R M) := inferInstanceAs (SMul R (RingQuot (Rel R M)))
+instance [SemiringOps R] [IsSemiring R] [IsModule R M] : AlgebraMap R (TensorAlgebra R M) := inferInstanceAs (AlgebraMap R (RingQuot (Rel R M)))
+instance [RingOps R] [IsRing R] [IsModule R M] : RingAlgebraMap R (TensorAlgebra R M) := inferInstanceAs (RingAlgebraMap R (RingQuot (Rel R M)))
+instance [SemiringOps R] [IsSemiring R] : IsSemiring (TensorAlgebra R M) := inferInstanceAs (IsSemiring (RingQuot (Rel R M)))
+instance [RingOps R] [IsRing R] : IsRing (TensorAlgebra R M) := inferInstanceAs (IsRing (RingQuot (Rel R M)))
+instance [SemiringOps R] [IsSemiring R] [IsModule R M] : IsAlgebra R (TensorAlgebra R M) := inferInstanceAs (IsAlgebra R (RingQuot (Rel R M)))
 
 end Instances
 
 section ι
 
-variable (R: Type*) [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
-variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R] [IsRing R]
-variable {M : Type*} [Zero M] [Add M] [SMul ℕ M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsModule R M]
-variable {A: Type*} {X: Type*} [Zero A] [One A] [Add A] [Mul A] [Pow A ℕ] [SMul ℕ A] [NatCast A] [∀n, OfNat A (n + 2)]
-  [IsCommMagma A] [IsSemiring A]
-  [SMul R A] [AlgebraMap R A]
+variable (R: Type*) [SemiringOps R] [IsCommMagma R] [IsSemiring R]
+-- variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R] [IsRing R]
+variable {M : Type*} [AddMonoidOps M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsModule R M]
+variable {A: Type*} {X: Type*} [SemiringOps A] [IsCommMagma A] [IsSemiring A] [SMul R A] [AlgebraMap R A]
 
 def ι : M →ₗ[R] (TensorAlgebra R M) where
   toFun x :=  RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)) (FreeAlgebra.ι R x)
@@ -92,9 +76,8 @@ def lift [IsSemiring A] [IsAlgebra R A] : (M →ₗ[R] A) ≃ (TensorAlgebra R M
     apply RingQuot.liftAlgHom_mkAlgHom_apply
     apply FreeAlgebra.lift_ι_apply
 
-variable {R: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
-variable {M : Type*} [Zero M] [Add M] [SMul ℕ M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsModule R M]
+variable {R: Type*} [SemiringOps R] [IsCommMagma R] [IsSemiring R]
+variable {M : Type*} [AddMonoidOps M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsModule R M]
   [SMul R A] [AlgebraMap R A]
 
 @[simp]

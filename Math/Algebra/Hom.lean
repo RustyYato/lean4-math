@@ -2,8 +2,11 @@ import Math.Algebra.RingHom
 import Math.Algebra.LinearMap
 import Math.Algebra.Basic
 
+section
+
 variable (F R A B: Type*)
   [FunLike F A B]
+  [SemiringOps R] [SemiringOps A] [SemiringOps B] [SemiringOps C]
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
 
 structure AlgebraMapHom where
@@ -58,17 +61,18 @@ def toAlgHom (f: F) : AlgHom R A B where
   toSemiringHom := toSemiringHom f
   resp_algebraMap := resp_algebraMap f
 
-instance [SMul R A] [SMul R B] [IsAlgebra R A] [IsAlgebra R B] : SMulHomClass (AlgHom R A B) R A B where
+instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsAlgebra R A] [IsAlgebra R B] : SMulHomClass (AlgHom R A B) R A B where
   resp_smul := by
     intro f r x
     rw [smul_def, smul_def, resp_mul, resp_algebraMap]
 
+end
+
+section
+
 variable {R A B C: Type*}
   [FunLike F A B]
-  [Zero R] [One R] [Add R] [Mul R]
-  [Zero A] [One A] [Add A] [Mul A]
-  [Zero B] [One B] [Add B] [Mul B]
-  [Zero C] [One C] [Add C] [Mul C]
+  [SemiringOps R] [SemiringOps A] [SemiringOps B] [SemiringOps C]
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
 
 def AlgHom.comp (h: AlgHom R B C) (g: AlgHom R A B) : AlgHom R A C where
@@ -88,3 +92,17 @@ def AlgHom.comp (h: AlgHom R B C) (g: AlgHom R A B) : AlgHom R A C where
   resp_algebraMap {_} := by
     dsimp
     rw [g.resp_algebraMap, h.resp_algebraMap]
+
+end
+
+section
+
+variable {R A B C: Type*}
+  [FunLike F A B]
+  [RingOps R] [RingOps A] [RingOps B]
+  [RingAlgebraMap R A] [RingAlgebraMap R B]
+
+def resp_algebraMapᵣ [AlgebraMapHomClass F R A B] (f: F) (r: R) : f (algebraMapᵣ r) = algebraMapᵣ r :=
+  resp_algebraMap _ _
+
+end

@@ -82,32 +82,32 @@ namespace FreeAlgebra
 
 open Free.Algebra Relation
 
-variable {R X: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R]
-variable [Sub R] [Neg R] [SMul ℤ R] [IntCast R]
-
-def ofPre : Pre R X -> FreeAlgebra R X := Quotient.mk _
+def ofPre [SemiringOps R] : Pre R X -> FreeAlgebra R X := Quotient.mk _
 
 scoped notation "⟦" x "⟧" => ofPre x
 
 @[local induction_eliminator]
-def ind {motive: FreeAlgebra R X -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quotient.ind
+def ind [SemiringOps R] {motive: FreeAlgebra R X -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quotient.ind
 @[local induction_eliminator]
-def ind₂ {motive: FreeAlgebra R X -> FreeAlgebra R X -> Prop} : (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) -> ∀a b, motive a b := Quotient.ind₂
+def ind₂ [SemiringOps R] {motive: FreeAlgebra R X -> FreeAlgebra R X -> Prop} : (mk: ∀a b, motive ⟦a⟧ ⟦b⟧) -> ∀a b, motive a b := Quotient.ind₂
 @[local induction_eliminator]
-def ind₃ {motive: FreeAlgebra R X -> FreeAlgebra R X -> FreeAlgebra R X -> Prop} : (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) -> ∀a b c, motive a b c := by
+def ind₃ [SemiringOps R] {motive: FreeAlgebra R X -> FreeAlgebra R X -> FreeAlgebra R X -> Prop} : (mk: ∀a b c, motive ⟦a⟧ ⟦b⟧ ⟦c⟧) -> ∀a b c, motive a b c := by
   intro h a b c
   induction a, b
   induction c
   apply h
 @[local induction_eliminator]
-def ind₄ {motive: FreeAlgebra R X -> FreeAlgebra R X -> FreeAlgebra R X -> FreeAlgebra R X -> Prop} : (mk: ∀a b c d, motive ⟦a⟧ ⟦b⟧ ⟦c⟧ ⟦d⟧) -> ∀a b c d, motive a b c d := by
+def ind₄ [SemiringOps R] {motive: FreeAlgebra R X -> FreeAlgebra R X -> FreeAlgebra R X -> FreeAlgebra R X -> Prop} : (mk: ∀a b c d, motive ⟦a⟧ ⟦b⟧ ⟦c⟧ ⟦d⟧) -> ∀a b c d, motive a b c d := by
   intro h a b c d
   induction a, b
   induction c, d
   apply h
 
-instance : Add (FreeAlgebra R X) where
+instance [SemiringOps R] : SemiringOps (FreeAlgebra R X) where
+  zero := ⟦.scalar 0⟧
+  one := ⟦.scalar 1⟧
+  natCast n := ⟦.scalar n⟧
+  ofNat n := ⟨⟦.scalar (OfNat.ofNat (n + 2))⟧⟩
   add := by
     apply Quotient.lift₂ (⟦·.add ·⟧)
     intro a b c d ac bd
@@ -115,8 +115,6 @@ instance : Add (FreeAlgebra R X) where
     apply Rel.add_congr
     assumption
     assumption
-
-instance : Mul (FreeAlgebra R X) where
   mul := by
     apply Quotient.lift₂ (⟦·.mul ·⟧)
     intro a b c d ac bd
@@ -124,9 +122,7 @@ instance : Mul (FreeAlgebra R X) where
     apply Rel.mul_congr
     assumption
     assumption
-
-instance : SMul ℕ (FreeAlgebra R X) where
-  smul n := by
+  nsmul n := by
     apply Quotient.lift (⟦.nsmul n ·⟧)
     intro a b ab
     apply Quotient.sound
@@ -144,9 +140,7 @@ instance : SMul ℕ (FreeAlgebra R X) where
       symm; apply Rel.add_congr
       assumption
       assumption
-
-instance : Pow (FreeAlgebra R X) ℕ where
-  pow := flip <| by
+  npow := flip <| by
     intro n
     apply Quotient.lift (⟦Pre.npow · n⟧)
     intro a b ab
@@ -166,13 +160,7 @@ instance : Pow (FreeAlgebra R X) ℕ where
       assumption
       assumption
 
-instance : NatCast (FreeAlgebra R X) := ⟨fun n => ⟦.scalar n⟧⟩
-instance : IntCast (FreeAlgebra R X) := ⟨fun n => ⟦.scalar n⟧⟩
-instance : OfNat (FreeAlgebra R X) n := ⟨n⟩
-instance : Zero (FreeAlgebra R X) := ⟨⟦.scalar 0⟧⟩
-instance : One (FreeAlgebra R X) := ⟨⟦.scalar 1⟧⟩
-
-instance : AlgebraMap R (FreeAlgebra R X) where
+instance [SemiringOps R] : AlgebraMap R (FreeAlgebra R X) where
   toFun := (⟦.scalar ·⟧)
   resp_zero := rfl
   resp_one := rfl
@@ -187,19 +175,18 @@ instance : AlgebraMap R (FreeAlgebra R X) where
     apply Quotient.sound
     apply Rel.mul_scalar
 
-instance : SMul R (FreeAlgebra R X) where
+instance [SemiringOps R] : SMul R (FreeAlgebra R X) where
   smul x y := algebraMap x * y
 
-instance : Neg (FreeAlgebra R X) where
+instance [RingOps R] : Neg (FreeAlgebra R X) where
   neg x := (-1: R) • x
 
-instance : Sub (FreeAlgebra R X) where
+instance [RingOps R] : RingOps (FreeAlgebra R X) where
+  intCast n := ⟦.scalar n⟧
   sub a b := a + -b
+  zsmul := zsmulRec
 
-instance : SMul ℤ (FreeAlgebra R X) where
-  smul := zsmulRec
-
-instance [IsRing R] : RingAlgebraMap R (FreeAlgebra R X) where
+instance [RingOps R] [IsRing R] : RingAlgebraMap R (FreeAlgebra R X) where
   resp_neg := by
     intro x
     show ⟦_⟧ = ⟦_⟧
@@ -211,13 +198,13 @@ instance [IsRing R] : RingAlgebraMap R (FreeAlgebra R X) where
     rw [←neg_mul_left, one_mul]
     rfl
 
-instance : IsAddCommMagma (FreeAlgebra R X) where
+instance [SemiringOps R] : IsAddCommMagma (FreeAlgebra R X) where
   add_comm a b := by
     induction a, b
     apply Quotient.sound
     apply Rel.add_comm
 
-instance : IsAddZeroClass (FreeAlgebra R X) where
+instance [SemiringOps R] : IsAddZeroClass (FreeAlgebra R X) where
   zero_add := by
     intro a; induction a
     rw [add_comm]
@@ -228,7 +215,7 @@ instance : IsAddZeroClass (FreeAlgebra R X) where
     apply Quotient.sound
     apply Rel.add_zero
 
-instance : IsMulZeroClass (FreeAlgebra R X) where
+instance [SemiringOps R] : IsMulZeroClass (FreeAlgebra R X) where
   zero_mul := by
     intro a; induction a
     apply Quotient.sound
@@ -238,7 +225,7 @@ instance : IsMulZeroClass (FreeAlgebra R X) where
     apply Quotient.sound
     apply Rel.mul_zero
 
-instance : IsMulOneClass (FreeAlgebra R X) where
+instance [SemiringOps R] : IsMulOneClass (FreeAlgebra R X) where
   one_mul := by
     intro a; induction a
     apply Quotient.sound
@@ -248,31 +235,33 @@ instance : IsMulOneClass (FreeAlgebra R X) where
     apply Quotient.sound
     apply Rel.mul_one
 
-instance : IsAddSemigroup (FreeAlgebra R X) where
+instance [SemiringOps R] : IsAddSemigroup (FreeAlgebra R X) where
   add_assoc := by
     intro a b c; induction a, b, c
     apply Quotient.sound
     apply Rel.add_assoc
 
-instance : IsSemigroup (FreeAlgebra R X) where
+instance [SemiringOps R] : IsSemigroup (FreeAlgebra R X) where
   mul_assoc := by
     intro a b c; induction a, b, c
     apply Quotient.sound
     apply Rel.mul_assoc
 
-instance [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
+instance [SemiringOps R] [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
   natCast_zero := by
     show ⟦_⟧ = ⟦_⟧
     congr
     apply natCast_zero
   natCast_succ := by
     intro n
-    show ⟦.scalar (NatCast.natCast _)⟧ = ⟦_⟧ + ⟦_⟧
+    show ⟦.scalar _⟧ = ⟦_⟧ + ⟦_⟧
     rw [natCast_succ]
     apply resp_add (algebraMap (R := R) (A := FreeAlgebra R X))
   ofNat_zero := rfl
   ofNat_one := rfl
-  ofNat_eq_natCast _ := rfl
+  ofNat_eq_natCast _ := by
+    show ⟦_⟧ = ⟦_⟧
+    rw [ofNat_eq_natCast]
   left_distrib := by
     intro k a b; induction a, b, k
     apply Quotient.sound
@@ -298,7 +287,7 @@ instance [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
     apply Quotient.sound
     apply Rel.npow_succ
 
-instance : IsAlgebra R (FreeAlgebra R X) where
+instance [SemiringOps R] [IsSemiring R] : IsAlgebra R (FreeAlgebra R X) where
   commutes := by
     intro r x
     induction x
@@ -308,14 +297,15 @@ instance : IsAlgebra R (FreeAlgebra R X) where
     intro r x
     rfl
 
-instance [IsRing R] : IsRing (FreeAlgebra R X) where
+instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) where
   sub_eq_add_neg _ _ := rfl
   zsmul_ofNat _ _ := rfl
   zsmul_negSucc _ _ := rfl
   intCast_ofNat _ := by
-    simp [IntCast.intCast, intCast_ofNat]
-    rfl
+    show ⟦_⟧ = ⟦_⟧
+    simp [intCast_ofNat]
   intCast_negSucc n := by
+    show ⟦_⟧ = ⟦_⟧
     simp [IntCast.intCast, intCast_negSucc]
     show algebraMapᵣ (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMapᵣ (R := R) (A := FreeAlgebra R X) _
     rw [resp_neg]
@@ -326,7 +316,7 @@ instance [IsRing R] : IsRing (FreeAlgebra R X) where
     rw [←add_mul, ←resp_one (algebraMap (R := R) (A := FreeAlgebra R X)),
       ←resp_add, neg_add_cancel, resp_zero, zero_mul]
 
-instance : Inhabited (FreeAlgebra R X) := ⟨0⟩
+instance [h: Zero R] [One R] [Add R] [Mul R] : Inhabited (FreeAlgebra R X) := ⟨Quot.mk _ (.scalar 0)⟩
 
 end FreeAlgebra
 
@@ -334,28 +324,21 @@ namespace FreeAlgebra
 
 open Free.Algebra
 
-variable (R: Type*) {X: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
-variable {A: Type*} [Zero A] [One A] [Add A] [Mul A] [Pow A ℕ] [SMul ℕ A] [NatCast A] [∀n, OfNat A (n + 2)]
-  [IsCommMagma A] [IsSemiring A] [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
+def ι (R: Type*) [SemiringOps R] : X → FreeAlgebra R X := fun m ↦ ⟦.of m⟧
 
-def ι : X → FreeAlgebra R X := fun m ↦ ⟦.of m⟧
-
-def liftFun {A : Type*}
-  [Zero A] [One A] [Add A] [Mul A] [SMul ℕ A] [Pow A ℕ] [NatCast A] [∀n, OfNat A (n + 2)]
-  [Zero R] [One R] [Add R] [Mul R] [SMul ℕ R] [Pow R ℕ] [NatCast R] [∀n, OfNat R (n + 2)]
-  [SMul R A] [AlgebraMap R A]
+def liftFun (R: Type*) {A : Type*}
+  [SemiringOps A] [SemiringOps R] [SMul R A] [AlgebraMap R A]
   [IsSemiring A] [IsAlgebra R A] (f : X → A) :
     Pre R X → A
   | .of t => f t
   | .scalar c => algebraMap c
-  | .add a b => liftFun f a + liftFun f b
-  | .mul a b => liftFun f a * liftFun f b
-  | .nsmul n a => n • liftFun f a
-  | .npow a n => (liftFun f a) ^ n
+  | .add a b => liftFun R f a + liftFun R f b
+  | .mul a b => liftFun R f a * liftFun R f b
+  | .nsmul n a => n • liftFun R f a
+  | .npow a n => (liftFun R f a) ^ n
 
 @[induction_eliminator, elab_as_elim]
-def induction {motive: FreeAlgebra R X -> Prop}
+def induction [SemiringOps R] [IsSemiring R] {motive: FreeAlgebra R X -> Prop}
   (grade0: ∀r: R, motive (algebraMap r))
   (grade1: ∀x, motive (ι R x))
   (add: ∀a b, motive a -> motive b -> motive (a + b))
@@ -399,7 +382,11 @@ def induction {motive: FreeAlgebra R X -> Prop}
       assumption
       assumption
 
-def liftAux (f: X -> A) : FreeAlgebra R X →ₐ[R] A where
+def liftAux
+  (R: Type*)
+  [SemiringOps R] [IsSemiring R] [SemiringOps A] [IsSemiring A]
+  [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
+  (f: X -> A) : FreeAlgebra R X →ₐ[R] A where
   toFun := by
     apply Quotient.lift (liftFun R f)
     intro a b eq
@@ -459,7 +446,10 @@ def liftAux (f: X -> A) : FreeAlgebra R X →ₐ[R] A where
     rfl
   resp_algebraMap _ := rfl
 
-def lift : (X -> A) ≃ (FreeAlgebra R X →ₐ[R] A) where
+def lift
+  (R: Type*)
+  [SemiringOps R] [IsSemiring R] [SemiringOps A] [IsSemiring A]
+  [AlgebraMap R A] [SMul R A] [IsAlgebra R A] : (X -> A) ≃ (FreeAlgebra R X →ₐ[R] A) where
   toFun := liftAux R
   invFun f := f ∘ ι R
   leftInv := by
@@ -486,10 +476,8 @@ end FreeAlgebra
 
 namespace FreeAlgebra
 
-variable {R: Type*} {X: Type*} [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
-variable {A: Type*} [Zero A] [One A] [Add A] [Mul A] [Pow A ℕ] [SMul ℕ A] [NatCast A] [∀n, OfNat A (n + 2)]
-  [IsCommMagma A] [IsSemiring A] [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
+variable {R: Type*} {X: Type*} [SemiringOps R] [IsCommMagma R] [IsSemiring R]
+variable {A: Type*}  [SemiringOps A] [IsSemiring A] [IsCommMagma A] [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
 
 @[simp]
 def ι_comp_lift (f : X → A) : (lift R f : FreeAlgebra R X → A) ∘ ι R = f := rfl
