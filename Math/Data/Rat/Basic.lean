@@ -1,8 +1,8 @@
-import Math.Data.StdInt.AbsoluteValue
 import Math.Data.QuotLike.Basic
 import Math.Data.StdNat.Gcd
 import Math.Data.StdInt.Basic
 import Math.Ops.Checked
+import Math.Ops.Abs
 
 structure Fract where
   num: Int
