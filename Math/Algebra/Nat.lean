@@ -48,7 +48,7 @@ instance [AddMonoidWithOneOps R] [IsAddMonoidWithOne R] [IsAddCommMagma R] : IsM
   add_smul := add_nsmul
   zero_smul := zero_nsmul
 
-instance [SemiringOps R] [IsSemiring R] : AlgebraMap Nat R where
+instance (priority := 500) [SemiringOps R] [IsSemiring R] : AlgebraMap Nat R where
   toFun n := n
   resp_zero := natCast_zero
   resp_one := natCast_one

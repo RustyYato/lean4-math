@@ -69,7 +69,7 @@ instance [AlgebraMap R A] [IsAlgebra R A] : IsModule R A where
   smul_add a x y := by rw [smul_def, mul_add, ←smul_def, ←smul_def]
   add_smul a b x := by rw [smul_def, resp_add, add_mul, ←smul_def, ←smul_def]
 
-instance : AlgebraMap R R where
+instance (priority := 900) : AlgebraMap R R where
   toFun := id
   resp_one := rfl
   resp_zero := rfl
