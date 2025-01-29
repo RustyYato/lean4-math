@@ -86,3 +86,15 @@ instance [RingOps R] [IsRing R] : IsAlgebra Int R where
   smul_def a b := by
     rw [←intCast_mul_eq_zsmul]
     rfl
+
+def Int.char_eq : char Int = 0 := by
+  apply char_eq_of
+  intro n
+  rw [zero_nsmul]
+  intro m h
+  cases m
+  apply Nat.dvd_refl
+  have := h 1
+  rw [←natCast_eq_nsmul_one] at this
+  have := Int.ofNat_eq_zero.mp this
+  contradiction

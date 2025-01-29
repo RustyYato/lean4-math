@@ -352,6 +352,9 @@ instance : @IsSymmetric α trivial where
 instance : @IsTrans α trivial where
   trans _ _ := True.intro
 
+instance : @IsWellFounded Nat (· < ·) where
+  wf := Nat.lt_wfRel.wf
+
 end Relation
 
 namespace Quot

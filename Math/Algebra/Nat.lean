@@ -62,3 +62,14 @@ instance [SemiringOps R] [IsSemiring R] : IsAlgebra Nat R where
   smul_def a b := by
     rw [←natCast_mul_eq_nsmul]
     rfl
+
+def Nat.char_eq : char Nat = 0 := by
+  apply char_eq_of
+  intro n
+  rw [zero_nsmul]
+  intro m h
+  cases m
+  apply Nat.dvd_refl
+  have := h 1
+  rw [succ_nsmul] at this
+  contradiction
