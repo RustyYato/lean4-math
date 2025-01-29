@@ -269,6 +269,9 @@ def existsChar : ∃n, HasChar α n := by
       rw [zero_nsmul]
 
 -- the characteristic of a Addition Monoid over α
+-- i.e. the smallest non-zero natural such that
+-- the product with any element of α is zero
+-- or if no such non-zero natural exists, then zero
 noncomputable def char : ℕ := Classical.choose (existsChar α)
 
 def char_dvd : ∀(m: Nat), (∀(a: α), m • a = 0) -> char α ∣ m := fun m => (Classical.choose_spec (existsChar α) m).mp
@@ -732,6 +735,17 @@ def mul_natCast_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : x *
 
 def natCast_mul [SemiringOps α] [IsSemiring α] (a b: ℕ) : ((a * b: Nat): α) = a * b := by
   rw [natCast_mul_eq_nsmul, natCast_eq_nsmul_one, mul_nsmul, natCast_eq_nsmul_one]
+
+def char_eq_of_natCast_eq_zero [SemiringOps α] [IsSemiring α] (n: Nat) :
+  n = (0: α) -> (∀m: Nat, m = (0: α) -> n ∣ m) -> char α = n := by
+  intro h g
+  apply char_eq_of
+  intro x
+  rw [←natCast_mul_eq_nsmul, h, zero_mul]
+  intro m g'
+  apply g
+  rw [natCast_eq_nsmul_one]
+  apply g'
 
 class RingOps (α: Type*) extends SemiringOps α, AddGroupWithOneOps α where
 instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where

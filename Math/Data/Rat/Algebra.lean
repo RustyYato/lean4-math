@@ -92,3 +92,10 @@ instance : IsNontrivial ℚ where
   zero_ne_one := by
     intro h
     contradiction
+
+def Rat.char_eq : char Rat = 0 := by
+  apply char_eq_of_natCast_eq_zero
+  rfl
+  intro m h
+  cases h
+  apply Nat.dvd_refl
