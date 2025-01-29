@@ -48,8 +48,6 @@ instance : IsField ℚ where
   mul_zero := Rat.mul_zero
   one_mul := Rat.one_mul
   mul_one := Rat.mul_one
-  ofNat_zero := rfl
-  ofNat_one := rfl
   ofNat_eq_natCast _ := rfl
   natCast_zero := rfl
   natCast_succ := Rat.natCast_succ

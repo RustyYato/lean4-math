@@ -24,8 +24,6 @@ instance : IsRing Unit where
   add_zero _ := rfl
   natCast_zero := rfl
   natCast_succ _ := rfl
-  ofNat_zero := rfl
-  ofNat_one := rfl
   ofNat_eq_natCast _ := rfl
   mul_assoc _ _ _ := rfl
   zero_mul _ := rfl

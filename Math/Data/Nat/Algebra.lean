@@ -19,8 +19,6 @@ instance : IsSemiring nat where
     show _ = _ + nat.succ 0
     rw [nat.add_succ, nat.add_zero]
     rfl
-  ofNat_zero := rfl
-  ofNat_one := rfl
   ofNat_eq_natCast _ := rfl
   mul_assoc := nat.mul_assoc
   zero_mul := nat.zero_mul

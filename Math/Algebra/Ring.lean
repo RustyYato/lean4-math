@@ -654,11 +654,9 @@ instance [AddMonoidWithOneOps α] : OfNat α (n + 2) := AddMonoidWithOneOps.ofNa
 class IsAddMonoidWithOne (α: Type*) [AddMonoidWithOneOps α] extends IsAddMonoid α: Prop where
   natCast_zero : ((0: Nat): α) = (0: α)
   natCast_succ (n: ℕ) : (n.succ: α) = (n: α) + (1: α)
-  ofNat_zero : OfNat.ofNat (α := α) 0 = 0
-  ofNat_one : OfNat.ofNat (α := α) 1 = 1
   ofNat_eq_natCast (n: ℕ): OfNat.ofNat (α := α) (n + 2) = ((n + 2: Nat): α)
 
-export IsAddMonoidWithOne (natCast_zero natCast_succ ofNat_zero ofNat_one ofNat_eq_natCast)
+export IsAddMonoidWithOne (natCast_zero natCast_succ ofNat_eq_natCast)
 
 def natCast_eq_nsmul_one [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] (n: Nat) : (n: α) = n • 1  := by
   induction n with
@@ -865,15 +863,11 @@ instance
   : IsNonAssocSemiring α where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_zero := IsAddMonoidWithOne.ofNat_zero
-  ofNat_one := IsAddMonoidWithOne.ofNat_one
   ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
 instance [SemiringOps α] [IsSemiring α] : IsNonAssocSemiring α where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_zero := IsAddMonoidWithOne.ofNat_zero
-  ofNat_one := IsAddMonoidWithOne.ofNat_one
   ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
 class FieldOps (α: Type*) extends RingOps α,

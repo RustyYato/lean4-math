@@ -734,8 +734,6 @@ instance [SMul ℕ α] [NatCast α] [∀n, OfNat α (n + 2)] [IsAddMonoidWithOne
     cases x
     apply natCast_zero
     rfl
-  ofNat_zero := rfl
-  ofNat_one := rfl
   ofNat_eq_natCast := by
     intro n
     apply ext_coeffs
@@ -758,8 +756,6 @@ instance [SMul ℕ α] [NatCast α] [∀n, OfNat α (n + 2)] [IsSemiring α] : I
 instance [SMul ℕ α] [NatCast α] [∀n, OfNat α (n + 2)] [Sub α] [SMul ℤ α] [Neg α] [IntCast α] [IsAddGroupWithOne α] : IsAddGroupWithOne (Poly α) where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_zero := rfl
-  ofNat_one := rfl
   ofNat_eq_natCast := ofNat_eq_natCast
   intCast_ofNat n := by
     apply ext_coeffs

@@ -14,8 +14,6 @@ instance : IsRing Int where
   add_zero := Int.add_zero
   natCast_zero := rfl
   natCast_succ _ := rfl
-  ofNat_zero := rfl
-  ofNat_one := rfl
   ofNat_eq_natCast _ := rfl
   mul_assoc := Int.mul_assoc
   zero_mul := Int.zero_mul

@@ -48,8 +48,6 @@ instance : IsField Bool where
     contradiction
     rw [h, beq_false_of_ne, bne_eq_false_iff_eq]
     decide
-  ofNat_zero := by decide +kernel
-  ofNat_one := by decide +kernel
   ofNat_eq_natCast := by
     intro n
     dsimp [OfNat.ofNat, Nat.cast, NatCast.natCast]

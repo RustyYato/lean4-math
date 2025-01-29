@@ -257,8 +257,6 @@ instance [SemiringOps R] [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
     show ⟦.scalar _⟧ = ⟦_⟧ + ⟦_⟧
     rw [natCast_succ]
     apply resp_add (algebraMap (R := R) (A := FreeAlgebra R X))
-  ofNat_zero := rfl
-  ofNat_one := rfl
   ofNat_eq_natCast _ := by
     show ⟦_⟧ = ⟦_⟧
     rw [ofNat_eq_natCast]
