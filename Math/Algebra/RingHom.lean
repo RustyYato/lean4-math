@@ -230,70 +230,70 @@ section
 section
 
 variable {F α β: Type*} [FunLike F α β]
-variable [Zero α] [One α] [Add α] [Sub α] [Neg α] [Mul α] [Div α] [Inv α] [SMul ℕ α] [Pow α ℕ] [SMul ℤ α] [Pow α ℤ] [NatCast α] [IntCast α] [∀n, OfNat α (n + 2)]
-variable [Zero β] [One β] [Add β] [Sub β] [Neg β] [Mul β] [Div β] [Inv β] [SMul ℕ β] [Pow β ℕ] [SMul ℤ β] [Pow β ℤ] [NatCast β] [IntCast β] [∀n, OfNat β (n + 2)]
+-- variable [Zero α] [One α] [Add α] [Sub α] [Neg α] [Mul α] [Div α] [Inv α] [SMul ℕ α] [Pow α ℕ] [SMul ℤ α] [Pow α ℤ] [NatCast α] [IntCast α] [∀n, OfNat α (n + 2)]
+-- variable [Zero β] [One β] [Add β] [Sub β] [Neg β] [Mul β] [Div β] [Inv β] [SMul ℕ β] [Pow β ℕ] [SMul ℤ β] [Pow β ℤ] [NatCast β] [IntCast β] [∀n, OfNat β (n + 2)]
 
-variable [ZeroHomClass F α β] [OneHomClass F α β] [AddHomClass F α β] [MulHomClass F α β]
-  [NegHomClass F α β] [InvHomClass F α β]
+-- variable [ZeroHomClass F α β] [OneHomClass F α β] [AddHomClass F α β] [MulHomClass F α β]
+--   [NegHomClass F α β] [InvHomClass F α β]
 
 @[coe]
-def toZeroHom (f: F): ZeroHom α β where
+def toZeroHom [Zero α] [Zero β] [ZeroHomClass F α β] (f: F): ZeroHom α β where
   toFun := f
   resp_zero := resp_zero f
 
 @[coe]
-def toOneHom (f: F): OneHom α β where
+def toOneHom [One α] [One β] [OneHomClass F α β] (f: F): OneHom α β where
   toFun := f
   resp_one := resp_one f
 
 @[coe]
-def toAddHom (f: F): AddHom α β where
+def toAddHom [Add α] [Add β] [AddHomClass F α β] (f: F): AddHom α β where
   toFun := f
   resp_add := resp_add f
 
 @[coe]
-def toMulHom (f: F): MulHom α β where
+def toMulHom [Mul α] [Mul β] [MulHomClass F α β] (f: F): MulHom α β where
   toFun := f
   resp_mul := resp_mul f
 
 @[coe]
-def toNegHom (f: F): NegHom α β where
+def toNegHom [Neg α] [Neg β] [NegHomClass F α β] (f: F): NegHom α β where
   toFun := f
   resp_neg := resp_neg f
 
 @[coe]
-def toInvHom (f: F): InvHom α β where
+def toInvHom [Inv α] [Inv β] [InvHomClass F α β] (f: F): InvHom α β where
   toFun := f
   resp_inv := resp_inv f
 
 @[coe]
-def toAddMonoidHom (f: F) : AddMonoidHom α β where
+def toAddMonoidHom [AddMonoidOps α] [AddMonoidOps β] [ZeroHomClass F α β] [AddHomClass F α β] (f: F) : AddMonoidHom α β where
   toFun := f
   resp_zero := resp_zero f
   resp_add := resp_add f
 
 @[coe]
-def toMonoidHom (f: F) : MonoidHom α β where
+def toMonoidHom [MonoidOps α] [MonoidOps β] [OneHomClass F α β] [MulHomClass F α β] (f: F) : MonoidHom α β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
 
 @[coe]
-def toAddGroupHom (f: F) : AddGroupHom α β where
+def toAddGroupHom [AddGroupOps α] [AddGroupOps β] [ZeroHomClass F α β] [AddHomClass F α β] [NegHomClass F α β] (f: F) : AddGroupHom α β where
   toFun := f
   resp_zero := resp_zero f
   resp_add := resp_add f
   resp_neg := resp_neg f
 
 @[coe]
-def toGroupHom (f: F) : GroupHom α β where
+def toGroupHom [GroupOps α] [GroupOps β] [OneHomClass F α β] [MulHomClass F α β] [InvHomClass F α β] (f: F) : GroupHom α β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
   resp_inv := resp_inv f
 
 @[coe]
-def toSemiringHom (f: F) : SemiringHom α β where
+def toSemiringHom [SemiringOps α] [SemiringOps β] [ZeroHomClass F α β] [AddHomClass F α β] [OneHomClass F α β] [MulHomClass F α β] (f: F) : SemiringHom α β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
@@ -301,7 +301,7 @@ def toSemiringHom (f: F) : SemiringHom α β where
   resp_add := resp_add f
 
 @[coe]
-def toRingHom (f: F) : RingHom α β where
+def toRingHom [RingOps α] [RingOps β] [ZeroHomClass F α β] [AddHomClass F α β] [OneHomClass F α β] [MulHomClass F α β] [NegHomClass F α β] (f: F) : RingHom α β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
@@ -310,29 +310,31 @@ def toRingHom (f: F) : RingHom α β where
   resp_neg := resp_neg f
 
 private
-def ZeroHom.ofOneHom (h: OneHom α β) : ZeroHom (AddOfMul α) (AddOfMul β) where
+def ZeroHom.ofOneHom [One α] [One β] (h: OneHom α β) : ZeroHom (AddOfMul α) (AddOfMul β) where
   toFun := h
   resp_zero := h.resp_one
 
 private
-def AddHom.ofMulHom (h: MulHom α β) : AddHom (AddOfMul α) (AddOfMul β) where
+def AddHom.ofMulHom [Mul α] [Mul β] (h: MulHom α β) : AddHom (AddOfMul α) (AddOfMul β) where
   toFun := h
   resp_add := h.resp_mul
 
 private
-def AddMonoidHom.ofMonoidHom (h: MonoidHom α β) : AddMonoidHom (AddOfMul α) (AddOfMul β) where
+def AddMonoidHom.ofMonoidHom [MonoidOps α] [MonoidOps β] (h: MonoidHom α β) : AddMonoidHom (AddOfMul α) (AddOfMul β) where
   toFun := h
   resp_zero := h.resp_one
   resp_add := h.resp_mul
 
 private
-def AddGroupHom.ofGroupHom (h: GroupHom α β) : AddGroupHom (AddOfMul α) (AddOfMul β) where
+def AddGroupHom.ofGroupHom [GroupOps α] [GroupOps β] (h: GroupHom α β) : AddGroupHom (AddOfMul α) (AddOfMul β) where
   toFun := h
   resp_zero := h.resp_one
   resp_add := h.resp_mul
   resp_neg := h.resp_inv
 
 def resp_nsmul
+  [AddMonoidOps α] [AddMonoidOps β]
+  [ZeroHomClass F α β] [AddHomClass F α β]
   [IsAddMonoid α] [IsAddMonoid β]
   (f: F) (n: ℕ) (x: α) : f (n • x) = n • f x := by
   induction n with
@@ -340,11 +342,15 @@ def resp_nsmul
   | succ n ih => rw [succ_nsmul, succ_nsmul, resp_add, ih]
 
 def resp_npow
+  [MonoidOps α] [MonoidOps β]
+  [OneHomClass F α β] [MulHomClass F α β]
   [IsMonoid α] [IsMonoid β]
   (f: F) (n: ℕ) (x: α) : f (x ^ n) = (f x) ^ n :=
   resp_nsmul (AddMonoidHom.ofMonoidHom (toMonoidHom f)) n (AddOfMul.mk x)
 
 def resp_zsmul
+  [AddGroupOps α] [AddGroupOps β]
+  [ZeroHomClass F α β] [AddHomClass F α β] [NegHomClass F α β]
   [IsSubNegMonoid α] [IsSubNegMonoid β]
   (f: F) (n: ℤ) (x: α) : f (n • x) = n • f x := by
   induction n with
@@ -352,35 +358,47 @@ def resp_zsmul
   | negSucc n => rw [zsmul_negSucc, zsmul_negSucc, resp_neg, resp_nsmul]
 
 def resp_zpow
+  [GroupOps α] [GroupOps β]
+  [OneHomClass F α β] [MulHomClass F α β] [InvHomClass F α β]
   [IsDivInvMonoid α] [IsDivInvMonoid β]
   (f: F) (n: ℤ) (x: α) : f (x ^ n) = (f x) ^ n :=
   resp_zsmul (AddGroupHom.ofGroupHom (toGroupHom f)) n (AddOfMul.mk x)
 
 def resp_sub
+  [AddGroupOps α] [AddGroupOps β]
+  [ZeroHomClass F α β] [AddHomClass F α β] [NegHomClass F α β]
   [IsSubNegMonoid α] [IsSubNegMonoid β]
   (f: F) {x y: α} : f (x - y) = f x - f y := by
   rw [sub_eq_add_neg, sub_eq_add_neg, resp_add, resp_neg]
 
 def resp_div
+  [GroupOps α] [GroupOps β]
+  [OneHomClass F α β] [MulHomClass F α β] [InvHomClass F α β]
   [IsDivInvMonoid α] [IsDivInvMonoid β]
   (f: F) {x y: α} : f (x / y) = f x / f y := by
   rw [div_eq_mul_inv, div_eq_mul_inv, resp_mul, resp_inv]
 
 def resp_natCast
+  [AddMonoidWithOneOps α] [AddMonoidWithOneOps β]
+  [ZeroHomClass F α β] [OneHomClass F α β] [AddHomClass F α β]
   [IsAddMonoidWithOne α] [IsAddMonoidWithOne β]
-  (f: F) (n: Nat) : f (NatCast.natCast n) = NatCast.natCast n := by
+  (f: F) (n: Nat) : f n = n := by
   induction n with
   | zero => rw [natCast_zero, natCast_zero, resp_zero]
   | succ n ih => rw [natCast_succ, natCast_succ, resp_add, ih, resp_one]
 
 def resp_intCast
+  [AddGroupWithOneOps α] [AddGroupWithOneOps β]
+  [ZeroHomClass F α β] [OneHomClass F α β] [AddHomClass F α β] [NegHomClass F α β]
   [IsAddGroupWithOne α] [IsAddGroupWithOne β]
-  (f: F) (n: Int) : f (IntCast.intCast n) = IntCast.intCast n := by
+  (f: F) (n: Int) : f n = n := by
   induction n with
   | ofNat n => rw [Int.ofNat_eq_coe, intCast_ofNat, intCast_ofNat, resp_natCast]
   | negSucc n => rw [intCast_negSucc, intCast_negSucc, resp_neg, resp_natCast]
 
 def resp_ofNat
+  [AddMonoidWithOneOps α] [AddMonoidWithOneOps β]
+  [ZeroHomClass F α β] [OneHomClass F α β] [AddHomClass F α β]
   [IsAddMonoidWithOne α] [IsAddMonoidWithOne β]
   (f: F) (n: Nat) : f (OfNat.ofNat (n + 2)) = OfNat.ofNat (n + 2) := by
   rw [ofNat_eq_natCast, resp_natCast]

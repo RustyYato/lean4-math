@@ -4,10 +4,6 @@ import Math.Algebra.Basic
 
 variable (F R A B: Type*)
   [FunLike F A B]
-  [Zero R] [One R] [Add R] [Mul R]
-  [Zero A] [One A] [Add A] [Mul A]
-  [Zero B] [One B] [Add B] [Mul B]
-  [Zero C] [One C] [Add C] [Mul C]
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
 
 structure AlgebraMapHom where

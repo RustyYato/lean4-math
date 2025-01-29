@@ -525,6 +525,16 @@ instance [SemiringOps α] [IsAddCommMagma α] [IsAddMonoidWithOne α] [IsSemigro
   npow_zero := npow_zero
   npow_succ := npow_succ
 
+def natCast_mul_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : r * x = r • x := by
+  induction r with
+  | zero => rw [natCast_zero, zero_mul, zero_nsmul]
+  | succ r ih => rw [natCast_succ, add_mul, one_mul, succ_nsmul, ih]
+
+def mul_natCast_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : x * r = r • x := by
+  induction r with
+  | zero => rw [natCast_zero, mul_zero, zero_nsmul]
+  | succ r ih => rw [natCast_succ, mul_add, mul_one, succ_nsmul, ih]
+
 class RingOps (α: Type*) extends SemiringOps α, AddGroupWithOneOps α where
 instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where
 
@@ -571,6 +581,16 @@ def zsmul_eq_intCast_mul [RingOps α] [IsRing α] (n: ℤ) (x: α) : n • x = n
   | negSucc n =>
     rw [zsmul_negSucc, intCast_negSucc, nsmul_eq_natCast_mul, neg_mul_left]
 
+def intCast_mul_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : r * x = r • x := by
+  induction r with
+  | ofNat r => erw [intCast_ofNat, zsmul_ofNat, natCast_mul_eq_nsmul]
+  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, ←neg_mul_left, natCast_mul_eq_nsmul]
+
+def mul_intCast_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : x * r = r • x := by
+  induction r with
+  | ofNat r => erw [intCast_ofNat, zsmul_ofNat, mul_natCast_eq_nsmul]
+  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, ←neg_mul_right, mul_natCast_eq_nsmul]
+
 def add_one_mul [Mul α] [Add α] [One α] [IsMulOneClass α] [IsRightDistrib α] (a b: α) : (a + 1) * b = a * b + b := by rw [add_mul, one_mul]
 def mul_add_one [Mul α] [Add α] [One α] [IsMulOneClass α] [IsLeftDistrib α] (a b: α) : a * (b + 1) = a * b + a := by rw [mul_add, mul_one]
 def one_add_mul [Mul α] [Add α] [One α] [IsMulOneClass α] [IsRightDistrib α] (a b: α) : (1 + a) * b = b + a * b := by rw [add_mul, one_mul]
@@ -595,7 +615,7 @@ class IsDistribMulAction (R M: Type*) [MonoidOps R] [AddMonoidOps M] [SMul R M] 
 
 export IsDistribMulAction (smul_zero smul_add)
 
-class IsModule [SemiringOps R] [AddMonoidOps M] [SMul R M] [IsSemiring R] [IsAddCommMagma M] [IsAddMonoid M] extends IsDistribMulAction R M: Prop where
+class IsModule (R M: Type*) [SemiringOps R] [AddMonoidOps M] [SMul R M] [IsSemiring R] [IsAddCommMagma M] [IsAddMonoid M] extends IsDistribMulAction R M: Prop where
   add_smul: ∀r s: R, ∀x: M, (r + s) • x = r • x + s • x
   zero_smul: ∀x: M, (0: R) • x = 0
 
@@ -649,6 +669,10 @@ def natCast_mul [SemiringOps α] [IsSemiring α] (a b: ℕ) : ((a * b: Nat): α)
 def intCast_zero [RingOps α] [IsRing α] : ((0: Int): α) = 0 := by
   have : 0 = Int.ofNat 0 := rfl
   erw [this, intCast_ofNat, natCast_zero]
+
+def intCast_one [RingOps α] [IsRing α] : ((1: Int): α) = 1 := by
+  have : 1 = Int.ofNat 1 := rfl
+  erw [this, intCast_ofNat, natCast_one]
 
 def intCast_succ [RingOps α] [IsRing α] (a: ℤ) : ((a + 1: Int): α) = a + 1 := by
   cases a with

@@ -1,8 +1,8 @@
 import Math.Algebra.Order
 import Math.Order.Linear
+import Math.Algebra.Basic
 
 instance : One ℕ := ⟨1⟩
-instance : SMul ℕ ℕ := ⟨(· * ·)⟩
 
 instance : IsSemiring Nat where
   add_comm := Nat.add_comm
@@ -24,14 +24,10 @@ instance : IsSemiring Nat where
   zero_nsmul := Nat.zero_mul
   succ_nsmul := Nat.succ_mul
 
+instance : IsAddCommMagma Nat where
+  add_comm := Nat.add_comm
 instance : IsCommMagma Nat where
   mul_comm := Nat.mul_comm
-
-instance : IsLinearOrder Nat where
-  le_antisymm := Nat.le_antisymm
-  le_trans := Nat.le_trans
-  lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
-  lt_or_le := Nat.lt_or_ge
 
 instance : IsOrderedAddCommMonoid Nat where
   add_le_add_left _ _ := Nat.add_le_add_left
@@ -43,3 +39,26 @@ instance : IsOrderedAddCommMonoid Nat where
     apply Nat.le_of_mul_le_mul_left
     assumption
     assumption
+
+instance [AddMonoidWithOneOps R] [IsAddMonoidWithOne R] [IsAddCommMagma R] : IsModule Nat R where
+  one_smul := one_nsmul
+  mul_smul _ _ _ := mul_nsmul _ _ _
+  smul_zero := nsmul_zero
+  smul_add := nsmul_add
+  add_smul := add_nsmul
+  zero_smul := zero_nsmul
+
+instance [SemiringOps R] [IsSemiring R] : AlgebraMap Nat R where
+  toFun n := n
+  resp_zero := natCast_zero
+  resp_one := natCast_one
+  resp_add := natCast_add _ _
+  resp_mul := natCast_mul _ _
+
+instance [SemiringOps R] [IsSemiring R] : IsAlgebra Nat R where
+  commutes r x := by
+    show r * x = x * r
+    rw [natCast_mul_eq_nsmul, mul_natCast_eq_nsmul]
+  smul_def a b := by
+    rw [←natCast_mul_eq_nsmul]
+    rfl
