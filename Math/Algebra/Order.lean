@@ -84,15 +84,33 @@ class IsOrderedAbsAddGroup (α: Type*) {β: outParam Type*} [AddGroupOps α] [Ad
 
 export IsOrderedAbsAddGroup (neg_abs)
 
-class IsOrderedAbsSemiring (α: Type*) {β: outParam Type*} [SemiringOps α] [SemiringOps β] [LT β] [LE β] [IsSemiring α] [IsOrderedSemiring β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoid α, IsOrderedAbsMonoid α where
+class IsOrderedAbsAddMonoidWithOne (α: Type*) {β: outParam Type*} [AddMonoidWithOneOps α] [AddMonoidWithOneOps β] [LT β] [LE β] [IsAddMonoidWithOne α] [IsAddMonoidWithOne β] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoid α where
   natcast_abs: ∀n: Nat, ‖(n: α)‖ = n
 
-export IsOrderedAbsSemiring (natcast_abs)
+export IsOrderedAbsAddMonoidWithOne (natcast_abs)
 
-class IsOrderedAbsRing (α: Type*) {β: outParam Type*} [RingOps α] [SemiringOps β] [LT β] [LE β] [IsRing α] [IsOrderedSemiring β] [AbsoluteValue α β] extends IsOrderedAbsSemiring α, IsOrderedAbsAddGroup α where
+class IsOrderedAbsAddGroupWithOne (α: Type*) {β: outParam Type*} [AddGroupWithOneOps α] [AddMonoidWithOneOps β] [LT β] [LE β] [IsAddGroupWithOne α] [IsAddMonoidWithOne β] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoidWithOne α, IsOrderedAbsAddGroup α where
   intcast_abs: ∀n: Int, ‖(n: α)‖ = ‖n‖
 
-export IsOrderedAbsRing (intcast_abs)
+export IsOrderedAbsAddGroupWithOne (intcast_abs)
+
+class IsOrderedAbsSemiring (α: Type*) {β: outParam Type*} [SemiringOps α] [SemiringOps β] [LT β] [LE β] [IsSemiring α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoidWithOne α, IsOrderedAbsMonoid α where
+
+class IsOrderedAbsRing (α: Type*) {β: outParam Type*} [RingOps α] [SemiringOps β] [LT β] [LE β] [IsRing α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddGroupWithOne α, IsOrderedAbsSemiring α where
+
+instance
+  [SemiringOps α] [SemiringOps β] [LT β] [LE β] [IsSemiring α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β]
+  [IsOrderedAbsAddMonoidWithOne α] [IsOrderedAbsMonoid α]
+  : IsOrderedAbsSemiring α where
+  abs_one := abs_one
+  mul_abs := mul_abs
+
+instance
+  [RingOps α] [SemiringOps β] [LT β] [LE β] [IsRing α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β]
+  [IsOrderedAbsAddGroupWithOne α] [IsOrderedAbsMonoid α]
+  : IsOrderedAbsRing α where
+  abs_one := abs_one
+  mul_abs := mul_abs
 
 section
 
@@ -212,7 +230,7 @@ end
 
 section
 
-variable [RingOps α] [SemiringOps β] [IsRing α] [IsOrderedSemiring β] [AbsoluteValue α β] [IsOrderedAbsRing α]
+variable [AddGroupWithOneOps α] [AddMonoidWithOneOps β] [IsAddGroupWithOne α] [IsAddMonoidWithOne β] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] [IsOrderedAbsAddGroupWithOne α]
 
 def zsmul_abs: ∀a: α, ∀n: Int, ‖n • a‖ = ‖n‖ • ‖a‖ := by
   intro a n
@@ -221,38 +239,5 @@ def zsmul_abs: ∀a: α, ∀n: Int, ‖n • a‖ = ‖n‖ • ‖a‖ := by
   | ofNat n => erw [zsmul_ofNat, Int.natAbs_ofNat, nsmul_abs]
   | negSucc n => erw [Int.negSucc_eq, neg_zsmul, neg_abs, Int.natAbs_neg,
       ←Int.ofNat_add, Int.natAbs_ofNat, zsmul_ofNat, nsmul_abs]
-
--- variable [IsNontrivial β] [IsAddRightCancel β]
-
--- def two_pos [IsNontrivial β] [IsAddRightCancel β] : 0 < (2: β) := by
---   apply lt_trans
---   exact zero_lt_one
---   have : 1 + 1 = (2: β) := by
---     rw [ofNat_eq_natCast, natCast_succ, natCast_succ, natCast_zero, zero_add]
---   rw [←add_zero 1, ←this]; clear this
---   apply add_lt_add_of_le_of_lt
---   rfl
---   exact zero_lt_one
-
--- def zero_ne_two : (2: β) ≠ 0 := (ne_of_lt two_pos).symm
-
--- variable
---  [Sub β] [Pow β ℤ] [SMul ℤ β] [Neg β] [IntCast β] [CheckedInvert β (· ≠ 0)] [CheckedDiv β (· ≠ 0)] [IsField β]
---  [IsField β] [IsOrderedCommMonoid β]
-
--- def half_pos {ε: β} (h: 0 < ε) : 0 < ε /? 2 ~(zero_ne_two) := by
---   rw [div_eq_mul_inv?]
---   apply lt_of_le_of_ne
---   conv => { lhs; rw [←mul_zero 0] }
---   apply mul_le_mul
---   apply le_of_lt; assumption
---   ·
---     sorry
---   intro eq
---   have : 0 * 2 = (ε * 2⁻¹?~(zero_ne_two)) * 2 := by rw [←eq]
---   rw [mul_assoc, zero_mul, mul_comm _ 2, mul_inv?_cancel, mul_one] at this
---   subst ε
---   have := lt_irrefl h
---   contradiction
 
 end
