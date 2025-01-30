@@ -21,9 +21,9 @@ instance : RingOps Bool where
   zsmul n x := and (n % 2 != 0) x
 
 instance : FieldOps Bool where
-  pow
-  | _, .ofNat 0 => 1
-  | x, _ => x
+  checked_pow
+  | _, .ofNat 0, _ => 1
+  | x, _, _ => x
   checked_div x _ _ := x
   checked_invert _ _ := true
 
@@ -89,12 +89,12 @@ instance : IsField Bool where
     decide
   mul_inv?_cancel := by decide +kernel
   div_eq_mul_inv? := by decide +kernel
-  zpow_ofNat := by
+  zpow?_ofNat := by
     intro n x
     cases n
     rfl
     rfl
-  zpow_negSucc := by
+  zpow?_negSucc := by
     intro _ b _; cases b; contradiction; rfl
   npow_zero := by decide +kernel
   npow_succ := by
