@@ -320,4 +320,86 @@ def mul_neg_of_neg_of_pos (a b: ℝ) : (-a).IsPos -> b.IsPos -> (-(a * b)).IsPos
   have := mul_pos_of_pos_of_pos _ _ apos bpos
   rwa [←neg_mul_left] at this
 
+open Classical in def abs_def (a: ℝ) : ‖a‖ = if 0 ≤ a then a else -a := by
+  cases a with | mk a =>
+  split
+  rename_i h
+  cases h <;> rename_i h
+  replace h: IsPos (⟦a⟧ - 0) := h
+  rw [sub_zero] at h
+  replace ⟨B, Bpos, k, spec⟩ := h
+  apply Quotient.sound
+  apply CauchySeq.eventually_pointwise
+  exists k
+  intro n k_le_n
+  show ‖_‖ = _
+  rw [Rat.abs_def, if_neg]
+  apply not_lt_of_le
+  apply flip le_trans
+  apply spec
+  assumption
+  apply le_of_lt; assumption
+  rw [←h]
+  rfl
+  rename_i h
+  replace h: IsPos (0 - ⟦a⟧) := lt_of_not_le h
+  rw [zero_sub] at h
+  replace ⟨B, Bpos, k, spec⟩ := h
+  apply Quotient.sound
+  apply CauchySeq.eventually_pointwise
+  exists k
+  intro n k_le_n
+  show ‖_‖ = _
+  rw [Rat.abs_def, if_pos]
+  rfl
+  apply Rat.neg_lt_neg_iff.mpr
+  apply flip lt_of_lt_of_le
+  apply spec
+  assumption
+  assumption
+
+def lt_sub_iff_add_lt (a b k: ℝ) :  a < b - k ↔ a + k < b := by
+  show IsPos _ ↔ IsPos _
+  rw [sub_eq_add_neg _ (a + k), neg_add, add_comm (-a), ←add_assoc, ←sub_eq_add_neg, ←sub_eq_add_neg]
+
+def sub_lt_iff_lt_add (a b k: ℝ) :  a - k < b ↔ a < b + k := by
+  rw [sub_eq_add_neg]
+  conv => { rhs; rw [←neg_neg k, ←sub_eq_add_neg] }
+  symm
+  apply lt_sub_iff_add_lt
+
+def sub_le_iff_le_add (a b k: ℝ) :  a - k ≤ b ↔ a ≤ b + k := by
+  apply le_iff_of_lt_iff
+  apply lt_sub_iff_add_lt
+
+def le_sub_iff_add_le (a b k: ℝ) :  a ≤ b - k ↔ a + k ≤ b := by
+  apply le_iff_of_lt_iff
+  apply sub_lt_iff_lt_add
+
+def neg_lt_neg_iff (a b: ℝ) : -a < -b ↔ b < a := by
+  show IsPos _ ↔ IsPos _
+  rw [sub_eq_add_neg, neg_neg, add_comm, ←sub_eq_add_neg]
+
+def neg_le_neg_iff (a b: ℝ) : -a ≤ -b ↔ b ≤ a := by
+  apply le_iff_of_lt_iff
+  apply neg_lt_neg_iff
+
+def neg_zero : -(0: ℝ) = 0 := rfl
+
+def abs_sub_comm (a b: ℝ) : ‖a - b‖ = ‖b - a‖ := by
+  rw [abs_def, abs_def]
+  split <;> rename_i h
+  rcases lt_or_eq_of_le h with h | h
+  · rw [if_neg, neg_sub]
+    rw [←neg_le_neg_iff, neg_sub]
+    apply not_le_of_lt
+    assumption
+  cases eq_of_sub_eq_zero h.symm
+  rw [sub_self, if_pos (le_refl _)]
+  rw [←lt_iff_not_le] at h
+  rw [if_pos, neg_sub]
+  rw [←neg_le_neg_iff, neg_sub]
+  apply le_of_lt
+  assumption
+
 end Real

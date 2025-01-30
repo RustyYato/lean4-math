@@ -386,7 +386,6 @@ def CauchySeq.abs.spec (a b: CauchySeq) : a ≈ b ->
   assumption
   decide
 
-
 def CauchySeq.abs (a: CauchySeq) : CauchySeq where
   seq n := ‖a n‖
   is_cacuhy := by
@@ -757,6 +756,15 @@ def zero_sub (a: ℝ) : 0 - a = -a := by
   intro n
   simp
   erw [Rat.zero_sub]
+
+def two_mul (a: ℝ) : 2 * a = a + a := by
+  have : (2: ℝ) = 1 + 1 := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro
+    show 2 = 1 + 1
+    rfl
+  rw [this, add_mul, one_mul]
 
 instance : NatCast ℝ where
   natCast n := ⟦CauchySeq.ofRat (Rat.ofNat n)⟧

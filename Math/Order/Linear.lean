@@ -154,7 +154,47 @@ def compare_linear (a b: α) : a < b ∨ a = b ∨ b < a := by
   right; assumption
   left; symm; assumption
 
+instance : @Relation.IsTrichotomous α (· < ·) where
+  tri a b := by
+    rcases lt_or_le a b with ab | ba
+    left; assumption
+    right
+    rcases lt_or_eq_of_le ba
+    right; assumption
+    left; symm; assumption
+
+instance : @Relation.IsTotal α (· ≤ ·) where
+  total a b := by
+    rcases lt_or_le a b with ab | ba
+    left; apply le_of_lt; assumption
+    right; assumption
+
+def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomous α (· < ·))).tri
+
 end
+
+instance instLOofPOofLTtri [IsPartialOrder α] [Relation.IsTrichotomous (· < (·: α))] : IsLinearOrder α where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le
+  le_antisymm := le_antisymm
+  le_trans := le_trans
+  lt_or_le := by
+    intro a b
+    rcases Relation.trichotomous (· < ·) a b with lt | eq | gt
+    left; assumption
+    right; rw [eq]
+    right; apply le_of_lt; assumption
+
+instance instLOofPOofLEtri [IsPartialOrder α] [Relation.IsTrichotomous (· ≤ (·: α))] : IsLinearOrder α where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le
+  le_antisymm := le_antisymm
+  le_trans := le_trans
+  lt_or_le := by
+    intro a b
+    rcases Relation.trichotomous (· ≤ ·) a b with lt | eq | gt
+    cases lt_or_eq_of_le lt
+    left; assumption; rename_i h; right; rw[h]
+    right; rw [eq]
+    right; assumption
 
 variable [IsLinearMinMaxOrder α]
 
@@ -477,47 +517,6 @@ instance : IsLinearOrder Int where
     right; apply Int.le_of_lt; assumption
     right; subst b; apply Int.le_refl
 instance : IsDecidableLinearOrder Int where
-
-instance : @Relation.IsTrichotomous α (· < ·) where
-  tri a b := by
-    rcases lt_or_le a b with ab | ba
-    left; assumption
-    right
-    rcases lt_or_eq_of_le ba
-    right; assumption
-    left; symm; assumption
-
-instance : @Relation.IsTotal α (· ≤ ·) where
-  total a b := by
-    rcases lt_or_le a b with ab | ba
-    left; apply le_of_lt; assumption
-    right; assumption
-
-def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomous α (· < ·))).tri
-
-instance instLOofPOofLTtri [IsPartialOrder α] [Relation.IsTrichotomous (· < (·: α))] : IsLinearOrder α where
-  lt_iff_le_and_not_le := lt_iff_le_and_not_le
-  le_antisymm := le_antisymm
-  le_trans := le_trans
-  lt_or_le := by
-    intro a b
-    rcases Relation.trichotomous (· < ·) a b with lt | eq | gt
-    left; assumption
-    right; rw [eq]
-    right; apply le_of_lt; assumption
-
-instance instLOofPOofLEtri [IsPartialOrder α] [Relation.IsTrichotomous (· ≤ (·: α))] : IsLinearOrder α where
-  lt_iff_le_and_not_le := lt_iff_le_and_not_le
-  le_antisymm := le_antisymm
-  le_trans := le_trans
-  lt_or_le := by
-    intro a b
-    rcases Relation.trichotomous (· ≤ ·) a b with lt | eq | gt
-    cases lt_or_eq_of_le lt
-    left; assumption; rename_i h; right; rw[h]
-    right; rw [eq]
-    right; assumption
-
 
 variable {β γ: Type*} {x y z: β} {f: α -> β} {g: β -> γ }
 variable [LT β] [LE β]

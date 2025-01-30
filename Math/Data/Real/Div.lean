@@ -268,4 +268,94 @@ def le_iff_mul_le_mul_of_pos_left (a b k: ℝ) (h: 0 < k) : a ≤ b ↔ k * a �
   apply lt_iff_mul_lt_mul_of_pos_left
   assumption
 
+def div_eq_mul_inv (a b: ℝ) {h: b ≠ 0} : a /? b = a * b⁻¹? := rfl
+
+section
+
+open Classical
+
+def min_eq_neg_max_neg (a b: ℝ) : min a b = -max (-a) (-b) := by
+  simp [min, max]
+  conv => {
+    rhs; rw [div_eq_mul_inv, neg_mul_left]
+    simp [neg_add, neg_neg]
+  }
+  rw [sub_eq_add_neg, neg_sub_neg, abs_sub_comm]
+  rfl
+def max_eq_neg_min_neg (a b: ℝ) : max a b = -min (-a) (-b) := by
+  rw [min_eq_neg_max_neg, neg_neg, neg_neg, neg_neg]
+
+def min_comm (a b: ℝ) : min a b = min b a := by
+  simp [min]
+  rw [add_comm, abs_sub_comm]
+def max_comm (a b: ℝ) : max a b = max b a := by
+  rw [max_eq_neg_min_neg, min_comm, ←max_eq_neg_min_neg]
+
+def min_def (a b: ℝ) : min a b = if a ≤ b then a else b := by
+  rw [min_comm]
+  simp [min]
+  rw [abs_def, le_sub_iff_add_le, zero_add]
+  split
+  rw [sub_eq_add_neg, neg_sub, add_comm b, sub_eq_add_neg, add_comm _ (-b),
+    ←add_assoc, add_assoc a, add_neg_self, add_zero, ←two_mul, mul_comm,
+    div_eq_mul_inv, mul_assoc, mul_inv_self, mul_one]
+  rw [sub_eq_add_neg, neg_neg, sub_eq_add_neg, add_comm _ (-a), ←add_assoc,
+    add_assoc b, add_neg_self, add_zero, ←two_mul, mul_comm,
+    div_eq_mul_inv, mul_assoc, mul_inv_self, mul_one]
+
+def max_def (a b: ℝ) : max a b = if a ≤ b then b else a := by
+  rw [max_eq_neg_min_neg, min_def, neg_le_neg_iff]
+  rcases lt_trichotomy a b with lt | eq | gt
+  rw [if_neg, if_pos, neg_neg]
+  apply le_of_lt; assumption
+  rw [←lt_iff_not_le]
+  assumption
+  subst eq
+  rw [if_pos (le_refl _), if_pos (le_refl _), neg_neg]
+  rw [if_pos, if_neg, neg_neg]
+  rw [←lt_iff_not_le]
+  assumption
+  apply le_of_lt
+  assumption
+
+end
+
+instance : IsLinearMinMaxOrder ℝ where
+  min_iff_le_left := by
+    intro a b
+    rw [min_def]
+    apply Iff.intro
+    intro h
+    rw [if_pos h]
+    intro h; split at h
+    assumption
+    rw [h]
+  min_iff_le_right := by
+    intro a b
+    rw [min_comm, min_def]
+    apply Iff.intro
+    intro h
+    rw [if_pos h]
+    intro h; split at h
+    assumption
+    rw [h]
+  max_iff_le_left := by
+    intro a b
+    rw [max_def]
+    apply Iff.intro
+    intro h
+    rw [if_pos h]
+    intro h; split at h
+    assumption
+    rw [h]
+  max_iff_le_right := by
+    intro a b
+    rw [max_comm, max_def]
+    apply Iff.intro
+    intro h
+    rw [if_pos h]
+    intro h; split at h
+    assumption
+    rw [h]
+
 end Real
