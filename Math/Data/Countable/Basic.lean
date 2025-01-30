@@ -50,6 +50,11 @@ def ofEquiv (h: α ≃ β) : IsCountable β := by
   assumption
   exact .refl
 
+def ofEmbed (h: β ↪ α) : IsCountable β := by
+  apply IsCountable.intro
+  rename_i g
+  exact h.trans encode
+
 end Countable
 
 namespace Countable
