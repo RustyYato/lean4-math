@@ -193,3 +193,24 @@ instance [Encodable α] [Encodable β] : Encodable (α ⊕ β) where
     decide
     rw [Nat.add_mod,  Nat.mul_mod_right, Nat.zero_add]
     decide
+
+private def cantor (enc: Encodable (Nat -> Bool)) (n: Nat) : Bool :=
+  match enc.decode' n with
+    | .some g => !g n
+    | .none => false
+
+def cantor_diag : Encodable (Nat -> Bool) -> False := by
+  intro enc
+  let fenc := enc.encode (cantor enc)
+  have h : enc.decode' (enc.encode (cantor enc)) = (cantor enc) := by rw [decode'_spec]
+  have g : (decode' (encode (cantor enc))).get (by rw[h]; rfl) = (cantor enc) := by
+    apply Option.some.inj
+    rw [Option.some_get, h]
+  have := congrFun g (encode (cantor enc))
+  conv at this => {
+    rhs; rw [cantor, h]; dsimp
+  }
+  conv at this => { lhs; arg 1; rw [h] }
+  rw [Option.get_some] at this
+  have := Bool.eq_not.mp this
+  contradiction
