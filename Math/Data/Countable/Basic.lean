@@ -59,6 +59,8 @@ end Countable
 
 namespace Countable
 
+instance [h: Encodable α] : IsCountable α := .intro ⟨h.encode, encode_inj⟩
+
 def encodable (α: Type*) [IsCountable α] : Encodable α where
   encode := encode
   decode' n := match decode n with
