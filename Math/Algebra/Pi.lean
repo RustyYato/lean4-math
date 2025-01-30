@@ -1,5 +1,7 @@
 import Math.Algebra.Ring
 
+section Pi
+
 variable {ι: Type*} {β: ι -> Type*}
 
 instance [∀i, Zero (β i)] : Zero (∀i, β i) where
@@ -155,3 +157,90 @@ instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsRightDistrib (β i)] : I
 
 instance [∀i, SemiringOps (β i)] [∀i, IsSemiring (β i)] : IsSemiring (∀i, β i) := inferInstance
 instance [∀i, RingOps (β i)] [∀i, IsRing (β i)] : IsRing (∀i, β i) := inferInstance
+
+end Pi
+
+-- these instances are needed to get IsRing (ι -> ι -> β)
+-- for some reason Lean doesn't infer them from the Pi instances
+-- even though all of the below are infered
+section Function
+
+variable {ι β: Type*}
+
+instance [Zero β] : Zero (ι -> β) :=
+  inferInstance
+instance [One β] : One (ι -> β) :=
+  inferInstance
+instance [OfNat β (n+2)] : OfNat (ι -> β) (n+2) :=
+  inferInstance
+instance [NatCast β] : NatCast (ι -> β) :=
+  inferInstance
+instance [IntCast β] : IntCast (ι -> β) :=
+  inferInstance
+instance [Add β] : Add (ι -> β) :=
+  inferInstance
+instance [Sub β] : Sub (ι -> β) :=
+  inferInstance
+instance [Mul β] : Mul (ι -> β) :=
+  inferInstance
+instance [Div β] : Div (ι -> β) :=
+  inferInstance
+instance [SMul ℕ β] : SMul ℕ (ι -> β) :=
+  inferInstance
+instance [SMul ℤ β] : SMul ℤ (ι -> β) :=
+  inferInstance
+instance [Pow β ℕ] : Pow (ι -> β) ℕ :=
+  inferInstance
+instance [Pow β ℤ] : Pow (ι -> β) ℤ :=
+  inferInstance
+instance [Neg β] : Neg (ι -> β) :=
+  inferInstance
+instance [Inv β] : Inv (ι -> β) :=
+  inferInstance
+
+instance [Zero β] [Add β] [IsAddZeroClass β] : IsAddZeroClass (ι -> β) :=
+  inferInstance
+instance [One β] [Mul β] [IsMulOneClass β] : IsMulOneClass (ι -> β) :=
+  inferInstance
+instance [Zero β] [Mul β] [IsMulZeroClass β] : IsMulZeroClass (ι -> β) :=
+  inferInstance
+instance [Add β] [IsAddSemigroup β] : IsAddSemigroup (ι -> β) :=
+  inferInstance
+instance [Mul β] [IsSemigroup β] : IsSemigroup (ι -> β) :=
+  inferInstance
+instance [Add β] [IsAddCommMagma β] : IsAddCommMagma (ι -> β) :=
+  inferInstance
+instance [Mul β] [IsCommMagma β] : IsCommMagma (ι -> β) :=
+  inferInstance
+instance [AddMonoidOps β] [IsAddMonoid β] : IsAddMonoid (ι -> β) :=
+  inferInstance
+instance [MonoidOps β] [IsMonoid β] : IsMonoid (ι -> β) :=
+  inferInstance
+instance [Neg β] [IsInvolutiveNeg β] : IsInvolutiveNeg (ι -> β) :=
+  inferInstance
+instance [Inv β] [IsInvolutiveInv β] : IsInvolutiveInv (ι -> β)  :=
+  inferInstance
+instance [AddGroupOps β] [IsSubNegMonoid β] : IsSubNegMonoid (ι -> β) :=
+  inferInstance
+instance [GroupOps β] [IsDivInvMonoid β] : IsDivInvMonoid (ι -> β)  :=
+  inferInstance
+instance [AddGroupOps β] [IsSubtractionMonoid β] : IsSubtractionMonoid (ι -> β) :=
+  inferInstance
+instance [GroupOps β] [IsDivisionMonoid β] : IsDivisionMonoid (ι -> β)  :=
+  inferInstance
+instance [AddGroupOps β] [IsAddGroup β] : IsAddGroup (ι -> β) :=
+  inferInstance
+instance [GroupOps β] [IsGroup β] : IsGroup (ι -> β) :=
+  inferInstance
+instance [AddMonoidWithOneOps β] [IsAddMonoidWithOne β] : IsAddMonoidWithOne (ι -> β) :=
+  inferInstance
+instance [AddGroupWithOneOps β] [IsAddGroupWithOne β] : IsAddGroupWithOne (ι -> β) :=
+  inferInstance
+instance [Add β] [Mul β] [IsLeftDistrib β] : IsLeftDistrib (ι -> β) :=
+  inferInstance
+instance [Add β] [Mul β] [IsRightDistrib β] : IsRightDistrib (ι -> β) :=
+  inferInstance
+instance [SemiringOps β] [IsSemiring β] : IsSemiring (ι -> β) := inferInstance
+instance [RingOps β] [IsRing β] : IsRing (ι -> β) := inferInstance
+
+end Function
