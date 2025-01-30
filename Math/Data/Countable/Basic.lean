@@ -6,7 +6,7 @@ class inductive IsCountable (α: Sort u): Prop where
 
 noncomputable section
 
-namespace Countable
+namespace IsCountable
 
 open Classical
 
@@ -55,9 +55,9 @@ def ofEmbed (h: β ↪ α) : IsCountable β := by
   rename_i g
   exact h.trans encode
 
-end Countable
+end IsCountable
 
-namespace Countable
+namespace IsCountable
 
 instance [h: Encodable α] : IsCountable α := .intro ⟨h.encode, encode_inj⟩
 
@@ -75,6 +75,6 @@ example : ¬IsCountable (Nat -> Bool) := by
   intro c
   exact Encodable.cantor_diag (encodable (Nat -> Bool))
 
-end Countable
+end IsCountable
 
 end
