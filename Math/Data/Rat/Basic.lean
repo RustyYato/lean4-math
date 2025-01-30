@@ -410,8 +410,16 @@ def Fract.ofNat (n: Nat) : Fract where
   num := n
   den := 1
 
+def Fract.ofInt (n: Int) : Fract where
+  num := n
+  den := 1
+
 def Rat.ofNat (n: Nat) : ℚ where
   toFract := Fract.ofNat n
+  isReduced := Nat.gcd_eq_right (Nat.one_dvd _)
+
+def Rat.ofInt (n: Int) : ℚ where
+  toFract := Fract.ofInt n
   isReduced := Nat.gcd_eq_right (Nat.one_dvd _)
 
 instance : OfNat Fract n := ⟨Fract.ofNat n⟩

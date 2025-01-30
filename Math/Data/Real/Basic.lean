@@ -170,8 +170,11 @@ def Real.mk : CauchySeq -> ℝ := Quotient.mk _
 
 local notation "⟦" v "⟧" => Real.mk v
 
+@[cases_eliminator]
 def Real.ind {motive: ℝ -> Prop} : (mk: ∀x, motive ⟦x⟧) -> ∀r, motive r := Quotient.ind
+@[cases_eliminator]
 def Real.ind₂ {motive: ℝ -> ℝ -> Prop} : (mk: ∀x y, motive ⟦x⟧ ⟦y⟧) -> ∀x y, motive x y := Quotient.ind₂
+@[cases_eliminator]
 def Real.ind₃ {motive: ℝ -> ℝ -> ℝ -> Prop} : (mk: ∀x y z, motive ⟦x⟧ ⟦y⟧ ⟦z⟧) -> ∀x y z, motive x y z := by
   intro h x y z
   induction x using ind with | mk x =>
@@ -754,5 +757,16 @@ def zero_sub (a: ℝ) : 0 - a = -a := by
   intro n
   simp
   erw [Rat.zero_sub]
+
+instance : NatCast ℝ where
+  natCast n := ⟦CauchySeq.ofRat (Rat.ofNat n)⟧
+instance : IntCast ℝ where
+  intCast n := ⟦CauchySeq.ofRat (Rat.ofInt n)⟧
+
+end Real
+
+namespace Real
+
+scoped notation "⟦" v "⟧" => Real.mk v
 
 end Real

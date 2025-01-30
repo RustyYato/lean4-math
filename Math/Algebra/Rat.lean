@@ -15,6 +15,9 @@ instance : SMul ℕ ℚ where
 instance : SMul ℤ ℚ where
   smul n q := (n: ℚ) * q
 
+instance : CheckedIntPow ℚ (· ≠ 0) where
+  checked_pow x n _ := x ^ n
+
 def Rat.natCast_succ (a: Nat) : ((a + 1: ℕ): ℚ) = (a + 1: ℚ) := by
   apply Rat.toFract.inj
   apply Fract.isReduced.spec
@@ -78,8 +81,8 @@ instance : IsField ℚ where
     rfl
   mul_inv?_cancel := Rat.mul_inv_self
   div_eq_mul_inv? _ _ _ := rfl
-  zpow_ofNat _ _ := rfl
-  zpow_negSucc a b h := by
+  zpow?_ofNat _ _ := rfl
+  zpow?_negSucc a b h := by
     show Rat.zpow _ _ = Rat.npow _ _
     unfold Rat.zpow
     dsimp

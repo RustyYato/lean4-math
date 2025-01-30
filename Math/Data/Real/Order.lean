@@ -1,7 +1,5 @@
 import Math.Data.Real.Basic
 
-local notation "⟦" v "⟧" => Real.mk v
-
 namespace CauchySeq
 
 def IsPos (a: CauchySeq): Prop := ∃B, 0 < B ∧ Eventually fun n => B ≤ a n

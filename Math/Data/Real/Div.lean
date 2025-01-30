@@ -1,7 +1,5 @@
 import Math.Data.Real.Order
 
-local notation "⟦" f "⟧" => Real.mk f
-
 def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
   is_cauchy_equiv (fun n => if h:a n = 0 then 0 else (a n)⁻¹?) (fun n => if h:b n = 0 then 0 else (b n)⁻¹?) := by
   intro ab ε ε_pos
@@ -83,7 +81,7 @@ def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
     apply inv.spec_pos
     assumption
     apply Quotient.exact
-    show -⟦a⟧ = -⟦b⟧
+    show -Real.mk a = -Real.mk b
     congr 1
     exact Quotient.sound ab
     assumption
@@ -139,7 +137,7 @@ def CauchySeq.eventually_pointwise_ne_of_ne (a b: CauchySeq) (h: ¬a ≈ b) : Ev
   have : IsPos ‖a - b‖ := CauchySeq.abs_pos_of_non_zero (by
     intro g; apply h
     apply Quotient.exact
-    replace g : ⟦a⟧ - ⟦b⟧ = 0 := Quotient.sound g
+    replace g : Real.mk a - Real.mk b = 0 := Quotient.sound g
     exact Real.eq_of_sub_eq_zero g)
   obtain ⟨B, B_pos, δ, even⟩ := this
   refine ⟨δ, ?_⟩
