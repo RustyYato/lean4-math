@@ -1,5 +1,6 @@
 import Math.Algebra.Ring
 import Math.Data.Set.Lattice
+import Math.GroupTheory.Basic
 
 structure Subgroup (α: Type*) [GroupOps α] [IsGroup α] where
   set: Set α
@@ -10,6 +11,16 @@ structure Subgroup (α: Type*) [GroupOps α] [IsGroup α] where
 namespace Subgroup
 
 variable {α: Type*} [GroupOps α] [IsGroup α]
+
+def opp (a: Subgroup α) : Subgroup αᵐᵒᵖ where
+  set := a.set
+  one_mem := a.one_mem
+  inv_mem := a.inv_mem
+  mul_mem := by
+    intro x y hx hy
+    apply a.mul_mem
+    assumption
+    assumption
 
 inductive Generate (s: Set α) : α -> Prop where
 | of : x ∈ s -> Generate s x
@@ -223,5 +234,112 @@ instance {g: Subgroup α} : IsGroup g.set where
   div_eq_mul_inv _ _ := rfl
   zpow_ofNat _ _ := rfl
   zpow_negSucc _ _ := rfl
+
+def commutator (a b: Subgroup α) : Subgroup α :=
+  generated <| (Set.zip a.set b.set).image fun ⟨x, y⟩ => x⁻¹ * y⁻¹ * x * y
+
+def cosetLeft (x: α) (a: Subgroup α) : Set α :=
+  a.set.image fun y => x * y
+
+def cosetRight (x: α) (a: Subgroup α) : Set α :=
+  a.set.image fun y => y * x
+
+def cosetLeft_eq_opp_cosetRight (x: α) (a: Subgroup α) :
+  a.cosetLeft x = a.opp.cosetRight (MulOpp.mk x) := rfl
+
+def cosetRight_eq_opp_cosetLeft (x: α) (a: Subgroup α) :
+  a.cosetRight x = a.opp.cosetLeft (MulOpp.mk x) := rfl
+
+def cosetLeft.eq_or_disjoint (A: Subgroup α) (x y : α) :
+  A.cosetLeft x = A.cosetLeft y ∨ A.cosetLeft x ∩ A.cosetLeft y = ∅ := by
+  apply Classical.or_iff_not_imp_right.mpr
+  intro h
+  have ⟨z, hx, hy⟩ := Set.nonempty_of_not_empty _ h; clear h
+  obtain ⟨zx, hzx, eq⟩ := hx; subst eq
+  obtain ⟨zy, hzy, eq⟩ := hy
+  dsimp at eq
+  ext a
+  apply Iff.intro
+  intro ⟨a, _, eq⟩; subst eq
+  dsimp
+  rw [←mul_one x, ←mul_inv_cancel zx, ←mul_assoc, eq, mul_assoc y, mul_assoc y]
+  apply Set.mem_image'
+  apply A.mul_mem
+  apply A.mul_mem
+  assumption
+  apply A.inv_mem
+  assumption
+  assumption
+  intro ⟨a, _, eq⟩; subst eq
+  dsimp
+  rw [←mul_one y, ←mul_inv_cancel zy, ←mul_assoc, ←eq, mul_assoc x, mul_assoc x]
+  apply Set.mem_image'
+  apply A.mul_mem
+  apply A.mul_mem
+  assumption
+  apply A.inv_mem
+  assumption
+  assumption
+
+def cosetRight.eq_or_disjoint (A: Subgroup α) (x y : α) :
+  A.cosetRight x = A.cosetRight y ∨ A.cosetRight x ∩ A.cosetRight y = ∅ := by
+  simp [cosetRight_eq_opp_cosetLeft]
+  apply cosetLeft.eq_or_disjoint
+
+def IsNormal (A: Subgroup α) : Prop :=
+  ∀x y: α, y ∈ A.set -> x * y * x⁻¹ ∈ A.set
+
+def IsNormal.inv_left {A: Subgroup α} (h: A.IsNormal) :
+  ∀x y: α, y ∈ A.set -> x⁻¹ * y * x ∈ A.set := by
+  intro x y ha
+  conv => { rhs; rhs; rw [←inv_inv x] }
+  apply h
+  assumption
+
+def IsNormal.cosetEq {A: Subgroup α} (h: A.IsNormal) : A.cosetLeft = A.cosetRight := by
+  ext g a
+  apply Iff.intro
+  intro ⟨a, ha, eq⟩; subst eq
+  apply Set.mem_image.mpr
+  refine ⟨?_, ?_, ?_⟩
+  exact g * a * g⁻¹
+  apply h
+  assumption
+  rw [mul_assoc, inv_mul_cancel, mul_one]
+  intro ⟨a, ha, eq⟩; subst eq
+  apply Set.mem_image.mpr
+  refine ⟨?_, ?_, ?_⟩
+  exact g⁻¹ * a * g
+  apply h.inv_left
+  assumption
+  rw [←mul_assoc, ←mul_assoc, mul_inv_cancel, one_mul]
+
+def cosetLeft.setoid {A: Subgroup α} : Setoid α where
+  r x y := A.cosetLeft x = A.cosetLeft y
+  iseqv := {
+    refl := by
+      intro x
+      rfl
+    symm := by
+      intro a b eq
+      rw [eq]
+    trans := by
+      intro a b c ab bc
+      rw [ab, bc]
+  }
+
+def cosetRight.setoid {A: Subgroup α} : Setoid α where
+  r x y := A.cosetRight x = A.cosetRight y
+  iseqv := {
+    refl := by
+      intro x
+      rfl
+    symm := by
+      intro a b eq
+      rw [eq]
+    trans := by
+      intro a b c ab bc
+      rw [ab, bc]
+  }
 
 end Subgroup
