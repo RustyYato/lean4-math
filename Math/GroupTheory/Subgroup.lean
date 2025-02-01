@@ -314,7 +314,7 @@ def IsNormal.cosetEq {A: Subgroup g} (h: A.IsNormal) : A.cosetLeft = A.cosetRigh
   assumption
   rw [←mul_assoc, ←mul_assoc, mul_inv_cancel, one_mul]
 
-def cosetLeft.setoid {A: Subgroup g} : Setoid α where
+def cosetLeft.setoid (A: Subgroup g) : Setoid g where
   r x y := A.cosetLeft x = A.cosetLeft y
   iseqv := {
     refl := by
@@ -328,7 +328,7 @@ def cosetLeft.setoid {A: Subgroup g} : Setoid α where
       rw [ab, bc]
   }
 
-def cosetRight.setoid {A: Subgroup g} : Setoid α where
+def cosetRight.setoid (A: Subgroup g) : Setoid g where
   r x y := A.cosetRight x = A.cosetRight y
   iseqv := {
     refl := by
@@ -341,5 +341,96 @@ def cosetRight.setoid {A: Subgroup g} : Setoid α where
       intro a b c ab bc
       rw [ab, bc]
   }
+
+def rep_mem_cosetLeft {x: g} {A: Subgroup g} : x ∈ A.cosetLeft x := by
+  refine ⟨1, A.one_mem, ?_⟩
+  dsimp; rw [mul_one]
+
+def IsNormal.setoid {A: Subgroup g} (_: A.IsNormal) : Setoid g :=
+  cosetLeft.setoid A
+
+def IsNormal.QuotType {A: Subgroup g} (h: A.IsNormal) := Quotient h.setoid
+
+section
+
+variable {A: Subgroup g} (h: A.IsNormal)
+
+instance : One h.QuotType where
+  one := .mk _ 1
+
+instance : Inv h.QuotType where
+  inv := by
+    apply Quotient.lift (fun x => Quotient.mk _ (x⁻¹))
+    intro a b eq
+    apply Quotient.sound
+    apply (cosetLeft.eq_or_disjoint _ _ _).resolve_right
+    intro h'
+    have ⟨a', a'_mem, eq⟩ : a ∈ cosetLeft b A := by
+      rw [←eq]
+      exact rep_mem_cosetLeft
+    have : a⁻¹ ∈ cosetLeft b⁻¹ A := by
+      subst eq
+      dsimp at h'
+      refine ⟨?_, ?_, ?_⟩
+      exact b * a'⁻¹ * b⁻¹
+      apply h
+      apply A.inv_mem
+      assumption
+      rw [inv_mul_rev]
+      dsimp
+      rw [←mul_assoc, ←mul_assoc, inv_mul_cancel, one_mul]
+    have : a⁻¹ ∈ cosetLeft a⁻¹ A ∩ cosetLeft b⁻¹ A := ⟨rep_mem_cosetLeft, this⟩
+    rw [h'] at this
+    contradiction
+
+instance : Mul h.QuotType where
+  mul := by
+    apply Quotient.lift₂ (fun a b => Quotient.mk _ (a * b))
+    intro a b c d ac bd
+    apply Quotient.sound
+    apply (cosetLeft.eq_or_disjoint _ _ _).resolve_right
+    intro h'
+    have ⟨a', mema', ha⟩ : a ∈ A.cosetLeft c := by
+      rw [←ac]; exact rep_mem_cosetLeft
+    have ⟨b', memb', hb⟩  : b ∈ A.cosetLeft d := by
+      rw [←bd]; exact rep_mem_cosetLeft
+    have : a * b ∈ A.cosetLeft (c * d) := by
+      subst ha hb
+      dsimp
+      refine ⟨?_, ?_, ?_⟩
+      exact (d⁻¹ * a' * d) * b'
+      apply A.mul_mem
+      apply h.inv_left
+      assumption
+      assumption
+      dsimp
+      rw [mul_assoc c d, mul_assoc d⁻¹, mul_assoc d⁻¹, ←mul_assoc d d⁻¹,
+        mul_inv_cancel, one_mul, ←mul_assoc, ←mul_assoc, ←mul_assoc]
+    have : a * b ∈ A.cosetLeft (a * b) ∩ A.cosetLeft (c * d) :=
+      ⟨rep_mem_cosetLeft, this⟩
+    rw [h'] at this
+    contradiction
+
+end
+
+def IsNormal.Quot {A: Subgroup g} (h: A.IsNormal) : Group h.QuotType := by
+  apply Group.ofAxiomsLeft
+  · intro x
+    induction x using Quot.ind with | mk x =>
+    apply Quotient.sound
+    rw [one_mul]
+    rfl
+  · intro x
+    induction x using Quot.ind with | mk x =>
+    apply Quotient.sound
+    rw [inv_mul_cancel]
+    rfl
+  · intro a b c
+    induction a using Quot.ind with | mk a =>
+    induction b using Quot.ind with | mk b =>
+    induction c using Quot.ind with | mk c =>
+    apply Quotient.sound
+    rw [mul_assoc]
+    rfl
 
 end Subgroup
