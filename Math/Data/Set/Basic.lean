@@ -721,6 +721,19 @@ def image_id (s: Set α) : s.image id = s := by
   intro
   exists x
 
+def image_id' (s: Set α) {f: α -> α} (h: ∀x, f x = x) : s.image f = s := by
+  ext x
+  rw [mem_image]
+  apply Iff.intro
+  intro ⟨_, _, eq⟩
+  cases eq
+  rw [h]
+  assumption
+  intro
+  exists x
+  rw [h]
+  trivial
+
 def image_image (s: Set α) (f: α -> β) (g: β -> γ) : (s.image f).image g = s.image (g ∘ f) := by
   ext x
   apply Iff.intro

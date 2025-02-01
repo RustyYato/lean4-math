@@ -25,6 +25,9 @@ class Lattice extends SemiLatticeSup α, SemiLatticeInf α where
 export IsSemiLatticeSup (sup_le)
 export IsSemiLatticeInf (le_inf)
 
+instance Lattice.mk [Sup α] [Inf α] [IsSemiLatticeSup α] [IsSemiLatticeInf α] : IsLattice α where
+  le_inf := IsSemiLatticeInf.le_inf
+
 instance [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
   le_inf := sup_le (α := α)
 
@@ -262,7 +265,7 @@ theorem le_sup_inf : ∀ {x y z : α₀}, (x ⊔ y) ⊓ (x ⊔ z) ≤ x ⊔ y �
 
 end
 
-namespace OrderIso
+namespace OrderEmbedding
 
 def instIsSemiLatticeSup
   {α}
@@ -270,7 +273,7 @@ def instIsSemiLatticeSup
   [LE β] [LT β] [Sup β]
   [IsSemiLatticeSup α]
   [_root_.IsPartialOrder β]
-  (h: β ≃o α)
+  (h: β ↪o α)
   (hs: ∀a b, h (a ⊔ b) = h a ⊔ h b): IsSemiLatticeSup β where
   le_sup_left := by
     intro a b
@@ -296,7 +299,7 @@ def instIsSemiLatticeInf
   [LE β] [LT β] [Inf β]
   [IsSemiLatticeInf α]
   [_root_.IsPartialOrder β]
-  (h: β ≃o α)
+  (h: β ↪o α)
   (hs: ∀a b, h (a ⊓ b) = h a ⊓ h b): IsSemiLatticeInf β where
   inf_le_left := by
     intro a b
@@ -316,7 +319,7 @@ def instIsSemiLatticeInf
     rw [←hs] at this
     exact h.resp_le.mpr this
 
-end OrderIso
+end OrderEmbedding
 
 instance [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithTop α) where
   le_sup_left := by
@@ -367,13 +370,13 @@ instance [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeInf (With
     apply le_inf <;> assumption
 
 instance [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithBot α) :=
-  WithBot.orderIsoWithTop.instIsSemiLatticeSup <| by
+  OrderEmbedding.instIsSemiLatticeSup WithBot.orderIsoWithTop.toEmbedding <| by
     intro a b
     cases a <;> cases b
     all_goals rfl
 
 instance [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeInf (WithBot α) :=
-  WithBot.orderIsoWithTop.instIsSemiLatticeInf <| by
+  OrderEmbedding.instIsSemiLatticeInf WithBot.orderIsoWithTop.toEmbedding <| by
     intro a b
     cases a <;> cases b
     all_goals rfl

@@ -18,6 +18,11 @@ class IsCompleteSemiLatticeInf extends IsLawfulInfSet α, IsSemiLatticeInf α: P
 export IsCompleteSemiLatticeInf (le_sInf)
 
 class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, IsLawfulBot α, IsLawfulTop α: Prop where
+  mk' ::
+
+instance IsCompleteLattice.mk [IsLattice α] [IsCompleteSemiLatticeSup α] [IsCompleteSemiLatticeInf α] [IsLawfulBot α] [IsLawfulTop α] : IsCompleteLattice α where
+  sSup_le := IsCompleteSemiLatticeSup.sSup_le
+  le_sInf := IsCompleteSemiLatticeInf.le_sInf
 
 class CompleteSemiLatticeSup extends LawfulSupSet α, SemiLatticeSup α where
   sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> sSup s ≤ k
@@ -260,6 +265,51 @@ def sInf_eq_top : sInf s = ⊤ ↔ ∀x ∈ s, x = ⊤ :=
 
 end
 
+namespace OrderEmbedding
+
+def instIsCompleteSemiLatticeSup
+  {α}
+  [LE α] [LT α] [Sup α] [SupSet α]
+  [LE β] [LT β] [Sup β] [SupSet β]
+  [IsCompleteSemiLatticeSup α]
+  [IsSemiLatticeSup β]
+  (h: β ↪o α)
+  (hs: ∀s: Set β, h (sSup s) = sSup (s.image h))
+  : IsCompleteSemiLatticeSup β where
+  le_sSup := by
+    intro s x mem
+    apply h.resp_le.mpr
+    rw [hs]
+    apply le_sSup
+    apply Set.mem_image'
+    assumption
+  sSup_le := by
+    intro k s g
+    apply h.resp_le.mpr
+    rw [hs]
+    apply sSup_le
+    intro x ⟨x, _, eq⟩; subst eq
+    apply h.resp_le.mp
+    apply g
+    assumption
+
+def instIsCompleteSemiLatticeInf
+  {α}
+  [LE α] [LT α] [Inf α] [InfSet α]
+  [LE β] [LT β] [Inf β] [InfSet β]
+  [IsCompleteSemiLatticeInf α]
+  [IsSemiLatticeInf β]
+  (h: β ↪o α)
+  (hs: ∀s: Set β, h (sInf s) = sInf (s.image h))
+  : IsCompleteSemiLatticeInf β :=
+  let h': Opposite β ↪o Opposite α := Opposite.orderEmbeddingCongr h
+  have := instIsCompleteSemiLatticeSup h' hs
+  inferInstanceAs (
+    IsCompleteSemiLatticeInf (Opposite (Opposite β))
+  )
+
+end OrderEmbedding
+
 namespace OrderIso
 
 def instIsCompleteSemiLatticeSup
@@ -270,26 +320,16 @@ def instIsCompleteSemiLatticeSup
   [IsSemiLatticeSup β]
   (h: β ≃o α)
   (hs: ∀s: Set β, sSup s = h.symm (sSup (s.preimage h.symm)))
-  : IsCompleteSemiLatticeSup β where
-  le_sSup := by
-    intro s x mem
-    rw [hs]
-    apply h.resp_le.mpr
-    rw [h.symm_coe]
-    apply le_sSup
-    show h.symm (h x) ∈ s
-    rw [h.coe_symm]
-    exact mem
-  sSup_le := by
-    intro k s g
-    rw [hs]
-    apply h.resp_le.mpr
-    rw [h.symm_coe]
-    apply sSup_le
-    intro x mem
-    apply h.symm.resp_le.mpr
-    rw [h.coe_symm]
-    exact g _ mem
+  : IsCompleteSemiLatticeSup β :=
+  h.toEmbedding.instIsCompleteSemiLatticeSup <| by
+  intro s
+  show h _ = sSup (Set.image _ h)
+  rw [hs]
+  rw [h.symm_coe]
+  congr
+  rw [←Set.image_preimage (s.image h) h.symm, Set.image_image, Set.image_id']
+  intro; dsimp; rw [h.coe_symm]
+  exact h.symm.inj
 
 def instIsCompleteSemiLatticeInf
   {α}

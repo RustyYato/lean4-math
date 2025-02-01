@@ -73,6 +73,26 @@ def inducedIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
     intro ab ba
     exact h.inj (le_antisymm ab ba)
 
+def instIsLawfulTop {_: LE α} [LT α] {_: LE β} [LT β]
+  [Top α] [Top β]
+  [IsLawfulTop β]
+  (h: α ↪o β) (map_top: h ⊤ = ⊤) : IsLawfulTop α where
+  le_top := by
+    intro x
+    apply h.resp_le.mpr
+    rw [map_top]
+    apply le_top
+
+def instIsLawfulBot {_: LE α} [LT α] {_: LE β} [LT β]
+  [Bot α] [Bot β]
+  [IsLawfulBot β]
+  (h: α ↪o β) (map_bot: h ⊥ = ⊥) : IsLawfulBot α where
+  bot_le := by
+    intro x
+    apply h.resp_le.mpr
+    rw [map_bot]
+    apply bot_le
+
 end OrderEmbedding
 
 namespace OrderIso
@@ -96,6 +116,8 @@ instance : Coe (α ≃o β) (α ↪o β) where
     toEmbedding := h.toEmbedding
     resp_rel := h.resp_rel
   }
+
+def toEmbedding (h: α ≃o β) : α ↪o β := h
 
 instance : IsEquivLike (α ≃o β) α β where
   coe e := e.toFun
@@ -145,6 +167,11 @@ def orderIsoCongr {_: LE α} {_: LE β} (h: α ≃o β) : Opposite α ≃o Oppos
   invFun := h.symm
   leftInv := h.leftInv
   rightInv := h.rightInv
+  resp_rel := h.resp_rel
+
+def orderEmbeddingCongr {_: LE α} {_: LE β} (h: α ↪o β) : Opposite α ↪o Opposite β where
+  toFun := h
+  inj := h.inj
   resp_rel := h.resp_rel
 
 end Opposite
