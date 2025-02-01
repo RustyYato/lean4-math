@@ -311,6 +311,7 @@ def zpowRec [MonoidOps α] [Inv α] : ℤ -> α -> α := zsmulRec (α := AddOfMu
 class AddGroupOps (α: Type*) extends AddMonoidOps α, Neg α, Sub α where
   zsmul: ℤ -> α -> α := by exact SMul.smul
 class GroupOps (α: Type*) extends MonoidOps α, Inv α, Div α where
+  div := div'
   zpow: α -> ℤ -> α := by exact Pow.pow
 
 instance [AddMonoidOps α] [Neg α] [Sub α] [SMul ℤ α] : AddGroupOps α where

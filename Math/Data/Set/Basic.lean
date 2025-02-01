@@ -987,6 +987,12 @@ def forall_mem_image {f : α → β} {s : Set α} {p : β → Prop} :
 
 def sdiff_eq_inter_compl (a b: Set α) : a \ b = a ∩ bᶜ := rfl
 
+def zip (a: Set α) (b: Set β) : Set (α × β) where
+  Mem x := x.1 ∈ a ∧ x.2 ∈ b
+
+def mem_zip {a: Set α} {b: Set β}: ∀{x}, x ∈ zip a b ↔ x.1 ∈ a ∧ x.2 ∈ b :=
+  Iff.rfl
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]

@@ -195,4 +195,33 @@ instance : IsCompleteSemiLatticeInf (Subgroup α) where
 
 instance : IsCompleteLattice (Subgroup α) := IsCompleteLattice.mk _
 
+scoped instance {g: Subgroup α} : One g.set where
+  one := ⟨1, g.one_mem⟩
+scoped instance {g: Subgroup α} : Inv g.set where
+  inv x := ⟨x.val⁻¹, g.inv_mem _ x.property⟩
+scoped instance {g: Subgroup α} : Mul g.set where
+  mul x y := ⟨x.val * y.val, g.mul_mem _ _ x.property y.property⟩
+
+scoped instance {g: Subgroup α} : MonoidOps g.set where
+  npow := flip npowRec
+scoped instance {g: Subgroup α} : GroupOps g.set where
+  zpow := flip zpowRec
+
+instance {g: Subgroup α} : IsGroup g.set where
+  mul_assoc a b c := by
+    apply Subtype.val_inj
+    apply mul_assoc
+  one_mul a := by
+    apply Subtype.val_inj
+    apply one_mul
+  mul_one a := by
+    apply Subtype.val_inj
+    apply mul_one
+  inv_mul_cancel a := by
+    apply Subtype.val_inj
+    apply inv_mul_cancel
+  div_eq_mul_inv _ _ := rfl
+  zpow_ofNat _ _ := rfl
+  zpow_negSucc _ _ := rfl
+
 end Subgroup
