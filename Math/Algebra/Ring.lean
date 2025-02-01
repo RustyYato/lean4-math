@@ -523,6 +523,14 @@ instance [AddGroupOps α] [IsAddGroup α] : IsNegZeroClass α where
 instance [GroupOps α] [IsGroup α] : IsInvOneClass α where
   inv_one := neg_zero (α := AddOfMul α)
 
+def eq_one_of_mul_left_id [GroupOps α] [IsGroup α]  (a: α) (h: ∀x: α, a * x = x) : a = 1 := by
+  apply mul_right_cancel
+  rw [h 1]
+  rw [one_mul]
+
+def eq_one_of_mul_right_id [GroupOps α] [IsGroup α]  (a: α) (h: ∀x: α, x * a = x) : a = 1 :=
+  eq_one_of_mul_left_id (α := αᵐᵒᵖ) a h
+
 def neg_sub [AddGroupOps α] [IsAddGroup α] (a b: α) : -(a - b) = b - a := by
   rw [sub_eq_add_neg, neg_add_rev, neg_neg, ←sub_eq_add_neg]
 
