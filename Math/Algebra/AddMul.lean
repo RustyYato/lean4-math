@@ -8,6 +8,12 @@ def MulOfAdd (α: Sort u) := α
 def MulOfAdd.get : MulOfAdd α -> α := id
 def MulOfAdd.mk : α -> MulOfAdd α := id
 
+def MulOpp (α: Sort u) := α
+def MulOpp.get : MulOpp α -> α := id
+def MulOpp.mk : α -> MulOpp α := id
+
+postfix:max "ᵐᵒᵖ" => MulOpp
+
 instance [One α] : Zero (AddOfMul α) where
   zero := (1: α)
 
@@ -43,3 +49,24 @@ instance [SMul ℕ α] : Pow (MulOfAdd α) ℕ where
 
 instance [SMul ℤ α] : Pow (MulOfAdd α) ℤ where
   pow a n := .mk (n • a.get)
+
+instance [Zero α] : Zero αᵐᵒᵖ where
+  zero := (0: α)
+
+instance [One α] : One αᵐᵒᵖ where
+  one := (1: α)
+
+instance [Mul α] : Mul αᵐᵒᵖ where
+  mul a b := b.get * a.get
+
+instance [Inv α] : Inv αᵐᵒᵖ where
+  inv a := .mk (a.get⁻¹)
+
+instance [Mul α] [Inv α] : Div αᵐᵒᵖ where
+  div a b := a * b⁻¹
+
+instance [Pow α ℕ] : Pow αᵐᵒᵖ ℕ where
+  pow a n := .mk (a.get ^ n)
+
+instance [Pow α ℤ] : Pow αᵐᵒᵖ ℤ where
+  pow a n := .mk (a.get ^ n)

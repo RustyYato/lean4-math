@@ -604,6 +604,12 @@ def not_nonempty (a: Set α) (h: ¬a.Nonempty) : a = ∅ := by
   apply h
   exists x
 
+def nonempty_of_not_empty (a: Set α) (h: a ≠ ∅) : a.Nonempty := by
+  apply Classical.byContradiction
+  intro g
+  rw [not_nonempty _ g] at h
+  contradiction
+
 @[simp]
 def empty_attach : (∅: Set α).attach = ∅ := by
   apply ext_empty
@@ -991,6 +997,12 @@ def zip (a: Set α) (b: Set β) : Set (α × β) where
   Mem x := x.1 ∈ a ∧ x.2 ∈ b
 
 def mem_zip {a: Set α} {b: Set β}: ∀{x}, x ∈ zip a b ↔ x.1 ∈ a ∧ x.2 ∈ b :=
+  Iff.rfl
+
+def zipAll {ι: Type*} {α: ι -> Type*} (a: ∀x, Set (α x)) : Set (∀x, α x) where
+  Mem x := ∀i: ι, x i ∈ a i
+
+def mem_zipAll {ι: Type*} {α: ι -> Type*} {a: ∀x, Set (α x)}: ∀{x}, x ∈ zipAll a ↔ ∀i, x i ∈ a i :=
   Iff.rfl
 
 section min_elem
