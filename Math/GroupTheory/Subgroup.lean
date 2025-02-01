@@ -2,17 +2,17 @@ import Math.Algebra.Ring
 import Math.Data.Set.Lattice
 import Math.GroupTheory.Basic
 
-structure Subgroup (α: Type*) [GroupOps α] [IsGroup α] where
-  set: Set α
+structure Subgroup {α: Type*} (g: Group α) where
+  set: Set g
   one_mem: 1 ∈ set
   inv_mem: ∀x ∈ set, x⁻¹ ∈ set
   mul_mem: ∀x y, x ∈ set -> y ∈ set -> x * y ∈ set
 
 namespace Subgroup
 
-variable {α: Type*} [GroupOps α] [IsGroup α]
+variable {α: Type*} {g: Group α}
 
-def opp (a: Subgroup α) : Subgroup αᵐᵒᵖ where
+def opp (a: Subgroup g) : Subgroup g.opp where
   set := a.set
   one_mem := a.one_mem
   inv_mem := a.inv_mem
@@ -22,19 +22,19 @@ def opp (a: Subgroup α) : Subgroup αᵐᵒᵖ where
     assumption
     assumption
 
-inductive Generate (s: Set α) : α -> Prop where
+inductive Generate (s: Set g) : g -> Prop where
 | of : x ∈ s -> Generate s x
 | one : Generate s 1
 | inv : Generate s a -> Generate s a⁻¹
 | mul : Generate s a -> Generate s b -> Generate s (a * b)
 
-def generated (s: Set α) : Subgroup α where
+def generated (s: Set g) : Subgroup g where
   set := Set.mk (Generate s)
   one_mem := Generate.one
   inv_mem _ := Generate.inv
   mul_mem _ _ := Generate.mul
 
-instance : Bot (Subgroup α) where
+instance : Bot (Subgroup g) where
   bot := {
     set := {1}
     one_mem := rfl
@@ -48,7 +48,7 @@ instance : Bot (Subgroup α) where
       rfl
   }
 
-instance : Top (Subgroup α) where
+instance : Top (Subgroup g) where
   top := {
     set := ⊤
     one_mem := True.intro
@@ -56,13 +56,13 @@ instance : Top (Subgroup α) where
     mul_mem _ _ _ _ := True.intro
   }
 
-instance : LE (Subgroup α) where
+instance : LE (Subgroup g) where
   le a b := a.set ⊆ b.set
 
-instance : LT (Subgroup α) where
+instance : LT (Subgroup g) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-instance : Inf (Subgroup α) where
+instance : Inf (Subgroup g) where
   inf a b := {
     set := a.set ∩ b.set
     one_mem := ⟨a.one_mem, b.one_mem⟩
@@ -74,10 +74,10 @@ instance : Inf (Subgroup α) where
       exact ⟨a.mul_mem _ _ hax hay, b.mul_mem _ _ hbx hby⟩
   }
 
-instance : Sup (Subgroup α) where
+instance : Sup (Subgroup g) where
   sup a b := generated (a.set ∪ b.set)
 
-instance : InfSet (Subgroup α) where
+instance : InfSet (Subgroup g) where
   sInf s := {
     set := sInf (s.image Subgroup.set)
     one_mem := by
@@ -101,40 +101,40 @@ instance : InfSet (Subgroup α) where
       assumption
   }
 
-instance : SupSet (Subgroup α) where
+instance : SupSet (Subgroup g) where
   sSup s := generated (sSup (s.image Subgroup.set))
 
-instance : IsLawfulLT (Subgroup α) where
+instance : IsLawfulLT (Subgroup g) where
   lt_iff_le_and_not_le := Iff.rfl
 
-def orderEmbedSet : Subgroup α ↪o Set α where
+def orderEmbedSet : Subgroup g ↪o Set α where
   toFun := Subgroup.set
   inj := by
     intro x y eq
     cases x; cases y; congr
   resp_rel := Iff.rfl
 
-def le_generated (a: Subgroup α) {s: Set α} : a.set ⊆ s -> a ≤ generated s := by
+def le_generated (a: Subgroup g) {s: Set α} : a.set ⊆ s -> a ≤ generated s := by
   intro h  x hx
   apply Generate.of
   apply h
   assumption
 
-instance : IsPartialOrder (Subgroup α) :=
+instance : IsPartialOrder (Subgroup g) :=
   orderEmbedSet.inducedIsPartialOrder'
 
-instance : IsLawfulTop (Subgroup α) where
+instance : IsLawfulTop (Subgroup g) where
   le_top := by
     intro x
     apply Set.sub_univ
 
-instance : IsLawfulBot (Subgroup α) where
+instance : IsLawfulBot (Subgroup g) where
   bot_le := by
     intro g x mem
     cases mem
     apply g.one_mem
 
-instance : IsSemiLatticeSup (Subgroup α) where
+instance : IsSemiLatticeSup (Subgroup g) where
   le_sup_left := by
     intro x y
     apply le_generated
@@ -154,7 +154,7 @@ instance : IsSemiLatticeSup (Subgroup α) where
     | inv => apply k.inv_mem; assumption
     | mul => apply k.mul_mem <;> assumption
 
-instance : IsSemiLatticeInf (Subgroup α) where
+instance : IsSemiLatticeInf (Subgroup g) where
   inf_le_left := by
     intro x y
     apply Set.inter_sub_left
@@ -167,9 +167,9 @@ instance : IsSemiLatticeInf (Subgroup α) where
     apply kx; apply ha
     apply ky; apply ha
 
-instance : IsLattice (Subgroup α) := Lattice.mk _
+instance : IsLattice (Subgroup g) := Lattice.mk _
 
-instance : IsCompleteSemiLatticeSup (Subgroup α) where
+instance : IsCompleteSemiLatticeSup (Subgroup g) where
   le_sSup := by
     intro U s hs x hx
     apply Generate.of
@@ -191,7 +191,7 @@ instance : IsCompleteSemiLatticeSup (Subgroup α) where
     | inv => apply Subgroup.inv_mem; assumption
     | mul => apply Subgroup.mul_mem <;> assumption
 
-instance : IsCompleteSemiLatticeInf (Subgroup α) where
+instance : IsCompleteSemiLatticeInf (Subgroup g) where
   sInf_le := by
     intro U s hs x hx
     apply hx
@@ -204,21 +204,21 @@ instance : IsCompleteSemiLatticeInf (Subgroup α) where
     assumption
     assumption
 
-instance : IsCompleteLattice (Subgroup α) := IsCompleteLattice.mk _
+instance : IsCompleteLattice (Subgroup g) := IsCompleteLattice.mk _
 
-scoped instance {g: Subgroup α} : One g.set where
+scoped instance {g: Subgroup g} : One g.set where
   one := ⟨1, g.one_mem⟩
-scoped instance {g: Subgroup α} : Inv g.set where
+scoped instance {g: Subgroup g} : Inv g.set where
   inv x := ⟨x.val⁻¹, g.inv_mem _ x.property⟩
-scoped instance {g: Subgroup α} : Mul g.set where
+scoped instance {g: Subgroup g} : Mul g.set where
   mul x y := ⟨x.val * y.val, g.mul_mem _ _ x.property y.property⟩
 
-scoped instance {g: Subgroup α} : MonoidOps g.set where
+scoped instance {g: Subgroup g} : MonoidOps g.set where
   npow := flip npowRec
-scoped instance {g: Subgroup α} : GroupOps g.set where
+scoped instance {g: Subgroup g} : GroupOps g.set where
   zpow := flip zpowRec
 
-instance {g: Subgroup α} : IsGroup g.set where
+instance {g: Subgroup g} : IsGroup g.set where
   mul_assoc a b c := by
     apply Subtype.val_inj
     apply mul_assoc
@@ -235,22 +235,22 @@ instance {g: Subgroup α} : IsGroup g.set where
   zpow_ofNat _ _ := rfl
   zpow_negSucc _ _ := rfl
 
-def commutator (a b: Subgroup α) : Subgroup α :=
+def commutator (a b: Subgroup g) : Subgroup g :=
   generated <| (Set.zip a.set b.set).image fun ⟨x, y⟩ => x⁻¹ * y⁻¹ * x * y
 
-def cosetLeft (x: α) (a: Subgroup α) : Set α :=
+def cosetLeft (x: g) (a: Subgroup g) : Set α :=
   a.set.image fun y => x * y
 
-def cosetRight (x: α) (a: Subgroup α) : Set α :=
+def cosetRight (x: g) (a: Subgroup g) : Set α :=
   a.set.image fun y => y * x
 
-def cosetLeft_eq_opp_cosetRight (x: α) (a: Subgroup α) :
+def cosetLeft_eq_opp_cosetRight (x: α) (a: Subgroup g) :
   a.cosetLeft x = a.opp.cosetRight (MulOpp.mk x) := rfl
 
-def cosetRight_eq_opp_cosetLeft (x: α) (a: Subgroup α) :
+def cosetRight_eq_opp_cosetLeft (x: α) (a: Subgroup g) :
   a.cosetRight x = a.opp.cosetLeft (MulOpp.mk x) := rfl
 
-def cosetLeft.eq_or_disjoint (A: Subgroup α) (x y : α) :
+def cosetLeft.eq_or_disjoint (A: Subgroup g) (x y : g) :
   A.cosetLeft x = A.cosetLeft y ∨ A.cosetLeft x ∩ A.cosetLeft y = ∅ := by
   apply Classical.or_iff_not_imp_right.mpr
   intro h
@@ -281,22 +281,22 @@ def cosetLeft.eq_or_disjoint (A: Subgroup α) (x y : α) :
   assumption
   assumption
 
-def cosetRight.eq_or_disjoint (A: Subgroup α) (x y : α) :
+def cosetRight.eq_or_disjoint (A: Subgroup g) (x y : g) :
   A.cosetRight x = A.cosetRight y ∨ A.cosetRight x ∩ A.cosetRight y = ∅ := by
   simp [cosetRight_eq_opp_cosetLeft]
   apply cosetLeft.eq_or_disjoint
 
-def IsNormal (A: Subgroup α) : Prop :=
-  ∀x y: α, y ∈ A.set -> x * y * x⁻¹ ∈ A.set
+def IsNormal (A: Subgroup g) : Prop :=
+  ∀x y: g, y ∈ A.set -> x * y * x⁻¹ ∈ A.set
 
-def IsNormal.inv_left {A: Subgroup α} (h: A.IsNormal) :
-  ∀x y: α, y ∈ A.set -> x⁻¹ * y * x ∈ A.set := by
+def IsNormal.inv_left {A: Subgroup g} (h: A.IsNormal) :
+  ∀x y: g, y ∈ A.set -> x⁻¹ * y * x ∈ A.set := by
   intro x y ha
   conv => { rhs; rhs; rw [←inv_inv x] }
   apply h
   assumption
 
-def IsNormal.cosetEq {A: Subgroup α} (h: A.IsNormal) : A.cosetLeft = A.cosetRight := by
+def IsNormal.cosetEq {A: Subgroup g} (h: A.IsNormal) : A.cosetLeft = A.cosetRight := by
   ext g a
   apply Iff.intro
   intro ⟨a, ha, eq⟩; subst eq
@@ -314,7 +314,7 @@ def IsNormal.cosetEq {A: Subgroup α} (h: A.IsNormal) : A.cosetLeft = A.cosetRig
   assumption
   rw [←mul_assoc, ←mul_assoc, mul_inv_cancel, one_mul]
 
-def cosetLeft.setoid {A: Subgroup α} : Setoid α where
+def cosetLeft.setoid {A: Subgroup g} : Setoid α where
   r x y := A.cosetLeft x = A.cosetLeft y
   iseqv := {
     refl := by
@@ -328,7 +328,7 @@ def cosetLeft.setoid {A: Subgroup α} : Setoid α where
       rw [ab, bc]
   }
 
-def cosetRight.setoid {A: Subgroup α} : Setoid α where
+def cosetRight.setoid {A: Subgroup g} : Setoid α where
   r x y := A.cosetRight x = A.cosetRight y
   iseqv := {
     refl := by

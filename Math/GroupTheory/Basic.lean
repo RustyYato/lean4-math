@@ -41,7 +41,12 @@ def IsGroup.ofAxiomsLeft
 
 structure Group (α: Type*) extends GroupOps α, IsGroup α where
 
-def Group.Elem (_: Group α) := α
+namespace Group
+
+def Elem (_: Group α) := α
+
+instance : CoeSort (Group α) (Type _) where
+  coe := Elem
 
 instance (g: Group α) : One g.Elem where
   one := g.one
@@ -53,7 +58,7 @@ instance (g: Group α) : Mul g.Elem where
   mul := g.mul
 
 instance (g: Group α) : Div g.Elem where
-  div := g.div
+  div a b := a * b⁻¹
 
 instance (g: Group α) : Pow g.Elem ℕ where
   pow := g.npow
@@ -66,13 +71,13 @@ instance (g: Group α) : IsGroup g.Elem where
   one_mul := g.one_mul
   mul_one := g.mul_one
   inv_mul_cancel := g.inv_mul_cancel
-  div_eq_mul_inv := g.div_eq_mul_inv
+  div_eq_mul_inv _ _ := rfl
   zpow_ofNat := g.zpow_ofNat
   zpow_negSucc := g.zpow_negSucc
   npow_zero := g.npow_zero
   npow_succ := g.npow_succ
 
-def Group.ofAxiomsLeft
+def ofAxiomsLeft
   [One α] [Mul α] [Inv α]
   (one_mul: ∀x: α, 1 * x = x)
   (inv_mul: ∀x: α, x⁻¹ * x = 1)
@@ -102,7 +107,7 @@ def Group.ofAxiomsLeft
   }
   ⟨ops, prf⟩
 
-def Group.ofAxiomsRight
+def ofAxiomsRight
   [One α] [Mul α] [Inv α]
   (mul_one: ∀x: α, x * 1 = x)
   (mul_inv: ∀x: α, x * x⁻¹ = 1)
@@ -110,3 +115,10 @@ def Group.ofAxiomsRight
   Group.ofAxiomsLeft (α := αᵐᵒᵖ) mul_one mul_inv <| by
     intro a b c
     exact (mul_assoc _ _ _).symm
+
+def opp (g: Group α) : Group αᵐᵒᵖ :=
+  let _ := g.toGroupOps
+  let _ := g.toIsGroup
+  Group.mk inferInstance inferInstance
+
+end Group

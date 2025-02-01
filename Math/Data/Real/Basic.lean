@@ -778,3 +778,13 @@ namespace Real
 scoped notation "⟦" v "⟧" => Real.mk v
 
 end Real
+
+def CauchySeq.ofIncreasingBounded
+  (f: Nat -> ℚ)
+  (inc: ∀n, f n ≤ f (n + 1))
+  (bounded: ∃B, ∀n, f n ≤ B) : CauchySeq where
+  seq := f
+  is_cacuhy := by
+    intro ε ε_pos
+    obtain ⟨B, bounded⟩  := bounded
+    sorry
