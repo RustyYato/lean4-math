@@ -184,82 +184,93 @@ def IsFinite.ofSubset (s t: Set α) [h: t.IsFinite] (h: s ⊆ t) : s.IsFinite :=
     cases eq
     congr
 
+instance [Set.IsFinite s] : Set.IsFinite (s \ t) := by
+  apply Set.IsFinite.ofSubset _ s
+  intro x h; exact h.left
+
+def insert_card (x: α) [Set.IsFinite s] : IsFinite.card ((insert x s): Set _) = IsFinite.card s + if x ∈ s then 0 else 1 := by
+  split
+  rw [Nat.add_zero]
+  congr
+  ext y
+  rw [mem_insert]
+  apply Iff.intro
+  intro h
+  cases h; subst x; assumption
+  assumption
+  intro
+  right; assumption
+  rw [←Option.card'_eq]
+  apply IsFinite.card_of_equiv
+  refine ⟨?_, ?_, ?_, ?_⟩
+  intro y
+  if y = x then
+    exact .none
+  else
+    obtain ⟨y, hy⟩ := y
+    refine .some ⟨y, ?_⟩
+    rw [mem_insert] at hy
+    cases hy; subst y; contradiction
+    assumption
+  intro y
+  match y with
+  | .none => exact ⟨x, Set.mem_insert.mpr (.inl rfl)⟩
+  | .some y => exact ⟨y, Set.mem_insert.mpr (.inr y.property)⟩
+  intro y
+  dsimp
+  by_cases h:y.val = x
+  rw [dif_pos h]
+  dsimp; cases y; symm; congr
+  rw [dif_neg h]
+  intro y
+  cases y
+  dsimp
+  rw [dif_pos rfl]
+  dsimp
+  rw [dif_neg]
+  intro; subst x
+  rename_i y _; have := y.property
+  contradiction
+
+noncomputable
+def IsFinite.rec {motive : Set α → Sort*} (s : Set α) [h : s.IsFinite]
+    (nil: motive ∅)
+    (cons : ∀ a s, a ∉ s → Set.IsFinite s → motive s → motive (insert a s)) : motive s :=
+    if h:s = ∅ then
+      h ▸ nil
+    else
+      let x := Classical.choose (Set.nonempty_of_not_empty _ h)
+      have xmem: x ∈ s := Classical.choose_spec (Set.nonempty_of_not_empty _ h)
+      have : s = insert x (s \ {x}) := by
+        ext y
+        simp [mem_sdiff]
+        apply Iff.intro
+        intro hy
+        by_cases y = x
+        left; assumption
+        right; constructor
+        assumption
+        assumption
+        intro h; cases h
+        subst y; assumption
+        rename_i g; cases g
+        assumption
+      have out := cons x (s \ {x}) (fun h => (Set.mem_sdiff.mp h).right rfl) inferInstance (rec _ nil cons)
+      this ▸ out
+termination_by h.card
+decreasing_by
+  show IsFinite.card ((s \ {x}): Set _) < _
+  have : IsFinite.card s = IsFinite.card ((insert x (s \ {x}): Set _)) := IsFinite.card_of_equiv ⟨this ▸ Equiv.refl⟩
+  rw [this, insert_card, if_neg]
+  apply Nat.lt_succ_self
+  rw [Set.mem_sdiff]
+  intro h
+  exact h.right rfl
+
 def IsFinite.induction {motive : Set α → Prop} (s : Set α) [h : s.IsFinite]
     (nil: motive ∅)
-    (cons : ∀ a s, a ∉ s → Set.IsFinite s → motive s → motive (insert a s)) : motive s := by
-    obtain ⟨limit, eqv⟩ := h
-    induction limit generalizing s with
-    | zero =>
-      suffices s = ∅ by
-        subst s
-        assumption
-      apply ext_empty
-      intro x mem
-      exact (eqv ⟨x, mem⟩).elim0
-    | succ h ih =>
-      let x := eqv.invFun 0
-      have : s = insert x.val (s \ {x.val}) := by
-        ext y
-        rw [mem_insert, mem_sdiff, mem_singleton]
-        apply Iff.intro
-        intro mem
-        by_cases g:x.val = y
-        rw [←g]
-        left; rfl
-        right
-        apply And.intro
-        assumption
-        exact Ne.symm g
-        intro h
-        cases h
-        subst y
-        exact x.property
-        rename_i g
-        cases g
-        assumption
-      rw [this]
-      clear this
-      suffices (s \ {x.val}: Set _) ≃ Fin h by
-        apply cons
-        intro mem
-        exact (Set.mem_sdiff.mp mem).right (Set.mem_singleton.mpr rfl)
-        exists h
-        apply ih
-        assumption
-      apply Equiv.mk
-      case toFun =>
-        intro ⟨y, hy⟩
-        rw [mem_sdiff] at hy
-        apply (eqv.toFun ⟨y, hy.left⟩).pred
-        intro h
-        have : ⟨y, hy.left⟩ = x := by
-          show _ = eqv.invFun 0
-          rw [←h, eqv.leftInv]
-        apply hy.right
-        rw [mem_singleton]
-        rw [←this]
-      case invFun =>
-        intro y
-        let y' := eqv.invFun y.succ
-        refine ⟨y'.val, ?_⟩
-        rw [mem_sdiff, mem_singleton]
-        apply And.intro
-        exact y'.property
-        intro g
-        replace g := Subtype.ext g
-        have := Fin.val_inj.mpr (eqv.invFun_inj g)
-        contradiction
-      case leftInv =>
-        intro ⟨y, hy⟩
-        dsimp; rw [mem_sdiff, mem_singleton] at hy
-        congr
-        rw [Fin.succ_pred, eqv.leftInv]
-      case rightInv =>
-        intro y
-        dsimp
-        rw [Fin.pred_eq_iff_eq_succ]
-        show eqv.toFun (eqv.invFun _) = _
-        rw [eqv.rightInv]
+    (cons : ∀ a s, a ∉ s → Set.IsFinite s → motive s → motive (insert a s)) : motive s :=
+    IsFinite.rec s nil cons
 
 def IsFinite.spec (s: Set α) [h: s.IsFinite] : ∃s': List α, s'.Nodup ∧ ∀x, x ∈ s ↔ x ∈ s' := by
   induction s using Set.IsFinite.induction with

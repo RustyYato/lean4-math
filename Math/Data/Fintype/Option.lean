@@ -20,12 +20,16 @@ instance [f: Fintype α] : Fintype (Option α) where
     apply Fintype.complete
 
 open Fintype in
-def Option.card_eq [f: Fintype α] [fo: Fintype (Option α)] :  card (Option α) = (card α).succ := by
+def Option.card_eq' {f: Fintype α} {fo: Fintype (Option α)} :  card (Option α) = (card α).succ := by
   rw [Fintype.card_eq fo instFintypeOption]
   show Nat.succ _ = _
   congr 1
   rw [List.length_map]
   rfl
+
+open Fintype in
+def Option.card_eq [f: Fintype α] [fo: Fintype (Option α)] :  card (Option α) = (card α).succ :=
+  card_eq'
 
 def Option.equivFinSucc : Fin (Nat.succ n) ≃ Option (Fin n) where
   toFun x := if h:x = 0 then .none else .some (x.pred h)

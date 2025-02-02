@@ -88,9 +88,20 @@ noncomputable
 def IsFinite.toEquiv α [IsFinite α] : α ≃ Fin (card α) :=
   Classical.choice (Classical.choose_spec (existsEquiv α))
 
+def IsFinite.card_of_equiv (h: Nonempty (α ≃ β)) [IsFinite α] [IsFinite β] : IsFinite.card α = IsFinite.card β := by
+  obtain ⟨h⟩ := h
+  have := ((toEquiv β).symm.trans <| h.symm.trans (toEquiv α)).symm
+  exact Fin.eqOfEquiv this
+
 noncomputable
 def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=
   Fintype.ofEquiv (IsFinite.toEquiv α)
+
+def IsFinite.card_eq_card (α: Type _) [IsFinite α] :
+  IsFinite.card α = @Fintype.card α (Fintype.ofIsFinite α) := by
+  rw [Fintype.ofIsFinite, Fintype.eqCardOfEquiv (IsFinite.toEquiv α),
+    Fin.card_eq]
+  infer_instance
 
 open Classical in
 instance [f: Fintype α] : IsFinite α := by
@@ -259,3 +270,12 @@ instance [hs: Subsingleton α] : IsFinite α := by
   · infer_instance
   · have := IsEmpty.ofNotNonempty h
     infer_instance
+
+instance [IsFinite α] : IsFinite (Option α) := by
+  have := Fintype.ofIsFinite α
+  infer_instance
+
+def Option.card'_eq [IsFinite α] :
+  IsFinite.card (Option α) = IsFinite.card α + 1 := by
+  have := Fintype.ofIsFinite α
+  rw [IsFinite.card_eq_card, IsFinite.card_eq_card, card_eq']

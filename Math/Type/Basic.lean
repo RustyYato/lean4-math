@@ -706,3 +706,73 @@ def Equiv.swap [DecidableEq α] (a b: α) : α ≃ α where
     split
     rw [if_pos rfl]; symm; assumption
     rfl
+
+def Nat.not_between_succ (n m: Nat) : n < m -> m < n + 1 -> False := by
+  intro h g
+  replace g := Nat.le_of_lt_succ g
+  exact Nat.lt_irrefl _ (Nat.lt_of_lt_of_le h g)
+
+def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
+  induction n generalizing m with
+  | zero =>
+    cases m
+    rfl
+    exact (h.symm 0).elim0
+  | succ n ih =>
+    cases m
+    exact (h 0).elim0
+    congr; rename_i m
+    apply ih
+    let h' := h.trans (Equiv.swap (Fin.last _) (h (Fin.last _)))
+    have hspec : h' (Fin.last _) = Fin.last _ := by
+      show ((Equiv.swap (Fin.last _) (h (Fin.last _)))) (h <| Fin.last _) = _
+      simp [Equiv.swap, DFunLike.coe, IsEquivLike.coe]
+    have hspec' : h'.symm (Fin.last _) = Fin.last _ := by
+      show h.symm (((Equiv.swap (Fin.last _) (h (Fin.last _)))).symm <| Fin.last _) = _
+      simp [Equiv.swap, DFunLike.coe, IsEquivLike.coe, Equiv.symm]
+      apply h.coe_symm
+    apply Equiv.mk _ _ _ _
+    · intro x
+      refine ⟨h' x.castSucc, ?_⟩
+      apply Nat.lt_of_not_le
+      intro g
+      cases Nat.lt_or_eq_of_le g <;> rename_i g
+      exact Nat.not_between_succ _ _ g (Fin.isLt _)
+      rename_i g'; clear g'
+      have eq : last m = h' x.castSucc := by
+        rw [←Fin.val_inj]; assumption
+      rw [←hspec] at eq
+      have := (Fin.castSucc_lt_iff_succ_le (i := x) (j := Fin.last _)).mpr (by
+        apply Nat.le_of_lt_succ
+        apply Nat.succ_lt_succ
+        apply Fin.isLt)
+      rw [h'.inj eq] at this
+      have := Nat.lt_irrefl _ this
+      contradiction
+    · intro x
+      refine ⟨h'.symm x.castSucc, ?_⟩
+      apply Nat.lt_of_not_le
+      intro g
+      cases Nat.lt_or_eq_of_le g <;> rename_i g
+      exact Nat.not_between_succ _ _ g (Fin.isLt _)
+      rename_i g'; clear g'
+      have eq : last n = h'.symm x.castSucc := by
+        rw [←Fin.val_inj]; assumption
+      rw [←hspec'] at eq
+      have := (Fin.castSucc_lt_iff_succ_le (i := x) (j := Fin.last _)).mpr (by
+        apply Nat.le_of_lt_succ
+        apply Nat.succ_lt_succ
+        apply Fin.isLt)
+      rw [h'.symm.inj eq] at this
+      have := Nat.lt_irrefl _ this
+      contradiction
+    · intro x
+      dsimp
+      congr 1
+      rw [h'.coe_symm]
+      rfl
+    · intro x
+      dsimp
+      congr 1
+      rw [h'.symm_coe]
+      rfl
