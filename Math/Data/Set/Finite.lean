@@ -272,6 +272,11 @@ def IsFinite.induction {motive : Set α → Prop} (s : Set α) [h : s.IsFinite]
     (cons : ∀ a s, a ∉ s → Set.IsFinite s → motive s → motive (insert a s)) : motive s :=
     IsFinite.rec s nil cons
 
+def IsFinite.rec_nil {motive: Set α -> Sort*}
+  {nil: motive ∅} {cons: ∀ a s, a ∉ s → Set.IsFinite s → motive s → motive (insert a s) }:
+  IsFinite.rec ∅ nil cons = nil := by
+  rw [rec, dif_pos rfl]
+
 def IsFinite.spec (s: Set α) [h: s.IsFinite] : ∃s': List α, s'.Nodup ∧ ∀x, x ∈ s ↔ x ∈ s' := by
   induction s using Set.IsFinite.induction with
   | nil =>
