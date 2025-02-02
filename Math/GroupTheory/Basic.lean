@@ -324,4 +324,28 @@ def ofTrivial.Subsingleton : Subsingleton (Trivial →g g) where
     show a 1 = b 1
     rw [resp_one, resp_one]
 
+def Equiv.toHom_comp_toHom (h: b ≃g c) (g: a ≃g b) :
+  h.toHom.comp g.toHom = (g.trans h).toHom := rfl
+
+def Equiv.refl_toHom : Group.Equiv.refl.toHom = Hom.id (a := a) := rfl
+
+def Equiv.coe_symm (h: a ≃g b) (x: a) :
+  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+def Equiv.symm_coe (h: a ≃g b) (x: b) :
+  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+
+def Equiv.trans_symm (h: a ≃g b) :
+  h.trans h.symm = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h.symm (h x) = x
+  rw [h.coe_symm]
+
+def Equiv.symm_trans (h: a ≃g b) :
+  h.symm.trans h = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h (h.symm x) = x
+  rw [h.symm_coe]
+
 end Group

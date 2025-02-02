@@ -206,6 +206,13 @@ instance : IsCompleteSemiLatticeInf (Subgroup g) where
 
 instance : IsCompleteLattice (Subgroup g) := IsCompleteLattice.mk _
 
+@[ext]
+def ext (a b: Subgroup g) : (∀x, x ∈ a.set ↔ x ∈ b.set) -> a = b:= by
+  intro h
+  apply orderEmbedSet.inj
+  ext
+  apply h
+
 scoped instance {g: Subgroup g} : One g.set where
   one := ⟨1, g.one_mem⟩
 scoped instance {g: Subgroup g} : Inv g.set where
@@ -279,6 +286,9 @@ def preimage (s: Subgroup g') (h: g →g g') : Subgroup g where
     apply s.mul_mem
     assumption
     assumption
+
+def preimage_preimage (s: Subgroup c) (h: a →g b) (g: b →g c) :
+  (s.preimage g).preimage h = s.preimage (g.comp h) := rfl
 
 def commutator (a b: Subgroup g) : Subgroup g :=
   generated <| (Set.zip a.set b.set).image fun ⟨x, y⟩ => x⁻¹ * y⁻¹ * x * y
@@ -478,4 +488,63 @@ def IsNormal.Quot {A: Subgroup g} (h: A.IsNormal) : Group h.QuotType := by
     rw [mul_assoc]
     rfl
 
+def IsNormal.preimage {A: Subgroup g} (h: A.IsNormal) (f: g' →g g) :
+  (A.preimage f).IsNormal := by
+  intro x y hy
+  apply Set.mem_preimage.mpr
+  rw [resp_mul, resp_mul, resp_inv]
+  apply h
+  assumption
+
+def IsNormal.image {A: Subgroup g} (h: A.IsNormal) (f: g →g g') (hf: Function.Surjective f):
+  (A.image f).IsNormal := by
+  intro x y ⟨y, hy, eq⟩; subst eq
+  have := fun x => h x y hy
+  obtain ⟨x, eq⟩ := hf x; subst eq
+  rw [←resp_inv, ←resp_mul, ←resp_mul]
+  apply Set.mem_image'
+  apply h
+  assumption
+
 end Subgroup
+
+namespace Group
+
+-- the only normal subgroups of a simple group are
+-- the trivial group, and the entire group
+def IsSimple (g: Group α) :=
+  ∀s: Subgroup g, s.IsNormal -> s = ⊤ ∨ s = ⊥
+
+-- simple groups respect the isomorphsim relation
+def IsSimple.congr (g: Group α) (h: g ≃g g'):
+  g.IsSimple -> g'.IsSimple := by
+  intro g_simp s n
+  cases g_simp _ (n.preimage h.toHom) <;> rename_i hs
+  · left
+    ext x
+    apply Iff.intro
+    intro
+    trivial
+    intro
+    have : (s.preimage h.toHom).preimage h.symm.toHom = (⊤: Subgroup g).preimage h.symm.toHom := by rw [hs]
+    rw [Subgroup.preimage_preimage, Equiv.toHom_comp_toHom, h.symm_trans] at this
+    replace this : s = _ := this
+    rw [this]
+    trivial
+  · right
+    ext x
+    apply Iff.intro
+    intro hx
+    have : (s.preimage h.toHom).preimage h.symm.toHom = (⊥: Subgroup g).preimage h.symm.toHom := by rw [hs]
+    rw [Subgroup.preimage_preimage, Equiv.toHom_comp_toHom, h.symm_trans] at this
+    replace this : s = _ := this
+    rw [this] at hx
+    replace hx: h.symm x = 1 := hx
+    rw [←h.coe_symm 1, resp_one,] at hx
+    rw [h.invFun_inj hx]
+    rfl
+    intro
+    subst x
+    apply s.one_mem
+
+end Group
