@@ -924,3 +924,16 @@ export IsNonCommField (
 )
 
 class IsField (α: Type*) [FieldOps α] extends IsNonCommField α, IsCommMagma α : Prop where
+
+class NoZeroDivisors (α: Type*) [Mul α] [Zero α] where
+  of_mul_eq_zero: ∀a b: α, a * b = 0 -> a = 0 ∨ b = 0
+
+export NoZeroDivisors (of_mul_eq_zero)
+
+instance [FieldOps α] [IsField α] : NoZeroDivisors α where
+  of_mul_eq_zero a b h := by
+    apply Classical.or_iff_not_imp_right.mpr
+    intro g
+    have : (a * b) * b⁻¹? = 0 := by rw [h, zero_mul]
+    rw [mul_assoc, mul_inv?_cancel, mul_one] at this
+    assumption
