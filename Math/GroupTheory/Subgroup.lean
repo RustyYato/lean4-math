@@ -547,4 +547,14 @@ def IsSimple.congr (g: Group α) (h: g ≃g g'):
     subst x
     apply s.one_mem
 
+def IsSimple.Trivial : Trivial.IsSimple := by
+  intro S h
+  right
+  ext x
+  apply Iff.intro
+  intro
+  apply Subgroup.one_mem
+  intro
+  apply Subgroup.one_mem
+
 end Group
