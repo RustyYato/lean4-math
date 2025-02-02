@@ -18,11 +18,13 @@ instance : NatCast (Fin (n + 1)) where
 instance : IntCast (Fin (n + 1)) where
   intCast := intCastRec
 
-instance : IsSemiring (Fin (n + 2)) where
+instance : IsAddCommMagma (Fin (n + 1)) where
   add_comm := by
     intro a b
     show ⟨_, _⟩ = Fin.mk _ _
     simp [Nat.add_comm]
+
+instance : IsAddGroupWithOne (Fin (n + 1)) where
   add_assoc := by
     intro a b c
     show ⟨_, _⟩ = Fin.mk _ _
@@ -33,12 +35,35 @@ instance : IsSemiring (Fin (n + 2)) where
   add_zero := by
     intro a
     simp
+  sub_eq_add_neg := by
+    intro a b
+    show Fin.mk _ _ = Fin.mk _ _
+    simp
+    rw [Nat.add_comm]
+  zsmul_ofNat _ _ := rfl
+  zsmul_negSucc _ _ := rfl
+  neg_add_cancel := by
+    intro a
+    show Fin.mk _ _ = Fin.mk _ _
+    simp
   natCast_zero := rfl
   natCast_succ := by
     intro a
     show Fin.mk _ _ = Fin.mk _ _
     simp
   ofNat_eq_natCast _ := rfl
+  intCast_ofNat _ := rfl
+  intCast_negSucc _ := rfl
+  zero_nsmul _ := by
+    show Fin.mk _ _ = Fin.mk _ _
+    simp
+  succ_nsmul := by
+    intro m a
+    show Fin.mk _ _ = Fin.mk _ _
+    simp
+    rw [Nat.add_mul, Nat.one_mul]
+
+instance : IsSemiring (Fin (n + 2)) where
   mul_assoc := by
     intro a b c
     show Fin.mk _ _ = Fin.mk _ _
@@ -78,14 +103,6 @@ instance : IsSemiring (Fin (n + 2)) where
     show Fin.mk _ _ = Fin.mk _ _
     simp
     rw [Nat.add_mul]
-  zero_nsmul _ := by
-    show Fin.mk _ _ = Fin.mk _ _
-    simp
-  succ_nsmul := by
-    intro m a
-    show Fin.mk _ _ = Fin.mk _ _
-    simp
-    rw [Nat.add_mul, Nat.one_mul]
   npow_zero _ := rfl
   npow_succ := by
     intro a m
@@ -93,20 +110,7 @@ instance : IsSemiring (Fin (n + 2)) where
     simp
     rw [Nat.pow_succ]
 
-instance : IsRing (Fin (n + 2)) where
-  zsmul_ofNat _ _ := rfl
-  zsmul_negSucc _ _ := rfl
-  intCast_ofNat _ := rfl
-  intCast_negSucc _ := rfl
-  sub_eq_add_neg := by
-    intro a b
-    show Fin.mk _ _ = Fin.mk _ _
-    simp
-    rw [Nat.add_comm]
-  neg_add_cancel := by
-    intro a
-    show Fin.mk _ _ = Fin.mk _ _
-    simp
+instance : IsRing (Fin (n + 2)) := inferInstance
 
 instance : IsCommMagma (Fin (n + 2)) where
   mul_comm := by
@@ -114,7 +118,14 @@ instance : IsCommMagma (Fin (n + 2)) where
     show Fin.mk _ _ = Fin.mk _ _
     simp [Nat.mul_comm]
 
-def Fin.char_eq : char (Fin (n + 2)) = n + 2 := by
+def Fin.char_eq : char (Fin (n + 1)) = n + 1 := by
+  cases n
+  · dsimp
+    apply char_eq_of
+    intro
+    apply Subsingleton.allEq
+    intro m h
+    apply Nat.one_dvd
   apply char_eq_of_natCast_eq_zero
   show Fin.mk _ _ = Fin.mk _ _
   simp

@@ -43,6 +43,9 @@ structure Group (α: Type*) extends GroupOps α, IsGroup α where
 
 namespace Group
 
+def Group.ofAdd (α: Type*) [AddGroupOps α] [IsAddGroup α] :=
+  Group.mk (α := MulOfAdd α) inferInstance inferInstance
+
 def Elem (_: Group α) := α
 
 instance : CoeSort (Group α) (Type _) where
