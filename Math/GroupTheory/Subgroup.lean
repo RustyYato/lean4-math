@@ -235,6 +235,51 @@ instance {g: Subgroup g} : IsGroup g.set where
   zpow_ofNat _ _ := rfl
   zpow_negSucc _ _ := rfl
 
+def toGroup (A: Subgroup g) : Group A.set where
+
+def image (s: Subgroup g) (h: g →g g') : Subgroup g' where
+  set := s.set.image h
+  one_mem := by
+    apply Set.mem_image.mpr
+    exists 1
+    apply And.intro
+    apply s.one_mem
+    rw [resp_one]
+  inv_mem := by
+    intro _ ⟨x, _, eq⟩; subst eq
+    rw [←resp_inv]
+    apply Set.mem_image'
+    apply s.inv_mem
+    assumption
+  mul_mem := by
+    intro _ _ ⟨x, _,  eqx⟩ ⟨y, _, eqy⟩
+    subst eqx eqy
+    rw [←resp_mul]
+    apply Set.mem_image'
+    apply s.mul_mem
+    assumption
+    assumption
+
+def preimage (s: Subgroup g') (h: g →g g') : Subgroup g where
+  set := s.set.preimage h
+  one_mem := by
+    apply Set.mem_preimage.mpr
+    rw [resp_one]
+    apply s.one_mem
+  inv_mem := by
+    intro x hx
+    apply Set.mem_preimage.mpr
+    rw [resp_inv]
+    apply s.inv_mem
+    assumption
+  mul_mem := by
+    intro x y hx hy
+    apply Set.mem_preimage.mpr
+    rw [resp_mul]
+    apply s.mul_mem
+    assumption
+    assumption
+
 def commutator (a b: Subgroup g) : Subgroup g :=
   generated <| (Set.zip a.set b.set).image fun ⟨x, y⟩ => x⁻¹ * y⁻¹ * x * y
 
