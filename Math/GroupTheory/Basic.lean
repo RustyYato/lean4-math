@@ -281,4 +281,47 @@ def conj (A: Group α) (x: A) : A ≃g A where
     dsimp
     rw [mul_one, inv_mul_cancel]
 
+instance : GroupOps Unit where
+  mul _ _ := ()
+  one := ()
+  inv _ := ()
+  div _ _ := ()
+  npow _ _ := ()
+  zpow _ _ := ()
+
+def Trivial : Group Unit where
+  mul_assoc _ _ _ := rfl
+  one_mul _ := rfl
+  mul_one _ := rfl
+  div_eq_mul_inv _ _ := rfl
+  zpow_ofNat _ _ := rfl
+  zpow_negSucc _ _ := rfl
+  inv_mul_cancel _ := rfl
+
+def toTrivial : g →g Trivial where
+  toFun _ := 1
+  resp_mul := rfl
+  resp_one := rfl
+
+def ofTrivial : Trivial ↪g g where
+  toFun _ := 1
+  inj { _ _ } _  := rfl
+  resp_mul := by
+    intro x y
+    rw [mul_one]
+  resp_one := rfl
+
+def toTrivial.Subsingleton : Subsingleton (g →g Trivial) where
+  allEq a b := by
+    apply DFunLike.ext
+    intro x
+    rfl
+
+def ofTrivial.Subsingleton : Subsingleton (Trivial →g g) where
+  allEq a b := by
+    apply DFunLike.ext
+    intro x
+    show a 1 = b 1
+    rw [resp_one, resp_one]
+
 end Group
