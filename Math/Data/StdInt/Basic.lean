@@ -6,6 +6,12 @@ def cases {motive: Int -> Sort _}
 | .negSucc _ => neg _
 | .ofNat (.succ _) => pos _
 
+def coe_cases {motive: Int -> Sort _}
+  (ofNat: ∀n: Nat, motive n)
+  (negSucc: ∀n: Nat, motive (Int.negSucc n)): ∀x, motive x
+| .negSucc _ => negSucc _
+| .ofNat _ => ofNat _
+
 def induction {motive : Int → Prop} (i : Int)
   (zero : motive 0) (succ : ∀i, motive i → motive (i + 1)) (pred : ∀i, motive i → motive (i - 1)) : motive i := by
 induction i with

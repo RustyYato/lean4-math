@@ -20,7 +20,7 @@ syntax "int_pow_tactic_trivial" : tactic
 
 -- prioritize deciding if pow is nonneg, which is usually easier
 -- otherwise prove that the val satisfies condition via invert_tactic
-macro_rules | `(tactic|int_pow_tactic) => `(tactic|first|(right; first|trivial|int_pow_tactic_trivial)|(left; invert_tactic))
+macro_rules | `(tactic|int_pow_tactic) => `(tactic|first|assumption|(right; first|trivial|int_pow_tactic_trivial)|(left; invert_tactic))
 macro_rules | `(tactic|int_pow_tactic_trivial) => `(tactic|apply Int.ofNat_nonneg)
 
 -- prioritize assumption, so if the user proves this manually, that proof will be used
@@ -39,7 +39,7 @@ macro_rules | `($x /? $y) => `(CheckedDiv.checked_div $x $y (by invert_tactic))
 syntax:70 term:70 " %? " term:71 : term
 macro_rules | `($x %? $y) => `(CheckedMod.checked_mod $x $y (by invert_tactic))
 
-syntax:70 term:70 " ^? " term:71 : term
+syntax:80 term:70 " ^? " term:71 : term
 macro_rules | `($x ^? $y) => `(CheckedIntPow.checked_pow $x $y (by int_pow_tactic))
 
 syntax:max term noWs "⁻¹?" "~(" term ")" : term
@@ -51,7 +51,7 @@ macro_rules | `($x /? $y ~($prf)) => `(CheckedDiv.checked_div $x $y $prf)
 syntax:70 term:70 " %? " term:71 "~(" term ")" : term
 macro_rules | `($x %? $y ~($prf)) => `(CheckedMod.checked_mod $x $y $prf)
 
-syntax:70 term:70 " ^? " term:71 "~(" term ")" : term
+syntax:80 term:70 " ^? " term:71 "~(" term ")" : term
 macro_rules | `($x ^? $y ~($prf)) => `(CheckedIntPow.checked_pow $x $y $prf)
 
 open Lean Meta PrettyPrinter Delaborator SubExpr in
@@ -79,3 +79,12 @@ def delab_checked_invert : Delab := do
   let #[_, _, _, x, _] := expr.getAppArgs | failure
   let x ← delab x
   `($x⁻¹?)
+
+open Lean Meta PrettyPrinter Delaborator SubExpr in
+@[delab app.CheckedIntPow.checked_pow]
+def delab_checked_int_pow : Delab := do
+  let expr ← getExpr
+  let #[_, _, _, x, y, _] := expr.getAppArgs | failure
+  let x ← delab x
+  let y ← delab y
+  `($x ^? $y)

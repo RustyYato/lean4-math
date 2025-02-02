@@ -131,6 +131,9 @@ def Equiv.trans (h: Equiv α β) (g: Equiv β γ) : Equiv α γ where
     dsimp
     rw [h.rightInv, g.rightInv]
 
+def Equiv.trans_trans {h₀: Equiv α₀ α₁} {h₁: Equiv α₁ α₂} {h₂: Equiv α₂ α₃} :
+  (h₀.trans h₁).trans h₂ = h₀.trans (h₁.trans h₂) := rfl
+
 instance [IsEmpty α] : Embedding α β where
   toFun x := elim_empty x
   inj x := elim_empty x
@@ -706,6 +709,19 @@ def Equiv.swap [DecidableEq α] (a b: α) : α ≃ α where
     split
     rw [if_pos rfl]; symm; assumption
     rfl
+
+def Equiv.swap_symm [DecidableEq α] (a b: α) :
+  (Equiv.swap a b).symm = Equiv.swap b a := by
+  simp [swap, symm]
+  ext x
+  split
+  subst x
+  split
+  subst b; rfl
+  rfl
+  split
+  rfl
+  rfl
 
 def Nat.not_between_succ (n m: Nat) : n < m -> m < n + 1 -> False := by
   intro h g

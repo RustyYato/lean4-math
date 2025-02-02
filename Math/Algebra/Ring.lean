@@ -622,31 +622,31 @@ def mul_zsmul [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] (x y: ℤ) (a
   | succ y ih => rw [Int.mul_add, Int.mul_one, add_zsmul, add_zsmul, one_zsmul, zsmul_add, ih]
   | pred y ih => rw [Int.mul_sub, Int.mul_one, sub_zsmul, sub_zsmul, one_zsmul, zsmul_sub, ih]
 
-def succ_zpow [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (x + 1) = a ^ x * a :=
+def zpow_succ [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (x + 1) = a ^ x * a :=
   succ_zsmul (α := AddOfMul α) _ _
 
-def pred_zpow [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (x - 1) = a ^ x / a :=
+def zpow_pred [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (x - 1) = a ^ x / a :=
   pred_zsmul (α := AddOfMul α) _ _
 
-def add_zpow [GroupOps α] [IsGroup α] (x y: ℤ) (a: α) : a ^ (x + y) = a ^ x * a ^ y :=
+def zpow_add [GroupOps α] [IsGroup α] (x y: ℤ) (a: α) : a ^ (x + y) = a ^ x * a ^ y :=
   add_zsmul (α := AddOfMul α) _ _ _
 
-def neg_zpow [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (-x) = (a ^ x)⁻¹ :=
+def zpow_neg [GroupOps α] [IsGroup α] (x: ℤ) (a: α) : a ^ (-x) = (a ^ x)⁻¹ :=
   neg_zsmul (α := AddOfMul α) _ _
 
-def zpow_add [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a * b) ^ x = a ^ x * b ^ x :=
+def mul_zpow [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a * b) ^ x = a ^ x * b ^ x :=
   zsmul_add (α := AddOfMul α) _ _ _
 
-def zpow_inv [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
+def inv_zpow [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
   zsmul_neg (α := AddOfMul α) _ _
 
-def zpow_div [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a / b) ^ x = a ^ x / b ^ x :=
+def div_zpow [GroupOps α] [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a / b) ^ x = a ^ x / b ^ x :=
   zsmul_sub (α := AddOfMul α) _ _ _
 
-def sub_zpow [GroupOps α] [IsGroup α] (x y: ℤ) (a: α) : a ^ (x - y) = a ^ x / a ^ y :=
+def zpow_sub [GroupOps α] [IsGroup α] (x y: ℤ) (a: α) : a ^ (x - y) = a ^ x / a ^ y :=
   sub_zsmul (α := AddOfMul α) _ _ _
 
-def mul_zpow [GroupOps α] [IsGroup α]  [IsCommMagma α] (x y: ℤ) (a: α) : a ^ (x * y) = (a ^ y) ^ x :=
+def zpow_mul [GroupOps α] [IsGroup α]  [IsCommMagma α] (x y: ℤ) (a: α) : a ^ (x * y) = (a ^ y) ^ x :=
   mul_zsmul (α := AddOfMul α) _ _ _
 
 class IsLeftDistrib (α: Type*) [Add α] [Mul α]: Prop where
@@ -910,15 +910,15 @@ class FieldOps (α: Type*) extends RingOps α,
 
 instance [RingOps α] [CheckedIntPow α (P := fun x => x ≠ 0)] [CheckedInvert α (P := fun x => x ≠ 0)] [CheckedDiv α (P := fun x => x ≠ 0)] : FieldOps α where
 
-class IsNonCommField (α: Type*) [FieldOps α] extends IsRing α : Prop where
+class IsNonCommField (α: Type*) [FieldOps α] extends IsRing α, IsNontrivial α : Prop where
   mul_inv?_cancel: ∀(a: α) (h: a ≠ 0), a * a⁻¹? = 1
-  div_eq_mul_inv?: ∀(a b: α) (h: b ≠ 0), a /? b = a * b⁻¹?
+  div?_eq_mul_inv?: ∀(a b: α) (h: b ≠ 0), a /? b = a * b⁻¹?
   zpow?_ofNat (n: ℕ) (a: α) : a ^? (n: ℤ) = a ^ n
   zpow?_negSucc (n: ℕ) (a: α) (h: a ≠ 0) : a ^? (Int.negSucc n) = (a⁻¹? ^ n.succ)
 
 export IsNonCommField (
   mul_inv?_cancel
-  div_eq_mul_inv?
+  div?_eq_mul_inv?
   zpow?_ofNat
   zpow?_negSucc
 )
@@ -926,14 +926,302 @@ export IsNonCommField (
 class IsField (α: Type*) [FieldOps α] extends IsNonCommField α, IsCommMagma α : Prop where
 
 class NoZeroDivisors (α: Type*) [Mul α] [Zero α] where
-  of_mul_eq_zero: ∀a b: α, a * b = 0 -> a = 0 ∨ b = 0
+  of_mul_eq_zero: ∀{a b: α}, a * b = 0 -> a = 0 ∨ b = 0
 
 export NoZeroDivisors (of_mul_eq_zero)
 
-instance [FieldOps α] [IsField α] : NoZeroDivisors α where
-  of_mul_eq_zero a b h := by
+def of_npow_eq_zero [Zero α] [MonoidOps α] [IsMonoid α] [IsNontrivial α] [NoZeroDivisors α] (a: α) (n: ℕ) : a ^ n = 0 -> a = 0 := by
+  induction n with
+  | zero =>
+    rw [npow_zero]
+    intro h
+    have := zero_ne_one h.symm; contradiction
+  | succ n ih =>
+    rw [npow_succ]
+    intro h
+    cases of_mul_eq_zero h
+    apply ih
+    assumption
+    assumption
+
+instance [FieldOps α] [IsNonCommField α] : NoZeroDivisors α where
+  of_mul_eq_zero {a b} h := by
     apply Classical.or_iff_not_imp_right.mpr
     intro g
     have : (a * b) * b⁻¹? = 0 := by rw [h, zero_mul]
     rw [mul_assoc, mul_inv?_cancel, mul_one] at this
     assumption
+
+open Classical in
+def zpow?_def
+  [FieldOps α] [IsNonCommField α]
+  (n: ℤ) (a: α) (h: a ≠ 0 ∨ 0 ≤ n) : a ^? n = if g:0 ≤ n then
+      a ^ n.natAbs
+    else
+      (a⁻¹? ~(by
+        apply h.resolve_right
+        assumption)) ^ n.natAbs := by
+    cases n using Int.coe_cases with
+    | ofNat =>
+      rw [zpow?_ofNat, dif_pos]
+      rfl
+      apply Int.ofNat_nonneg
+    | negSucc n =>
+      rw [dif_neg, zpow?_negSucc]
+      rfl
+      apply (Int.negSucc_not_nonneg _).mp
+
+def inv?_rw_proof [FieldOps α] [IsNonCommField α] (a: α) (h g: a ≠ 0) : a⁻¹? ~(h) = a⁻¹? ~(g) := rfl
+def zpow?_rw_proof [FieldOps α] [IsNonCommField α] (a: α) (n: ℤ) (h g: a ≠ 0 ∨ 0 ≤ n) : a ^? n ~(h) = a ^? n ~(g) := rfl
+
+def mul_ne_zero [Mul α] [Zero α] [NoZeroDivisors α] (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : a * b ≠ 0 := by
+  intro g
+  cases of_mul_eq_zero g <;> contradiction
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply mul_ne_zero <;> invert_tactic)
+
+def npow_ne_zero [FieldOps α] [IsNonCommField α] (a: α) (n: Nat) (h: a ≠ 0) : a ^ n ≠ 0 := by
+  intro g
+  have := of_npow_eq_zero _ _ g
+  contradiction
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply npow_ne_zero; invert_tactic)
+
+def inv?_ne_zero [FieldOps α] [IsNonCommField α] (a: α) (h: a ≠ 0) : a⁻¹? ≠ 0 := by
+  intro g
+  have : a * a⁻¹? = 0 := by rw [g, mul_zero]
+  rw [mul_inv?_cancel] at this
+  exact zero_ne_one this.symm
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply inv?_ne_zero)
+
+def zpow?_ne_zero [FieldOps α] [IsNonCommField α] (a: α) (h: a ≠ 0) : a ^? n ≠ 0 := by
+  intro g
+  cases n using Int.coe_cases with
+  | ofNat n =>
+    rw [zpow?_ofNat] at g
+    have := (of_npow_eq_zero _ _ g)
+    contradiction
+  | negSucc n =>
+    rw [zpow?_negSucc] at g
+    exact inv?_ne_zero _ _ (of_npow_eq_zero _ _ g)
+    assumption
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply zpow?_ne_zero; try invert_tactic)
+
+def inv?_mul_cancel [FieldOps α] [IsNonCommField α] (a: α) (h: a ≠ 0) : a⁻¹? * a = 1 := by
+  conv => { lhs; rhs; rw [←mul_one a] }
+  rw [←mul_inv?_cancel (a⁻¹?), ←mul_assoc a, mul_inv?_cancel, one_mul, mul_inv?_cancel]
+  apply inv?_ne_zero
+
+def mul_left_cancel' [FieldOps α] [IsNonCommField α] (a b k: α) (hk: k ≠ 0):
+  k * a = k * b -> a = b := by
+  intro h
+  have : k⁻¹? * (k * a) = k⁻¹? * (k * b) := by rw [h]
+  rw [←mul_assoc, ←mul_assoc, inv?_mul_cancel, one_mul, one_mul] at this
+  assumption
+
+def mul_right_cancel' [FieldOps α] [IsNonCommField α] (a b k: α) (hk: k ≠ 0):
+  a * k = b * k -> a = b := by
+  intro h
+  have : (a * k) * k⁻¹? = (b * k) * k⁻¹? := by rw [h]
+  rw [mul_assoc, mul_assoc, mul_inv?_cancel, mul_one, mul_one] at this
+  assumption
+
+def inv?_mul_rev [FieldOps α] [IsNonCommField α] (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) :
+  (a * b)⁻¹? = b⁻¹? * a⁻¹? := by
+  apply mul_left_cancel' _ _ (a * b)
+  invert_tactic
+  rw [mul_inv?_cancel, ←mul_assoc, mul_assoc a, mul_inv?_cancel, mul_one, mul_inv?_cancel]
+
+def zpow?_negSucc'
+  [FieldOps α] [IsNonCommField α]
+  (n: ℕ) (a: α) (h: a ≠ 0) : a ^? (Int.negSucc n) = (a ^ n.succ)⁻¹? := by
+  rw [zpow?_negSucc _ _ h]
+  induction n with
+  | zero =>
+    rw [npow_one]
+    congr
+    rw [npow_one]
+  | succ n ih =>
+    conv => {
+      rhs; arg 1
+      rw [npow_succ']
+    }
+    rw [npow_succ, ih, inv?_mul_rev]
+
+namespace IsField
+
+structure NonZero (α: Type*) [Zero α] where
+  val: α
+  nonzero: val ≠ 0 := by invert_tactic
+
+variable [FieldOps α] [IsNonCommField α]
+
+instance : One (NonZero α) where
+  one := ⟨1, zero_ne_one.symm⟩
+
+instance : Mul (NonZero α) where
+  mul | ⟨a, ha⟩, ⟨b, hb⟩ => ⟨a * b, by
+    intro h
+    cases of_mul_eq_zero h <;> contradiction⟩
+
+instance : Inv (NonZero α) where
+  inv | ⟨a, ha⟩ => ⟨a⁻¹?, by
+    intro h
+    have : a * a⁻¹? = 0 := by rw [h, mul_zero]
+    rw [mul_inv?_cancel] at this
+    exact zero_ne_one this.symm⟩
+
+instance : MonoidOps (NonZero α) where
+  npow | ⟨x, hx⟩, n => NonZero.mk (x ^ n)
+instance : GroupOps (NonZero α) where
+  zpow | ⟨x, hx⟩, n => NonZero.mk (x ^? n)
+
+instance : IsGroup (NonZero α) where
+  mul_assoc := by
+    intro a b c
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [mul_assoc]
+  one_mul := by
+    intro a
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [one_mul]
+  mul_one := by
+    intro a
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [mul_one]
+  inv_mul_cancel := by
+    intro a
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [inv?_mul_cancel]
+  div_eq_mul_inv _ _ := rfl
+  zpow_ofNat _ _ := by
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [zpow?_ofNat]
+  zpow_negSucc _ _ := by
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [zpow?_negSucc']
+    congr
+    apply NonZero.nonzero
+  npow_zero _ := by
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [npow_zero]
+  npow_succ n a := by
+    show NonZero.mk _ _ = NonZero.mk _ _
+    congr 1
+    rw [npow_succ]
+
+def zpow?_eq_nz_zpow
+  (a: α) (n: ℤ) (h: a ≠ 0) : NonZero.mk (a ^? n) = (NonZero.mk a) ^ n := rfl
+
+def inv?_eq_nz_inv
+  (a: α) (h: a ≠ 0) : NonZero.mk (a⁻¹?) = (NonZero.mk a)⁻¹ := rfl
+
+def mul_eq_nz_mul
+  (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : NonZero.mk (a * b) (by
+    intro h
+    cases of_mul_eq_zero h <;> contradiction) = NonZero.mk a * NonZero.mk b := rfl
+
+def div_eq_nz_div
+  (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : NonZero.mk (a /? b) (by
+    intro h
+    rw [div?_eq_mul_inv?] at h
+    have := inv?_ne_zero b hb
+    cases of_mul_eq_zero h <;> contradiction) = NonZero.mk a / NonZero.mk b := by
+    rw [div_eq_mul_inv, ←inv?_eq_nz_inv, ←mul_eq_nz_mul]
+    congr
+    rw [div?_eq_mul_inv?]
+
+end IsField
+
+def zero_zpow?
+  [FieldOps α] [IsNonCommField α]
+  (n: ℤ) (hn: 0 ≤ n) : (0: α) ^? n = if n = 0 then 1 else 0 := by
+  cases n using Int.coe_cases with
+  | negSucc n => contradiction
+  | ofNat n =>
+    rw [zpow?_ofNat]
+    cases n
+    rw [npow_zero, if_pos]
+    rfl
+    rw [npow_succ, mul_zero, if_neg]
+    intro h
+    have := Int.ofNat.inj h
+    contradiction
+
+def zpow?_add [FieldOps α] [IsNonCommField α] (n m: ℤ) (a: α) (hn: a ≠ 0 ∨ 0 ≤ n) (hm: a ≠ 0 ∨ 0 ≤ m) :
+  a ^? (n + m) ~(by
+    cases hn
+    left; assumption
+    cases hm
+    left; assumption
+    right
+    apply Int.add_nonneg <;> assumption) = a ^? n * a ^? m := by
+    by_cases h:a = 0
+    subst a
+    repeat rw [zero_zpow?]
+    by_cases hn':n = 0
+    rw [if_pos hn']
+    by_cases hm:m = 0
+    rw [if_pos, if_pos hm]
+    rw [mul_one]
+    rw [hn', hm]; rfl
+    rw [if_neg, if_neg, mul_zero]
+    assumption
+    rw [hn', Int.zero_add]; assumption
+    rw [if_neg, if_neg, zero_mul]
+    assumption
+    intro h
+    rw [Int.add_comm] at h
+    replace h := Int.neg_eq_of_add_eq_zero h
+    have : m < 0 := by
+      rw [←Int.neg_neg m]
+      apply Int.neg_lt_of_neg_lt
+      rw [Int.neg_zero, h]
+      apply Int.lt_iff_le_not_le.mpr
+      have : 0 ≤ n := by
+        apply hn.resolve_left
+        intro; contradiction
+      apply And.intro
+      assumption
+      intro g
+      have := Int.le_antisymm g this
+      contradiction
+    cases hm
+    contradiction
+    have := Int.not_le_of_gt this
+    contradiction
+    apply hm.resolve_left
+    intro; contradiction
+    apply hn.resolve_left
+    intro; contradiction
+    apply Int.add_nonneg
+    apply hn.resolve_left
+    intro; contradiction
+    apply hm.resolve_left
+    intro; contradiction
+    apply IsField.NonZero.mk.inj
+    rw [IsField.mul_eq_nz_mul]
+    repeat rw [IsField.zpow?_eq_nz_zpow (α := α)]
+    rw [zpow_add]
+    assumption
+
+def zpow?_sub [FieldOps α] [IsNonCommField α] (n m: ℤ) (a: α) (hn: a ≠ 0) :
+  a ^? (n - m) = a ^? n /? a ^? m := by
+  apply IsField.NonZero.mk.inj
+  rw [IsField.div_eq_nz_div]
+  repeat rw [IsField.zpow?_eq_nz_zpow (α := α)]
+  rw [zpow_sub]
+  assumption
