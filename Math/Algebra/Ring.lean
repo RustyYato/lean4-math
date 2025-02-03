@@ -908,6 +908,14 @@ class FieldOps (α: Type*) extends RingOps α,
   CheckedInvert α (P := fun x => x ≠ 0),
   CheckedDiv α (P := fun x => x ≠ 0) where
 
+def zpow?Rec [RingOps α] [CheckedInvert α (P := fun x => x ≠ 0)] (a: α) (n: ℤ) (h: a ≠ 0 ∨ 0 ≤ n) : α :=
+  match n with
+  | .ofNat n => a ^ n
+  | .negSucc n => (a⁻¹? ~(by
+    apply h.resolve_right
+    apply Int.not_le.mpr
+    apply Int.negSucc_lt_zero)) ^ n.succ
+
 instance [RingOps α] [CheckedIntPow α (P := fun x => x ≠ 0)] [CheckedInvert α (P := fun x => x ≠ 0)] [CheckedDiv α (P := fun x => x ≠ 0)] : FieldOps α where
 
 class IsNonCommField (α: Type*) [FieldOps α] extends IsRing α, IsNontrivial α : Prop where

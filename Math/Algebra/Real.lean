@@ -67,8 +67,18 @@ instance : IsField ℝ where
   neg_add_cancel a := by
     rw [Real.add_comm, Real.add_neg_self]
   mul_inv?_cancel := Real.mul_inv_self
-  div_eq_mul_inv? _ _ _ := rfl
+  div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
+  zero_ne_one := by
+    apply ne_of_lt
+    show (1 - 0: ℝ).IsPos
+    rw [sub_zero]
+    exists 1
+    apply And.intro
+    decide
+    exists 0
+    intro _ _
+    rfl
 
 end Real

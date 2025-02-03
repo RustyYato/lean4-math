@@ -402,4 +402,31 @@ def abs_sub_comm (a b: ℝ) : ‖a - b‖ = ‖b - a‖ := by
   apply le_of_lt
   assumption
 
+def square_nonneg (a: ℝ) : 0 ≤ a * a := by
+  rcases pos_or_eq_or_neg a with p | eq | n
+  have := mul_pos_of_pos_of_pos a a p p
+  left
+  show (a * a - 0).IsPos
+  rw [sub_zero]
+  assumption
+  rw [eq, mul_zero]
+  have := mul_pos_of_neg_of_neg a a n n
+  left
+  show (a * a - 0).IsPos
+  rw [sub_zero]
+  assumption
+
+def eq_zero_of_square_eq_zero (a: ℝ) : a * a = 0 -> a = 0 := by
+  intro h
+  rcases pos_or_eq_or_neg a with p | eq | n
+  have := mul_pos_of_pos_of_pos a a p p
+  rw [h] at this
+  have := zero_not_pos
+  contradiction
+  assumption
+  have := mul_pos_of_neg_of_neg a a n n
+  rw [h] at this
+  have := zero_not_pos
+  contradiction
+
 end Real

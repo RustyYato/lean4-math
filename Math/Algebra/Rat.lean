@@ -80,7 +80,7 @@ instance : IsField ℚ where
     apply quot.sound
     rfl
   mul_inv?_cancel := Rat.mul_inv_self
-  div_eq_mul_inv? _ _ _ := rfl
+  div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc a b h := by
     show Rat.zpow _ _ = Rat.npow _ _
@@ -88,6 +88,7 @@ instance : IsField ℚ where
     dsimp
     rw [dif_neg h]
     rfl
+  zero_ne_one := by decide
 
 instance : IsNontrivial ℚ where
   zero_ne_one := by
