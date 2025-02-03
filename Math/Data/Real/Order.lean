@@ -480,18 +480,29 @@ end Real
 
 namespace CauchySeq
 
+def le_eventually_pointwise (a b: CauchySeq) :
+  (Eventually fun n => a n ≤ b n) ->
+  Real.mk a ≤ Real.mk b := by
+  intro h
+  rw [le_iff_not_lt]
+  intro ⟨B, B_pos, spec⟩
+  replace spec := h.merge spec; clear h
+  obtain ⟨k, spec⟩ := spec
+  replace spec := spec k (le_refl _)
+  obtain ⟨h, spec⟩ := spec
+  replace spec: 0 < a _ - b _ := lt_of_lt_of_le B_pos spec
+  replace spec := Rat.add_lt_add_of_lt_of_le spec (le_refl (b k))
+  rw [Rat.zero_add, Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add,
+    Rat.add_zero] at spec
+  exact not_le_of_lt spec h
+
 def le_pointwise (a b: CauchySeq) :
   (∀n, a n ≤ b n) ->
   Real.mk a ≤ Real.mk b := by
   intro h
-  rw [le_iff_not_lt]
-  intro ⟨B, B_pos, k, spec⟩
-  dsimp at spec
-  have : B ≤ a k - b k := spec k (le_refl _)
-  replace this := lt_of_lt_of_le B_pos this
-  have := Rat.add_lt_add_of_lt_of_le this (le_refl (b k))
-  rw [Rat.zero_add, Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add,
-    Rat.add_zero] at this
-  exact not_le_of_lt this (h _)
+  apply le_eventually_pointwise
+  exists 0
+  intro n g
+  apply h
 
 end CauchySeq
