@@ -1066,3 +1066,9 @@ def Rat.mk_zpow (a: Fract) (n: Int) : ⟦a⟧ ^ n = ⟦a ^ n⟧ := by
     exact quot.sound g)]
   rw [mk_inv, mk_npow]
   rfl
+
+instance : IntCast ℚ where
+  intCast := Rat.ofInt
+
+instance : NatCast ℚ where
+  natCast := Rat.ofNat

@@ -599,4 +599,113 @@ def le_add_right_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ a + b := by
   apply le_add_left_nonneg
   assumption
 
+def floor (a: ℚ) : Int := a.num.ediv (a.den: Int)
+def ceil (a: ℚ) : Int := -Rat.floor (-a)
+
+private def sub_one (a: ℚ) : ℚ where
+  num := a.num - a.den
+  den := a.den
+  den_pos := a.den_pos
+  isReduced := by
+    dsimp [Fract.isReduced]
+    apply (Nat.gcd_eq_one_iff_no_common_prime_factor _ _).mpr
+    intro k kprime kdvd_abs kdvd_den
+    replace kdvd_abs : (Int.ofNat k) ∣ ‖a.num - a.den‖ := Int.ofNat_dvd.mpr kdvd_abs
+    replace kdvd_abs : ↑k ∣ a.num - _ := Int.dvd_natAbs.mp kdvd_abs
+    have := Int.dvd_add kdvd_abs (Int.ofNat_dvd.mpr kdvd_den)
+    rw [Int.sub_add_cancel] at this
+    refine (Nat.gcd_eq_one_iff_no_common_prime_factor _ _).mp a.isReduced k kprime ?_ kdvd_den
+    apply Int.ofNat_dvd.mp
+    apply Int.dvd_natAbs.mpr
+    assumption
+
+private def Fract.sub_one_num (a: Fract) : (a - 1).num = a.num - a.den := by
+  show (a.sub 1).num = _
+  unfold Fract.sub; dsimp
+  erw [Int.mul_one, Int.one_mul]
+
+private def Fract.sub_one_den (a: Fract) : (a - 1).den = a.den := Nat.mul_one _
+
+private def int_div_one (a: Int) : a / (1: Nat) = a := by
+  refine Int.ediv_eq_of_eq_mul_left ?_ ?_
+  decide
+  erw [Int.mul_one]
+
+private def sub_one_num (a: ℚ) : (a - 1).num = a.num - a.den := by
+  show (a.sub 1).num = _
+  simp [sub, quot.lift₂, QuotLike.mk, unwrapQuot, QuotLike.unwrapQuot]
+  dsimp [Fract.reduce]
+  erw [Fract.sub_one_num, Fract.sub_one_den]
+  have := (sub_one a).isReduced
+  unfold Rat.sub_one at this
+  erw [this, int_div_one]
+
+private def sub_one_den (a: ℚ) : (a - 1).den = a.den := by
+  show (a.sub 1).den = _
+  simp [sub, quot.lift₂, QuotLike.mk, unwrapQuot, QuotLike.unwrapQuot]
+  dsimp [Fract.reduce]
+  erw [Fract.sub_one_num, Fract.sub_one_den]
+  have := (sub_one a).isReduced
+  unfold Rat.sub_one at this
+  erw [this, Nat.div_one]
+
+private def add_one_num (a: ℚ) : (a + 1).num = a.num + a.den := by
+  rw [←neg_neg (a + 1)]
+  show -(-(a + 1)).num = _
+  rw [Rat.neg_add, ←Rat.sub_eq_add_neg, sub_one_num]
+  show -(-a.num - a.den) = _
+  rw [Int.neg_sub, Int.sub_eq_add_neg, Int.neg_neg, Int.add_comm]
+
+private def add_one_den (a: ℚ) : (a + 1).den = a.den := by
+  show (-(a + 1)).den = _
+  rw [Rat.neg_add, ←Rat.sub_eq_add_neg, sub_one_den]
+  rfl
+
+def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by
+  apply Iff.intro
+  · intro h
+    subst h
+    unfold floor
+    apply And.intro
+    · erw [le_def, Int.mul_one]
+      refine Int.ediv_mul_le a.num ?_
+      intro h
+      exact (ne_of_lt a.den_pos).symm (Int.ofNat_inj.mp h)
+    · rw [add_lt_add_right (k := -1), add_assoc, Rat.add_neg_self,
+        Rat.add_zero, ←Rat.sub_eq_add_neg]
+      erw [lt_def, Int.mul_one]
+      rw [sub_one_den, sub_one_num]
+      refine Int.sub_lt_iff.mpr ?_
+      conv => { rhs; rhs; rw [←Int.one_mul a.den] }
+      rw [←Int.add_mul]
+      refine (Int.ediv_lt_iff_lt_mul ?_).mp ?_
+      apply Int.ofNat_lt.mpr
+      exact a.den_pos
+      exact Int.lt_succ (a.num / ↑a.den)
+  · intro ⟨hle, hlt⟩
+    show a.num / a.den = _
+    rw [le_def] at hle; rw [lt_def] at hlt
+    replace hle: x * _ ≤ _ * 1 := hle
+    rw [Int.mul_one] at hle
+    rw [add_one_num, add_one_den] at hlt
+    replace hlt: _ * 1 < (x + 1) * _ := hlt
+    rw [Int.mul_one] at hlt
+    apply flip le_antisymm
+    refine (Int.le_ediv_iff_mul_le ?_).mpr hle
+    apply Int.ofNat_lt.mpr
+    exact a.den_pos
+    refine Int.lt_add_one_iff.mp ?_
+    apply (Int.ediv_lt_iff_lt_mul ?_).mpr
+    assumption
+    apply Int.ofNat_lt.mpr
+    exact a.den_pos
+
+def ceil_spec (a: ℚ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by
+  rw [ceil, Int.neg_eq_comm, Eq.comm]
+  apply Iff.trans (floor_spec _ _)
+  rw [neg_lt_neg_iff, neg_neg, neg_add, ←Rat.sub_eq_add_neg]
+  rw [neg_le_neg_iff, neg_neg]
+  show _ ≤ ((- -x: Int): ℚ) ∧ ((- -x: Int): ℚ) - 1 < a ↔ _
+  rw [Int.neg_neg, And.comm]
+
 end Rat
