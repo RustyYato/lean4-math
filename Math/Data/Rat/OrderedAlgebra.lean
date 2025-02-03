@@ -44,3 +44,8 @@ instance : IsOrderedAbsRing ℚ where
   natcast_abs _ := rfl
   intcast_abs _ := rfl
   neg_abs := Rat.abs_neg
+
+  sub_eq_add_neg := sub_eq_add_neg
+  zsmul_ofNat := zsmul_ofNat
+  zsmul_negSucc := zsmul_negSucc
+  neg_add_cancel := neg_add_cancel

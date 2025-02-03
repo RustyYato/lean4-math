@@ -771,6 +771,12 @@ instance : NatCast ℝ where
 instance : IntCast ℝ where
   intCast n := ⟦CauchySeq.ofRat (Rat.ofInt n)⟧
 
+def neg_inj {a b: ℝ} : -a = -b ↔ a = b := by
+  apply flip Iff.intro
+  intro h; rw [h]
+  intro h
+  rw [←neg_neg a, ←neg_neg b, h]
+
 end Real
 
 namespace Real

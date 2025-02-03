@@ -8,6 +8,10 @@ variable
 
 namespace IsPseudoMetricSpace
 
+instance : IsPreOrder β :=
+  have := inferInstanceAs (IsPartialOrder β)
+  this.toIsPreOrder
+
 def Ball (x: α) (δ: β): Set α := Set.mk fun y => dist x y < δ
 
 def ball_sub (x: α) (δ₀ δ₁: β) (h: δ₀ ≤ δ₁) : Ball x δ₀ ⊆ Ball x δ₁ := by

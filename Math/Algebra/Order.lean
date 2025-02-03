@@ -48,7 +48,7 @@ def mul_le_mul [MonoidOps α] [IsOrderedCommMonoid α] : ∀a b c d: α, a ≤ c
 variable [NatCast α] [∀n, OfNat α (n + 2)]
 variable [NatCast α] [∀n, OfNat α (n + 2)]
 
-class IsOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends IsSemiring α, IsOrderedAddCommMonoid α, IsOrderedCommMonoid α where
+class IsOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends IsSemiring α, IsOrderedAddCommMonoid α where
   zero_le_one: 0 ≤ (1: α)
   mul_le_mul_of_nonneg_left: ∀a b: α, a ≤ b -> ∀c, 0 ≤ c -> c * a ≤ c * b
   mul_le_mul_of_nonneg_right: ∀a b: α, a ≤ b -> ∀c, 0 ≤ c -> a * c ≤ b * c
@@ -71,7 +71,7 @@ class IsOrderedAbsAddMonoid (α: Type*) {β: outParam Type*} [AddMonoidOps α] [
   abs_add_le_add_abs: ∀a b: α, ‖a + b‖ ≤ ‖a‖ + ‖b‖
   nsmul_abs: ∀a: α, ∀n: Nat, ‖n • a‖ = n • ‖a‖
 
-class IsOrderedAbsMonoid (α: Type*) {β: outParam Type*} [MonoidOps α] [MonoidOps β] [LT β] [LE β] [AbsoluteValue α β] [IsOrderedCommMonoid β] [Zero β] extends IsLawfulAbs α where
+class IsOrderedAbsMonoid (α: Type*) {β: outParam Type*} [MonoidOps α] [MonoidOps β] [LT β] [LE β] [AbsoluteValue α β] [Zero β] extends IsLawfulAbs α where
   abs_one: ‖(1: α)‖ = 1
   mul_abs: ∀a b: α, ‖a * b‖ = ‖a‖ * ‖b‖
 
@@ -94,19 +94,19 @@ class IsOrderedAbsAddGroupWithOne (α: Type*) {β: outParam Type*} [AddGroupWith
 
 export IsOrderedAbsAddGroupWithOne (intcast_abs)
 
-class IsOrderedAbsSemiring (α: Type*) {β: outParam Type*} [SemiringOps α] [SemiringOps β] [LT β] [LE β] [IsSemiring α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoidWithOne α, IsOrderedAbsMonoid α where
+class IsOrderedAbsSemiring (α: Type*) {β: outParam Type*} [SemiringOps α] [SemiringOps β] [LT β] [LE β] [IsSemiring α] [IsSemiring β] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddMonoidWithOne α, IsOrderedAbsMonoid α where
 
-class IsOrderedAbsRing (α: Type*) {β: outParam Type*} [RingOps α] [SemiringOps β] [LT β] [LE β] [IsRing α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddGroupWithOne α, IsOrderedAbsSemiring α where
+class IsOrderedAbsRing (α: Type*) {β: outParam Type*} [RingOps α] [SemiringOps β] [LT β] [LE β] [IsRing α] [IsSemiring β] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] extends IsOrderedAbsAddGroupWithOne α, IsOrderedAbsSemiring α where
 
 instance
-  [SemiringOps α] [SemiringOps β] [LT β] [LE β] [IsSemiring α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β]
+  [SemiringOps α] [SemiringOps β] [LT β] [LE β] [IsSemiring α] [IsSemiring β] [IsOrderedAddCommMonoid β] [AbsoluteValue α β]
   [IsOrderedAbsAddMonoidWithOne α] [IsOrderedAbsMonoid α]
   : IsOrderedAbsSemiring α where
   abs_one := abs_one
   mul_abs := mul_abs
 
 instance
-  [RingOps α] [SemiringOps β] [LT β] [LE β] [IsRing α] [IsSemiring β] [IsOrderedAddCommMonoid β] [IsOrderedCommMonoid β] [AbsoluteValue α β]
+  [RingOps α] [SemiringOps β] [LT β] [LE β] [IsRing α] [IsSemiring β] [IsOrderedAddCommMonoid β] [AbsoluteValue α β]
   [IsOrderedAbsAddGroupWithOne α] [IsOrderedAbsMonoid α]
   : IsOrderedAbsRing α where
   abs_one := abs_one

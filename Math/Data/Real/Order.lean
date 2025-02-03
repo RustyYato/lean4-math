@@ -1,4 +1,5 @@
 import Math.Data.Real.Basic
+import Math.Data.Set.Order.Bounds
 
 namespace CauchySeq
 
@@ -429,4 +430,68 @@ def eq_zero_of_square_eq_zero (a: ℝ) : a * a = 0 -> a = 0 := by
   have := zero_not_pos
   contradiction
 
+def lt_iff_intCast_lt (a b: Int) : a < b ↔ (a: ℝ) < b := by
+  apply Iff.intro
+  · intro h
+    exists Rat.ofInt b - Rat.ofInt a
+    apply And.intro
+    · apply Rat.add_lt_add_right.mpr
+      show 0 + Rat.ofInt a < _
+      rw [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.add_zero, Rat.zero_add,
+        Rat.lt_def]
+      unfold Rat.ofInt
+      dsimp [Fract.ofInt]
+      rw [Int.mul_one, Int.mul_one]
+      assumption
+    · exists 0
+      intro n hn
+      rfl
+  · intro h
+    replace h : (b - a: ℝ).IsPos := h
+    obtain ⟨B, B_pos, k, spec⟩ := h
+    replace spec : B ≤ Rat.ofInt b - Rat.ofInt a := spec k (le_refl _)
+    replace spec := Rat.add_lt_add_of_lt_of_le B_pos spec
+    rw [Rat.add_comm B] at spec
+    replace spec := Rat.add_lt_add_right.mpr spec
+    replace spec := Rat.add_lt_add_of_lt_of_le spec (le_refl _: Rat.ofInt a ≤ Rat.ofInt a)
+    rw [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.zero_add, Rat.add_zero] at spec
+    rw [Rat.lt_def] at spec
+    unfold Rat.ofInt Fract.ofInt at spec
+    dsimp at spec
+    rw [Int.mul_one, Int.mul_one] at spec
+    assumption
+
+def lt_iff_natCast_lt (a b: Nat) : a < b ↔ (a: ℝ) < b := by
+  apply Iff.trans _ (lt_iff_intCast_lt a b)
+  apply Int.ofNat_lt.symm
+
+def le_iff_intCast_le (a b: Int) : a ≤ b ↔ (a: ℝ) ≤ b := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_intCast_lt
+
+def le_iff_natCast_le (a b: Nat) : a ≤ b ↔ (a: ℝ) ≤ b := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_natCast_lt
+
+def zero_lt_iff_pos {a: ℝ} : 0 < a ↔ a.IsPos :=by
+  rw [lt_def, sub_zero]
+
 end Real
+
+namespace CauchySeq
+
+def le_pointwise (a b: CauchySeq) :
+  (∀n, a n ≤ b n) ->
+  Real.mk a ≤ Real.mk b := by
+  intro h
+  rw [le_iff_not_lt]
+  intro ⟨B, B_pos, k, spec⟩
+  dsimp at spec
+  have : B ≤ a k - b k := spec k (le_refl _)
+  replace this := lt_of_lt_of_le B_pos this
+  have := Rat.add_lt_add_of_lt_of_le this (le_refl (b k))
+  rw [Rat.zero_add, Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add,
+    Rat.add_zero] at this
+  exact not_le_of_lt this (h _)
+
+end CauchySeq

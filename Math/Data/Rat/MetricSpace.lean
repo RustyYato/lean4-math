@@ -25,7 +25,7 @@ instance : IsMetricSpace ℚ where
   of_dist_eq_zero := by
     intro a b eq
     have := Rat.eq_zero_iff_abs_eq_zero.mpr eq
-    exact eq_of_sub_eq_zero _ _ this
+    exact eq_of_sub_eq_zero this
 
 instance : Topology ℚ := Topology.ofIsPseudoMetricSpace
 instance (priority := 2000) rat_prod_topo : Topology (ℚ × ℚ) := Topology.ofIsPseudoMetricSpace
@@ -205,7 +205,7 @@ instance Rat.mul_continuous_left (x: ℚ) : Topology.IsContinuous (· * x) where
       intro g
       cases Rat.eq_zero_iff_abs_eq_zero.mpr g
       contradiction
-    rw [mul_assoc, mul_inv?_cancel, mul_one, ←div_eq_mul_inv?]
+    rw [mul_assoc, mul_inv?_cancel, mul_one, ←div?_eq_mul_inv?]
     assumption
 
 instance Rat.mul_continuous_right (x: ℚ) : Topology.IsContinuous (x * ·) := by
