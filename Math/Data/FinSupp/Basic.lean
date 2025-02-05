@@ -1,5 +1,4 @@
 import Math.Data.Set.Finite
-import Math.Data.Set.Like.Nat
 import Math.Order.Lattice.SetLike
 import Math.Data.EncodableInto.Basic
 import Math.Algebra.Ring
@@ -115,3 +114,48 @@ instance [DecidableEq β] : DecidableEq (FinSupp α β S default) := by
     rw [Classical.not_forall] at h
     obtain ⟨_, _⟩ := h
     contradiction
+
+instance [h: Inhabited S] [he: IsLawfulEmptySetLike S] : Zero (FinSupp α β S default) where
+  zero := {
+    toFun _:= default
+    support := Squash.mk {
+      set := h.default
+      card := 0
+      decMem x := .isFalse fun h => he.elim ⟨_, h⟩
+      enc := {
+        encode_into := elim_empty
+        decode_from' _ := .none
+        spec_decode_from' x := elim_empty x
+      }
+      spec := by intro x h; contradiction
+    }
+  }
+
+instance [Zero β] [Add β] [IsAddZeroClass β] : Add (FinSupp α β S 0) where
+  add a b := {
+    toFun x := a x + b x
+    support :=
+      a.support.lift fun ha =>
+      b.support.lift fun hb => Squash.mk {
+        set := ha.set ⊔ hb.set
+        card := ha.card + hb.card
+        decMem x :=
+          have := ha.decMem; have := hb.decMem
+          decidable_of_iff (x ∈ ha.set ∨ x ∈ hb.set) <| by
+            dsimp
+            rw [←mem_coe (_ ⊔ _), IsSetLikeLattice.sup_eq_set_sup]
+            rfl
+        enc := sup_encodable ha hb
+        spec := by
+          intro x hx
+          rw [←mem_coe, IsSetLikeLattice.sup_eq_set_sup]
+          by_cases ha':a x = 0
+          rw [ha', zero_add] at hx
+          right;
+          apply hb.spec
+          assumption
+          left
+          apply ha.spec
+          assumption
+      }
+  }

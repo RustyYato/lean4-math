@@ -52,3 +52,6 @@ instance : IsSetLikeLattice Nat where
     apply Nat.succ_le_of_lt
     apply h
     apply Nat.lt_succ_self
+
+instance : IsLawfulEmptySetLike Nat where
+  elim x := Nat.not_lt_zero _ x.property

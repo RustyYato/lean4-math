@@ -19,6 +19,7 @@ instance : HasSubset S where
 instance  (priority := 100) : CoeSort S (Type _) :=
   ⟨fun s => { x : α // x ∈ s }⟩
 
+class IsLawfulEmptySetLike (α: Type*) [h: Inhabited α] [SetLike α β] extends IsEmpty h.default where
 
 variable (p q : S)
 
