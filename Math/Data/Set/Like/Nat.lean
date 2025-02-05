@@ -1,5 +1,7 @@
 import Math.Data.Set.Like
 import Math.Type.Finite
+import Math.Order.Lattice.SetLike
+import Math.Data.StdNat.Lattice
 
 instance : SetLike Nat Nat where
   coe lim := Set.mk fun x => x < lim
@@ -27,4 +29,26 @@ def Nat.equivSetLikeFin : { x // x ∈ a } ≃ Fin a where
   leftInv _ := rfl
   rightInv _ := rfl
 
-instance Nat.isSetLikeFinite {a: Nat} : IsFinite { x // x ∈ a } := IsFinite.intro a Nat.equivSetLikeFin.toEmbedding
+instance Nat.isSetLikeFinite {a: Nat} : IsFinite { x // x ∈ a } := IsFinite.intro a Nat.equivSetLikeFin
+
+instance (a b: Nat) : Decidable (a ∈ b) := inferInstanceAs (Decidable (a < b))
+
+instance : IsSetLikeLattice Nat where
+  inf_eq_set_inf a b := by
+    ext x
+    exact Nat.lt_min
+  sup_eq_set_sup a b := by
+    ext x
+    show x < max a b ↔ x < a ∨ x < b
+    exact lt_max_iff
+  le_iff_sub a b := by
+    apply Iff.intro
+    intro h x hx
+    exact Nat.lt_of_lt_of_le hx h
+    intro h
+    cases a
+    apply Nat.zero_le
+    rename_i a
+    apply Nat.succ_le_of_lt
+    apply h
+    apply Nat.lt_succ_self

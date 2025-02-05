@@ -4,6 +4,8 @@ class SetLike (S: Type*) (α: outParam Type*) where
   coe : S -> Set α
   coe_inj: Function.Injective coe
 
+attribute [coe] SetLike.coe
+
 variable [SetLike S α]
 
 instance : CoeTC S (Set α) where
