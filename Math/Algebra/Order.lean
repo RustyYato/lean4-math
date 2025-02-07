@@ -45,9 +45,6 @@ def mul_le_mul [MonoidOps α] [IsOrderedCommMonoid α] : ∀a b c d: α, a ≤ c
   apply mul_le_mul_right
   assumption
 
-variable [NatCast α] [∀n, OfNat α (n + 2)]
-variable [NatCast α] [∀n, OfNat α (n + 2)]
-
 class IsOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends IsSemiring α, IsOrderedAddCommMonoid α where
   zero_le_one: 0 ≤ (1: α)
   mul_le_mul_of_nonneg_left: ∀a b: α, a ≤ b -> ∀c, 0 ≤ c -> c * a ≤ c * b
@@ -241,3 +238,103 @@ def zsmul_abs: ∀a: α, ∀n: Int, ‖n • a‖ = ‖n‖ • ‖a‖ := by
       ←Int.ofNat_add, Int.natAbs_ofNat, zsmul_ofNat, nsmul_abs]
 
 end
+
+section
+
+variable [FieldOps α] [IsNonCommField α] [IsOrderedSemiring α]
+
+def mul_lt_mul_of_pos_left: ∀(a b : α), a < b → ∀ (c : α), 0 < c → c * a < c * b := by
+  intro a b ab c cpos
+  apply lt_of_le_of_ne
+  apply mul_le_mul_of_nonneg_left
+  apply le_of_lt
+  assumption
+  apply le_of_lt
+  assumption
+  intro h
+  have : c ≠ 0 := by symm; apply ne_of_lt; assumption
+  have : c⁻¹? * (c * a) = c⁻¹? * (c * b) := by rw [h]
+  rw [←mul_assoc, ←mul_assoc, inv?_mul_cancel, one_mul, one_mul] at this
+  subst b
+  exact lt_irrefl ab
+
+def mul_lt_mul_of_pos_right: ∀(a b : α), a < b → ∀ (c : α), 0 < c → a * c < b * c := by
+  intro a b ab c cpos
+  apply lt_of_le_of_ne
+  apply mul_le_mul_of_nonneg_right
+  apply le_of_lt
+  assumption
+  apply le_of_lt
+  assumption
+  intro h
+  have : c ≠ 0 := by symm; apply ne_of_lt; assumption
+  have : (a * c) * c⁻¹? = (b * c) * c⁻¹? := by rw [h]
+  rw [mul_assoc, mul_assoc, mul_inv?_cancel, mul_one, mul_one] at this
+  subst b
+  exact lt_irrefl ab
+
+def inv?_pos [IsLinearOrder α] (a: α) (h: 0 < a): 0 < a⁻¹?~(by
+  intro g; rw [g] at h
+  exact lt_irrefl h) := by
+  have anz : a ≠ 0 := by
+    intro g; rw [g] at h
+    exact lt_irrefl h
+  apply lt_of_not_le
+  intro g; replace g := lt_or_eq_of_le g
+  cases g <;> rename_i g
+  · have := mul_lt_mul_of_pos_left _ _ g _ h
+    rw [mul_inv?_cancel, mul_zero] at this
+    exact lt_irrefl (lt_trans this zero_lt_one)
+  · have := mul_inv?_cancel a anz
+    rw [g, mul_zero] at this
+    exact zero_ne_one this
+
+def two_pos : 0 < (2: α) := by
+  show (0: α) < OfNat.ofNat (0 + 2)
+  have := ofNat_eq_natCast (α := α) 0
+  rw [ofNat_eq_natCast (α := α) 0, Nat.zero_add, show 2 = 1 + 1 by rfl, natCast_add]
+  apply lt_of_lt_of_le
+  apply zero_lt_one
+  rw [←add_zero (1: α), natCast_one]
+  apply add_le_add_left
+  apply zero_le_one
+
+def half_pos [IsLinearOrder α] {ε: α} (h: 0 < ε) : 0 < ε /? 2 ~(((ne_of_lt two_pos).symm: (2: α) ≠ 0)) := by
+  have := mul_lt_mul_of_pos_left _ _ (inv?_pos _ two_pos) _ h
+  rw [mul_zero, ←div?_eq_mul_inv?] at this
+  assumption
+
+def add_half (a: α) : a /? 2 ~(by symm; apply ne_of_lt two_pos) + a /? 2 ~(by symm; apply ne_of_lt two_pos) = a := by
+  rw [add_div?_add', ←mul_two, div?_eq_mul_inv?, mul_assoc, mul_inv?_cancel, mul_one]
+
+end
+
+section
+
+variable
+  [AbsoluteValue α α]
+  [AddGroupWithOneOps α] [IsAddGroupWithOne α]
+  [LT α] [LE α] [IsOrderedAddCommMonoid α]
+  [IsOrderedAbsAddGroupWithOne α]
+
+-- open Classical in
+-- def abs_lt_abs_iff {a b: α} :
+--   ‖a‖ < ‖b‖ ↔ a < b ∧ 0 < a ∨ b < a ∧ a < 0 := by
+--   apply Iff.intro
+--   intro h
+--   repeat sorry
+--   have : ‖a‖ = if a < 0 then -a else a := by
+--     split
+--     rw [←neg_abs]
+--     apply le_antisymm
+--     sorry
+--     apply
+--     sorry
+--     sorry
+
+
+--   sorry
+
+end
+
+section

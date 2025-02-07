@@ -287,6 +287,8 @@ def resp_zpow
   [OneHomClass F α β] [MulHomClass F α β] [InvHomClass F α β]
   [IsDivInvMonoid α] [IsDivInvMonoid β]
   (f: F) (n: ℤ) (x: α) : f (x ^ n) = (f x) ^ n :=  by
+  -- can't map to resp_zsmul because that would introduce more restrictive bounds
+  -- than I would like to enforce. (would promote to IsGroup α/IsDivisionMonoid β)
   induction n with
   | ofNat n => rw [Int.ofNat_eq_coe, zpow_ofNat, zpow_ofNat, resp_npow]
   | negSucc n => rw [zpow_negSucc, zpow_negSucc, resp_inv, resp_npow]

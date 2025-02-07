@@ -6,20 +6,7 @@ import Math.Relation.Basic
 
 namespace CauchySeq
 
-variable {α: Type*} [AbsoluteValue α γ]
-  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
-  [IsField γ] [IsLinearOrder γ] [IsOrderedRing γ]
-  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
-  [IsOrderedAbsAddGroup α]
-
 open Abs
-
-local instance : Dist α γ := Abs.instDist α
-local instance : IsMetricSpace α := Abs.instIsMetricSpace α
-
-private
-def half_pos {ε: γ} (h: 0 < ε) : 0 < ε /? 2 ~((ne_of_lt two_pos).symm) := by
-  sorry
 
 def Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
 def Eventually₂ (P: Nat -> Nat -> Prop) : Prop := ∃k, ∀n m, k ≤ n -> k ≤ m -> P n m
@@ -64,12 +51,35 @@ def Eventually₂.merge : Eventually₂ a -> Eventually₂ b -> Eventually₂ fu
   apply le_trans _ hn
   apply le_max_right
 
-def is_cauchy_equiv (a b: Nat -> α) : Prop :=
-  ∀ε: γ, 0 < ε -> Eventually₂ fun n m => dist (a n) (b m) < ε
+end CauchySeq
 
-structure CauchySeq (α: Type*) {γ: Type*} [Dist α γ] [Sub α] [LT γ] [Zero γ] where
+section
+
+variable {α: Type*} [AbsoluteValue α γ] [LT γ] [LE γ] [Zero γ] [Sub α]
+
+
+def CauchySeq.is_cauchy_equiv (a b: Nat -> α) : Prop :=
+  ∀ε: γ, 0 < ε -> Eventually₂ fun n m => ‖a n - b m‖ < ε
+
+structure CauchySeq (α: Type*) {γ: Type*} [AbsoluteValue α γ] [LT γ] [LE γ] [Zero γ] [Sub α] where
   seq: Nat -> α
-  is_cacuhy: is_cauchy_equiv seq seq
+  is_cacuhy: CauchySeq.is_cauchy_equiv seq seq
+
+end
+namespace CauchySeq
+
+
+variable {α: Type*} [AbsoluteValue α γ]
+  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
+  [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
+  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
+  [IsOrderedAbsAddGroup α]
+
+local instance : IsLinearOrder γ := (inferInstanceAs (IsLinearMinMaxOrder γ)).toIsLinearOrder
+local instance : Dist α γ := Abs.instDist α
+local instance : IsMetricSpace α := Abs.instIsMetricSpace α
+local instance : @Std.Commutative α (· + ·) := ⟨add_comm⟩
+local instance :  @Std.Associative α (· + ·) := ⟨add_assoc⟩
 
 instance : FunLike (CauchySeq α) Nat α where
   coe := CauchySeq.seq
@@ -92,7 +102,8 @@ private noncomputable def findBound (f: Nat -> α) (k: Nat) : Nat -> γ
 private def findBoundFrom.nonneg {f: Nat -> α} : 0 ≤ findBoundFrom f src n := by
   induction n with
   | zero => rfl
-  | succ n ih => simp [findBoundFrom, le_max_iff, ih]
+  | succ n ih =>
+    simp [findBoundFrom, le_max_iff, ih]
 
 @[simp]
 private def findBound.nonneg {f: Nat -> α} : 0 ≤ findBound f k n := by
@@ -178,7 +189,7 @@ def boundedDist (c: CauchySeq α) : ∃B: γ, ∀n m, dist (c n) (c m) < B := by
     apply findBound.nonneg
     rfl
 
-instance : Setoid (CauchySeq α) where
+instance setoid : Setoid (CauchySeq α) where
   r a b := is_cauchy_equiv a b
   iseqv := {
     refl x := x.is_cacuhy
@@ -187,14 +198,35 @@ instance : Setoid (CauchySeq α) where
       replace ⟨k, eqv⟩ := eqv ε ε_pos
       exists k
       intro n m kn km
-      rw [dist_comm]
+      rw [abs_sub_comm]
       apply eqv
       assumption
       assumption
     trans := by
       intro a b c ab bc ε ε_pos
-      have := ab
-      sorry
+      have ⟨k, spec⟩ := (ab _ (half_pos (half_pos ε_pos))).merge (bc _ (half_pos (half_pos ε_pos)))
+        |>.merge (b.is_cacuhy _ (half_pos ε_pos))
+      exists k
+      intro n m kn km
+      replace ⟨⟨ab, bc⟩, bspec⟩ := spec n m kn km
+      rw [←add_zero (_ - _), ←add_neg_cancel (b m), ←add_zero (_ - _), ←add_neg_cancel (b n),
+        sub_eq_add_neg]
+      rw [show a n + -c m + (b n + -b n) + (b m + -b m) =
+               (a n + -b m) + (b n + -c m) + (b m + -b n) by ac_rfl]
+      rw [←sub_eq_add_neg, ←sub_eq_add_neg, ←sub_eq_add_neg]
+      have : (2: γ) ≠ 0 := by symm; apply ne_of_lt; exact two_pos
+      apply lt_of_le_of_lt
+      apply abs_add_le_add_abs
+      rw [←add_half ε]
+      apply add_lt_add
+      apply lt_of_le_of_lt
+      apply abs_add_le_add_abs
+      rw [←add_half (ε /? 2)]
+      apply add_lt_add
+      assumption
+      assumption
+      rw [abs_sub_comm]
+      assumption
   }
 
 def const (x: α) : CauchySeq α where
@@ -204,15 +236,59 @@ def const (x: α) : CauchySeq α where
     exists 0
     intros
     dsimp
-    rw [dist_self]
+    rw [sub_self, abs_zero.mpr]
     assumption
+    rfl
 
 instance : Zero (CauchySeq α) := ⟨const 0⟩
 
 -- if a cauchy sequence converges to zero
-def limZero (c: CauchySeq α) : Prop :=
+def IsLimZero (c: CauchySeq α) : Prop :=
   ∀ ε > 0, ∃ i, ∀ j ≥ i, ‖c j‖ < ε
 
--- def limZero_iff_eqv_zero
+def add.spec (a b c d: CauchySeq α) : a ≈ c -> b ≈ d -> is_cauchy_equiv (fun n => a n + b n) (fun n => c n + d n) := by
+  intro ac bd ε ε_pos
+  have ⟨k, spec⟩ := (ac _ (half_pos ε_pos)).merge (bd _ (half_pos ε_pos))
+  exists k
+  intro n m kn km
+  replace spec := spec n m kn km
+  obtain ⟨ac, bd⟩ := spec
+  dsimp
+  rw [sub_eq_add_neg, neg_add_rev, show a n + b n + (-d m + -c m) = (a n + -c m) + (b n + -d m) by ac_rfl]
+  rw [←sub_eq_add_neg, ←sub_eq_add_neg, ←add_half ε]
+  apply lt_of_le_of_lt
+  apply abs_add_le_add_abs
+  apply add_lt_add
+  assumption
+  assumption
+
+def add (a b: CauchySeq α) : CauchySeq α where
+  seq n := a n + b n
+  is_cacuhy := by
+    apply add.spec
+    apply a.is_cacuhy
+    apply b.is_cacuhy
 
 end CauchySeq
+
+section
+
+variable (α: Type*) {γ: Type*} [AbsoluteValue α γ]
+  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
+  [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
+  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
+  [IsOrderedAbsAddGroup α]
+
+def Cauchy := Quotient.mk (CauchySeq.setoid (α := α))
+
+end
+
+namespace Cauchy
+
+variable {α: Type*} {γ: Type*} [AbsoluteValue α γ]
+  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
+  [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
+  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
+  [IsOrderedAbsAddGroup α]
+
+end Cauchy
