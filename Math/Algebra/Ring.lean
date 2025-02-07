@@ -443,7 +443,7 @@ def zpow_one [GroupOps α] [IsDivInvMonoid α] (a: α) : a ^ (1: ℤ) = a :=
 def sub_zero [AddGroupOps α] [IsSubNegMonoid α] [IsNegZeroClass α] (a: α): a - 0 = a := by
   rw [sub_eq_add_neg, neg_zero, add_zero]
 
-def dov_one [GroupOps α] [IsDivInvMonoid α] [IsInvOneClass α] (a: α): a / 1 = a :=
+def div_one [GroupOps α] [IsDivInvMonoid α] [IsInvOneClass α] (a: α): a / 1 = a :=
   sub_zero (α := AddOfMul α) _
 
 class IsSubtractionMonoid (α: Type*) [AddGroupOps α] extends IsSubNegMonoid α, IsInvolutiveNeg α: Prop where
@@ -469,6 +469,9 @@ def neg_eq_of_add_right [AddGroupOps α] [IsSubtractionMonoid α] {a b: α} : a 
   rw [←neg_eq_of_add_left h, neg_neg]
 def inv_eq_of_mul_right [GroupOps α] [IsDivisionMonoid α] {a b: α} : a * b = 1 -> a = b⁻¹ :=
   neg_eq_of_add_right (α := AddOfMul α)
+
+def neg_sub_neg [AddGroupOps α] [IsAddCommMagma α] [IsSubtractionMonoid α] (a b: α) : -a - -b = b - a := by
+  rw [sub_eq_add_neg, neg_neg, add_comm, sub_eq_add_neg]
 
 class IsAddGroup (α: Type*) [AddGroupOps α] extends IsSubNegMonoid α: Prop where
   neg_add_cancel (a: α): -a + a = 0

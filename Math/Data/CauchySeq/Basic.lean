@@ -271,6 +271,43 @@ def add (a b: CauchySeq α) : CauchySeq α where
 
 instance : Add (CauchySeq α) := ⟨.add⟩
 
+def neg.spec (a b: CauchySeq α) : a ≈ b -> is_cauchy_equiv (fun n => -a n) (fun n => -b n) := by
+  intro ab ε ε_pos
+  replace ⟨k, ab⟩ := ab _ ε_pos
+  exists k
+  intro n m kn km
+  replace ab := ab n m kn km
+  dsimp
+  dsimp at ab
+  rw [neg_sub_neg, abs_sub_comm]
+  assumption
+
+def neg (a: CauchySeq α) : CauchySeq α where
+  seq n := -a n
+  is_cacuhy := by
+    apply neg.spec
+    apply a.is_cacuhy
+
+instance : Neg (CauchySeq α) := ⟨.neg⟩
+
+def sub.spec (a b c d: CauchySeq α) : a ≈ c -> b ≈ d -> is_cauchy_equiv (fun n => a n - b n) (fun n => c n - d n) := by
+  intro ac bd
+  conv => { arg 1; intro n; rw [sub_eq_add_neg] }
+  conv => { arg 2; intro n; rw [sub_eq_add_neg] }
+  apply add.spec (a := a) (b := -b) (c := c) (d := -d)
+  assumption
+  apply neg.spec
+  assumption
+
+def sub (a b: CauchySeq α) : CauchySeq α where
+  seq n := a n - b n
+  is_cacuhy := by
+    apply sub.spec
+    apply a.is_cacuhy
+    apply b.is_cacuhy
+
+instance : Sub (CauchySeq α) := ⟨.sub⟩
+
 end CauchySeq
 
 section
@@ -306,5 +343,24 @@ def add : Cauchy α -> Cauchy α -> Cauchy α := by
   assumption
 
 instance : Add (Cauchy α) := ⟨.add⟩
+
+def neg : Cauchy α -> Cauchy α := by
+  apply Quotient.lift (⟦-·⟧)
+  intro a b ab
+  apply Quotient.sound
+  apply CauchySeq.neg.spec
+  assumption
+
+instance : Neg (Cauchy α) := ⟨.neg⟩
+
+def sub : Cauchy α -> Cauchy α -> Cauchy α := by
+  apply Quotient.lift₂ (⟦· - ·⟧)
+  intro a b c d ac bd
+  apply Quotient.sound
+  apply CauchySeq.sub.spec
+  assumption
+  assumption
+
+instance : Sub (CauchySeq α) := ⟨.sub⟩
 
 end Cauchy
