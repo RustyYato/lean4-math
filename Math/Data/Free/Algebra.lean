@@ -283,18 +283,21 @@ instance [SemiringOps R] [IsSemiring R] : IsAlgebra R (FreeAlgebra R X) where
     intro r x
     rfl
 
-private
-def neg_add_cancel' [RingOps R] [IsRing R] (a: FreeAlgebra R X) : -a + a = 0 := by
-  induction a with | mk a =>
-  simp [Neg.neg, smul_def]
-  conv => { lhs; rhs; rw [←one_mul ⟦a⟧] }
-  rw [←add_mul, ←resp_one (algebraMap (R := R) (A := FreeAlgebra R X)),
-    ←resp_add, neg_add_cancel, resp_zero, zero_mul]
-
-instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) where
+instance [RingOps R] [IsRing R] : IsAddGroup (FreeAlgebra R X) where
   sub_eq_add_neg _ _ := rfl
   zsmul_ofNat _ _ := rfl
   zsmul_negSucc _ _ := rfl
+  neg_add_cancel a := by
+    induction a with | mk a =>
+    simp [Neg.neg, smul_def]
+    conv => { lhs; rhs; rw [←one_mul ⟦a⟧] }
+    rw [←add_mul, ←resp_one (algebraMap (R := R) (A := FreeAlgebra R X)),
+      ←resp_add, neg_add_cancel, resp_zero, zero_mul]
+
+instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
+  natCast_zero := natCast_zero
+  natCast_succ := natCast_succ
+  ofNat_eq_natCast := ofNat_eq_natCast
   intCast_ofNat _ := by
     show ⟦_⟧ = ⟦_⟧
     simp [intCast_ofNat]
@@ -302,16 +305,9 @@ instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) where
     show ⟦_⟧ = ⟦_⟧
     simp [IntCast.intCast, intCast_negSucc]
     show algebraMap (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMap (R := R) (A := FreeAlgebra R X) _
-    have := negHomClassOfRingHom (α := R) (β := FreeAlgebra R X) ?_
     rw [resp_neg]
-    intro a b eq
-    rw [←add_zero (-a), ←eq, ←add_assoc, neg_add_cancel', zero_add]
-  neg_add_cancel a := by
-    induction a with | mk a =>
-    simp [Neg.neg, smul_def]
-    conv => { lhs; rhs; rw [←one_mul ⟦a⟧] }
-    rw [←add_mul, ←resp_one (algebraMap (R := R) (A := FreeAlgebra R X)),
-      ←resp_add, neg_add_cancel, resp_zero, zero_mul]
+
+instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) := inferInstance
 
 instance [h: Zero R] [One R] [Add R] [Mul R] : Inhabited (FreeAlgebra R X) := ⟨Quot.mk _ (.scalar 0)⟩
 
