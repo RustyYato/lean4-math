@@ -269,6 +269,8 @@ def add (a b: CauchySeq α) : CauchySeq α where
     apply a.is_cacuhy
     apply b.is_cacuhy
 
+instance : Add (CauchySeq α) := ⟨.add⟩
+
 end CauchySeq
 
 section
@@ -279,7 +281,7 @@ variable (α: Type*) {γ: Type*} [AbsoluteValue α γ]
   [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
   [IsOrderedAbsAddGroup α]
 
-def Cauchy := Quotient.mk (CauchySeq.setoid (α := α))
+def Cauchy := Quotient (CauchySeq.setoid (α := α))
 
 end
 
@@ -290,5 +292,19 @@ variable {α: Type*} {γ: Type*} [AbsoluteValue α γ]
   [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
   [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
   [IsOrderedAbsAddGroup α]
+
+def mk : CauchySeq α -> Cauchy α := Quotient.mk _
+
+scoped notation "⟦" x "⟧" => mk x
+
+def add : Cauchy α -> Cauchy α -> Cauchy α := by
+  apply Quotient.lift₂ (⟦· + ·⟧)
+  intro a b c d ac bd
+  apply Quotient.sound
+  apply CauchySeq.add.spec
+  assumption
+  assumption
+
+instance : Add (Cauchy α) := ⟨.add⟩
 
 end Cauchy
