@@ -1,16 +1,13 @@
-import Math.Data.QuotLike.Basic
 import Math.Type.Notation
 import Math.Data.List.Basic
 import Math.Function.Basic
 import Math.Relation.Basic
-import Math.AxiomBlame
 
 def Multiset (α: Type*) := Quotient (List.isSetoid α)
 
 namespace Multiset
 
 def mk : List α -> Multiset α := Quotient.mk _
-instance : QuotientLike (List.isSetoid α) (Multiset α) where
 
 local notation "⟦" a "⟧" => mk a
 
@@ -30,8 +27,6 @@ def ind₄ {motive: Multiset α -> Multiset α -> Multiset α -> Multiset α -> 
   apply h
 
 instance : EmptyCollection (Multiset α) := ⟨⟦[]⟧⟩
-
-def toList : Multiset α -> List α := unwrapQuot
 
 def mem (x: α) : Multiset α -> Prop := Quot.lift (x ∈ ·) <| by
   intro x y eq
@@ -242,17 +237,12 @@ def mk_flatten (as: List (List α)) : ⟦as.map (⟦·⟧)⟧.flatten = ⟦as.fl
   | nil => rfl
   | cons a as ih => simp [ih]
 
-def mk_flatten' (as: List (Multiset α)) : ⟦as⟧.flatten = ⟦(as.map unwrapQuot).flatten⟧ := by
-  rw [←mk_flatten]
-  congr
-  rw [List.map_map, List.map_id'']
-  apply mk_unwrapQuot
-
 def flatMap {β: Type _} (f: α -> Multiset β) (as: Multiset α) : Multiset β :=
   (as.map f).flatten
 
 def flatten_cons (a: Multiset α) (as: Multiset (Multiset α)) : (a::ₘas).flatten = a ++ as.flatten := by
-  quot_ind (a as)
+  cases a with | mk a =>
+  cases as with | mk as =>
   rfl
 
 @[simp]
@@ -263,13 +253,6 @@ def mk_flatMap (as: List α) (f: α -> List β) : ⟦as⟧.flatMap (fun x => ⟦
   | nil => rfl
   | cons a as ih =>
     simp [ih, ←mk_cons, flatten_cons]
-
-def mk_flatMap' (as: List α) (f: α -> Multiset β) : ⟦as⟧.flatMap f = ⟦as.flatMap (unwrapQuot ∘ f)⟧ := by
-  rw [←mk_flatMap]
-  congr
-  funext
-  symm
-  apply mk_unwrapQuot
 
 def flatMap_cons (a: α) (as: Multiset α) (f: α -> Multiset β) : (a::ₘas).flatMap f = f a ++ as.flatMap f := by
   cases as
@@ -324,7 +307,7 @@ instance [DecidableEq α] : DecidableEq (Multiset α) := Quotient.decidableEq
 
 def of_count_cons {x a: α} {as: Multiset α} {n: Nat} :
   (a::ₘas).MinCount x n -> as.MinCount x n ∨ (n ≠ 0 ∧ x = a ∧ as.MinCount a n.pred) := by
-  quot_ind as
+  cases as
   intro h
   cases h
   left
