@@ -27,7 +27,6 @@ instance [SemiringOps R] [IsSemiring R] : SemiringOps (TensorAlgebra R M) := Rin
 instance [RingOps R] [IsRing R] : RingOps (TensorAlgebra R M) := RingQuot.instRingOps
 instance [SemiringOps R] [IsSemiring R] [IsModule R M] : SMul R (TensorAlgebra R M) := inferInstanceAs (SMul R (RingQuot (Rel R M)))
 instance [SemiringOps R] [IsSemiring R] [IsModule R M] : AlgebraMap R (TensorAlgebra R M) := inferInstanceAs (AlgebraMap R (RingQuot (Rel R M)))
-instance [RingOps R] [IsRing R] [IsModule R M] : RingAlgebraMap R (TensorAlgebra R M) := inferInstanceAs (RingAlgebraMap R (RingQuot (Rel R M)))
 instance [SemiringOps R] [IsSemiring R] : IsSemiring (TensorAlgebra R M) := inferInstanceAs (IsSemiring (RingQuot (Rel R M)))
 instance [RingOps R] [IsRing R] : IsRing (TensorAlgebra R M) := inferInstanceAs (IsRing (RingQuot (Rel R M)))
 instance [SemiringOps R] [IsSemiring R] [IsModule R M] : IsAlgebra R (TensorAlgebra R M) := inferInstanceAs (IsAlgebra R (RingQuot (Rel R M)))
@@ -45,12 +44,12 @@ def ι : M →ₗ[R] (TensorAlgebra R M) where
   resp_add := by
     intro x y
     rw [←resp_add (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)))]
-    apply RingQuot.mkSemiringHom_rel
+    apply RingQuot.mkRingHom_rel
     apply Rel.add
   resp_smul := by
     intro x y
     rw [←resp_smul (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M))) (r := x)]
-    apply RingQuot.mkSemiringHom_rel
+    apply RingQuot.mkRingHom_rel
     apply Rel.smul
 
 def lift [IsSemiring A] [IsAlgebra R A] : (M →ₗ[R] A) ≃ (TensorAlgebra R M →ₐ[R] A) where
@@ -102,7 +101,7 @@ def induction {motive: TensorAlgebra R M -> Prop}
   | grade0 => apply algebraMap
   | grade1 x =>
     have := ι x
-    unfold TensorAlgebra.ι RingQuot.mkAlgHom RingQuot.mkSemiringHom at this
+    unfold TensorAlgebra.ι RingQuot.mkAlgHom RingQuot.mkRingHom at this
     apply this
   | add =>
     erw [←RingQuot.mk, ←RingQuot.mk_add]

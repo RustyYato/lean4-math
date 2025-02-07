@@ -20,7 +20,7 @@ class AlgebraMapHomClass where
 
 export AlgebraMapHomClass (resp_algebraMap)
 
-structure AlgHom extends SemiringHom A B where
+structure AlgHom extends A →+* B where
   resp_algebraMap : ∀r: R, toFun (algebraMap r: A) = (algebraMap r: B)
 
 notation:25 A " →ₐ[" R "] " B => AlgHom R A B
@@ -58,7 +58,7 @@ def toAlgebraMapHom (f: F) : AlgebraMapHom R A B where
 
 @[coe]
 def toAlgHom (f: F) : AlgHom R A B where
-  toSemiringHom := toSemiringHom f
+  toRingHom := toRingHom f
   resp_algebraMap := resp_algebraMap f
 
 instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsAlgebra R A] [IsAlgebra R B] : SMulHomClass (AlgHom R A B) R A B where
@@ -92,17 +92,5 @@ def AlgHom.comp (h: AlgHom R B C) (g: AlgHom R A B) : AlgHom R A C where
   resp_algebraMap {_} := by
     dsimp
     rw [g.resp_algebraMap, h.resp_algebraMap]
-
-end
-
-section
-
-variable {R A B C: Type*}
-  [FunLike F A B]
-  [RingOps R] [RingOps A] [RingOps B]
-  [RingAlgebraMap R A] [RingAlgebraMap R B]
-
-def resp_algebraMapᵣ [AlgebraMapHomClass F R A B] (f: F) (r: R) : f (algebraMapᵣ r) = algebraMapᵣ r :=
-  resp_algebraMap _ _
 
 end

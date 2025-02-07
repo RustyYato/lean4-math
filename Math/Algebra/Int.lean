@@ -69,13 +69,12 @@ instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] [IsAddCommMagma R] : IsMod
   add_smul := add_zsmul
   zero_smul := zero_zsmul
 
-instance (priority := 500) [RingOps R] [IsRing R] : RingAlgebraMap Int R where
+instance (priority := 500) [RingOps R] [IsRing R] : AlgebraMap Int R where
   toFun n := n
   resp_zero := intCast_zero
   resp_one := intCast_one
   resp_add := intCast_add _ _
   resp_mul := intCast_mul _ _
-  resp_neg := intCast_neg _
 
 instance [RingOps R] [IsRing R] : IsAlgebra Int R where
   commutes r x := by

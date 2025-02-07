@@ -157,7 +157,7 @@ instance : IsRatAlgebra ℚ where
     rw [Int.mul_one, Nat.one_mul]
     rfl
 
-instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : RingAlgebraMap ℚ α where
+instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : AlgebraMap ℚ α where
   toFun a := a
   resp_zero := by
     dsimp
@@ -169,14 +169,6 @@ instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : RingAlgebr
     apply inv?_eq_of_mul_right
     rw [one_mul]
     apply natCast_one
-  resp_neg := by
-    intro a
-    simp
-    rw [ratCast_eq_intCast_div?_natCast, ratCast_eq_intCast_div?_natCast,
-      div?_eq_mul_inv?, div?_eq_mul_inv?, neg_mul_left]
-    congr 1
-    rw [←intCast_neg]
-    rfl
   resp_mul := by
     intro a b
     dsimp

@@ -186,18 +186,6 @@ instance [RingOps R] : RingOps (FreeAlgebra R X) where
   sub a b := a + -b
   zsmul := zsmulRec
 
-instance [RingOps R] [IsRing R] : RingAlgebraMap R (FreeAlgebra R X) where
-  resp_neg := by
-    intro x
-    show ⟦_⟧ = ⟦_⟧
-    symm
-    apply Eq.trans
-    symm
-    apply Quot.sound
-    apply Rel.mul_scalar
-    rw [←neg_mul_left, one_mul]
-    rfl
-
 instance [SemiringOps R] : IsAddCommMagma (FreeAlgebra R X) where
   add_comm a b := by
     induction a, b
@@ -295,6 +283,14 @@ instance [SemiringOps R] [IsSemiring R] : IsAlgebra R (FreeAlgebra R X) where
     intro r x
     rfl
 
+private
+def neg_add_cancel' [RingOps R] [IsRing R] (a: FreeAlgebra R X) : -a + a = 0 := by
+  induction a with | mk a =>
+  simp [Neg.neg, smul_def]
+  conv => { lhs; rhs; rw [←one_mul ⟦a⟧] }
+  rw [←add_mul, ←resp_one (algebraMap (R := R) (A := FreeAlgebra R X)),
+    ←resp_add, neg_add_cancel, resp_zero, zero_mul]
+
 instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) where
   sub_eq_add_neg _ _ := rfl
   zsmul_ofNat _ _ := rfl
@@ -305,8 +301,11 @@ instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) where
   intCast_negSucc n := by
     show ⟦_⟧ = ⟦_⟧
     simp [IntCast.intCast, intCast_negSucc]
-    show algebraMapᵣ (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMapᵣ (R := R) (A := FreeAlgebra R X) _
+    show algebraMap (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMap (R := R) (A := FreeAlgebra R X) _
+    have := negHomClassOfRingHom (α := R) (β := FreeAlgebra R X) ?_
     rw [resp_neg]
+    intro a b eq
+    rw [←add_zero (-a), ←eq, ←add_assoc, neg_add_cancel', zero_add]
   neg_add_cancel a := by
     induction a with | mk a =>
     simp [Neg.neg, smul_def]

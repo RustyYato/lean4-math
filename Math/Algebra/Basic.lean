@@ -2,14 +2,9 @@ import Math.Algebra.RingHom
 
 section
 
-class AlgebraMap (R A: Type*) [SemiringOps R] [SemiringOps A] extends R →+ₙ* A where
-
-class RingAlgebraMap (R A: Type*) [RingOps R] [RingOps A] extends AlgebraMap R A , R →+* A where
+class AlgebraMap (R A: Type*) [SemiringOps R] [SemiringOps A] extends R →+* A where
 
 def algebraMap {R A: Type*} [SemiringOps R] [SemiringOps A] [f: AlgebraMap R A]
-  : R →+ₙ* A := f.toSemiringHom
-
-def algebraMapᵣ {R A: Type*} [RingOps R] [RingOps A] [f: RingAlgebraMap R A]
   : R →+* A := f.toRingHom
 
 class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A] extends IsSemiring R: Prop where

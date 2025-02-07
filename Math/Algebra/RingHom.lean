@@ -171,27 +171,7 @@ instance : MulHomClass (GroupHom α β) α β where
 instance : InvHomClass (GroupHom α β) α β where
   resp_inv f := f.resp_inv
 
-structure SemiringHom extends AddMonoidHom α β, MonoidHom α β where
-
-instance : FunLike (SemiringHom α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : ZeroHomClass (SemiringHom α β) α β where
-  resp_zero f := f.resp_zero
-
-instance : AddHomClass (SemiringHom α β) α β where
-  resp_add f := f.resp_add
-
-instance : OneHomClass (SemiringHom α β) α β where
-  resp_one f := f.resp_one
-
-instance : MulHomClass (SemiringHom α β) α β where
-  resp_mul f := f.resp_mul
-
-structure RingHom extends SemiringHom α β, NegHom α β where
+structure RingHom extends AddMonoidHom α β, MonoidHom α β where
 
 instance : FunLike (RingHom α β) α β where
   coe f := f.toFun
@@ -205,9 +185,6 @@ instance : ZeroHomClass (RingHom α β) α β where
 instance : AddHomClass (RingHom α β) α β where
   resp_add f := f.resp_add
 
-instance : NegHomClass (RingHom α β) α β where
-  resp_neg f := f.resp_neg
-
 instance : OneHomClass (RingHom α β) α β where
   resp_one f := f.resp_one
 
@@ -220,7 +197,6 @@ infixr:25 " →*ₙ " => MonoidHom
 infixr:25 " →+ " => AddGroupHom
 infixr:25 " →* " => GroupHom
 
-infixr:25 " →+ₙ* " => SemiringHom
 infixr:25 " →+* " => RingHom
 
 end
@@ -267,47 +243,38 @@ def toInvHom [Inv α] [Inv β] [InvHomClass F α β] (f: F): InvHom α β where
   resp_inv := resp_inv f
 
 @[coe]
-def toAddMonoidHom [AddMonoidOps α] [AddMonoidOps β] [ZeroHomClass F α β] [AddHomClass F α β] (f: F) : AddMonoidHom α β where
+def toAddMonoidHom [AddMonoidOps α] [AddMonoidOps β] [ZeroHomClass F α β] [AddHomClass F α β] (f: F) : α →+ₙ β where
   toFun := f
   resp_zero := resp_zero f
   resp_add := resp_add f
 
 @[coe]
-def toMonoidHom [MonoidOps α] [MonoidOps β] [OneHomClass F α β] [MulHomClass F α β] (f: F) : MonoidHom α β where
+def toMonoidHom [MonoidOps α] [MonoidOps β] [OneHomClass F α β] [MulHomClass F α β] (f: F) : α →*ₙ β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
 
 @[coe]
-def toAddGroupHom [AddGroupOps α] [AddGroupOps β] [ZeroHomClass F α β] [AddHomClass F α β] [NegHomClass F α β] (f: F) : AddGroupHom α β where
+def toAddGroupHom [AddGroupOps α] [AddGroupOps β] [ZeroHomClass F α β] [AddHomClass F α β] [NegHomClass F α β] (f: F) : α →+ β where
   toFun := f
   resp_zero := resp_zero f
   resp_add := resp_add f
   resp_neg := resp_neg f
 
 @[coe]
-def toGroupHom [GroupOps α] [GroupOps β] [OneHomClass F α β] [MulHomClass F α β] [InvHomClass F α β] (f: F) : GroupHom α β where
+def toGroupHom [GroupOps α] [GroupOps β] [OneHomClass F α β] [MulHomClass F α β] [InvHomClass F α β] (f: F) : α →* β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
   resp_inv := resp_inv f
 
 @[coe]
-def toSemiringHom [SemiringOps α] [SemiringOps β] [ZeroHomClass F α β] [AddHomClass F α β] [OneHomClass F α β] [MulHomClass F α β] (f: F) : SemiringHom α β where
+def toRingHom [SemiringOps α] [SemiringOps β] [ZeroHomClass F α β] [AddHomClass F α β] [OneHomClass F α β] [MulHomClass F α β] (f: F) : α →+* β where
   toFun := f
   resp_one := resp_one f
   resp_mul := resp_mul f
   resp_zero := resp_zero f
   resp_add := resp_add f
-
-@[coe]
-def toRingHom [RingOps α] [RingOps β] [ZeroHomClass F α β] [AddHomClass F α β] [OneHomClass F α β] [MulHomClass F α β] [NegHomClass F α β] (f: F) : RingHom α β where
-  toFun := f
-  resp_one := resp_one f
-  resp_mul := resp_mul f
-  resp_zero := resp_zero f
-  resp_add := resp_add f
-  resp_neg := resp_neg f
 
 private
 def ZeroHom.ofOneHom [One α] [One β] (h: OneHom α β) : ZeroHom (AddOfMul α) (AddOfMul β) where
@@ -404,6 +371,25 @@ def resp_ofNat
   rw [ofNat_eq_natCast, resp_natCast]
   symm; apply ofNat_eq_natCast
 
+def negHomClassOfRingHom
+  [RingOps α] [IsRing α] [RingOps β] [IsSemiring β]
+  (neg_eq_of_add_left: ∀{a b: β}, a + b = 0 -> -a = b)
+  : NegHomClass (α →+* β) α β where
+  resp_neg := by
+    intro h x
+    rw [neg_eq_neg_one_zsmul x, zsmul_eq_intCast_mul, resp_mul]
+    symm
+    apply neg_eq_of_add_left
+    conv => { lhs; lhs; rw [←one_mul (h x)] }
+    rw [←add_mul, ←resp_one (f := h)]
+    show (h 1 + _) * _ = _
+    rw [←resp_add, intCast_neg, intCast_one, add_neg_cancel, resp_zero, zero_mul]
+
+
+instance [RingOps α] [IsRing α] [RingOps β] [IsRing β] : NegHomClass (α →+* β) α β := by
+  apply negHomClassOfRingHom
+  apply neg_eq_of_add_left
+
 end
 
 section
@@ -413,16 +399,12 @@ variable [Zero α] [One α] [Add α] [Sub α] [Neg α] [Mul α] [Div α] [Inv α
 variable [Zero β] [One β] [Add β] [Sub β] [Neg β] [Mul β] [Div β] [Inv β] [SMul ℕ β] [Pow β ℕ] [SMul ℤ β] [Pow β ℤ] [NatCast β] [IntCast β] [∀n, OfNat β (n + 2)]
 variable [Zero γ] [One γ] [Add γ] [Sub γ] [Neg γ] [Mul γ] [Div γ] [Inv γ] [SMul ℕ γ] [Pow γ ℕ] [SMul ℤ γ] [Pow γ ℤ] [NatCast γ] [IntCast γ] [∀n, OfNat γ (n + 2)]
 
-def SemiringHom.comp (a: SemiringHom β γ) (b: SemiringHom α β) : SemiringHom α γ where
+def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : RingHom α γ where
   toFun := a.toFun ∘ b.toFun
   resp_zero := by dsimp; rw [b.resp_zero, a.resp_zero]
   resp_one := by dsimp; rw [b.resp_one, a.resp_one]
   resp_add { _ _ } := by dsimp; rw [b.resp_add, a.resp_add]
   resp_mul { _ _ } := by dsimp; rw [b.resp_mul, a.resp_mul]
-
-def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : RingHom α γ where
-  toSemiringHom := a.toSemiringHom.comp b.toSemiringHom
-  resp_neg { _ } := by dsimp [SemiringHom.comp]; rw [b.resp_neg, a.resp_neg]
 
 end
 
