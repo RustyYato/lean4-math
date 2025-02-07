@@ -10,6 +10,9 @@ structure Fract where
   den_pos: 0 < den := by exact Nat.zero_lt_succ _
 deriving Repr, DecidableEq
 
+def Fract.den_nz (f: Fract) : f.den ≠ 0 := by
+  exact Nat.ne_of_lt' f.den_pos
+
 def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: Int) ≠ 0 := by
   intro h
   have : ‖a.num‖.gcd a.den = 0 := Int.ofNat.inj h
@@ -72,7 +75,7 @@ def Rat.toFract.inj (a b: ℚ) : a.toFract = b.toFract -> a = b := by
   cases a; cases b;
   congr
 
-def Fract.den_nz (a: Fract) : Int.ofNat a.den ≠ 0 := by
+def Fract.den_nz' (a: Fract) : Int.ofNat a.den ≠ 0 := by
   cases a  with | mk a d p =>
   dsimp
   intro h
@@ -95,7 +98,7 @@ def Fract.Equiv.trans {a b c: Fract} : a.Equiv b -> b.Equiv c -> a.Equiv c := by
     ac_rfl
   apply (Int.mul_eq_mul_right_iff _).mp
   assumption
-  exact b.den_nz
+  exact b.den_nz'
 
 instance Fract.setoid : Setoid Fract where
   r := Fract.Equiv

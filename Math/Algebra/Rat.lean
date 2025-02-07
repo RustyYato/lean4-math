@@ -157,6 +157,23 @@ instance : IsRatAlgebra ℚ where
     rw [Int.mul_one, Nat.one_mul]
     rfl
 
+def char_eq_zero_of_ratAlg [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : char α = 0 := by
+  apply char_eq_of_natCast_eq_zero
+  rw [natCast_zero]
+  intro n h
+  rw [eq_zero_of_natCast_eq_zero _ h]
+  apply Nat.dvd_refl
+
+def intCast_div?_natCast_eq_ratCast_mk
+  [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α]
+  (a: Int) (b: Nat) (h: b ≠ 0) :
+  (a: α) /? (b: α) ~(by
+    intro g
+    have := eq_zero_of_natCast_eq_zero _ g
+    contradiction) = (Rat.mk (Fract.mk a b (by
+    apply Nat.zero_lt_of_ne_zero h)).reduce (Fract.reduce.isReduced _)) := by
+  sorry
+
 instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : AlgebraMap ℚ α where
   toFun a := a
   resp_zero := by
@@ -176,8 +193,23 @@ instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : AlgebraMap
       div?_eq_mul_inv?, div?_eq_mul_inv?, mul_assoc,
       ←mul_assoc ((a.den: α)⁻¹?~(_)), mul_comm _ (b.num: α),
       ←mul_assoc, ←mul_assoc, mul_assoc, ←inv?_mul_rev, ←div?_eq_mul_inv?]
+    conv => {
+      rhs; rw [←intCast_mul]
+      arg 2; rw [←natCast_mul, Nat.mul_comm]
+    }
+    rw [intCast_div?_natCast_eq_ratCast_mk]
+    rfl
+    intro g
+    cases Nat.mul_eq_zero.mp g
+    have := a.den_nz
+    contradiction
+    have := b.den_nz
+    contradiction
+  resp_add := by
+    intro x y
+    dsimp
+    rw [ratCast_eq_intCast_div?_natCast x, ratCast_eq_intCast_div?_natCast y]
     sorry
-  resp_add := sorry
 
 instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : IsAlgebra ℚ α where
   commutes _ _ := by rw [mul_comm]
