@@ -81,4 +81,11 @@ instance : IsField ℝ where
     intro _ _
     rfl
 
+instance : RatCast ℝ where
+  cast := .ofRat
+
+instance : IsRatAlgebra ℝ where
+  eq_zero_of_natCast_eq_zero := sorry
+  ratCast_eq_intCast_div?_natCast := sorry
+
 end Real

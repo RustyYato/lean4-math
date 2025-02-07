@@ -1,27 +1,25 @@
 import Math.Order.Linear
 import Math.Function.Basic
 import Math.Ops.Abs
-import Math.Topology.MetricSpace.Defs
+import Math.Topology.MetricSpace.Abs
 import Math.Relation.Basic
 
 namespace CauchySeq
 
-variable {α: Type*} [Dist α γ] [LT γ] [LE γ] [Zero γ]
-  [Add α] [Add γ] [Zero α] [Zero γ] [SMul ℕ α] [SMul ℕ γ]
-  [SMul ℤ α] [Sub α] [Neg α] [IsAddGroup α]
-  [IsAddMonoid α] [IsAddCommMagma α]
-  [One γ] [IsNontrivial γ] [Mul γ] [Pow γ ℕ] [NatCast γ] [∀n, OfNat γ (n + 2)]
-  [IsOrderedSemiring γ]
-  [Min γ] [Max γ] [IsAddCancel γ]
-  [IsLinearMinMaxOrder γ] [IsMetricSpace α]
-  [Sub γ] [Pow γ ℤ] [SMul ℤ γ] [Neg γ] [IntCast γ] [CheckedInvert γ (· ≠ 0)] [CheckedDiv γ (· ≠ 0)] [IsField γ]
+variable {α: Type*} [AbsoluteValue α γ]
+  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
+  [IsField γ] [IsLinearOrder γ] [IsOrderedRing γ]
+  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
+  [IsOrderedAbsAddGroup α]
+
+open Abs
+
+local instance : Dist α γ := Abs.instDist α
+local instance : IsMetricSpace α := Abs.instIsMetricSpace α
 
 private
 def half_pos {ε: γ} (h: 0 < ε) : 0 < ε /? 2 ~((ne_of_lt two_pos).symm) := by
   sorry
-
-local instance : AbsoluteValue α γ where
-  abs := dist 0
 
 def Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
 def Eventually₂ (P: Nat -> Nat -> Prop) : Prop := ∃k, ∀n m, k ≤ n -> k ≤ m -> P n m

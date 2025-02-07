@@ -1233,3 +1233,27 @@ def zpow?_sub [FieldOps α] [IsNonCommField α] (n m: ℤ) (a: α) (hn: a ≠ 0)
   repeat rw [IsField.zpow?_eq_nz_zpow (α := α)]
   rw [zpow_sub]
   assumption
+
+def inv?_eq_of_mul_left [FieldOps α] [IsNonCommField α] (a b: α) (h: a * b = 1) : a⁻¹?~(by
+  intro g; rw [g, zero_mul] at h
+  exact zero_ne_one h) = b := by
+  apply IsField.NonZero.mk.inj
+  rw [IsField.inv?_eq_nz_inv]
+  apply inv_eq_of_mul_left
+  rw [←IsField.mul_eq_nz_mul]
+  congr
+  intro g
+  rw [g, mul_zero] at h
+  exact zero_ne_one h
+
+def inv?_eq_of_mul_right [FieldOps α] [IsNonCommField α] (a b: α) (h: b * a = 1) : b = a⁻¹?~(by
+  intro g; rw [g, mul_zero] at h
+  exact zero_ne_one h) := by
+  apply IsField.NonZero.mk.inj
+  rw [IsField.inv?_eq_nz_inv]
+  apply inv_eq_of_mul_right
+  rw [←IsField.mul_eq_nz_mul]
+  congr
+  intro g
+  rw [g, zero_mul] at h
+  exact zero_ne_one h

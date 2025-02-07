@@ -3,13 +3,10 @@ import Math.Topology.MetricSpace.Defs
 
 namespace Abs
 
-variable (α: Type*) [AbsoluteValue α γ] [LT γ] [LE γ] [Zero γ]
-  [Add α] [Add γ] [Zero α] [Zero γ] [SMul ℕ α] [SMul ℕ γ]
-  [SMul ℤ α] [Sub α] [Neg α] [IsAddGroup α]
-  [IsAddMonoid α] [IsAddCommMagma α]
-  [IsOrderedAddCommMonoid γ]
-  [IsOrderedAbsAddGroup α]
-  [IsPreOrder γ]
+variable (α: Type*)
+  [AbsoluteValue α γ] [LT γ] [LE γ]
+  [AddMonoidOps γ] [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α]
+  [IsOrderedAddCommMonoid γ] [IsOrderedAbsAddGroup α] [IsLinearOrder γ]
 
 scoped instance : Dist α γ where
   dist x y := ‖x - y‖

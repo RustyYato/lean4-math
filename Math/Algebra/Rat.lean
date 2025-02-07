@@ -1,4 +1,4 @@
-import Math.Algebra.Ring
+import Math.Algebra.Basic
 import Math.Data.Rat.Basic
 
 local notation "⟦" f "⟧" => QuotLike.mk (Q := ℚ) f
@@ -101,3 +101,92 @@ def Rat.char_eq : char Rat = 0 := by
   intro m h
   cases h
   apply Nat.dvd_refl
+
+class RatCast (α: Type u) where
+  cast: ℚ -> α
+
+attribute [coe] RatCast.cast
+
+instance [RatCast α] : Coe ℚ α where
+  coe := RatCast.cast
+
+class IsRatAlgebra (α: Type u) [FieldOps α] [RatCast α] [SMul ℚ α] extends IsField α where
+  rsmul_eq_cast_mul (q: ℚ) (a: α) : q • a = q * a
+  eq_zero_of_natCast_eq_zero (n: ℕ): (n: α) = 0 -> n = 0
+  ratCast_eq_intCast_div?_natCast (q: ℚ): (q: α) = (q.num /? q.den ~((Nat.ne_of_lt' q.den_pos <| eq_zero_of_natCast_eq_zero _ ·)): α)
+
+export IsRatAlgebra (
+  rsmul_eq_cast_mul
+  eq_zero_of_natCast_eq_zero
+  ratCast_eq_intCast_div?_natCast
+)
+
+instance : RatCast ℚ where
+  cast := id
+
+instance : IsRatAlgebra ℚ where
+  rsmul_eq_cast_mul _ _ := rfl
+  eq_zero_of_natCast_eq_zero := by
+    intro n h
+    cases h
+    rfl
+  ratCast_eq_intCast_div?_natCast q := by
+    show q = _
+    rw [div?_eq_mul_inv?]
+    show q = (Rat.mk (Fract.mk q.num 1 _) _).mul ((Rat.mk (Fract.mk q.den 1 _) _).inv _)
+    rw [Rat.inv]
+    dsimp
+    conv => {
+      rhs; rhs; lhs; arg 1
+      rw [Int.sign_ofNat_of_nonzero (by
+        have := q.den_pos
+        intro h; rw [h] at this
+        contradiction), Int.one_mul]
+    }
+    show q = Rat.mk ((Fract.mk _ _ _).mul (Fract.mk _ _ _)).reduce _
+    show q = Rat.mk ((Fract.mk _ _ _)).reduce _
+    cases q with | mk q hq =>
+    congr; dsimp
+    rw [Fract.isReduced.spec (Fract.mk (q.num * 1) (1 * ‖(q.den: Int)‖) _).reduce (Fract.mk q.num q.den _)]
+    apply Fract.reduce.isReduced
+    assumption
+    apply Fract.trans; symm
+    apply Fract.reduce.spec
+    show _ = _
+    dsimp
+    rw [Int.mul_one, Nat.one_mul]
+    rfl
+
+instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : RingAlgebraMap ℚ α where
+  toFun a := a
+  resp_zero := by
+    dsimp
+    erw [ratCast_eq_intCast_div?_natCast, intCast_zero, div?_eq_mul_inv?, zero_mul]
+  resp_one := by
+    dsimp
+    erw [ratCast_eq_intCast_div?_natCast, intCast_one, div?_eq_mul_inv?, one_mul]
+    symm
+    apply inv?_eq_of_mul_right
+    rw [one_mul]
+    apply natCast_one
+  resp_neg := by
+    intro a
+    simp
+    rw [ratCast_eq_intCast_div?_natCast, ratCast_eq_intCast_div?_natCast,
+      div?_eq_mul_inv?, div?_eq_mul_inv?, neg_mul_left]
+    congr 1
+    rw [←intCast_neg]
+    rfl
+  resp_mul := by
+    intro a b
+    dsimp
+    rw [ratCast_eq_intCast_div?_natCast a, ratCast_eq_intCast_div?_natCast b,
+      div?_eq_mul_inv?, div?_eq_mul_inv?, mul_assoc,
+      ←mul_assoc ((a.den: α)⁻¹?~(_)), mul_comm _ (b.num: α),
+      ←mul_assoc, ←mul_assoc, mul_assoc, ←inv?_mul_rev, ←div?_eq_mul_inv?]
+    sorry
+  resp_add := sorry
+
+instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : IsAlgebra ℚ α where
+  commutes _ _ := by rw [mul_comm]
+  smul_def := rsmul_eq_cast_mul
