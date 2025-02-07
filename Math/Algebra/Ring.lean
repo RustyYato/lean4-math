@@ -41,6 +41,34 @@ instance [Add α] [IsAddCommMagma α] : IsCommMagma (MulOfAdd α) where
 instance [Mul α] [IsCommMagma α] : IsCommMagma αᵐᵒᵖ where
   mul_comm _ _ := mul_comm (α := α) _ _
 
+def add_comm_left [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (a b c: α) : a + b + c = c + b + a := by
+  rw [add_comm _ c, add_comm a, add_assoc]
+
+def add_comm_right [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (a b c: α) : a + b + c = a + c + b := by
+  rw [add_assoc, add_comm b, add_assoc]
+
+def add_left_comm [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (a b c: α) : a + (b + c) = b + (a + c) := by
+  rw [←add_assoc, ←add_assoc, add_comm b]
+
+def add_right_comm [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (a b c: α) : a + (b + c) = c + (b + a) := by
+  rw [←add_assoc, ←add_assoc, add_comm_left]
+
+def mul_comm_left [Mul α] [IsSemigroup α] [IsCommMagma α]
+  (a b c: α) : a * b * c = c * b * a := add_comm_left (α := AddOfMul α) _ _ _
+
+def mul_comm_right [Mul α] [IsSemigroup α] [IsCommMagma α]
+  (a b c: α) : a * b * c = a * c * b := add_comm_right (α := AddOfMul α) _ _ _
+
+def mul_left_comm [Mul α] [IsSemigroup α] [IsCommMagma α]
+  (a b c: α) : a * (b * c) = b * (a * c) := add_left_comm (α := AddOfMul α) _ _ _
+
+def mul_right_comm [Mul α] [IsSemigroup α] [IsCommMagma α]
+  (a b c: α) : a * (b * c) = c * (b * a) := add_right_comm (α := AddOfMul α) _ _ _
+
 class IsAddLeftCancel (α: Type*) [Add α]: Prop where
   add_left_cancel {a b k: α}: k + a = k + b -> a = b
 class IsAddRightCancel (α: Type*) [Add α]: Prop where
@@ -1257,3 +1285,6 @@ def inv?_eq_of_mul_right [FieldOps α] [IsNonCommField α] (a b: α) (h: b * a =
   intro g
   rw [g, zero_mul] at h
   exact zero_ne_one h
+
+def add_div?_add' [FieldOps α] [IsNonCommField α] (a b c: α) (h: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, div?_eq_mul_inv?, ←add_mul]

@@ -172,7 +172,64 @@ def intCast_div?_natCast_eq_ratCast_mk
     have := eq_zero_of_natCast_eq_zero _ g
     contradiction) = (Rat.mk (Fract.mk a b (by
     apply Nat.zero_lt_of_ne_zero h)).reduce (Fract.reduce.isReduced _)) := by
-  sorry
+  let x := Int.gcd a b
+  have x_dvd_a : (x: Int) ∣ a := Int.gcd_dvd_left (a := a) (b := b)
+  have x_dvd_b : x ∣ b := Int.ofNat_dvd.mp (Int.gcd_dvd_right (a := a) (b := b))
+  obtain ⟨a', ha⟩ := x_dvd_a
+  obtain ⟨b', hb⟩ := x_dvd_b
+  rw [ha, intCast_mul]
+  conv => { lhs; arg 2; rw [hb, natCast_mul, ←intCast_ofNat, ←intCast_ofNat] }
+  conv => { rhs; arg 1; arg 1; arg 1; arg 2; rw [hb] }
+  rw [div?_eq_mul_inv?, inv?_mul_rev, mul_assoc, mul_right_comm (a': α), ←mul_comm (a': α),
+    ←mul_assoc, mul_inv?_cancel, one_mul, ←div?_eq_mul_inv?]
+  unfold Fract.reduce
+  dsimp
+  have int_abs_def : ∀x: Int, ‖x‖ = x.natAbs := fun _ => rfl
+  conv => {
+    rhs; arg 1; arg 1
+    conv => {
+      arg 1
+      rw [int_abs_def, Int.natAbs_mul, Int.natAbs_ofNat, ←int_abs_def,
+        Nat.gcd_mul_left, Int.natCast_mul, Int.mul_ediv_mul_of_pos _ _ (by
+          refine Int.ofNat_pos.mpr ?_
+          apply Nat.pos_of_ne_zero
+          intro h; rw [h, Nat.zero_mul] at hb
+          contradiction)]
+    }
+    arg 2
+    rw [int_abs_def, Int.natAbs_mul, Int.natAbs_ofNat, ←int_abs_def,
+      Nat.gcd_mul_left, Nat.mul_div_mul_left _ _ (by
+        apply Nat.pos_of_ne_zero
+        intro h; rw [h, Nat.zero_mul] at hb
+        contradiction)]
+  }
+  rw [ratCast_eq_intCast_div?_natCast]
+  dsimp
+  suffices ‖a'‖.gcd b' = 1 by
+    congr
+    rw [this, Int.ofNat_one, Int.ediv_one]
+    rw [this, Nat.div_one]
+    rw [intCast_ofNat]
+  apply Nat.eq_of_mul_eq_mul_left
+  show 0 < x
+  apply Nat.pos_of_ne_zero
+  intro h; rw [h, Nat.zero_mul] at hb
+  contradiction
+  rw [←Nat.gcd_mul_left, ←hb]
+  conv => {
+    lhs; rw [←Int.natAbs_ofNat x, int_abs_def, ←Int.natAbs_mul, ←int_abs_def, ←ha]
+  }
+  rw [Nat.mul_one]; rfl
+  rw [intCast_ofNat]
+  intro h
+  cases eq_zero_of_natCast_eq_zero _ h
+  rw [Nat.mul_zero] at hb
+  contradiction
+  rw [intCast_ofNat]
+  intro h
+  have := eq_zero_of_natCast_eq_zero _ h
+  rw [this, Nat.zero_mul] at hb
+  contradiction
 
 instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : AlgebraMap ℚ α where
   toFun a := a
@@ -209,7 +266,41 @@ instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : AlgebraMap
     intro x y
     dsimp
     rw [ratCast_eq_intCast_div?_natCast x, ratCast_eq_intCast_div?_natCast y]
-    sorry
+    rw [div?_eq_mul_inv?, div?_eq_mul_inv?]
+    conv => {
+      rhs; conv => { lhs; rw [←one_mul (_ * _), ←mul_inv?_cancel (y.den: α) (by
+        intro h
+        exact y.den_nz (eq_zero_of_natCast_eq_zero _ h))] }
+      rhs; rw [←mul_one (_ * _), ←mul_inv?_cancel (x.den: α) (by
+        intro h
+        exact x.den_nz (eq_zero_of_natCast_eq_zero _ h))]
+    }
+    rw [mul_assoc, mul_left_comm _ (x.num: α), ←mul_assoc, ←inv?_mul_rev]
+    rw [mul_assoc (y.num: α), mul_left_comm _ (x.den: α), ←mul_assoc, ←inv?_mul_rev]
+    rw [←add_mul, ←div?_eq_mul_inv?]
+    conv => { rhs; arg 1; rw [←intCast_ofNat, ←intCast_ofNat] }
+    conv => { rhs; arg 2; rw [←natCast_mul] }
+    rw [←intCast_mul, ←intCast_mul, ←intCast_add, intCast_div?_natCast_eq_ratCast_mk]
+    congr
+    cases x with | mk x hx =>
+    cases y with | mk y hy =>
+    apply Rat.toFract.inj
+    apply Fract.isReduced.spec
+    apply Rat.isReduced
+    apply Rat.isReduced
+    apply flip Fract.trans
+    apply Fract.reduce.spec
+    apply Fract.trans
+    symm; apply Fract.reduce.spec
+    show x + y ≈ _
+    show _ = _
+    simp
+    ac_rfl
+    intro a b
+    intro h
+    cases Nat.mul_eq_zero.mp h
+    apply b.den_nz; assumption
+    apply a.den_nz; assumption
 
 instance [FieldOps α] [RatCast α] [SMul ℚ α] [IsRatAlgebra α] : IsAlgebra ℚ α where
   commutes _ _ := by rw [mul_comm]
