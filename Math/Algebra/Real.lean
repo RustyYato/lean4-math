@@ -4,9 +4,13 @@ import Math.Data.Real.Div
 
 namespace Real
 
+instance : RatCast ℝ where
+  cast := .ofRat
 instance : SMul ℕ ℝ where
   smul n r := n * r
 instance : SMul ℤ ℝ where
+  smul n r := n * r
+instance : SMul ℚ ℝ where
   smul n r := n * r
 
 instance : Pow ℝ ℕ where
@@ -81,11 +85,43 @@ instance : IsField ℝ where
     intro _ _
     rfl
 
-instance : RatCast ℝ where
-  cast := .ofRat
-
 instance : IsRatAlgebra ℝ where
-  eq_zero_of_natCast_eq_zero := sorry
-  ratCast_eq_intCast_div?_natCast := sorry
+  rsmul_eq_cast_mul _ _ := rfl
+  eq_zero_of_natCast_eq_zero n h := by
+    cases n; rfl
+    rw [natCast_add] at h
+    rename_i n
+    exfalso
+    rw [natCast_one] at h
+    replace h := neg_eq_of_add_right h
+    suffices -1 < (n: ℝ) by
+      rw [h]at this
+      exact lt_irrefl this
+    clear h
+    exists 1
+    apply And.intro
+    decide
+    exists 0
+    intro m hm
+    show 1 ≤ Rat.ofNat n - -1
+    rw [Rat.sub_eq_add_neg (Rat.ofNat n) (-1), Rat.neg_neg]
+    show 1 ≤ (n: ℚ) + ((1: Nat): ℚ)
+    rw [←natCast_add, Rat.le_def]
+    show 1 * 1 ≤ ((n + 1: Nat): Int) * 1
+    rw [Int.one_mul, Int.mul_one]
+    apply Int.ofNat_le.mpr
+    apply Nat.le_add_left
+  ratCast_eq_intCast_div?_natCast q := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    show q = (q.num: ℚ) * _
+    rw [CauchySeq.inv]; dsimp
+    rw [dif_neg]
+    rw [←div?_eq_mul_inv?]
+    apply ratCast_eq_intCast_div?_natCast
+
+instance : AlgebraMap ℚ ℝ := inferInstance
+instance : IsAlgebra ℚ ℝ := inferInstance
 
 end Real
