@@ -215,7 +215,6 @@ instance : FunLike (AddGroupEquiv α β) α β where
     apply DFunLike.coe_inj
     assumption
 
-
 instance : ZeroHomClass (AddGroupEquiv α β) α β where
   resp_zero f := f.resp_zero
 
@@ -232,10 +231,10 @@ instance : FunLike (GroupEquiv α β) α β where
     apply DFunLike.coe_inj
     assumption
 
-instance : OneHomClass (GroupHom α β) α β where
+instance : OneHomClass (GroupEquiv α β) α β where
   resp_one f := f.resp_one
 
-instance : MulHomClass (GroupHom α β) α β where
+instance : MulHomClass (GroupEquiv α β) α β where
   resp_mul f := f.resp_mul
 
 structure RingEquiv extends α ≃ β, RingHom α β where
@@ -455,6 +454,16 @@ variable [Zero α] [One α] [Add α] [Sub α] [Neg α] [Mul α] [Div α] [Inv α
 variable [Zero β] [One β] [Add β] [Sub β] [Neg β] [Mul β] [Div β] [Inv β] [SMul ℕ β] [Pow β ℕ] [SMul ℤ β] [Pow β ℤ] [NatCast β] [IntCast β] [∀n, OfNat β (n + 2)]
 variable [Zero γ] [One γ] [Add γ] [Sub γ] [Neg γ] [Mul γ] [Div γ] [Inv γ] [SMul ℕ γ] [Pow γ ℕ] [SMul ℤ γ] [Pow γ ℤ] [NatCast γ] [IntCast γ] [∀n, OfNat γ (n + 2)]
 
+def AddGroupHom.comp (a: β →+ γ) (b: α →+ β) : α →+ γ where
+  toFun := a.toFun ∘ b.toFun
+  resp_zero := by dsimp; rw [b.resp_zero, a.resp_zero]
+  resp_add { _ _ } := by dsimp; rw [b.resp_add, a.resp_add]
+
+def GroupHom.comp (a: β →* γ) (b: α →* β) : α →* γ where
+  toFun := a.toFun ∘ b.toFun
+  resp_one := by dsimp; rw [b.resp_one, a.resp_one]
+  resp_mul { _ _ } := by dsimp; rw [b.resp_mul, a.resp_mul]
+
 def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : RingHom α γ where
   toFun := a.toFun ∘ b.toFun
   resp_zero := by dsimp; rw [b.resp_zero, a.resp_zero]
@@ -480,12 +489,12 @@ def intCast_AddGroupHom [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ℤ →
     intro x y
     rw [intCast_add]
 
-def AddGroupEmbedding.refl [AddGroupOps A] : A ↪+ A where
+def AddGroupEmbedding.refl [AddMonoidOps A] : A ↪+ A where
   toEmbedding := Embedding.refl
   resp_zero := rfl
   resp_add := rfl
 
-def GroupEmbedding.refl [GroupOps A] : A ↪* A where
+def GroupEmbedding.refl [MonoidOps A] : A ↪* A where
   toEmbedding := Embedding.refl
   resp_one := rfl
   resp_mul := rfl
@@ -497,12 +506,12 @@ def RingEmbedding.refl [SemiringOps A] : A ↪+* A where
   resp_add := rfl
   resp_mul := rfl
 
-def AddGroupEquiv.refl [AddGroupOps A] : A ≃+ A where
+def AddGroupEquiv.refl [AddMonoidOps A] : A ≃+ A where
   toEquiv := Equiv.refl
   resp_zero := rfl
   resp_add := rfl
 
-def GroupEquiv.refl [GroupOps A] : A ≃* A where
+def GroupEquiv.refl [MonoidOps A] : A ≃* A where
   toEquiv := Equiv.refl
   resp_one := rfl
   resp_mul := rfl
@@ -514,7 +523,7 @@ def RingEquiv.refl [SemiringOps A] : A ≃+* A where
   resp_add := rfl
   resp_mul := rfl
 
-def AddGroupEmbedding.trans [AddGroupOps A] [AddGroupOps B] [AddGroupOps C]
+def AddGroupEmbedding.trans [AddMonoidOps A] [AddMonoidOps B] [AddMonoidOps C]
   (h: A ↪+ B) (g: B ↪+ C) : A ↪+ C where
   toEmbedding := h.toEmbedding.trans g.toEmbedding
   resp_zero := by
@@ -525,7 +534,7 @@ def AddGroupEmbedding.trans [AddGroupOps A] [AddGroupOps B] [AddGroupOps C]
     rw [resp_add, resp_add]
     rfl
 
-def GroupEmbedding.trans [GroupOps A] [GroupOps B] [GroupOps C]
+def GroupEmbedding.trans [MonoidOps A] [MonoidOps B] [MonoidOps C]
   (h: A ↪* B) (g: B ↪* C) : A ↪* C where
   toEmbedding := h.toEmbedding.trans g.toEmbedding
   resp_one := by
@@ -554,24 +563,47 @@ def RingEmbedding.trans [SemiringOps A] [SemiringOps B] [SemiringOps C]
     rw [resp_mul, resp_mul]
     rfl
 
-def AddGroupEquiv.trans [AddGroupOps A] : A ≃+ A where
-  toEquiv := Equiv.refl
-  resp_zero := rfl
-  resp_add := rfl
+def AddGroupEquiv.trans [AddMonoidOps A] [AddMonoidOps B] [AddMonoidOps C]
+  (h: A ≃+ B) (g: B ≃+ C) : A ≃+ C where
+  toEquiv := h.toEquiv.trans g.toEquiv
+  resp_zero := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_zero, resp_zero]
+  resp_add {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_add, resp_add]
+    rfl
 
-def GroupEquiv.trans [GroupOps A] : A ≃* A where
-  toEquiv := Equiv.refl
-  resp_one := rfl
-  resp_mul := rfl
+def GroupEquiv.trans [MonoidOps A] [MonoidOps B] [MonoidOps C]
+  (h: A ≃* B) (g: B ≃* C) : A ≃* C where
+  toEquiv := h.toEquiv.trans g.toEquiv
+  resp_one := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_one, resp_one]
+  resp_mul {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_mul, resp_mul]
+    rfl
 
-def RingEquiv.trans [SemiringOps A] : A ≃+* A where
-  toEquiv := Equiv.refl
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := rfl
+def RingEquiv.trans [SemiringOps A] [SemiringOps B] [SemiringOps C]
+  (h: A ≃+* B) (g: B ≃+* C) : A ≃+* C where
+  toEquiv := h.toEquiv.trans g.toEquiv
+  resp_zero := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_zero, resp_zero]
+  resp_one := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_one, resp_one]
+  resp_add {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_add, resp_add]
+    rfl
+  resp_mul {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_mul, resp_mul]
+    rfl
 
-def AddGroupEquiv.symm [AddGroupOps A] [AddGroupOps B] (h: A ≃+ B) : B ≃+ A where
+def AddGroupEquiv.symm [AddMonoidOps A] [AddMonoidOps B] (h: A ≃+ B) : B ≃+ A where
   toEquiv := h.toEquiv.symm
   resp_zero := by
     rw [←h.coe_symm 0]
@@ -582,7 +614,7 @@ def AddGroupEquiv.symm [AddGroupOps A] [AddGroupOps B] (h: A ≃+ B) : B ≃+ A 
     show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
     erw [h.resp_add, h.rightInv, h.rightInv]
 
-def GroupEquiv.symm [GroupOps A] [GroupOps B] (h: A ≃* B) : B ≃* A where
+def GroupEquiv.symm [MonoidOps A] [MonoidOps B] (h: A ≃* B) : B ≃* A where
   toEquiv := h.toEquiv.symm
   resp_one := by
     rw [←h.coe_symm 1]
@@ -611,3 +643,116 @@ def RingEquiv.symm [SemiringOps A] [SemiringOps B] (h: A ≃+* B) : B ≃+* A wh
     rw [←h.coe_symm (_ * _)]
     show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
     erw [h.resp_mul, h.rightInv, h.rightInv]
+
+def AddGroupEquiv.toEmbedding [AddMonoidOps A] [AddMonoidOps B] (h: A ≃+ B) : A ↪+ B where
+  toEmbedding := h.toEquiv.toEmbedding
+  resp_zero := h.resp_zero
+  resp_add := h.resp_add
+
+def GroupEquiv.toEmbedding [MonoidOps A] [MonoidOps B] (h: A ≃* B) : A ↪* B where
+  toEmbedding := h.toEquiv.toEmbedding
+  resp_one := h.resp_one
+  resp_mul := h.resp_mul
+
+def RingEquiv.toEmbedding [SemiringOps A] [SemiringOps B] (h: A ≃+* B) : A ↪+* B where
+  toEmbedding := h.toEquiv.toEmbedding
+  resp_zero := h.resp_zero
+  resp_one := h.resp_one
+  resp_add := h.resp_add
+  resp_mul := h.resp_mul
+
+def AddGroupEquiv.toHom [AddMonoidOps A] [AddMonoidOps B] (h: A ≃+ B) : A →+ B where
+  toFun := h.toEquiv.toEmbedding
+  resp_zero := h.resp_zero
+  resp_add := h.resp_add
+
+def GroupEquiv.toHom [MonoidOps A] [MonoidOps B] (h: A ≃* B) : A →* B where
+  toFun := h.toEquiv.toEmbedding
+  resp_one := h.resp_one
+  resp_mul := h.resp_mul
+
+def RingEquiv.toHom [SemiringOps A] [SemiringOps B] (h: A ≃+* B) : A →+* B where
+  toFun := h.toEquiv.toEmbedding
+  resp_zero := h.resp_zero
+  resp_one := h.resp_one
+  resp_add := h.resp_add
+  resp_mul := h.resp_mul
+
+def AddGroupHom.id (A: Type*) [AddMonoidOps A] : A →+ A where
+  toFun := _root_.id
+  resp_zero := rfl
+  resp_add := rfl
+
+def GroupHom.id (A: Type*) [MonoidOps A] : A →* A where
+  toFun := _root_.id
+  resp_one := rfl
+  resp_mul := rfl
+
+-- def GroupEquiv.toEmbedding [MonoidOps A] [MonoidOps B] (h: A ≃* B) : A ↪* B where
+--   toEmbedding := h.toEquiv.toEmbedding
+--   resp_one := h.resp_one
+--   resp_mul := h.resp_mul
+
+-- def RingEquiv.toEmbedding [SemiringOps A] [SemiringOps B] (h: A ≃+* B) : A ↪+* B where
+--   toEmbedding := h.toEquiv.toEmbedding
+--   resp_zero := h.resp_zero
+--   resp_one := h.resp_one
+--   resp_add := h.resp_add
+--   resp_mul := h.resp_mul
+
+def AddGroupEquiv.coe_symm [AddMonoidOps α] [AddMonoidOps β] (h: α ≃+ β) (x: α) :
+  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+def AddGroupEquiv.symm_coe [AddMonoidOps α] [AddMonoidOps β] (h: α ≃+ β) (x: β) :
+  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+
+def GroupEquiv.coe_symm [MonoidOps α] [MonoidOps β] (h: α ≃* β) (x: α) :
+  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+def GroupEquiv.symm_coe [MonoidOps α] [MonoidOps β] (h: α ≃* β) (x: β) :
+  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+
+def RingEquiv.coe_symm [SemiringOps α] [SemiringOps β] (h: α ≃+* β) (x: α) :
+  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+def RingEquiv.symm_coe [SemiringOps α] [SemiringOps β] (h: α ≃+* β) (x: β) :
+  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+
+def AddGroupEquiv.trans_symm [AddMonoidOps α] [AddMonoidOps β] (h: α ≃+ β) :
+  h.trans h.symm = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h.symm (h x) = x
+  rw [h.coe_symm]
+
+def AddGroupEquiv.symm_trans [AddMonoidOps α] [AddMonoidOps β] (h: α ≃+ β) :
+  h.symm.trans h = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h (h.symm x) = x
+  rw [h.symm_coe]
+
+def GroupEquiv.trans_symm [MonoidOps α] [MonoidOps β] (h: α ≃* β) :
+  h.trans h.symm = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h.symm (h x) = x
+  rw [h.coe_symm]
+
+def GroupEquiv.symm_trans [MonoidOps α] [MonoidOps β] (h: α ≃* β) :
+  h.symm.trans h = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h (h.symm x) = x
+  rw [h.symm_coe]
+
+def RingEquiv.trans_symm [SemiringOps α] [SemiringOps β] (h: α ≃+* β) :
+  h.trans h.symm = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h.symm (h x) = x
+  rw [h.coe_symm]
+
+def RingEquiv.symm_trans [SemiringOps α] [SemiringOps β] (h: α ≃+* β) :
+  h.symm.trans h = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h (h.symm x) = x
+  rw [h.symm_coe]

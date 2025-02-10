@@ -124,145 +124,14 @@ def opp (g: Group α) : Group αᵐᵒᵖ :=
   let _ := g.toIsGroup
   Group.mk inferInstance inferInstance
 
-protected structure Hom (a: Group α) (b: Group β) extends MulHom a b, OneHom a b
-protected structure Embedding (a: Group α) (b: Group β) extends a ↪ b, Group.Hom a b where
-protected structure Equiv (a: Group α) (b: Group β) extends a ≃ b, Group.Hom a b where
+protected abbrev Hom (a: Group α) (b: Group β) := a →* b
+protected abbrev Embedding (a: Group α) (b: Group β) := a ↪* b
+protected abbrev Equiv (a: Group α) (b: Group β) := a ≃* b
 
-infixr:25 " →g " => Group.Hom
-infixr:25 " ↪g " => Group.Embedding
-infixr:25 " ≃g " => Group.Equiv
-
-instance : FunLike (Group.Hom a b) a b where
-  coe f := f.toFun
-  coe_inj := by
-    intro x y eq
-    cases x; cases y
-    congr
-    apply DFunLike.coe_inj
-    assumption
-
-instance : MulHomClass (Group.Hom a b) a b where
-  resp_mul f := f.resp_mul
-
-instance : OneHomClass (Group.Hom a b) a b where
-  resp_one f := f.resp_one
-
-instance : InvHomClass (Group.Hom a b) a b where
-  resp_inv f y := by
-    symm
-    apply inv_eq_of_mul_left
-    rw [←resp_mul, mul_inv_cancel, resp_one]
-
-instance : FunLike (Group.Embedding a b) a b where
-  coe f := f.toFun
-  coe_inj := by
-    intro x y eq
-    cases x; cases y
-    congr
-    apply DFunLike.coe_inj
-    assumption
-
-instance : MulHomClass (Group.Embedding a b) a b where
-  resp_mul f := f.resp_mul
-
-instance : OneHomClass (Group.Embedding a b) a b where
-  resp_one f := f.resp_one
-
-instance : InvHomClass (Group.Embedding a b) a b where
-  resp_inv f y := by
-    symm
-    apply inv_eq_of_mul_left
-    rw [←resp_mul, mul_inv_cancel, resp_one]
-
-instance : FunLike (Group.Equiv a b) a b where
-  coe f := f.toFun
-  coe_inj := by
-    intro x y eq
-    cases x; cases y
-    congr
-    apply DFunLike.coe_inj
-    assumption
-
-instance : MulHomClass (Group.Equiv a b) a b where
-  resp_mul f := f.resp_mul
-
-instance : OneHomClass (Group.Equiv a b) a b where
-  resp_one f := f.resp_one
-
-instance : InvHomClass (Group.Equiv a b) a b where
-  resp_inv f y := by
-    symm
-    apply inv_eq_of_mul_left
-    rw [←resp_mul, mul_inv_cancel, resp_one]
-
-def Equiv.toEmbedding (f: a ≃g b) : a ↪g b where
-  toEmbedding := f.toEquiv.toEmbedding
-  resp_mul := f.resp_mul
-  resp_one := f.resp_one
-
-def Hom.id : a →g a where
-  toFun x := x
-  resp_mul := rfl
-  resp_one := rfl
-
-def Hom.comp (h: b →g c) (g: a →g b) : a →g c where
-  toFun := h ∘ g
-  resp_mul := by
-    intro x y
-    dsimp
-    rw [resp_mul, resp_mul]
-  resp_one := by
-    dsimp
-    rw [OneHomClass.resp_one, OneHomClass.resp_one]
-
-def Embedding.refl : a ↪g a where
-  toEmbedding := _root_.Embedding.refl
-  resp_mul := rfl
-  resp_one := rfl
-
-def Embedding.trans (h: a ↪g b) (g: b ↪g c): a ↪g c where
-  toEmbedding := h.toEmbedding.trans g.toEmbedding
-  resp_mul := by
-    intro x y
-    show g.toFun (h.toFun (x * y)) = _
-    rw [h.resp_mul, g.resp_mul]
-    rfl
-  resp_one := by
-    show g.toFun (h.toFun 1) = 1
-    rw [h.resp_one, g.resp_one]
-
-def Equiv.refl : a ≃g a where
-  toEquiv := _root_.Equiv.refl
-  resp_mul := rfl
-  resp_one := rfl
-
-def Equiv.symm (h: a ≃g b): b ≃g a where
-  toEquiv := h.toEquiv.symm
-  resp_mul := by
-    intro x y
-    apply h.toFun_inj
-    show h.toEquiv (h.toEquiv.symm (x * y)) = h.toFun _
-    rw [h.symm_coe, h.resp_mul]
-    show _ = h.toEquiv (h.toEquiv.symm x) * h.toEquiv (h.toEquiv.symm y)
-    rw [h.symm_coe, h.symm_coe]
-  resp_one := by
-    apply h.toFun_inj
-    show h.toEquiv (h.toEquiv.symm 1) = h 1
-    rw [h.symm_coe, OneHomClass.resp_one]
-
-def Equiv.trans (h: a ≃g b) (g: b ≃g c): a ≃g c where
-  toEquiv := h.toEquiv.trans g.toEquiv
-  resp_mul := by
-    intro x y
-    show g.toFun (h.toFun (x * y)) = _
-    rw [h.resp_mul, g.resp_mul]
-    rfl
-  resp_one := by
-    show g.toFun (h.toFun 1) = 1
-    rw [h.resp_one, g.resp_one]
+variable {a: Group α} {b: Group β} {c: Group γ}
 
 -- conjugate each the elements of `A` by `x` as an group equivalence relation
-def conj (A: Group α) (x: A) : A ≃g A where
+def conj (A: Group α) (x: A) : A ≃* A where
   toFun a := x⁻¹ * a * x
   invFun a := x * a * x⁻¹
   leftInv := by
@@ -301,12 +170,12 @@ def Trivial : Group Unit where
   zpow_negSucc _ _ := rfl
   inv_mul_cancel _ := rfl
 
-def toTrivial : g →g Trivial where
+def toTrivial (g: Group α) : g →* Trivial where
   toFun _ := 1
   resp_mul := rfl
   resp_one := rfl
 
-def ofTrivial : Trivial ↪g g where
+def ofTrivial (g: Group α) : Trivial ↪* g where
   toFun _ := 1
   inj { _ _ } _  := rfl
   resp_mul := by
@@ -314,37 +183,32 @@ def ofTrivial : Trivial ↪g g where
     rw [mul_one]
   resp_one := rfl
 
-def toTrivial.Subsingleton : Subsingleton (g →g Trivial) where
+def toTrivial.Subsingleton (g: Group α) : Subsingleton (g →* Trivial) where
   allEq a b := by
     apply DFunLike.ext
     intro x
     rfl
 
-def ofTrivial.Subsingleton : Subsingleton (Trivial →g g) where
+def ofTrivial.Subsingleton (g: Group α) : Subsingleton (Trivial →* g) where
   allEq a b := by
     apply DFunLike.ext
     intro x
     show a 1 = b 1
     rw [resp_one, resp_one]
 
-def Equiv.toHom_comp_toHom (h: b ≃g c) (g: a ≃g b) :
+def Equiv.toHom_comp_toHom (h: b ≃* c) (g: a ≃* b) :
   h.toHom.comp g.toHom = (g.trans h).toHom := rfl
 
-def Equiv.refl_toHom : Group.Equiv.refl.toHom = Hom.id (a := a) := rfl
+def Equiv.refl_toHom : GroupEquiv.refl.toHom = GroupHom.id a := rfl
 
-def Equiv.coe_symm (h: a ≃g b) (x: a) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def Equiv.symm_coe (h: a ≃g b) (x: b) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-
-def Equiv.trans_symm (h: a ≃g b) :
+def Equiv.trans_symm (h: a ≃* b) :
   h.trans h.symm = .refl := by
   apply DFunLike.ext
   intro x
   show h.symm (h x) = x
   rw [h.coe_symm]
 
-def Equiv.symm_trans (h: a ≃g b) :
+def Equiv.symm_trans (h: a ≃* b) :
   h.symm.trans h = .refl := by
   apply DFunLike.ext
   intro x

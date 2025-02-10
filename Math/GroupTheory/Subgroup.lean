@@ -244,7 +244,7 @@ instance {g: Subgroup g} : IsGroup g.set where
 
 def toGroup (A: Subgroup g) : Group A.set where
 
-def image (s: Subgroup g) (h: g →g g') : Subgroup g' where
+def image {g': Group α} (s: Subgroup g) (h: g →* g') : Subgroup g' where
   set := s.set.image h
   one_mem := by
     apply Set.mem_image.mpr
@@ -267,7 +267,7 @@ def image (s: Subgroup g) (h: g →g g') : Subgroup g' where
     assumption
     assumption
 
-def preimage (s: Subgroup g') (h: g →g g') : Subgroup g where
+def preimage {g: Group α} (s: Subgroup g') (h: g →* g') : Subgroup g where
   set := s.set.preimage h
   one_mem := by
     apply Set.mem_preimage.mpr
@@ -287,7 +287,7 @@ def preimage (s: Subgroup g') (h: g →g g') : Subgroup g where
     assumption
     assumption
 
-def preimage_preimage (s: Subgroup c) (h: a →g b) (g: b →g c) :
+def preimage_preimage {a: Group α} {b: Group β} {c: Group γ} (s: Subgroup c) (h: a →* b) (g: b →* c) :
   (s.preimage g).preimage h = s.preimage (g.comp h) := rfl
 
 def commutator (a b: Subgroup g) : Subgroup g :=
@@ -488,7 +488,7 @@ def IsNormal.Quot {A: Subgroup g} (h: A.IsNormal) : Group h.QuotType := by
     rw [mul_assoc]
     rfl
 
-def IsNormal.preimage {A: Subgroup g} (h: A.IsNormal) (f: g' →g g) :
+def IsNormal.preimage {g': Group β} {A: Subgroup g} (h: A.IsNormal) (f: g' →* g) :
   (A.preimage f).IsNormal := by
   intro x y hy
   apply Set.mem_preimage.mpr
@@ -496,7 +496,7 @@ def IsNormal.preimage {A: Subgroup g} (h: A.IsNormal) (f: g' →g g) :
   apply h
   assumption
 
-def IsNormal.image {A: Subgroup g} (h: A.IsNormal) (f: g →g g') (hf: Function.Surjective f):
+def IsNormal.image {g': Group α} {A: Subgroup g} (h: A.IsNormal) (f: g →* g') (hf: Function.Surjective f):
   (A.image f).IsNormal := by
   intro x y ⟨y, hy, eq⟩; subst eq
   have := fun x => h x y hy
@@ -516,7 +516,7 @@ def IsSimple (g: Group α) :=
   ∀s: Subgroup g, s.IsNormal -> s = ⊤ ∨ s = ⊥
 
 -- simple groups respect the isomorphsim relation
-def IsSimple.congr (g: Group α) (h: g ≃g g'):
+def IsSimple.congr {g: Group α} {g': Group β} (h: g ≃* g'):
   g.IsSimple -> g'.IsSimple := by
   intro g_simp s n
   cases g_simp _ (n.preimage h.toHom) <;> rename_i hs
@@ -540,7 +540,7 @@ def IsSimple.congr (g: Group α) (h: g ≃g g'):
     replace this : s = _ := this
     rw [this] at hx
     replace hx: h.symm x = 1 := hx
-    rw [←h.coe_symm 1, resp_one,] at hx
+    rw [←h.coe_symm 1, resp_one] at hx
     rw [h.invFun_inj hx]
     rfl
     intro

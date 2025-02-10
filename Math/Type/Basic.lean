@@ -141,6 +141,18 @@ instance [IsEmpty α] : Embedding α β where
 def Equiv.coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
 def Equiv.symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
 
+def Equiv.trans_symm (h: α ≃ β) : h.trans h.symm = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h.symm (h x) = x
+  rw [h.coe_symm]
+
+def Equiv.symm_trans (h: α ≃ β) : h.symm.trans h = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h (h.symm x) = x
+  rw [h.symm_coe]
+
 def Equiv.inj (h: Equiv α β) : Function.Injective h := by
   intro x y eq
   exact h.toFun_inj eq

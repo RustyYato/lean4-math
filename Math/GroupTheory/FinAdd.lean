@@ -56,7 +56,7 @@ def multiplier_dvd (x: g.toGroup): (multiplier g h).val ∣ Fin.val (Subtype.val
   sorry
 
 def sub_cyclic:
-  ∃m, ∃_: NeZero m, Nonempty (g.toGroup ≃g Cyclic m) := by
+  ∃m, ∃_: NeZero m, Nonempty (g.toGroup ≃* Cyclic m) := by
   by_cases h:∃x ∈ g.set, x.val ≠ 0
   · replace h: ∃x: Fin (n + 1), x ∈ g.set ∧ x.val ≠ 0 := h
     replace h := Relation.exists_min (fun x y => x.val < y.val) h
@@ -80,7 +80,7 @@ def sub_cyclic:
       apply Decidable.byContradiction
       intro h
       sorry
-    apply Group.Equiv.mk _ _ _
+    apply GroupEquiv.mk _ _ _
     · apply _root_.Equiv.mk
       case toFun =>
         intro ⟨a, ha⟩
@@ -97,7 +97,7 @@ def sub_cyclic:
     }
     refine ⟨1, ?_, ⟨?_⟩⟩
     infer_instance
-    apply Group.Equiv.mk
+    apply GroupEquiv.mk
     case neg.refine_2.toEquiv =>
       apply _root_.Equiv.mk
       case toFun =>
@@ -123,10 +123,10 @@ def sub_cyclic:
         apply Fin.val_inj.mpr
         dsimp
         apply Subsingleton.allEq
+    rfl
     intro x y
     dsimp
     rw [one_mul]
-    rfl
 
 def IsSimple.Cyclic [h: NeZero n] :
   n.IsAtomic ↔ (Cyclic n).IsSimple := by

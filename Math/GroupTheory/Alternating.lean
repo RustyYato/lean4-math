@@ -49,17 +49,20 @@ instance : One (EvenPermType α) where
   one := ⟨.refl, .refl⟩
 
 instance : Inv (EvenPermType α) where
-  inv := ⟨.symm, ?_⟩
+  inv h := ⟨h.perm.symm, sorry⟩
 
 instance : Mul (EvenPermType α) where
-  mul := .trans
+  mul a b := ⟨a.perm.trans b.perm, sorry⟩
 
 def Perm (α: Type*) : Group (EvenPermType α) := by
   apply Group.ofAxiomsLeft
   intro
   rfl
   intro x
-  apply Equiv.symm_trans_self
+  · cases x with | mk x hx =>
+    show EvenPermType.mk _ _ = EvenPermType.mk _ _
+    congr
+    apply Equiv.symm_trans_self
   intro  _ _ _; rfl
 
 end Group
