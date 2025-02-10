@@ -827,14 +827,15 @@ instance [RingOps α] [IsSemiring α] [IsAddGroupWithOne α] : IsRing α where
   zsmul_negSucc := zsmul_negSucc
   neg_add_cancel := neg_add_cancel
 
-def mul_sub [RingOps α] [IsRing α] (k a b: α): k * (a - b) = k * a - k * b := by
+def mul_sub [AddGroupOps α] [IsAddGroup α] [Mul α] [IsLeftDistrib α] [IsMulZeroClass α] (k a b: α): k * (a - b) = k * a - k * b := by
+
   rw [sub_eq_add_neg, sub_eq_add_neg, mul_add]
   congr 1
   symm
   apply neg_eq_of_add
   rw [←mul_add, add_neg_cancel, mul_zero]
 
-def sub_mul [RingOps α] [IsRing α] (k a b: α): (a - b) * k = a * k - b * k := by
+def sub_mul [AddGroupOps α] [IsAddGroup α] [Mul α] [IsRightDistrib α] [IsMulZeroClass α] (k a b: α): (a - b) * k = a * k - b * k := by
   rw [sub_eq_add_neg, sub_eq_add_neg, add_mul]
   congr 1
   symm
@@ -1291,3 +1292,16 @@ def inv?_eq_of_mul_right [FieldOps α] [IsNonCommField α] (a b: α) (h: b * a =
 
 def add_div?_add' [FieldOps α] [IsNonCommField α] (a b c: α) (h: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, div?_eq_mul_inv?, ←add_mul]
+
+def div?_self [FieldOps α] [IsNonCommField α] (a: α) (h: a ≠ 0) : a /? a = 1 := by
+  rw [div?_eq_mul_inv?, mul_inv?_cancel]
+
+instance (priority := 100) [Add α] [IsAddSemigroup α] : @Std.Associative α (· + ·) where
+  assoc := add_assoc
+instance (priority := 100) [Mul α] [IsSemigroup α] : @Std.Associative α (· * ·) where
+  assoc := mul_assoc
+
+instance (priority := 100) [Add α] [IsAddCommMagma α] : @Std.Commutative α (· + ·) where
+  comm := add_comm
+instance (priority := 100) [Mul α] [IsCommMagma α] : @Std.Commutative α (· * ·) where
+  comm := mul_comm
