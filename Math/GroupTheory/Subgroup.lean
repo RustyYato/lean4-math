@@ -526,6 +526,7 @@ def ofEmbed {a: Group α} {b: Group β} (h: a ↪* b) : Subgroup b where
     exists x'⁻¹
     rw [resp_inv]
 
+-- the canonical injection to the subgroup based on the embedding
 def toOfEmbed {a: Group α} {b: Group β} (h: a ↪* b) : a ↪* ofEmbed h where
   toFun x := ⟨h x, Set.mem_range'⟩
   inj := by
@@ -540,6 +541,8 @@ def toOfEmbed {a: Group α} {b: Group β} (h: a ↪* b) : a ↪* ofEmbed h where
     congr
     rw [resp_mul]
 
+-- the canonical equivalence to the subgroup based on the embedding
+-- the forward direction is the same as toOfEmbed, so use that instead if possible
 noncomputable
 def ofEmbedEquiv {a: Group α} {b: Group β} (h: a ↪* b) : a ≃* ofEmbed h where
   toFun := toOfEmbed h

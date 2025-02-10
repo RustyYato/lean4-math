@@ -84,6 +84,7 @@ def EvenPerm (α: Type*) : Group (EvenPermType α) := by
   intro  _ _ _; rfl
 
 -- the alternating group embeds directly into the symmetric group
+-- this proves that EvenPerm is a subgroup of Perm (see [`ofEmbed`])
 def embedPerm : EvenPerm α ↪* Perm α where
   toFun x := x.perm
   inj := by
