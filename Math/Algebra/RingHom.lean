@@ -480,6 +480,97 @@ def intCast_AddGroupHom [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ℤ →
     intro x y
     rw [intCast_add]
 
+def AddGroupEmbedding.refl [AddGroupOps A] : A ↪+ A where
+  toEmbedding := Embedding.refl
+  resp_zero := rfl
+  resp_add := rfl
+
+def GroupEmbedding.refl [GroupOps A] : A ↪* A where
+  toEmbedding := Embedding.refl
+  resp_one := rfl
+  resp_mul := rfl
+
+def RingEmbedding.refl [SemiringOps A] : A ↪+* A where
+  toEmbedding := Embedding.refl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
+
+def AddGroupEquiv.refl [AddGroupOps A] : A ≃+ A where
+  toEquiv := Equiv.refl
+  resp_zero := rfl
+  resp_add := rfl
+
+def GroupEquiv.refl [GroupOps A] : A ≃* A where
+  toEquiv := Equiv.refl
+  resp_one := rfl
+  resp_mul := rfl
+
+def RingEquiv.refl [SemiringOps A] : A ≃+* A where
+  toEquiv := Equiv.refl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
+
+def AddGroupEmbedding.trans [AddGroupOps A] [AddGroupOps B] [AddGroupOps C]
+  (h: A ↪+ B) (g: B ↪+ C) : A ↪+ C where
+  toEmbedding := h.toEmbedding.trans g.toEmbedding
+  resp_zero := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_zero, resp_zero]
+  resp_add {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_add, resp_add]
+    rfl
+
+def GroupEmbedding.trans [GroupOps A] [GroupOps B] [GroupOps C]
+  (h: A ↪* B) (g: B ↪* C) : A ↪* C where
+  toEmbedding := h.toEmbedding.trans g.toEmbedding
+  resp_one := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_one, resp_one]
+  resp_mul {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_mul, resp_mul]
+    rfl
+
+def RingEmbedding.trans [SemiringOps A] [SemiringOps B] [SemiringOps C]
+  (h: A ↪+* B) (g: B ↪+* C) : A ↪+* C where
+  toEmbedding := h.toEmbedding.trans g.toEmbedding
+  resp_zero := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_zero, resp_zero]
+  resp_one := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_one, resp_one]
+  resp_add {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_add, resp_add]
+    rfl
+  resp_mul {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_mul, resp_mul]
+    rfl
+
+def AddGroupEquiv.trans [AddGroupOps A] : A ≃+ A where
+  toEquiv := Equiv.refl
+  resp_zero := rfl
+  resp_add := rfl
+
+def GroupEquiv.trans [GroupOps A] : A ≃* A where
+  toEquiv := Equiv.refl
+  resp_one := rfl
+  resp_mul := rfl
+
+def RingEquiv.trans [SemiringOps A] : A ≃+* A where
+  toEquiv := Equiv.refl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
+
 def AddGroupEquiv.symm [AddGroupOps A] [AddGroupOps B] (h: A ≃+ B) : B ≃+ A where
   toEquiv := h.toEquiv.symm
   resp_zero := by
