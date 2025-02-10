@@ -153,6 +153,8 @@ def Equiv.symm_trans (h: α ≃ β) : h.symm.trans h = .refl := by
   show h (h.symm x) = x
   rw [h.symm_coe]
 
+def Equiv.trans_assoc (h: α ≃ β) (g: β ≃ γ) (i: γ ≃ η) : (h.trans g).trans i = h.trans (g.trans i) := rfl
+
 def Equiv.inj (h: Equiv α β) : Function.Injective h := by
   intro x y eq
   exact h.toFun_inj eq

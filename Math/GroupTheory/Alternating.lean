@@ -39,6 +39,23 @@ def Equiv.IsEven.of_trans
     refine ⟨x₀, x₁, ne, ?_⟩
     rfl
 
+def Equiv.IsEven.symm {h: α ≃ α} (hx: IsEven h) : IsEven h.symm := by
+  apply Equiv.IsEven.of_trans h.symm h
+  rw [Equiv.symm_trans]
+  exact Equiv.IsEven.refl
+  assumption
+
+def Equiv.IsEven.trans {h g: α ≃ α} (hx: IsEven h) (gx: IsEven g) : IsEven (h.trans g) := by
+  show ((h.trans g).trans .refl).IsEven
+  apply Equiv.IsEven.of_trans (h.trans g) g.symm
+  apply Equiv.IsEven.of_trans _ h.symm
+  rw [Equiv.trans_assoc h, g.trans_symm]
+  show (h.trans h.symm).IsEven
+  rw [h.trans_symm]
+  exact Equiv.IsEven.refl
+  exact hx.symm
+  exact gx.symm
+
 namespace Group
 
 structure EvenPermType (α: Type*) where
@@ -49,10 +66,10 @@ instance : One (EvenPermType α) where
   one := ⟨.refl, .refl⟩
 
 instance : Inv (EvenPermType α) where
-  inv h := ⟨h.perm.symm, sorry⟩
+  inv h := ⟨h.perm.symm, h.isEven.symm⟩
 
 instance : Mul (EvenPermType α) where
-  mul a b := ⟨a.perm.trans b.perm, sorry⟩
+  mul a b := ⟨a.perm.trans b.perm, a.isEven.trans b.isEven⟩
 
 def Perm (α: Type*) : Group (EvenPermType α) := by
   apply Group.ofAxiomsLeft
