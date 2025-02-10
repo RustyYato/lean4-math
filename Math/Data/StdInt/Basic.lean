@@ -49,4 +49,13 @@ def mul_pow (a b: Int) (n: Nat) : a ^ n * b ^ n = (a * b) ^ n := by
     rw [Int.pow_succ, Int.pow_succ, Int.pow_succ, ←ih]
     ac_rfl
 
+def emod_two_eq_zero_or_one (n : Int) : n % 2 = 0 ∨ n % 2 = 1 :=
+  have h : n % 2 < 2 :=  by omega
+  have h₁ : 0 ≤ n % 2 := Int.emod_nonneg _ (by decide)
+  match n % 2, h, h₁ with
+  | (0 : Nat), _ ,_ => Or.inl rfl
+  | (1 : Nat), _ ,_ => Or.inr rfl
+  | (k + 2 : Nat), h₁, _ => by omega
+  | -[a+1], _, h₁ => by cases h₁
+
 end Int

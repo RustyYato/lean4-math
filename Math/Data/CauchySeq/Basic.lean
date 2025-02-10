@@ -68,12 +68,10 @@ structure CauchySeq (α: Type*) {γ: Type*} [AbsoluteValue α γ] [LT γ] [LE γ
 end
 namespace CauchySeq
 
-
 variable {α: Type*} [AbsoluteValue α γ]
   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
   [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
-  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
-  [IsOrderedAbsAddGroup α]
+  [FieldOps α] [IsField α] [IsOrderedAbsRing α]
 
 local instance : IsLinearOrder γ := (inferInstanceAs (IsLinearMinMaxOrder γ)).toIsLinearOrder
 local instance : Dist α γ := Abs.instDist α
@@ -94,9 +92,9 @@ private noncomputable def findBoundFrom (f: Nat -> α) (src: α) : Nat -> γ
 | n + 1 => max (dist src (f n)) (findBoundFrom f src n)
 
 -- noncomputable so lean doesn't waste time compiling this
-private noncomputable def findBound (f: Nat -> α) (k: Nat) : Nat -> γ
+private noncomputable def findBound (f g: Nat -> α) (k: Nat) : Nat -> γ
 | 0 => 0
-| n + 1 => max (findBoundFrom f (f n) k) (findBound f k n)
+| n + 1 => max (findBoundFrom f (g n) k) (findBound f g k n)
 
 @[simp]
 private def findBoundFrom.nonneg {f: Nat -> α} : 0 ≤ findBoundFrom f src n := by
@@ -106,7 +104,7 @@ private def findBoundFrom.nonneg {f: Nat -> α} : 0 ≤ findBoundFrom f src n :=
     simp [findBoundFrom, le_max_iff, ih]
 
 @[simp]
-private def findBound.nonneg {f: Nat -> α} : 0 ≤ findBound f k n := by
+private def findBound.nonneg {f g: Nat -> α} : 0 ≤ findBound f g k n := by
   induction n with
   | zero => rfl
   | succ n ih => simp [findBound, le_max_iff, ih]
@@ -126,7 +124,7 @@ private def findBoundFrom.spec {f: Nat -> α} {k: Nat} : ∀n, n ≤ k -> dist s
     simp [le_max_iff]
 
 @[simp]
-private def findBound.spec {f: Nat -> α} {k₀ k₁: Nat} : ∀n m, n ≤ k₁ -> m ≤ k₀ -> dist (f n) (f m) ≤ findBound f k₀.succ k₁.succ := by
+private def findBound.spec {f g: Nat -> α} {k₀ k₁: Nat} : ∀n m, n ≤ k₁ -> m ≤ k₀ -> dist (g n) (f m) ≤ findBound f g k₀.succ k₁.succ := by
   intro n m nk mk
   induction k₁ with
   | zero =>
@@ -137,7 +135,7 @@ private def findBound.spec {f: Nat -> α} {k₀ k₁: Nat} : ∀n m, n ≤ k₁ 
     assumption
   | succ k₁ ih =>
     rw [findBound, le_max_iff]
-    have := findBoundFrom.spec (f := f) (k := k₀) (src := f (k₁+1)) m mk
+    have := findBoundFrom.spec (f := f) (k := k₀) (src := g (k₁+1)) m mk
     rcases lt_or_eq_of_le nk with nk | nk
     replace nk := Nat.le_of_lt_succ nk
     exact .inr (ih nk)
@@ -145,17 +143,64 @@ private def findBound.spec {f: Nat -> α} {k₀ k₁: Nat} : ∀n m, n ≤ k₁ 
     subst n
     apply this
 
-def boundedDist (c: CauchySeq α) : ∃B: γ, ∀n m, dist (c n) (c m) < B := by
-  have ⟨k, kspec⟩ := c.is_cacuhy 1 zero_lt_one
+def boundedDistBetween {f g: Nat -> α} (c: is_cauchy_equiv f g) : ∃B: γ, ∀n m, dist (g n) (f m) < B := by
+  have ⟨k, kspec⟩ := c 1 zero_lt_one
   dsimp at kspec
-  have spec := findBound.spec (f := c) (k₀ := k) (k₁ := k)
-  exists findBound c k.succ k.succ + 1
+  have spec := findBound.spec (f := f) (g := g) (k₀ := k) (k₁ := k)
+  exists findBound f g k.succ k.succ + 1
   intro n m
   rcases lt_or_le n k with n_lt_k | k_le_n
   <;> rcases lt_or_le m k with m_lt_k | k_le_m
   · have := spec n m (le_of_lt n_lt_k) (le_of_lt m_lt_k)
     apply lt_of_le_of_lt this
-    conv => { lhs; rw [←add_zero (CauchySeq.findBound _ _ _)] }
+    conv => { lhs; rw [←add_zero (CauchySeq.findBound _ _ _ _)] }
+    apply add_lt_add_of_le_of_lt
+    rfl
+    apply zero_lt_one
+  · show ‖g n - f m‖ < _
+    apply lt_of_le_of_lt
+
+    -- apply lt_of_le_of_lt
+    -- apply dist_triangle (k := f k)
+    -- apply add_lt_add_of_le_of_lt
+    -- apply findBound.spec
+    -- apply le_of_lt
+    -- assumption
+    -- rfl
+    -- apply kspec
+    -- rfl
+    assumption
+  · rw [dist_comm]
+    apply lt_of_le_of_lt
+    apply dist_triangle (k := f k)
+    apply add_lt_add_of_le_of_lt
+    apply findBound.spec
+    apply le_of_lt
+    assumption
+    rfl
+    apply kspec
+    rfl
+    assumption
+  · apply lt_of_lt_of_le
+    apply kspec
+    assumption
+    assumption
+    conv => { lhs; rw [←zero_add 1] }
+    apply add_le_add
+    apply findBound.nonneg
+    rfl
+
+def boundedDist (c: CauchySeq α) : ∃B: γ, ∀n m, dist (c n) (c m) < B := by
+  have ⟨k, kspec⟩ := c.is_cacuhy 1 zero_lt_one
+  dsimp at kspec
+  have spec := findBound.spec (f := c) (g := c) (k₀ := k) (k₁ := k)
+  exists findBound c c k.succ k.succ + 1
+  intro n m
+  rcases lt_or_le n k with n_lt_k | k_le_n
+  <;> rcases lt_or_le m k with m_lt_k | k_le_m
+  · have := spec n m (le_of_lt n_lt_k) (le_of_lt m_lt_k)
+    apply lt_of_le_of_lt this
+    conv => { lhs; rw [←add_zero (CauchySeq.findBound _ _ _ _)] }
     apply add_lt_add_of_le_of_lt
     rfl
     apply zero_lt_one
@@ -308,6 +353,60 @@ def sub (a b: CauchySeq α) : CauchySeq α where
 
 instance : Sub (CauchySeq α) := ⟨.sub⟩
 
+def mul.spec (a b c d: CauchySeq α): a ≈ c -> b ≈ d -> is_cauchy_equiv (fun n => a n * b n) (fun n => c n * d n) := by
+  intro ac bd ε ε_pos
+  have ⟨K₁, K₁spec⟩ := a.boundedDist
+  have ⟨K₂, K₂spec⟩ := d.boundedDist
+  let B := max 1 (max K₁ K₂)
+  have bound_pos' : 0 < B := by
+    apply lt_of_lt_of_le zero_lt_one
+    apply le_max_left
+  have bound_pos : 0 < 2 * B := by
+    rw [←mul_zero 2]
+    apply mul_lt_mul_of_pos_left
+    assumption
+    apply two_pos
+  have : 2 * B ≠ 0 := by
+    symm; apply ne_of_lt
+    assumption
+
+  obtain ⟨δ, spec⟩  := (ac _ (div?_pos _ _ ε_pos bound_pos)).merge (bd _ (div?_pos _ _ ε_pos bound_pos))
+  exists δ
+  intro n m δn δm
+  obtain ⟨ac, bd⟩ := spec _ _ δn δm
+  dsimp
+  replace ac := mul_lt_mul_of_pos_right _ _ ac _ bound_pos'
+  conv at ac => {
+    rhs
+    rw [div?_eq_mul_inv?, mul_assoc, inv?_mul_rev _ _ (by
+      have := two_pos (α := γ)
+      invert_tactic), mul_comm _ B, ←mul_assoc B, mul_inv?_cancel _ (by
+      invert_tactic), one_mul, ←div?_eq_mul_inv?]
+  }
+  replace bd := mul_lt_mul_of_pos_right _ _ bd _ bound_pos'
+  conv at bd => {
+    rhs
+    rw [div?_eq_mul_inv?, mul_assoc, inv?_mul_rev _ _ (by
+      have := two_pos (α := γ)
+      invert_tactic), mul_comm _ B, ←mul_assoc B, mul_inv?_cancel _ (by
+      invert_tactic), one_mul, ←div?_eq_mul_inv?]
+  }
+  rw [←add_half ε]
+  apply flip lt_of_le_of_lt
+  apply add_lt_add
+  exact ac
+  exact bd
+  rw [←add_mul]
+  apply flip le_trans
+  apply mul_le_mul_of_nonneg_right
+  apply abs_add_le_add_abs
+  apply le_of_lt; assumption
+  clear ac bd
+
+
+
+  sorry
+
 end CauchySeq
 
 section
@@ -315,8 +414,7 @@ section
 variable (α: Type*) {γ: Type*} [AbsoluteValue α γ]
   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
   [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
-  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
-  [IsOrderedAbsAddGroup α]
+  [FieldOps α] [IsField α] [IsOrderedAbsRing α]
 
 def Cauchy := Quotient (CauchySeq.setoid (α := α))
 
@@ -327,8 +425,7 @@ namespace Cauchy
 variable {α: Type*} {γ: Type*} [AbsoluteValue α γ]
   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
   [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
-  [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α]
-  [IsOrderedAbsAddGroup α]
+  [FieldOps α] [IsField α] [IsOrderedAbsRing α]
 
 def mk : CauchySeq α -> Cauchy α := Quotient.mk _
 
