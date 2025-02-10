@@ -1,4 +1,5 @@
-import Math.Algebra.Ring
+import Math.Algebra.RingHom
+import Math.Algebra.Int
 import Math.Function.Basic
 import Math.Type.Basic
 import Math.Data.StdInt.Basic
@@ -342,12 +343,6 @@ def intCast_inj {a b: Int} : (a: BitInt) = (b: BitInt) ↔ a = b :=
   (Function.IsLeftInverse.Injective intCast_toInt).eq_iff
 def toInt_inj {a b: BitInt} : a.toInt = b.toInt ↔ a = b :=
   (Function.IsLeftInverse.Injective toInt_intCast).eq_iff
-
-def equivInt : BitInt ≃ Int where
-  toFun n := n.toInt
-  invFun n := n
-  leftInv := toInt_intCast
-  rightInv := intCast_toInt
 
 instance : OfNat Pre n := ⟨.ofNat n⟩
 instance : OfNat BitInt n := ⟨n⟩
@@ -1875,5 +1870,15 @@ instance : Pow BitInt ℕ where
 instance : IsMonoid BitInt where
 
 instance : IsRing BitInt := inferInstance
+
+def equivInt : Int ≃+* BitInt where
+  toFun n := n
+  invFun n := n.toInt
+  leftInv := intCast_toInt
+  rightInv := toInt_intCast
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := intCast_add _ _
+  resp_mul := intCast_mul _ _
 
 end BitInt
