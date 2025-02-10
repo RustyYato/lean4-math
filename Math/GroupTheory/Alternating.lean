@@ -1,4 +1,5 @@
 import Math.GroupTheory.Subgroup
+import Math.GroupTheory.Perm
 
 open Classical
 
@@ -71,7 +72,7 @@ instance : Inv (EvenPermType α) where
 instance : Mul (EvenPermType α) where
   mul a b := ⟨a.perm.trans b.perm, a.isEven.trans b.isEven⟩
 
-def Perm (α: Type*) : Group (EvenPermType α) := by
+def EvenPerm (α: Type*) : Group (EvenPermType α) := by
   apply Group.ofAxiomsLeft
   intro
   rfl
@@ -81,5 +82,14 @@ def Perm (α: Type*) : Group (EvenPermType α) := by
     congr
     apply Equiv.symm_trans_self
   intro  _ _ _; rfl
+
+-- the alternating group embeds directly into the symmetric group
+def embedPerm : EvenPerm α ↪* Perm α where
+  toFun x := x.perm
+  inj := by
+    intro x y eq
+    cases x; congr
+  resp_mul := rfl
+  resp_one := rfl
 
 end Group

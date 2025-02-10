@@ -179,10 +179,10 @@ instance : FunLike (GroupEmbedding α β) α β where
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr
 
-instance : OneHomClass (GroupHom α β) α β where
+instance : OneHomClass (GroupEmbedding α β) α β where
   resp_one f := f.resp_one
 
-instance : MulHomClass (GroupHom α β) α β where
+instance : MulHomClass (GroupEmbedding α β) α β where
   resp_mul f := f.resp_mul
 
 structure RingEmbedding extends α ↪ β, RingHom α β where

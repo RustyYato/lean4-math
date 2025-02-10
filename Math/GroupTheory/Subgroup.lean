@@ -244,6 +244,9 @@ instance {g: Subgroup g} : IsGroup g.set where
 
 def toGroup (A: Subgroup g) : Group A.set where
 
+instance : CoeSort (Subgroup g) (Type _) where
+  coe g := g.toGroup
+
 def image {g': Group α} (s: Subgroup g) (h: g →* g') : Subgroup g' where
   set := s.set.image h
   one_mem := by
@@ -505,6 +508,59 @@ def IsNormal.image {g': Group α} {A: Subgroup g} (h: A.IsNormal) (f: g →* g')
   apply Set.mem_image'
   apply h
   assumption
+
+def ofEmbed {a: Group α} {b: Group β} (h: a ↪* b) : Subgroup b where
+  set := Set.range h
+  one_mem := by
+    exists 1
+    rw [resp_one]
+  mul_mem := by
+    intro x y hx hy
+    obtain ⟨x', eq⟩ := hx; subst eq
+    obtain ⟨y', eq⟩ := hy; subst eq
+    exists x' * y'
+    rw [resp_mul]
+  inv_mem := by
+    intro x hx
+    obtain ⟨x', eq⟩ := hx; subst eq
+    exists x'⁻¹
+    rw [resp_inv]
+
+def toOfEmbed {a: Group α} {b: Group β} (h: a ↪* b) : a ↪* ofEmbed h where
+  toFun x := ⟨h x, Set.mem_range'⟩
+  inj := by
+    intro x y eq
+    exact h.inj (Subtype.mk.inj eq)
+  resp_one := by
+    dsimp
+    congr
+    rw [resp_one]
+  resp_mul {x y } := by
+    dsimp
+    congr
+    rw [resp_mul]
+
+noncomputable
+def ofEmbedEquiv {a: Group α} {b: Group β} (h: a ↪* b) : a ≃* ofEmbed h where
+  toFun := toOfEmbed h
+  invFun x := Classical.choose x.property
+  leftInv := by
+    intro  x
+    dsimp
+    apply h.inj
+    show h _ = h _
+    have : ((toOfEmbed h) x).val ∈ (ofEmbed h).set := by
+      exists x
+    rw [←Classical.choose_spec this]
+    rfl
+  rightInv := by
+    intro x
+    simp
+    have := Classical.choose_spec x.property
+    apply Subtype.val_inj
+    exact (Classical.choose_spec x.property).symm
+  resp_one := resp_one _
+  resp_mul := resp_mul _
 
 end Subgroup
 
