@@ -239,6 +239,17 @@ def zsmul_abs: ∀a: α, ∀n: Int, ‖n • a‖ = ‖n‖ • ‖a‖ := by
 
 end
 
+def ne_zero_of_zero_lt
+  [IsPreOrder α] [Zero α]
+  (a: α): 0 < a -> a ≠ 0 := by
+  intro h
+  symm
+  apply ne_of_lt
+  assumption
+
+macro_rules
+| `(tactic|invert_tactic) => `(tactic|apply ne_zero_of_zero_lt; assumption)
+
 section
 
 variable [FieldOps α] [IsNonCommField α] [IsOrderedSemiring α]
@@ -273,9 +284,7 @@ def mul_lt_mul_of_pos_right: ∀(a b : α), a < b → ∀ (c : α), 0 < c → a 
   subst b
   exact lt_irrefl ab
 
-def inv?_pos [IsLinearOrder α] (a: α) (h: 0 < a): 0 < a⁻¹?~(by
-  intro g; rw [g] at h
-  exact lt_irrefl h) := by
+def inv?_pos [IsLinearOrder α] (a: α) (h: 0 < a): 0 < a⁻¹? := by
   have anz : a ≠ 0 := by
     intro g; rw [g] at h
     exact lt_irrefl h
@@ -288,6 +297,13 @@ def inv?_pos [IsLinearOrder α] (a: α) (h: 0 < a): 0 < a⁻¹?~(by
   · have := mul_inv?_cancel a anz
     rw [g, mul_zero] at this
     exact zero_ne_one this
+
+def div?_pos [IsLinearOrder α] (a b: α) (ha: 0 < a) (hb: 0 < b): 0 < a /? b := by
+  rw [div?_eq_mul_inv?]; conv => { lhs; rw [←mul_zero a] }
+  apply mul_lt_mul_of_pos_left
+  apply inv?_pos
+  assumption
+  assumption
 
 def two_pos : 0 < (2: α) := by
   show (0: α) < OfNat.ofNat (0 + 2)
