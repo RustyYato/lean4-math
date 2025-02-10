@@ -157,10 +157,123 @@ instance : OneHomClass (RingHom α β) α β where
 instance : MulHomClass (RingHom α β) α β where
   resp_mul f := f.resp_mul
 
+structure AddGroupEmbedding extends α ↪ β, AddGroupHom α β where
+
+instance : FunLike (AddGroupEmbedding α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr
+
+instance : ZeroHomClass (AddGroupEmbedding α β) α β where
+  resp_zero f := f.resp_zero
+
+instance : AddHomClass (AddGroupEmbedding α β) α β where
+  resp_add f := f.resp_add
+
+structure GroupEmbedding extends α ↪ β, GroupHom α β where
+
+instance : FunLike (GroupEmbedding α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr
+
+instance : OneHomClass (GroupHom α β) α β where
+  resp_one f := f.resp_one
+
+instance : MulHomClass (GroupHom α β) α β where
+  resp_mul f := f.resp_mul
+
+structure RingEmbedding extends α ↪ β, RingHom α β where
+
+instance : FunLike (RingEmbedding α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr
+
+instance : ZeroHomClass (RingEmbedding α β) α β where
+  resp_zero f := f.resp_zero
+
+instance : AddHomClass (RingEmbedding α β) α β where
+  resp_add f := f.resp_add
+
+instance : OneHomClass (RingEmbedding α β) α β where
+  resp_one f := f.resp_one
+
+instance : MulHomClass (RingEmbedding α β) α β where
+  resp_mul f := f.resp_mul
+
+structure AddGroupEquiv extends α ≃ β, AddGroupHom α β where
+
+instance : FunLike (AddGroupEquiv α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr 1
+    apply DFunLike.coe_inj
+    assumption
+
+
+instance : ZeroHomClass (AddGroupEquiv α β) α β where
+  resp_zero f := f.resp_zero
+
+instance : AddHomClass (AddGroupEquiv α β) α β where
+  resp_add f := f.resp_add
+
+structure GroupEquiv extends α ≃ β, GroupHom α β where
+
+instance : FunLike (GroupEquiv α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr 1
+    apply DFunLike.coe_inj
+    assumption
+
+instance : OneHomClass (GroupHom α β) α β where
+  resp_one f := f.resp_one
+
+instance : MulHomClass (GroupHom α β) α β where
+  resp_mul f := f.resp_mul
+
+structure RingEquiv extends α ≃ β, RingHom α β where
+
+instance : FunLike (RingEquiv α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr 1
+    apply DFunLike.coe_inj
+    assumption
+
+instance : ZeroHomClass (RingEquiv α β) α β where
+  resp_zero f := f.resp_zero
+
+instance : AddHomClass (RingEquiv α β) α β where
+  resp_add f := f.resp_add
+
+instance : OneHomClass (RingEquiv α β) α β where
+  resp_one f := f.resp_one
+
+instance : MulHomClass (RingEquiv α β) α β where
+  resp_mul f := f.resp_mul
+
 infixr:25 " →+ " => AddGroupHom
 infixr:25 " →* " => GroupHom
 
 infixr:25 " →+* " => RingHom
+
+infixr:25 " ↪+ " => AddGroupEmbedding
+infixr:25 " ↪* " => GroupEmbedding
+
+infixr:25 " ↪+* " => RingEmbedding
+
+infixr:25 " ≃+ " => AddGroupEquiv
+infixr:25 " ≃* " => GroupEquiv
+
+infixr:25 " ≃+* " => RingEquiv
 
 end
 
@@ -366,3 +479,44 @@ def intCast_AddGroupHom [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ℤ →
     dsimp
     intro x y
     rw [intCast_add]
+
+def AddGroupEquiv.symm [AddGroupOps A] [AddGroupOps B] (h: A ≃+ B) : B ≃+ A where
+  toEquiv := h.toEquiv.symm
+  resp_zero := by
+    rw [←h.coe_symm 0]
+    show h.toEquiv.symm 0 = h.toEquiv.symm (h.toFun 0)
+    rw [h.resp_zero]
+  resp_add {a b} := by
+    rw [←h.coe_symm (_ + _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.resp_add, h.rightInv, h.rightInv]
+
+def GroupEquiv.symm [GroupOps A] [GroupOps B] (h: A ≃* B) : B ≃* A where
+  toEquiv := h.toEquiv.symm
+  resp_one := by
+    rw [←h.coe_symm 1]
+    show h.toEquiv.symm 1 = h.toEquiv.symm (h.toFun 1)
+    rw [h.resp_one]
+  resp_mul {a b} := by
+    rw [←h.coe_symm (_ * _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.resp_mul, h.rightInv, h.rightInv]
+
+def RingEquiv.symm [SemiringOps A] [SemiringOps B] (h: A ≃+* B) : B ≃+* A where
+  toEquiv := h.toEquiv.symm
+  resp_zero := by
+    rw [←h.coe_symm 0]
+    show h.toEquiv.symm 0 = h.toEquiv.symm (h.toFun 0)
+    rw [h.resp_zero]
+  resp_one := by
+    rw [←h.coe_symm 1]
+    show h.toEquiv.symm 1 = h.toEquiv.symm (h.toFun 1)
+    rw [h.resp_one]
+  resp_add {a b} := by
+    rw [←h.coe_symm (_ + _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.resp_add, h.rightInv, h.rightInv]
+  resp_mul {a b} := by
+    rw [←h.coe_symm (_ * _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.resp_mul, h.rightInv, h.rightInv]
