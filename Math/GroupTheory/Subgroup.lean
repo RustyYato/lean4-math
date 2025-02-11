@@ -593,11 +593,11 @@ def kernel {A: Group α} {B: Group β} (f: A →* B) : Subgroup A := preimage �
 def kernel.IsNormal {A: Group α} {B: Group β} (f: A →* B) : (kernel f).IsNormal :=
   IsNormal.preimage (IsNormal.bot _) f
 
--- show that every normal subgroup is equivalent to the kernel of the mkQuot homomorphism
-def IsNormal.eqv_kernel_quot (s: Subgroup A) (hs: s.IsNormal) : s ≃* kernel (mkQuot hs) where
-  toFun := by
-    intro ⟨a, ha⟩
-    refine ⟨a, ?_⟩
+-- show that every normal subgroup is equal to the kernel of the mkQuot homomorphism
+def IsNormal.eq_kernel_quot (s: Subgroup A) (hs: s.IsNormal) : s = kernel (mkQuot hs) := by
+  ext a
+  apply Iff.intro
+  · intro ha
     apply Quotient.sound
     apply (cosetLeft.eq_or_disjoint _ _ _).resolve_right
     intro h
@@ -607,9 +607,7 @@ def IsNormal.eqv_kernel_quot (s: Subgroup A) (hs: s.IsNormal) : s ≃* kernel (m
     apply And.intro ha
     dsimp
     rw [one_mul]
-  invFun := by
-    intro ⟨a, ha⟩
-    refine ⟨a, ?_⟩
+  · intro ha
     have := Quotient.exact ha
     replace : cosetLeft a s = cosetLeft 1 s := this
     unfold cosetLeft at this
@@ -621,10 +619,6 @@ def IsNormal.eqv_kernel_quot (s: Subgroup A) (hs: s.IsNormal) : s ≃* kernel (m
     dsimp; rw [mul_one]
     intro
     rw [one_mul]
-  leftInv _ := rfl
-  rightInv _ := rfl
-  resp_one := rfl
-  resp_mul := rfl
 
 end Subgroup
 
