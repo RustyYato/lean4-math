@@ -61,6 +61,12 @@ instance [SemiringOps R] [IsSemiring R] : IsAlgebra Nat R where
     rw [←natCast_mul_eq_nsmul]
     rfl
 
+instance : NoZeroDivisors Nat where
+  of_mul_eq_zero := Nat.mul_eq_zero.mp
+
+instance : IsNontrivial Nat where
+  zero_ne_one := by decide
+
 def Nat.char_eq : char Nat = 0 := by
   apply char_eq_of_natCast_eq_zero
   rfl

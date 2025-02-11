@@ -206,3 +206,87 @@ instance [AddMonoidOps α] [IsAddMonoid α] : IsAddGroup (AddUnits α) where
     intro a n
     apply AddUnits.val_inj
     apply succ_nsmul
+
+class IsUnit {α: Type*} [One α] [Mul α] (x: α) where
+  eq_unit: ∃u: Units α, u.val = x
+
+namespace IsUnit
+
+variable [One α] [Mul α]
+
+private noncomputable
+abbrev val (x: α) [h: IsUnit x] : α := (Classical.choose h.eq_unit).val
+
+private
+def val_eq (x: α) [h: IsUnit x] : val x = x := by
+  conv => {
+    rhs; rw [←Classical.choose_spec h.eq_unit]
+  }
+
+noncomputable
+def inv (x: α) [h: IsUnit x] : α := (Classical.choose h.eq_unit).inv
+
+def mul_inv (x: α) [h: IsUnit x] : x * inv x = 1 := by
+  conv => { lhs; lhs; rw [←val_eq x] }
+  exact (Classical.choose h.eq_unit).val_mul_inv
+
+def inv_mul (x: α) [h: IsUnit x] : inv x * x = 1 := by
+  conv => { lhs; rhs; rw [←val_eq x] }
+  exact (Classical.choose h.eq_unit).inv_mul_val
+
+end IsUnit
+
+noncomputable
+def toUnit (x: α) [One α] [Mul α] [IsUnit x] : Units α where
+  val := x
+  inv := IsUnit.inv x
+  val_mul_inv := IsUnit.mul_inv x
+  inv_mul_val := IsUnit.inv_mul x
+
+instance : IsUnit (1: Nat) where
+  eq_unit := ⟨⟨1, 1, rfl, rfl⟩, rfl⟩
+instance : IsUnit (1: Int) where
+  eq_unit := ⟨⟨1, 1, rfl, rfl⟩, rfl⟩
+instance : IsUnit (-1: Int) where
+  eq_unit := ⟨⟨-1, -1, rfl, rfl⟩, rfl⟩
+
+def Nat.zeroNotUnit : ¬IsUnit 0 := by
+  intro h
+  have := h.mul_inv
+  rw [Nat.zero_mul] at this
+  contradiction
+def Nat.addTwoNotUnit : ¬IsUnit (n + 2) := by
+  intro h
+  have := h.mul_inv
+  rw [Nat.add_mul] at this
+  generalize hy:IsUnit.inv (n + 2) = y
+  rw [hy] at this
+  cases y
+  rw [Nat.mul_zero, Nat.mul_zero] at this; contradiction
+  rw [Nat.mul_add 2, ←Nat.add_assoc] at this
+  have := Nat.succ.inj this
+  contradiction
+
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply Nat.zeroNotUnit; assumption)
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply Nat.addTwoNotUnit; assumption)
+
+def Nat.ofIsUnit (x: Nat) [h: IsUnit x] : x = 1 := by
+  match x, h with
+  | 0, _ => contradiction
+  | 1, _ => rfl
+  | x + 2, _ => contradiction
+
+def Int.ofIsUnit (x: Int) [h: IsUnit x] : x = 1 ∨ x = -1 := by
+  suffices IsUnit x.natAbs by
+    have := Nat.ofIsUnit x.natAbs
+    rcases Int.natAbs_eq x with h | h
+    rw [h, this]; left; rfl
+    rw [h, this]; right; rfl
+  obtain ⟨u, h⟩ := h
+  refine ⟨⟨u.val.natAbs, u.inv.natAbs, ?_, ?_⟩, ?_⟩
+  rw [←Int.natAbs_mul, u.val_mul_inv]; rfl
+  rw [←Int.natAbs_mul, u.inv_mul_val]; rfl
+  dsimp
+  rw [h]
