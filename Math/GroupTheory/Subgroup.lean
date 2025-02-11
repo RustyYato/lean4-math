@@ -620,6 +620,49 @@ def IsNormal.eq_kernel_quot (s: Subgroup A) (hs: s.IsNormal) : s = kernel (mkQuo
     intro
     rw [one_mul]
 
+def IsNormal.ofAbelian {G: AbelianGroup α} (s: Subgroup (α := α) G) : s.IsNormal := by
+  intro x y hy
+  rw [mul_comm x, mul_assoc, mul_inv_cancel, mul_one]
+  assumption
+
+def npow_mem (S: Subgroup G) (a: S) (x: Nat) : a.val ^ x ∈ S.set := by
+  induction x with
+  | zero =>
+    rw [npow_zero]
+    exact S.one_mem
+  | succ n ih =>
+    rw [npow_succ]
+    apply S.mul_mem
+    assumption
+    exact a.property
+
+def zpow_mem (S: Subgroup G) (a: S) (x: Int) : a.val ^ x ∈ S.set := by
+  cases x using Int.coe_cases with
+  | ofNat x =>
+    rw [zpow_ofNat x a.val]
+    apply npow_mem
+  | negSucc x =>
+    rw [zpow_negSucc x a.val]
+    apply S.inv_mem
+    apply npow_mem
+
+def generate_one (G: Group α) : Subgroup.generated (g := G) {1} = ⊥ := by
+  ext x
+  apply Iff.intro
+  · intro h
+    induction h with
+    | of => assumption
+    | one => rfl
+    | inv ha ih =>
+      apply Subgroup.inv_mem
+      assumption
+    | mul =>
+      apply Subgroup.mul_mem <;> assumption
+  · intro h
+    subst h
+    apply Generate.of
+    rfl
+
 end Subgroup
 
 namespace Group

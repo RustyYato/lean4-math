@@ -40,36 +40,42 @@ def IsGroup.ofAxiomsLeft
   ⟨ops, prf⟩
 
 structure Group (α: Type*) extends GroupOps α, IsGroup α where
+structure AbelianGroup (α: Type*) extends Group α, IsCommMagma α where
 
 namespace Group
 
-def Group.ofAdd (α: Type*) [AddGroupOps α] [IsAddGroup α] :=
+def ofAdd (α: Type*) [AddGroupOps α] [IsAddGroup α] :=
   Group.mk (α := MulOfAdd α) inferInstance inferInstance
 
 def Elem (_: Group α) := α
 
+attribute [coe] Elem
+
 instance : CoeSort (Group α) (Type _) where
   coe := Elem
+instance : Coe (AbelianGroup α) (Group α) := ⟨AbelianGroup.toGroup⟩
+instance : CoeSort (AbelianGroup α) (Type _) where
+  coe x := (x: Group α)
 
-instance (g: Group α) : One g.Elem where
+instance (g: Group α) : One g where
   one := g.one
 
-instance (g: Group α) : Inv g.Elem where
+instance (g: Group α) : Inv g where
   inv := g.inv
 
-instance (g: Group α) : Mul g.Elem where
+instance (g: Group α) : Mul g where
   mul := g.mul
 
-instance (g: Group α) : Div g.Elem where
+instance (g: Group α) : Div g where
   div a b := a * b⁻¹
 
-instance (g: Group α) : Pow g.Elem ℕ where
+instance (g: Group α) : Pow g ℕ where
   pow := g.npow
 
-instance (g: Group α) : Pow g.Elem ℤ where
+instance (g: Group α) : Pow g ℤ where
   pow := g.zpow
 
-instance (g: Group α) : IsGroup g.Elem where
+instance (g: Group α) : IsGroup g where
   mul_assoc := g.mul_assoc
   one_mul := g.one_mul
   mul_one := g.mul_one
@@ -79,6 +85,9 @@ instance (g: Group α) : IsGroup g.Elem where
   zpow_negSucc := g.zpow_negSucc
   npow_zero := g.npow_zero
   npow_succ := g.npow_succ
+
+instance (g: Group α) : IsDivInvMonoid g := inferInstance
+instance (g: Group α) : IsDivisionMonoid g := inferInstance
 
 def ofAxiomsLeft
   [One α] [Mul α] [Inv α]
@@ -216,3 +225,14 @@ def Equiv.symm_trans (h: a ≃* b) :
   rw [h.symm_coe]
 
 end Group
+
+namespace AbelianGroup
+
+attribute [coe] AbelianGroup.toGroup
+
+def ofAdd (α: Type*) [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α] :=
+  AbelianGroup.mk (Group.ofAdd α) inferInstance
+
+instance (g: AbelianGroup α) : IsCommMagma (g: Group α).Elem := g.toIsCommMagma
+
+end AbelianGroup
