@@ -34,6 +34,96 @@ def generated (s: Set g) : Subgroup g where
   inv_mem _ := Generate.inv
   mul_mem _ _ := Generate.mul
 
+scoped instance {g: Subgroup g} : One g.set where
+  one := ⟨1, g.one_mem⟩
+scoped instance {g: Subgroup g} : Inv g.set where
+  inv x := ⟨x.val⁻¹, g.inv_mem _ x.property⟩
+scoped instance {g: Subgroup g} : Mul g.set where
+  mul x y := ⟨x.val * y.val, g.mul_mem _ _ x.property y.property⟩
+
+scoped instance {g: Subgroup g} : MonoidOps g.set where
+  npow := flip npowRec
+scoped instance {g: Subgroup g} : GroupOps g.set where
+  zpow := flip zpowRec
+
+instance {g: Subgroup g} : IsGroup g.set where
+  mul_assoc a b c := by
+    apply Subtype.val_inj
+    apply mul_assoc
+  one_mul a := by
+    apply Subtype.val_inj
+    apply one_mul
+  mul_one a := by
+    apply Subtype.val_inj
+    apply mul_one
+  inv_mul_cancel a := by
+    apply Subtype.val_inj
+    apply inv_mul_cancel
+  div_eq_mul_inv _ _ := rfl
+  zpow_ofNat _ _ := rfl
+  zpow_negSucc _ _ := rfl
+
+def toGroup (A: Subgroup g) : Group A.set where
+
+instance : CoeSort (Subgroup g) (Type _) where
+  coe g := g.toGroup
+
+def ofEmbed {a: Group α} {b: Group β} (h: a ↪* b) : Subgroup b where
+  set := Set.range h
+  one_mem := by
+    exists 1
+    rw [resp_one]
+  mul_mem := by
+    intro x y hx hy
+    obtain ⟨x', eq⟩ := hx; subst eq
+    obtain ⟨y', eq⟩ := hy; subst eq
+    exists x' * y'
+    rw [resp_mul]
+  inv_mem := by
+    intro x hx
+    obtain ⟨x', eq⟩ := hx; subst eq
+    exists x'⁻¹
+    rw [resp_inv]
+
+-- the canonical injection to the subgroup based on the embedding
+def toOfEmbed {a: Group α} {b: Group β} (h: a ↪* b) : a ↪* ofEmbed h where
+  toFun x := ⟨h x, Set.mem_range'⟩
+  inj := by
+    intro x y eq
+    exact h.inj (Subtype.mk.inj eq)
+  resp_one := by
+    dsimp
+    congr
+    rw [resp_one]
+  resp_mul {x y } := by
+    dsimp
+    congr
+    rw [resp_mul]
+
+-- the canonical equivalence to the subgroup based on the embedding
+-- the forward direction is the same as toOfEmbed, so use that instead if possible
+noncomputable
+def ofEmbedEquiv {a: Group α} {b: Group β} (h: a ↪* b) : a ≃* ofEmbed h where
+  toFun := toOfEmbed h
+  invFun x := Classical.choose x.property
+  leftInv := by
+    intro  x
+    dsimp
+    apply h.inj
+    show h _ = h _
+    have : ((toOfEmbed h) x).val ∈ (ofEmbed h).set := by
+      exists x
+    rw [←Classical.choose_spec this]
+    rfl
+  rightInv := by
+    intro x
+    simp
+    have := Classical.choose_spec x.property
+    apply Subtype.val_inj
+    exact (Classical.choose_spec x.property).symm
+  resp_one := resp_one _
+  resp_mul := resp_mul _
+
 instance : Bot (Subgroup g) where
   bot := {
     set := {1}
@@ -120,6 +210,13 @@ def le_generated (a: Subgroup g) {s: Set α} : a.set ⊆ s -> a ≤ generated s 
   apply h
   assumption
 
+@[ext]
+def ext (a b: Subgroup g) : (∀x, x ∈ a.set ↔ x ∈ b.set) -> a = b:= by
+  intro h
+  apply orderEmbedSet.inj
+  ext
+  apply h
+
 instance : IsPartialOrder (Subgroup g) :=
   orderEmbedSet.inducedIsPartialOrder'
 
@@ -205,47 +302,6 @@ instance : IsCompleteSemiLatticeInf (Subgroup g) where
     assumption
 
 instance : IsCompleteLattice (Subgroup g) := IsCompleteLattice.mk _
-
-@[ext]
-def ext (a b: Subgroup g) : (∀x, x ∈ a.set ↔ x ∈ b.set) -> a = b:= by
-  intro h
-  apply orderEmbedSet.inj
-  ext
-  apply h
-
-scoped instance {g: Subgroup g} : One g.set where
-  one := ⟨1, g.one_mem⟩
-scoped instance {g: Subgroup g} : Inv g.set where
-  inv x := ⟨x.val⁻¹, g.inv_mem _ x.property⟩
-scoped instance {g: Subgroup g} : Mul g.set where
-  mul x y := ⟨x.val * y.val, g.mul_mem _ _ x.property y.property⟩
-
-scoped instance {g: Subgroup g} : MonoidOps g.set where
-  npow := flip npowRec
-scoped instance {g: Subgroup g} : GroupOps g.set where
-  zpow := flip zpowRec
-
-instance {g: Subgroup g} : IsGroup g.set where
-  mul_assoc a b c := by
-    apply Subtype.val_inj
-    apply mul_assoc
-  one_mul a := by
-    apply Subtype.val_inj
-    apply one_mul
-  mul_one a := by
-    apply Subtype.val_inj
-    apply mul_one
-  inv_mul_cancel a := by
-    apply Subtype.val_inj
-    apply inv_mul_cancel
-  div_eq_mul_inv _ _ := rfl
-  zpow_ofNat _ _ := rfl
-  zpow_negSucc _ _ := rfl
-
-def toGroup (A: Subgroup g) : Group A.set where
-
-instance : CoeSort (Subgroup g) (Type _) where
-  coe g := g.toGroup
 
 def image {g': Group α} (s: Subgroup g) (h: g →* g') : Subgroup g' where
   set := s.set.image h
@@ -343,6 +399,25 @@ def cosetRight.eq_or_disjoint (A: Subgroup g) (x y : g) :
   A.cosetRight x = A.cosetRight y ∨ A.cosetRight x ∩ A.cosetRight y = ∅ := by
   simp [cosetRight_eq_opp_cosetLeft]
   apply cosetLeft.eq_or_disjoint
+
+def bot_eq_of_embed_trivial (G: Group α) : ⊥ = ofEmbed (Group.ofTrivial G) := by
+  ext x
+  apply Iff.intro
+  intro h
+  subst x
+  apply Set.mem_range'
+  exact 1
+  intro ⟨_, _⟩
+  subst x
+  rfl
+
+def top_eq_of_embed_refl (G: Group α) : (⊤: Subgroup G) = ofEmbed .refl := by
+  ext x
+  apply Iff.intro
+  intro h
+  exists x
+  intro
+  trivial
 
 def IsNormal (A: Subgroup g) : Prop :=
   ∀x y: g, y ∈ A.set -> x * y * x⁻¹ ∈ A.set
@@ -518,62 +593,6 @@ def IsNormal.image {g': Group α} {A: Subgroup g} (h: A.IsNormal) (f: g →* g')
   apply Set.mem_image'
   apply h
   assumption
-
-def ofEmbed {a: Group α} {b: Group β} (h: a ↪* b) : Subgroup b where
-  set := Set.range h
-  one_mem := by
-    exists 1
-    rw [resp_one]
-  mul_mem := by
-    intro x y hx hy
-    obtain ⟨x', eq⟩ := hx; subst eq
-    obtain ⟨y', eq⟩ := hy; subst eq
-    exists x' * y'
-    rw [resp_mul]
-  inv_mem := by
-    intro x hx
-    obtain ⟨x', eq⟩ := hx; subst eq
-    exists x'⁻¹
-    rw [resp_inv]
-
--- the canonical injection to the subgroup based on the embedding
-def toOfEmbed {a: Group α} {b: Group β} (h: a ↪* b) : a ↪* ofEmbed h where
-  toFun x := ⟨h x, Set.mem_range'⟩
-  inj := by
-    intro x y eq
-    exact h.inj (Subtype.mk.inj eq)
-  resp_one := by
-    dsimp
-    congr
-    rw [resp_one]
-  resp_mul {x y } := by
-    dsimp
-    congr
-    rw [resp_mul]
-
--- the canonical equivalence to the subgroup based on the embedding
--- the forward direction is the same as toOfEmbed, so use that instead if possible
-noncomputable
-def ofEmbedEquiv {a: Group α} {b: Group β} (h: a ↪* b) : a ≃* ofEmbed h where
-  toFun := toOfEmbed h
-  invFun x := Classical.choose x.property
-  leftInv := by
-    intro  x
-    dsimp
-    apply h.inj
-    show h _ = h _
-    have : ((toOfEmbed h) x).val ∈ (ofEmbed h).set := by
-      exists x
-    rw [←Classical.choose_spec this]
-    rfl
-  rightInv := by
-    intro x
-    simp
-    have := Classical.choose_spec x.property
-    apply Subtype.val_inj
-    exact (Classical.choose_spec x.property).symm
-  resp_one := resp_one _
-  resp_mul := resp_mul _
 
 def IsNormal.bot (G: Group α) : (⊥: Subgroup G).IsNormal := by
   intro x y h
