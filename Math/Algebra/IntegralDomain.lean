@@ -1,6 +1,6 @@
 import Math.Algebra.Units
-import Math.Algebra.Nat
-import Math.Algebra.Int
+import Math.Algebra.Impls.Nat
+import Math.Algebra.Impls.Int
 
 class IsIntegralDomain (α: Type*) [RingOps α] extends IsRing α, NoZeroDivisors α, IsNontrivial α, IsCommMagma α where
   mk' ::

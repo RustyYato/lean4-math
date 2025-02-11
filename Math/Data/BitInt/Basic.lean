@@ -1,5 +1,5 @@
 import Math.Algebra.RingHom
-import Math.Algebra.Int
+import Math.Algebra.Impls.Int
 import Math.Function.Basic
 import Math.Type.Basic
 import Math.Data.StdInt.Basic

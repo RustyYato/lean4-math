@@ -1,5 +1,5 @@
 import Math.GroupTheory.Subgroup
-import Math.Algebra.Fin
+import Math.Algebra.Impls.Fin
 import Math.Data.StdNat.Gcd
 import Math.Relation.Basic
 import Math.Data.Set.Finite

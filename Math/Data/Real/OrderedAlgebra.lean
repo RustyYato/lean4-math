@@ -1,4 +1,4 @@
-import Math.Algebra.Real
+import Math.Algebra.Impls.Real
 import Math.Algebra.Order
 import Math.Data.Rat.OrderedAlgebra
 

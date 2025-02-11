@@ -1,6 +1,6 @@
 import Math.GroupTheory.Subgroup
 import Math.GroupTheory.Units
-import Math.Algebra.Fin
+import Math.Algebra.Impls.Fin
 
 namespace Group
 

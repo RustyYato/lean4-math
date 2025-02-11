@@ -1,7 +1,7 @@
 import Math.Function.Basic
 import Math.Type.Basic
 import Math.Algebra.Order
-import Math.Algebra.Nat
+import Math.Algebra.Impls.Nat
 
 def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) ≠ y.addNat n := by
   intro h

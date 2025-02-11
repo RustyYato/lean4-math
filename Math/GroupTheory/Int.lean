@@ -1,5 +1,5 @@
 import Math.GroupTheory.Subgroup
-import Math.Algebra.Int
+import Math.Algebra.Impls.Int
 
 namespace Group
 

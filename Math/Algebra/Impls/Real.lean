@@ -1,5 +1,5 @@
 import Math.Algebra.Ring
-import Math.Algebra.Rat
+import Math.Algebra.Impls.Rat
 import Math.Data.Real.Div
 
 namespace Real

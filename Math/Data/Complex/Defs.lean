@@ -1,4 +1,4 @@
-import Math.Algebra.Real
+import Math.Algebra.Impls.Real
 
 @[ext]
 structure Complex where
