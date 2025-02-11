@@ -491,6 +491,11 @@ def IsNormal.Quot {A: Subgroup g} (h: A.IsNormal) : Group h.QuotType := by
     rw [mul_assoc]
     rfl
 
+def mkQuot {A: Subgroup G} (h: A.IsNormal) : G →* h.Quot where
+  toFun := Quotient.mk _
+  resp_one := rfl
+  resp_mul := rfl
+
 def IsNormal.preimage {g': Group β} {A: Subgroup g} (h: A.IsNormal) (f: g' →* g) :
   (A.preimage f).IsNormal := by
   intro x y hy
@@ -564,6 +569,58 @@ def ofEmbedEquiv {a: Group α} {b: Group β} (h: a ↪* b) : a ≃* ofEmbed h wh
     exact (Classical.choose_spec x.property).symm
   resp_one := resp_one _
   resp_mul := resp_mul _
+
+def kernel {A: Group α} {B: Group β} (f: A →* B) : Subgroup A where
+  -- the kernel is the set of all elements that map to the unit
+  set := Set.preimage {1} f
+  one_mem := by apply resp_one
+  inv_mem := by
+    intro x hx
+    show f _ = 1
+    rw [resp_inv, hx, inv_one]
+  mul_mem := by
+    intro a b ha hb
+    show f _ = _
+    rw [resp_mul, ha, hb, mul_one]
+
+def kernel.IsNormal {A: Group α} {B: Group β} (f: A →* B) : (kernel f).IsNormal := by
+  intro a b hb
+  show f _ = _
+  rw [resp_mul, resp_mul, hb, mul_one, resp_inv, mul_inv_cancel]
+
+-- show that every normal subgroup is equivalent to the kernel of the mkQuot homomorphism
+def IsNormal.eqv_kernel_quot (s: Subgroup A) (hs: s.IsNormal) : s ≃* kernel (mkQuot hs) where
+  toFun := by
+    intro a
+    refine ⟨?_, ?_⟩
+    exact a.val
+    apply Quotient.sound
+    apply (cosetLeft.eq_or_disjoint _ _ _).resolve_right
+    intro h
+    apply Set.inter_eq_empty_iff.mp h
+    apply rep_mem_cosetLeft
+    exists a.val
+    apply And.intro a.property
+    dsimp
+    rw [one_mul]
+  invFun := by
+    intro ⟨a, ha⟩
+    refine ⟨a, ?_⟩
+    have := Quotient.exact ha
+    replace : cosetLeft a s = cosetLeft 1 s := this
+    unfold cosetLeft at this
+    rw [Set.image_id' (f := fun y => 1 * y)] at this
+    rw [←this]
+    exists 1
+    apply And.intro
+    apply s.one_mem
+    dsimp; rw [mul_one]
+    intro
+    rw [one_mul]
+  leftInv _ := rfl
+  rightInv _ := rfl
+  resp_one := rfl
+  resp_mul := rfl
 
 end Subgroup
 

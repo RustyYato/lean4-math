@@ -1005,6 +1005,17 @@ def zipAll {ι: Type*} {α: ι -> Type*} (a: ∀x, Set (α x)) : Set (∀x, α x
 def mem_zipAll {ι: Type*} {α: ι -> Type*} {a: ∀x, Set (α x)}: ∀{x}, x ∈ zipAll a ↔ ∀i, x i ∈ a i :=
   Iff.rfl
 
+def inter_eq_empty_iff {a b: Set α} : a ∩ b = ∅ ↔ ∀x, x ∈ a -> x ∈ b -> False := by
+  apply Iff.intro
+  intro h x ha hb
+  have : x ∈ a ∩ b := ⟨ha, hb⟩
+  rw [h] at this
+  contradiction
+  intro h
+  apply ext_empty
+  intro x ⟨ha, hb⟩
+  apply h x <;> assumption
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]
