@@ -496,6 +496,11 @@ def mkQuot {A: Subgroup G} (h: A.IsNormal) : G →* h.Quot where
   resp_one := rfl
   resp_mul := rfl
 
+def mkQuot.Surjective : Function.Surjective (mkQuot h) := by
+  intro x
+  induction x using Quot.ind with | mk x =>
+  exists x
+
 def IsNormal.preimage {g': Group β} {A: Subgroup g} (h: A.IsNormal) (f: g' →* g) :
   (A.preimage f).IsNormal := by
   intro x y hy
