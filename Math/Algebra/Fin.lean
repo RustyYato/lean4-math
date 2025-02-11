@@ -1,6 +1,7 @@
 import Math.Algebra.Basic
+import Math.Algebra.Units
 
-instance : One (Fin (n + 2)) := ⟨1⟩
+instance : One (Fin (n + 1)) := ⟨1⟩
 
 instance : SMul ℕ (Fin n) where
   smul m x := ⟨(m * x) % n, Nat.mod_lt _ x.pos⟩
@@ -63,7 +64,7 @@ instance : IsAddGroupWithOne (Fin (n + 1)) where
     simp
     rw [Nat.add_mul, Nat.one_mul]
 
-instance : IsSemiring (Fin (n + 2)) where
+instance : IsSemiring (Fin (n + 1)) where
   mul_assoc := by
     intro a b c
     show Fin.mk _ _ = Fin.mk _ _
@@ -91,6 +92,9 @@ instance : IsSemiring (Fin (n + 2)) where
     show Fin.mk _ _ = Fin.mk _ _
     simp
     congr
+    cases n
+    · match a with
+      | 0 => rfl
     rw [Nat.mod_eq_of_lt (a := 1), Nat.mul_one, Nat.mod_eq_of_lt a.isLt]
     simp
   left_distrib := by
@@ -110,9 +114,9 @@ instance : IsSemiring (Fin (n + 2)) where
     simp
     rw [Nat.pow_succ]
 
-instance : IsRing (Fin (n + 2)) := inferInstance
+instance : IsRing (Fin (n + 1)) := inferInstance
 
-instance : IsCommMagma (Fin (n + 2)) where
+instance : IsCommMagma (Fin (n + 1)) where
   mul_comm := by
     intro a b
     show Fin.mk _ _ = Fin.mk _ _
@@ -131,3 +135,13 @@ def Fin.char_eq : char (Fin (n + 1)) = n + 1 := by
   simp
   intro m meq
   exact Nat.dvd_of_mod_eq_zero (Fin.mk.inj meq)
+
+-- FIXME: implement xGCD to find the multiplicative inverse
+-- def Fin.toUnit (x: Fin (n + 1)) (coprime: Nat.gcd x.val n = 1 := by decide) : Units (Fin (n + 1)) where
+--   val := x
+--   inv := by
+--     replace coprime: x.val.gcd n = 1 := coprime
+--     -- have := Int
+--     sorry
+--   val_mul_inv := sorry
+--   inv_mul_val := sorry

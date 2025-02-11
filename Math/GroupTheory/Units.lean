@@ -1,4 +1,4 @@
-import Math.GroupTheory.Subgroup
+import Math.GroupTheory.Basic
 import Math.Algebra.Units
 
 namespace Group
