@@ -496,7 +496,7 @@ def mkQuot {A: Subgroup G} (h: A.IsNormal) : G →* h.Quot where
   resp_one := rfl
   resp_mul := rfl
 
-def mkQuot.Surjective : Function.Surjective (mkQuot h) := by
+def mkQuot.Surjective {A: Subgroup G} (h: A.IsNormal) : Function.Surjective (mkQuot h) := by
   intro x
   induction x using Quot.ind with | mk x =>
   exists x
@@ -575,37 +575,36 @@ def ofEmbedEquiv {a: Group α} {b: Group β} (h: a ↪* b) : a ≃* ofEmbed h wh
   resp_one := resp_one _
   resp_mul := resp_mul _
 
-def kernel {A: Group α} {B: Group β} (f: A →* B) : Subgroup A where
-  -- the kernel is the set of all elements that map to the unit
-  set := Set.preimage {1} f
-  one_mem := by apply resp_one
-  inv_mem := by
-    intro x hx
-    show f _ = 1
-    rw [resp_inv, hx, inv_one]
-  mul_mem := by
-    intro a b ha hb
-    show f _ = _
-    rw [resp_mul, ha, hb, mul_one]
+def IsNormal.bot (G: Group α) : (⊥: Subgroup G).IsNormal := by
+  intro x y h
+  subst y
+  rw [mul_one, mul_inv_cancel]
+  rfl
 
-def kernel.IsNormal {A: Group α} {B: Group β} (f: A →* B) : (kernel f).IsNormal := by
-  intro a b hb
-  show f _ = _
-  rw [resp_mul, resp_mul, hb, mul_one, resp_inv, mul_inv_cancel]
+def IsNormal.top (G: Group α) : (⊤: Subgroup G).IsNormal := by
+  intro x y h
+  trivial
+
+-- the kernel is the preimage of the trivial subgroup
+-- i.e. the set of all elements that map to the unit
+def kernel {A: Group α} {B: Group β} (f: A →* B) : Subgroup A := preimage ⊥ f
+
+-- the kernel is always a normal subgroup
+def kernel.IsNormal {A: Group α} {B: Group β} (f: A →* B) : (kernel f).IsNormal :=
+  IsNormal.preimage (IsNormal.bot _) f
 
 -- show that every normal subgroup is equivalent to the kernel of the mkQuot homomorphism
 def IsNormal.eqv_kernel_quot (s: Subgroup A) (hs: s.IsNormal) : s ≃* kernel (mkQuot hs) where
   toFun := by
-    intro a
-    refine ⟨?_, ?_⟩
-    exact a.val
+    intro ⟨a, ha⟩
+    refine ⟨a, ?_⟩
     apply Quotient.sound
     apply (cosetLeft.eq_or_disjoint _ _ _).resolve_right
     intro h
     apply Set.inter_eq_empty_iff.mp h
     apply rep_mem_cosetLeft
-    exists a.val
-    apply And.intro a.property
+    exists a
+    apply And.intro ha
     dsimp
     rw [one_mul]
   invFun := by
