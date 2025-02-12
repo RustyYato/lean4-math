@@ -301,4 +301,14 @@ def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsLinearlyIndep
       apply Set.mem_image'
       assumption
 
+noncomputable
+def basis (V: VectorSpace R A) : Set V.Vector := Classical.choose V.existsBasis
+
+def basis_linear_indep (V: VectorSpace R A) : V.IsLinearlyIndependent V.basis := (Classical.choose_spec V.existsBasis).left
+def basis_spec (V: VectorSpace R A) : ∀v, v ∈ V.Span V.basis := by
+  intro v
+  unfold basis
+  rw [(Classical.choose_spec V.existsBasis).right]
+  trivial
+
 end VectorSpace
