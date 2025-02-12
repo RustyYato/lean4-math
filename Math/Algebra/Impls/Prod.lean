@@ -1,6 +1,6 @@
 import Math.Algebra.Ring
 
-section Pi
+section Prod
 
 variable {α β: Type*}
 
@@ -27,10 +27,7 @@ instance [Mul α] [Mul β] : Mul (α × β) where
 instance [Div α] [Div β] : Div (α × β) where
   div f g := (f.1 / g.1, f.2 / g.2)
 
-instance [SMul ℕ α] [SMul ℕ β] : SMul ℕ (α × β) where
-  smul n f := (n • f.1, n • f.2)
-
-instance [SMul ℤ α] [SMul ℤ β] : SMul ℤ (α × β) where
+instance [SMul R α] [SMul R β] : SMul R (α × β) where
   smul n f := (n • f.1, n • f.2)
 
 instance [Pow α ℕ] [Pow β ℕ] : Pow (α × β) ℕ where
@@ -152,4 +149,31 @@ instance [Add α] [Add β] [Mul α] [Mul β] [IsRightDistrib α] [IsRightDistrib
 instance [SemiringOps α] [SemiringOps β] [IsSemiring α] [IsSemiring β] : IsSemiring (α × β) := inferInstance
 instance [RingOps α] [RingOps β] [IsRing α] [IsRing β] : IsRing (α × β) := inferInstance
 
-end Pi
+instance [MonoidOps R] [SMul R α] [SMul R β] [IsMonoid R] [IsMulAction R α] [IsMulAction R β] : IsMulAction R (α × β) where
+  one_smul := by
+    intro a
+    ext <;> apply one_smul
+  mul_smul := by
+    intro r₀ r₁ a
+    ext <;> apply mul_smul
+
+instance [MonoidOps R] [SMul R α] [SMul R β] [IsMonoid R]
+  [AddMonoidOps α] [AddMonoidOps β] [IsAddMonoid α] [IsAddMonoid β]
+  [IsDistribMulAction R α] [IsDistribMulAction R β] : IsDistribMulAction R (α × β) where
+  smul_zero := by
+    intro a; ext <;> apply smul_zero
+  smul_add := by
+    intro r a b; ext <;> apply smul_add
+
+instance [SemiringOps R] [SMul R α] [SMul R β] [IsSemiring R]
+  [AddMonoidOps α] [AddMonoidOps β] [IsAddMonoid α] [IsAddMonoid β]
+  [IsAddCommMagma α] [IsAddCommMagma β]
+  [IsModule R α] [IsModule R β] : IsModule R (α × β) where
+  add_smul := by
+    intro r s a
+    ext <;> apply add_smul
+  zero_smul := by
+    intro r
+    ext <;> apply zero_smul
+
+end Prod
