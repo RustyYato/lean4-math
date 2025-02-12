@@ -1,5 +1,5 @@
 import Math.GroupTheory.Subgroup
-import Math.Algebra.Impls.Int
+import Math.GroupTheory.Perm
 
 namespace Group
 
@@ -24,5 +24,11 @@ def Aut : Group (G ≃* G) := by
   case inv_mul =>
     intro x
     apply GroupEquiv.symm_trans
+
+def embedPerm : Aut G ↪* Perm α where
+  toFun x := x.toEquiv
+  inj := by intro a b h; cases a; congr
+  resp_one := rfl
+  resp_mul := rfl
 
 end Group
