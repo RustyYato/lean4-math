@@ -665,3 +665,43 @@ def List.ext_nodup (as: List α) (bs: List α) (ha: as.Nodup) (hb: bs.Nodup) :
     intro c
     have := hb c
     contradiction
+
+def List.nodup_getElem_inj {as: List α} (h: as.Nodup)
+  {i j: Nat} {hi: i < as.length} {hj: j < as.length} :
+  as[i] = as[j] -> i = j := by
+  intro g
+  induction i generalizing j as with
+  | zero =>
+    cases j with
+    | zero => rfl
+    | succ j =>
+    cases as with
+    | nil => contradiction
+    | cons a as =>
+      dsimp at g
+      rw [g] at h
+      have := Nat.lt_of_succ_lt_succ hj
+      have := h.head as[j] (List.getElem_mem _)
+      contradiction
+  | succ i ih =>
+    cases j with
+    | zero =>
+      cases as with
+      | nil => contradiction
+      | cons a as =>
+        dsimp at g
+        rw [←g] at h
+        have := Nat.lt_of_succ_lt_succ hi
+        have := h.head as[i] (List.getElem_mem _)
+        contradiction
+    | succ j =>
+      cases as with
+      | nil => contradiction
+      | cons a as =>
+      rw [ih]
+      exact h.tail
+      apply Nat.lt_of_succ_lt_succ
+      assumption
+      apply Nat.lt_of_succ_lt_succ
+      assumption
+      assumption

@@ -886,6 +886,25 @@ def mul_two [AddMonoidWithOneOps α] [Mul α] [IsAddMonoidWithOne α] [IsLeftDis
   rw [ofNat_eq_natCast, Nat.zero_add, natCast_succ, natCast_succ,
     natCast_zero, zero_add, mul_add, mul_one]
 
+def add_sub_assoc [AddGroupOps α] [IsAddGroup α] (a b c: α) : a + b - c = a + (b - c) := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, add_assoc]
+
+def sub_add_assoc [AddGroupOps α] [IsAddGroup α] (a b c: α) : a - b + c = a + (-b + c) := by
+  rw [sub_eq_add_neg, add_assoc]
+
+def add_eq_iff_eq_sub [AddGroupOps α] [IsAddGroup α]
+  (a b c: α) : a + b = c ↔ a = c - b := by
+  apply Iff.intro
+  intro h
+  rw [←h, add_sub_assoc, sub_self, add_zero]
+  intro h
+  rw [h, sub_add_assoc, neg_add_cancel, add_zero]
+
+def zero_sub [AddGroupOps α] [IsAddGroup α]
+  (a: α) : 0 - a = -a := by
+  refine neg_eq_of_add_right ?_
+  rw [sub_add_assoc, neg_add_cancel, add_zero]
+
 class IsMulAction (R M: Type*) [MonoidOps R] [SMul R M] [IsMonoid R] : Prop where
   one_smul: ∀a: M, (1: R) • a = a
   mul_smul: ∀x y: R, ∀b: M, (x * y) • b = x • y • b
@@ -908,6 +927,16 @@ class IsSMulComm (R S A: Type*) [SMul R A] [SMul S A]: Prop where
   smul_comm: ∀(r: R) (s: S) (x: A), r • s • x = s • r • x
 
 export IsSMulComm (smul_comm)
+
+def smul_neg [SMul R M] [RingOps R] [AddGroupOps M] [IsRing R] [IsAddGroup M] [IsDistribMulAction R M]
+  (r: R) (x: M) : r • -x = -(r • x) := by
+  refine neg_eq_of_add_right ?_
+  rw [←smul_add, neg_add_cancel, smul_zero]
+
+def neg_smul [SMul R M] [RingOps R] [AddGroupOps M] [IsRing R] [IsAddGroup M] [IsAddCommMagma M] [IsModule R M]
+  (r: R) (x: M) : (-r) • x = -(r • x) := by
+  refine neg_eq_of_add_right ?_
+  rw [←add_smul, neg_add_cancel, zero_smul]
 
 class IsNonUnitalNonAssocSemiring (α: Type*) [AddMonoidOps α] [Mul α] extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α: Prop
 
