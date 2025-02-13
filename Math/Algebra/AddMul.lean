@@ -70,3 +70,34 @@ instance [Pow α ℕ] : Pow αᵐᵒᵖ ℕ where
 
 instance [Pow α ℤ] : Pow αᵐᵒᵖ ℤ where
   pow a n := .mk (a.get ^ n)
+
+instance [Mul α] : SMul αᵐᵒᵖ α where
+  smul c x := x * c.get
+
+instance [Add α] : Add αᵐᵒᵖ := ⟨(.mk <| ·.get + ·.get)⟩
+instance [Sub α] : Sub αᵐᵒᵖ := ⟨(.mk <| ·.get - ·.get)⟩
+instance [Neg α] : Neg αᵐᵒᵖ := ⟨(.mk <| -·.get)⟩
+instance [SMul Nat α] : SMul Nat αᵐᵒᵖ := ⟨(.mk <| · • ·.get)⟩
+instance [SMul Int α] : SMul Int αᵐᵒᵖ := ⟨(.mk <| · • ·.get)⟩
+
+instance [NatCast α] : NatCast αᵐᵒᵖ := ⟨(.mk ·)⟩
+instance [IntCast α] : IntCast αᵐᵒᵖ := ⟨(.mk ·)⟩
+
+instance [OfNat α (n + 2)] : OfNat αᵐᵒᵖ (n + 2) := ⟨(.mk (OfNat.ofNat (n + 2)))⟩
+
+namespace MulOpp
+
+@[simp]
+def mk_zero [Zero α] : mk (0: α) = 0 :=rfl
+@[simp]
+def mk_one [One α] : mk (1: α) = 1 :=rfl
+@[simp]
+def mk_ofNat [OfNat α (n + 2)] : mk (OfNat.ofNat (n + 2): α) = OfNat.ofNat (n + 2) :=rfl
+@[simp]
+def mk_add [Add α] (a b: α) : mk (a + b) = mk a + mk b :=rfl
+@[simp]
+def mk_neg [Neg α] (a: α) : mk (-a) = -mk a :=rfl
+@[simp]
+def mk_mul [Mul α] (a b: α) : mk (a * b) = mk b * mk a :=rfl
+
+end MulOpp

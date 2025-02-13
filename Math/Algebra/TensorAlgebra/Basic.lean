@@ -131,6 +131,20 @@ def algebraMap_leftInverse :
 
 def algebraMap_inj : Function.Injective (algebraMap (R := R) (A := TensorAlgebra R M)) := algebraMap_leftInverse.Injective
 
+def ιInv : TensorAlgebra R M →ₗ[R] M := by
+  sorry
+  -- letI : Module Rᵐᵒᵖ M := Module.compHom _ ((RingHom.id R).fromOpposite mul_comm)
+  -- haveI : IsCentralScalar R M := ⟨fun r m => rfl⟩
+  -- exact (TrivSqZeroExt.sndHom R M).comp toTrivSqZeroExt.toLinearMap
+
+theorem ι_leftInverse : Function.IsLeftInverse ιInv (ι R : M → TensorAlgebra R M) := fun x ↦ by
+  -- simp [ιInv]
+  sorry
+
+@[simp]
+theorem ι_inj (x y : M) : ι R x = ι R y ↔ x = y :=
+  ι_leftInverse.Injective.eq_iff
+
 attribute [irreducible] ι
 
 end ι

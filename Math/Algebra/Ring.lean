@@ -38,6 +38,8 @@ instance [Mul α] [IsCommMagma α] : IsAddCommMagma (AddOfMul α) where
   add_comm := mul_comm (α := α)
 instance [Add α] [IsAddCommMagma α] : IsCommMagma (MulOfAdd α) where
   mul_comm := add_comm (α := α)
+instance [Add α] [IsAddCommMagma α] : IsAddCommMagma αᵐᵒᵖ :=
+  inferInstanceAs (IsAddCommMagma α)
 instance [Mul α] [IsCommMagma α] : IsCommMagma αᵐᵒᵖ where
   mul_comm _ _ := mul_comm (α := α) _ _
 
@@ -137,10 +139,12 @@ instance [Mul α] [One α] [IsMulOneClass α] : IsAddZeroClass (AddOfMul α) whe
 instance [Add α] [Zero α] [IsAddZeroClass α] : IsMulOneClass (MulOfAdd α) where
   mul_one := add_zero (α := α)
   one_mul := zero_add (α := α)
+instance [Add α] [Zero α] [IsAddZeroClass α] : IsAddZeroClass αᵐᵒᵖ :=
+  inferInstanceAs (IsAddZeroClass α)
 instance [Mul α] [One α] [IsMulOneClass α] : IsMulOneClass αᵐᵒᵖ where
   one_mul := mul_one (α := α)
   mul_one := one_mul (α := α)
-instance [Mul α] [One α] [Zero α] [IsMulZeroClass α] : IsMulZeroClass αᵐᵒᵖ where
+instance [Mul α] [Zero α] [IsMulZeroClass α] : IsMulZeroClass αᵐᵒᵖ where
   zero_mul := mul_zero (α := α)
   mul_zero := zero_mul (α := α)
 
@@ -198,6 +202,8 @@ instance [MonoidOps α] [IsMonoid α] : IsAddMonoid (AddOfMul α) where
 instance [AddMonoidOps α] [IsAddMonoid α] : IsMonoid (MulOfAdd α) where
   npow_zero := zero_nsmul (α := α)
   npow_succ := succ_nsmul (α := α)
+instance [AddMonoidOps α] [IsAddMonoid α] : IsAddMonoid αᵐᵒᵖ :=
+  inferInstanceAs (IsAddMonoid α)
 
 def nsmul_zero [AddMonoidOps α] [IsAddMonoid α] (a: ℕ) : a • (0: α) = 0 := by
   induction a with
@@ -340,6 +346,8 @@ instance [Inv α] [IsInvolutiveInv α] : IsInvolutiveNeg (AddOfMul α) where
   neg_neg := inv_inv (α := α)
 instance [Neg α] [IsInvolutiveNeg α] : IsInvolutiveInv (MulOfAdd α) where
   inv_inv := neg_neg (α := α)
+instance [Neg α] [IsInvolutiveNeg α] : IsInvolutiveNeg αᵐᵒᵖ :=
+  inferInstanceAs (IsInvolutiveNeg α)
 instance [Inv α] [IsInvolutiveInv α] : IsInvolutiveInv αᵐᵒᵖ where
   inv_inv := inv_inv (α := α)
 
@@ -397,6 +405,8 @@ instance [AddGroupOps α] [IsSubNegMonoid α] : IsDivInvMonoid (MulOfAdd α) whe
   zpow_ofNat := zsmul_ofNat (α := α)
   zpow_negSucc := zsmul_negSucc (α := α)
 
+instance [AddGroupOps α] [IsSubNegMonoid α] : IsSubNegMonoid αᵐᵒᵖ :=
+  inferInstanceAs (IsSubNegMonoid α)
 instance [GroupOps α] [IsDivInvMonoid α] : IsDivInvMonoid αᵐᵒᵖ where
   div_eq_mul_inv _ _ := rfl
   zpow_ofNat := zpow_ofNat (α := α)
@@ -417,6 +427,10 @@ instance [One α] [Inv α] [IsInvOneClass α] : IsNegZeroClass (AddOfMul α) whe
   neg_zero := inv_one (α := α)
 instance [Zero α] [Neg α] [IsNegZeroClass α] : IsInvOneClass (MulOfAdd α) where
   inv_one := neg_zero (α := α)
+instance [Zero α] [Neg α] [IsNegZeroClass α] : IsNegZeroClass αᵐᵒᵖ :=
+  inferInstanceAs (IsNegZeroClass α)
+instance [One α] [Inv α] [IsInvOneClass α] : IsInvOneClass αᵐᵒᵖ :=
+  inferInstanceAs (IsInvOneClass α)
 
 def zsmul_zero [AddGroupOps α] [IsSubNegMonoid α] [IsNegZeroClass α] (a: ℤ) : a • (0: α) = 0 := by
   cases a
@@ -463,6 +477,8 @@ instance [GroupOps α] [IsDivisionMonoid α] : IsSubtractionMonoid (AddOfMul α)
 instance [AddGroupOps α] [IsSubtractionMonoid α] : IsDivisionMonoid (MulOfAdd α) where
   inv_mul_rev := neg_add_rev (α := α)
   inv_eq_of_mul_left := neg_eq_of_add_left (α := α)
+instance [AddGroupOps α] [IsSubtractionMonoid α] : IsSubtractionMonoid αᵐᵒᵖ :=
+  inferInstanceAs (IsSubtractionMonoid α)
 
 def neg_eq_of_add_right [AddGroupOps α] [IsSubtractionMonoid α] {a b: α} : a + b = 0 -> a = -b := by
   intro h
@@ -485,6 +501,8 @@ instance [GroupOps α] [IsGroup α] : IsAddGroup (AddOfMul α) where
   neg_add_cancel := inv_mul_cancel (α := α)
 instance [AddGroupOps α] [IsAddGroup α] : IsGroup (MulOfAdd α) where
   inv_mul_cancel := neg_add_cancel (α := α)
+instance [AddGroupOps α] [IsAddGroup α] : IsAddGroup αᵐᵒᵖ :=
+  inferInstanceAs (IsAddGroup α)
 
 def left_neg_eq_right_neg [AddGroupOps α] [IsAddGroup α] { a b c: α } (hba : b + a = 0) (hac : a + c = 0) : b = c := by
   rw [← zero_add c, ← hba, add_assoc, hac, add_zero b]
@@ -688,6 +706,11 @@ class IsRightDistrib (α: Type*) [Add α] [Mul α]: Prop where
 export IsLeftDistrib (left_distrib)
 export IsRightDistrib (right_distrib)
 
+instance [Add α] [Mul α] [IsLeftDistrib α] : IsRightDistrib αᵐᵒᵖ where
+  right_distrib _ _ _ := left_distrib (α := α) _ _ _
+instance [Add α] [Mul α] [IsRightDistrib α] : IsLeftDistrib αᵐᵒᵖ where
+  left_distrib _ _ _ := right_distrib (α := α) _ _ _
+
 def mul_add [Add α] [Mul α] [IsLeftDistrib α] (k a b: α): k * (a + b) = k * a + k * b := left_distrib k a b
 def add_mul [Add α] [Mul α] [IsRightDistrib α] (a b k: α): (a + b) * k = a * k + b * k := right_distrib a b k
 
@@ -722,6 +745,11 @@ class IsAddMonoidWithOne (α: Type*) [AddMonoidWithOneOps α] extends IsAddMonoi
 
 export IsAddMonoidWithOne (natCast_zero natCast_succ ofNat_eq_natCast)
 
+instance [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : IsAddMonoidWithOne αᵐᵒᵖ where
+  natCast_zero := natCast_zero (α := α)
+  natCast_succ := natCast_succ (α := α)
+  ofNat_eq_natCast := ofNat_eq_natCast (α := α)
+
 def natCast_eq_nsmul_one [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] (n: Nat) : (n: α) = n • 1  := by
   induction n with
   | zero => rw [zero_nsmul, natCast_zero]
@@ -742,6 +770,13 @@ class IsAddGroupWithOne (α: Type*) [AddGroupWithOneOps α] extends IsAddGroup �
   intCast_negSucc (n: ℕ) : (Int.negSucc n) = -(n.succ: α)
 
 export IsAddGroupWithOne (intCast_ofNat intCast_negSucc)
+
+instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne αᵐᵒᵖ where
+  natCast_zero := natCast_zero (α := α)
+  natCast_succ := natCast_succ (α := α)
+  ofNat_eq_natCast := ofNat_eq_natCast (α := α)
+  intCast_ofNat := intCast_ofNat (α := α)
+  intCast_negSucc := intCast_negSucc (α := α)
 
 def intCast_eq_zsmul_one [AddGroupWithOneOps α] [IsAddGroupWithOne α] (n: Int) : (n: α) = n • 1  := by
   cases n with
@@ -785,6 +820,8 @@ instance [SemiringOps α] [IsAddCommMagma α] [IsAddMonoidWithOne α] [IsSemigro
   npow_zero := npow_zero
   npow_succ := npow_succ
 
+instance [SemiringOps α] [IsSemiring α] : IsSemiring αᵐᵒᵖ := inferInstance
+
 def natCast_mul_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : r * x = r • x := by
   induction r with
   | zero => rw [natCast_zero, zero_mul, zero_nsmul]
@@ -826,6 +863,8 @@ instance [RingOps α] [IsSemiring α] [IsAddGroupWithOne α] : IsRing α where
   zsmul_ofNat := zsmul_ofNat
   zsmul_negSucc := zsmul_negSucc
   neg_add_cancel := neg_add_cancel
+
+instance [RingOps α] [IsRing α] : IsRing αᵐᵒᵖ := inferInstance
 
 def mul_sub [AddGroupOps α] [IsAddGroup α] [Mul α] [IsLeftDistrib α] [IsMulZeroClass α] (k a b: α): k * (a - b) = k * a - k * b := by
 
@@ -963,6 +1002,23 @@ instance [SemiringOps α] [IsSemiring α] : IsNonAssocSemiring α where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
   ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
+
+instance [SemiringOps α] [IsNonAssocSemiring α] [IsMonoid α] : IsSemiring α := inferInstance
+
+class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] extends IsNonAssocSemiring α, IsAddGroupWithOne α: Prop
+
+instance
+  [AddGroupWithOneOps α] [Mul α]
+  [h: IsNonAssocSemiring α]
+  [g: IsAddGroupWithOne α]
+  : IsNonAssocRing α := {
+    h, g with
+  }
+
+instance [RingOps α] [IsRing α] : IsNonAssocRing α := inferInstance
+
+instance [RingOps α] [h: IsNonAssocRing α] [g: IsMonoid α] :
+  IsRing α := inferInstance
 
 class FieldOps (α: Type*) extends RingOps α,
   CheckedIntPow α (P := fun x => x ≠ 0),
