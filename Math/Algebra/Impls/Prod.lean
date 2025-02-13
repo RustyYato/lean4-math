@@ -225,4 +225,18 @@ instance [SMul R α] [SMul R β] : SMulHomClass (Prod.fstHomType (α := α) (β 
 instance [SMul R α] [SMul R β] : SMulHomClass (Prod.sndHomType (α := α) (β := β)) R (α × β) β where
   resp_smul _ := rfl
 
+instance [Subsingleton β] : IsEmbeddingLike (Prod.fstHomType (α := α) (β := β)) (α × β) α where
+  coe_inj := by
+    intro f a b h
+    ext
+    assumption
+    apply Subsingleton.allEq
+
+instance [Subsingleton α] : IsEmbeddingLike (Prod.sndHomType (α := α) (β := β)) (α × β) β where
+  coe_inj := by
+    intro f a b h
+    ext
+    apply Subsingleton.allEq
+    assumption
+
 end Prod
