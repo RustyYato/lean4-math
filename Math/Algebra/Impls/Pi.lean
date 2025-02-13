@@ -27,10 +27,7 @@ instance [∀i, Mul (β i)] : Mul (∀i, β i) where
 instance [∀i, Div (β i)] : Div (∀i, β i) where
   div f g i := f i / g i
 
-instance [∀i, SMul ℕ (β i)] : SMul ℕ (∀i, β i) where
-  smul n f i := n • f i
-
-instance [∀i, SMul ℤ (β i)] : SMul ℤ (∀i, β i) where
+instance [∀i, SMul R (β i)] : SMul R (∀i, β i) where
   smul n f i := n • f i
 
 instance [∀i, Pow (β i) ℕ] : Pow (∀i, β i) ℕ where
@@ -158,6 +155,32 @@ instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsRightDistrib (β i)] : I
 instance [∀i, SemiringOps (β i)] [∀i, IsSemiring (β i)] : IsSemiring (∀i, β i) := inferInstance
 instance [∀i, RingOps (β i)] [∀i, IsRing (β i)] : IsRing (∀i, β i) := inferInstance
 
+instance [MonoidOps R] [∀i, SMul R (β i)] [IsMonoid R] [∀i, IsMulAction R (β i)] : IsMulAction R (∀i, β i) where
+  one_smul := by
+    intro a
+    ext i; apply one_smul
+  mul_smul := by
+    intro r₀ r₁ a
+    ext i; apply mul_smul
+
+instance [MonoidOps R] [∀i, SMul R (β i)] [IsMonoid R]
+  [∀i, AddMonoidOps (β i)] [∀i, IsAddMonoid (β i)]
+  [∀i, IsDistribMulAction R (β i)] : IsDistribMulAction R (∀i, β i) where
+  smul_zero := by
+    intro a; ext i; apply smul_zero
+  smul_add := by
+    intro r a b; ext i; apply smul_add
+
+instance [SemiringOps R] [∀i, SMul R (β i)] [IsSemiring R]
+  [∀i, AddMonoidOps (β i)] [∀i, IsAddMonoid (β i)]
+  [∀i, IsAddCommMagma (β i)] [∀i, IsModule R (β i)] : IsModule R (∀i, β i) where
+  add_smul := by
+    intro r s a
+    ext i; apply add_smul
+  zero_smul := by
+    intro r
+    ext i; apply zero_smul
+
 end Pi
 
 -- these instances are needed to get IsRing (ι -> ι -> β)
@@ -242,5 +265,13 @@ instance [Add β] [Mul β] [IsRightDistrib β] : IsRightDistrib (ι -> β) :=
   inferInstance
 instance [SemiringOps β] [IsSemiring β] : IsSemiring (ι -> β) := inferInstance
 instance [RingOps β] [IsRing β] : IsRing (ι -> β) := inferInstance
+
+instance [MonoidOps R] [SMul R β] [IsMonoid R] [IsMulAction R β] : IsMulAction R (ι -> β) := inferInstance
+instance [MonoidOps R] [SMul R β] [IsMonoid R]
+  [AddMonoidOps β] [IsAddMonoid β]
+  [IsDistribMulAction R β] : IsDistribMulAction R (ι -> β) := inferInstance
+instance [SemiringOps R] [SMul R β] [IsSemiring R]
+  [AddMonoidOps β] [IsAddMonoid β]
+  [IsAddCommMagma β] [IsModule R β] : IsModule R (ι -> β) := inferInstance
 
 end Function
