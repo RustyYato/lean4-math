@@ -475,3 +475,53 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
 instance (priority := 5000) : IsCompleteLattice (Filter α) := inferInstance
 
 end FilterBase
+
+namespace Filter
+
+section Basic
+
+def univ_mem (f: Filter α) : ⊤ ∈ f := FilterBase.top_mem f
+
+def map (f: α -> β) (F: Filter α) : Filter β where
+  set := F.set.preimage (Set.preimage · f)
+  nonempty := by
+    exists ⊤
+    simp [Set.mem_preimage]
+    apply univ_mem
+  closed_upward := by
+    intro a b ha hb
+    apply F.closed_upward
+    assumption
+    dsimp
+    intro x hx
+    apply hb
+    assumption
+  closed_inf := F.closed_inf
+
+end Basic
+
+section Limit
+
+def Eventually (P: α -> Prop) (f: Filter α) : Prop := Set.mk P ∈ f
+def Frequently (P: α -> Prop) (f: Filter α) : Prop := ¬f.Eventually fun x => ¬P x
+
+def TendsTo (f : α -> β) (l₁ : Filter α) (l₂ : Filter β) :=
+  l₁.map f ≤ l₂
+
+def tendsto_def {f : α → β} {l₁ : Filter α} {l₂ : Filter β} :
+  TendsTo f l₁ l₂ ↔ ∀ s ∈ l₂, s.preimage f ∈ l₁ := Iff.rfl
+
+def TendsTo.eventually {f: α -> β} (h: TendsTo f l₁ l₂) : l₂.Eventually P -> l₁.Eventually (P ∘ f) := h _
+
+@[simp]
+def TendsTo.bot {f : α → β} {l : Filter β} : TendsTo f ⊥ l := bot_le _
+
+@[simp]
+def TendsTo.top {f : α → β} {l : Filter α} : TendsTo f l ⊤ := le_top _
+
+@[simp]
+theorem tendsto_id {x : Filter α} : TendsTo id x x := le_refl x
+
+end Limit
+
+end Filter

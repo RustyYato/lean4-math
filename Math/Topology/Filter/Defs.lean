@@ -22,4 +22,10 @@ def nhdsWithin (x : α) (s : Set α) : Filter α := 𝓝 x ⊓ 𝓟 s
 @[inherit_doc]
 scoped notation "𝓝[" s "] " x:100 => nhdsWithin x s
 
+-- the limit of a filter, if it exists
+noncomputable def lim [Nonempty α] (f: Filter α) : α :=
+  Classical.epsilon fun x => f ≤ 𝓝 x
+
+def lim_spec [Nonempty α] (f: Filter α) (h: ∃x, f ≤ 𝓝 x) : f ≤ 𝓝 (lim f) := Classical.epsilon_spec h
+
 end Topology
