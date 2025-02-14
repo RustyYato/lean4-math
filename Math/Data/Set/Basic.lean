@@ -1016,6 +1016,38 @@ def inter_eq_empty_iff {a b: Set α} : a ∩ b = ∅ ↔ ∀x, x ∈ a -> x ∈ 
   intro x ⟨ha, hb⟩
   apply h x <;> assumption
 
+def mem_iSup {f: ι -> Set α} : x ∈ iSup f ↔ ∃i, x ∈ f i := by
+  simp [iSup, sSup, mem_sUnion, mem_range]
+  apply Iff.intro
+  intro ⟨_, ⟨i, rfl⟩ , _⟩
+  exists i
+  intro ⟨i, _⟩
+  exists f i
+  refine ⟨⟨i, rfl⟩, ?_⟩
+  assumption
+
+def sInf_eq_iInf [InfSet α] (s: Set α) : sInf s = iInf fun x: s => x.val := by
+  rw [iInf]
+  congr
+  ext x
+  apply Iff.intro
+  intro h
+  apply Set.mem_range.mpr
+  exists ⟨_, h⟩
+  intro ⟨y, eq⟩; subst eq
+  exact y.property
+
+def sSup_eq_iSup [SupSet α] (s: Set α) : sSup s = iSup fun x: s => x.val := by
+  rw [iSup]
+  congr
+  ext x
+  apply Iff.intro
+  intro h
+  apply Set.mem_range.mpr
+  exists ⟨_, h⟩
+  intro ⟨y, eq⟩; subst eq
+  exact y.property
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]

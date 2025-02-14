@@ -6,6 +6,13 @@ def Iff.not_iff_not : (P ↔ Q) -> (¬P ↔ ¬Q) := by
   intro nq p
   exact nq (h.mp p)
 
+def Classical.not_iff_not : (P ↔ Q) ↔ (¬P ↔ ¬Q) := by
+  apply Iff.intro
+  apply Iff.not_iff_not
+  intro h
+  replace h := h.not_iff_not
+  rwa [Classical.not_not, Classical.not_not] at h
+
 def Iff.and (h: P ↔ Q) (g: S ↔ R) : (P ∧ S ↔ Q ∧ R) := by
   apply Iff.intro
   intro ⟨p, s⟩
@@ -18,6 +25,12 @@ def contrapositive {P Q: Prop} (f: P -> Q) : ¬Q -> ¬P := by
   apply nq
   apply f
   assumption
+
+def Classical.contrapositive {P Q: Prop}: (¬Q -> ¬P) ↔ (P -> Q) := by
+  apply Iff.intro _ _root_.contrapositive
+  intro h
+  replace h := _root_.contrapositive h
+  rwa [Classical.not_not, Classical.not_not] at h
 
 def Option.get_inj (a b: Option α) (ha: a.isSome) (hb: b.isSome) :
   a.get ha = b.get hb -> a = b := by

@@ -1,5 +1,6 @@
 import Math.Data.Set.Lattice
 import Math.Relation.RelIso
+import Math.Order.Directed.Basic
 
 namespace Set
 
@@ -53,6 +54,21 @@ def empty : (∅: Set α).IsChain r where
 
 def univ [Relation.IsTrichotomous r] : (Set.univ α).IsChain r :=
   (Induced.embed r (Set.univ α)).tri
+
+def directedOn [Relation.IsRefl r] {s: Set α} (h: s.IsChain r) : s.DirectedOn r := by
+  intro a ha b hb
+  rcases h.tri ⟨a, ha⟩ ⟨b, hb⟩ with h | h | h
+  exists b
+  cases h
+  exists a
+  exists a
+
+def opp {s: Set α} (h: s.IsChain r) : s.IsChain (flip r) where
+  tri a b := by
+    rcases h.tri a b with h | h | h
+    right; right; assumption
+    right; left; assumption
+    left; assumption
 
 end IsChain
 

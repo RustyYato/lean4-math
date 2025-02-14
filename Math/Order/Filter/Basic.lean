@@ -474,6 +474,31 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
 -- a shortcut instance
 instance (priority := 5000) : IsCompleteLattice (Filter α) := inferInstance
 
+class NeBot (f: FilterBase α) [Nonempty α] where
+  ne : f ≠ ⊥
+
+def not_neBot [Nonempty α] : ¬NeBot f ↔ f = ⊥ := by
+  apply Iff.intro
+  intro h
+  apply Classical.byContradiction
+  intro g
+  exact h ⟨g⟩
+  intro h g
+  exact g.ne h
+
+def bot_mem_iff_bot (f: Filter α) : ⊥ ∈ f ↔ f = ⊥ := by
+  apply Iff.intro
+  intro h
+  ext x
+  apply Iff.intro
+  intro; trivial
+  intro
+  apply closed_upward
+  assumption
+  apply bot_le
+  rintro rfl
+  trivial
+
 end FilterBase
 
 namespace Filter

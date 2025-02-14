@@ -355,6 +355,9 @@ instance : @IsTrans α trivial where
 instance : @IsWellFounded Nat (· < ·) where
   wf := Nat.lt_wfRel.wf
 
+instance [LE α] [IsRefl (· ≤ (·: α))] : IsRefl (· ≥ (·: α)) where
+  refl a := by rfl
+
 end Relation
 
 namespace Quot
