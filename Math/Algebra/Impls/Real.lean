@@ -73,16 +73,6 @@ instance : IsField ℝ where
   div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
-  zero_ne_one := by
-    apply ne_of_lt
-    show (1 - 0: ℝ).IsPos
-    rw [sub_zero]
-    exists 1
-    apply And.intro
-    decide
-    exists 0
-    intro _ _
-    rfl
 
 instance : IsRatAlgebra ℝ where
   rsmul_eq_cast_mul _ _ := rfl

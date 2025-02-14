@@ -91,15 +91,10 @@ instance : IsField ℚ where
     dsimp
     rw [dif_neg h]
     rfl
-  zero_ne_one := by decide
-
-instance : IsNontrivial ℚ where
-  zero_ne_one := by
-    intro h
-    contradiction
 
 instance : IsAddMonoidWithOne ℚ := inferInstance
 instance : IsGroupWithZero ℚ := inferInstance
+instance : IsRing ℚ := inferInstance
 
 def Rat.char_eq : char Rat = 0 := by
   apply char_eq_of_natCast_eq_zero

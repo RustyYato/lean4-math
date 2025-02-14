@@ -3,6 +3,7 @@ import Math.Data.StdNat.Gcd
 import Math.Data.StdInt.Basic
 import Math.Ops.Checked
 import Math.Ops.Abs
+import Math.Logic.Nontrivial
 
 structure Fract where
   num: Int
@@ -1075,3 +1076,6 @@ instance : IntCast ℚ where
 
 instance : NatCast ℚ where
   natCast := Rat.ofNat
+
+instance : IsNontrivial ℚ where
+  exists_ne := ⟨0, 1, by decide⟩

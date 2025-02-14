@@ -777,6 +777,15 @@ def neg_inj {a b: ℝ} : -a = -b ↔ a = b := by
   intro h
   rw [←neg_neg a, ←neg_neg b, h]
 
+instance : IsNontrivial ℝ where
+  exists_ne := ⟨0, 1, by
+    intro h
+    replace h := Quotient.exact h
+    replace ⟨k, h⟩ := h  (1 /? 2) (by decide)
+    replace h: ‖0 - (1: ℚ)‖ < 1 /? (2: ℚ) := h k k (le_refl _) (le_refl _)
+    dsimp at h
+    contradiction⟩
+
 end Real
 
 namespace Real
