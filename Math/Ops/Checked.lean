@@ -1,4 +1,4 @@
-          import Lean
+import Lean
 
 class CheckedInvert (α: Sort u) (P: outParam (α -> Prop)) where
   checked_invert: ∀a: α, P a -> α
@@ -20,8 +20,8 @@ syntax "int_pow_tactic_trivial" : tactic
 
 -- prioritize deciding if pow is nonneg, which is usually easier
 -- otherwise prove that the val satisfies condition via invert_tactic
-macro_rules | `(tactic|int_pow_tactic) => `(tactic|first|assumption|(right; first|trivial|int_pow_tactic_trivial)|(left; invert_tactic))
-macro_rules | `(tactic|int_pow_tactic_trivial) => `(tactic|apply Int.ofNat_nonneg)
+macro_rules | `(tactic|int_pow_tactic) => `(tactic|first|assumption|(first|(right; trivial)|int_pow_tactic_trivial)|(left; invert_tactic))
+macro_rules | `(tactic|int_pow_tactic_trivial) => `(tactic|right; apply Int.ofNat_nonneg)
 
 -- prioritize assumption, so if the user proves this manually, that proof will be used
 macro_rules | `(tactic|invert_tactic) => `(tactic|first|assumption|invert_tactic_trivial)

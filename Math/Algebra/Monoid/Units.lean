@@ -1,4 +1,4 @@
-import Math.Algebra.Ring
+import Math.Algebra.Monoid.Defs
 import Math.Function.Basic
 
 structure Units (α: Type*) [One α] [Mul α] where
@@ -49,13 +49,7 @@ instance [MonoidOps α] [IsMonoid α] : Pow (Units α) ℕ where
         rw [npow_succ, npow_succ', mul_assoc, ←mul_assoc a.inv, a.inv_mul_val, one_mul, ih]
   }
 
-instance [MonoidOps α] [IsMonoid α] : Pow (Units α) ℤ where
-  pow := flip zpowRec
-
-instance [MonoidOps α] [IsMonoid α] : Div (Units α) where
-  div := div'
-
-def Units.val_inj [MonoidOps α] [IsMonoid α] : Function.Injective (Units.val (α := α)) := by
+def Units.val.inj [MonoidOps α] [IsMonoid α] : Function.Injective (Units.val (α := α)) := by
   intro a b eq
   cases a with | mk a a' aa' a'a =>
   cases b with | mk b b' bb' b'b =>
@@ -65,7 +59,7 @@ def Units.val_inj [MonoidOps α] [IsMonoid α] : Function.Injective (Units.val (
   rw [←mul_assoc, ←mul_assoc, a'a, one_mul, one_mul] at this
   assumption
 
-def Units.inv_inj [MonoidOps α] [IsMonoid α] : Function.Injective (Units.inv (α := α)) := by
+def Units.inv.inj [MonoidOps α] [IsMonoid α] : Function.Injective (Units.inv (α := α)) := by
   intro a b eq
   cases a with | mk a a' aa' a'a =>
   cases b with | mk b b' bb' b'b =>
@@ -75,34 +69,8 @@ def Units.inv_inj [MonoidOps α] [IsMonoid α] : Function.Injective (Units.inv (
   rw [←mul_assoc, ←mul_assoc, aa', one_mul, one_mul] at this
   assumption
 
-instance [MonoidOps α] [IsMonoid α] : IsGroup (Units α) where
-  mul_assoc := by
-    intro a b c
-    apply Units.val_inj
-    apply mul_assoc
-  one_mul := by
-    intro a
-    apply Units.val_inj
-    apply one_mul
-  mul_one := by
-    intro a
-    apply Units.val_inj
-    apply mul_one
-  div_eq_mul_inv _ _ := rfl
-  zpow_ofNat _ _ := rfl
-  zpow_negSucc _ _ := rfl
-  inv_mul_cancel := by
-    intro a
-    apply Units.val_inj
-    exact a.inv_mul_val
-  npow_zero := by
-    intro a
-    apply Units.val_inj
-    apply npow_zero
-  npow_succ := by
-    intro a n
-    apply Units.val_inj
-    apply npow_succ
+def Units.val_inj [MonoidOps α] [IsMonoid α] {a b: Units α} : a.val = b.val ↔ a = b := Units.val.inj.eq_iff
+def Units.inv_inj [MonoidOps α] [IsMonoid α] {a b: Units α} : a.inv = b.inv ↔ a = b := Units.inv.inj.eq_iff
 
 structure AddUnits (α: Type*) [Zero α] [Add α] where
   val: α
@@ -152,13 +120,7 @@ instance [AddMonoidOps α] [IsAddMonoid α] : SMul ℕ (AddUnits α) where
         rw [succ_nsmul, succ_nsmul', add_assoc, ←add_assoc a.neg, a.neg_add_val, zero_add, ih]
   }
 
-instance [AddMonoidOps α] [IsAddMonoid α] : SMul ℤ (AddUnits α) where
-  smul := zsmulRec
-
-instance [AddMonoidOps α] [IsAddMonoid α] : Sub (AddUnits α) where
-  sub := sub'
-
-def AddUnits.val_inj [AddMonoidOps α] [IsAddMonoid α] : Function.Injective (AddUnits.val (α := α)) := by
+def AddUnits.val.inj [AddMonoidOps α] [IsAddMonoid α] : Function.Injective (AddUnits.val (α := α)) := by
   intro a b eq
   cases a with | mk a a' aa' a'a =>
   cases b with | mk b b' bb' b'b =>
@@ -168,7 +130,7 @@ def AddUnits.val_inj [AddMonoidOps α] [IsAddMonoid α] : Function.Injective (Ad
   rw [←add_assoc, ←add_assoc, a'a, zero_add, zero_add] at this
   assumption
 
-def AddUnits.neg_inj [AddMonoidOps α] [IsAddMonoid α] : Function.Injective (AddUnits.neg (α := α)) := by
+def AddUnits.neg.inj [AddMonoidOps α] [IsAddMonoid α] : Function.Injective (AddUnits.neg (α := α)) := by
   intro a b eq
   cases a with | mk a a' aa' a'a =>
   cases b with | mk b b' bb' b'b =>
@@ -178,34 +140,8 @@ def AddUnits.neg_inj [AddMonoidOps α] [IsAddMonoid α] : Function.Injective (Ad
   rw [←add_assoc, ←add_assoc, aa', zero_add, zero_add] at this
   assumption
 
-instance [AddMonoidOps α] [IsAddMonoid α] : IsAddGroup (AddUnits α) where
-  add_assoc := by
-    intro a b c
-    apply AddUnits.val_inj
-    apply add_assoc
-  zero_add := by
-    intro a
-    apply AddUnits.val_inj
-    apply zero_add
-  add_zero := by
-    intro a
-    apply AddUnits.val_inj
-    apply add_zero
-  sub_eq_add_neg _ _ := rfl
-  zsmul_ofNat _ _ := rfl
-  zsmul_negSucc _ _ := rfl
-  neg_add_cancel := by
-    intro a
-    apply AddUnits.val_inj
-    exact a.neg_add_val
-  zero_nsmul := by
-    intro a
-    apply AddUnits.val_inj
-    apply zero_nsmul
-  succ_nsmul := by
-    intro a n
-    apply AddUnits.val_inj
-    apply succ_nsmul
+def AddUnits.val_inj [AddMonoidOps α] [IsAddMonoid α] {a b: AddUnits α} : a.val = b.val ↔ a = b := AddUnits.val.inj.eq_iff
+def AddUnits.neg_inj [AddMonoidOps α] [IsAddMonoid α] {a b: AddUnits α} : a.neg = b.neg ↔ a = b := AddUnits.neg.inj.eq_iff
 
 class IsUnit {α: Type*} [One α] [Mul α] (x: α) where
   eq_unit: ∃u: Units α, u.val = x
