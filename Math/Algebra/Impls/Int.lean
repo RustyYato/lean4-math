@@ -89,9 +89,6 @@ instance [RingOps R] [IsRing R] : IsAlgebra Int R where
 instance : NoZeroDivisors Int where
   of_mul_eq_zero := Int.mul_eq_zero.mp
 
-instance : IsNontrivial Int where
-  zero_ne_one := by decide
-
 def Int.char_eq : char Int = 0 := by
   apply char_eq_of_natCast_eq_zero
   rfl

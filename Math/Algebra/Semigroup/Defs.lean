@@ -2,11 +2,7 @@ import Math.Type.Notation
 import Math.Algebra.Notation
 import Math.Algebra.AddMul
 import Math.Relation.Basic
-
-class IsNontrivial (α: Type*) [Zero α] [One α]: Prop where
-  zero_ne_one: 0 ≠ (1: α)
-
-def zero_ne_one (α: Type*) [Zero α] [One α] [IsNontrivial α]: (0: α) ≠ 1 := IsNontrivial.zero_ne_one
+import Math.Logic.Nontrivial
 
 variable [Add α] [Mul α] [Zero α] [One α]
 
@@ -168,6 +164,14 @@ def all_eq_zero_of_trivial [Mul α] [Zero α] [One α] [IsMulZeroClass α] [IsMu
 def subsingleton_of_trivial [Mul α] [Zero α] [One α] [IsMulZeroClass α] [IsMulOneClass α] (triv: (0: α) = (1: α)) : Subsingleton α where
   allEq a b := by
     rw [all_eq_zero_of_trivial triv a, all_eq_zero_of_trivial triv b]
+
+instance [IsNontrivial α] [Mul α] [Zero α] [One α] [IsMulZeroClass α] [IsMulOneClass α] : NeZero (1: α) where
+  out := by
+    intro h
+    have := Subsingleton.iff_not_nontrivial.mp (subsingleton_of_trivial h.symm)
+    contradiction
+
+def zero_ne_one (α: Type*) [IsNontrivial α] [Mul α] [Zero α] [One α] [IsMulZeroClass α] [IsMulOneClass α] : 0 ≠ (1: α) := Ne.symm (NeZero.ne (1: α))
 
 instance (priority := 100) [Add α] [IsAddSemigroup α] : @Std.Associative α (· + ·) where
   assoc := add_assoc

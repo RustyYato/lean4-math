@@ -8,7 +8,7 @@ class NoZeroDivisors (α: Type*) [Mul α] [Zero α] where
 def of_mul_eq_zero [Mul α] [Zero α] [NoZeroDivisors α]: ∀{a b: α}, a * b = 0 -> a = 0 ∨ b = 0 :=
   NoZeroDivisors.of_mul_eq_zero
 
-def of_npow_eq_zero [Zero α] [MonoidOps α] [IsMonoid α] [IsNontrivial α] [NoZeroDivisors α] (a: α) (n: ℕ) : a ^ n = 0 -> a = 0 := by
+def of_npow_eq_zero [Zero α] [MonoidOps α] [IsMonoid α] [IsNontrivial α] [IsMulZeroClass α] [NoZeroDivisors α] (a: α) (n: ℕ) : a ^ n = 0 -> a = 0 := by
   induction n with
   | zero =>
     rw [npow_zero]
