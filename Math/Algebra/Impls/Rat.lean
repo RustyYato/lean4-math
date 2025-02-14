@@ -1,4 +1,7 @@
 import Math.Algebra.Basic
+import Math.Algebra.GroupWithZero.Basic
+import Math.Algebra.Field.Defs
+import Math.Algebra.Semiring.Char
 import Math.Data.Rat.Basic
 
 local notation "⟦" f "⟧" => QuotLike.mk (Q := ℚ) f
@@ -94,6 +97,9 @@ instance : IsNontrivial ℚ where
   zero_ne_one := by
     intro h
     contradiction
+
+instance : IsAddMonoidWithOne ℚ := inferInstance
+instance : IsGroupWithZero ℚ := inferInstance
 
 def Rat.char_eq : char Rat = 0 := by
   apply char_eq_of_natCast_eq_zero

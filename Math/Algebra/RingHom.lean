@@ -1,5 +1,5 @@
 import Math.Type.Basic
-import Math.Algebra.Ring
+import Math.Algebra.Ring.Defs
 
 section
 

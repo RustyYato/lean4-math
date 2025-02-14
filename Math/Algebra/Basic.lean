@@ -1,4 +1,5 @@
 import Math.Algebra.RingHom
+import Math.Algebra.Ring
 
 section
 

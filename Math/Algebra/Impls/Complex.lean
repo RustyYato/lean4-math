@@ -8,7 +8,7 @@ instance : IsField ℂ where
   zero_ne_one := by
     intro h
     obtain ⟨h, _⟩ := Complex.mk.inj h
-    exact zero_ne_one h
+    exact zero_ne_one _ h
   add_comm _ _ := by ext <;> apply add_comm
   add_assoc _ _ _ := by ext <;> apply add_assoc
   mul_comm := by

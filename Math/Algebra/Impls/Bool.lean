@@ -1,4 +1,5 @@
-import Math.Algebra.Ring
+import Math.Algebra.Monoid.Char
+import Math.Algebra.Field.Defs
 
 instance : SemiringOps Bool where
   add := xor
@@ -31,6 +32,7 @@ instance : IsCommMagma Bool where
   mul_comm := by decide +kernel
 
 instance : IsField Bool where
+  zero_ne_one := by decide +kernel
   add_comm := by decide +kernel
   add_assoc := by decide +kernel
   zero_add := by decide +kernel
@@ -88,7 +90,7 @@ instance : IsField Bool where
     cases Nat.mod_two_eq_zero_or_one n <;> (rename_i h; rw [h]; rfl)
     decide
   mul_inv?_cancel := by decide +kernel
-  div_eq_mul_inv? := by decide +kernel
+  div?_eq_mul_inv? := by decide +kernel
   zpow?_ofNat := by
     intro n x
     cases n

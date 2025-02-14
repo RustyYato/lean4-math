@@ -1,4 +1,3 @@
-import Math.Algebra.Ring
 import Math.Algebra.Impls.Rat
 import Math.Data.Real.Div
 

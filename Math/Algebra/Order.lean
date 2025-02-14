@@ -52,7 +52,7 @@ class IsOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends IsS
 
 export IsOrderedSemiring (zero_le_one mul_le_mul_of_nonneg_left mul_le_mul_of_nonneg_right)
 
-def zero_lt_one [SemiringOps α] [IsOrderedSemiring α] [IsNontrivial α] : (0: α) < 1 := lt_of_le_of_ne zero_le_one zero_ne_one
+def zero_lt_one [SemiringOps α] [IsOrderedSemiring α] [IsNontrivial α] : (0: α) < 1 := lt_of_le_of_ne zero_le_one (zero_ne_one _)
 
 class IsOrderedRing (α: Type*) [RingOps α] [LT α] [LE α] extends IsRing α, IsOrderedSemiring α where
   mul_nonneg: ∀a b: α, 0 ≤ a -> 0 ≤ b -> 0 ≤ a * b
@@ -296,7 +296,7 @@ def inv?_pos [IsLinearOrder α] (a: α) (h: 0 < a): 0 < a⁻¹? := by
     exact lt_irrefl (lt_trans this zero_lt_one)
   · have := mul_inv?_cancel a anz
     rw [g, mul_zero] at this
-    exact zero_ne_one this
+    exact zero_ne_one _ this
 
 def div?_pos [IsLinearOrder α] (a b: α) (ha: 0 < a) (hb: 0 < b): 0 < a /? b := by
   rw [div?_eq_mul_inv?]; conv => { lhs; rw [←mul_zero a] }

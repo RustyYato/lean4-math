@@ -1,6 +1,8 @@
+import Math.Algebra.Basic
+import Math.Algebra.Group.Units
+import Math.Algebra.Semiring.Char
 import Math.Algebra.Order
 import Math.Order.Linear
-import Math.Algebra.Basic
 
 instance : One ℕ := ⟨1⟩
 
