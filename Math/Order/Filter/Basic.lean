@@ -3,6 +3,7 @@ import Math.Data.Set.Lattice
 import Math.Function.Basic
 import Math.Order.Partial
 import Math.Order.Lattice.Complete
+import Math.Order.GaloisConnection
 
 structure Filter (α: Type*) [LE α] [Inf α] extends IsLawfulInf α where
   set: Set α
@@ -179,6 +180,41 @@ def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : Filter α where
 
 def generate [Top α] [IsLawfulTop α] (g: Set α) : Filter α := generate_of_nonempty (insert ⊤ g) Set.nonempty_insert
 
+def generate_eq_generate_nonempty [Top α] [IsLawfulTop α] (s: Set α) (h: s.Nonempty) :
+  generate_of_nonempty s h = generate s := by
+  apply le_antisymm
+  · intro x hx
+    induction hx with
+    | basic =>
+      rename_i hx
+      rcases hx with hx | hx
+      subst hx
+      apply top_mem
+      apply GenerateSets.basic
+      assumption
+    | up =>
+      apply GenerateSets.up
+      assumption
+      assumption
+    | inf =>
+      apply GenerateSets.inf
+      assumption
+      assumption
+  · intro x hx
+    induction hx with
+    | basic =>
+      rename_i hx
+      apply GenerateSets.basic
+      simp [hx]
+    | up =>
+      apply GenerateSets.up
+      assumption
+      assumption
+    | inf =>
+      apply GenerateSets.inf
+      assumption
+      assumption
+
 def mem_generate_of_mem {s : Set α} {x : α} (h : x ∈ s) {h': s.Nonempty} :
   x ∈ generate_of_nonempty s h' := GenerateSets.basic h
 
@@ -201,6 +237,20 @@ def le_generate_iff {s : Set α} {f : Filter α} {ne: s.Nonempty} : f ≤ genera
     apply f.closed_inf
     assumption
     assumption
+
+def le_generate_iff' [Top α] [IsLawfulTop α] {s : Set α} {f : Filter α} : f ≤ generate s ↔ s ⊆ f.set := by
+  rw [generate, le_generate_iff]
+  apply Iff.intro
+  intro h x hx
+  apply h
+  simp [hx]
+  intro h x hx
+  simp at hx
+  cases hx
+  subst x
+  apply top_mem
+  apply h
+  assumption
 
 def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeInf α] {s : Set α} {ne: s.Nonempty} {x: α} : x ∈ generate_of_nonempty s ne ↔ ∃ t ⊆ s, Set.IsFinite t ∧ sInf t ≤ x := by
   apply Iff.intro
@@ -328,92 +378,93 @@ instance [h: Nonempty α] : Bot (Filter α) where
       apply Set.mem_univ
   }
 
-instance [Top α] [IsLawfulTop α] [InfSet α] : InfSet (Filter α) where
-  sInf fs := generate (Set.mk fun s => ∃f: fs -> α, (∀x, (f x) ∈ x.val) ∧ s = iInf f)
-
 instance [Top α] [IsLawfulTop α] : SupSet (Filter α) where
   sSup := join ∘ 𝓟
 
 instance [Top α] [IsLawfulTop α] : Inf (Filter α) where
   inf a b := generate (Set.mk fun s => ∃f₀ f₁: α, f₀ ∈ a ∧ f₁ ∈ b ∧ s = f₀ ⊓ f₁)
-instance [Top α] [IsLawfulTop α] : Sup (Filter α) where
-  sup a b := sSup {a, b}
 
-instance [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] : IsCompleteLattice (Filter α) where
-  le_top := by
-    intro x a mem; subst a
-    apply top_mem
-  bot_le := by
-    intro x a mem
-    trivial
-  le_sup_left := by
-    intro f g a mem
-    apply mem
-    simp
-  le_sup_right := by
-    intro f g a mem
-    apply mem
-    simp
-  inf_le_left := by
-    intro f g x mem
-    apply Filter.GenerateSets.basic
-    rw [Set.mem_insert]; right
-    refine ⟨x, ⊤, ?_, ?_, ?_⟩
-    assumption
-    repeat simp
-  inf_le_right := by
-    intro f g x mem
-    apply Filter.GenerateSets.basic
-    rw [Set.mem_insert]; right
-    refine ⟨⊤, x, ?_, ?_, ?_⟩
-    simp
-    assumption
-    simp
-  sup_le := by
-    intro f g k kf kg x mem
-    have := kf x mem
-    have := kg x mem
-    intro i mem
-    simp at mem; cases mem <;> subst i
-    assumption
-    assumption
-  le_inf := by
-    intro a b k ka kb x mem
-    induction mem with
-    | up =>
-      apply closed_upward
-      assumption
-      assumption
-    | inf =>
-      apply closed_inf
-      assumption
-      assumption
-    | basic h =>
-      cases Set.mem_insert.mp h <;> rename_i h
-      subst h; apply top_mem
-      obtain ⟨f₀, f₁, f₀_in_a, f₁_in_b, eq⟩ := h
-      subst eq; clear h
-      apply closed_inf
-      apply ka; assumption
-      apply kb; assumption
-  le_sSup := by
-    intro fs f hf x hx
-    apply hx
-    assumption
-  sSup_le := by
-    intro f fs ih x mem g hg
-    apply ih
-    assumption
-    assumption
-  sInf_le := by
-    intro fs f hf x hx
+protected def mkOfClosure [Top α] [IsLawfulTop α] (s : Set α) (hs : (generate s).set = s) : Filter α where
+  set := s
+  nonempty := hs ▸ nonempty _
+  closed_inf := hs ▸ closed_inf _
+  closed_upward := hs ▸ closed_upward _
+
+def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] :
+  GaloisInsertion (α := Set α) (β := Opposite (Filter α)) Filter.generate Filter.set where
+  choice s hs := Filter.mkOfClosure s (le_antisymm hs <| le_generate_iff.1 <| by
+    rw [generate_eq_generate_nonempty])
+  choice_eq s _ := by
+    dsimp
+    apply ext
+    intro x
+    unfold Filter.mkOfClosure
+    rw [mem_set]
+    dsimp
+    apply Iff.intro
+    intro hx
     apply GenerateSets.basic
-    simp; right
-    refine ⟨?_, ?_, ?_⟩
-    sorry
-    sorry
-    sorry
-  le_sInf := sorry
+    simp [hx]
+    revert x
+    assumption
+    intro s hs
+    exists ⊤
+    apply hs
+    apply top_mem
+  gc _ _ := le_generate_iff'
+  le_l_u _ _ h := GenerateSets.basic (Set.mem_insert.mpr (.inr h))
 
+instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] : CompleteLattice (Filter α) := {
+    (giGenerate (α := α)).liftCompleteLattice.opposite with
+    top := ⊤
+    inf := (· ⊓ ·)
+    sSup := join ∘ 𝓟
+    inf_le_left := by
+      intro f g x mem
+      apply Filter.GenerateSets.basic
+      rw [Set.mem_insert]; right
+      refine ⟨x, ⊤, ?_, ?_, ?_⟩
+      assumption
+      repeat simp
+    inf_le_right := by
+      intro f g x mem
+      apply Filter.GenerateSets.basic
+      rw [Set.mem_insert]; right
+      refine ⟨⊤, x, ?_, ?_, ?_⟩
+      simp
+      assumption
+      simp
+    le_inf := by
+      intro a b k ka kb x mem
+      induction mem with
+      | up =>
+        apply closed_upward
+        assumption
+        assumption
+      | inf =>
+        apply closed_inf
+        assumption
+        assumption
+      | basic h =>
+        cases Set.mem_insert.mp h <;> rename_i h
+        subst h; apply top_mem
+        obtain ⟨f₀, f₁, f₀_in_a, f₁_in_b, eq⟩ := h
+        subst eq; clear h
+        apply closed_inf
+        apply ka; assumption
+        apply kb; assumption
+    le_sSup := by
+      intro fs f hf x hx
+      apply hx
+      assumption
+    sSup_le := by
+      intro f fs ih x mem g hg
+      apply ih
+      assumption
+      assumption
+    le_top := by
+      intro x a mem; subst a
+      apply top_mem
+  }
 
 end Filter

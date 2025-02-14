@@ -261,6 +261,41 @@ abbrev GaloisCoinsertion.dual (gi: GaloisCoinsertion l u) : GaloisInsertion
   le_l_u := gi.u_l_le
   choice_eq := gi.choice_eq
 
+def GaloisInsertion.isLUB_of_u_image (gi : GaloisInsertion l u) {s : Set β} {a : α}
+    (hs : (s.image u).IsLUB a) : s.IsLUB (l a) := by
+  apply And.intro
+  intro x hx
+  apply le_trans (gi.le_l_u x)
+  apply gi.gc.monotone_l
+  apply hs.left
+  apply Set.mem_image'
+  assumption
+  intro x hx
+  apply gi.gc.l_le
+  apply hs.right
+  intro _ ⟨y, hy, eq⟩ ; subst eq
+  apply gi.gc.monotone_u
+  apply hx
+  assumption
+
+def GaloisInsertion.isGLB_of_u_image (gi : GaloisInsertion l u) {s : Set β} {a : α}
+    (hs : (s.image u).IsGLB a) : s.IsGLB (l a) := by
+  apply And.intro
+  intro x hx
+  apply gi.gc.l_le
+  apply hs.left
+  apply Set.mem_image'
+  assumption
+  intro b hb
+  apply le_trans
+  apply gi.le_l_u
+  apply gi.gc.monotone_l
+  apply hs.right
+  intro _ ⟨c, hc, eq⟩; subst eq
+  apply gi.gc.monotone_u
+  apply hb
+  assumption
+
 abbrev GaloisInsertion.monotoneIntro (hu : Monotone u) (hl : Monotone l) (hul : ∀ a, a ≤ u (l a)) (hlu : ∀ b, l (u b) = b) : GaloisInsertion l u where
   gc := .monotoneIntro hu hl hul (fun x => le_of_eq (hlu x))
   le_l_u := fun x => by rw [hlu]
@@ -391,12 +426,25 @@ abbrev GaloisInsertion.liftCompleteLattice
   [IsPartialOrder β] (gi : GaloisInsertion l u) : CompleteLattice β :=
   { gi.instLawfulTop, gi.gc.instLawfulBot, gi.instLattice with
     sSup := fun s => l (sSup (s.image u))
-    sSup_le := fun s => sorry -- (gi.isLUB_of_u_image (isLUB_sSup _)).2
-    le_sSup := fun s => sorry -- (gi.isLUB_of_u_image (isLUB_sSup _)).1
-    sInf := fun s =>
-      gi.choice (sInf (s.image u)) <| (isGLB_sInf _).2 <|
-          gi.gc.monotone_u.mem_lowerBounds_image (gi.isGLB_of_u_image <| isGLB_sInf _).1
-    sInf_le := fun s => by dsimp; rw [gi.choice_eq]; exact (gi.isGLB_of_u_image (isGLB_sInf _)).1
-    le_sInf := fun s => by dsimp; rw [gi.choice_eq]; exact (gi.isGLB_of_u_image (isGLB_sInf _)).2 }
+    sSup_le := fun s _ => by apply (gi.isLUB_of_u_image (isLUB_sSup _)).2
+    le_sSup := fun s => by
+      apply (gi.isLUB_of_u_image (isLUB_sSup _)).1
+      assumption
+    sInf s :=  by
+      apply gi.choice (sInf (s.image u))
+      apply (isGLB_sInf _).right
+      apply gi.gc.monotone_u.mem_lowerBounds_image
+      intro b hb
+      apply gi.gc.l_le
+      apply (isGLB_sInf _).left
+      apply Set.mem_image'
+      assumption
+    sInf_le s := by
+      dsimp; rw [gi.choice_eq]
+      apply (gi.isGLB_of_u_image (isGLB_sInf _)).left
+      assumption
+    le_sInf s _ := by
+      dsimp; rw [gi.choice_eq]
+      apply (gi.isGLB_of_u_image (isGLB_sInf _)).right }
 
 end GaloisInsertion

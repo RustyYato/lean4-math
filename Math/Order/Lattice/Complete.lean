@@ -1,5 +1,5 @@
 import Math.Order.Lattice.ConditionallyComplete
-import Math.Data.Set.Basic
+import Math.Data.Set.Order.Bounds
 import Math.Data.Set.TopBot
 
 section
@@ -263,6 +263,20 @@ def sSup_eq_bot : sSup s = ⊥ ↔ ∀x ∈ s, x = ⊥ := by
 def sInf_eq_top : sInf s = ⊤ ↔ ∀x ∈ s, x = ⊤ :=
   sSup_eq_bot (α₀ := Opposite α₀)
 
+def isLUB_sSup (s: Set α₀) : s.IsLUB (sSup s) := by
+  apply And.intro
+  intro x hx
+  apply le_sSup
+  assumption
+  intro x hx
+  apply sSup_le
+  intro y hy
+  apply hx
+  assumption
+
+def isGLB_sInf (s: Set α₀) : s.IsGLB (sInf s) :=
+  isLUB_sSup (α₀ := α₀ᵒᵖ) s
+
 end
 
 namespace OrderEmbedding
@@ -464,3 +478,15 @@ instance {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α]
 
 instance {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithBot α) :=
   WithBot.orderIsoWithTop.instIsCompleteSemiLatticeSup fun _ => rfl
+
+instance Opposite.instCompleteLatticeSup {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (Opposite α) where
+  sSup_le := le_sInf (α := α)
+instance Opposite.instCompleteLatticeInf {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf (Opposite α) where
+  le_sInf := sSup_le (α := α)
+instance Opposite.instCompleteLattice {α} [LE α] [LT α] [SupSet α] [Sup α] [InfSet α] [Inf α] [Top α] [Bot α] [inst: IsCompleteLattice α] : IsCompleteLattice (Opposite α) := {
+    Opposite.instCompleteLatticeSup, Opposite.instCompleteLatticeInf with
+}
+
+def CompleteSemiLatticeSup.opposite (c: CompleteSemiLatticeSup α) : CompleteSemiLatticeInf αᵒᵖ := inferInstance
+def CompleteSemiLatticeInf.opposite (c: CompleteSemiLatticeInf α) : CompleteSemiLatticeSup αᵒᵖ := inferInstance
+def CompleteLattice.opposite (c: CompleteLattice α) : CompleteLattice αᵒᵖ := inferInstance

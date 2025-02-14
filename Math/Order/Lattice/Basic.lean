@@ -390,3 +390,13 @@ instance [LE α] [LT α] [Inf α] [IsLattice α] : IsLattice (WithBot α) where
   inf_le_left := inf_le_left
   inf_le_right := inf_le_right
   le_inf := le_inf
+
+instance Opposite.instLatticeSup {α} [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeSup αᵒᵖ where
+  sup_le := le_inf (α := α)
+instance Opposite.instLatticeInf {α} [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
+  le_inf := sup_le (α := α)
+instance Opposite.instLattice {α} [LE α] [LT α] [Sup α] [Inf α] [IsLattice α] : IsLattice (Opposite α) := inferInstance
+
+def SemiLatticeSup.opposite (c: SemiLatticeSup α) : SemiLatticeInf αᵒᵖ := inferInstance
+def SemiLatticeInf.opposite (c: SemiLatticeInf α) : SemiLatticeSup αᵒᵖ := inferInstance
+def Lattice.opposite (c: Lattice α) : Lattice αᵒᵖ := inferInstance

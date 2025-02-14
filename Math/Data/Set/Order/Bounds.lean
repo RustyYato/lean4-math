@@ -193,4 +193,10 @@ def map_bounded_above (m: Monotone f) (b: Set.BoundedAbove s) : Set.BoundedAbove
   apply h
   assumption
 
+def mem_lowerBounds_image (m: Monotone f) (Ha : a ∈ s.lowerBounds) : f a ∈ (s.image f).lowerBounds := by
+  intro _ ⟨b, hb, eq⟩; subst eq
+  apply m
+  apply Ha
+  assumption
+
 end Monotone
