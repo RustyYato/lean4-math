@@ -5,70 +5,74 @@ import Math.Order.Partial
 import Math.Order.Lattice.Complete
 import Math.Order.GaloisConnection
 
-structure Filter (α: Type*) [LE α] [Inf α] extends IsLawfulInf α where
+-- a general filter on an arbitrary order
+structure FilterBase (α: Type*) [LE α] [Inf α] extends IsLawfulInf α where
   set: Set α
   nonempty: set.Nonempty
   closed_upward: ∀{x y}, x ∈ set -> x ≤ y -> y ∈ set
   closed_inf: ∀{x y}, x ∈ set -> y ∈ set -> x ⊓ y ∈ set
 
-namespace Filter
+-- a filter over sets using their usual ordering
+abbrev Filter (α: Type*) := FilterBase (Set α)
+
+namespace FilterBase
 
 variable {α : Type*} [LE α] [Inf α]
 
-instance : Membership α (Filter α) :=
+instance : Membership α (FilterBase α) :=
   ⟨fun F U => U ∈ F.set⟩
 
-instance : LE (Filter α) where
+instance : LE (FilterBase α) where
   le a b := ∀x ∈ b, x ∈ a
 
-instance : LT (Filter α) where
+instance : LT (FilterBase α) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-instance : IsLawfulLT (Filter α) where
+instance : IsLawfulLT (FilterBase α) where
   lt_iff_le_and_not_le := Iff.rfl
 
-def top_mem' (top: α) (h: ∀x, x ≤ top) (f: Filter α): top ∈ f := by
+def top_mem' (top: α) (h: ∀x, x ≤ top) (f: FilterBase α): top ∈ f := by
   have ⟨x, mem⟩ := f.nonempty
-  apply Filter.closed_upward
+  apply FilterBase.closed_upward
   assumption
   apply h
 
 @[simp]
-def top_mem [Top α] [IsLawfulTop α] (f: Filter α): ⊤ ∈ f := by
+def top_mem [Top α] [IsLawfulTop α] (f: FilterBase α): ⊤ ∈ f := by
   apply top_mem'
   apply le_top
 
-instance [Top α] [IsLawfulTop α] (f: Filter α) : Inhabited f.set where
+instance [Top α] [IsLawfulTop α] (f: FilterBase α) : Inhabited f.set where
   default := ⟨⊤, top_mem f⟩
 
-def set_inj : Function.Injective (Filter.set (α := α)) := by
+def set_inj : Function.Injective (FilterBase.set (α := α)) := by
   intro x y h
   cases x; cases y
   congr
 
-def mem_set {f: Filter α} : ∀x, x ∈ f ↔ x ∈ f.set := by
+def mem_set {f: FilterBase α} : ∀x, x ∈ f ↔ x ∈ f.set := by
   intro x
   rfl
 
 @[ext]
-def ext {f g: Filter α} : (∀x, x ∈ f ↔ x ∈ g) -> f = g := by
+def ext {f g: FilterBase α} : (∀x, x ∈ f ↔ x ∈ g) -> f = g := by
   intro h
   apply set_inj
   ext
   apply h
 
-protected def copy (f : Filter α) (S : Set α) (hmem : ∀ s, s ∈ S ↔ s ∈ f) : Filter α := by
+protected def copy (f : FilterBase α) (S : Set α) (hmem : ∀ s, s ∈ S ↔ s ∈ f) : FilterBase α := by
   have : S = f.set := Set.ext _ _ hmem
-  apply Filter.mk f.toIsLawfulInf S
+  apply FilterBase.mk f.toIsLawfulInf S
   rw [this]; exact f.nonempty
   rw [this]; exact f.closed_upward
   rw [this]; exact f.closed_inf
 
-def copy_eq {f: Filter α} {S} (hmem : ∀ s, s ∈ S ↔ s ∈ f) : f.copy S hmem = f := Filter.ext hmem
-@[simp] def mem_copy {f: Filter α} {S hmem} : s ∈ f.copy S hmem ↔ s ∈ S := Iff.rfl
+def copy_eq {f: FilterBase α} {S} (hmem : ∀ s, s ∈ S ↔ s ∈ f) : f.copy S hmem = f := FilterBase.ext hmem
+@[simp] def mem_copy {f: FilterBase α} {S hmem} : s ∈ f.copy S hmem ↔ s ∈ S := Iff.rfl
 
 @[simp]
-def closed_inf_iff [IsLawfulInf α] {f: Filter α} {s t : α} : s ⊓ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
+def closed_inf_iff [IsLawfulInf α] {f: FilterBase α} {s t : α} : s ⊓ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
   apply Iff.intro
   intro h
   apply And.intro
@@ -82,7 +86,7 @@ def closed_inf_iff [IsLawfulInf α] {f: Filter α} {s t : α} : s ⊓ t ∈ f �
   apply closed_inf <;> assumption
 
 def closed_finite_sInf [LT α] [InfSet α] [IsCompleteSemiLatticeInf α]
-  (s: Set α) [s.IsFinite] (f: Filter α): sInf s ∈ f ↔ s ⊆ f.set := by
+  (s: Set α) [s.IsFinite] (f: FilterBase α): sInf s ∈ f ↔ s ⊆ f.set := by
   induction s using Set.IsFinite.induction with
   | nil =>
     apply Iff.intro
@@ -109,16 +113,16 @@ def closed_finite_sInf [LT α] [InfSet α] [IsCompleteSemiLatticeInf α]
     intro x
     exact .inr
 
-def exists_mem_le_iff [LT α] [IsPreOrder α] {f: Filter α} : (∃ t ∈ f, t ≤ s) ↔ s ∈ f :=
+def exists_mem_le_iff [LT α] [IsPreOrder α] {f: FilterBase α} : (∃ t ∈ f, t ≤ s) ↔ s ∈ f :=
   ⟨fun ⟨_, ht, ts⟩ => closed_upward _ ht ts, fun hs => ⟨s, hs, le_refl _⟩⟩
 
 variable {α : Type u} {β : Type v} {γ : Type w} {δ : Type*} {ι : Sort x}
-variable {α: Type*} [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] {f g: Filter α} {s t: α}
+variable {α: Type*} [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] {f g: FilterBase α} {s t: α}
 
 section Principal
 
 /-- The principal filter of `s` is the collection of all supersets of `s`. -/
-def principal (s : α) : Filter α where
+def principal (s : α) : FilterBase α where
   set := .mk fun x => s ≤ x
   nonempty := ⟨s, le_refl _⟩
   closed_upward := le_trans
@@ -128,7 +132,7 @@ def principal (s : α) : Filter α where
     intros
     apply And.intro <;> assumption
 
-scoped notation "𝓟" => Filter.principal
+scoped notation "𝓟" => FilterBase.principal
 
 @[simp] theorem mem_principal {s t : α} : s ∈ 𝓟 t ↔ t ≤ s := Iff.rfl
 
@@ -138,12 +142,12 @@ end Principal
 
 namespace Order
 
-def orderEmbSetOp : Filter α ↪o (Set α)ᵒᵖ where
+def orderEmbSetOp : FilterBase α ↪o (Set α)ᵒᵖ where
   toFun f := f.set
-  inj := Filter.set_inj
+  inj := FilterBase.set_inj
   resp_rel := Iff.rfl
 
-instance : IsPartialOrder (Filter α) :=
+instance : IsPartialOrder (FilterBase α) :=
   orderEmbSetOp.inducedIsPartialOrder'
 
 def le_def : (f ≤ g) = ∀x ∈ g, x ∈ f := rfl
@@ -160,7 +164,7 @@ inductive GenerateSets (g : Set α) : α → Prop
   | up {s t : α} : GenerateSets g s → s ≤ t → GenerateSets g t
   | inf {s t : α} : GenerateSets g s → GenerateSets g t → GenerateSets g (s ⊓ t)
 
-def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : Filter α where
+def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : FilterBase α where
   set := Set.mk (GenerateSets g)
   nonempty := by
     obtain ⟨x, ne⟩ := ne
@@ -178,7 +182,7 @@ def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : Filter α where
     assumption
     assumption
 
-def generate [Top α] [IsLawfulTop α] (g: Set α) : Filter α := generate_of_nonempty (insert ⊤ g) Set.nonempty_insert
+def generate [Top α] [IsLawfulTop α] (g: Set α) : FilterBase α := generate_of_nonempty (insert ⊤ g) Set.nonempty_insert
 
 def generate_eq_generate_nonempty [Top α] [IsLawfulTop α] (s: Set α) (h: s.Nonempty) :
   generate_of_nonempty s h = generate s := by
@@ -218,7 +222,7 @@ def generate_eq_generate_nonempty [Top α] [IsLawfulTop α] (s: Set α) (h: s.No
 def mem_generate_of_mem {s : Set α} {x : α} (h : x ∈ s) {h': s.Nonempty} :
   x ∈ generate_of_nonempty s h' := GenerateSets.basic h
 
-def le_generate_iff {s : Set α} {f : Filter α} {ne: s.Nonempty} : f ≤ generate_of_nonempty s ne ↔ s ⊆ f.set := by
+def le_generate_iff {s : Set α} {f : FilterBase α} {ne: s.Nonempty} : f ≤ generate_of_nonempty s ne ↔ s ⊆ f.set := by
   apply Iff.intro
   intro h x mem
   apply h
@@ -238,7 +242,7 @@ def le_generate_iff {s : Set α} {f : Filter α} {ne: s.Nonempty} : f ≤ genera
     assumption
     assumption
 
-def le_generate_iff' [Top α] [IsLawfulTop α] {s : Set α} {f : Filter α} : f ≤ generate s ↔ s ⊆ f.set := by
+def le_generate_iff' [Top α] [IsLawfulTop α] {s : Set α} {f : FilterBase α} : f ≤ generate s ↔ s ⊆ f.set := by
   rw [generate, le_generate_iff]
   apply Iff.intro
   intro h x hx
@@ -310,14 +314,14 @@ def generate_singleton (a: Set α) : generate_of_nonempty {a} (Set.nonempty_sing
 
 end Generate
 
-def join [Top α] [IsLawfulTop α] (fs : Filter (Set (Filter α))) : Filter α where
-  set := Set.mk fun s => (Set.mk fun t : Filter α => s ∈ t) ∈ fs
+def join [Top α] [IsLawfulTop α] (fs : FilterBase (Set (FilterBase α))) : FilterBase α where
+  set := Set.mk fun s => (Set.mk fun t : FilterBase α => s ∈ t) ∈ fs
   nonempty := by
     obtain ⟨x, x_in_fs⟩ := fs.nonempty
     replace x_in_fs: x ∈ fs := x_in_fs
     refine ⟨⊤, ?_⟩
     rw [Set.mk_mem]
-    have : (Set.mk fun t: Filter α => ⊤ ∈ t) = ⊤ := by
+    have : (Set.mk fun t: FilterBase α => ⊤ ∈ t) = ⊤ := by
       apply Set.ext_univ
       intro f
       apply top_mem
@@ -337,7 +341,7 @@ def join [Top α] [IsLawfulTop α] (fs : Filter (Set (Filter α))) : Filter α w
   closed_inf := by
     simp [Set.mk_mem]
     intro x y hx hy
-    suffices ({ Mem := fun t => x ∈ t ∧ y ∈ t }: Set (Filter _)) = { Mem := fun t => x ∈ t } ∩ { Mem := fun t => y ∈ t } by
+    suffices ({ Mem := fun t => x ∈ t ∧ y ∈ t }: Set (FilterBase _)) = { Mem := fun t => x ∈ t } ∩ { Mem := fun t => y ∈ t } by
       rw [this]
       apply closed_inf
       assumption
@@ -346,10 +350,10 @@ def join [Top α] [IsLawfulTop α] (fs : Filter (Set (Filter α))) : Filter α w
     simp [Set.mem_inter]
 
 @[simp]
-def mem_join [Top α] [IsLawfulTop α] {s : α} {f : Filter (Set (Filter α))} : s ∈ join f ↔ (Set.mk fun t => s ∈ t) ∈ f :=
+def mem_join [Top α] [IsLawfulTop α] {s : α} {f : FilterBase (Set (FilterBase α))} : s ∈ join f ↔ (Set.mk fun t => s ∈ t) ∈ f :=
   Iff.rfl
 
-instance [Top α] [IsLawfulTop α] : Top (Filter α) where
+instance [Top α] [IsLawfulTop α] : Top (FilterBase α) where
   top := {
     set := {⊤}
     nonempty := ⟨⊤, Set.mem_singleton.mp rfl⟩
@@ -364,7 +368,7 @@ instance [Top α] [IsLawfulTop α] : Top (Filter α) where
       simp
   }
 
-instance [h: Nonempty α] : Bot (Filter α) where
+instance [h: Nonempty α] : Bot (FilterBase α) where
   bot := {
     set := ⊤
     nonempty :=
@@ -378,27 +382,27 @@ instance [h: Nonempty α] : Bot (Filter α) where
       apply Set.mem_univ
   }
 
-instance [Top α] [IsLawfulTop α] : SupSet (Filter α) where
+instance [Top α] [IsLawfulTop α] : SupSet (FilterBase α) where
   sSup := join ∘ 𝓟
 
-instance [Top α] [IsLawfulTop α] : Inf (Filter α) where
+instance [Top α] [IsLawfulTop α] : Inf (FilterBase α) where
   inf a b := generate (Set.mk fun s => ∃f₀ f₁: α, f₀ ∈ a ∧ f₁ ∈ b ∧ s = f₀ ⊓ f₁)
 
-protected def mkOfClosure [Top α] [IsLawfulTop α] (s : Set α) (hs : (generate s).set = s) : Filter α where
+protected def mkOfClosure [Top α] [IsLawfulTop α] (s : Set α) (hs : (generate s).set = s) : FilterBase α where
   set := s
   nonempty := hs ▸ nonempty _
   closed_inf := hs ▸ closed_inf _
   closed_upward := hs ▸ closed_upward _
 
 def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] :
-  GaloisInsertion (α := Set α) (β := Opposite (Filter α)) Filter.generate Filter.set where
-  choice s hs := Filter.mkOfClosure s (le_antisymm hs <| le_generate_iff.1 <| by
+  GaloisInsertion (α := Set α) (β := Opposite (FilterBase α)) FilterBase.generate FilterBase.set where
+  choice s hs := FilterBase.mkOfClosure s (le_antisymm hs <| le_generate_iff.1 <| by
     rw [generate_eq_generate_nonempty])
   choice_eq s _ := by
     dsimp
     apply ext
     intro x
-    unfold Filter.mkOfClosure
+    unfold FilterBase.mkOfClosure
     rw [mem_set]
     dsimp
     apply Iff.intro
@@ -414,21 +418,21 @@ def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf �
   gc _ _ := le_generate_iff'
   le_l_u _ _ h := GenerateSets.basic (Set.mem_insert.mpr (.inr h))
 
-instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] : CompleteLattice (Filter α) := {
+instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] : CompleteLattice (FilterBase α) := {
     (giGenerate (α := α)).liftCompleteLattice.opposite with
     top := ⊤
     inf := (· ⊓ ·)
     sSup := join ∘ 𝓟
     inf_le_left := by
       intro f g x mem
-      apply Filter.GenerateSets.basic
+      apply FilterBase.GenerateSets.basic
       rw [Set.mem_insert]; right
       refine ⟨x, ⊤, ?_, ?_, ?_⟩
       assumption
       repeat simp
     inf_le_right := by
       intro f g x mem
-      apply Filter.GenerateSets.basic
+      apply FilterBase.GenerateSets.basic
       rw [Set.mem_insert]; right
       refine ⟨⊤, x, ?_, ?_, ?_⟩
       simp
@@ -467,4 +471,7 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
       apply top_mem
   }
 
-end Filter
+-- a shortcut instance
+instance (priority := 5000) : IsCompleteLattice (Filter α) := inferInstance
+
+end FilterBase
