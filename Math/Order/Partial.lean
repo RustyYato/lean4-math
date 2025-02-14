@@ -27,6 +27,7 @@ def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
   cases lt_or_eq_of_le h
   assumption
   contradiction
+def le_iff_lt_or_eq: a ≤ b ↔ a < b ∨ a = b := Iff.intro lt_or_eq_of_le le_of_lt_or_eq
 
 instance : @Relation.IsAntisymm α (· ≤ ·) where
   antisymm := le_antisymm

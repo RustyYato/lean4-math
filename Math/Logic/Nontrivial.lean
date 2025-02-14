@@ -1,4 +1,5 @@
 import Math.Type.Notation
+import Math.Data.Opposite
 
 class IsNontrivial (α: Type*): Prop where
   exists_ne: ∃a b: α, a ≠ b
@@ -51,3 +52,13 @@ instance : IsNontrivial Bool where
 
 instance : IsNontrivial Prop where
   exists_ne := ⟨False, True, by decide⟩
+
+instance [h: IsNontrivial α] : IsNontrivial αᵒᵖ where
+  exists_ne := h.exists_ne
+
+def exists_ne [h: IsNontrivial α] (a: α) : ∃b, b ≠ a := by
+  obtain ⟨x, y, h⟩ := h
+  by_cases g:y = a
+  subst a
+  exists x
+  exists y
