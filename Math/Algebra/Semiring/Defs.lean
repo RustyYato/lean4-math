@@ -1,4 +1,4 @@
-import Math.Algebra.MonoidWithOne.Defs
+import Math.Algebra.AddMonoidWithOne.Defs
 
 class IsLeftDistrib (α: Type*) [Add α] [Mul α]: Prop where
   left_distrib (k a b: α): k * (a + b) = k * a + k * b

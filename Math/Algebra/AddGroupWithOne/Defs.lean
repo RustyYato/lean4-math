@@ -1,4 +1,4 @@
-import Math.Algebra.MonoidWithOne.Defs
+import Math.Algebra.AddMonoidWithOne.Defs
 import Math.Algebra.Group.Defs
 
 def intCastRec [NatCast α] [Neg α] : ℤ -> α

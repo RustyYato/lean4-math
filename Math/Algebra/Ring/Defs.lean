@@ -1,5 +1,5 @@
 import Math.Algebra.Semiring.Defs
-import Math.Algebra.GroupWithOne.Defs
+import Math.Algebra.AddGroupWithOne.Defs
 
 class RingOps (α: Type*) extends SemiringOps α, AddGroupWithOneOps α where
 instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where
