@@ -1,4 +1,5 @@
 import Math.Algebra.LinearMap
+import Math.Algebra.Field.Defs
 
 structure VectorSpace (R A: Type*) where
   [smul: SMul R A]

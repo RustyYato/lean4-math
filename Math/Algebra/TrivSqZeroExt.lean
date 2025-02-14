@@ -195,7 +195,6 @@ def mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsAddCommMagma M] [IsModule R M] [h: IsModule Rᵐᵒᵖ M]
   (x: TrivSqZeroExt R M) (r: R) : inl r  * x = r • x := by
   ext <;> simp
-  rfl
   simp [smul_zero, add_zero]
 
 instance instMulOneClass [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M]
@@ -301,7 +300,9 @@ instance monoid : IsMonoid (TrivSqZeroExt R M) where
     mul_assoc a b c := by
       ext <;> simp
       rw [mul_assoc]
-      simp [mul_smul, smul_add, add_assoc, smul_comm]
+      simp [mul_smul, smul_add, add_assoc]
+      congr 1
+      rw [smul_comm]
 
 @[simp]
 def fst_npow (x: TrivSqZeroExt R M) (n: ℕ) : fst (x ^ n) = x.fst ^ n := fst_npow' x n
@@ -318,10 +319,10 @@ instance [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddC
     zero_mul a := by ext <;> simp [zero_mul, zero_smul, smul_zero, add_zero]
     mul_zero a := by ext <;> simp [mul_zero, zero_smul, smul_zero, add_zero]
     left_distrib k a b := by
-      ext <;> simp [left_distrib, smul_add, add_smul]
+      ext <;> simp [mul_add, smul_add, add_smul]
       ac_rfl
     right_distrib a b k := by
-      ext <;> simp [right_distrib, smul_add, add_smul]
+      ext <;> simp [add_mul, smul_add, add_smul]
       ac_rfl
   }
 

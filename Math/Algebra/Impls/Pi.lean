@@ -145,12 +145,12 @@ instance [∀i, AddGroupWithOneOps (β i)] [∀i, IsAddGroupWithOne (β i)] : Is
 instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsLeftDistrib (β i)] : IsLeftDistrib (∀i, β i) where
   left_distrib := by
     intro k a b; ext i
-    apply left_distrib
+    apply mul_add
 
 instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsRightDistrib (β i)] : IsRightDistrib (∀i, β i) where
   right_distrib := by
     intro k a b; ext i
-    apply right_distrib
+    apply add_mul
 
 instance [∀i, SemiringOps (β i)] [∀i, IsSemiring (β i)] : IsSemiring (∀i, β i) := inferInstance
 instance [∀i, RingOps (β i)] [∀i, IsRing (β i)] : IsRing (∀i, β i) := inferInstance

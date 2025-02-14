@@ -1,8 +1,8 @@
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Monoid.Action.Defs
 
-class IsModule (R M: Type*) [SemiringOps R] [AddMonoidOps M] [SMul R M]
-  [IsAddCommMagma M] [IsAddMonoid M] [IsSemiring R] extends IsDistribMulAction R M: Prop where
+class IsModule (R M: Type*) [SemiringOps R] [AddMonoidOps M] [SMul R M] [IsSemiring R]
+  [IsAddCommMagma M] [IsAddMonoid M] extends IsDistribMulAction R M: Prop where
   add_smul: ∀r s: R, ∀x: M, (r + s) • x = r • x + s • x
   zero_smul: ∀x: M, (0: R) • x = 0
 

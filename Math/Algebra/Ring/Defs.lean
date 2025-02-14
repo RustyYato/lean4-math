@@ -93,5 +93,5 @@ instance
 
 instance [RingOps α] [IsRing α] : IsNonAssocRing α := inferInstance
 
-instance [RingOps α] [h: IsNonAssocRing α] [g: IsMonoid α] :
+instance (priority := 100) [RingOps α] [h: IsNonAssocRing α] [g: IsMonoid α] :
   IsRing α := inferInstance

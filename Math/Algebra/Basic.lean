@@ -30,6 +30,9 @@ variable {R A: Type*} [SemiringOps R] [SemiringOps A]
 
 variable [IsCommMagma R] [IsSemiring R] [IsSemiring A] [SMul R A]
 
+-- a shortcut instance
+local instance : IsSemigroup A := inferInstance
+
 abbrev Algebra.ofModule [IsModule R A]
   (h₁ : ∀ (r : R) (x y : A), r • x * y = r • (x * y))
   (h₂ : ∀ (r : R) (x y : A), x * r • y = r • (x * y)) : Algebra R A where

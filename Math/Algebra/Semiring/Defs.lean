@@ -92,4 +92,4 @@ instance [SemiringOps α] [IsSemiring α] : IsNonAssocSemiring α where
   natCast_succ := natCast_succ
   ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
-instance [SemiringOps α] [IsNonAssocSemiring α] [IsMonoid α] : IsSemiring α := inferInstance
+instance (priority := 100) [SemiringOps α] [IsNonAssocSemiring α] [IsMonoid α] : IsSemiring α := inferInstance

@@ -1,4 +1,5 @@
 import Math.Algebra.RingHom
+import Math.Algebra.Module.Defs
 
 variable [SMul R A] [SMul R B] [SMul R C]
 

@@ -139,14 +139,14 @@ instance [AddGroupWithOneOps α] [AddGroupWithOneOps β] [IsAddGroupWithOne α] 
 instance [Add α] [Add β] [Mul α] [Mul β] [IsLeftDistrib α] [IsLeftDistrib β] : IsLeftDistrib (α × β) where
   left_distrib := by
     intro k a b; ext <;>
-    apply left_distrib
+    apply mul_add
 
 instance [Add α] [Add β] [Mul α] [Mul β] [IsRightDistrib α] [IsRightDistrib β] : IsRightDistrib (α × β) where
   right_distrib := by
     intro k a b; ext <;>
-    apply right_distrib
+    apply add_mul
 
-instance [SemiringOps α] [SemiringOps β] [IsSemiring α] [IsSemiring β] : IsSemiring (α × β) := inferInstance
+instance [SemiringOps α] [SemiringOps β] [h: IsSemiring α] [g: IsSemiring β] : IsSemiring (α × β) := inferInstance
 instance [RingOps α] [RingOps β] [IsRing α] [IsRing β] : IsRing (α × β) := inferInstance
 
 instance [MonoidOps R] [SMul R α] [SMul R β] [IsMonoid R] [IsMulAction R α] [IsMulAction R β] : IsMulAction R (α × β) where
