@@ -1085,4 +1085,28 @@ def InjectiveOn_univ_iff_Injective :
   intro h x y _ _
   apply h
 
+def SurjectiveOn (f: α -> β) (s: Set α) (t: Set β) : Prop :=
+  ∀{y: β}, y ∈ t -> ∃x ∈ s, f x = y
+
+open Classical in
+noncomputable def invFun_on {α : Type u} {β} [Nonempty α] (s: Set α) (f : α → β) : β → α :=
+  fun y => Classical.epsilon (fun x => x ∈ s ∧ f x = y)
+
+def invFun_eq_on {s: Set α} {f: α -> β} (h : ∃a ∈ s, f a = b) :
+  have := nonempty_of_exists h
+  f (invFun_on s f b) = b := by
+  simp only [invFun_on, dif_pos h, Classical.epsilon_spec h]
+
+def invFun_eq'_on {x: α} (hf: InjectiveOn f s) (h: x ∈ s):
+    have : Nonempty α := ⟨x⟩
+   invFun_on s f (f x) = x := by
+  dsimp
+  unfold invFun_on
+  have : ∃x₀, x₀ ∈ s ∧ f x₀ = f x := ⟨x, h, rfl⟩
+  have ⟨mem, eq⟩ := Classical.epsilon_spec this
+  apply hf
+  assumption
+  assumption
+  assumption
+
 end Function

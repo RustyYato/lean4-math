@@ -58,4 +58,21 @@ def emod_two_eq_zero_or_one (n : Int) : n % 2 = 0 ∨ n % 2 = 1 :=
   | (k + 2 : Nat), h₁, _ => by omega
   | -[a+1], _, h₁ => by cases h₁
 
+def of_toNat_eq_zero (a: Int) : a.toNat = 0 -> a ≤ 0 := by
+  intro h
+  cases a with
+  | ofNat a =>
+    cases a
+    apply Int.le_refl
+    contradiction
+  | negSucc a =>
+    exact negSucc_le_zero a
+
+def pos_of_sign_pos (a: Int) : 0 < a.sign -> 0 < a := by
+  intro
+  cases a using Int.cases
+  contradiction
+  exact ofNat_succ_pos _
+  contradiction
+
 end Int

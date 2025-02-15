@@ -632,7 +632,7 @@ def Rat.approx_sqrt_aux (n x: ℚ) : Nat -> ℚ
   else
     Rat.approx_sqrt_aux n ((x + n /? x) /? (2: ℚ)) m
 
-def Rat.approx_sqrt (a: ℚ) : Nat -> ℚ := a.approx_sqrt_aux a
+def Rat.approx_sqrt (a: ℚ) : Nat -> ℚ := a.approx_sqrt_aux 1
 
 @[simp]
 def Rat.neg_neg (a: ℚ) : - -a = a := by

@@ -44,6 +44,11 @@ def CauchySeq.Eventually₂.merge : Eventually₂ a -> Eventually₂ b -> Eventu
   apply le_trans _ hn
   apply le_max_right
 
+def CauchySeq.Eventually₂.lower_bound (n: Nat) : Eventually₂ fun i j => n ≤ i ∧ n ≤ j := by
+  exists n
+  intro i j ni nj
+  trivial
+
 def is_cauchy_equiv (a b: Nat -> ℚ) : Prop :=
   ∀ε: ℚ, 0 < ε -> CauchySeq.Eventually₂ fun n m => ‖a n - b m‖ < ε
 
@@ -219,6 +224,8 @@ def CauchySeq.eventually_pointwise (a b: CauchySeq) : Eventually (fun n => a n =
 instance : Coe ℚ ℝ := ⟨.ofRat⟩
 instance : OfNat CauchySeq n := ⟨.ofRat (OfNat.ofNat n: ℚ)⟩
 instance : OfNat ℝ n := ⟨⟦OfNat.ofNat n⟧⟩
+
+instance : Nonempty ℝ := ⟨0⟩
 
 def CauchySeq.add.spec (a b c d: CauchySeq) :
   a ≈ c -> b ≈ d ->

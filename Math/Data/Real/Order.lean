@@ -186,6 +186,14 @@ instance : LE ℝ where
 def lt_def (a b: ℝ) : (a < b) = (b - a).IsPos := rfl
 def le_def (a b: ℝ) : (a ≤ b) = (a < b ∨ a = b) := rfl
 
+instance : LT CauchySeq where
+  lt a b := (b - a).IsPos
+instance : LE CauchySeq where
+  le a b := a < b ∨ a ≈ b
+
+def CauchySeq.lt_def (a b: CauchySeq) : (a < b) = (b - a).IsPos := rfl
+def CauchySeq.le_def (a b: CauchySeq) : (a ≤ b) = (a < b ∨ a ≈ b) := rfl
+
 instance : IsLinearOrder ℝ where
   lt_iff_le_and_not_le := by
     intro a b
@@ -475,6 +483,99 @@ def le_iff_natCast_le (a b: Nat) : a ≤ b ↔ (a: ℝ) ≤ b := by
 
 def zero_lt_iff_pos {a: ℝ} : 0 < a ↔ a.IsPos :=by
   rw [lt_def, sub_zero]
+
+def neg_nonpos_of_nonneg (a: ℝ) : 0 ≤ a -> -a ≤ 0 := by
+  rw [←neg_le_neg_iff]
+  exact id
+
+def neg_nonneg_of_nonpos (a: ℝ) : a ≤ 0 -> 0 ≤ -a := by
+  rw [←neg_le_neg_iff]
+  exact id
+
+def mul_nonneg_of_nonneg_of_nonneg (a b: ℝ) :
+  0 ≤ a -> 0 ≤ b -> 0 ≤ a * b := by
+  intro ha hb
+  rcases Or.symm (lt_or_eq_of_le ha) with ha | ha
+  subst a; rw [zero_mul]
+  rcases Or.symm (lt_or_eq_of_le hb) with hb | hb
+  subst b; rw [mul_zero]
+  apply le_of_lt
+  rw [zero_lt_iff_pos] at *
+  exact mul_pos_of_pos_of_pos a b ha hb
+
+def mul_nonneg_of_nonpos_of_nonpos (a b: ℝ) :
+  a ≤ 0 -> b ≤ 0 -> 0 ≤ a * b := by
+  intro ha hb
+  rw [←neg_neg (a * b), neg_mul_left, neg_mul_right]
+  apply mul_nonneg_of_nonneg_of_nonneg
+  exact neg_nonneg_of_nonpos a ha
+  exact neg_nonneg_of_nonpos b hb
+
+def mul_lt_mul_of_pos_left {a b k: ℝ} : 0 < k -> a < b -> k * a < k * b := by
+  intro hk ab
+  rw [lt_def] at ab
+  rw [zero_lt_iff_pos] at hk
+  rw [lt_def, ←mul_sub]
+  exact mul_pos_of_pos_of_pos k (b - a) hk ab
+
+def mul_lt_mul_of_pos_right {a b k: ℝ} : 0 < k -> a < b -> a * k < b * k := by
+  rw [mul_comm _ k, mul_comm _ k]
+  apply mul_lt_mul_of_pos_left
+
+def mul_le_mul_of_nonneg_left {a b k: ℝ} : 0 ≤ k -> a ≤ b -> k * a ≤ k * b := by
+  intro hk ab
+  rcases Or.symm (lt_or_eq_of_le hk) with hk | hk
+  subst k; rw [zero_mul, zero_mul]
+  rcases Or.symm (lt_or_eq_of_le ab) with ab | ab
+  subst b; rfl
+  apply le_of_lt
+  apply mul_lt_mul_of_pos_left
+  assumption
+  assumption
+
+def mul_le_mul_of_nonneg_right {a b k: ℝ} : 0 ≤ k -> a ≤ b -> a * k ≤ b * k := by
+  rw [mul_comm _ k, mul_comm _ k]
+  apply mul_le_mul_of_nonneg_left
+
+def mul_lt_mul_of_nonneg {a b c d: ℝ} :
+  0 ≤ a -> 0 ≤ b -> a < c -> b < d -> a * b < c * d := by
+  intro ha hb ac bd
+  have cpos := lt_of_le_of_lt ha ac
+  have dpos := lt_of_le_of_lt hb bd
+  rcases Or.symm (lt_or_eq_of_le ha) with ha | ha
+  subst a
+  rw [zero_mul]; rw [zero_lt_iff_pos] at *
+  exact mul_pos_of_pos_of_pos c d cpos dpos
+  rcases Or.symm (lt_or_eq_of_le hb) with hb | hb
+  subst b
+  rw [mul_zero]; rw [zero_lt_iff_pos] at *
+  exact mul_pos_of_pos_of_pos c d cpos dpos
+  apply lt_trans
+  apply mul_lt_mul_of_pos_left
+  assumption
+  assumption
+  apply mul_lt_mul_of_pos_right
+  assumption
+  assumption
+
+def mul_le_mul_of_nonneg {a b c d: ℝ} :
+  0 ≤ a -> 0 ≤ b -> a ≤ c -> b ≤ d -> a * b ≤ c * d := by
+  intro ha hb ac bd
+  rcases Or.symm (lt_or_eq_of_le ha) with ha | ha
+  subst a
+  rw [zero_mul]
+  apply mul_nonneg_of_nonneg_of_nonneg
+  assumption
+  apply le_trans hb
+  assumption
+  apply le_trans
+  apply mul_le_mul_of_nonneg_left
+  assumption; assumption
+  apply mul_le_mul_of_nonneg_right
+  apply flip le_trans <;> assumption
+  assumption
+
+def mul_nonneg {a b: ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b) : 0 ≤ a * b := mul_nonneg_of_nonneg_of_nonneg a b ha hb
 
 end Real
 

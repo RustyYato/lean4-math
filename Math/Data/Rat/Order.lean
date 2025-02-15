@@ -135,6 +135,11 @@ def nonneg_iff_sign_nonneg {a: ℚ} : 0 ≤ a ↔ 0 ≤ a.sign := by
   show _ * _ ≤ _ * _ ↔ _
   erw [Int.zero_mul, Int.mul_one]
 
+def Fract.nonneg_iff_sign_nonneg {a: Fract} : 0 ≤ a ↔ 0 ≤ a.sign := by
+  rw [←mk_le]
+  apply Rat.nonneg_iff_sign_nonneg.trans
+  rw [mk_sign]
+
 def nonpos_iff_sign_nonpos {a: ℚ} : a ≤ 0 ↔ a.sign ≤ 0 := by
   obtain ⟨⟨a, _, _ ⟩, _⟩ := a
   simp [sign]
@@ -156,6 +161,11 @@ def pos_iff_sign_pos {a: ℚ} : 0 < a ↔ 0 < a.sign := by
   apply Iff.trans _ lt_iff_not_le.symm
   apply Iff.not_iff_not
   apply nonpos_iff_sign_nonpos
+
+def Fract.pos_iff_sign_pos {a: Fract} : 0 < a ↔ 0 < a.sign := by
+  rw [←mk_lt]
+  apply Rat.pos_iff_sign_pos.trans
+  rw [mk_sign]
 
 def neg_iff_sign_neg {a: ℚ} : a < 0 ↔ a.sign < 0 := by
   apply Iff.trans lt_iff_not_le
@@ -599,7 +609,9 @@ def le_add_right_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ a + b := by
   apply le_add_left_nonneg
   assumption
 
+/-- the integer part of `a` --/
 def floor (a: ℚ) : Int := a.num.ediv (a.den: Int)
+/-- the smallest integer larger than `a` --/
 def ceil (a: ℚ) : Int := -Rat.floor (-a)
 
 private def sub_one (a: ℚ) : ℚ where
@@ -707,5 +719,137 @@ def ceil_spec (a: ℚ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by
   rw [neg_le_neg_iff, neg_neg]
   show _ ≤ ((- -x: Int): ℚ) ∧ ((- -x: Int): ℚ) - 1 < a ↔ _
   rw [Int.neg_neg, And.comm]
+
+def intCast_lt (a b: Int) : (a: ℚ) < (b: ℚ) ↔ a < b := by
+  erw [lt_def, Int.mul_one, Int.mul_one]
+  rfl
+
+def intCast_le (a b: Int) : (a: ℚ) ≤ (b: ℚ) ↔ a ≤ b := by
+  apply le_iff_of_lt_iff
+  apply intCast_lt
+
+def add_le_iff_le_sub (a b c: ℚ) :
+  a + b ≤ c ↔ a ≤ c - b := by
+  rw [add_le_add_right (k := -b), add_assoc, add_neg_self, add_zero, sub_eq_add_neg]
+
+def le_add_iff_sub_le (a b c: ℚ) :
+  a ≤ b + c ↔ a - c ≤ b := by
+  rw [add_le_add_right (k := -c), add_assoc, add_neg_self, add_zero, sub_eq_add_neg]
+
+def add_lt_iff_lt_sub (a b c: ℚ) :
+  a + b < c ↔ a < c - b := by
+  apply lt_iff_of_le_iff
+  apply le_add_iff_sub_le
+
+def lt_add_iff_sub_lt (a b c: ℚ) :
+  a < b + c ↔ a - c < b := by
+  apply lt_iff_of_le_iff
+  apply add_le_iff_le_sub
+
+/-- the fractional part of `a`, guaranteed to be between zero and one --/
+def fract (a: ℚ) : ℚ := a - a.floor
+
+def floor_add_fract (a: ℚ) : a.floor + a.fract = a := by
+  rw [fract, sub_eq_add_neg, add_comm, add_assoc, neg_self_add, add_zero]
+
+def sub_fract (a: ℚ) : a - a.fract = a.floor := by
+  rw [fract, sub_eq_add_neg, sub_eq_add_neg, neg_add,
+    neg_neg, ←add_assoc, add_neg_self, zero_add]
+
+def fract_spec (a: ℚ) : 0 ≤ a.fract ∧ a.fract < 1 := by
+  rw [fract]
+  have ⟨floor_le, lt_floor_succ⟩ := (floor_spec a a.floor).mp rfl
+  apply And.intro
+  rw [←add_le_iff_le_sub, zero_add]
+  assumption
+  rw [←lt_add_iff_sub_lt, add_comm]
+  assumption
+
+def zero_le_floor (a: ℚ) : 0 ≤ a.floor ↔ 0 ≤ a := by
+  rw [floor]
+  apply Iff.intro
+  intro h
+  rcases Int.le_total 0 a.num with g | g
+  refine nonneg_iff_sign_nonneg.mpr ?_
+  exact Int.sign_nonneg.mpr g
+  rcases lt_or_eq_of_le g with h' | h'
+  have := not_lt_of_le h <| Int.ediv_neg' h' (Int.ofNat_lt.mpr a.den_pos)
+  contradiction
+  rw [eq_zero_of_num_eq_zero.mpr h']
+  intro h
+  apply Int.ediv_nonneg
+  refine Int.sign_nonneg.mp ?_
+  exact nonneg_iff_sign_nonneg.mp h
+  exact Int.ofNat_zero_le a.den
+
+def ceil_le_zero (a: ℚ) : a.ceil ≤ 0 ↔ a ≤ 0 := by
+  have : ∀{a b: Int}, -a ≤ -b ↔ b ≤ a := by
+    intro a b
+    apply Iff.intro _ Int.neg_le_neg
+    intro h
+    have := Int.neg_le_neg h
+    rw [Int.neg_neg, Int.neg_neg] at this
+    assumption
+  rw [ceil, ←Int.neg_zero, this, zero_le_floor]
+  apply Iff.trans neg_le_neg_iff
+  rw [neg_neg]
+  rfl
+
+def ne_zero_of_zero_lt [Zero α] [LT α] [LE α] [IsPreOrder α] (b: α) (h: 0 < b) : b ≠ 0 := (ne_of_lt h).symm
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply ne_zero_of_zero_lt; trivial)
+
+def ne_zero_of_lt_zero [Zero α] [LT α] [LE α] [IsPreOrder α] (b: α) (h: b < 0) : b ≠ 0 := (ne_of_lt h)
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply ne_zero_of_lt_zero; trivial)
+
+def mul_le_mul_iff_of_pos {a b k: ℚ} (h: 0 < k) : a ≤ b ↔ a * k ≤ b * k := by
+  quot_ind (a b k)
+  simp [mk_le]
+  rw [
+    show
+      (a.num * k.num * (↑b.den * ↑k.den) ≤ b.num * k.num * (↑a.den * ↑k.den)) =
+      ((a.num * ↑b.den) * (k.num * ↑k.den) ≤ (b.num * ↑a.den) * (k.num * ↑k.den)) by ac_rfl
+  ]
+  apply Iff.intro
+  intro
+  apply Int.mul_le_mul_of_nonneg_right
+  assumption
+  refine Int.mul_nonneg ?_ ?_
+  refine Int.sign_nonneg.mp ?_
+  show 0 ≤ k.sign
+  apply Fract.nonneg_iff_sign_nonneg.mp
+  rw [←mk_le]
+  apply le_of_lt
+  assumption
+  exact Int.ofNat_zero_le k.den
+  intro g
+  apply Int.le_of_mul_le_mul_right
+  assumption
+  refine Int.mul_pos ?_ ?_
+  refine Int.pos_of_sign_pos k.num ?_
+  apply Fract.pos_iff_sign_pos.mp
+  rw [←mk_lt]
+  assumption
+  refine Int.ofNat_pos.mpr ?_
+  exact k.den_pos
+
+def mul_le_mul_iff_of_neg {a b k: ℚ} (h: k < 0) : a ≤ b ↔ b * k ≤ a * k := by
+  rw [mul_le_mul_iff_of_pos (k := -k)]
+  rw [←neg_mul_right, ←neg_mul_right, ←neg_le_neg_iff]
+  rw [neg_lt_neg_iff, neg_neg]
+  assumption
+
+def div_le_iff_le_mul_of_pos (a b c: ℚ) (h: 0 < b) : a /? b ≤ c ↔ a ≤ c * b := by
+  rw [mul_le_mul_iff_of_pos (k := b), div_eq_mul_inv, mul_assoc, inv_self_mul, mul_one]
+  assumption
+
+def div_le_iff_le_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b ≤ c ↔ c * b ≤ a := by
+  rw [mul_le_mul_iff_of_pos (k := -b), div_eq_mul_inv, mul_assoc, ←Rat.neg_mul_right, ←Rat.neg_mul_right, ←Rat.neg_mul_right,
+    inv_self_mul, mul_one, ←neg_le_neg_iff]
+  rw [neg_lt_neg_iff, neg_neg]
+  assumption
 
 end Rat

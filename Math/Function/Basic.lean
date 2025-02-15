@@ -95,12 +95,21 @@ def hfunext {α α' : Sort u} {β : α → Sort v} {β' : α' → Sort v} {f : �
 
 open Classical in
 noncomputable def invFun {α : Sort u} {β} [Nonempty α] (f : α → β) : β → α :=
-  fun y => if h:(∃ x, f x = y) then Classical.choose h else Classical.choice inferInstance
+  fun y => Classical.epsilon (fun x => f x = y)
 
 def invFun_eq (h : ∃ a, f a = b) :
   have := nonempty_of_exists h
   f (invFun f b) = b := by
-  simp only [invFun, dif_pos h, h.choose_spec]
+  simp only [invFun, dif_pos h, Classical.epsilon_spec h]
+
+def invFun_eq' {x: α} (hf: Injective f):
+    have : Nonempty α := ⟨x⟩
+   invFun f (f x) = x := by
+  dsimp
+  unfold invFun
+  have : ∃x₀, f x₀ = f x := ⟨x, rfl⟩
+  apply hf
+  rw [Classical.epsilon_spec this]
 
 def apply_invFun_apply {α β : Sort*} {f : α → β} {a : α} :
     f (@invFun _ _ ⟨a⟩ f (f a)) = f a := invFun_eq ⟨_, rfl⟩
