@@ -4,7 +4,9 @@ import Math.Data.List.Basic
 
 namespace VectorSpace
 
--- a finite set is linearly indepenedent iff the it's sum ()
+-- a finite set is linearly indepenedent iff the the only linear combination
+-- of vectors equals zero is if all the scalars are equal to zero, i.e. the
+-- trivial linear combination
 def IsFiniteLinearlyIndependent (V: VectorSpace R A) (xs: List V.Vector) :=
   (∀(rs: List V.Scalar), rs.length = xs.length ->
     linear_combination V (rs.zip xs) = 0 -> ∀r ∈ rs, r = 0)
@@ -21,8 +23,7 @@ def Span (V: VectorSpace R A) (S: Set V.Vector): Set V.Vector :=
   ∃(rs: List V.Scalar) (xs: List V.Vector), rs.length = xs.length ∧
   Set.ofList xs ⊆ S ∧ v = V.linear_combination (rs.zip xs)
 
--- a possibly infinite set is linearly independent iff all
--- finite subsets are linearly independent
+-- a set of vectors whose span is the entire vector space
 def IsBasis (V: VectorSpace R A) (S: Set V.Vector) := V.Span S = ⊤
 
 structure PreBasis {R A: Type*} (V: VectorSpace R A) where
