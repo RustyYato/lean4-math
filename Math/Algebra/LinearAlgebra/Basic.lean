@@ -1,6 +1,7 @@
 import Math.Algebra.LinearMap
 import Math.Algebra.Field.Defs
 import Math.Algebra.Group.Action.Basic
+import Math.Data.Set.Basic
 
 structure VectorSpace (R A: Type*) where
   [smul: SMul R A]
@@ -59,5 +60,27 @@ def linear_combination_extract
       dsimp
       unfold linear_combination
       rw [add_left_comm, ih]
+
+-- a finite set is linearly indepenedent iff the the only linear combination
+-- of vectors equals zero is if all the scalars are equal to zero, i.e. the
+-- trivial linear combination
+def IsFiniteLinearlyIndependent (V: VectorSpace R A) (xs: List V.Vector) :=
+  (∀(rs: List V.Scalar), rs.length = xs.length ->
+    linear_combination V (rs.zip xs) = 0 -> ∀r ∈ rs, r = 0)
+
+-- a possibly infinite set is linearly independent iff all
+-- finite subsets are linearly independent
+def IsLinearlyIndependent (V: VectorSpace R A) (s: Set V.Vector) :=
+  ∀l: List V.Vector, l.Nodup -> Set.ofList l ⊆ s -> IsFiniteLinearlyIndependent V l
+
+-- the span of a set of vectors is the set of all vectors
+-- which can be made from any finite subset of `S`
+def Span (V: VectorSpace R A) (S: Set V.Vector): Set V.Vector :=
+  Set.mk fun v =>
+  ∃(rs: List V.Scalar) (xs: List V.Vector), rs.length = xs.length ∧
+  Set.ofList xs ⊆ S ∧ v = V.linear_combination (rs.zip xs)
+
+-- a linearly independent set of vectors whose span is the entire vector space
+def IsBasis (V: VectorSpace R A) (S: Set V.Vector) := V.IsLinearlyIndependent S ∧ V.Span S = ⊤
 
 end VectorSpace
