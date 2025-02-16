@@ -4,66 +4,10 @@ import Math.Data.List.Basic
 
 namespace VectorSpace
 
-def smul_sum
-  (V: VectorSpace R A) : ∀(rs: List V.Scalar) (xs: List V.Vector), rs.length = xs.length -> V.Vector
-| [], [], .refl _ => 0
-| r::rs, x::xs, h => r • x + smul_sum V rs xs (Nat.succ.inj h)
-
-def smul_smul_sum
-  (V: VectorSpace R A) (r: V.Scalar) (rs: List V.Scalar) (xs: List V.Vector) (h: rs.length = xs.length) :
-  r • V.smul_sum rs xs h = V.smul_sum (rs.map (fun r₀ => r * r₀)) xs (by
-    rw [List.length_map]
-    assumption) := by
-  induction xs generalizing rs with
-  | nil =>
-    cases rs with
-    | cons r rs => contradiction
-    | nil =>
-      unfold smul_sum
-      dsimp
-      rw [smul_zero]
-  | cons x xs ih =>
-    cases rs with
-    | nil => contradiction
-    | cons r₀ rs =>
-    unfold smul_sum
-    dsimp
-    rw [smul_add, mul_smul]
-    congr
-    apply ih
-
-def smul_sum_pull_to_front
-  (V: VectorSpace R A) (rs: List V.Scalar) (xs: List V.Vector) (h: rs.length = xs.length)
-  (i: Nat) (hi: i < xs.length):
-  V.smul_sum rs xs h = rs[i] • xs[i] + V.smul_sum (rs.eraseIdx i) (xs.eraseIdx i) (by
-    rw [List.length_eraseIdx, List.length_eraseIdx, if_pos, if_pos, h]
-    assumption
-    rw [h]; assumption) := by
-  induction i generalizing xs rs with
-  | zero =>
-    cases xs with
-    | nil => contradiction
-    | cons x xs =>
-    cases rs with
-    | nil => contradiction
-    | cons r rs => rfl
-  | succ i ih =>
-    cases xs with
-    | nil => contradiction
-    | cons x xs =>
-    cases rs with
-    | nil => contradiction
-    | cons r rs =>
-    dsimp
-    unfold smul_sum
-    rw [←add_assoc, add_comm _ (r • x), add_assoc]
-    congr
-    apply ih
-
 -- a finite set is linearly indepenedent iff the it's sum ()
 def IsFiniteLinearlyIndependent (V: VectorSpace R A) (xs: List V.Vector) :=
   (∀(rs: List V.Scalar) (h: rs.length = xs.length),
-    smul_sum V rs xs h = 0 -> ∀r ∈ rs, r = 0)
+    linear_combination V rs xs h = 0 -> ∀r ∈ rs, r = 0)
 
 -- a possibly infinite set is linearly independent iff all
 -- finite subsets are linearly independent
@@ -75,7 +19,7 @@ def IsLinearlyIndependent (V: VectorSpace R A) (s: Set V.Vector) :=
 def Span (V: VectorSpace R A) (S: Set V.Vector): Set V.Vector :=
   Set.mk fun v =>
   ∃(rs: List V.Scalar) (xs: List V.Vector) (h: rs.length = xs.length),
-  Set.ofList xs ⊆ S ∧ v = V.smul_sum rs xs h
+  Set.ofList xs ⊆ S ∧ v = V.linear_combination rs xs h
 
 -- a possibly infinite set is linearly independent iff all
 -- finite subsets are linearly independent
@@ -138,14 +82,14 @@ def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsLinearlyIndep
     cases hv
     simp
     contradiction
-    unfold smul_sum smul_sum
+    unfold linear_combination linear_combination
     rw [add_zero, one_smul]
     · intro xs xs_nodup hxs rs eq h
       by_cases v ∈ xs
       · rename_i hvx
         have ⟨i, hi, eq⟩ := List.getElem_of_mem hvx
         subst v; clear hvx
-        rw [smul_sum_pull_to_front (i := i) (hi := hi)] at h
+        rw [linear_combination_extract (i := i) (hi := hi)] at h
         by_cases hr:rs[i]=0
         · rw [hr, zero_smul, zero_add] at h
           have := basis.linear_indep (xs.eraseIdx i) (xs_nodup.eraseIdx _) ?_ (rs.eraseIdx i) _ h
@@ -209,11 +153,11 @@ def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsLinearlyIndep
             assumption
         · exfalso
           rw [add_eq_iff_eq_sub, zero_sub] at h
-          have : rs[i]⁻¹? • (rs[i] • xs[i]) = rs[i]⁻¹? • (-V.smul_sum (rs.eraseIdx i) (xs.eraseIdx i) (by
+          have : rs[i]⁻¹? • (rs[i] • xs[i]) = rs[i]⁻¹? • (-V.linear_combination (rs.eraseIdx i) (xs.eraseIdx i) (by
             rw [List.length_eraseIdx, List.length_eraseIdx, if_pos, if_pos, eq]
             assumption
             rw [eq]; assumption)) := by rw [h]
-          rw [←mul_smul, inv?_mul_cancel, one_smul, smul_neg, ←neg_smul, smul_smul_sum] at this
+          rw [←mul_smul, inv?_mul_cancel, one_smul, smul_neg, ←neg_smul, smul_linear_combination] at this
           apply hv
           refine ⟨?_, ?_, ?_, ?_, ?_⟩
           exact List.map (fun r₀ => -rs[i]⁻¹? * r₀) (rs.eraseIdx i)
