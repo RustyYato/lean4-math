@@ -23,8 +23,8 @@ def Span (V: VectorSpace R A) (S: Set V.Vector): Set V.Vector :=
   ∃(rs: List V.Scalar) (xs: List V.Vector), rs.length = xs.length ∧
   Set.ofList xs ⊆ S ∧ v = V.linear_combination (rs.zip xs)
 
--- a set of vectors whose span is the entire vector space
-def IsBasis (V: VectorSpace R A) (S: Set V.Vector) := V.Span S = ⊤
+-- a linearly independent set of vectors whose span is the entire vector space
+def IsBasis (V: VectorSpace R A) (S: Set V.Vector) := V.IsLinearlyIndependent S ∧ V.Span S = ⊤
 
 structure PreBasis {R A: Type*} (V: VectorSpace R A) where
   set: Set V.Vector
@@ -63,7 +63,7 @@ def PreBasis.le_sup_right (a b: PreBasis V) (h: a ≤ b ∨ b ≤ a) : b ≤ sup
   contradiction
   assumption
 
-def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsLinearlyIndependent basis ∧ V.IsBasis basis := by
+def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsBasis basis := by
   have ⟨basis, is_maximal⟩ := Zorn.partialorder (α := PreBasis V) ?_
   refine ⟨basis.set, basis.linear_indep, ?_⟩
   · apply Set.ext_univ
