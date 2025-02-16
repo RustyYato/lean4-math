@@ -209,7 +209,7 @@ def SubWellOrder.sUnion_wo (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·))
       have := ss'.init ⟨_, hx⟩ ⟨_, y_in_s', hy'⟩
       dsimp at this
       have _ := s'.wo
-      have := Relation.asymm (r := Set.Induced s'.rel s'.domain) (a := ⟨_, x_in_s'⟩) (b := ⟨_, y_in_s'⟩) this hxy
+      have := Relation.asymm (rel := Set.Induced s'.rel s'.domain) (a := ⟨_, x_in_s'⟩) (b := ⟨_, y_in_s'⟩) this hxy
       contradiction
     · have := s's.sub _ y_in_s'
       apply ih ⟨_, _⟩

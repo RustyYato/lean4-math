@@ -1,5 +1,6 @@
 import Math.Algebra.LinearMap
 import Math.Algebra.Field.Defs
+import Math.Algebra.Group.Action.Basic
 
 structure VectorSpace (R A: Type*) where
   [smul: SMul R A]
