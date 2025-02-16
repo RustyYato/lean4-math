@@ -1,4 +1,4 @@
-import Math.Type.Notation
+import Math.Type.Basic
 import Math.Function.Basic
 import Math.Data.Fin.Pairing
 
@@ -240,5 +240,25 @@ def getElem_zip (a: Vector α n) (b: Vector β n) (i: Fin m) (h: m ≤ n) : (a.z
   show (a.toList.zip b.toList)[i.val]'_ = _
   rw [List.getElem_zip]
   rfl
+
+def ofFn (f: Fin n -> α) : Vector α n where
+  val := List.ofFn f
+  property := by rw [List.length_ofFn]
+
+@[simp]
+def getElem_ofFn (f: Fin n -> α) (i: Fin n) : (ofFn f)[i] = f i := by
+  show (List.ofFn f)[i.val]'_ = _
+  rw [List.getElem_ofFn]
+
+def equivFinFunc (α: Type*) (n: Nat) : Vector α n ≃ (Fin n -> α) where
+  toFun x n := x[n]
+  invFun := ofFn
+  leftInv := by
+    intro x
+    ext i
+    simp
+  rightInv := by
+    intro x
+    simp
 
 end List.Vector
