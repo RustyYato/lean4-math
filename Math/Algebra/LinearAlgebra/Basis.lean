@@ -233,11 +233,12 @@ def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsBasis basis :
 noncomputable
 def basis (V: VectorSpace R A) : Set V.Vector := Classical.choose V.existsBasis
 
-def basis_linear_indep (V: VectorSpace R A) : V.IsLinearlyIndependent V.basis := (Classical.choose_spec V.existsBasis).left
-def basis_spec (V: VectorSpace R A) : ∀v, v ∈ V.Span V.basis := by
+def basis_spec (V: VectorSpace R A) : V.IsBasis V.basis := Classical.choose_spec V.existsBasis
+
+def basis_linear_indep (V: VectorSpace R A) : V.IsLinearlyIndependent V.basis := V.basis_spec.left
+def mem_basis (V: VectorSpace R A) : ∀v, v ∈ V.Span V.basis := by
   intro v
-  unfold basis
-  rw [(Classical.choose_spec V.existsBasis).right]
+  rw [V.basis_spec.right]
   trivial
 
 end VectorSpace
