@@ -705,3 +705,31 @@ def List.nodup_getElem_inj {as: List α} (h: as.Nodup)
       apply Nat.lt_of_succ_lt_succ
       assumption
       assumption
+
+def List.eraseIdx_zip (as: List α) (bs: List β) (i: Nat) :
+  (as.zip bs).eraseIdx i = (as.eraseIdx i).zip (bs.eraseIdx i) := by
+  induction i generalizing as bs with
+  | zero =>
+    cases as with
+    | nil => rfl
+    | cons a as =>
+    cases bs with
+    | nil => cases as <;> rfl
+    | cons b bs => rfl
+  | succ i ih =>
+    cases as with
+    | nil => rfl
+    | cons a as =>
+    cases bs with
+    | nil => cases as <;> rfl
+    | cons b bs => simp [List.zip_cons_cons, eraseIdx_cons_succ, ih]
+
+def List.eraseIdx_map (as: List α) (f: α -> β) (i: Nat) :
+  (as.map f).eraseIdx i = (as.eraseIdx i).map f := by
+  induction i generalizing as with
+  | zero =>
+    cases as <;> rfl
+  | succ i ih =>
+    cases as with
+    | nil => rfl
+    | cons a as => simp [List.map_cons, eraseIdx_cons_succ, ih]

@@ -6,8 +6,8 @@ namespace VectorSpace
 
 -- a finite set is linearly indepenedent iff the it's sum ()
 def IsFiniteLinearlyIndependent (V: VectorSpace R A) (xs: List V.Vector) :=
-  (∀(rs: List V.Scalar) (h: rs.length = xs.length),
-    linear_combination V rs xs h = 0 -> ∀r ∈ rs, r = 0)
+  (∀(rs: List V.Scalar), rs.length = xs.length ->
+    linear_combination V (rs.zip xs) = 0 -> ∀r ∈ rs, r = 0)
 
 -- a possibly infinite set is linearly independent iff all
 -- finite subsets are linearly independent
@@ -18,8 +18,8 @@ def IsLinearlyIndependent (V: VectorSpace R A) (s: Set V.Vector) :=
 -- which can be made from any finite subset of `S`
 def Span (V: VectorSpace R A) (S: Set V.Vector): Set V.Vector :=
   Set.mk fun v =>
-  ∃(rs: List V.Scalar) (xs: List V.Vector) (h: rs.length = xs.length),
-  Set.ofList xs ⊆ S ∧ v = V.linear_combination rs xs h
+  ∃(rs: List V.Scalar) (xs: List V.Vector), rs.length = xs.length ∧
+  Set.ofList xs ⊆ S ∧ v = V.linear_combination (rs.zip xs)
 
 -- a possibly infinite set is linearly independent iff all
 -- finite subsets are linearly independent
@@ -83,16 +83,23 @@ def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsLinearlyIndep
     simp
     contradiction
     unfold linear_combination linear_combination
+    dsimp
     rw [add_zero, one_smul]
     · intro xs xs_nodup hxs rs eq h
       by_cases v ∈ xs
       · rename_i hvx
         have ⟨i, hi, eq⟩ := List.getElem_of_mem hvx
         subst v; clear hvx
-        rw [linear_combination_extract (i := i) (hi := hi)] at h
+        rw [linear_combination_extract (i := i) (hi := by
+          rw [List.length_zip, eq, Nat.min_self]
+          exact hi)] at h
         by_cases hr:rs[i]=0
-        · rw [hr, zero_smul, zero_add] at h
-          have := basis.linear_indep (xs.eraseIdx i) (xs_nodup.eraseIdx _) ?_ (rs.eraseIdx i) _ h
+        · simp at h
+          rw [hr, zero_smul, zero_add] at h
+          have := basis.linear_indep (xs.eraseIdx i) (xs_nodup.eraseIdx _) ?_ (rs.eraseIdx i) (by
+            rw [List.length_eraseIdx, List.length_eraseIdx, eq]) (by
+            rw [←List.eraseIdx_zip]
+            assumption)
           intro r hr
           have ⟨j, hj, eqj⟩ := List.getElem_of_mem hr
           rcases Nat.lt_trichotomy i j with ij | rfl | ji
@@ -153,10 +160,8 @@ def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsLinearlyIndep
             assumption
         · exfalso
           rw [add_eq_iff_eq_sub, zero_sub] at h
-          have : rs[i]⁻¹? • (rs[i] • xs[i]) = rs[i]⁻¹? • (-V.linear_combination (rs.eraseIdx i) (xs.eraseIdx i) (by
-            rw [List.length_eraseIdx, List.length_eraseIdx, if_pos, if_pos, eq]
-            assumption
-            rw [eq]; assumption)) := by rw [h]
+          rw [List.getElem_zip] at h
+          have : rs[i]⁻¹? • (rs[i] • xs[i]) = rs[i]⁻¹? • (-V.linear_combination ((rs.zip xs).eraseIdx i)) := by rw [h]
           rw [←mul_smul, inv?_mul_cancel, one_smul, smul_neg, ←neg_smul, smul_linear_combination] at this
           apply hv
           refine ⟨?_, ?_, ?_, ?_, ?_⟩
@@ -180,7 +185,8 @@ def existsBasis (V: VectorSpace R A) : ∃basis: Set V.Vector, V.IsLinearlyIndep
             subst i
             have := Nat.lt_succ_self j; contradiction
             assumption
-          assumption
+          rw [←List.eraseIdx_map, ←List.eraseIdx_zip, this, ←List.eraseIdx_map, List.zip_map_left]
+          rfl
       · apply basis.linear_indep _ _ _ _ eq h
         assumption
         intro x hx

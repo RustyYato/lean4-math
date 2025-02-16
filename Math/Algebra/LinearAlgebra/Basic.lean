@@ -30,60 +30,34 @@ instance : IsModule V.Scalar V.Vector := V.is_module
 
 end
 
-def linear_combination
-  (V: VectorSpace R A) : ∀(rs: List V.Scalar) (xs: List V.Vector), rs.length = xs.length -> V.Vector
-| [], [], .refl _ => 0
-| r::rs, x::xs, h => r • x + linear_combination V rs xs (Nat.succ.inj h)
+def linear_combination (V: VectorSpace R A) : List (V.Scalar × V.Vector) -> V.Vector
+| [] => 0
+| (r, x)::xs => r • x + linear_combination V xs
 
-def smul_linear_combination
-  (V: VectorSpace R A) (r: V.Scalar) (rs: List V.Scalar) (xs: List V.Vector) (h: rs.length = xs.length) :
-  r • V.linear_combination rs xs h = V.linear_combination (rs.map (fun r₀ => r * r₀)) xs (by
-    rw [List.length_map]
-    assumption) := by
-  induction xs generalizing rs with
-  | nil =>
-    cases rs with
-    | cons r rs => contradiction
-    | nil =>
-      unfold linear_combination
-      dsimp
-      rw [smul_zero]
+def smul_linear_combination (V: VectorSpace R A) (r: V.Scalar) (xs: List (V.Scalar × V.Vector)) :
+  r • V.linear_combination xs = V.linear_combination  (xs.map fun (r₀, x) => (r * r₀, x)) := by
+  induction xs with
+  | nil => apply smul_zero
   | cons x xs ih =>
-    cases rs with
-    | nil => contradiction
-    | cons r₀ rs =>
-    unfold linear_combination
+    obtain ⟨r₀, x⟩ := x
     dsimp
-    rw [smul_add, mul_smul]
-    congr
-    apply ih
+    unfold linear_combination
+    rw [smul_add, mul_smul, ih]
 
 def linear_combination_extract
-  (V: VectorSpace R A) (rs: List V.Scalar) (xs: List V.Vector) (h: rs.length = xs.length)
-  (i: Nat) (hi: i < xs.length):
-  V.linear_combination rs xs h = rs[i] • xs[i] + V.linear_combination (rs.eraseIdx i) (xs.eraseIdx i) (by
-    rw [List.length_eraseIdx, List.length_eraseIdx, if_pos, if_pos, h]
-    assumption
-    rw [h]; assumption) := by
-  induction i generalizing xs rs with
+  (V: VectorSpace R A) (xs: List (V.Scalar × V.Vector)) (i: Nat) (hi: i < xs.length):
+  V.linear_combination xs = xs[i].fst • xs[i].snd + V.linear_combination (xs.eraseIdx i) := by
+  induction i generalizing xs with
   | zero =>
     cases xs with
     | nil => contradiction
-    | cons x xs =>
-    cases rs with
-    | nil => contradiction
-    | cons r rs => rfl
+    | cons x xs => rfl
   | succ i ih =>
     cases xs with
     | nil => contradiction
     | cons x xs =>
-    cases rs with
-    | nil => contradiction
-    | cons r rs =>
-    dsimp
-    unfold linear_combination
-    rw [←add_assoc, add_comm _ (r • x), add_assoc]
-    congr
-    apply ih
+      dsimp
+      unfold linear_combination
+      rw [add_left_comm, ih]
 
 end VectorSpace
