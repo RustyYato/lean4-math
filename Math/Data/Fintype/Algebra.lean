@@ -211,4 +211,25 @@ def prod_prod [f₀: Fintype ι₀] [f₁: Fintype ι₁]
   (prod (α := α) fun i₀ => prod fun i₁ => f i₀ i₁) = prod fun i: ι₀ × ι₁ => f i.1 i.2 :=
   sum_sum (α := AddOfMul α) f
 
+def sum_add
+  [fι: Fintype ι]
+  [Add α] [Zero α] [IsAddCommMagma α] [IsAddZeroClass α] [IsAddSemigroup α]
+  (f g: ι -> α) : Fintype.sum f + Fintype.sum g = Fintype.sum (fun i => f i + g i) := by
+  cases fι with | mk as nodup complete =>
+  simp [sum]
+  clear nodup complete
+  induction as with
+  | nil => apply zero_add
+  | cons a as ih =>
+    simp
+    rw [show
+      f a + (List.map f as).sum + (g a + (List.map g as).sum) =
+      f a + g a + ((List.map f as).sum + (List.map g as).sum) by ac_rfl, ih]
+
+def prod_mul
+  [fι: Fintype ι]
+  [Mul α] [One α] [IsCommMagma α] [IsMulOneClass α] [IsSemigroup α]
+  (f g: ι -> α) : Fintype.prod f * Fintype.prod g = Fintype.prod (fun i => f i * g i) :=
+  sum_add (α := AddOfMul α) f g
+
 end Fintype

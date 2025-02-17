@@ -49,6 +49,19 @@ instance [SMul ℕ α] : SMul ℕ (Matrix α n m) where
 instance [SMul ℤ α] : SMul ℤ (Matrix α n m) where
   smul r a := .of fun i j => r • a i j
 
+@[simp]
+def add_elem [Add α] (a b: Matrix α n m) (i: n) (j: m) : (a + b) i j = a i j + b i j := rfl
+@[simp]
+def sub_elem [Sub α] (a b: Matrix α n m) (i: n) (j: m) : (a - b) i j = a i j - b i j := rfl
+@[simp]
+def smul_elem [Mul α] (x: α) (a: Matrix α n m) (i: n) (j: m) : (x • a) i j = x * a i j := rfl
+@[simp]
+def neg_elem [Neg α] (a: Matrix α n m) (i: n) (j: m) : (-a) i j = -a i j := rfl
+@[simp]
+def nsmul_elem [SMul ℕ α] (x: ℕ) (a: Matrix α n m) (i: n) (j: m) : (x • a) i j = x • a i j := rfl
+@[simp]
+def zsmul_elem [SMul ℤ α] (x: ℤ) (a: Matrix α n m) (i: n) (j: m) : (x • a) i j = x • a i j := rfl
+
 instance [Add α] [IsAddCommMagma α] : IsAddCommMagma (Matrix α n m) where
   add_comm a b := by
     ext i j
