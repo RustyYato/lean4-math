@@ -75,4 +75,10 @@ def pos_of_sign_pos (a: Int) : 0 < a.sign -> 0 < a := by
   exact ofNat_succ_pos _
   contradiction
 
+def pow_ofNat (a n: Nat) : (a ^ n: Nat) = (a: Int) ^ n := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [Int.pow_succ, Nat.pow_succ, Int.ofNat_mul, ih]
+
 end Int
