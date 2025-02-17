@@ -1,6 +1,5 @@
 import Math.Type.Basic
 import Math.Algebra.Ring
-import Math.Data.QuotLike.Basic
 import Math.Type.Finite
 import Math.Data.Set.Finite
 import Math.Data.Fin.Basic

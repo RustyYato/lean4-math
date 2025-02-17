@@ -1,17 +1,5 @@
   -- SAFETY: @Quot α r is represented exactly the same as α at runtime
 -- so there is no problem with casting between them
-unsafe def Quot.getRuntime : (f: @Quot α r -> α) ×' (∀x, mk _ (f x) = x) := ⟨cast lcProof, lcProof⟩
-@[implemented_by Quot.getRuntime]
-opaque Quot.getBuilder : (f: @Quot α r -> α) ×' (∀x, mk _ (f x) = x) :=
-  ⟨(Classical.choose ·.exists_rep), (Classical.choose_spec ·.exists_rep)⟩
-def Quot.unwrapQuot : @Quot α r -> α := Quot.getBuilder.fst
-def Quot.mk_unwrapQuot : ∀q: Quot r, mk r q.unwrapQuot = q := Quot.getBuilder.snd
-def Quotient.unwrapQuot : @Quotient α s -> α := Quot.unwrapQuot
-def Quotient.mk_unwrapQuot : ∀q: Quotient s, Quotient.mk s q.unwrapQuot = q := Quot.mk_unwrapQuot
-def Quotient.get_equiv {s: Setoid α} : ∀q: α, (Quotient.mk s q).unwrapQuot ≈ q := by
-  intro q
-  apply Quotient.exact
-  rw [mk_unwrapQuot]
 
 class QuotLike {α: outParam (Sort u)} (r: outParam (α -> α -> Prop)) (Q: Sort u) where
   mkQuotLike ::
@@ -72,9 +60,6 @@ def quot.lift₂_mk [QuotientLike s₁ Q₁] [QuotientLike s₂ Q₂] :
 def quot.lift₃_mk [QuotientLike s₁ Q₁] [QuotientLike s₂ Q₂] [QuotientLike s₃ Q₃] :
   lift₃ f h (⟦a⟧: Q₁) (⟦b⟧: Q₂) (⟦c⟧: Q₃) = f a b c := by
   apply h <;> apply quot.exact'
-
-instance : QuotLike r (Quot r) where
-instance : QuotLike (fun _ _: α => True) (Squash α) where
 
 def quot.liftProp [@QuotLike α r Q] : (f: α -> Prop) -> (∀a b, r a b -> (f a -> f b)) -> Q -> Prop := fun f _ x => f (unwrapQuot x)
 def quot.liftProp_mk [@QuotientLike α r Q] : liftProp f h (⟦a⟧: Q) ↔ f a := by

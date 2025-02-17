@@ -1,7 +1,7 @@
 import Math.Data.Multiset.Basic
 import Math.Function.Basic
 
-local notation "⟦" a "⟧" => (QuotLike.mk (a: List _): Multiset _)
+local notation "⟦" a "⟧" => (Multiset.mk (a: List _): Multiset _)
 
 namespace Multiset.Pi
 
@@ -17,7 +17,7 @@ def cons (ms: Multiset α) (f: ∀x ∈ ms, β x) (a: α) (b: β a) : ∀x ∈ a
    if g:x = a
    then g ▸ b
    else f x (by
-    quot_ind ms
+    induction ms using ind
     simp at *
     cases h
     contradiction
