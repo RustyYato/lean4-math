@@ -131,4 +131,10 @@ instance [SemiringOps α] [IsSemiring α] : IsModule α (Matrix α n m) where
     ext
     apply zero_mul
 
+def diagonal [DecidableEq n] [Zero α] (f: n -> α) : Matrix α n n where
+  toFun := fun i j => if i = j then f i else 0
+
+instance [DecidableEq n] [One α] [Zero α] : One (Matrix α n n) where
+  one := .diagonal fun _ => 1
+
 end Matrix
