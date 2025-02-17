@@ -172,15 +172,15 @@ def add_hmul [Add α] [Zero α] [Mul α] [Fintype K]
   conv => { lhs; arg 1; intro k; rw [add_mul] }
   rw [Fintype.sum_add]
 
--- at this point we have proven that Matricies are a non-unital ring
--- when the underlying scalar is a non-unital ring
--- it is associative with the underlying scalar is
--- and it has a multiplicative identity
-
 end
 
 instance [Add α] [Zero α] [Mul α] [Fintype n] : Mul (Matrix α n n) where
     mul a b := a * b
+
+instance [Add α] [Zero α] [One α] [Mul α] [DecidableEq n] [Fintype n] : Pow (Matrix α n n) ℕ :=
+  instNPowrec
+
+instance [RingOps α] [DecidableEq n] [Fintype n] : RingOps (Matrix α n n) := RingOps.mk
 
 instance
   [AddMonoidOps α] [Mul α]
@@ -196,12 +196,18 @@ instance
   [Fintype n] : IsSemigroup (Matrix α n n) where
   mul_assoc := hmul_assoc
 
-open Classical in
+open Classical
+
 instance
   [AddMonoidOps α] [Mul α] [One α]
   [IsMulOneClass α] [IsMulZeroClass α] [IsAddZeroClass α]
   [Fintype n] : IsMulOneClass (Matrix α n n) where
   one_mul := one_hmul
   mul_one := hmul_one
+
+instance instSemiring [SemiringOps α] [IsSemiring α] [Fintype n] : IsSemiring (Matrix α n n) := {}
+instance [RingOps α] [IsRing α] [Fintype n] : IsRing (Matrix α n n) := {
+  instSemiring, instAddGroupWithOne with
+}
 
 end Matrix

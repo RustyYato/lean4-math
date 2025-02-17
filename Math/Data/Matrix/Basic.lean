@@ -115,7 +115,7 @@ instance [AddGroupOps α] [IsSubtractionMonoid α] : IsSubtractionMonoid (Matrix
     rw [h]
     rfl
 
-instance [AddGroupOps α] [IsAddGroup α] : IsAddGroup (Matrix α n m) where
+instance instAddGroup [AddGroupOps α] [IsAddGroup α] : IsAddGroup (Matrix α n m) where
   neg_add_cancel a := by
     ext i j
     apply neg_add_cancel
@@ -149,5 +149,74 @@ def diagonal [DecidableEq n] [Zero α] (f: n -> α) : Matrix α n n where
 
 instance [DecidableEq n] [One α] [Zero α] : One (Matrix α n n) where
   one := .diagonal fun _ => 1
+
+instance [NatCast α] [Zero α] [DecidableEq n] : NatCast (Matrix α n n) where
+  natCast x := diagonal fun _ => (x: α)
+instance [IntCast α] [Zero α] [DecidableEq n] : IntCast (Matrix α n n) where
+  intCast x := diagonal fun _ => (x: α)
+
+instance [OfNat α n] [Zero α] [DecidableEq N] : OfNat (Matrix α N N) n where
+  ofNat := diagonal fun _ => (OfNat.ofNat n)
+
+@[simp]
+def diagonal_mem [DecidableEq n] [Zero α] (f: n -> α) (i j: n) :
+  diagonal f i j = if i = j then f i else 0 := rfl
+
+@[simp]
+def one_mem [DecidableEq n] [One α] [Zero α] (i j: n) :
+ (1: Matrix α n n) i j = if i = j then 1 else 0 := rfl
+
+@[simp]
+def natCast_mem [DecidableEq N] [NatCast α] [Zero α] (n: ℕ) (i j: N) :
+ (n: Matrix α N N) i j = if i = j then (n: α) else 0 := rfl
+@[simp]
+def intCast_mem [DecidableEq N] [IntCast α] [Zero α] (n: ℤ) (i j: N) :
+ (n: Matrix α N N) i j = if i = j then (n: α) else 0 := rfl
+@[simp]
+def ofNat_mem [DecidableEq N] [OfNat α n] [Zero α] (i j: N) :
+ (OfNat.ofNat n: Matrix α N N) i j = if i = j then OfNat.ofNat n else 0 := rfl
+
+section
+
+open Classical
+
+instance instAddMonoidWithOne [AddMonoidWithOneOps α] [IsAddMonoidWithOne α]: IsAddMonoidWithOne (Matrix α N N) where
+  natCast_zero := by
+    ext i j
+    simp
+    split
+    apply natCast_zero
+    rfl
+  natCast_succ n := by
+    ext i j
+    simp
+    split
+    rw [natCast_succ]
+    rw [add_zero]
+  ofNat_eq_natCast n := by
+    ext i j
+    simp
+    split
+    apply ofNat_eq_natCast
+    rfl
+
+instance instAddGroupWithOne [AddGroupWithOneOps α] [IsAddGroupWithOne α]: IsAddGroupWithOne (Matrix α N N) :=
+  {
+    instAddMonoidWithOne, instAddGroup with
+    intCast_ofNat n := by
+      ext i j
+      simp
+      split
+      apply intCast_ofNat
+      rfl
+    intCast_negSucc n := by
+      ext i j
+      simp
+      split
+      apply intCast_negSucc
+      rw [neg_zero]
+  }
+
+end
 
 end Matrix
