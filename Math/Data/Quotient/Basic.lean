@@ -12,24 +12,30 @@ def Quotient.out_spec {s: Setoid α} (q: Quotient s) : Quotient.mk s q.out = q :
 
 def Quotient.mk_lift : Quotient.lift f resp (Quotient.mk _ x) = f x := rfl
 
-private unsafe def Quotient.ilift_compute {s: Setoid α}
-  (f: (ι -> α) -> β)
-  (_resp: ∀g₀ g₁: ι -> α, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁):
-  (ι -> Quotient s) -> β :=
+private unsafe def Quotient.ilift_compute
+  {α: ι -> Sort u}
+  {s: ∀i, Setoid (α i)}
+  (f: (∀i, α i) -> β)
+  (_resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁):
+  (∀i, Quotient (s i)) -> β :=
   fun h => f (fun i => (h i).usnafe_cast_unchecked)
 
 @[implemented_by Quotient.ilift_compute]
-def Quotient.ilift {s: Setoid α}
-  (f: (ι -> α) -> β)
-  (_resp: ∀g₀ g₁: ι -> α, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁):
-  (ι -> Quotient s) -> β :=
+def Quotient.ilift
+  {α: ι -> Sort u}
+  {s: ∀i, Setoid (α i)}
+  (f: (∀i, α i) -> β)
+  (_resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁):
+  (∀i, Quotient (s i)) -> β :=
   fun h => f (fun i => (h i).out)
 
-def Quotient.mk_ilift {s: Setoid α}
-  (f: (ι -> α) -> β)
-  (resp: ∀g₀ g₁: ι -> α, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁)
-  (h: ι -> α):
-  Quotient.ilift f resp (fun x => Quotient.mk s (h x)) = f h := by
+def Quotient.mk_ilift
+  {α: ι -> Sort u}
+  {s: ∀i, Setoid (α i)}
+  (f: (∀i, α i) -> β)
+  (resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁)
+  (h: ∀i, α i):
+  Quotient.ilift f resp (fun i => Quotient.mk (s i) (h i)) = f h := by
   apply resp
   intro
   dsimp
@@ -37,16 +43,17 @@ def Quotient.mk_ilift {s: Setoid α}
   apply Quotient.out_spec _
 
 def Quotient.iind
-  {s: Setoid α}
-  {motive: (ι -> Quotient s) -> Prop}
-  (mk: ∀f: ι -> α, motive (fun x => (Quotient.mk s (f x)))):
+  {α: ι -> Sort u}
+  {s: ∀i: ι, Setoid (α i)}
+  {motive: (∀i, Quotient (s i)) -> Prop}
+  (mk: ∀f: ∀i, α i, motive (fun x => (Quotient.mk (s _) (f x)))):
   ∀f, motive f := by
   intro f
-  have : ∀x: ι, ∃y, Quotient.mk s y = f x := by
+  have : ∀x: ι, ∃y, Quotient.mk (s _) y = f x := by
     intro x
     apply Quotient.exists_rep
   have ⟨g, eq⟩ := Classical.axiomOfChoice this
-  rw [show f = (fun x => (Quotient.mk s (g x))) from ?_]
+  rw [show f = (fun x => (Quotient.mk (s _) (g x))) from ?_]
   apply mk
   ext x
   symm; apply eq
