@@ -573,4 +573,32 @@ instance : IsField ℚ where
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
 
+def mul_nonzero (a b: ℚ) : a ≠ 0 -> b ≠ 0 -> a * b ≠ 0 := by
+  intro ha hb h
+  cases of_mul_eq_zero h <;> contradiction
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply mul_nonzero <;> assumption)
+
+def neg_nonzero (a: ℚ) : a ≠ 0 -> -a ≠ 0 := by
+  intro ha
+  rw [neg_eq_neg_one_zsmul]
+  apply mul_nonzero
+  decide
+  assumption
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply neg_nonzero <;> assumption)
+
+def natCast_nonzero (n: Nat) : ((n + 1: ℕ): ℚ) ≠ 0 := by
+  intro ha
+  have eq : _ = _ := Quotient.exact ha
+  simp at eq
+  have : (n: Int) + 1 = (n + 1: Nat) := Int.ofNat_add _ _
+  rw [this] at eq
+  nomatch eq
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply natCast_nonzero)
+
 end Rat

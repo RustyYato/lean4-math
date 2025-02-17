@@ -140,5 +140,83 @@ instance : Max ℚ := maxOfLe
 
 instance : IsDecidableLinearOrder ℚ where
 
+def Fract.abs (f: Fract) : Fract where
+  num := ‖f.num‖
+  den := f.den
+  den_pos := f.den_pos
+
+instance : AbsoluteValue Fract Fract := ⟨.abs⟩
+
+@[simp]
+def Fract.abs_num (a: Fract) : ‖a‖.num = ‖a.num‖ := rfl
+@[simp]
+def Fract.abs_den (a: Fract) : ‖a‖.den = a.den := rfl
+
+def Fract.abs.spec (a b: Fract) : a ≈ b -> ‖a‖ ≈ ‖b‖ := by
+  intro eqv
+  show _ * _ = _ * _
+  have : ‖a‖.num = ‖a.num‖ := rfl
+  rw [this]
+  have : ‖b‖.num = ‖b.num‖ := rfl
+  rw [this]
+  have : ‖a‖.den = ‖Int.ofNat a.den‖ := rfl
+  rw [this]
+  have : ‖b‖.den = ‖Int.ofNat b.den‖ := rfl
+  rw [this]
+  rw [Int.ofNat_mul_ofNat, Int.ofNat_mul_ofNat]
+  congr 1
+  show Int.natAbs a.num * Int.natAbs b.den = Int.natAbs b.num * Int.natAbs a.den
+  rw [←Int.natAbs_mul, eqv, ←Int.natAbs_mul]
+
+instance : AbsoluteValue ℚ ℚ where
+  abs := by
+    apply Quotient.lift (⟦‖·‖⟧)
+    intro a b eq
+    apply sound
+    apply Fract.abs.spec
+    assumption
+
+@[simp]
+def mk_abs (a: Fract) : ‖⟦a⟧‖ = ⟦‖a‖⟧ := rfl
+
+def abs_def (q: ℚ) : ‖q‖ = if 0 ≤ q then q else -q := by
+  cases q with | mk q =>
+  simp
+  split <;> (apply sound; show _ = _)
+  congr 1
+  rename_i h
+  rw [le_def, sub_zero] at h
+  exact Int.natAbs_of_nonneg h
+  congr 1
+  rename_i h
+  rw [le_def, sub_zero] at h
+  show q.num.natAbs = (-q.num)
+  rw [←Int.natAbs_neg]
+  apply Int.natAbs_of_nonneg
+  replace h: (-q).isPos := isPos.neg.mp h
+  apply le_of_lt h
+
+def abs_nonzero (a: ℚ) : a ≠ 0 -> ‖a‖ ≠ 0 := by
+  cases a with | mk a =>
+  intro ha
+  simp
+  replace ha := exact_ne ha
+  intro h
+  apply ha
+  clear ha
+  replace h: a.abs ≈ 0 := exact h
+  unfold Fract.abs at h
+  simp [AbsoluteValue.abs] at h
+  replace h : _ = _ := h
+  simp at h
+  erw [Int.mul_one, Int.zero_mul] at h
+  show _ = _
+  erw [Int.mul_one, Int.zero_mul]
+  refine Int.natAbs_eq_zero.mp ?_
+  apply Int.ofNat.inj
+  assumption
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply abs_nonzero <;> assumption)
 
 end Rat
