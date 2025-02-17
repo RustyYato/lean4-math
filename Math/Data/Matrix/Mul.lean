@@ -38,6 +38,8 @@ instance [Fintype n]
   [IsNonUnitalNonAssocSemiring α] [IsSemigroup α]
   : @Std.Associative (Matrix α n n) (· * ·) := ⟨hmul_assoc⟩
 
+section
+
 open Classical
 
 def zero_hmul [Add α] [Mul α] [Zero α] [Fintype k] [IsAddZeroClass α] [IsMulZeroClass α]
@@ -152,7 +154,7 @@ def hmul_one [Add α] [Zero α] [One α] [Mul α] [f: Fintype n]
     apply List.MinCount.head
     apply List.MinCount.zero
 
-def hmul_add [Add α] [Zero α] [One α] [Mul α] [Fintype K]
+def hmul_add [Add α] [Zero α] [Mul α] [Fintype K]
   [IsLeftDistrib α] [IsAddCommMagma α] [IsAddSemigroup α]
   [IsAddZeroClass α]
   (k: Matrix α N K) (a b: Matrix α K M) : k * (a + b) = k * a + k * b := by
@@ -161,7 +163,7 @@ def hmul_add [Add α] [Zero α] [One α] [Mul α] [Fintype K]
   conv => { lhs; arg 1; intro k; rw [mul_add] }
   rw [Fintype.sum_add]
 
-def add_hmul [Add α] [Zero α] [One α] [Mul α] [Fintype K]
+def add_hmul [Add α] [Zero α] [Mul α] [Fintype K]
   [IsRightDistrib α] [IsAddCommMagma α] [IsAddSemigroup α]
   [IsAddZeroClass α]
   (a b: Matrix α M K) (k: Matrix α K N) : (a + b) * k = a * k + b * k := by
@@ -169,5 +171,37 @@ def add_hmul [Add α] [Zero α] [One α] [Mul α] [Fintype K]
   simp
   conv => { lhs; arg 1; intro k; rw [add_mul] }
   rw [Fintype.sum_add]
+
+-- at this point we have proven that Matricies are a non-unital ring
+-- when the underlying scalar is a non-unital ring
+-- it is associative with the underlying scalar is
+-- and it has a multiplicative identity
+
+end
+
+instance [Add α] [Zero α] [Mul α] [Fintype n] : Mul (Matrix α n n) where
+    mul a b := a * b
+
+instance
+  [AddMonoidOps α] [Mul α]
+  [IsNonUnitalNonAssocSemiring α]
+  [Fintype n] : IsNonUnitalNonAssocSemiring (Matrix α n n) where
+  left_distrib _ _ _ := hmul_add _ _ _
+  right_distrib _ _ _ := add_hmul _ _ _
+  zero_mul := zero_hmul
+  mul_zero := hmul_zero
+
+instance
+  [AddMonoidOps α] [Mul α] [IsNonUnitalNonAssocSemiring α] [IsSemigroup α]
+  [Fintype n] : IsSemigroup (Matrix α n n) where
+  mul_assoc := hmul_assoc
+
+open Classical in
+instance
+  [AddMonoidOps α] [Mul α] [One α]
+  [IsMulOneClass α] [IsMulZeroClass α] [IsAddZeroClass α]
+  [Fintype n] : IsMulOneClass (Matrix α n n) where
+  one_mul := one_hmul
+  mul_one := hmul_one
 
 end Matrix
