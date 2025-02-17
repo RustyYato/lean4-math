@@ -305,10 +305,13 @@ def ofEquivGen [IsRefl r] [IsSymmetric r] [IsTrans r] (h: EquivGen r a b) : r a 
     assumption
   | trans => apply trans <;> assumption
 
-
 instance (s: Setoid α) : IsRefl s.r := ⟨s.refl⟩
 instance (s: Setoid α) : IsSymmetric s.r := ⟨s.symm⟩
 instance (s: Setoid α) : IsTrans s.r := ⟨s.trans⟩
+
+instance (s: Setoid α) : IsRefl (HasEquiv.Equiv (α := α)) := ⟨s.refl⟩
+instance (s: Setoid α) : IsSymmetric (HasEquiv.Equiv (α := α)) := ⟨s.symm⟩
+instance (s: Setoid α) : IsTrans (HasEquiv.Equiv (α := α)) := ⟨s.trans⟩
 
 abbrev relAnd (r s: α -> α -> Prop) (x y: α): Prop := r x y ∧ s x y
 abbrev relOr (r s: α -> α -> Prop) (x y: α): Prop := r x y ∨ s x y
