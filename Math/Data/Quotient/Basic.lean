@@ -1,5 +1,3 @@
-unsafe def Quot.usnafe_cast_unchecked {r: α -> α -> Prop} : Quot r -> α := Quot.lift id lcProof
-
 noncomputable
 def Quot.out {r: α -> α -> Prop} (q: Quot r) : α := Classical.choose q.exists_rep
 noncomputable
@@ -11,36 +9,6 @@ noncomputable
 def Quotient.out_spec {s: Setoid α} (q: Quotient s) : Quotient.mk s q.out = q := Quot.out_spec q
 
 def Quotient.mk_lift : Quotient.lift f resp (Quotient.mk _ x) = f x := rfl
-
-private unsafe def Quotient.ilift_compute
-  {α: ι -> Sort u}
-  {s: ∀i, Setoid (α i)}
-  (f: (∀i, α i) -> β)
-  (_resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁):
-  (∀i, Quotient (s i)) -> β :=
-  fun h => f (fun i => (h i).usnafe_cast_unchecked)
-
-@[implemented_by Quotient.ilift_compute]
-def Quotient.ilift
-  {α: ι -> Sort u}
-  {s: ∀i, Setoid (α i)}
-  (f: (∀i, α i) -> β)
-  (_resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁):
-  (∀i, Quotient (s i)) -> β :=
-  fun h => f (fun i => (h i).out)
-
-def Quotient.mk_ilift
-  {α: ι -> Sort u}
-  {s: ∀i, Setoid (α i)}
-  (f: (∀i, α i) -> β)
-  (resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁)
-  (h: ∀i, α i):
-  Quotient.ilift f resp (fun i => Quotient.mk (s i) (h i)) = f h := by
-  apply resp
-  intro
-  dsimp
-  apply Quotient.exact
-  apply Quotient.out_spec _
 
 def Quotient.iind
   {α: ι -> Sort u}
@@ -57,3 +25,23 @@ def Quotient.iind
   apply mk
   ext x
   symm; apply eq
+
+noncomputable def Quotient.ilift
+  {α: ι -> Sort u}
+  {s: ∀i, Setoid (α i)}
+  (f: (∀i, α i) -> β)
+  (_resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁):
+  (∀i, Quotient (s i)) -> β := fun h => f (fun i => (h i).out)
+
+def Quotient.mk_ilift
+  {α: ι -> Sort u}
+  {s: ∀i, Setoid (α i)}
+  (f: (∀i, α i) -> β)
+  (resp: ∀g₀ g₁: ∀i, α i, (∀x, g₀ x ≈ g₁ x) -> f g₀ = f g₁)
+  (h: ∀i, α i):
+  Quotient.ilift f resp (fun i => Quotient.mk (s i) (h i)) = f h := by
+  apply resp
+  intro
+  dsimp
+  apply Quotient.exact
+  apply Quotient.out_spec _
