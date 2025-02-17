@@ -733,3 +733,26 @@ def List.eraseIdx_map (as: List α) (f: α -> β) (i: Nat) :
     cases as with
     | nil => rfl
     | cons a as => simp [List.map_cons, eraseIdx_cons_succ, ih]
+
+def List.MinCountBy.append
+  (ha: MinCountBy P as n)
+  (hb: MinCountBy P bs m):
+  MinCountBy P (as ++ bs) (n + m) := by
+  induction ha with
+  | nil =>
+    rw [Nat.zero_add]
+    assumption
+  | cons a as ih =>
+    apply List.MinCountBy.cons
+    assumption
+  | head a as ih =>
+    rw [Nat.succ_add]
+    apply List.MinCountBy.head
+    assumption
+    assumption
+
+def List.MinCount.append
+  (ha: MinCount as x n)
+  (hb: MinCount bs x m):
+  MinCount (as ++ bs) x (n + m) :=
+  MinCountBy.append ha hb
