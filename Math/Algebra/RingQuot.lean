@@ -509,6 +509,12 @@ variable (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [SMul S R] [A
    [SemiringOps A] [IsSemiring A] [AlgebraMap S A] [SMul S A] [IsAlgebra S A]
    [SemiringOps B] [IsSemiring B] [AlgebraMap S B] [SMul S B] [IsAlgebra S B]
 
+theorem mkAlgHom_rel {s : A → A → Prop} {x y : A} (w : s x y) :
+    mkAlgHom S s x = mkAlgHom S s y := by
+  apply Quot.sound
+  apply Rel.of
+  assumption
+
 def mkAlgHom_surj (r: R -> R -> Prop) : Function.Surjective (mkAlgHom S r) := by
   apply mkRingHom_surj
 

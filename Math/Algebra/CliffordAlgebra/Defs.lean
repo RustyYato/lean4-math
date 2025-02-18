@@ -52,3 +52,41 @@ instance : Sub (CliffordAlgebra Q) := inferInstance
 instance : Neg (CliffordAlgebra Q) := inferInstance
 
 end Instances
+
+section ι
+
+variable [SemiringOps R] [IsSemiring R] [IsCommMagma R] [AddMonoidOps V]
+  [IsAddMonoid V] [IsAddCommMagma V] [SMul R V] [IsModule R V]
+
+variable (Q: QuadraticForm R V)
+
+namespace CliffordAlgebra
+
+def ι : V →ₗ[R] CliffordAlgebra Q :=
+  (RingQuot.mkAlgHom R _).toLinearMap.comp (TensorAlgebra.ι R)
+
+private def algmap_coe_eq
+  [SemiringOps A] [SemiringOps B] [AlgebraMap R A] [AlgebraMap R B]
+  (f: A →ₐ[R] B) (x: A) : f.toFun x = f x := rfl
+
+/-- As well as being linear, `ι Q` squares to the quadratic form -/
+@[simp]
+theorem ι_sq_scalar (v: V) : ι Q v * ι Q v = algebraMap (Q v) := by
+  rw [ι]
+  dsimp [LinearMap.comp, DFunLike.coe, AlgHom.toLinearMap]
+  rw [algmap_coe_eq, ←resp_mul (f := RingQuot.mkAlgHom R (CliffordAlgebra.Rel Q))]
+  show _ = algebraMap _
+  apply (RingQuot.mkAlgHom_rel R (CliffordAlgebra.Rel.intro v)).trans
+  apply resp_algebraMap
+
+end CliffordAlgebra
+
+-- the canonical map from a TensorAlgebra to a CliffordAlgebra
+def toClifford : TensorAlgebra R V →ₐ[R] CliffordAlgebra Q :=
+  TensorAlgebra.lift R (CliffordAlgebra.ι Q)
+
+@[simp]
+theorem toClifford_ι (v: V) : toClifford Q (TensorAlgebra.ι R v) = CliffordAlgebra.ι Q v := by
+  simp [toClifford]
+
+end ι
