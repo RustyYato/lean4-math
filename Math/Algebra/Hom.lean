@@ -1,4 +1,4 @@
-import Math.Algebra.RingHom
+import Math.Algebra.Hom.Defs
 import Math.Algebra.LinearMap
 import Math.Algebra.Basic
 
@@ -15,10 +15,10 @@ structure AlgebraMapHom where
 
 notation:25 A " →ₐ₀[" R "] " B => AlgebraMapHom R A B
 
-class AlgebraMapHomClass where
+class IsAlgebraMapHom where
   resp_algebraMap (f: F) : ∀r: R, f (algebraMap r: A) = (algebraMap r: B)
 
-export AlgebraMapHomClass (resp_algebraMap)
+export IsAlgebraMapHom (resp_algebraMap)
 
 structure AlgHom extends A →+* B where
   resp_algebraMap : ∀r: R, toFun (algebraMap r: A) = (algebraMap r: B)
@@ -33,19 +33,19 @@ instance : FunLike (A →ₐ[R] B) A B where
     congr
     apply DFunLike.coe_inj eq
 
-instance : ZeroHomClass (A →ₐ[R] B) A B where
+instance : IsZeroHom (A →ₐ[R] B) A B where
   resp_zero f := f.resp_zero
 
-instance : OneHomClass (A →ₐ[R] B) A B where
+instance : IsOneHom (A →ₐ[R] B) A B where
   resp_one f := f.resp_one
 
-instance : AddHomClass (A →ₐ[R] B) A B where
+instance : IsAddHom (A →ₐ[R] B) A B where
   resp_add f := f.resp_add
 
-instance : MulHomClass (A →ₐ[R] B) A B where
+instance : IsMulHom (A →ₐ[R] B) A B where
   resp_mul f := f.resp_mul
 
-instance : AlgebraMapHomClass (A →ₐ[R] B) R A B where
+instance : IsAlgebraMapHom (A →ₐ[R] B) R A B where
   resp_algebraMap f := f.resp_algebraMap
 
 structure AlgEmbedding extends A ↪ B, A →ₐ[R] B where
@@ -67,19 +67,19 @@ instance : FunLike (A ↪ₐ[R] B) A B where
 instance : IsEmbeddingLike (A ↪ₐ[R] B) A B where
   coe_inj f := f.inj
 
-instance : ZeroHomClass (A ↪ₐ[R] B) A B where
+instance : IsZeroHom (A ↪ₐ[R] B) A B where
   resp_zero f := f.resp_zero
 
-instance : OneHomClass (A ↪ₐ[R] B) A B where
+instance : IsOneHom (A ↪ₐ[R] B) A B where
   resp_one f := f.resp_one
 
-instance : AddHomClass (A ↪ₐ[R] B) A B where
+instance : IsAddHom (A ↪ₐ[R] B) A B where
   resp_add f := f.resp_add
 
-instance : MulHomClass (A ↪ₐ[R] B) A B where
+instance : IsMulHom (A ↪ₐ[R] B) A B where
   resp_mul f := f.resp_mul
 
-instance : AlgebraMapHomClass (A ↪ₐ[R] B) R A B where
+instance : IsAlgebraMapHom (A ↪ₐ[R] B) R A B where
   resp_algebraMap f := f.resp_algebraMap
 
 instance : IsEquivLike (A ≃ₐ[R] B) A B where
@@ -93,19 +93,19 @@ instance : IsEquivLike (A ≃ₐ[R] B) A B where
     apply DFunLike.coe_inj
     assumption
 
-instance : ZeroHomClass (A ≃ₐ[R] B) A B where
+instance : IsZeroHom (A ≃ₐ[R] B) A B where
   resp_zero f := f.resp_zero
 
-instance : OneHomClass (A ≃ₐ[R] B) A B where
+instance : IsOneHom (A ≃ₐ[R] B) A B where
   resp_one f := f.resp_one
 
-instance : AddHomClass (A ≃ₐ[R] B) A B where
+instance : IsAddHom (A ≃ₐ[R] B) A B where
   resp_add f := f.resp_add
 
-instance : MulHomClass (A ≃ₐ[R] B) A B where
+instance : IsMulHom (A ≃ₐ[R] B) A B where
   resp_mul f := f.resp_mul
 
-instance : AlgebraMapHomClass (A ≃ₐ[R] B) R A B where
+instance : IsAlgebraMapHom (A ≃ₐ[R] B) R A B where
   resp_algebraMap f := f.resp_algebraMap
 
 end
@@ -116,8 +116,8 @@ variable {F R A B: Type*}
   [FunLike F A B]
   [SemiringOps R] [SemiringOps A] [SemiringOps B] [SemiringOps C]
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
-variable [ZeroHomClass F A B] [OneHomClass F A B] [AddHomClass F A B] [MulHomClass F A B]
-   [AlgebraMapHomClass F R A B]
+variable [IsZeroHom F A B] [IsOneHom F A B] [IsAddHom F A B] [IsMulHom F A B]
+   [IsAlgebraMapHom F R A B]
 
 @[coe]
 def toAlgebraMapHom (f: F) : A →ₐ₀[R] B where
@@ -129,7 +129,7 @@ def toAlgHom' (f: F) : A →ₐ[R] B where
   toRingHom := toRingHom f
   resp_algebraMap := resp_algebraMap f
 
-instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsAlgebra R A] [IsAlgebra R B]: SMulHomClass F R A B where
+instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsAlgebra R A] [IsAlgebra R B]: IsSMulHom F R A B where
   resp_smul := by
     intro f r x
     rw [smul_def, smul_def, resp_mul, resp_algebraMap]
@@ -143,7 +143,7 @@ variable (F R A B: Type*)
   [SemiringOps R] [SemiringOps A] [SemiringOps B] [SemiringOps C]
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
 
-variable [AddHomClass F A B] [MulHomClass F A B] [AlgebraMapHomClass F R A B]
+variable [IsAddHom F A B] [IsMulHom F A B] [IsAlgebraMapHom F R A B]
   [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsAlgebra R A] [IsAlgebra R B]
 
 def toAlgHom (f: F) : A →ₐ[R] B where

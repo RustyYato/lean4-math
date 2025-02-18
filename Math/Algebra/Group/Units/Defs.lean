@@ -1,5 +1,5 @@
 import Math.Algebra.Group.Defs
-import Math.Algebra.Monoid.Units
+import Math.Algebra.Monoid.Units.Defs
 
 instance [MonoidOps α] [IsMonoid α] : Pow (Units α) ℤ where
   pow := flip zpowRec

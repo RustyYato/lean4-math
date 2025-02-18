@@ -1,24 +1,7 @@
-import Math.Algebra.RingHom
+import Math.Algebra.Hom.Defs
 import Math.Algebra.Module.Defs
 
 variable [SMul R A] [SMul R B] [SMul R C]
-
-structure SMulHom (R A B: Type*) [SMul R A] [SMul R B] where
-  toFun: A -> B
-  resp_smul: ∀{r: R} {x: A}, toFun (r • x) = r • toFun x
-
-instance : FunLike (SMulHom R A B) A B where
-  coe := SMulHom.toFun
-  coe_inj := by
-    intro f g eq; cases f; congr
-
-class SMulHomClass (F R: Type*) (A B: outParam Type*) [FunLike F A B] [SMul R A] [SMul R B] where
-  resp_smul (f: F): ∀{r: R} {x: A}, f (r • x) = r • f x
-
-export SMulHomClass (resp_smul)
-
-instance : SMulHomClass (SMulHom R A B) R A B where
-  resp_smul := SMulHom.resp_smul
 
 structure LinearMap (R A B: Type*) [Add A] [Add B] [SMul R A] [SMul R B] extends AddHom A B, SMulHom R A B where
 
@@ -39,14 +22,14 @@ instance [Add A] [Add B] : FunLike (A →ₗ[R] B) A B where
     apply DFunLike.coe_inj
     assumption
 
-instance [Add A] [Add B] : AddHomClass (A →ₗ[R] B) A B where
+instance [Add A] [Add B] : IsAddHom (A →ₗ[R] B) A B where
   resp_add f := f.resp_add
-instance [Add A] [Add B] : SMulHomClass (A →ₗ[R] B) R A B where
+instance [Add A] [Add B] : IsSMulHom (A →ₗ[R] B) R A B where
   resp_smul f := f.resp_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
-  [IsDistribMulAction R A] [IsModule R B] : ZeroHomClass (A →ₗ[R] B) A B where
+  [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A →ₗ[R] B) A B where
   resp_zero := by
     intro f
     rw [←smul_zero (0: R), resp_smul, zero_smul]
@@ -58,14 +41,14 @@ instance [Add A] [Add B] : FunLike (A ↪ₗ[R] B) A B where
     apply DFunLike.coe_inj
     assumption
 
-instance [Add A] [Add B] : AddHomClass (A ↪ₗ[R] B) A B where
+instance [Add A] [Add B] : IsAddHom (A ↪ₗ[R] B) A B where
   resp_add f := f.resp_add
-instance [Add A] [Add B] : SMulHomClass (A ↪ₗ[R] B) R A B where
+instance [Add A] [Add B] : IsSMulHom (A ↪ₗ[R] B) R A B where
   resp_smul f := f.resp_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
-  [IsDistribMulAction R A] [IsModule R B] : ZeroHomClass (A ↪ₗ[R] B) A B where
+  [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A ↪ₗ[R] B) A B where
   resp_zero := by
     intro f
     rw [←smul_zero (0: R), resp_smul, zero_smul]
@@ -99,14 +82,14 @@ instance [Add A] [Add B] : FunLike (A ≃ₗ[R] B) A B where
     apply DFunLike.coe_inj
     assumption
 
-instance [Add A] [Add B] : AddHomClass (A ≃ₗ[R] B) A B where
+instance [Add A] [Add B] : IsAddHom (A ≃ₗ[R] B) A B where
   resp_add f := f.resp_add
-instance [Add A] [Add B] : SMulHomClass (A ≃ₗ[R] B) R A B where
+instance [Add A] [Add B] : IsSMulHom (A ≃ₗ[R] B) R A B where
   resp_smul f := f.resp_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
-  [IsDistribMulAction R A] [IsModule R B] : ZeroHomClass (A ≃ₗ[R] B) A B where
+  [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A ≃ₗ[R] B) A B where
   resp_zero := by
     intro f
     rw [←smul_zero (0: R), resp_smul, zero_smul]
@@ -123,7 +106,7 @@ def LinearEquiv.symm {R A B: Type*} [Add A] [Add B] [SMul R A] [SMul R B] (h: A 
     rw [←h.coe_symm (_ + _)]
     congr
     show _ = h (h.toEquiv.symm _ + h.toEquiv.symm _)
-    rw [AddHomClass.resp_add]
+    rw [IsAddHom.resp_add]
     congr
     apply (h.symm_coe _).symm
     apply (h.symm_coe _).symm
@@ -152,7 +135,7 @@ def LinearEquiv.trans {R A B C: Type*} [Add A] [Add B] [Add C] [SMul R A] [SMul 
 
 def toLinearMap
   [FunLike F A B] [SMul R A] [SMul R B] [Add A] [Add B]
-  [AddHomClass F A B] [SMulHomClass F R A B] (f: F) : LinearMap R A B where
+  [IsAddHom F A B] [IsSMulHom F R A B] (f: F) : LinearMap R A B where
   toFun := f
   resp_add := resp_add _
   resp_smul := resp_smul _

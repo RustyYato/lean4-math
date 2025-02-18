@@ -1,5 +1,5 @@
 import Math.Algebra.GroupWithZero.Defs
-import Math.Algebra.Group.Units
+import Math.Algebra.Group.Units.Defs
 
 variable [GroupWithZeroOps α] [IsGroupWithZero α]
 

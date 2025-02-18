@@ -1,5 +1,5 @@
 import Math.Algebra.Basic
-import Math.Algebra.Group.Units
+import Math.Algebra.Group.Units.Defs
 import Math.Algebra.Semiring.Char
 import Math.Algebra.Order
 import Math.Order.Linear
