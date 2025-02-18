@@ -6,11 +6,6 @@ instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps
 
 class IsRing (α: Type*) [RingOps α] extends IsSemiring α, IsAddGroupWithOne α : Prop where
 
--- a shortcut instance to prevent timeouts
-instance (priority := 5000) [RingOps α] [IsRing α] : IsSemiring α where
-  npow_zero := npow_zero
-  npow_succ := npow_succ
-
 instance [RingOps α] [IsSemiring α] [IsAddGroupWithOne α] : IsRing α where
   intCast_ofNat := intCast_ofNat
   intCast_negSucc := intCast_negSucc

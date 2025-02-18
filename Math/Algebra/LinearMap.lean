@@ -186,7 +186,9 @@ instance
 
 /-- A shorthand for the type of `R`-bilinear `Nₗ`-valued maps on `M`. -/
 abbrev BilinMap
+  (R A B: Type*)
   [Add A] [AddMonoidOps B] [MonoidOps R]
-  [IsMonoid R] [IsAddMonoid B] [IsAddCommMagma B]
-  [IsSMulComm R R B] [IsDistribMulAction R B]
+  [IsMonoid R] [IsCommMagma R]
+  [IsAddMonoid B] [IsAddCommMagma B]
+  [SMul R A] [SMul R B] [IsDistribMulAction R B]
   : Type _ := A →ₗ[R] A →ₗ[R] B

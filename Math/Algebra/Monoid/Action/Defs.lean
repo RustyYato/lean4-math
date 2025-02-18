@@ -56,3 +56,7 @@ instance [SMul Mᵐᵒᵖ α] [SMul M α] [IsCentralScalar M α] [IsSMulComm M M
     have : m = MulOpp.mk m.get := rfl
     rw [this]
     rw [op_smul_eq_smul, op_smul_eq_smul, smul_comm]
+
+instance [MonoidOps R] [IsMonoid R] : IsMulAction R R where
+  one_smul _ := one_mul _
+  mul_smul _ _ _ := mul_assoc _ _ _

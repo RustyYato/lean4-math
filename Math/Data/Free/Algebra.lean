@@ -1,4 +1,4 @@
-import Math.Algebra.Ring
+import Math.Algebra.Ring.Defs
 import Math.Algebra.Hom
 import Math.Algebra.Group.Hom
 import Math.Relation.RelIso
@@ -283,6 +283,9 @@ instance [SemiringOps R] [IsSemiring R] : IsAlgebra R (FreeAlgebra R X) where
   smul_def := by
     intro r x
     rfl
+
+-- a shortcut instance to prevent timeouts
+local instance (priority := 5000) [RingOps α] [IsRing α] : IsSemiring α := IsRing.toIsSemiring
 
 instance [RingOps R] [IsRing R] : IsAddGroup (FreeAlgebra R X) where
   sub_eq_add_neg _ _ := rfl

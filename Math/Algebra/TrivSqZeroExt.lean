@@ -1,4 +1,4 @@
-import Math.Algebra.Ring
+import Math.Algebra.Ring.Defs
 import Math.Function.Basic
 import Math.Algebra.Impls.Prod
 

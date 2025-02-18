@@ -34,6 +34,11 @@ instance [SemiringOps R] [IsSemiring R] : IsSemiring (TensorAlgebra R M) := infe
 instance [RingOps R] [IsRing R] : IsRing (TensorAlgebra R M) := inferInstanceAs (IsRing (RingQuot (Rel R M)))
 instance [SemiringOps R] [IsSemiring R] [IsModule R M] : IsAlgebra R (TensorAlgebra R M) := inferInstanceAs (IsAlgebra R (RingQuot (Rel R M)))
 
+instance [SemiringOps R] [IsSemiring R] : Add (TensorAlgebra R M) := inferInstance
+instance [SemiringOps R] [IsSemiring R] : Mul (TensorAlgebra R M) := inferInstance
+instance [RingOps R] [IsRing R] : Sub (TensorAlgebra R M) := inferInstance
+instance [RingOps R] [IsRing R] : Neg (TensorAlgebra R M) := inferInstance
+
 end Instances
 
 section ι
