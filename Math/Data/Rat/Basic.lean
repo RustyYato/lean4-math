@@ -573,6 +573,12 @@ instance : IsField ℚ where
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
 
+def add_half (a: ℚ) : a = a /? 2 + a /? 2 := by
+  rw [←two_mul, div?_eq_mul_inv?, mul_comm, mul_assoc, inv?_mul_cancel, mul_one]
+def sub_half (a: ℚ) : a - a /? 2 = a /? 2 := by
+  conv => { lhs; lhs ; rw [add_half a] }
+  rw [add_sub_assoc, add_sub_cancel]
+
 def mul_nonzero (a b: ℚ) : a ≠ 0 -> b ≠ 0 -> a * b ≠ 0 := by
   intro ha hb h
   cases of_mul_eq_zero h <;> contradiction

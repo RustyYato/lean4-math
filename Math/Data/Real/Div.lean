@@ -25,7 +25,7 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
   by_cases h:a n - b m = 0
   erw [h, Rat.div_eq_mul_inv, Rat.zero_mul]
   assumption
-  apply (Rat.lt_of_mul_right_pos _).mpr
+  apply (lt_uiff_mul_right_pos _).mpr
   apply lt_trans _ eqv
   · assumption
   · assumption
@@ -218,8 +218,8 @@ def inv_pos (a: ℝ) (apos: a.IsPos) : (a⁻¹?).IsPos := by
   unfold CauchySeq.inv
   simp
   rw [dif_neg]
-  apply (Rat.le_of_mul_left_pos anpos).mpr
-  apply (Rat.le_of_mul_left_pos bound_pos).mpr
+  apply (le_iff_mul_left_pos anpos).mpr
+  apply (le_iff_mul_left_pos bound_pos).mpr
   rw [Rat.mul_inv_self, ←Rat.mul_assoc, Rat.mul_comm bound, Rat.mul_assoc, Rat.mul_inv_self,
     Rat.mul_one, Rat.mul_one]
   apply le_of_lt

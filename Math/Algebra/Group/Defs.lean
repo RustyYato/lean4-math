@@ -287,6 +287,12 @@ def sub_sub [IsAddGroup α] (a b c: α) : a - (b - c) = a + c - b := by
 def sub_add_cancel [IsAddGroup α] (a b: α) : a - b + b = a := by
   rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero]
 
+def add_sub_cancel [IsAddGroup α] [IsAddCommMagma α] (a b: α) : a + (b - a) = b := by
+  rw [sub_eq_add_neg, add_left_comm, add_neg_cancel, add_zero]
+
+def sub_add (k a b: α) : k - (a + b) = k - b - a := by
+  rw [sub_eq_add_neg, neg_add_rev, ←add_assoc, sub_eq_add_neg, sub_eq_add_neg]
+
 def eq_of_sub_eq_zero [IsAddGroup α] {a b: α} : a - b = 0 -> a = b := by
   intro h
   rw [sub_eq_add_neg] at h

@@ -131,6 +131,9 @@ def lt_or_gt_of_ne : a ≠ b -> a < b ∨ b < a := by
 def lt_iff_not_le : a < b ↔ ¬b ≤ a := ⟨not_le_of_lt,lt_of_not_le⟩
 def le_iff_not_lt : a ≤ b ↔ ¬b < a := ⟨not_lt_of_le,le_of_not_lt⟩
 
+def not_le : ¬b ≤ a ↔ a < b := ⟨lt_of_not_le, not_le_of_lt⟩
+def not_lt : ¬b < a ↔ a ≤ b := ⟨le_of_not_lt, not_lt_of_le⟩
+
 def lt_iff_of_le_iff [LE β] [LT β] [IsLinearOrder β] {a b: α} {c d: β} : (a ≤ b ↔ c ≤ d) -> (b < a ↔ d < c) := by
   intro h
   apply Iff.trans lt_iff_not_le

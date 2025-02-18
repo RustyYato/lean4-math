@@ -1,6 +1,6 @@
 import Math.Topology.MetricSpace.Basic
 import Math.Topology.Constructions
-import Math.Data.Rat.OrderedAlgebra
+import Math.Data.RatOld.OrderedAlgebra
 
 instance : Dist ℚ ℚ where
   dist a b := ‖a - b‖

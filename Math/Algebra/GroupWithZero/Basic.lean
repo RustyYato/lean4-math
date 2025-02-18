@@ -131,3 +131,11 @@ def inv?_eq_of_mul_right (a b: α) (h: b * a = 1) : b = a⁻¹?~(by
   intro g
   rw [g, zero_mul] at h
   exact zero_ne_one _ h
+
+def inv?_inv? (a: α) (h: a ≠ 0) : a⁻¹?⁻¹? = a := by
+  symm
+  refine inv?_eq_of_mul_right a⁻¹? a ?_
+  rw [mul_inv?_cancel]
+
+def div?_mul_cancel (a b: α) (h: b ≠ 0) : a /? b * b = a := by
+  rw [div?_eq_mul_inv?, mul_assoc, inv?_mul_cancel, mul_one]

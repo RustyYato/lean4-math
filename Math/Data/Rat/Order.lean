@@ -1,5 +1,7 @@
 import Math.Data.Rat.Basic
 import Math.Order.Linear
+import Math.Algebra.GroupWithZero.Basic
+import Math.Ops.CheckedOrder
 
 namespace Rat
 
@@ -73,6 +75,10 @@ def isPos.neg {a: ℚ} : ¬a.isNonneg ↔ (-a).isPos := by
   cases a
   simp [Fract.isNonneg, Fract.isPos, ←lt_iff_not_le]
   omega
+def isPos.mul {a b: ℚ} (ha: a.isPos) : b.isPos ↔ (a * b).isPos := by
+  cases a, b with | mk a b =>
+  simp [Fract.isPos, ← Int.sign_eq_one_iff_pos] at *
+  simp [ha]
 
 def isNonneg.antisymm {a: ℚ} : a.isNonneg -> (-a).isNonneg -> a = 0 := by
   intro ha hb
@@ -218,5 +224,321 @@ def abs_nonzero (a: ℚ) : a ≠ 0 -> ‖a‖ ≠ 0 := by
 
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply abs_nonzero <;> assumption)
+
+def neg_le_neg_iff {a b: ℚ} : a ≤ b ↔ -b ≤ -a := by
+  rw [le_def, le_def, neg_sub_neg]
+def neg_lt_neg_iff {a b: ℚ} : a < b ↔ -b < -a := by
+  rw [lt_def, lt_def, neg_sub_neg]
+
+-- def nonneg_iff_sign_nonneg {a: ℚ} : 0 ≤ a ↔ 0 ≤ a.sign := by sorry
+-- def Fract.nonneg_iff_sign_nonneg {a: Fract} : 0 ≤ a ↔ 0 ≤ a.sign := by sorry
+-- def nonpos_iff_sign_nonpos {a: ℚ} : a ≤ 0 ↔ a.sign ≤ 0 := by sorry
+-- def pos_iff_sign_pos {a: ℚ} : 0 < a ↔ 0 < a.sign := by sorry
+-- def Fract.pos_iff_sign_pos {a: Fract} : 0 < a ↔ 0 < a.sign := by sorry
+-- def neg_iff_sign_neg {a: ℚ} : a < 0 ↔ a.sign < 0 := by sorry
+-- def eq_zero_iff_sign_eq_zero {a: ℚ} : a = 0 ↔ a.sign = 0 := by sorry
+
+def abs_nonneg (a: ℚ) : 0 ≤ ‖a‖ := by
+  rw [abs_def]
+  split
+  assumption
+  rename_i h
+  rw [le_def, sub_zero]; rw [le_def, sub_zero] at h
+  apply isNonneg.neg.mp
+  intro g; apply h
+  cases a
+  exact le_of_lt (α := Int) g
+def abs_pos (a: ℚ) : a ≠ 0 -> 0 < ‖a‖ := by
+  intro h
+  apply lt_of_le_of_ne
+  apply abs_nonneg
+  intro g
+  have := (abs_nonzero _ h).symm
+  contradiction
+def add_le_add_right {a b k: ℚ} : a ≤ b ↔ a + k ≤ b + k := by
+  rw [le_def, le_def, add_sub_assoc, sub_add, sub_self, zero_sub, sub_eq_add_neg]
+def add_le_add_left {a b k: ℚ} : a ≤ b ↔ k + a ≤ k + b := by
+  rw [add_comm k, add_comm k]
+  apply add_le_add_right
+def add_lt_add_right {a b k: ℚ} : a < b ↔ a + k < b + k := by
+  apply lt_iff_of_le_iff
+  apply add_le_add_right
+def add_lt_add_left {a b k: ℚ} : a < b ↔ k + a < k + b := by
+  apply lt_iff_of_le_iff
+  apply add_le_add_left
+def add_le_add {a b c d: ℚ} : a ≤ c -> b ≤ d -> a + b ≤ c + d := by
+  intro ac bd
+  apply le_trans
+  apply add_le_add_right.mp
+  assumption
+  apply add_le_add_left.mp
+  assumption
+def add_lt_add {a b c d: ℚ} : a < c -> b < d -> a + b < c + d := by
+  intro ac bd
+  apply lt_trans
+  apply add_lt_add_right.mp
+  assumption
+  apply add_lt_add_left.mp
+  assumption
+def add_lt_add_of_lt_of_le {a b c d: ℚ} : a < c -> b ≤ d -> a + b < c + d := by
+  intro ac bd
+  apply lt_of_lt_of_le
+  apply add_lt_add_right.mp
+  assumption
+  apply add_le_add_left.mp
+  assumption
+def add_lt_add_of_le_of_lt {a b c d: ℚ} : a ≤ c -> b < d -> a + b < c + d := by
+  intro ac bd
+  apply lt_of_le_of_lt
+  apply add_le_add_right.mp
+  assumption
+  apply add_lt_add_left.mp
+  assumption
+def add_neg_lt_left (a b: ℚ) : b < 0 -> a + b < a := by
+  intro h
+  conv => { rhs; rw [←add_zero a] }
+  apply add_lt_add_of_le_of_lt
+  rfl
+  assumption
+def left_le_add_nonneg (a b: ℚ) : 0 ≤ b -> a ≤ a + b := by
+  intro h
+  conv => { lhs; rw [←add_zero a] }
+  apply add_le_add
+  rfl
+  assumption
+def add_nonneg (a b: ℚ) : 0 ≤ a -> 0 ≤ b -> 0 ≤ a + b := by
+  intro ha hb
+  rw [←add_zero 0]
+  apply add_le_add <;> assumption
+def add_nonpos (a b: ℚ) : a ≤ 0 -> b ≤ 0 -> a + b ≤ 0 := by
+  intro ha hb
+  rw [←add_zero 0]
+  apply add_le_add <;> assumption
+
+def add_le_iff_le_sub {a b k: ℚ} : a + k ≤ b ↔ a ≤ b - k := by
+  rw [add_le_add_right (k := -k), add_assoc, add_neg_cancel, add_zero, sub_eq_add_neg]
+def le_add_iff_sub_le {a b k: ℚ} : a ≤ b + k ↔ a - k ≤ b := by
+  rw [add_le_add_right (k := -k), add_assoc, add_neg_cancel, add_zero, sub_eq_add_neg]
+
+def add_lt_iff_lt_sub {a b k: ℚ} : a + k < b ↔ a < b - k := by
+  apply lt_iff_of_le_iff
+  apply le_add_iff_sub_le
+def lt_add_iff_sub_lt {a b k: ℚ} : a < b + k ↔ a - k < b := by
+  apply lt_iff_of_le_iff
+  apply add_le_iff_le_sub
+
+def lt_iff_mul_left_pos {a b k: ℚ} : 0 < k -> (a < b ↔ k * a < k * b) := by
+  intro kpos
+  rw [lt_def, lt_def, ←mul_sub]
+  apply isPos.mul
+  rw [lt_def, sub_zero] at kpos
+  assumption
+def lt_iff_mul_right_pos {a b k: ℚ} : 0 < k -> (a < b ↔ a * k < b * k) := by
+  rw [mul_comm _ k, mul_comm _ k]
+  apply lt_iff_mul_left_pos
+def le_iff_mul_left_pos {a b k: ℚ} : 0 < k -> (a ≤ b ↔ k * a ≤ k * b) := by
+  intro kpos
+  apply le_iff_of_lt_iff
+  apply lt_iff_mul_left_pos
+  assumption
+def le_iff_mul_right_pos {a b k: ℚ} : 0 < k -> (a ≤ b ↔ a * k ≤ b * k) := by
+  intro kpos
+  apply le_iff_of_lt_iff
+  apply lt_iff_mul_right_pos
+  assumption
+def mul_le_mul_of_right_nonneg (a b k: ℚ) : 0 ≤ k -> a ≤ b -> a * k ≤ b * k := by
+  intro knonneg a_le_b
+  rcases lt_or_eq_of_le knonneg with h | h
+  apply (le_iff_mul_right_pos h).mp
+  assumption
+  rw [←h, mul_zero, mul_zero]
+def mul_le_mul_of_left_nonneg (a b k: ℚ) : 0 ≤ k -> a ≤ b -> k * a ≤ k * b := by
+  intro knonneg a_le_b
+  rcases lt_or_eq_of_le knonneg with h | h
+  apply (le_iff_mul_left_pos h).mp
+  assumption
+  rw [←h, zero_mul, zero_mul]
+def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹? := by
+  suffices ∀(a: ℚ) (h: a ≠ 0), 0 < a -> 0 < a⁻¹? by
+    apply Iff.intro
+    apply this
+    intro g
+    have := this _ (by invert_tactic) g
+    rw [inv?_inv?] at this
+    assumption
+  clear h a
+  intro a h ha
+  apply (lt_trichotomy 0 a⁻¹?).resolve_right
+  intro g
+  rcases g with g | g
+  have := g.symm
+  have : a⁻¹? ≠ 0 := by invert_tactic
+  contradiction
+  have := (lt_iff_mul_left_pos ha).mp g
+  rw [mul_inv?_cancel, mul_zero] at this
+  contradiction
+
+def nonpos_of_le_neg (a: ℚ) : a ≤ -a -> a ≤ 0 := by
+  intro h
+  rw [le_def, ←neg_sub, sub_eq_add_neg, neg_neg, ←sub_zero (- _), ←le_def, neg_add_rev] at h
+  rw [←mul_two] at h
+  have := (le_iff_mul_right_pos (k := 2⁻¹?) (by decide)).mp h
+  rw [zero_mul, mul_assoc, mul_inv?_cancel, mul_one, neg_le_neg_iff, neg_neg] at this
+  assumption
+def nonneg_of_neg_le (a: ℚ) : -a ≤ a -> 0 ≤ a := by
+  intro h
+  rw [neg_le_neg_iff]
+  apply nonpos_of_le_neg
+  rw [neg_neg]
+  assumption
+def le_neg_of_nonpos (a: ℚ) : a ≤ 0 -> a ≤ -a := by
+  intro h
+  apply le_trans h
+  rw [neg_le_neg_iff, neg_neg]
+  assumption
+def neg_le_of_nonneg (a: ℚ) : 0 ≤ a -> -a ≤ a := by
+  intro h
+  apply le_trans _ h
+  rw [neg_le_neg_iff, neg_neg]
+  assumption
+def abs_add_le_add_abs.helper (a b: ℚ) : a < 0 -> 0 ≤ b -> ‖a + b‖ ≤ -a + b := by
+  intro ha hb
+  rw [abs_def]
+  split
+  apply add_le_add_right.mp
+  apply add_le_add_left.mpr
+  rw [neg_add_cancel]
+  rw [neg_le_neg_iff, neg_add_rev, neg_neg]
+  apply add_nonpos <;> (apply le_of_lt; assumption)
+  rw [neg_add_rev, add_comm]
+  apply add_le_add_left.mp
+  apply add_le_add_right.mpr
+  rw [neg_add_cancel]
+  apply add_nonneg <;> assumption
+def abs_add_le_add_abs (a b: ℚ) : ‖a + b‖ ≤ ‖a‖ + ‖b‖ := by
+  rw [abs_def a, abs_def b]
+  split <;> split
+  · rw [abs_def, if_pos]
+    apply add_nonneg <;> assumption
+  · rw [add_comm a, add_comm a]
+    apply abs_add_le_add_abs.helper
+    rw [not_le] at *; assumption
+    assumption
+  · apply abs_add_le_add_abs.helper
+    rw [not_le] at *; assumption
+    assumption
+  · rename_i h g
+    rw [not_le] at h g
+    rw [abs_def, if_neg, neg_add_rev, add_comm]
+    rw [not_le]
+    rw [←add_zero 0]
+    apply add_lt_add <;> assumption
+
+def sub_abs_self_sub (a b: ℚ) : a - ‖a - b‖ ≤ b := by
+  rw [abs_def]; split
+  rw [sub_sub, add_sub_assoc, add_sub_cancel]
+  rw [sub_eq_add_neg, neg_neg]
+  rename_i h; rw [not_le] at h
+  conv => { rhs; rw [←add_zero b] }
+  apply add_le_add
+  rw [←lt_add_iff_sub_lt, zero_add] at h
+  apply le_of_lt; assumption
+  apply le_of_lt; assumption
+def sub_le_sub (a b c d: ℚ) : a ≤ c -> d ≤ b -> a - b ≤ c - d := by
+  rw [neg_le_neg_iff (a := d) (b := b), sub_eq_add_neg, sub_eq_add_neg]
+  apply add_le_add
+def mul_pos {a b: ℚ} : 0 < a -> 0 < b -> 0 < a * b := by
+  intro ha hb
+  have := (lt_iff_mul_right_pos hb).mp ha
+  rw [zero_mul] at this
+  assumption
+def mul_nonneg {a b: ℚ} : 0 ≤ a -> 0 ≤ b -> 0 ≤ a * b := by
+  intro ha hb
+  rcases lt_or_eq_of_le ha with ha | ha
+  rcases lt_or_eq_of_le hb with hb | hb
+  apply le_of_lt; apply mul_pos <;> assumption
+  rw [←hb, mul_zero]
+  rw [←ha, zero_mul]
+def pos_mul_lt_of_right_lt_one (a b: ℚ) : 0 < a -> b < 1 -> a * b < a := by
+  intro ha hb
+  conv => {
+    rhs; rw [←mul_one a]
+  }
+  apply (lt_iff_mul_left_pos _).mp
+  assumption
+  assumption
+def abs_of_nonneg (a: ℚ) : 0 ≤ a -> ‖a‖ = a := by
+  intro h
+  rw [abs_def, if_pos h]
+def abs_of_pos (a: ℚ) : 0 < a -> ‖a‖ = a := by
+  intro h
+  rw [abs_def, if_pos (le_of_lt h)]
+def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
+  conv => { rhs; rw [add_half a] }
+  conv => { lhs; rw [←add_zero (_ /? _)] }
+  apply add_lt_add_of_le_of_lt
+  rfl
+  rw [div?_eq_mul_inv?]
+  apply mul_pos
+  assumption
+  decide
+def abs_abs (a: ℚ) : ‖‖a‖‖ = ‖a‖ := by
+  rw [abs_of_nonneg]
+  apply abs_nonneg
+def abs_mul (a b: ℚ) : ‖a‖ * ‖b‖ = ‖a * b‖ := by
+  simp [abs_def]
+  rcases lt_trichotomy 0 a with ha | ha | ha
+  <;> rcases lt_trichotomy 0 b with hb | hb | hb
+  any_goals rw [if_pos (le_of_lt ha)]
+  any_goals rw [if_pos (le_of_lt hb)]
+  any_goals rw [←ha]
+  any_goals rw [←hb]
+  repeat any_goals rw [zero_mul]
+  repeat any_goals rw [mul_zero]
+  all_goals repeat rw [if_pos (le_refl _)]
+  repeat any_goals rw [zero_mul]
+  repeat any_goals rw [mul_zero]
+  rw [if_pos]
+  apply le_of_lt; apply mul_pos <;> assumption
+  rw [if_neg (not_le_of_lt hb), if_neg, neg_mul_right]
+  rw [not_le, neg_lt_neg_iff, neg_mul_right]
+  apply mul_pos; assumption
+  rw [neg_lt_neg_iff, neg_neg]; assumption
+  rw [if_neg, if_neg, neg_mul_left]
+  rw [not_le, neg_lt_neg_iff, neg_mul_left]
+  apply mul_pos
+  rw [neg_lt_neg_iff, neg_neg]; assumption
+  assumption
+  rw [not_le]; assumption
+  rw [if_neg, if_neg, if_pos, ←neg_mul_left, ←neg_mul_right, neg_neg]
+  rw [←neg_neg (a * b), neg_mul_left, neg_mul_right]
+  apply mul_nonneg
+  repeat
+    rw [neg_le_neg_iff, neg_neg]
+    apply le_of_lt; assumption
+  all_goals
+    rw [not_le]
+    assumption
+def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ < 1 ↔ ‖a‖ < ‖b‖ := by
+  rw [lt_iff_mul_right_pos (k := ‖b‖), one_mul, abs_mul, div?_eq_mul_inv?,
+    mul_assoc, inv?_mul_cancel, mul_one]
+  exact abs_pos b h
+def le_add_left_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ b + a := by
+  conv => { lhs; rw [←zero_add a] }
+  apply add_le_add_right.mp
+  assumption
+def le_add_right_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ a + b := by
+  conv => { lhs; rw [←add_zero a] }
+  apply add_le_add_left.mp
+  assumption
+
+def div_le_iff_le_mul_of_pos (a b c: ℚ) (h: 0 < b) : a /? b ≤ c ↔ a ≤ c * b := by
+  rw [le_iff_mul_right_pos  (k := b), div?_mul_cancel]
+  assumption
+def div_le_iff_le_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b ≤ c ↔ c * b ≤ a := by
+  rw [le_iff_mul_right_pos  (k := -b), ←neg_mul_right, div?_mul_cancel,
+    ←neg_mul_right, ←neg_le_neg_iff]
+  rw [neg_lt_neg_iff, neg_neg]
+  assumption
 
 end Rat
