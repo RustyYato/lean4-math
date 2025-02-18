@@ -165,6 +165,15 @@ variable {R A B C: Type*}
   [SemiringOps R] [SemiringOps A] [SemiringOps B] [SemiringOps C]
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
 
+def AlgHom.toLinearMap
+  [SMul R A] [SMul R B]
+  [IsSemiring R] [IsSemiring A] [IsSemiring B]
+  [IsAlgebra R A] [IsAlgebra R B]
+  (h: A →ₐ[R] B) : A →ₗ[R] B where
+  toFun := h
+  resp_add := resp_add h
+  resp_smul := resp_smul h
+
 def AlgHom.comp (h: B →ₐ[R] C) (g: A →ₐ[R] B) : A →ₐ[R] C where
   toFun := h.toFun ∘ g.toFun
   resp_zero := by

@@ -190,39 +190,29 @@ instance : FunLike (Prod.sndHomType (α := α) (β := β)) (α × β) β where
   coe _ := Prod.snd
   coe_inj := by intro a b h; rfl
 
-instance [Zero α] [Zero β] : ZeroHomClass (Prod.fstHomType (α := α) (β := β)) (α × β) α where
+instance [Zero α] [Zero β] : IsZeroHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
   resp_zero _ := rfl
-instance [Zero α] [Zero β] : ZeroHomClass (Prod.sndHomType (α := α) (β := β)) (α × β) β where
+instance [Zero α] [Zero β] : IsZeroHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
   resp_zero _ := rfl
 
-instance [One α] [One β] : OneHomClass (Prod.fstHomType (α := α) (β := β)) (α × β) α where
+instance [One α] [One β] : IsOneHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
   resp_one _ := rfl
-instance [One α] [One β] : OneHomClass (Prod.sndHomType (α := α) (β := β)) (α × β) β where
+instance [One α] [One β] : IsOneHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
   resp_one _ := rfl
 
-instance [Add α] [Add β] : AddHomClass (Prod.fstHomType (α := α) (β := β)) (α × β) α where
+instance [Add α] [Add β] : IsAddHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
   resp_add _ := rfl
-instance [Add α] [Add β] : AddHomClass (Prod.sndHomType (α := α) (β := β)) (α × β) β where
+instance [Add α] [Add β] : IsAddHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
   resp_add _ := rfl
 
-instance [Mul α] [Mul β] : MulHomClass (Prod.fstHomType (α := α) (β := β)) (α × β) α where
+instance [Mul α] [Mul β] : IsMulHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
   resp_mul _ := rfl
-instance [Mul α] [Mul β] : MulHomClass (Prod.sndHomType (α := α) (β := β)) (α × β) β where
+instance [Mul α] [Mul β] : IsMulHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
   resp_mul _ := rfl
 
-instance [Neg α] [Neg β] : NegHomClass (Prod.fstHomType (α := α) (β := β)) (α × β) α where
-  resp_neg _ := rfl
-instance [Neg α] [Neg β] : NegHomClass (Prod.sndHomType (α := α) (β := β)) (α × β) β where
-  resp_neg _ := rfl
-
-instance [Inv α] [Inv β] : InvHomClass (Prod.fstHomType (α := α) (β := β)) (α × β) α where
-  resp_inv _ := rfl
-instance [Inv α] [Inv β] : InvHomClass (Prod.sndHomType (α := α) (β := β)) (α × β) β where
-  resp_inv _ := rfl
-
-instance [SMul R α] [SMul R β] : SMulHomClass (Prod.fstHomType (α := α) (β := β)) R (α × β) α where
+instance [SMul R α] [SMul R β] : IsSMulHom (Prod.fstHomType (α := α) (β := β)) R (α × β) α where
   resp_smul _ := rfl
-instance [SMul R α] [SMul R β] : SMulHomClass (Prod.sndHomType (α := α) (β := β)) R (α × β) β where
+instance [SMul R α] [SMul R β] : IsSMulHom (Prod.sndHomType (α := α) (β := β)) R (α × β) β where
   resp_smul _ := rfl
 
 instance [Subsingleton β] : IsEmbeddingLike (Prod.fstHomType (α := α) (β := β)) (α × β) α where

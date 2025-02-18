@@ -346,4 +346,66 @@ def inlHom [SemiringOps R] [IsSemiring R]
 
 end Mul
 
+-- a shortcut instance, since this is slow to infer
+instance
+  [SemiringOps R] [AddMonoidOps M]
+  [IsSemiring R] [IsAddMonoid M]
+  [SMul R M] [SMul Rᵐᵒᵖ M]
+  [IsDistribMulAction R M]
+  [IsDistribMulAction Rᵐᵒᵖ M] : SemiringOps (TrivSqZeroExt R M) := inferInstance
+
+instance
+  [SemiringOps R] [AddMonoidOps M]
+  [IsSemiring R] [IsAddMonoid M] [IsAddCommMagma M]
+  [SMul R M] [SMul Rᵐᵒᵖ M]
+  [IsModule R M]
+  [IsModule Rᵐᵒᵖ M]
+  [IsSMulComm Rᵐᵒᵖ R M] : IsSemiring (TrivSqZeroExt R M) where
+  add_comm a b := by ext <;> simp [add_comm]
+  mul_assoc a b c := by ext <;> simp [mul_assoc]
+  zero_mul a := by ext <;> simp [zero_mul]
+  mul_zero a := by ext <;> simp [mul_zero]
+  left_distrib k a b := by ext <;> simp [mul_add]
+  right_distrib a b k := by ext <;> simp [add_mul]
+
+instance
+  [SemiringOps R] [AddMonoidOps M]
+  [IsSemiring R] [IsAddMonoid M]
+  [SMul R M] [SMul Rᵐᵒᵖ M]
+  [IsDistribMulAction R M]
+  [IsDistribMulAction Rᵐᵒᵖ M] : AlgebraMap R (TrivSqZeroExt R M) where
+  toFun := inl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := by
+    intro x y
+    ext <;> simp [add_zero]
+  resp_mul := by
+    intro x y
+    ext <;> simp [add_zero, smul_zero]
+
+def algebraMap_eq_inl
+  [SemiringOps R] [AddMonoidOps M]
+  [IsSemiring R] [IsAddMonoid M]
+  [SMul R M] [SMul Rᵐᵒᵖ M]
+  [IsDistribMulAction R M]
+  [IsDistribMulAction Rᵐᵒᵖ M] :
+  (DFunLike.coe algebraMap) = inl (R := R) (M := M) := rfl
+
+
+instance
+  [SemiringOps R] [AddMonoidOps M]
+  [IsSemiring R] [IsAddMonoid M]
+  [IsCommMagma R] [IsAddCommMagma M]
+  [SMul R M] [SMul Rᵐᵒᵖ M]
+  [IsModule R M]
+  [IsModule Rᵐᵒᵖ M]
+  [IsCentralScalar R M]
+  [IsSMulComm Rᵐᵒᵖ R M] : IsAlgebra R (TrivSqZeroExt R M) where
+  commutes r x := by
+    ext <;> simp [algebraMap_eq_inl]
+    apply mul_comm r x.fst
+    rw [op_smul_eq_smul]
+  smul_def r x := by ext <;> simp [algebraMap_eq_inl]
+
 end TrivSqZeroExt

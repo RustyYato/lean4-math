@@ -1,5 +1,6 @@
 import Math.Algebra.Ring
 import Math.Algebra.Hom
+import Math.Algebra.Group.Hom
 import Math.Relation.RelIso
 
 namespace Free.Algebra
@@ -487,7 +488,7 @@ def ι_inj [IsNontrivial R] : Function.Injective (ι R (X := X)) := by
   have h₀ : f (ι R x) = 1 := if_pos rfl
   have h₁ : f (ι R y) = 0 := if_neg h
   rw [eq, h₁] at h₀
-  exact zero_ne_one h₀
+  exact zero_ne_one _ h₀
 
 @[simp]
 def lift_symm_apply (F : FreeAlgebra R X →ₐ[R] A) : (lift R).symm F = F ∘ ι R := rfl
@@ -514,7 +515,7 @@ def ι_ne_algebraMap [IsNontrivial R] (x: X) (y: R) : ι R x ≠ algebraMap y :=
   replace h₀: y = 0 := h₀
   replace h₁: y = 1 := h₁
   rw [h₀] at h₁
-  exact zero_ne_one h₁
+  exact zero_ne_one _ h₁
 
 @[simp]
 theorem ι_ne_zero [IsNontrivial R] (x : X) : ι R x ≠ 0 :=

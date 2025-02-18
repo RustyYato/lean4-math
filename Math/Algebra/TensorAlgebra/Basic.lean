@@ -1,6 +1,9 @@
 import Math.Data.Free.Algebra
 import Math.Algebra.RingQuot
 import Math.Algebra.LinearMap
+import Math.Algebra.Module.Hom
+import Math.Algebra.Hom
+import Math.Algebra.TrivSqZeroExt
 
 section TensorAlgebra
 
@@ -114,7 +117,7 @@ def induction {motive: TensorAlgebra R M -> Prop}
     assumption
     assumption
 
-def algebraMapInv : TensorAlgebra R M →ₐ[R] R :=
+private def algebraMapInv : TensorAlgebra R M →ₐ[R] R :=
   lift R {
     toFun _ := 0
     resp_add := by
@@ -126,20 +129,38 @@ def algebraMapInv : TensorAlgebra R M →ₐ[R] R :=
   }
 
 unseal RingQuot.liftAlgHom RingQuot.preLiftAlgHom in
-def algebraMap_leftInverse :
+private def algebraMap_leftInverse :
     Function.IsLeftInverse algebraMapInv (algebraMap (R := R) (A := TensorAlgebra R M)) := fun _ => rfl
 
 def algebraMap_inj : Function.Injective (algebraMap (R := R) (A := TensorAlgebra R M)) := algebraMap_leftInverse.Injective
 
-def ιInv : TensorAlgebra R M →ₗ[R] M := by
-  sorry
-  -- letI : Module Rᵐᵒᵖ M := Module.compHom _ ((RingHom.id R).fromOpposite mul_comm)
-  -- haveI : IsCentralScalar R M := ⟨fun r m => rfl⟩
-  -- exact (TrivSqZeroExt.sndHom R M).comp toTrivSqZeroExt.toLinearMap
+section
 
-theorem ι_leftInverse : Function.IsLeftInverse ιInv (ι R : M → TensorAlgebra R M) := fun x ↦ by
-  -- simp [ιInv]
-  sorry
+variable [SMul R M] [IsModule R M] [SMul Rᵐᵒᵖ M] [IsModule Rᵐᵒᵖ M] [IsCentralScalar R M]
+
+/-- The canonical map from `TensorAlgebra R M` into `TrivSqZeroExt R M` that sends
+`TensorAlgebra.ι` to `TrivSqZeroExt.inr`. -/
+private def toTrivSqZeroExt: TensorAlgebra R M →ₐ[R] TrivSqZeroExt R M :=
+  lift R (TrivSqZeroExt.inrHom)
+
+@[simp]
+private def toTrivSqZeroExt_ι (x : M) : toTrivSqZeroExt (ι R x) = TrivSqZeroExt.inr x := lift_ι_apply _ _
+
+end
+
+private def ιInv : TensorAlgebra R M →ₗ[R] M := by
+  let hom := ((RingHom.id R).toMulOpp mul_comm)
+  let smul: SMul Rᵐᵒᵖ M := SMul.comp hom
+  let _ : @IsModule Rᵐᵒᵖ M _ _ _ _ _ _ := IsModule.compHom ((RingHom.id R).toMulOpp mul_comm)
+  haveI : IsCentralScalar R M := ⟨fun r m => rfl⟩
+  exact (TrivSqZeroExt.sndHom (R := R) (M := M)).comp toTrivSqZeroExt.toLinearMap
+
+private def ι_leftInverse : Function.IsLeftInverse ιInv (ι R : M → TensorAlgebra R M) := fun x ↦
+  let hom := ((RingHom.id R).toMulOpp mul_comm)
+  let _: SMul Rᵐᵒᵖ M := SMul.comp hom
+  let _ : @IsModule Rᵐᵒᵖ M _ _ _ _ _ _ := IsModule.compHom ((RingHom.id R).toMulOpp mul_comm)
+  haveI : IsCentralScalar R M := ⟨fun _ _ => rfl⟩
+  of_eq_true (Eq.trans (congrArg (fun x_1 ↦ (TrivSqZeroExt.sndHom) x_1 = x) (toTrivSqZeroExt_ι x)) (eq_self x))
 
 @[simp]
 theorem ι_inj (x y : M) : ι R x = ι R y ↔ x = y :=

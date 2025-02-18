@@ -144,7 +144,7 @@ def wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s where
   toIsTrichotomous := h.tri
   trans := by
     intro a b c ab bc
-    exact h.resp_rel.mpr <| Relation.trans (h.resp_rel.mp ab) (h.resp_rel.mp bc)
+    exact h.resp_rel.mpr <| Trans.trans (h.resp_rel.mp ab) (h.resp_rel.mp bc)
 
 end RelEmbedding
 
@@ -199,7 +199,7 @@ def trans' (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r where
   trans := by
     intro a b c ab bc
     apply h.inv_resp_rel.mpr
-    apply Relation.trans
+    apply Relation.IsTrans.trans
     exact h.inv_resp_rel.mp ab
     exact h.inv_resp_rel.mp bc
 

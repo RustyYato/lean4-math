@@ -335,6 +335,23 @@ instance [IsMulHom F α β] : IsAddHom F (AddOfMul α) (AddOfMul β) where
 
 end
 
+def AddGroupHom.id (α: Type*) [Zero α] [Add α] : α →+ α where
+  toFun := _root_.id
+  resp_zero := rfl
+  resp_add := rfl
+
+def GroupHom.id (α: Type*) [One α] [Mul α] : α →* α where
+  toFun := _root_.id
+  resp_one := rfl
+  resp_mul := rfl
+
+def RingHom.id (α: Type*) [Zero α] [One α] [Add α] [Mul α] : α →+* α where
+  toFun := _root_.id
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
+
 def AddGroupHom.comp (a: β →+ γ) (b: α →+ β) : α →+ γ where
   toFun := a.toFun ∘ b.toFun
   resp_zero := by dsimp; rw [b.resp_zero, a.resp_zero]
@@ -345,7 +362,7 @@ def GroupHom.comp (a: β →* γ) (b: α →* β) : α →* γ where
   resp_one := by dsimp; rw [b.resp_one, a.resp_one]
   resp_mul { _ _ } := by dsimp; rw [b.resp_mul, a.resp_mul]
 
-def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : RingHom α γ where
+def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : α →+* γ where
   toFun := a.toFun ∘ b.toFun
   resp_zero := by dsimp; rw [b.resp_zero, a.resp_zero]
   resp_one := by dsimp; rw [b.resp_one, a.resp_one]
@@ -541,16 +558,6 @@ def RingEquiv.toHom (h: α ≃+* β) : α →+* β where
   resp_add := h.resp_add
   resp_mul := h.resp_mul
 
-def AddGroupHom.id (α: Type*) [Zero α] [Add α] : α →+ α where
-  toFun := _root_.id
-  resp_zero := rfl
-  resp_add := rfl
-
-def GroupHom.id (α: Type*) [One α] [Mul α] : α →* α where
-  toFun := _root_.id
-  resp_one := rfl
-  resp_mul := rfl
-
 -- def GroupEquiv.toEmbedding (h: α ≃* β) : α ↪* β where
 --   toEmbedding := h.toEquiv.toEmbedding
 --   resp_one := h.resp_one
@@ -619,3 +626,18 @@ def RingEquiv.symm_trans (h: α ≃+* β) :
   intro x
   show h (h.symm x) = x
   rw [h.symm_coe]
+
+def MulHom.toMulOpp (f: MulHom α β) (f_img_comm: ∀a b, f a * f b = f b * f a) : MulHom αᵐᵒᵖ β where
+  toFun x := f x.get
+  resp_mul {x y} := by
+    dsimp
+    show f (y.get * x.get) = _
+    rw [_root_.resp_mul, f_img_comm]
+
+def GroupHom.toMulOpp (f: α →* β) (f_img_comm: ∀a b, f a * f b = f b * f a) : αᵐᵒᵖ →* β := {
+  f.toOneHom, f.toMulHom.toMulOpp f_img_comm with
+}
+
+def RingHom.toMulOpp (f: α →+* β) (f_img_comm: ∀a b, f a * f b = f b * f a) : αᵐᵒᵖ →+* β := {
+  f.toAddGroupHom, f.toGroupHom.toMulOpp f_img_comm with
+}
