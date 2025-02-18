@@ -192,3 +192,35 @@ abbrev BilinMap
   [IsAddMonoid B] [IsAddCommMagma B]
   [SMul R A] [SMul R B] [IsDistribMulAction R B]
   : Type _ := A →ₗ[R] A →ₗ[R] B
+
+@[ext]
+def LinearMap.ext
+  [Add A] [AddMonoidOps B] [MonoidOps R]
+  [IsMonoid R] [IsCommMagma R]
+  [IsAddMonoid B] [IsAddCommMagma B]
+  [SMul R A] [SMul R B] [IsDistribMulAction R B] (a b: A →ₗ[R] B) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
+
+def BilinMap.mk
+  [Add A] [AddMonoidOps B] [MonoidOps R]
+  [IsMonoid R] [IsCommMagma R]
+  [IsAddMonoid B] [IsAddCommMagma B]
+  [SMul R A] [SMul R B] [IsDistribMulAction R B]
+  (f: A -> A -> B)
+  (resp_add_left: ∀(a b k: A), f (a + b) k = f a k + f b k)
+  (resp_add_right: ∀(k a b: A), f k (a + b) = f k a + f k b)
+  (resp_smul_left: ∀(r: R) (a k: A), f (r • a) k = r • f a k)
+  (resp_smul_right: ∀(r: R) (a k: A), f k (r • a) = r • f k a)
+  : A →ₗ[R] A →ₗ[R] B where
+  toFun x := {
+    toFun y := f x y
+    resp_add := resp_add_right _ _ _
+    resp_smul := resp_smul_right _ _ _
+  }
+  resp_add := by
+    intro a b
+    ext k
+    apply resp_add_left
+  resp_smul := by
+    intro a b
+    ext k
+    apply resp_smul_left
