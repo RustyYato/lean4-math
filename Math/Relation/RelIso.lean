@@ -270,7 +270,7 @@ def ofMappedTransGen [IsTrans s] (h: TransGen r a b) (g: r →r s) : s (g a) (g 
     apply g.resp_rel
     assumption
   | tail x xs ih =>
-    apply trans ih
+    apply trans' ih
     apply g.resp_rel
     assumption
 
@@ -278,7 +278,7 @@ def ofMappedReflTransGen [IsRefl s] [IsTrans s] (h: ReflTransGen r a b) (g: r �
   induction h with
   | refl => rfl
   | cons x xs ih =>
-    apply trans _ ih
+    apply trans' _ ih
     apply g.resp_rel
     assumption
 
@@ -291,7 +291,7 @@ def ofMappedEquivGen [IsRefl s] [IsSymmetric s] [IsTrans s] (h: EquivGen r a b) 
   | symm _ _ =>
     apply symm
     assumption
-  | trans => apply trans <;> assumption
+  | trans => apply trans' <;> assumption
 
 def TransGen.RelHom : r →r TransGen r where
   toFun := id

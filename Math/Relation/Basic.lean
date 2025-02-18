@@ -58,10 +58,10 @@ def total [IsTotal rel] : ∀(a b: α), rel a b ∨ rel b a := IsTotal.total
 
 class IsTrans: Prop where
   trans: ∀{a b c}, rel a b -> rel b c -> rel a c
-def trans [IsTrans r] : ∀{a b c}, r a b -> r b c -> r a c := IsTrans.trans
+def trans' [IsTrans r] : ∀{a b c}, r a b -> r b c -> r a c := IsTrans.trans
 
 instance [IsTrans rel] : Trans rel rel rel where
-  trans := trans
+  trans := IsTrans.trans
 
 class IsTrichotomous: Prop where
   tri: ∀a b, rel a b ∨ a = b ∨ rel b a
@@ -166,10 +166,10 @@ instance [IsTrans r] [IsTrans s] : IsTrans (Sum.Lex r s) where
     intro a b c ab bc
     cases ab <;> cases bc
     apply Sum.Lex.inl
-    apply trans <;> assumption
+    apply trans' <;> assumption
     apply Sum.Lex.sep
     apply Sum.Lex.inr
-    apply trans <;> assumption
+    apply trans' <;> assumption
     apply Sum.Lex.sep
 instance [IsTrichotomous r] [IsTrichotomous s] : IsTrichotomous (Sum.Lex r s) where
   tri a b := by
@@ -199,13 +199,13 @@ instance [IsTrans r] [IsTrans s] : IsTrans (Prod.Lex r s) where
     intro ⟨a, b⟩ ⟨c, d⟩ ⟨e, f⟩ x y
     cases x <;> cases y
     apply Prod.Lex.left
-    apply trans <;> assumption
+    apply trans' <;> assumption
     apply Prod.Lex.left
     assumption
     apply Prod.Lex.left
     assumption
     apply Prod.Lex.right
-    apply trans <;> assumption
+    apply trans' <;> assumption
 
 instance [IsTrichotomous r] [IsTrichotomous s] : IsTrichotomous (Prod.Lex r s) where
   tri := by
@@ -289,12 +289,12 @@ def setoid [IsRefl rel] [IsSymmetric rel] [IsTrans rel] : Setoid α where
 def ofTransGen [IsTrans r] (h: TransGen r a b) : r a b := by
   induction h with
   | single => assumption
-  | tail x xs ih => apply trans <;> assumption
+  | tail x xs ih => apply trans' <;> assumption
 
 def ofReflTransGen [IsRefl r] [IsTrans r] (h: ReflTransGen r a b) : r a b := by
   induction h with
   | refl => rfl
-  | cons x xs ih => apply trans <;> assumption
+  | cons x xs ih => apply trans' <;> assumption
 
 def ofEquivGen [IsRefl r] [IsSymmetric r] [IsTrans r] (h: EquivGen r a b) : r a b := by
   induction h with
@@ -303,7 +303,7 @@ def ofEquivGen [IsRefl r] [IsSymmetric r] [IsTrans r] (h: EquivGen r a b) : r a 
   | symm _ _ =>
     apply symm
     assumption
-  | trans => apply trans <;> assumption
+  | trans => apply trans' <;> assumption
 
 instance (s: Setoid α) : IsRefl s.r := ⟨s.refl⟩
 instance (s: Setoid α) : IsSymmetric s.r := ⟨s.symm⟩

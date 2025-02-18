@@ -59,3 +59,6 @@ def Monotone.dual (m: Monotone f) : Monotone (Opposite.mk ∘ f ∘ Opposite.get
   intro x y le
   apply m
   assumption
+
+def Monotone.comp (mg: Monotone g) (mf: Monotone f) : Monotone (g ∘ f) :=
+  fun {_ _} h => mg (mf h)
