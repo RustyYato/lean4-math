@@ -130,6 +130,16 @@ instance : @Relation.IsIrrefl α (· < ·) where
 instance : @Relation.IsRefl α (· ≤ ·) where
   refl := le_refl
 
+ instance : @Trans α α α (· < ·) (· ≤ ·) (· < ·) where
+  trans := lt_of_lt_of_le
+ instance : @Trans α α α (· < ·) (· = ·) (· < ·) where
+  trans := lt_of_lt_of_eq
+
+ instance : @Trans α α α (· ≤ ·) (· < ·) (· < ·) where
+  trans := lt_of_le_of_lt
+ instance : @Trans α α α (· = ·) (· < ·) (· < ·) where
+  trans := lt_of_eq_of_lt
+
 namespace Pi
 
 variable {β: α -> Sort _}

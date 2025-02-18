@@ -3,7 +3,7 @@ import Math.Type.Notation
 
 section
 
-variable {α β: Type*} (μ: β -> α -> α) (r: α -> α -> Prop)
+variable {β α: Type*} (μ: β -> α -> α) (r: α -> α -> Prop)
 
 def Covariant : Prop :=
   ∀ (b: β) {a₁ a₂: α}, r a₁ a₂ → r (μ b a₁) (μ b a₂)

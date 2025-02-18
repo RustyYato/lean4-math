@@ -541,4 +541,24 @@ def div_le_iff_le_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b ≤ c ↔ c * b �
   rw [neg_lt_neg_iff, neg_neg]
   assumption
 
+-- def floor (a: ℚ) : Int := a.num.ediv (a.den: Int)
+-- def ceil (a: ℚ) : Int := -Rat.floor (-a)
+-- private def Fract.sub_one_num (a: Fract) : (a - 1).num = a.num - a.den := by sorry
+-- private def Fract.sub_one_den (a: Fract) : (a - 1).den = a.den := Nat.mul_one _
+-- private def int_div_one (a: Int) : a / (1: Nat) = a := by sorry
+-- private def sub_one_num (a: ℚ) : (a - 1).num = a.num - a.den := by sorry
+-- private def sub_one_den (a: ℚ) : (a - 1).den = a.den := by sorry
+-- private def add_one_num (a: ℚ) : (a + 1).num = a.num + a.den := by sorry
+-- private def add_one_den (a: ℚ) : (a + 1).den = a.den := by sorry
+-- def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by sorry
+-- def ceil_spec (a: ℚ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by sorry
+-- def intCast_lt (a b: Int) : (a: ℚ) < (b: ℚ) ↔ a < b := by sorry
+-- def intCast_le (a b: Int) : (a: ℚ) ≤ (b: ℚ) ↔ a ≤ b := by sorry
+-- def fract (a: ℚ) : ℚ := a - a.floor
+-- def floor_add_fract (a: ℚ) : a.floor + a.fract = a := by sorry
+-- def sub_fract (a: ℚ) : a - a.fract = a.floor := by sorry
+-- def fract_spec (a: ℚ) : 0 ≤ a.fract ∧ a.fract < 1 := by sorry
+-- def zero_le_floor (a: ℚ) : 0 ≤ a.floor ↔ 0 ≤ a := by sorry
+-- def ceil_le_zero (a: ℚ) : a.ceil ≤ 0 ↔ a ≤ 0 := by sorry
+
 end Rat
