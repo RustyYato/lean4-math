@@ -1,6 +1,6 @@
 import Math.Data.Real.Order
 import Math.Data.Rat.Basic
-import Math.Algebra.Impls.Real
+import Math.Data.Real.Div
 
 noncomputable def Real.sqrt : ℝ -> ℝ :=
   Function.invFun_on (Set.mk fun x => 0 ≤ x) (fun a => a * a)

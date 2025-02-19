@@ -1,4 +1,4 @@
-import Math.Algebra.Impls.Real
+import Math.Data.Real.Div
 
 @[ext]
 structure Complex where
@@ -63,7 +63,7 @@ def mag_sq_nonzero (c: ℂ) (h: c ≠ 0) : c.mag_sq ≠ 0 := by
   replace g := neg_eq_of_add_left g
   ext
   have := Real.square_nonneg c.img
-  rw [←g, ←Real.neg_le_neg_iff, Real.neg_neg, neg_zero] at this
+  rw [←g, ←Real.neg_le_neg_iff, neg_neg, neg_zero] at this
   exact Real.eq_zero_of_square_eq_zero _ <| le_antisymm this (Real.square_nonneg c.real)
   have := Real.square_nonneg c.real
   rw [←Real.neg_le_neg_iff, g, neg_zero] at this
