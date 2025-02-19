@@ -32,6 +32,15 @@ def mul_ne_zero [Mul α] [Zero α] [NoZeroDivisors α] (a b: α) (ha: a ≠ 0) (
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply mul_ne_zero <;> invert_tactic)
 
+def instCheckedIntPow [MonoidOps α] [Zero α] [CheckedInvert α (fun a => a ≠ 0)] : CheckedIntPow α (fun a => a ≠ 0) where
+  checked_pow a := fun
+    | .ofNat n, h => a ^ n
+    | .negSucc n, h =>
+      have : a ≠ 0 := h.resolve_right (by
+        intro g
+        contradiction)
+      a⁻¹? ^ n.succ
+
 class GroupWithZeroOps (α: Type*) extends
   MonoidOps α,
   Zero α,

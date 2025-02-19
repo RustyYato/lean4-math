@@ -261,6 +261,48 @@ def le_iff_mul_le_mul_of_pos_left (a b k: ℝ) (h: 0 < k) : a ≤ b ↔ k * a �
 
 def div_eq_mul_inv (a b: ℝ) {h: b ≠ 0} : a /? b = a * b⁻¹? := rfl
 
+instance : CheckedIntPow ℝ (fun x => x ≠ 0) := instCheckedIntPow
+
+instance : IsField ℝ where
+  mul_inv?_cancel := by
+    intro a h
+    cases a with | mk a =>
+    apply Quotient.sound
+    apply CauchySeq.eventually_pointwise
+    have : ¬a ≈ 0 := by
+      intro g
+      exact h (Quotient.sound g)
+    replace := CauchySeq.pos_or_neg_of_abs_pos (CauchySeq.abs_pos_of_non_zero this)
+    rcases this with ⟨B, Bpos, k, h⟩ | ⟨B, Bpos, k, h⟩
+    · exists k
+      intro n hn
+      replace h := h n hn
+      dsimp at h
+      unfold CauchySeq.inv
+      simp
+      rw [dif_neg]
+      rw [mul_inv?_cancel]; rfl
+      intro g
+      rw [g] at h
+      rw [le_iff_not_lt] at h
+      contradiction
+    · exists k
+      intro n hn
+      replace h: B ≤ -a n := h n hn
+      unfold CauchySeq.inv
+      simp
+      rw [dif_neg]
+      rw [mul_inv?_cancel]; rfl
+      intro g
+      rw [g] at h
+      rw [le_iff_not_lt] at h
+      contradiction
+  div?_eq_mul_inv? := by
+    intro a b h
+    rfl
+  zpow?_ofNat n a := rfl
+  zpow?_negSucc n a _ := rfl
+
 section
 
 open Classical

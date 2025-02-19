@@ -426,14 +426,7 @@ instance : Pow ℚ ℕ where
     apply Quotient.sound
     apply Fract.npow.spec
     assumption
-instance : CheckedIntPow ℚ (fun a => a ≠ 0) where
-  checked_pow a := fun
-    | .ofNat n, h => a ^ n
-    | .negSucc n, h =>
-      have : a ≠ 0 := h.resolve_right (by
-        intro g
-        contradiction)
-      a⁻¹? ^ n.succ
+instance : CheckedIntPow ℚ (fun a => a ≠ 0) := instCheckedIntPow
 
 @[local simp] def smul_eq (n: ℕ) (a: ℚ) : n • a = n * a := rfl
 @[local simp] def zmul_eq (n: ℤ) (a: ℚ) : n • a = n * a := rfl

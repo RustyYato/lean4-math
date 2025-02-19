@@ -1,8 +1,8 @@
-import Math.Algebra.Impls.Real
 import Math.Algebra.Order
 import Math.Data.Rat.OrderedAlgebra
+import Math.Data.Real.Div
 
-instance : IsOrderedRing ℝ where
+instance Real.instOrderedRing : IsStrictOrderedRing ℝ where
   zero_le_one := by
     left
     exists 1
@@ -45,6 +45,26 @@ instance : IsOrderedRing ℝ where
     <;> (rw [←Real.zero_lt_iff_pos]; assumption)
     subst b; rw [mul_zero]
     subst a; rw [zero_mul]
+  mul_pos a b := by
+    intro apos bpos
+    cases a, b with | mk a b =>
+    rw [Real.zero_lt_iff_pos] at apos bpos
+    obtain ⟨A, Apos, Aeven⟩ := apos
+    obtain ⟨B, Bpos, Beven⟩ := bpos
+    have ⟨k, even⟩  := Aeven.merge Beven
+    rw [Real.zero_lt_iff_pos]
+    exists A * B
+    apply And.intro
+    apply Rat.mul_pos <;> assumption
+    exists k
+    intro n hn
+    replace ⟨Aeven, Beven⟩ := even n hn
+    clear even
+    apply Rat.mul_le_mul_nonneg
+    apply le_of_lt; assumption
+    assumption
+    apply le_of_lt; assumption
+    assumption
 
 instance : IsOrderedAbsMonoid ℝ where
   abs_nonneg a := by
@@ -71,7 +91,7 @@ instance : IsOrderedAbsAddGroupWithOne ℝ where
     split
     rfl
     rw [←neg_zero]
-    apply Iff.trans Real.neg_inj
+    apply Iff.trans neg_inj
     rfl
   abs_add_le_add_abs a b := by
     cases a, b with | mk a b =>
