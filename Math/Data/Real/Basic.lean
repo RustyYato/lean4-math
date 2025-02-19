@@ -692,6 +692,8 @@ instance : IsCommMagma ℝ where
     intro n
     apply mul_comm
 
+instance : IsSemiring ℝ := inferInstance
+
 def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
   induction a, b, k using ind₃ with | mk a b k =>
   apply Iff.intro

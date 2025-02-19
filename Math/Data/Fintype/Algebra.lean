@@ -53,6 +53,12 @@ def prod_eq_one_of_all_one
   [One α] [Mul α] [IsMulOneClass α] (as: List α) : (∀a ∈ as, a = 1) -> as.prod = 1 :=
   sum_eq_zero_of_all_zeros (α := AddOfMul α) as
 
+def Fin.sum_strip_prefix [Add α] [Zero α]
+  (as bs cs: List α) (h: bs.sum = cs.sum): (as ++ bs).sum = (as ++ cs).sum := by
+  induction as with
+  | nil => assumption
+  | cons a as ih => rw [List.cons_append, List.cons_append, List.sum_cons, List.sum_cons, ih]
+
 end List
 
 namespace Fintype
