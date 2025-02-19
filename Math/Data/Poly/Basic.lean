@@ -292,30 +292,6 @@ instance [Zero α] [Neg α] [IsNegZeroClass α] : Neg (Poly α) where
     rw [ha, neg_zero]
     assumption
 
-def eval [SemiringOps α] [IsSemiring α] (p: Poly α) (x: α) : α := by
-  apply Quot.liftOn p.has_degree _ _
-  intro ⟨bound, spec⟩
-  refine Fin.sum (n := bound + 1) ?_
-  intro n
-  exact p.coeffs n.val * x ^ n.val
-  intro ⟨a, bound_a⟩ ⟨b, bound_b⟩ _
-  dsimp
-  cases p with
-  | mk  p h =>
-  dsimp
-  dsimp at bound_a bound_b
-  clear h
-  apply Fin.sum_eq_sum_of_prefix
-  intro; rfl
-  intro n b_le_n
-  rw [bound_b, zero_mul]
-  apply Nat.lt_of_le_of_lt _ b_le_n
-  apply Nat.le_refl
-  intro n a_le_n
-  rw [bound_a, zero_mul]
-  apply Nat.lt_of_le_of_lt _ a_le_n
-  apply Nat.le_refl
-
 section
 
 variable [Zero α] [One α] [Add α] [Mul α] [IsAddZeroClass α] [IsMulZeroClass α]
