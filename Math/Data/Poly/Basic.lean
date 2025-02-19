@@ -237,7 +237,7 @@ instance [Zero P] [Add P] [SMul ℕ P] [IsAddMonoid P] : SMul ℕ P[X] where
     rw [spec, nsmul_zero]
     assumption
 
-instance [Zero P] [Add P] [Mul P] [IsMulZeroClass P] : SMul P P[X] where
+instance [Zero P] [Mul P] [IsMulZeroClass P] : SMul P P[X] where
   smul k p := by
     apply Poly.mk (fun n => k * p.coeffs n)
     apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
@@ -515,10 +515,17 @@ def const_mul_const (a b: P) : const a * const b = const (a * b) := by
     dsimp
     rw [zero_mul]
 
+def mul_var_zero : Poly.mul_var (0: P[X]) = 0 := by
+  apply ext_coeffs
+  ext i
+  cases i <;> rfl
+
+def coeffs_congr {p q: P[X]} (h: p = q) : p.coeffs = q.coeffs := by rw [h]
+
 @[induction_eliminator]
 def induction {motive: P[X] -> Prop}
   (const: ∀a, motive (const a))
-  (mul_add: ∀a: P, ∀p: P[X], motive p -> motive (Poly.const a) -> motive (p.mul_var + Poly.const a)): ∀p, motive p := by
+  (mul_add: ∀a: P, ∀p: P[X], p ≠ 0 -> motive p -> motive (Poly.const a) -> motive (p.mul_var + Poly.const a)): ∀p, motive p := by
   intro p
   cases p with
   | mk p has_deg =>
@@ -538,10 +545,29 @@ def induction {motive: P[X] -> Prop}
     erw [←p_eq_const]
     apply const
   | succ degree ih =>
-    rw [eq_div_mul_add ⟨_, _⟩]
-    apply mul_add
-    apply ih
-    apply const
+    by_cases h:(p ∘ Nat.succ)=(0: P[X]).coeffs
+    · rw [eq_div_mul_add ⟨_, _⟩]
+      have p_eq_const : Poly.div_var { coeffs := p, has_degree := Quot.mk (fun x x => True) ⟨degree + 1, spec⟩ } = { coeffs := coeffs 0, has_degree := Quot.mk (fun x x => True) ⟨0, ?_⟩ } := by
+        apply Poly.ext_coeffs
+        ext n
+        simp
+        simp [div_var]
+        rw [←h]
+        rfl
+      intro _ _; rfl
+      rw [p_eq_const]
+      show motive (Poly.mul_var 0 + _)
+      rw [mul_var_zero, zero_add]
+      simp
+      apply const
+    · rw [eq_div_mul_add ⟨_, _⟩]
+      apply mul_add
+      · intro g
+        have := coeffs_congr g
+        simp [div_var] at this
+        contradiction
+      apply ih
+      apply const
 
 variable [IsLeftDistrib P] [IsRightDistrib P] [IsAddSemigroup P] [IsAddCommMagma P]
 
@@ -583,7 +609,7 @@ instance [IsCommMagma P] : IsCommMagma P[X] where
       rw [Nat.succ_sub_succ, Nat.sub_sub_eq_min, Nat.min_eq_right, mul_comm]
       apply Nat.le_of_lt_succ
       exact x.isLt
-    | mul_add a p ih =>
+    | mul_add a p _ ih =>
       rw [add_mul, mul_add, mul_var_mul, mul_mul_var, ih]
       congr 1
 
@@ -692,5 +718,98 @@ instance [AddGroupWithOneOps P] [IsAddGroupWithOne P] : IsAddGroupWithOne P[X] :
 instance [SemiringOps P] [IsSemiring P] : IsSemiring P[X] where
 instance [RingOps P] [IsRing P] : RingOps P[X] := RingOps.mk
 instance [RingOps P] [IsRing P] : IsRing P[X] := inferInstance
+
+instance [SemiringOps P] [IsSemiring P] : AlgebraMap P P[X] where
+  toFun := const
+  resp_zero := by
+    apply ext_coeffs
+    ext i; cases i <;> rfl
+  resp_one := by
+    apply ext_coeffs
+    ext i; cases i <;> rfl
+  resp_add {_ _} := by
+    apply ext_coeffs
+    ext i
+    cases i
+    rfl
+    symm; apply zero_add
+  resp_mul {x y} := by
+    symm; apply const_mul_const
+
+def smul_const [Zero P] [Mul P] [IsMulZeroClass P] (r p: P) : r • const p = const (r * p) := by
+  apply ext_coeffs
+  ext i; cases i
+  rfl
+  apply mul_zero
+
+def smul_mul_var [Zero P] [Mul P] [IsMulZeroClass P] (r: P) (p: P[X]) : r • p.mul_var = (r • p).mul_var := by
+  apply ext_coeffs
+  ext i; cases i
+  apply mul_zero
+  rfl
+
+def smul_add' [SemiringOps P] [IsSemiring P] (r: P) (p q: P[X]) : r • (p + q) = r • p + r • q := by
+  apply ext_coeffs
+  ext i
+  apply mul_add
+
+instance [SemiringOps P] [IsSemiring P] [IsCommMagma P] : IsAlgebra P P[X] where
+  commutes _ _ := by rw [mul_comm]
+  smul_def r p := by
+    induction p with
+    | const =>
+      rw [smul_const, ←const_mul_const]
+      rfl
+    | mul_add p ps ps_ne_zero ih₀ ih₁ =>
+      simp [smul_add', smul_mul_var, smul_const, ih₀, ih₁,
+        mul_add, ←mul_mul_var]
+
+instance [Zero P] [Subsingleton P] : Subsingleton P[X] where
+  allEq := by
+    intro a b
+    apply ext_coeffs
+    apply Subsingleton.allEq
+
+instance [Zero P] [h: IsNontrivial P] : IsNontrivial P[X] where
+  exists_ne := by
+    have ⟨a, b, ne⟩ := h.exists_ne
+    refine ⟨const a, const b, ?_⟩
+    intro h
+    have : (const a).coeffs 0 = (const b).coeffs 0 := by rw [h]
+    contradiction
+
+def constHom [SemiringOps P] [IsSemiring P] : P →+* P[X] := algebraMap
+
+def X [Zero P] [One P] : P[X] := Poly.ofCoeffs [0, 1]
+
+def mul_X [SemiringOps P] [IsSemiring P] (p: P[X]) : p * X = p.mul_var := by
+  apply ext_coeffs
+  ext i
+  match i with
+  | 0 =>
+    apply Fin.sum_eq_zero_of_each_eq_zero
+    intro x
+    match x with
+    | 0 => erw [mul_zero]
+  | 1 =>
+    show Fin.sum _ = p.coeffs 0
+    rw [Fin.sum, Fin.sum, Fin.sum, add_zero]
+    erw [mul_one]
+    simp
+    erw [mul_zero, add_zero]
+  | i + 2 =>
+    show Fin.sum _ = p.coeffs (i + 1)
+    rw [Fin.sum_succ', Fin.sum_succ', Fin.sum_eq_zero_of_each_eq_zero, zero_add]
+    simp [Fin.last]
+    erw [mul_zero, Nat.add_sub_cancel_left, mul_one, add_zero]
+    intro ⟨x, xLt⟩
+    simp
+    rw [Nat.lt_succ] at xLt
+    rcases lt_or_eq_of_le xLt with xLt | rfl
+    simp [X, ofCoeffs]
+    rw [List.getElem?_eq_none, Option.getD, mul_zero]
+    simp; omega
+    erw [Nat.add_sub_cancel_left, mul_zero]
+
 
 end Poly

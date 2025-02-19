@@ -289,9 +289,9 @@ def evalWith_mul [IsCommMagma S] (p q: P[X]) (x: S) : (p * q).evalWith f x = p.e
   | const p =>
     induction q with
     | const q => rw [const_mul_const, evalWith_const, evalWith_const, evalWith_const, resp_mul]
-    | mul_add q qs ih₀ ih₁ =>
+    | mul_add q qs _ ih₀ ih₁ =>
       simp only [mul_add, mul_mul_var, evalWith_add, evalWith_mul_var, ih₀, evalWith_const, mul_assoc, ih₁]
-  | mul_add p ps ih₀ ih₁ =>
+  | mul_add p ps _ ih₀ ih₁ =>
     simp only [add_mul, mul_var_mul, evalWith_add, ih₀, evalWith_const, mul_assoc, ih₀, ih₁,
       evalWith_mul_var]
     rw [mul_comm x]
@@ -308,6 +308,8 @@ def evalWithHom [IsCommMagma S] (x: S) : P[X] →+* S where
   resp_one := evalWith_one _
   resp_add := evalWith_add _ _ _ _
   resp_mul := evalWith_mul _ _ _ _
+
+def lift [IsCommMagma S] : P[X] →+* S[X] := evalWithHom (constHom.comp (toRingHom f)) X
 
 end
 
@@ -343,6 +345,8 @@ def evalHom [IsCommMagma S] (x: S) : P[X] →+* S where
   resp_one := eval_one
   resp_add := eval_add _ _ _
   resp_mul := eval_mul _ _ _
+
+def comp [IsCommMagma P] : P[X] -> P[X] →+* P[X] := evalHom
 
 end
 

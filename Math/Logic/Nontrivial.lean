@@ -62,3 +62,9 @@ def exists_ne [h: IsNontrivial α] (a: α) : ∃b, b ≠ a := by
   subst a
   exists x
   exists y
+
+def subsingleton_or_nontrivial (α: Type*) : Subsingleton α ∨ IsNontrivial α := by
+  apply Classical.or_iff_not_imp_right.mpr
+  intro h
+  rw [Subsingleton.iff_not_nontrivial]
+  assumption
