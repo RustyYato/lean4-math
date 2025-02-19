@@ -236,33 +236,36 @@ end
 
 section
 
-variable [SemiringOps P] [SemiringOps S] [IsSemiring P] [IsSemiring S] [SMul P S] [AlgebraMap P S] [IsAlgebra P S]
+variable [SemiringOps P] [SemiringOps S] [FunLike F P S]
+  [IsZeroHom F P S] [IsOneHom F P S] [IsAddHom F P S] [IsMulHom F P S]
+  [IsSemiring P] [IsSemiring S]
+  (f: F)
 
 @[simp]
-def eval_const (p: P) (x: S) : (const p).eval x = algebraMap p := by
+def evalWith_const (p: P) (x: S) : (const p).evalWith f x = f p := by
   apply (foldl_const _).trans
-  rw [npow_zero, smul_one, zero_add]
+  rw [npow_zero, mul_one, zero_add]
 
 @[simp]
-def eval_mul_var (p: P[X]) (x: S) : (mul_var p).eval x = p.eval x * x := by
+def evalWith_mul_var (p: P[X]) (x: S) : (mul_var p).evalWith f x = p.evalWith f x * x := by
   apply (foldl_mul_var _).trans
-  rw [eval]
+  rw [evalWith]
   cases p with | mk p hp =>
   cases hp using Squash.ind with | h deg =>
   obtain ⟨deg, hp⟩ := deg
   rw [foldl_mk, foldl_mk, foldl'_sum, foldl'_sum, Fin.sum_mul]
   congr; ext i
-  rw [smul_def, smul_def, mul_assoc, npow_succ]
+  rw [mul_assoc, npow_succ]
 
 @[simp]
-def eval_add (p q: P[X]) (x: S) : (p + q).eval x = p.eval x + q.eval x := by
+def evalWith_add (p q: P[X]) (x: S) : (p + q).evalWith f x = p.evalWith f x + q.evalWith f x := by
   cases p with | mk p hp =>
   cases q with | mk q hq =>
   induction hp using Squash.ind with | h hp =>
   induction hq using Squash.ind with | h hq =>
   obtain ⟨deg_p, hp⟩ := hp
   obtain ⟨deg_q, hq⟩ := hq
-  unfold eval
+  unfold evalWith
   rw [foldl_mk, foldl_mk]
   apply (foldl_mk _ _ _).trans
   simp [foldl'_sum]
@@ -272,26 +275,61 @@ def eval_add (p q: P[X]) (x: S) : (p + q).eval x = p.eval x + q.eval x := by
   congr; ext ⟨i, hi⟩
   simp;
   split <;> split <;> rename_i h g
-  rw [add_smul]
+  rw [resp_add, add_mul]
   rw [hq, add_zero, add_zero]
   omega
   rw [hp, zero_add, zero_add]
   omega
-  rw [hp, hq, zero_add, zero_smul, add_zero]
+  rw [hp, hq, zero_add, resp_zero, zero_mul, add_zero]
   all_goals omega
 
 @[simp]
-def eval_mul [IsCommMagma S] (p q: P[X]) (x: S) : (p * q).eval x = p.eval x * q.eval x := by
+def evalWith_mul [IsCommMagma S] (p q: P[X]) (x: S) : (p * q).evalWith f x = p.evalWith f x * q.evalWith f x := by
   induction p generalizing q with
   | const p =>
     induction q with
-    | const q => rw [const_mul_const, eval_const, eval_const, eval_const, resp_mul]
+    | const q => rw [const_mul_const, evalWith_const, evalWith_const, evalWith_const, resp_mul]
     | mul_add q qs ih₀ ih₁ =>
-      simp only [mul_add, mul_mul_var, eval_add, eval_mul_var, ih₀, eval_const, mul_assoc, ih₁]
+      simp only [mul_add, mul_mul_var, evalWith_add, evalWith_mul_var, ih₀, evalWith_const, mul_assoc, ih₁]
   | mul_add p ps ih₀ ih₁ =>
-    simp only [add_mul, mul_var_mul, eval_add, ih₀, eval_const, mul_assoc, ih₀, ih₁,
-      eval_mul_var]
+    simp only [add_mul, mul_var_mul, evalWith_add, ih₀, evalWith_const, mul_assoc, ih₀, ih₁,
+      evalWith_mul_var]
     rw [mul_comm x]
+
+def evalWith_zero : (0: P[X]).evalWith f (x: S) = 0 := by
+  rw [zero_eq_const, evalWith_const, resp_zero]
+
+def evalWith_one : (1: P[X]).evalWith f (x: S) = 1 := by
+  erw [evalWith_const, resp_one]
+
+def evalWithHom [IsCommMagma S] (x: S) : P[X] →+* S where
+  toFun := (evalWith · f x)
+  resp_zero := evalWith_zero _
+  resp_one := evalWith_one _
+  resp_add := evalWith_add _ _ _ _
+  resp_mul := evalWith_mul _ _ _ _
+
+end
+
+section
+
+variable [SemiringOps P] [SemiringOps S] [IsSemiring P] [IsSemiring S] [SMul P S] [AlgebraMap P S] [IsAlgebra P S]
+
+@[simp]
+def eval_const (p: P) (x: S) : (const p).eval x = algebraMap p := by
+  simp [eval_eq_evalWith]
+
+@[simp]
+def eval_mul_var (p: P[X]) (x: S) : (mul_var p).eval x = p.eval x * x := by
+  simp [eval_eq_evalWith]
+
+@[simp]
+def eval_add (p q: P[X]) (x: S) : (p + q).eval x = p.eval x + q.eval x := by
+  simp [eval_eq_evalWith]
+
+@[simp]
+def eval_mul [IsCommMagma S] (p q: P[X]) (x: S) : (p * q).eval x = p.eval x * q.eval x := by
+  simp [eval_eq_evalWith]
 
 def eval_zero : (0: P[X]).eval (x: S) = 0 := by
   rw [zero_eq_const, eval_const, resp_zero]
