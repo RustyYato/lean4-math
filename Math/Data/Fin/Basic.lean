@@ -333,6 +333,17 @@ def Fin.sum_eq_zero_of_each_eq_zero
     intro x
     apply h
 
+def Fin.sum_succ' [Add α] [Zero α] [IsAddZeroClass α] [IsAddSemigroup α]
+  (f: Fin (n + 1) -> α):
+  Fin.sum f = Fin.sum (f ∘ Fin.castSucc) + f (Fin.last _) := by
+    induction n with
+    | zero =>
+      rw [sum_succ, sum, add_zero, sum]
+      symm; apply zero_add
+    | succ n ih =>
+      rw [sum, ih, ←add_assoc]
+      rfl
+
 def Fin.sum_eq_sum_of_prefix
   [Add α] [Zero α] [IsAddZeroClass α]
   (f: Fin n -> α)
@@ -426,6 +437,34 @@ def Fin.sum_strip_prefix
       apply pre ⟨_, _⟩
       apply Nat.succ_lt_succ
       exact x.isLt
+
+def Fin.sum_extend [Add α] [Zero α] [IsAddZeroClass α] (f: Fin n -> α) (h: n ≤ m) :
+  Fin.sum f = Fin.sum fun x: Fin m => if h:x.val < n then f ⟨_, h⟩ else 0 := by
+  induction m generalizing n with
+  | zero =>
+    cases Nat.le_zero.mp h
+    rfl
+  | succ m ih =>
+    cases n with
+    | zero =>
+      rw [sum, sum_eq_zero_of_each_eq_zero]
+      intro x
+      rw [dif_neg]
+      exact Nat.not_lt_zero ↑x
+    | succ n =>
+      rw [sum, sum, dif_pos, ih]
+      congr
+      ext i
+      simp
+      omega
+
+def Fin.sum_mul [Add α] [Zero α] [Mul α] [IsMulZeroClass α] [IsRightDistrib α] (f: Fin n -> α) (x: α) :
+  Fin.sum f * x = Fin.sum (fun i => f i * x) := by
+  induction n with
+  | zero => rw [sum, sum, zero_mul]
+  | succ n ih =>
+    rw [sum_succ, sum_succ, add_mul, ih]
+    rfl
 
 def Fin.sum_pop [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α]
   (f: Fin (n + 1) -> α) : Fin.sum f = Fin.sum (fun x: Fin n => f x.castSucc) + f (Fin.last _) := by

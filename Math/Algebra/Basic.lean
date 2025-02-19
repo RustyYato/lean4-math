@@ -89,4 +89,7 @@ instance [AlgebraMap R A] [IsAlgebra R A] [AlgebraMap S A] [IsAlgebra S A] : IsS
     congr 1
     apply commutes
 
+def smul_one [AlgebraMap S A] [IsAlgebra S A] (s: S) : s • (1: A) = algebraMap s := by
+  rw [smul_def, mul_one]
+
 end Algebra
