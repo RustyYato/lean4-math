@@ -1,5 +1,6 @@
 import Math.Data.Poly.Basic
 import Math.Algebra.Hom.Defs
+import Math.Algebra.Group.Hom
 
 def Fin.foldl_id {f} (h: ∀a b, f a b = a) : Fin.foldl n f init = init := by
   induction n generalizing init with
@@ -346,8 +347,73 @@ def evalHom [IsCommMagma S] (x: S) : P[X] →+* S where
   resp_add := eval_add _ _ _
   resp_mul := eval_mul _ _ _
 
-def comp [IsCommMagma P] : P[X] -> P[X] →+* P[X] := evalHom
+def evalHom_def [IsCommMagma S] (p: P[X]) (x: S) : evalHom x p = p.eval x := rfl
+
+-- def of_eval_eq_zero [IsCommMagma P] (p: P[X]) : (∀x: P, p.eval x = 0) -> p = 0 := by
+--   intro h
+--   induction p with
+--   | const p =>
+--     have := h 0
+--     rw [eval_const] at this
+--     rw [zero_eq_const]
+--     congr
+--   | mul_add p ps ps_ne_zero ih₀ ih₁ =>
+--     conv at h => {
+--       intro x ; rw [eval_add, eval_mul_var, eval_const]
+--     }
+--     replace h : ∀x: P, ps.eval x * x + p = 0 := h
+--     have := h 0
+--     rw [mul_zero, zero_add] at this
+--     subst this
+--     rw [←zero_eq_const, add_zero]
+--     rw [ih₀]
+--     sorry
+--     intro x
+--     conv at h => { intro; rw [add_zero] }
+--     sorry
 
 end
+
+section
+
+variable [SemiringOps P] [IsSemiring P] [IsCommMagma P]
+
+def compHom : P[X] -> P[X] →+* P[X] := evalHom (S := P[X])
+def comp : P[X] -> P[X] -> P[X] := fun x y => compHom y x
+
+@[simp]
+def compHom_const (p: P) (q: P[X]) : q.compHom (const p) = const p := by
+  rw [compHom, evalHom_def, eval_const]
+  rfl
+
+@[simp]
+def comp_mul_var (p q: P[X]) : q.compHom p.mul_var = q.compHom p * q := by
+  rw [compHom, evalHom_def, eval_mul_var]
+  rfl
+
+def eval_compHom (p q: P[X]) : (p.compHom q).eval x = q.eval (p.eval x (S := P)) := by
+  induction q with
+  | const q => simp
+  | mul_add q qs ps_ne_zero ih₀ ih₁ => simp [ih₀, ih₁, resp_add]
+
+def eval_comp (p q: P[X]) : (p.comp q).eval x = p.eval (q.eval x (S := P)) :=
+  eval_compHom _ _
+
+end
+
+-- instance [RingOps P] [IsRing P] [IsCommMagma P] : FunLike P[X] P P where
+--   coe := eval
+--   coe_inj := by
+--     intro a b eq
+--     rcases subsingleton_or_nontrivial P with subsing | nontriv
+--     apply Subsingleton.allEq
+--     apply eq_of_sub_eq_zero
+--     have : ∀x: P, (a - b).eval x = 0 := by
+--       intro x
+--       show evalHom x (a - b) = 0
+--       rw [resp_sub]
+--       show a.eval x - b.eval x = 0
+--       rw [eq, sub_self]
+--     exact of_eval_eq_zero _ this
 
 end Poly
