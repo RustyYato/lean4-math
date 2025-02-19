@@ -173,9 +173,9 @@ def toFract : ℚ -> Fract := by
   apply Fract.isReduced.spec
   apply Fract.reduce.isReduced
   apply Fract.reduce.isReduced
-  apply Relation.trans
+  apply Relation.IsTrans.trans
   apply (Fract.reduce.spec _).symm
-  apply Relation.trans eq
+  apply Relation.IsTrans.trans eq
   apply Fract.reduce.spec
 
 def toFract.inj : ∀{a b: ℚ}, a.toFract = b.toFract ↔ a = b :=

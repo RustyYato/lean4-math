@@ -1,5 +1,6 @@
 import Math.Algebra.Monoid.Defs
 import Math.Data.StdInt.Basic
+import Math.Function.Basic
 
 class IsInvolutiveNeg (α: Type*) [Neg α]: Prop where
   neg_neg (a: α): - -a = a
@@ -17,6 +18,14 @@ instance [Neg α] [IsInvolutiveNeg α] : IsInvolutiveNeg αᵐᵒᵖ :=
   inferInstanceAs (IsInvolutiveNeg α)
 instance [Inv α] [IsInvolutiveInv α] : IsInvolutiveInv αᵐᵒᵖ where
   inv_inv := inv_inv (α := α)
+
+def neg_inj [Neg α] [IsInvolutiveNeg α] {a b: α} : -a = -b ↔ a = b :=
+  Function.Injective.eq_iff <| by
+    intro a b eq
+    rw [←neg_neg a, ←neg_neg b, eq]
+
+def inv_inj [Inv α] [IsInvolutiveInv α] {a b: α} : a⁻¹ = b⁻¹ ↔ a = b :=
+  neg_inj (α := AddOfMul α)
 
 def sub' [Add α] [Neg α] (a b: α) := a + -b
 def div' [Mul α] [Inv α] (a b: α) := a * b⁻¹

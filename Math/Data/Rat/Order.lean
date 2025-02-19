@@ -485,7 +485,7 @@ def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
 def abs_abs (a: ℚ) : ‖‖a‖‖ = ‖a‖ := by
   rw [abs_of_nonneg]
   apply abs_nonneg
-def abs_mul (a b: ℚ) : ‖a‖ * ‖b‖ = ‖a * b‖ := by
+def abs_mul (a b: ℚ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   simp [abs_def]
   rcases lt_trichotomy 0 a with ha | ha | ha
   <;> rcases lt_trichotomy 0 b with hb | hb | hb
@@ -505,22 +505,20 @@ def abs_mul (a b: ℚ) : ‖a‖ * ‖b‖ = ‖a * b‖ := by
   apply mul_pos; assumption
   rw [neg_lt_neg_iff, neg_neg]; assumption
   rw [if_neg, if_neg, neg_mul_left]
-  rw [not_le, neg_lt_neg_iff, neg_mul_left]
+  rw [not_le]; assumption
+  rw [not_le, ←neg_neg (_ * _), neg_mul_left, neg_lt_neg_iff, neg_neg];
   apply mul_pos
   rw [neg_lt_neg_iff, neg_neg]; assumption
   assumption
-  rw [not_le]; assumption
-  rw [if_neg, if_neg, if_pos, ←neg_mul_left, ←neg_mul_right, neg_neg]
-  rw [←neg_neg (a * b), neg_mul_left, neg_mul_right]
-  apply mul_nonneg
-  repeat
-    rw [neg_le_neg_iff, neg_neg]
-    apply le_of_lt; assumption
-  all_goals
+  rw [if_pos, if_neg, if_neg, ←neg_mul_left, ←neg_mul_right, neg_neg]
+  any_goals
     rw [not_le]
     assumption
+  rw [←neg_neg (_ * _), neg_mul_right, neg_mul_left]
+  apply mul_nonneg <;> rw [neg_le_neg_iff, neg_neg]
+  repeat apply le_of_lt; assumption
 def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ < 1 ↔ ‖a‖ < ‖b‖ := by
-  rw [lt_iff_mul_right_pos (k := ‖b‖), one_mul, abs_mul, div?_eq_mul_inv?,
+  rw [lt_iff_mul_right_pos (k := ‖b‖), one_mul, ←abs_mul, div?_eq_mul_inv?,
     mul_assoc, inv?_mul_cancel, mul_one]
   exact abs_pos b h
 def le_add_left_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ b + a := by
@@ -539,6 +537,15 @@ def div_le_iff_le_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b ≤ c ↔ c * b �
   rw [le_iff_mul_right_pos  (k := -b), ←neg_mul_right, div?_mul_cancel,
     ←neg_mul_right, ←neg_le_neg_iff]
   rw [neg_lt_neg_iff, neg_neg]
+  assumption
+
+def eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ ‖a‖ = 0 := by
+  rw [abs_def]
+  split <;> apply Iff.intro <;> intro h
+  any_goals assumption
+  apply neg_inj.mp; rw [neg_neg]
+  assumption
+  apply neg_inj.mp
   assumption
 
 -- def floor (a: ℚ) : Int := a.num.ediv (a.den: Int)

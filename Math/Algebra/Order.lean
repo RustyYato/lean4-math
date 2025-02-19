@@ -1,6 +1,7 @@
 import Math.Algebra.Ring
 import Math.Order.Linear
 import Math.Ops.Abs
+import Math.Ops.CheckedOrder
 
 variable [LT α] [LE α] [LT β] [LE β]
 
@@ -238,17 +239,6 @@ def zsmul_abs: ∀a: α, ∀n: Int, ‖n • a‖ = ‖n‖ • ‖a‖ := by
       ←Int.ofNat_add, Int.natAbs_ofNat, zsmul_ofNat, nsmul_abs]
 
 end
-
-def ne_zero_of_zero_lt
-  [IsPreOrder α] [Zero α]
-  (a: α): 0 < a -> a ≠ 0 := by
-  intro h
-  symm
-  apply ne_of_lt
-  assumption
-
-macro_rules
-| `(tactic|invert_tactic) => `(tactic|apply ne_zero_of_zero_lt; assumption)
 
 section
 
