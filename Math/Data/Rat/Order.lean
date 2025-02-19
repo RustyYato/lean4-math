@@ -346,6 +346,15 @@ def le_iff_mul_right_pos {a b k: ℚ} : 0 < k -> (a ≤ b ↔ a * k ≤ b * k) :
   apply le_iff_of_lt_iff
   apply lt_iff_mul_right_pos
   assumption
+def mul_lt_mul {a b c d: ℚ} : 0 < a -> a < c -> 0 < b -> b < d -> a * b < c * d := by
+  intro apos ac bpos bd
+  apply lt_trans
+  apply (lt_iff_mul_left_pos _).mp
+  assumption
+  assumption
+  apply (lt_iff_mul_right_pos _).mp
+  assumption
+  apply lt_trans <;> assumption
 def mul_le_mul_of_right_nonneg (a b k: ℚ) : 0 ≤ k -> a ≤ b -> a * k ≤ b * k := by
   intro knonneg a_le_b
   rcases lt_or_eq_of_le knonneg with h | h
@@ -526,6 +535,12 @@ def abs_mul (a b: ℚ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   rw [←neg_neg (_ * _), neg_mul_right, neg_mul_left]
   apply mul_nonneg <;> rw [neg_le_neg_iff, neg_neg]
   repeat apply le_of_lt; assumption
+def abs_inv? (a: ℚ) (h: a ≠ 0) : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
+  refine inv?_eq_of_mul_right ‖a‖ ‖a⁻¹?‖ ?_
+  rw [←abs_mul, inv?_mul_cancel]
+  rfl
+def abs_div? (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, abs_mul, abs_inv?]
 def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ < 1 ↔ ‖a‖ < ‖b‖ := by
   rw [lt_iff_mul_right_pos (k := ‖b‖), one_mul, ←abs_mul, div?_eq_mul_inv?,
     mul_assoc, inv?_mul_cancel, mul_one]

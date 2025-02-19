@@ -411,4 +411,10 @@ def zpow_sub [IsGroup α] (x y: ℤ) (a: α) : a ^ (x - y) = a ^ x / a ^ y :=
 def zpow_mul [IsGroup α]  [IsCommMagma α] (x y: ℤ) (a: α) : a ^ (x * y) = (a ^ y) ^ x :=
   mul_zsmul (α := AddOfMul α) _ _ _
 
+def sub_neg [IsAddGroup α] (a b: α) : a - -b = a + b := by
+  rw [sub_eq_add_neg, neg_neg]
+
+def div_inv [IsGroup α] (a b: α) : a / b⁻¹ = a * b :=
+  sub_neg (α := AddOfMul α) a b
+
 end Group

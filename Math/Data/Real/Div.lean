@@ -1,4 +1,5 @@
 import Math.Data.Real.Order
+import Math.Algebra.Field.Basic
 
 def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
   is_cauchy_equiv (fun n => if h:a n = 0 then 0 else (a n)⁻¹?) (fun n => if h:b n = 0 then 0 else (b n)⁻¹?) := by
@@ -20,20 +21,20 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
     rw [h] at B_le_bm
     exact lt_irrefl (lt_of_le_of_lt B_le_bm B_pos)
   rw [dif_neg, dif_neg]
-  rw [Rat.inv_sub_inv, Rat.abs_div]
-  rw [Rat.abs_sub_comm]
+  rw [inv_sub_inv, Rat.abs_div?]
+  rw [abs_sub_comm]
   by_cases h:a n - b m = 0
-  erw [h, Rat.div_eq_mul_inv, Rat.zero_mul]
+  erw [h, div?_eq_mul_inv?, zero_mul]
   assumption
-  apply (lt_uiff_mul_right_pos _).mpr
+  apply (Rat.lt_iff_mul_right_pos _).mpr
   apply lt_trans _ eqv
   · assumption
   · assumption
-  · rw [Rat.div_eq_mul_inv, Rat.mul_assoc]
+  · rw [div?_eq_mul_inv?, mul_assoc]
     apply Rat.pos_mul_lt_of_right_lt_one
     apply Rat.abs_pos
     assumption
-    rw [←Rat.abs_inv, Rat.inv_mul, Rat.abs_mul,
+    rw [←Rat.abs_inv?, inv?_mul_rev, Rat.abs_mul,
       ←Rat.abs_of_pos _ (Rat.half_pos A_pos), ←Rat.abs_of_pos _ (Rat.half_pos B_pos)]
     suffices ‖A/?2‖ *‖(a n)⁻¹?‖ * (‖B/?2‖ * ‖(b m)⁻¹?‖) < 1 by
       apply lt_of_le_of_lt _ this
@@ -41,9 +42,9 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
       assumption
       apply le_of_eq
       ac_rfl
-    rw [←Rat.abs_mul, ←Rat.abs_mul, ←Rat.div_eq_mul_inv, ←Rat.div_eq_mul_inv]
-    rw [←Rat.mul_one 1]
-    apply Rat.mul_lt_mul_of_pos
+    rw [←Rat.abs_mul, ←Rat.abs_mul, ←div?_eq_mul_inv?, ←div?_eq_mul_inv?]
+    conv => { rhs; rw [←mul_one 1] }
+    apply Rat.mul_lt_mul
     · apply Rat.abs_pos
       have : A ≠ 0 := by symm; apply ne_of_lt; assumption
       invert_tactic
@@ -91,7 +92,7 @@ def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
   simp at prf
   apply lt_of_le_of_lt _ prf
   clear prf
-  rw [←Rat.abs_neg]
+  rw [←neg_abs]
   apply le_of_eq
   congr
   split <;> split
@@ -102,27 +103,17 @@ def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
     rename_i h _
     rw [h]; rfl
   · rw [dif_pos, dif_neg]
-    rw [Rat.sub_eq_add_neg, Rat.neg_inv, Rat.neg_add, Rat.sub_eq_add_neg]
-    rfl
-    rename_i h
-    intro g; apply h
-    rw [←Rat.neg_neg (b m), g]; rfl
-    rename_i h _
-    rw [h]; rfl
+    rw [sub_eq_add_neg, neg_inv?, sub_neg, zero_add, neg_neg, zero_add]
+    invert_tactic
+    rename_i h _; rw [h]; rfl
   · rw [dif_neg, dif_pos]
-    rw [Rat.sub_zero, Rat.sub_zero, Rat.neg_inv]
+    rw [sub_zero, sub_zero, neg_inv?]
     rename_i h; rw [h]; rfl
-    rename_i h _
-    intro g; apply h
-    rw [←Rat.neg_neg (a n), g]; rfl
+    invert_tactic
   · rw [dif_neg, dif_neg]
-    rw [Rat.neg_sub, ←Rat.neg_sub_neg, Rat.neg_inv, Rat.neg_inv]
-    rename_i h
-    intro g; apply h
-    rw [←Rat.neg_neg (b m), g]; rfl
-    rename_i h _
-    intro g; apply h
-    rw [←Rat.neg_neg (a n), g]; rfl
+    rw [neg_inv?, neg_inv?, neg_sub, neg_sub_neg]
+    invert_tactic
+    invert_tactic
 
 def CauchySeq.inv (a: CauchySeq) (ha: ¬a ≈ 0) : CauchySeq where
   seq n := if h:a n = 0 then 0 else (a n)⁻¹?
@@ -138,14 +129,14 @@ def CauchySeq.eventually_pointwise_ne_of_ne (a b: CauchySeq) (h: ¬a ≈ b) : Ev
     intro g; apply h
     apply Quotient.exact
     replace g : Real.mk a - Real.mk b = 0 := Quotient.sound g
-    exact Real.eq_of_sub_eq_zero g)
+    exact eq_of_sub_eq_zero (α := ℝ) g)
   obtain ⟨B, B_pos, δ, even⟩ := this
   refine ⟨δ, ?_⟩
   intro n δn
   intro g
   simp at even
   replace even : B ≤ ‖a n - b n‖ := even _ δn
-  rw [←g, Rat.sub_self] at even
+  rw [←g, sub_self] at even
   have := not_lt_of_le even
   contradiction
 
@@ -197,7 +188,7 @@ def inv_self_mul (a: ℝ) (h: a ≠ 0) : a⁻¹? * a = 1 := by
   unfold CauchySeq.inv
   simp
   rw [dif_neg prf]
-  rw [Rat.inv_self_mul]
+  rw [inv?_mul_cancel]
   rfl
 
 def mul_inv_self (a: ℝ) (h: a ≠ 0) : a * a⁻¹? = 1 := by
@@ -218,10 +209,10 @@ def inv_pos (a: ℝ) (apos: a.IsPos) : (a⁻¹?).IsPos := by
   unfold CauchySeq.inv
   simp
   rw [dif_neg]
-  apply (le_iff_mul_left_pos anpos).mpr
-  apply (le_iff_mul_left_pos bound_pos).mpr
-  rw [Rat.mul_inv_self, ←Rat.mul_assoc, Rat.mul_comm bound, Rat.mul_assoc, Rat.mul_inv_self,
-    Rat.mul_one, Rat.mul_one]
+  apply (Rat.le_iff_mul_left_pos anpos).mpr
+  apply (Rat.le_iff_mul_left_pos bound_pos).mpr
+  rw [mul_inv?_cancel, ←mul_assoc, mul_comm bound, mul_assoc, mul_inv?_cancel,
+    mul_one, mul_one]
   apply le_of_lt
   apply prf
   assumption
@@ -232,7 +223,7 @@ def of_mul_pos (a b: ℝ) : (a * b).IsPos -> (a.IsPos ↔ b.IsPos) := by
     intro a b mpos
     apply Iff.intro
     apply this _ _ mpos
-    apply this _ _ (mul_comm _ _ ▸ mpos)
+    apply this _ _ (mul_comm (α := ℝ) _ _ ▸ mpos)
   intro a b mpos apos
   have := mul_pos_of_pos_of_pos _ _ (inv_pos _ apos) mpos
   rw [←mul_assoc, inv_self_mul, one_mul] at this
@@ -278,9 +269,9 @@ def min_eq_neg_max_neg (a b: ℝ) : min a b = -max (-a) (-b) := by
   simp [min, max]
   conv => {
     rhs; rw [div_eq_mul_inv, neg_mul_left]
-    simp [neg_add, neg_neg]
+    simp [neg_add_rev, neg_neg, neg_sub_neg]
   }
-  rw [sub_eq_add_neg, neg_sub_neg, abs_sub_comm]
+  rw [sub_eq_add_neg, abs_sub_comm, add_comm, add_comm a b]
   rfl
 def max_eq_neg_min_neg (a b: ℝ) : max a b = -min (-a) (-b) := by
   rw [min_eq_neg_max_neg, neg_neg, neg_neg, neg_neg]
@@ -297,10 +288,10 @@ def min_def (a b: ℝ) : min a b = if a ≤ b then a else b := by
   rw [abs_def, le_sub_iff_add_le, zero_add]
   split
   rw [sub_eq_add_neg, neg_sub, add_comm b, sub_eq_add_neg, add_comm _ (-b),
-    ←add_assoc, add_assoc a, add_neg_self, add_zero, ←two_mul, mul_comm,
+    ←add_assoc, add_assoc a, add_neg_cancel, add_zero, ←two_mul, mul_comm,
     div_eq_mul_inv, mul_assoc, mul_inv_self, mul_one]
   rw [sub_eq_add_neg, neg_neg, sub_eq_add_neg, add_comm _ (-a), ←add_assoc,
-    add_assoc b, add_neg_self, add_zero, ←two_mul, mul_comm,
+    add_assoc b, add_neg_cancel, add_zero, ←two_mul, mul_comm,
     div_eq_mul_inv, mul_assoc, mul_inv_self, mul_one]
 
 def max_def (a b: ℝ) : max a b = if a ≤ b then b else a := by

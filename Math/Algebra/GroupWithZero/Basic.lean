@@ -142,3 +142,13 @@ def div?_mul_cancel (a b: α) (h: b ≠ 0) : a /? b * b = a := by
 
 def mul_div?_cancel [IsCommMagma α] (a b: α) (h: b ≠ 0) : b * (a /? b) = a := by
   rw [div?_eq_mul_inv?, mul_left_comm, mul_inv?_cancel, mul_one]
+
+def of_mul_right_nonzero (a b k: α) (hk: k ≠ 0) : a * k = b * k -> a = b := by
+  intro h
+  rw [←mul_one a, ←mul_one b, ←mul_inv?_cancel k, ←mul_assoc, ←mul_assoc, h]
+  assumption
+
+def of_mul_left_nonzero (a b k: α) (hk: k ≠ 0) : k * a = k * b -> a = b :=by
+  intro h
+  rw [←one_mul a, ←one_mul b, ←inv?_mul_cancel k, mul_assoc, mul_assoc, h]
+  assumption
