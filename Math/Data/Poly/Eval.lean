@@ -1,4 +1,5 @@
 import Math.Data.Poly.Basic
+import Math.Algebra.Hom.Defs
 
 def Fin.foldl_id {f} (h: ∀a b, f a b = a) : Fin.foldl n f init = init := by
   induction n generalizing init with
@@ -10,7 +11,7 @@ def Fin.foldl_id {f} (h: ∀a b, f a b = a) : Fin.foldl n f init = init := by
 
 namespace Poly
 
-def fold [Zero α] (p: Poly α) (init: β) (f: α -> ℕ -> β -> β) (resp_zero: ∀n x, f 0 n x = x): β := by
+def foldl [Zero P] (p: P[X]) (init: S) (f: P -> ℕ -> S -> S) (resp_zero: ∀n x, f 0 n x = x): S := by
   apply Quot.liftOn p.has_degree _ _
   intro ⟨bound, spec⟩
   refine Fin.foldl (n := bound + 1) (fun x n => f (p.coeffs n.val) n.val x) init
@@ -64,10 +65,33 @@ def fold [Zero α] (p: Poly α) (init: β) (f: α -> ℕ -> β -> β) (resp_zero
         simp
         rw [resp_zero]
 
-def eval [SemiringOps α] [IsSemiring α] (p: Poly α) (x: α) : α :=
-  p.fold 0 (fun a n s => s + a * x ^ n) <| by
+section
+
+variable
+  [SemiringOps P] [IsSemiring P]
+  [SemiringOps S] [IsSemiring S]
+
+-- evaluate this polynomial when given a ring homomorphism from the coeffiecients
+def evalWith (p: P[X]) (f: P →+* S) (x: S) : S :=
+  p.foldl 0 (fun a n s => s + f a * x ^ n) (by
     intro n x
     simp
-    rw [zero_mul, add_zero]
+    rw [resp_zero, zero_mul, add_zero])
+
+-- evaluate this polynomial in module over P
+def eval [SMul P S] [IsModule P S] (p: P[X]) (x: S) : S :=
+  p.foldl 0 (fun a n s => s + a • x ^ n) <| by
+    intro n x
+    simp
+    rw [zero_smul, add_zero]
+
+-- over an algebra, eval and evalWith algebraMap coincide
+def eval_eq_evalWith [SMul P S] [AlgebraMap P S] [IsAlgebra P S] (p: P[X]) (x: S) : p.eval x = p.evalWith algebraMap x := by
+    unfold eval evalWith
+    congr
+    ext c n s
+    rw [smul_def]
+
+end
 
 end Poly

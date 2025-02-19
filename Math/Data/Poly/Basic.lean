@@ -5,16 +5,18 @@ import Math.Relation.Basic
 import Math.Algebra.Ring.Defs
 import Math.Data.Fin.Basic
 
-def Poly.DegreeLe [Zero α] (f: Nat -> α) (bound: Nat) :=
+def Poly.DegreeLe [Zero P] (f: Nat -> P) (bound: Nat) :=
   ∀n > bound, f n = 0
 
-structure Poly (α: Type*) [Zero α] where
-  coeffs: Nat -> α
+structure Poly (P: Type*) [Zero P] where
+  coeffs: Nat -> P
   has_degree: Squash (Σ'bound: Nat, Poly.DegreeLe coeffs bound)
 
 namespace Poly
 
-instance (priority := 100) [Zero α] [OfNat α n] : OfNat (Poly α) n where
+scoped notation:9000 P "[X]" => Poly P
+
+instance (priority := 100) [Zero P] [OfNat P n] : OfNat P[X] n where
   ofNat := {
     coeffs
     | 0 => OfNat.ofNat n
@@ -22,25 +24,25 @@ instance (priority := 100) [Zero α] [OfNat α n] : OfNat (Poly α) n where
     has_degree := Squash.mk ⟨0, fun x _ => match x with | _ + 1 => rfl⟩
   }
 
-instance [Zero α] [NatCast α] : NatCast (Poly α) where
+instance [Zero P] [NatCast P] : NatCast P[X] where
   natCast n := {
     coeffs
-    | 0 => (n: α)
+    | 0 => (n: P)
     | _ + 1 => 0
     has_degree := Squash.mk ⟨0, fun x _ => match x with | _ + 1 => rfl⟩
   }
 
-instance [Zero α] [IntCast α] : IntCast (Poly α) where
+instance [Zero P] [IntCast P] : IntCast P[X] where
   intCast n := {
     coeffs
-    | 0 => (n: α)
+    | 0 => (n: P)
     | _ + 1 => 0
     has_degree := Squash.mk ⟨0, fun x _ => match x with | _ + 1 => rfl⟩
   }
 
-instance [Zero α] [One α] : One (Poly α) := ⟨1⟩
+instance [Zero P] [One P] : One P[X] := ⟨1⟩
 
-instance [Zero α] : Zero (Poly α) where
+instance [Zero P] : Zero P[X] where
   zero := {
     coeffs _ := 0
     has_degree := Squash.mk ⟨0, fun _ _ => rfl⟩
@@ -48,10 +50,10 @@ instance [Zero α] : Zero (Poly α) where
 
 section degree
 
-variable [Zero α] [BEq α] [LawfulBEq α]
+variable [Zero P] [BEq P] [LawfulBEq P]
 
 private
-def findDegree (f: Nat -> α) : (Σ'm: Nat, Poly.DegreeLe f m) -> Σ'm: Nat, Poly.DegreeLe f m ∧ ∀x, Poly.DegreeLe f x -> m ≤ x
+def findDegree (f: Nat -> P) : (Σ'm: Nat, Poly.DegreeLe f m) -> Σ'm: Nat, Poly.DegreeLe f m ∧ ∀x, Poly.DegreeLe f x -> m ≤ x
 | ⟨0, h⟩ => ⟨0, h, fun _ _ => Nat.zero_le _⟩
 | ⟨m + 1, hm⟩ => by
   if f (m + 1) == 0 then
@@ -73,7 +75,7 @@ def findDegree (f: Nat -> α) : (Σ'm: Nat, Poly.DegreeLe f m) -> Σ'm: Nat, Pol
     rw [(deg _ g), LawfulBEq.rfl] at *
     contradiction
 
-def degree (p: Poly α) : Nat := by
+def degree (p: P[X]) : Nat := by
   apply p.has_degree.liftOn _ _
   intro h
   -- search for the degree starting at the current degree
@@ -89,7 +91,7 @@ def degree (p: Poly α) : Nat := by
   apply y.snd.right
   exact x.snd.left
 
-def degree.DegreeLe (p: Poly α) : Poly.DegreeLe p.coeffs p.degree := by
+def degree.DegreeLe (p: P[X]) : Poly.DegreeLe p.coeffs p.degree := by
   cases p with
   | mk f h =>
   induction h using Quot.ind with
@@ -97,7 +99,7 @@ def degree.DegreeLe (p: Poly α) : Poly.DegreeLe p.coeffs p.degree := by
   dsimp
   exact (Poly.findDegree f h).snd.left
 
-def degree_is_minimal (p: Poly α) : ∀x, Poly.DegreeLe p.coeffs x -> p.degree ≤ x := by
+def degree_is_minimal (p: P[X]) : ∀x, Poly.DegreeLe p.coeffs x -> p.degree ≤ x := by
   cases p with
   | mk f h =>
   induction h using Quot.ind with
@@ -107,7 +109,7 @@ def degree_is_minimal (p: Poly α) : ∀x, Poly.DegreeLe p.coeffs x -> p.degree 
 
 end degree
 
-def ofCoeffs [Zero α] (coeffs: List α) : Poly α where
+def ofCoeffs [Zero P] (coeffs: List P) : P[X] where
   coeffs n := coeffs.getD n 0
   has_degree := by
     refine Squash.mk ⟨coeffs.length, ?_⟩
@@ -120,7 +122,7 @@ def ofCoeffs [Zero α] (coeffs: List α) : Poly α where
     assumption
 
 -- multiply the polynomial by the variable
-def mul_var [Zero α] (p: Poly α): Poly α where
+def mul_var [Zero P] (p: P[X]): P[X] where
   coeffs
   | 0 => 0
   | n + 1 => p.coeffs n
@@ -137,7 +139,7 @@ def mul_var [Zero α] (p: Poly α): Poly α where
     assumption
 
 -- divide the polynomial by the variable
-def div_var [Zero α] (p: Poly α): Poly α where
+def div_var [Zero P] (p: P[X]): P[X] where
   coeffs n := p.coeffs (n + 1)
   has_degree := by
     apply p.has_degree.lift
@@ -151,7 +153,7 @@ def div_var [Zero α] (p: Poly α): Poly α where
     apply Nat.succ_lt_succ
     assumption
 
-def const [Zero α] (k: α) : Poly α where
+def const [Zero P] (k: P) : P[X] where
   coeffs
   | 0 => k
   | n + 1 => 0
@@ -163,7 +165,7 @@ def const [Zero α] (k: α) : Poly α where
     | x + 1 =>
     rfl
 
-instance [Zero α] [Add α] [IsAddZeroClass α] : Add (Poly α) where
+instance [Zero P] [Add P] [IsAddZeroClass P] : Add P[X] where
   add a b := Poly.mk (fun n => a.coeffs n + b.coeffs n) <| by
     match a, b with
     | .mk a ha, .mk b hb =>
@@ -182,7 +184,7 @@ instance [Zero α] [Add α] [IsAddZeroClass α] : Add (Poly α) where
     apply Nat.lt_of_le_of_lt _ h
     apply Nat.le_max_left
 
-instance [Zero α] [Add α] [Mul α] [IsAddZeroClass α] [IsMulZeroClass α] : Mul (Poly α) where
+instance [Zero P] [Add P] [Mul P] [IsAddZeroClass P] [IsMulZeroClass P] : Mul P[X] where
   mul a b := Poly.mk (fun n => Fin.sum fun x: Fin (n + 1) => a.coeffs x.val * b.coeffs (n - x.val)) <| by
     match a, b with
     | .mk a ha, .mk b hb =>
@@ -211,7 +213,7 @@ instance [Zero α] [Add α] [Mul α] [IsAddZeroClass α] [IsMulZeroClass α] : M
       apply Nat.le_of_lt_succ
       exact x.isLt
 
-instance [Zero α] [Neg α] [IsNegZeroClass α] : Neg (Poly α) where
+instance [Zero P] [Neg P] [IsNegZeroClass P] : Neg P[X] where
   neg p := by
     apply Poly.mk (fun n => -p.coeffs n)
     apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
@@ -223,7 +225,7 @@ instance [Zero α] [Neg α] [IsNegZeroClass α] : Neg (Poly α) where
     rw [spec, neg_zero]
     assumption
 
-instance [Zero α] [Add α] [SMul ℕ α] [IsAddMonoid α] : SMul ℕ (Poly α) where
+instance [Zero P] [Add P] [SMul ℕ P] [IsAddMonoid P] : SMul ℕ P[X] where
   smul k p := by
     apply Poly.mk (fun n => k • p.coeffs n)
     apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
@@ -235,7 +237,7 @@ instance [Zero α] [Add α] [SMul ℕ α] [IsAddMonoid α] : SMul ℕ (Poly α) 
     rw [spec, nsmul_zero]
     assumption
 
-instance [Zero α] [Add α] [Mul α] [IsMulZeroClass α] : SMul α (Poly α) where
+instance [Zero P] [Add P] [Mul P] [IsMulZeroClass P] : SMul P P[X] where
   smul k p := by
     apply Poly.mk (fun n => k * p.coeffs n)
     apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
@@ -247,7 +249,7 @@ instance [Zero α] [Add α] [Mul α] [IsMulZeroClass α] : SMul α (Poly α) whe
     rw [spec, mul_zero]
     assumption
 
-instance [Zero α] [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass α] [IsSubNegMonoid α] : SMul ℤ (Poly α) where
+instance [Zero P] [Add P] [Neg P] [Sub P] [SMul ℕ P] [SMul ℤ P] [IsNegZeroClass P] [IsSubNegMonoid P] : SMul ℤ P[X] where
   smul k p := by
     apply Poly.mk (fun n => k • p.coeffs n)
     apply p.has_degree.recOnSubsingleton (motive := fun _ => _)
@@ -259,7 +261,7 @@ instance [Zero α] [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNeg
     rw [spec, zsmul_zero]
     assumption
 
-instance [Zero α] [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass α] [IsSubNegMonoid α] : Sub (Poly α) where
+instance [Zero P] [Add P] [Neg P] [Sub P] [SMul ℕ P] [SMul ℤ P] [IsNegZeroClass P] [IsSubNegMonoid P] : Sub P[X] where
   sub a b := Poly.mk (fun n => a.coeffs n - b.coeffs n) <| by
     match a, b with
     | .mk a ha, .mk b hb =>
@@ -278,7 +280,7 @@ instance [Zero α] [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNeg
     apply Nat.lt_of_le_of_lt _ h
     apply Nat.le_max_left
 
-instance [Zero α] [Neg α] [IsNegZeroClass α] : Neg (Poly α) where
+instance [Zero P] [Neg P] [IsNegZeroClass P] : Neg P[X] where
   neg a := Poly.mk (fun n => -a.coeffs n) <| by
     match a with
     | .mk a ha =>
@@ -294,18 +296,18 @@ instance [Zero α] [Neg α] [IsNegZeroClass α] : Neg (Poly α) where
 
 section
 
-variable [Zero α] [One α] [Add α] [Mul α] [IsAddZeroClass α] [IsMulZeroClass α]
+variable [Zero P] [One P] [Add P] [Mul P] [IsAddZeroClass P] [IsMulZeroClass P]
 
-instance [Zero α] [One α] [Add α] [Mul α] [IsAddZeroClass α] [IsMulZeroClass α] : Pow (Poly α) ℕ := ⟨flip npowRec⟩
+instance [Zero P] [One P] [Add P] [Mul P] [IsAddZeroClass P] [IsMulZeroClass P] : Pow P[X] ℕ := ⟨flip npowRec⟩
 
-def ext_coeffs (a b: Poly α) : a.coeffs = b.coeffs -> a = b := by
+def ext_coeffs (a b: P[X]) : a.coeffs = b.coeffs -> a = b := by
   intro h
   cases a;cases b; congr
   apply Subsingleton.helim
   dsimp at h
   rw [h]
 
-def mul_mul_var (p q: Poly α) : p * q.mul_var = (p * q).mul_var := by
+def mul_mul_var (p q: P[X]) : p * q.mul_var = (p * q).mul_var := by
   apply ext_coeffs
   ext n
   cases n
@@ -334,7 +336,7 @@ def mul_mul_var (p q: Poly α) : p * q.mul_var = (p * q).mul_var := by
   have := Nat.lt_asymm x.isLt (Nat.lt_of_succ_le h)
   contradiction
 
-def mul_var_mul (p q: Poly α) : p.mul_var * q = (p * q).mul_var := by
+def mul_var_mul (p q: P[X]) : p.mul_var * q = (p * q).mul_var := by
   apply ext_coeffs
   ext n
   cases n
@@ -355,7 +357,7 @@ def mul_var_mul (p q: Poly α) : p.mul_var * q = (p * q).mul_var := by
   dsimp
   rw [Nat.succ_sub_succ]
 
-instance : IsAddZeroClass (Poly α) where
+instance : IsAddZeroClass P[X] where
   zero_add a := by
     apply Poly.ext_coeffs
     ext n
@@ -367,7 +369,7 @@ instance : IsAddZeroClass (Poly α) where
     show _ + 0 = _
     rw [add_zero]
 
-instance [IsAddSemigroup α] : IsAddSemigroup (Poly α) where
+instance [IsAddSemigroup P] : IsAddSemigroup P[X] where
   add_assoc a b c := by
     apply Poly.ext_coeffs
     ext n
@@ -375,7 +377,7 @@ instance [IsAddSemigroup α] : IsAddSemigroup (Poly α) where
     rw [add_assoc]
     rfl
 
-instance [Neg α] [IsNegZeroClass α] : IsNegZeroClass (Poly α) where
+instance [Neg P] [IsNegZeroClass P] : IsNegZeroClass P[X] where
   neg_zero := by
     apply Poly.ext_coeffs
     ext n
@@ -383,7 +385,7 @@ instance [Neg α] [IsNegZeroClass α] : IsNegZeroClass (Poly α) where
     rw [neg_zero]
     rfl
 
-instance [SMul ℕ α] [IsAddMonoid α] : IsAddMonoid (Poly α) where
+instance [SMul ℕ P] [IsAddMonoid P] : IsAddMonoid P[X] where
   zero_nsmul p := by
     apply Poly.ext_coeffs
     ext n
@@ -398,7 +400,7 @@ instance [SMul ℕ α] [IsAddMonoid α] : IsAddMonoid (Poly α) where
     rw [succ_nsmul]
     rfl
 
-instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass α] [IsSubNegMonoid α] : IsSubNegMonoid (Poly α) where
+instance [Add P] [Neg P] [Sub P] [SMul ℕ P] [SMul ℤ P] [IsNegZeroClass P] [IsSubNegMonoid P] : IsSubNegMonoid P[X] where
   sub_eq_add_neg p q := by
     apply Poly.ext_coeffs
     ext n
@@ -415,21 +417,21 @@ instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass 
     show (Int.negSucc k) • p.coeffs n = _
     apply zsmul_negSucc
 
-instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsAddGroup α] : IsAddGroup (Poly α) where
+instance [Add P] [Neg P] [Sub P] [SMul ℕ P] [SMul ℤ P] [IsAddGroup P] : IsAddGroup P[X] where
   neg_add_cancel a := by
     apply Poly.ext_coeffs
     ext n
     show -a.coeffs n + _ = 0
     rw [neg_add_cancel]
 
-instance [Neg α] [IsNegZeroClass α] [IsInvolutiveNeg α] : IsInvolutiveNeg (Poly α) where
+instance [Neg P] [IsNegZeroClass P] [IsInvolutiveNeg P] : IsInvolutiveNeg P[X] where
   neg_neg a := by
     apply ext_coeffs
     ext n
     show - -a.coeffs n = _
     rw [neg_neg]
 
-instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass α] [IsSubtractionMonoid α] : IsSubtractionMonoid (Poly α) where
+instance [Add P] [Neg P] [Sub P] [SMul ℕ P] [SMul ℤ P] [IsNegZeroClass P] [IsSubtractionMonoid P] : IsSubtractionMonoid P[X] where
   neg_add_rev := by
     intro a b
     apply ext_coeffs
@@ -446,7 +448,7 @@ instance [Add α] [Neg α] [Sub α] [SMul ℕ α] [SMul ℤ α] [IsNegZeroClass 
     rw [eq]
     rfl
 
-instance [Add α] [IsAddZeroClass α] [IsAddCommMagma α] : IsAddCommMagma (Poly α) where
+instance [Add P] [IsAddZeroClass P] [IsAddCommMagma P] : IsAddCommMagma P[X] where
   add_comm := by
     intro p q
     apply Poly.ext_coeffs
@@ -454,9 +456,9 @@ instance [Add α] [IsAddZeroClass α] [IsAddCommMagma α] : IsAddCommMagma (Poly
     show p.coeffs n + q.coeffs n = q.coeffs n + p.coeffs n
     rw [add_comm]
 
-variable [Add α] [Mul α] [IsAddZeroClass α] [IsMulZeroClass α]
+variable [Add P] [Mul P] [IsAddZeroClass P] [IsMulZeroClass P]
 
-instance [IsMulZeroClass α] : IsMulZeroClass (Poly α) where
+instance [IsMulZeroClass P] : IsMulZeroClass P[X] where
   zero_mul a := by
     apply Poly.ext_coeffs
     ext n
@@ -473,7 +475,7 @@ instance [IsMulZeroClass α] : IsMulZeroClass (Poly α) where
     erw [mul_zero]
 
 private
-def eq_div_mul_add (p: Poly α) :
+def eq_div_mul_add (p: P[X]) :
   p = p.div_var.mul_var + const (p.coeffs 0) := by
   apply Poly.ext_coeffs
   ext n
@@ -488,12 +490,12 @@ def eq_div_mul_add (p: Poly α) :
     erw [add_zero]
     rfl
 
-def zero_eq_const : (0: Poly α) = const 0 := by
+def zero_eq_const : (0: P[X]) = const 0 := by
   apply ext_coeffs
   ext n
   cases n <;> rfl
 
-def const_mul_const (a b: α) : const a * const b = const (a * b) := by
+def const_mul_const (a b: P) : const a * const b = const (a * b) := by
   apply ext_coeffs
   ext n
   cases n
@@ -514,9 +516,9 @@ def const_mul_const (a b: α) : const a * const b = const (a * b) := by
     rw [zero_mul]
 
 @[induction_eliminator]
-def induction {motive: Poly α -> Prop}
+def induction {motive: P[X] -> Prop}
   (const: ∀a, motive (const a))
-  (mul_add: ∀a: α, ∀p: Poly α, motive p -> motive (Poly.const a) -> motive (p.mul_var + Poly.const a)): ∀p, motive p := by
+  (mul_add: ∀a: P, ∀p: P[X], motive p -> motive (Poly.const a) -> motive (p.mul_var + Poly.const a)): ∀p, motive p := by
   intro p
   cases p with
   | mk p has_deg =>
@@ -541,9 +543,9 @@ def induction {motive: Poly α -> Prop}
     apply ih
     apply const
 
-variable [IsLeftDistrib α] [IsRightDistrib α] [IsAddSemigroup α] [IsAddCommMagma α]
+variable [IsLeftDistrib P] [IsRightDistrib P] [IsAddSemigroup P] [IsAddCommMagma P]
 
-instance : IsLeftDistrib (Poly α) where
+instance : IsLeftDistrib P[X] where
   left_distrib := by
     intro k a b
     apply Poly.ext_coeffs
@@ -554,7 +556,7 @@ instance : IsLeftDistrib (Poly α) where
     funext m
     rw [mul_add]
 
-instance : IsRightDistrib (Poly α) where
+instance : IsRightDistrib P[X] where
   right_distrib := by
     intro k a b
     apply Poly.ext_coeffs
@@ -565,7 +567,7 @@ instance : IsRightDistrib (Poly α) where
     funext m
     rw [add_mul]
 
-instance [IsCommMagma α] : IsCommMagma (Poly α) where
+instance [IsCommMagma P] : IsCommMagma P[X] where
   mul_comm := by
     intro p q
     induction p with
@@ -585,7 +587,7 @@ instance [IsCommMagma α] : IsCommMagma (Poly α) where
       rw [add_mul, mul_add, mul_var_mul, mul_mul_var, ih]
       congr 1
 
-instance [IsSemigroup α] : IsSemigroup (Poly α) where
+instance [IsSemigroup P] : IsSemigroup P[X] where
   mul_assoc := by
     intro a b c
     induction a with
@@ -604,7 +606,7 @@ instance [IsSemigroup α] : IsSemigroup (Poly α) where
       simp [add_mul, mul_var_mul]
       congr
 
-instance [IsMulOneClass α] : IsMulOneClass (Poly α) where
+instance [IsMulOneClass P] : IsMulOneClass P[X] where
   mul_one a := by
     show a * const 1 = a
     apply ext_coeffs
@@ -649,14 +651,13 @@ instance [IsMulOneClass α] : IsMulOneClass (Poly α) where
 
 end
 
-
-instance [AddGroupOps α] [IsAddGroup α] : IsAddGroup (Poly α) where
+instance [AddGroupOps P] [IsAddGroup P] : IsAddGroup P[X] where
   neg_add_cancel a := by
     apply ext_coeffs
     ext i
     apply neg_add_cancel
 
-instance [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : IsAddMonoidWithOne (Poly α) where
+instance [AddMonoidWithOneOps P] [IsAddMonoidWithOne P] : IsAddMonoidWithOne P[X] where
   natCast_zero := by
     apply ext_coeffs
     ext i; cases i
@@ -675,7 +676,7 @@ instance [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : IsAddMonoidWithOne (
     apply ofNat_eq_natCast
     rfl
 
-instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne (Poly α) := {
+instance [AddGroupWithOneOps P] [IsAddGroupWithOne P] : IsAddGroupWithOne P[X] := {
   instIsAddMonoidWithOne, instIsAddGroup with
   intCast_ofNat n := by
     apply ext_coeffs
@@ -688,8 +689,8 @@ instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne (Pol
     apply intCast_negSucc
     symm; apply neg_zero
 }
-instance [SemiringOps α] [IsSemiring α] : IsSemiring (Poly α) where
-instance [RingOps α] [IsRing α] : RingOps (Poly α) := RingOps.mk
-instance [RingOps α] [IsRing α] : IsRing (Poly α) := inferInstance
+instance [SemiringOps P] [IsSemiring P] : IsSemiring P[X] where
+instance [RingOps P] [IsRing P] : RingOps P[X] := RingOps.mk
+instance [RingOps P] [IsRing P] : IsRing P[X] := inferInstance
 
 end Poly
