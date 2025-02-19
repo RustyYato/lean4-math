@@ -1,4 +1,4 @@
-import Math.Data.Rat.Order
+import Math.Data.Rat.OrderedAlgebra
 import Math.Function.Basic
 
 def CauchySeq.Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
@@ -91,7 +91,7 @@ def CauchySeq.upper_bound (c: CauchySeq) : ∃bound: ℚ, ∀n, c n < bound := b
     apply lt_of_le_of_lt
     apply max_until.spec c δ
     assumption
-    rw [←Rat.add_zero (c.max_until δ)]
+    rw [←add_zero (c.max_until δ)]
     apply Rat.add_lt_add_of_le_of_lt
     rfl
     decide
@@ -100,19 +100,15 @@ def CauchySeq.upper_bound (c: CauchySeq) : ∃bound: ℚ, ∀n, c n < bound := b
       apply lt_of_le_of_lt _ this
       rw [Rat.abs_def]
       split <;> rename_i g
+      rw [add_sub_cancel]
       apply le_trans
       show c n ≤ c δ
-      apply Rat.add_le_add_right.mpr
-      rw [Rat.add_neg_self (c δ), ←Rat.sub_eq_add_neg]
+      rw [not_le, ←Rat.lt_add_iff_sub_lt, zero_add] at g
       apply le_of_lt; assumption
-      conv => { lhs; rw [←Rat.add_zero (c δ)] }
-      apply Rat.add_le_add
-      rfl
-      apply Rat.neg_le_neg_iff.mpr
-      rw [Rat.neg_neg]
+      apply Rat.le_add_right_nonneg
+      rw [not_le] at g
+      rw [Rat.neg_le_neg_iff, neg_neg]
       apply le_of_lt; assumption
-      rw [Rat.sub_eq_add_neg, ←Rat.add_assoc, Rat.add_comm (c δ),
-        Rat.add_assoc, Rat.add_neg_self, Rat.add_zero]
     apply Rat.add_lt_add_of_le_of_lt
     apply max_until.spec c δ
     rfl
@@ -130,7 +126,7 @@ def CauchySeq.upper_bound_with (c: CauchySeq) (b: ℚ) : ∃bound: ℚ, b ≤ bo
 
 def CauchySeq.Equiv (a b: CauchySeq) := is_cauchy_equiv a.seq b.seq
 
-def Rat.half_pos {ε: ℚ} : 0 < ε -> 0 < ε /? 2 := (Rat.div_pos · (by decide))
+def Rat.half_pos {ε: ℚ} : 0 < ε -> 0 < ε /? 2 := (Rat.mul_pos · (by decide))
 
 @[refl]
 def CauchySeq.Equiv.refl (a: CauchySeq) : Equiv a a := a.is_cacuhy
@@ -140,7 +136,7 @@ def CauchySeq.Equiv.symm {a b: CauchySeq} : Equiv a b -> Equiv b a := by
   replace ⟨δ, h⟩ := h ε ε_pos
   exists δ
   intro n m _ _
-  rw [Rat.abs_sub_comm]
+  rw [abs_sub_comm]
   apply h <;> assumption
 def CauchySeq.Equiv.trans {a b c: CauchySeq} : Equiv a b -> Equiv b c -> Equiv a c := by
   intro ab bc ε ε_pos
@@ -152,8 +148,8 @@ def CauchySeq.Equiv.trans {a b c: CauchySeq} : Equiv a b -> Equiv b c -> Equiv a
   intro n m δ_le_n δ_le_m
   replace ⟨ab, bc, bspec⟩ := h n m δ_le_n δ_le_m
   have := Rat.add_lt_add ab (Rat.add_lt_add bc bspec)
-  rw [←Rat.mul_two, Rat.mul_div_cancel, ←Rat.mul_two, Rat.mul_div_cancel,
-    Rat.abs_sub_comm (b n) (b m)] at this
+  rw [←mul_two, div?_mul_cancel, ←mul_two, div?_mul_cancel,
+    abs_sub_comm (b n) (b m)] at this
   apply lt_of_le_of_lt _ this
   apply flip le_trans
   apply Rat.add_le_add
@@ -161,11 +157,11 @@ def CauchySeq.Equiv.trans {a b c: CauchySeq} : Equiv a b -> Equiv b c -> Equiv a
   apply Rat.abs_add_le_add_abs
   apply flip le_trans
   apply Rat.abs_add_le_add_abs
-  iterate 4 rw [Rat.sub_eq_add_neg]
+  iterate 4 rw [sub_eq_add_neg]
   have : a n + -b m + (b n + -c m + (b m + -b n)) =
     a n + -c m + (-b m + b m) + (b n + -b n) := by ac_rfl
   rw [this]; clear this
-  rw [Rat.neg_self_add, Rat.add_neg_self, Rat.add_zero, Rat.add_zero]
+  rw [neg_add_cancel, add_neg_cancel, add_zero, add_zero]
 
 instance CauchySeq.setoid : Setoid CauchySeq := ⟨Equiv, Equiv.refl, Equiv.symm, Equiv.trans⟩
 
@@ -193,7 +189,7 @@ def CauchySeq.ofRat (q: ℚ) : CauchySeq where
     refine ⟨0, ?_⟩
     intro n m _ _
     simp
-    rw [Rat.sub_self]
+    rw [sub_self]
     assumption
 
 def Real.ofRat (q: ℚ) : ℝ := ⟦.ofRat q⟧
@@ -222,8 +218,13 @@ def CauchySeq.eventually_pointwise (a b: CauchySeq) : Eventually (fun n => a n =
   assumption
 
 instance : Coe ℚ ℝ := ⟨.ofRat⟩
-instance : OfNat CauchySeq n := ⟨.ofRat (OfNat.ofNat n: ℚ)⟩
-instance : OfNat ℝ n := ⟨⟦OfNat.ofNat n⟧⟩
+instance : Coe ℚ ℝ := ⟨.ofRat⟩
+instance : NatCast ℝ where
+  natCast n := (n: ℚ)
+instance : IntCast ℝ where
+  intCast n := (n: ℚ)
+instance : OfNat CauchySeq n := ⟨.ofRat n⟩
+instance : OfNat ℝ n := ⟨n⟩
 
 instance : Nonempty ℝ := ⟨0⟩
 
@@ -235,15 +236,15 @@ def CauchySeq.add.spec (a b c d: CauchySeq) :
   refine ⟨δ, ?_⟩
   intro n m δ_le_n δ_le_m
   show ‖a n + b n - (c m + d m)‖ < ε
-  rw [Rat.sub_eq_add_neg, Rat.neg_add]
-  have : ‖a n + b n + (-c m + -d m)‖ =
+  rw [sub_eq_add_neg, neg_add_rev]
+  have : ‖a n + b n + (-d m + -c m)‖ =
     ‖a n + -c m + (b n + -d m)‖ := by ac_rfl
   rw [this]; clear this
   replace ⟨ab, cd⟩  := h n m δ_le_n δ_le_m
   have := Rat.add_lt_add ab cd
-  rw [←Rat.mul_two, Rat.mul_div_cancel] at this
+  rw [←mul_two, div?_mul_cancel] at this
   apply lt_of_le_of_lt _ this
-  rw [←Rat.sub_eq_add_neg, ←Rat.sub_eq_add_neg]
+  rw [←sub_eq_add_neg, ←sub_eq_add_neg]
   apply Rat.abs_add_le_add_abs
 
 def CauchySeq.add (a b: CauchySeq) : CauchySeq where
@@ -273,7 +274,7 @@ def CauchySeq.neg.spec (a b: CauchySeq) :
   refine ⟨δ, ?_⟩
   intro n m δ_le_n δ_le_m
   simp
-  rw [Rat.neg_sub_neg, Rat.abs_sub_comm]
+  rw [neg_sub_neg, abs_sub_comm]
   apply h <;> assumption
 
 def CauchySeq.neg (a: CauchySeq) : CauchySeq where
@@ -303,7 +304,7 @@ def CauchySeq.sub.spec (a b c d: CauchySeq) :
   refine ⟨δ, ?_⟩
   intro n m δ_le_n δ_le_m
   simp
-  rw [Rat.sub_eq_add_neg (a n), Rat.sub_eq_add_neg (c m)]
+  rw [sub_eq_add_neg (a n), sub_eq_add_neg (c m)]
   exact h n m δ_le_n δ_le_m
 
 def CauchySeq.sub (a b: CauchySeq) : CauchySeq where
@@ -335,22 +336,19 @@ def CauchySeq.abs.proof1 (a b: Rat) :
     have : b < a := lt_of_lt_of_le hb ha
     have : 0 ≤ a - b := by
       apply Rat.add_le_add_right.mpr
-      rw [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.add_zero, Rat.zero_add]
+      rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero, zero_add]
       apply le_of_lt; assumption
-    rw [if_neg (not_lt_of_le this)]
-    rw [Rat.abs_def]
+    rw [if_pos this]
+    rw [Rat.abs_def, sub_eq_add_neg]
     split
-    rw [Rat.neg_add, Rat.sub_eq_add_neg]
-    apply Rat.add_le_add_right.mp
-    apply Rat.neg_le_self_of_nonneg
-    assumption
-    rw [Rat.sub_eq_add_neg]
     apply Rat.add_le_add_left.mp
-    apply Rat.self_le_neg_of_nonpos
-    assumption
+    exact Rat.le_neg_of_nonpos b (le_of_lt hb)
+    rw [neg_add_rev, add_comm]
+    apply Rat.add_le_add_right.mp
+    exact Rat.neg_le_of_nonneg a ha
   · subst b
-    rw [Rat.sub_zero] at habs
-    rwa [Rat.add_zero]
+    rw [sub_zero] at habs
+    rwa [add_zero]
 
 def CauchySeq.abs.spec (a b: CauchySeq) : a ≈ b ->
   is_cauchy_equiv (fun n => ‖a n‖) (fun n => ‖b n‖) := by
@@ -362,36 +360,32 @@ def CauchySeq.abs.spec (a b: CauchySeq) : a ≈ b ->
   rw [Rat.abs_def (a n), Rat.abs_def (b m)]
   suffices ‖a.seq n - b.seq m‖ < ε by
     split <;> split <;> rename_i h g
-    · rw [Rat.neg_sub_neg, Rat.abs_sub_comm]
-      exact this
-    · rw [Rat.sub_eq_add_neg]
-      apply CauchySeq.abs.proof1
-      apply Rat.neg_le_neg_iff.mpr
-      rw [Rat.neg_neg]
-      apply le_of_lt; assumption
-      apply Rat.neg_le_neg_iff.mpr
-      rw [Rat.neg_neg]
-      apply le_of_not_lt; assumption
-      rw [Rat.neg_sub_neg, Rat.abs_sub_comm]
-      exact this
-    · rw [Rat.sub_eq_add_neg, Rat.neg_neg]
-      apply CauchySeq.abs.proof1
-      apply le_of_not_lt; assumption
-      apply le_of_lt; assumption
-      exact this
     · exact this
+    · rw [sub_eq_add_neg, neg_neg]
+      apply CauchySeq.abs.proof1
+      assumption
+      rw [not_le] at g
+      apply le_of_lt; assumption
+      exact this
+    · rw [sub_eq_add_neg]
+      apply CauchySeq.abs.proof1
+      apply Rat.neg_le_neg_iff.mpr
+      rw [neg_neg]
+      rw [not_le] at h
+      apply le_of_lt; assumption
+      apply Rat.neg_le_neg_iff.mpr
+      rw [neg_neg]
+      assumption
+      rw [neg_sub_neg, abs_sub_comm]
+      apply_assumption
+    · rw [neg_sub_neg, abs_sub_comm]
+      assumption
   replace ab  := ab _ _ δ_le_n δ_le_m
   apply lt_trans ab
   apply Rat.add_lt_add_right.mpr
-  rw [Rat.add_neg_self]
-  conv => {
-    rhs; lhs;
-    rw [←Rat.mul_div_cancel 2 ε (by decide)]
-  }
-  rw [Rat.mul_two, Rat.add_assoc, Rat.add_neg_self, Rat.add_zero, Rat.div_eq_mul_inv]
-  apply Rat.div_pos
-  assumption
-  decide
+  rw [add_neg_cancel]
+  rw [←sub_eq_add_neg, Rat.sub_half]
+  exact Rat.half_pos ε_pos
 
 def CauchySeq.abs (a: CauchySeq) : CauchySeq where
   seq n := ‖a n‖
@@ -429,14 +423,14 @@ def CauchySeq.mul.spec (a b c d: CauchySeq) : a ≈ c -> b ≈ d ->
   let ε₁ := (ε /? 2) /? amax
 
   have ε₀_pos : 0 < ε₀ := by
-    apply Rat.div_pos
-    apply Rat.div_pos
+    apply div?_pos
+    apply div?_pos
     assumption
     decide
     assumption
   have ε₁_pos : 0 < ε₁ := by
-    apply Rat.div_pos
-    apply Rat.div_pos
+    apply div?_pos
+    apply div?_pos
     assumption
     decide
     assumption
@@ -455,14 +449,14 @@ def CauchySeq.mul.spec (a b c d: CauchySeq) : a ≈ c -> b ≈ d ->
   refine ⟨δ, ?_⟩
   intro n m δ_le_n δ_le_m
   replace ⟨ab, bd⟩ := prf _ _ δ_le_n δ_le_m
-  rw [←Rat.add_zero (_ - _), ←Rat.add_neg_self (a n * d m),
-    Rat.sub_eq_add_neg]
+  rw [←add_zero (_ - _), ←add_neg_cancel (a n * d m),
+    sub_eq_add_neg]
   have :
     a n * b n + -(c m * d m) + (a n * d m + -(a n * d m)) =
     a n * b n + -(a n * d m) + (a n * d m + -(c m * d m)) := by ac_rfl
   rw [this]; clear this
-  iterate 2 rw [←Rat.sub_eq_add_neg]
-  rw [←Rat.mul_sub, ←Rat.sub_mul]
+  iterate 2 rw [←sub_eq_add_neg]
+  rw [←mul_sub, ←sub_mul]
   apply lt_of_le_of_lt
   apply Rat.abs_add_le_add_abs
   rw [Rat.abs_mul, Rat.abs_mul]
@@ -478,16 +472,15 @@ def CauchySeq.mul.spec (a b c d: CauchySeq) : a ≈ c -> b ≈ d ->
   apply dmax_spec
   apply lt_of_lt_of_le
   apply Rat.add_lt_add_of_lt_of_le
-  apply Rat.mul_lt_mul_of_left_pos
+  apply (Rat.lt_iff_mul_left_pos _).mp
+  assumption
   apply lt_of_lt_of_le _ one_lt_amax
   decide
+  apply (Rat.le_iff_mul_right_pos _).mp
+  apply le_of_lt
   assumption
-  apply Rat.mul_le_mul_of_right_nonneg
-  apply le_trans _ one_lt_dmax
-  decide
-  apply le_of_lt; assumption
-  rw [Rat.mul_div_cancel, Rat.mul_comm, Rat.mul_div_cancel,
-    ←Rat.mul_two, Rat.mul_div_cancel]
+  assumption
+  rw [div?_mul_cancel, mul_div?_cancel, add_half]
 
 def CauchySeq.mul (a b: CauchySeq) : CauchySeq where
   seq n := a n * b n
@@ -508,131 +501,188 @@ def Real.mk_mul (a b: CauchySeq) : ⟦a⟧ * ⟦b⟧ = ⟦a * b⟧ := rfl
 @[simp]
 def Real.eval_mul (a b: CauchySeq) (n: Nat) : (a * b) n = a n * b n := rfl
 
+def CauchySeq.pow.spec (a b: CauchySeq) (n: ℕ) : a ≈ b ->
+  is_cauchy_equiv (fun i => a i ^ n) (fun i => b i ^ n) := by
+  intro eq
+  induction n generalizing a b with
+  | zero =>
+    conv => { arg 1; intro x; rw [npow_zero] }
+    conv => { arg 2; intro x; rw [npow_zero] }
+    intro ε ε_pos
+    exists 0
+    intro n m hn hm
+    simp [sub_self]
+    assumption
+  | succ n ih =>
+    conv => { arg 1; intro x; rw [npow_succ] }
+    conv => { arg 2; intro x; rw [npow_succ] }
+    apply CauchySeq.mul.spec
+      ⟨fun i => a i ^ n, ih _ _ (CauchySeq.refl _)⟩
+      a
+      ⟨fun i => b i ^ n, ih _ _ (CauchySeq.refl _)⟩
+      b
+    apply ih
+    assumption
+    assumption
+
+instance : Pow CauchySeq ℕ where
+  pow a n := {
+    seq i := a i ^ n
+    is_cacuhy := by
+      apply CauchySeq.pow.spec
+      rfl
+  }
+
 namespace Real
 
-def sub_eq_add_neg (a b: ℝ) : a - b = a + -b := by
-  induction a, b using ind₂ with | mk a b =>
-  simp
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.sub_eq_add_neg]
+instance : SMul ℕ ℝ where
+  smul a b := a * b
+instance : SMul ℤ ℝ where
+  smul a b := a * b
+instance : Pow ℝ ℕ where
+  pow := flip <| by
+    intro n
+    apply Quotient.lift (⟦· ^ n⟧)
+    intro a b eq
+    apply Quotient.sound
+    apply CauchySeq.pow.spec
+    assumption
 
-def add_comm (a b: ℝ) : a + b = b + a := by
-  induction a, b using ind₂ with | mk a b =>
-  simp
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.add_comm]
-
-def add_assoc (a b c: ℝ) : a + b + c = a + (b + c) := by
-  induction a, b, c using ind₃ with | mk a b =>
-  simp
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.add_assoc]
-
-def add_neg_self (a: ℝ) : a + -a = 0 := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.add_neg_self]
-  rfl
-
-def neg_self_add (a: ℝ) : -a + a = 0 := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.neg_self_add]
-  rfl
-
-def sub_self (a: ℝ) : a - a = 0 := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.sub_self]
-  rfl
-
-instance : @Std.Commutative ℝ (· + ·) := ⟨add_comm⟩
-instance : @Std.Associative ℝ (· + ·) := ⟨add_assoc⟩
-
-def mul_comm (a b: ℝ) : a * b = b * a := by
-  induction a, b using ind₂ with | mk a b =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.mul_comm]
-
-def mul_assoc (a b c: ℝ) : a * b * c = a * (b * c) := by
-  induction a, b, c using ind₃ with | mk a b c =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.mul_assoc]
-
-instance : @Std.Commutative ℝ (· * ·) := ⟨mul_comm⟩
-instance : @Std.Associative ℝ (· * ·) := ⟨mul_assoc⟩
-
-def neg_add (a b: ℝ) : -(a + b) = -a + -b := by
-  induction a, b using ind₂ with | mk a b =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.neg_add]
-
-def neg_sub (a b: ℝ) : -(a - b) = b - a := by
-  induction a, b using ind₂ with | mk a b =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.neg_sub]
-
-def neg_sub_neg (a b: ℝ) : -a - -b = b - a := by
-  induction a, b using ind₂ with | mk a b =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.neg_sub_neg]
-
-def neg_mul_left (a b: ℝ) : -(a * b) = -a * b := by
-  induction a, b using ind₂ with | mk a b =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.neg_mul_left]
-
-def neg_mul_right (a b: ℝ) : -(a * b) = a * -b := by
-  induction a, b using ind₂ with | mk a b =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  rw [Rat.neg_mul_right]
-
-@[simp]
-def neg_neg (a: ℝ) : - -a = a := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
+-- we implement Ring here to get all the conveniences of it
+-- and will implement IsField after we have defined division
+-- in Math.Data.Real.Div
+instance : IsRing ℝ where
+  add_comm a b := by
+    cases a, b
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply add_comm
+  add_assoc a b c := by
+    cases a, b, c
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply add_assoc
+  mul_assoc a b c := by
+    cases a, b, c
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply mul_assoc
+  zero_add a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply zero_add
+  add_zero a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply add_zero
+  zero_mul a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply zero_mul
+  mul_zero a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply mul_zero
+  one_mul a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply one_mul
+  mul_one a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply mul_one
+  left_distrib a b c := by
+    cases a, b, c
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply mul_add
+  right_distrib a b c := by
+    cases a, b, c
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply add_mul
+  sub_eq_add_neg a b := by
+    cases a, b
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply sub_eq_add_neg
+  zero_nsmul a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply zero_nsmul
+  succ_nsmul n a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply succ_nsmul
+  npow_zero a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply npow_zero
+  npow_succ n a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply npow_succ
+  zsmul_ofNat n a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply zsmul_ofNat
+  zsmul_negSucc n a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply zsmul_negSucc
+  natCast_zero := rfl
+  natCast_succ n := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply natCast_succ
+  neg_add_cancel a := by
+    cases a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply neg_add_cancel
+  intCast_ofNat n := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply intCast_ofNat
+  intCast_negSucc n := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply intCast_negSucc
+  ofNat_eq_natCast _ := rfl
 
 def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
   induction a, b, k using ind₃ with | mk a b k =>
@@ -648,24 +698,16 @@ def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
   intro n m δn δm
   replace h := h _ _ δn δm
   simp at h
-  rw [Rat.sub_eq_add_neg, Rat.neg_add, Rat.add_assoc,
-    ←Rat.add_assoc (k n), Rat.add_comm (k n), Rat.add_assoc, ←Rat.add_assoc] at h
-  rw [←Rat.add_zero (_ - _), ←Rat.add_neg_self (k n - k m), ←Rat.add_assoc]
+  rw [sub_eq_add_neg, neg_add_rev, add_comm (-_) (-_), add_assoc,
+    ←add_assoc (k n), add_comm (k n), add_assoc, ←add_assoc] at h
+  rw [←add_zero (_ - _), ←add_neg_cancel (k n - k m), ←add_assoc]
   apply lt_of_le_of_lt
   apply Rat.abs_add_le_add_abs
-  rw [←Rat.sub_eq_add_neg, ←Rat.sub_eq_add_neg] at h
-  rw [Rat.abs_neg, Rat.add_half ε]
+  rw [←sub_eq_add_neg, ←sub_eq_add_neg] at h
+  rw [neg_abs, ←add_half ε]
   apply Rat.add_lt_add
   exact h.left
   exact h.right
-
-def eq_iff_neg_eq {a b: ℝ} : a = b ↔ -a = -b := by
-  apply Iff.intro
-  intro h; rw [h]
-  intro h
-  have : a + -a = b + -b := by rw [add_neg_self, add_neg_self]
-  rw [h] at this
-  exact eq_iff_add_right.mpr this
 
 def eq_iff_add_left {a b k: ℝ} : a = b ↔ k + a = k + b := by
   rw [add_comm k, add_comm k]
@@ -677,112 +719,25 @@ def eq_iff_sub_right {a b k: ℝ} : a = b ↔ a - k = b - k := by
 
 def eq_iff_sub_left {a b k: ℝ} : a = b ↔ k - a = k - b := by
   rw [sub_eq_add_neg, sub_eq_add_neg]
-  exact eq_iff_neg_eq.trans eq_iff_add_left
-
-def add_zero (a: ℝ) : a + 0 = a := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro; simp
-  erw [Rat.add_zero]
-
-def zero_add (a: ℝ) : 0 + a = a := by
-  rw [add_comm, add_zero]
-
-def mul_zero (a: ℝ) : a * 0 = 0 := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro; simp
-  erw [Rat.mul_zero]
-  rfl
-
-def zero_mul (a: ℝ) : 0 * a = 0 := by
-  rw [mul_comm, mul_zero]
-
-def mul_one (a: ℝ) : a * 1 = a := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro; simp
-  erw [Rat.mul_one]
-
-def one_mul (a: ℝ) : 1 * a = a := by
-  rw [mul_comm, mul_one]
-
-def sub_add_cancel (a b: ℝ) : a - b + b = a := by
-  rw [sub_eq_add_neg, add_assoc, neg_self_add, add_zero]
-
-def eq_of_sub_eq_zero {a b: ℝ} : a - b = 0 -> a = b := by
-  intro h
-  have : a = (a - b) + b := by rw [sub_add_cancel]
-  rw [h, zero_add] at this
-  exact this
-
-def add_mul (a b k: ℝ) : (a + b) * k = a * k + b * k := by
-  induction a, b, k using ind₃ with | mk a b k =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro; simp
-  erw [Rat.add_mul]
-
-def mul_add (a b k: ℝ) : k * (a + b) = k * a + k * b := by
-  iterate 3 rw [mul_comm k]
-  rw [add_mul]
-
-def sub_mul (a b k: ℝ) : (a - b) * k = a * k - b * k := by
-  rw [sub_eq_add_neg, sub_eq_add_neg, add_mul, neg_mul_left]
-
-def mul_sub (a b k: ℝ) : k * (a - b) = k * a - k * b := by
-  iterate 3 rw [mul_comm k]
-  rw [sub_mul]
+  exact neg_inj.symm.trans eq_iff_add_left
 
 def non_zero_of_ofNat (n: Nat) : (OfNat.ofNat (α := ℝ) n.succ) ≠ 0 := by
   intro h
   have ⟨δ, prf⟩ := (Quotient.exact h) (1 /? 2) (by decide)
-  have : ‖Rat.ofNat n.succ - 0‖ < 1 /? 2 := prf _ _ (le_refl _) (le_refl _)
+  have : ‖(n.succ: ℚ) - 0‖ < 1 /? 2 := prf _ _ (le_refl _) (le_refl _)
   simp at this
-  rw [Rat.sub_zero] at this
+  rw [sub_zero] at this
+  rw [Rat.abs_of_nonneg] at this
+  have two_eq : (2: ℚ) = (2: ℕ) := rfl
+  rw [Rat.lt_div_iff_mul_lt_of_pos, two_eq, ←natCast_mul] at this
+  replace this := Rat.natCast_lt_natCast.mp this
   contradiction
+  decide
+  apply Rat.natCast_le_natCast.mpr
+  apply Nat.zero_le
 
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply non_zero_of_ofNat)
-
-def sub_zero (a: ℝ) : a - 0 = a := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  erw [Rat.sub_zero]
-
-def zero_sub (a: ℝ) : 0 - a = -a := by
-  induction a using ind with | mk a =>
-  apply Quotient.sound
-  apply CauchySeq.pointwise
-  intro n
-  simp
-  erw [Rat.zero_sub]
-
-def two_mul (a: ℝ) : 2 * a = a + a := by
-  have : (2: ℝ) = 1 + 1 := by
-    apply Quotient.sound
-    apply CauchySeq.pointwise
-    intro
-    show 2 = 1 + 1
-    rfl
-  rw [this, add_mul, one_mul]
-
-instance : NatCast ℝ where
-  natCast n := ⟦CauchySeq.ofRat (Rat.ofNat n)⟧
-instance : IntCast ℝ where
-  intCast n := ⟦CauchySeq.ofRat (Rat.ofInt n)⟧
-
-def neg_inj {a b: ℝ} : -a = -b ↔ a = b := by
-  apply flip Iff.intro
-  intro h; rw [h]
-  intro h
-  rw [←neg_neg a, ←neg_neg b, h]
 
 instance : IsNontrivial ℝ where
   exists_ne := ⟨0, 1, by

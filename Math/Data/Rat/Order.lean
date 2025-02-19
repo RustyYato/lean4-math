@@ -530,6 +530,15 @@ def le_add_right_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ a + b := by
   apply add_le_add_left.mp
   assumption
 
+def le_div_iff_mul_le_of_pos (a b c: ℚ) (h: 0 < b) : c ≤ a /? b ↔ c * b ≤ a := by
+  rw [le_iff_mul_right_pos  (k := b), div?_mul_cancel]
+  assumption
+def le_div_iff_mul_le_of_neg (a b c: ℚ) (h: b < 0) : c ≤ a /? b ↔ a ≤ c * b := by
+  rw [le_iff_mul_right_pos  (k := -b), ←neg_mul_right, ←neg_mul_right, div?_mul_cancel,
+    ←neg_le_neg_iff]
+  rw [neg_lt_neg_iff, neg_neg]
+  assumption
+
 def div_le_iff_le_mul_of_pos (a b c: ℚ) (h: 0 < b) : a /? b ≤ c ↔ a ≤ c * b := by
   rw [le_iff_mul_right_pos  (k := b), div?_mul_cancel]
   assumption
@@ -538,6 +547,43 @@ def div_le_iff_le_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b ≤ c ↔ c * b �
     ←neg_mul_right, ←neg_le_neg_iff]
   rw [neg_lt_neg_iff, neg_neg]
   assumption
+
+def lt_div_iff_mul_lt_of_pos (a b c: ℚ) (h: 0 < b) : c < a /? b ↔ c * b < a := by
+  apply lt_iff_of_le_iff
+  apply div_le_iff_le_mul_of_pos
+  assumption
+def lt_div_iff_mul_lt_of_neg (a b c: ℚ) (h: b < 0) : c < a /? b ↔ a < c * b := by
+  apply lt_iff_of_le_iff
+  apply div_le_iff_le_mul_of_neg
+  assumption
+
+def div_lt_iff_lt_mul_of_pos (a b c: ℚ) (h: 0 < b) : a /? b < c ↔ a < c * b := by
+  apply lt_iff_of_le_iff
+  apply le_div_iff_mul_le_of_pos
+  assumption
+def div_lt_iff_lt_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b < c ↔ c * b < a := by
+  apply lt_iff_of_le_iff
+  apply le_div_iff_mul_le_of_neg
+  assumption
+
+def intCast_le_intCast {a b: ℤ} : (a: ℚ) ≤ b ↔ a ≤ b := by
+  rw [le_def]
+  show Fract.isNonneg _ ↔ _
+  unfold Fract.isNonneg
+  simp
+  omega
+
+def intCast_lt_intCast {a b: ℤ} : (a: ℚ) < b ↔ a < b := by
+  apply lt_iff_of_le_iff
+  apply intCast_le_intCast
+
+def natCast_le_natCast {a b: ℕ} : (a: ℚ) ≤ b ↔ a ≤ b := by
+  apply (intCast_le_intCast (a := a) (b := b)).trans
+  exact Int.ofNat_le
+
+def natCast_lt_natCast {a b: ℕ} : (a: ℚ) < b ↔ a < b := by
+  apply lt_iff_of_le_iff
+  apply natCast_le_natCast
 
 def eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ ‖a‖ = 0 := by
   rw [abs_def]

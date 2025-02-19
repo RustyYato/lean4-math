@@ -139,3 +139,6 @@ def inv?_inv? (a: α) (h: a ≠ 0) : a⁻¹?⁻¹? = a := by
 
 def div?_mul_cancel (a b: α) (h: b ≠ 0) : a /? b * b = a := by
   rw [div?_eq_mul_inv?, mul_assoc, inv?_mul_cancel, mul_one]
+
+def mul_div?_cancel [IsCommMagma α] (a b: α) (h: b ≠ 0) : b * (a /? b) = a := by
+  rw [div?_eq_mul_inv?, mul_left_comm, mul_inv?_cancel, mul_one]

@@ -439,14 +439,14 @@ instance : CheckedIntPow ℚ (fun a => a ≠ 0) where
 @[local simp] def zmul_eq (n: ℤ) (a: ℚ) : n • a = n * a := rfl
 
 @[simp] def Fract.natCast_num (n: Nat) : Fract.num n = n := rfl
-@[simp] def Fract.intCast_num (n: Nat) : Fract.num n = n := rfl
+@[simp] def Fract.intCast_num (n: Int) : Fract.num n = n := rfl
 @[simp] def Fract.natCast_den (n: Nat) : Fract.den n = 1 := rfl
-@[simp] def Fract.intCast_den (n: Nat) : Fract.den n = 1 := rfl
+@[simp] def Fract.intCast_den (n: Int) : Fract.den n = 1 := rfl
 
 @[simp] def Fract.ofNat_num (n: Nat) : Fract.num (Fract.ofNat n) = n := rfl
-@[simp] def Fract.ofInt_num (n: Nat) : Fract.num (Fract.ofInt n) = n := rfl
+@[simp] def Fract.ofInt_num (n: Int) : Fract.num (Fract.ofInt n) = n := rfl
 @[simp] def Fract.ofNat_den (n: Nat) : Fract.den (Fract.ofNat n) = 1 := rfl
-@[simp] def Fract.ofInt_den (n: Nat) : Fract.den (Fract.ofInt n) = 1 := rfl
+@[simp] def Fract.ofInt_den (n: Int) : Fract.den (Fract.ofInt n) = 1 := rfl
 
 instance : IsField ℚ where
   zero_add a := by
