@@ -67,30 +67,32 @@ def foldl [Zero P] (p: P[X]) (init: S) (f: P -> ℕ -> S -> S) (resp_zero: ∀n 
 
 section
 
-variable
-  [SemiringOps P] [IsSemiring P]
-  [SemiringOps S] [IsSemiring S]
+variable [SemiringOps S] [IsSemiring S]
 
--- evaluate this polynomial when given a ring homomorphism from the coeffiecients
-def evalWith (p: P[X]) (f: P →+* S) (x: S) : S :=
+-- evaluate this polynomial when given a zero homomorphism from
+-- the coeffiecients to the output semiring
+-- normally, this would be a ring homomorphism from a semiring to a semiring
+-- but we don't need all those restrictions
+def evalWith [FunLike F P S] [Zero P] [IsZeroHom F P S]
+  (p: P[X]) (f: F) (x: S) : S :=
   p.foldl 0 (fun a n s => s + f a * x ^ n) (by
     intro n x
     simp
     rw [resp_zero, zero_mul, add_zero])
 
 -- evaluate this polynomial in module over P
-def eval [SMul P S] [IsModule P S] (p: P[X]) (x: S) : S :=
+def eval [SemiringOps P] [IsSemiring P] [SMul P S] [IsModule P S] (p: P[X]) (x: S) : S :=
   p.foldl 0 (fun a n s => s + a • x ^ n) <| by
     intro n x
     simp
     rw [zero_smul, add_zero]
 
 -- over an algebra, eval and evalWith algebraMap coincide
-def eval_eq_evalWith [SMul P S] [AlgebraMap P S] [IsAlgebra P S] (p: P[X]) (x: S) : p.eval x = p.evalWith algebraMap x := by
-    unfold eval evalWith
-    congr
-    ext c n s
-    rw [smul_def]
+def eval_eq_evalWith [SemiringOps P] [SMul P S] [AlgebraMap P S] [IsAlgebra P S] (p: P[X]) (x: S) : p.eval x = p.evalWith algebraMap x := by
+  unfold eval evalWith
+  congr
+  ext c n s
+  rw [smul_def]
 
 end
 
