@@ -358,6 +358,15 @@ def mul_le_mul_of_left_nonneg (a b k: ℚ) : 0 ≤ k -> a ≤ b -> k * a ≤ k *
   apply (le_iff_mul_left_pos h).mp
   assumption
   rw [←h, zero_mul, zero_mul]
+def mul_le_mul_nonneg (a b c d: ℚ) : 0 ≤ a -> a ≤ c -> 0 ≤ b -> b ≤ d -> a * b ≤ c * d := by
+  intro ann ac bnn bd
+  apply le_trans
+  apply mul_le_mul_of_left_nonneg
+  assumption
+  assumption
+  apply mul_le_mul_of_right_nonneg
+  apply le_trans <;> assumption
+  assumption
 def inv_pos (a: ℚ) (h: a ≠ 0 := by invert_tactic) : 0 < a ↔ 0 < a⁻¹? := by
   suffices ∀(a: ℚ) (h: a ≠ 0), 0 < a -> 0 < a⁻¹? by
     apply Iff.intro

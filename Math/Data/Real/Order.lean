@@ -23,9 +23,9 @@ def IsPos.spec (a b: CauchySeq) : a ≈ b -> a.IsPos -> b.IsPos := by
   apply ab
   iterate 2 apply (max_le_iff.mp Kδ_le_n).right
   conv => {
-    rhs; lhs; rw [←Rat.mul_div_cancel 2 B (by decide)]
+    rhs; lhs; rw [←mul_div?_cancel B 2 (by decide)]
   }
-  rw [Rat.mul_two, Rat.sub_eq_add_neg, Rat.add_assoc, Rat.add_neg_self, Rat.add_zero]
+  rw [two_mul, add_sub_assoc, add_sub_cancel]
 
 def non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
   intro pos eq_zero
@@ -33,11 +33,12 @@ def non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
   replace ⟨δ, prf⟩  := pos.to₂_right.merge (eq_zero _ B_pos)
   replace ⟨pos, eq_zero⟩ := prf δ δ (le_refl _) (le_refl _)
   clear prf
-  erw [Rat.sub_zero] at eq_zero
+  erw [sub_zero] at eq_zero
   rw [Rat.abs_def] at eq_zero
   split at eq_zero <;> rename_i h
-  exact lt_asymm B_pos (lt_of_le_of_lt pos h)
   exact lt_irrefl <| lt_of_lt_of_le eq_zero pos
+  rw [not_le] at h
+  exact lt_asymm B_pos (lt_of_le_of_lt pos h)
 
 def abs_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
   false_or_by_contra
@@ -59,10 +60,10 @@ def abs_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
   refine ⟨j, fun k _ jk _ => ?_⟩
   have : ∀y, seq 0 y = 0 := fun _ => rfl
   dsimp
-  rw [this, Rat.sub_zero]
+  rw [this, sub_zero]
   have := lt_of_le_of_lt (Rat.abs_add_le_add_abs _ _) (Rat.add_lt_add (hi k j (le_trans ij jk) ij) hj)
-  rwa [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.add_zero,
-      ←Rat.mul_two, Rat.mul_div_cancel] at this
+  rwa [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero,
+      ←mul_two, div?_mul_cancel] at this
 
 def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos f ∨ IsPos (-f) := by
   obtain ⟨B, B_pos, pos⟩ := hf
@@ -72,19 +73,6 @@ def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos f ∨ IsP
   clear f_eqv
   rw [Rat.abs_def] at pos
   split at pos <;> rename_i h
-  · clear h
-    right
-    refine ⟨_, Rat.half_pos B_pos, δ, ?_⟩
-    intro n δ_n
-    apply le_trans _ <| Rat.sub_abs_self_sub (-f δ) (-f n)
-    rw [Rat.neg_sub_neg]
-    apply flip le_trans
-    apply Rat.sub_le_sub
-    assumption
-    apply le_of_lt
-    simp at prf
-    exact (prf n δ δ_n (le_refl _)).right
-    rw [Rat.sub_half]
   · clear h
     left
     refine ⟨_, Rat.half_pos B_pos, δ, ?_⟩
@@ -97,6 +85,19 @@ def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos f ∨ IsP
     simp at prf
     exact (prf δ n (le_refl _) δ_n).right
     rw [Rat.sub_half]
+  · clear h
+    right
+    refine ⟨_, Rat.half_pos B_pos, δ, ?_⟩
+    intro n δ_n
+    apply le_trans _ <| Rat.sub_abs_self_sub (-f δ) (-f n)
+    rw [neg_sub_neg]
+    apply flip le_trans
+    apply Rat.sub_le_sub
+    assumption
+    apply le_of_lt
+    simp at prf
+    exact (prf n δ δ_n (le_refl _)).right
+    rw [Rat.sub_half]
 
 def not_neg_of_pos {f: CauchySeq} : f.IsPos -> ¬(-f).IsPos := by
   intro pos neg
@@ -105,11 +106,11 @@ def not_neg_of_pos {f: CauchySeq} : f.IsPos -> ¬(-f).IsPos := by
   have ⟨δ, prf⟩ := pos.merge neg
   have ⟨pos, neg⟩ := prf _ (le_refl _)
   have : - - f δ ≤ - B := Rat.neg_le_neg_iff.mp neg
-  rw [Rat.neg_neg] at this
+  rw [neg_neg] at this
   have A_le_neg_B := le_trans pos this
   have := lt_of_lt_of_le A_pos A_le_neg_B
   have : - - B < 0 := Rat.neg_lt_neg_iff.mp this
-  rw [Rat.neg_neg] at this
+  rw [neg_neg] at this
   exact lt_asymm B_pos this
 
 def add_pos {a b: CauchySeq} : a.IsPos -> b.IsPos -> (a + b).IsPos := by
@@ -117,7 +118,7 @@ def add_pos {a b: CauchySeq} : a.IsPos -> b.IsPos -> (a + b).IsPos := by
   obtain ⟨A, A_pos, apos⟩ := apos
   obtain ⟨B, B_pos, bpos⟩ := bpos
   refine ⟨A + B, ?_, ?_⟩
-  rw [←Rat.add_zero 0]
+  rw [←add_zero 0]
   apply Rat.add_lt_add
   assumption
   assumption
@@ -241,7 +242,7 @@ instance : IsLinearOrder ℝ where
       replace bc : (c - b).IsPos := bc
       left
       show (c - a).IsPos
-      rw [←add_zero c, ←neg_self_add b, ←add_assoc, sub_eq_add_neg, add_assoc,
+      rw [←add_zero c, ←neg_add_cancel b, ←add_assoc, sub_eq_add_neg, add_assoc,
         ←sub_eq_add_neg, ←sub_eq_add_neg]
       apply add_pos <;> assumption
     subst c; left; assumption
@@ -266,10 +267,10 @@ def le_iff_neg_le_neg {a b: ℝ} : a ≤ b ↔ -b ≤ -a := by
 
 def lt_iff_add_lt_add_right {a b k: ℝ} : a < b ↔ a + k < b + k := by
   show IsPos _ ↔ IsPos _
-  rw [sub_eq_add_neg (b + k), neg_add]
-  have : b + k + (-a + -k) = b + -a + (k + -k) := by ac_rfl
+  rw [sub_eq_add_neg (b + k), neg_add_rev]
+  have : b + k + (-k + -a) = b + -a + (k + -k) := by ac_rfl
   rw [this]; clear this
-  rw [add_neg_self, add_zero, sub_eq_add_neg]
+  rw [add_neg_cancel, add_zero, sub_eq_add_neg]
 
 def lt_iff_add_lt_add_left {a b k: ℝ} : a < b ↔ k + a < k + b := by
   rw [add_comm k, add_comm k]
@@ -311,7 +312,7 @@ def mul_pos_of_pos_of_pos (a b: ℝ) : a.IsPos -> b.IsPos -> (a * b).IsPos := by
   refine ⟨A * B, Rat.mul_pos A_pos B_pos, δ, ?_⟩
   intro n δn
   obtain ⟨apos, bpos⟩ := prf _ δn
-  apply Rat.mul_le_mul_of_nonneg
+  apply Rat.mul_le_mul_nonneg
   apply le_of_lt; assumption
   assumption
   apply le_of_lt; assumption
@@ -342,8 +343,7 @@ open Classical in def abs_def (a: ℝ) : ‖a‖ = if 0 ≤ a then a else -a := 
   exists k
   intro n k_le_n
   show ‖_‖ = _
-  rw [Rat.abs_def, if_neg]
-  apply not_lt_of_le
+  rw [Rat.abs_def, if_pos]
   apply flip le_trans
   apply spec
   assumption
@@ -359,8 +359,9 @@ open Classical in def abs_def (a: ℝ) : ‖a‖ = if 0 ≤ a then a else -a := 
   exists k
   intro n k_le_n
   show ‖_‖ = _
-  rw [Rat.abs_def, if_pos]
+  rw [Rat.abs_def, if_neg]
   rfl
+  rw [not_le]
   apply Rat.neg_lt_neg_iff.mpr
   apply flip lt_of_lt_of_le
   apply spec
@@ -369,7 +370,7 @@ open Classical in def abs_def (a: ℝ) : ‖a‖ = if 0 ≤ a then a else -a := 
 
 def lt_sub_iff_add_lt (a b k: ℝ) :  a < b - k ↔ a + k < b := by
   show IsPos _ ↔ IsPos _
-  rw [sub_eq_add_neg _ (a + k), neg_add, add_comm (-a), ←add_assoc, ←sub_eq_add_neg, ←sub_eq_add_neg]
+  rw [sub_eq_add_neg _ (a + k), neg_add_rev, ←add_assoc, ←sub_eq_add_neg, ←sub_eq_add_neg]
 
 def sub_lt_iff_lt_add (a b k: ℝ) :  a - k < b ↔ a < b + k := by
   rw [sub_eq_add_neg]
@@ -441,33 +442,25 @@ def eq_zero_of_square_eq_zero (a: ℝ) : a * a = 0 -> a = 0 := by
 def lt_iff_intCast_lt (a b: Int) : a < b ↔ (a: ℝ) < b := by
   apply Iff.intro
   · intro h
-    exists Rat.ofInt b - Rat.ofInt a
+    exists b - a
     apply And.intro
     · apply Rat.add_lt_add_right.mpr
-      show 0 + Rat.ofInt a < _
-      rw [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.add_zero, Rat.zero_add,
-        Rat.lt_def]
-      unfold Rat.ofInt
-      dsimp [Fract.ofInt]
-      rw [Int.mul_one, Int.mul_one]
-      assumption
+      show 0 + (a: ℚ) < _
+      rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero, zero_add]
+      exact Rat.intCast_lt_intCast.mpr h
     · exists 0
       intro n hn
       rfl
   · intro h
     replace h : (b - a: ℝ).IsPos := h
     obtain ⟨B, B_pos, k, spec⟩ := h
-    replace spec : B ≤ Rat.ofInt b - Rat.ofInt a := spec k (le_refl _)
+    replace spec : B ≤ b -a := spec k (le_refl _)
     replace spec := Rat.add_lt_add_of_lt_of_le B_pos spec
-    rw [Rat.add_comm B] at spec
+    rw [add_comm B] at spec
     replace spec := Rat.add_lt_add_right.mpr spec
-    replace spec := Rat.add_lt_add_of_lt_of_le spec (le_refl _: Rat.ofInt a ≤ Rat.ofInt a)
-    rw [Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add, Rat.zero_add, Rat.add_zero] at spec
-    rw [Rat.lt_def] at spec
-    unfold Rat.ofInt Fract.ofInt at spec
-    dsimp at spec
-    rw [Int.mul_one, Int.mul_one] at spec
-    assumption
+    replace spec := Rat.add_lt_add_of_lt_of_le spec (le_refl _: (a: ℚ) ≤ a)
+    rw [sub_eq_add_neg, add_assoc, neg_add_cancel, zero_add, add_zero] at spec
+    exact Rat.intCast_lt_intCast.mp spec
 
 def lt_iff_natCast_lt (a b: Nat) : a < b ↔ (a: ℝ) < b := by
   apply Iff.trans _ (lt_iff_intCast_lt a b)
@@ -593,8 +586,8 @@ def le_eventually_pointwise (a b: CauchySeq) :
   obtain ⟨h, spec⟩ := spec
   replace spec: 0 < a _ - b _ := lt_of_lt_of_le B_pos spec
   replace spec := Rat.add_lt_add_of_lt_of_le spec (le_refl (b k))
-  rw [Rat.zero_add, Rat.sub_eq_add_neg, Rat.add_assoc, Rat.neg_self_add,
-    Rat.add_zero] at spec
+  rw [zero_add, sub_eq_add_neg, add_assoc, neg_add_cancel,
+    add_zero] at spec
   exact not_le_of_lt spec h
 
 def le_pointwise (a b: CauchySeq) :

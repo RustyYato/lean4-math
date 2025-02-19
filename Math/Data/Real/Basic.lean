@@ -684,6 +684,14 @@ instance : IsRing ℝ where
     apply intCast_negSucc
   ofNat_eq_natCast _ := rfl
 
+instance : IsCommMagma ℝ where
+  mul_comm a b := by
+    cases a, b
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro n
+    apply mul_comm
+
 def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
   induction a, b, k using ind₃ with | mk a b k =>
   apply Iff.intro
