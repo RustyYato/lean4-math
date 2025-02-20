@@ -486,5 +486,103 @@ def Ideal.eq_univ_of_mem_unit {R: Ring α} (i: Ideal R) (u: Units R) : u.val ∈
   rw [←mul_assoc, u.val_mul_inv, one_mul] at this
   assumption
 
+def Ideal.Quot (i: Ideal R) : Type _ := Quotient i.setoid
+
+@[cases_eliminator]
+private def Ideal.Quot.ind
+  {i: Ideal R} {motive: i.Quot -> Prop} : (mk: ∀x: R, motive (Quotient.mk _ x)) -> ∀q, motive q := Quotient.ind
+
+def Ideal.toRing (i: Ideal R) : Ring i.Quot := by
+  apply Ring.ofMinimalAxioms
+  case zero => exact Quotient.mk _ 0
+  case one => exact Quotient.mk _ 1
+  case neg =>
+    apply Quotient.lift (fun a => Quotient.mk _ (-a))
+    intro a b eq
+    apply Quotient.sound
+    show _ - _ ∈ i
+    rw [neg_sub_neg, ←neg_sub]
+    apply i.mem_neg
+    assumption
+  case add =>
+    apply Quotient.lift₂ (fun a b => Quotient.mk _ (a + b))
+    intro a b c d ac bd
+    apply Quotient.sound
+    show _ - _ ∈ i
+    rw [sub_eq_add_neg, neg_add_rev, add_assoc, ←add_assoc b,
+      ←sub_eq_add_neg b, add_comm _ (-c), ←add_assoc,
+      ←sub_eq_add_neg]
+    apply i.mem_add
+    assumption
+    assumption
+  case mul =>
+    apply Quotient.lift₂ (fun a b => Quotient.mk _ (a * b))
+    intro a b c d ac bd
+    apply Quotient.sound
+    show _ - _ ∈ _
+    rw [←add_zero (_ - _), ←add_neg_cancel (a * d), sub_add_assoc,
+      ←add_assoc (-_), add_comm _ (a * d), add_comm (_ + _),
+      ←add_assoc, ←sub_eq_add_neg, ←sub_eq_add_neg,
+      ←mul_sub, ←sub_mul]
+    apply i.mem_add
+    apply i.mem_mul_left
+    assumption
+    apply i.mem_mul_right
+    assumption
+
+  case add_comm =>
+    intro a b
+    cases a with | mk a =>
+    cases b with | mk b =>
+    apply Quotient.sound
+    rw [add_comm]
+  case add_assoc =>
+    intro a b c
+    cases a with | mk a =>
+    cases b with | mk b =>
+    cases c with | mk c =>
+    apply Quotient.sound
+    rw [add_assoc]
+  case mul_assoc =>
+    intro a b c
+    cases a with | mk a =>
+    cases b with | mk b =>
+    cases c with | mk c =>
+    apply Quotient.sound
+    rw [mul_assoc]
+  case zero_add =>
+    intro a
+    cases a with | mk a =>
+    apply Quotient.sound
+    rw [zero_add]
+  case neg_add_cancel =>
+    intro a
+    cases a with | mk a =>
+    apply Quotient.sound
+    rw [neg_add_cancel]
+  case one_mul =>
+    intro a
+    cases a with | mk a =>
+    apply Quotient.sound
+    rw [one_mul]
+  case mul_one =>
+    intro a
+    cases a with | mk a =>
+    apply Quotient.sound
+    rw [mul_one]
+  case mul_add =>
+    intro a b c
+    cases a with | mk a =>
+    cases b with | mk b =>
+    cases c with | mk c =>
+    apply Quotient.sound
+    rw [mul_add]
+  case add_mul =>
+    intro a b c
+    cases a with | mk a =>
+    cases b with | mk b =>
+    cases c with | mk c =>
+    apply Quotient.sound
+    rw [add_mul]
 
 end Ring
