@@ -1,4 +1,5 @@
 import Math.Algebra.Ring.Theory.Subring
+import Math.Order.Atom.Basic
 
 namespace Ring
 
@@ -635,5 +636,7 @@ def Ideal.mkQuot_kernel (i: Ideal R) : i.carrier = Set.preimage {0} i.mkQuot := 
   have : _ - _ ∈ i := Quotient.exact h
   rw [sub_zero] at this
   assumption
+
+def Ideal.isMaximal (i: Ideal R): Prop := IsCoatom i
 
 end Ring

@@ -11,7 +11,7 @@ local infixl:50 " ≼ " => r
 
 -- if every chain has an upper bound, then there exists a maximal chain
 def exists_maximal_of_chains_bounded (h : ∀ c, Set.IsChain r c → ∃ ub, ∀ a ∈ c, a ≼ ub)
-  (trans: ∀{a b c}, a ≼ b -> b ≼ c -> a ≼ c := by exact Relation.trans):
+  (trans: ∀{a b c}, a ≼ b -> b ≼ c -> a ≼ c := by exact trans):
   ∃ m, ∀ a, m ≼ a → a ≼ m := by
   have : ∃ ub, ∀ a ∈ Set.maxChain r, a ≼ ub := h _ Set.maxChain_spec.left
   obtain ⟨ub, spec⟩ := this

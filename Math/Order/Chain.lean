@@ -38,6 +38,14 @@ def Induced.embedSInter {s: Set α} {t: Set (Set α)} (h: s ∈ t) : (⋂t).Indu
 abbrev IsChain (s: Set α) :=
   Relation.IsTrichotomous (s.Induced r)
 
+instance {s: Set α} [Relation.IsRefl r] : Relation.IsRefl (s.Induced r) where
+  refl := by
+    intro a
+    show r _ _
+    rfl
+
+instance [IsChain r s] [Relation.IsRefl r] : Relation.IsTotal (s.Induced r) := inferInstance
+
 def IsSuperChain (s u: Set α) :=
   s ⊆ u ∧ u.IsChain r
 
