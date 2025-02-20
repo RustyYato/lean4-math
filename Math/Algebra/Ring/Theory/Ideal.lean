@@ -1,17 +1,6 @@
-import Math.Algebra.Ring.Theory.Basic
-import Math.Data.Set.Basic
-import Math.Order.Lattice.Complete
-import Math.Order.GaloisConnection
-import Math.Data.Set.Lattice
-import Math.Algebra.Group.Units.Defs
+import Math.Algebra.Ring.Theory.Subring
 
 namespace Ring
-
-structure AddSubgroup (R: Ring α) where
-  carrier: Set R
-  mem_zero: 0 ∈ carrier
-  mem_add: ∀{x y}, x ∈ carrier -> y ∈ carrier -> x + y ∈ carrier
-  mem_neg: ∀{x}, x ∈ carrier -> -x ∈ carrier
 
 structure LeftIdeal (R: Ring α) extends AddSubgroup R where
   mem_mul_left: ∀(r: R) {x}, x ∈ carrier -> r * x ∈ carrier
@@ -45,11 +34,6 @@ def Ideal.univ (R: Ring α) : Ideal R where
   mem_mul_left _ _ _ := True.intro
   mem_mul_right _ _ _ := True.intro
 
-def AddSubgroup.carrier_inj {a b: AddSubgroup R} : a.carrier = b.carrier ↔ a = b :=
-  Function.Injective.eq_iff <| by
-    intro a b eq
-    cases a; congr
-
 def LeftIdeal.carrier_inj {a b: LeftIdeal R} : a.carrier = b.carrier ↔ a = b :=
   Function.Injective.eq_iff (f₀ := fun a: LeftIdeal R => a.carrier) <| by
     intro a b eq
@@ -70,9 +54,6 @@ def Ideal.carrier_inj {a b: Ideal R} : a.carrier = b.carrier ↔ a = b :=
     cases a; congr
     apply LeftIdeal.carrier_inj.mp
     assumption
-
-instance (R: Ring α) : Membership R (AddSubgroup R) where
-  mem i x := x ∈ i.carrier
 
 instance (R: Ring α) : Membership R (LeftIdeal R) where
   mem i x := x ∈ i.carrier
@@ -505,25 +486,5 @@ def Ideal.eq_univ_of_mem_unit {R: Ring α} (i: Ideal R) (u: Units R) : u.val ∈
   rw [←mul_assoc, u.val_mul_inv, one_mul] at this
   assumption
 
-def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
-  r a b := a - b ∈ i
-  iseqv := {
-    refl x := by
-      rw [sub_self]
-      apply i.mem_zero
-    symm := by
-      intro x y h
-      rw [←neg_sub]
-      apply i.mem_neg
-      assumption
-    trans := by
-      intro x y z hx hy
-      rw [←add_zero (_ - _), ←sub_self y,
-        sub_add_assoc, ←add_sub_assoc, add_comm, sub_eq_add_neg, add_assoc (_ + _),
-          add_comm _ y, add_comm _ x, ←sub_eq_add_neg, ←sub_eq_add_neg]
-      apply i.mem_add
-      assumption
-      assumption
-  }
 
 end Ring
