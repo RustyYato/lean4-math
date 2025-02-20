@@ -31,6 +31,14 @@ class IsLawfulLT (α: Type _) [LT α] [LE α]: Prop where
   lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
 
 export IsLawfulLT (lt_iff_le_and_not_le)
+def IsLawfulLT.instLT (α: Type _) [LE α] : LT α where
+  lt a b := a ≤ b ∧ ¬b ≤ a
+
+def IsLawfulLT.inst (α: Type _) [LE α] : let _ := instLT α; IsLawfulLT α :=
+  let _ := instLT α
+  {
+    lt_iff_le_and_not_le := Iff.rfl
+  }
 
 namespace Relation
 
