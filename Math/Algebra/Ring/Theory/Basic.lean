@@ -1,4 +1,5 @@
 import Math.Algebra.Ring.Defs
+import Math.Algebra.Hom.Defs
 
 structure Ring (α: Type*) where
   [ops: RingOps α]
