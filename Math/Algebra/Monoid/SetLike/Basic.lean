@@ -40,6 +40,14 @@ instance [IsMulOneClass α] : IsMulOneClass s where
     apply Subtype.val_inj
     apply mul_one
 
+instance [IsMulZeroClass α] : IsMulZeroClass s where
+  zero_mul a := by
+    apply Subtype.val_inj
+    apply zero_mul
+  mul_zero a := by
+    apply Subtype.val_inj
+    apply mul_zero
+
 instance [IsAddZeroClass α] : IsAddZeroClass s where
   zero_add a := by
     apply Subtype.val_inj
