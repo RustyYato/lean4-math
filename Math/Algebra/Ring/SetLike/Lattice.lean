@@ -1,5 +1,8 @@
 import Math.Algebra.Ring.SetLike.Defs
-import Math.Algebra.AddGroupWithOne.SetLike.Lattice
+import Math.Algebra.AddGroupWithOne.SetLike.Basic
+import Math.Data.Set.Lattice
+import Math.Algebra.Semigroup.SetLike.Defs
+import Math.Order.GaloisConnection
 import Math.Algebra.Ring.Defs
 
 namespace SubRing

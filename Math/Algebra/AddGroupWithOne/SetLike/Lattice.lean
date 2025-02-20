@@ -1,5 +1,7 @@
 import Math.Algebra.AddGroupWithOne.SetLike.Basic
-import Math.Algebra.AddMonoidWithOne.SetLike.Lattice
+import Math.Data.Set.Lattice
+import Math.Algebra.Semigroup.SetLike.Defs
+import Math.Order.GaloisConnection
 
 namespace SubAddGroupWithOne
 

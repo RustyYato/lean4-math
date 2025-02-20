@@ -1,5 +1,8 @@
 import Math.Algebra.Semiring.SetLike.Defs
-import Math.Algebra.AddMonoidWithOne.SetLike.Lattice
+import Math.Algebra.AddMonoidWithOne.SetLike.Basic
+import Math.Data.Set.Lattice
+import Math.Algebra.Semigroup.SetLike.Defs
+import Math.Order.GaloisConnection
 import Math.Algebra.Semiring.Defs
 
 namespace SubSemiring
