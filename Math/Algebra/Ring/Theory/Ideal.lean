@@ -621,4 +621,19 @@ def Ideal.kernel {S R: Ring α} (f: S →+* R) : Ideal S where
     rw [Set.mem_preimage, resp_mul, hb, zero_mul]
     rfl
 
+-- the kernel of Ideal.mkQuot is exactly the ideal itself
+def Ideal.mkQuot_kernel (i: Ideal R) : i.carrier = Set.preimage {0} i.mkQuot := by
+  ext x
+  rw [Set.mem_preimage, Set.mem_singleton]
+  apply Iff.intro
+  intro h
+  apply Quotient.sound
+  show _ - _ ∈ i
+  rw [sub_zero]
+  assumption
+  intro h
+  have : _ - _ ∈ i := Quotient.exact h
+  rw [sub_zero] at this
+  assumption
+
 end Ring
