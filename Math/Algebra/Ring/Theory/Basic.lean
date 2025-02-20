@@ -22,7 +22,7 @@ def opp (r: Ring α) : Ring αᵐᵒᵖ :=
   Ring.mk
 
 set_option linter.unusedVariables false in
-def Ring.ofMinimalAxioms
+def ofMinimalAxioms
   (zero: α)
   (one: α)
   (neg: α -> α)

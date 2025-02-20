@@ -1,65 +1,10 @@
-import Math.Algebra.Semiring.Defs
 import Math.Data.Fintype.Defs
 import Math.Data.Fintype.Prod
-
-def List.prod [Mul α] [One α] : List α -> α := List.sum (α := AddOfMul α)
+import Math.Data.List.Algebra
+import Math.Algebra.Monoid.Action.Defs
 
 def Fintype.sum [ft: Fintype ι] [Add α] [Zero α] (f: ι -> α) := (ft.all.map f).sum
 def Fintype.prod [ft: Fintype ι] [Mul α] [One α] (f: ι -> α) := (ft.all.map f).prod
-
-namespace List
-
-def sum_extract
-  [Add α] [Zero α] [IsAddSemigroup α]
-  [IsAddZeroClass α] [IsAddCommMagma α]
-  (as bs: List α) (x: α):
-  (as ++ x::bs).sum = x + (as ++ bs).sum := by
-  induction as with
-  | nil => rfl
-  | cons a as ih =>
-    simp [List.cons_append, List.sum_cons]
-    rw [add_left_comm, ih]
-
-def sum_append
-  [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α]
-  (as bs: List α) : (as ++ bs).sum = as.sum + bs.sum := by
-  induction as with
-  | nil => symm; apply zero_add
-  | cons a as ih => simp [List.cons_append, List.sum_cons, ih, add_assoc]
-
-def sum_strip_prefix_zeros
-  [Zero α] [Add α] [IsAddZeroClass α] (as bs: List α) : (∀a ∈ as, a = 0) -> (as ++ bs).sum = bs.sum := by
-  induction as with
-  | nil => intro; rfl
-  | cons a as ih =>
-    intro h
-    rw [List.cons_append, sum_cons, ih, h a, zero_add]
-    apply List.Mem.head
-    intro a ha
-    exact h _ (List.Mem.tail _ ha)
-
-def prod_strip_prefix_zeros
-  [One α] [Mul α] [IsMulOneClass α] (as bs: List α) : (∀a ∈ as, a = 1) -> (as ++ bs).prod = bs.prod :=
-  sum_strip_prefix_zeros (α := AddOfMul α) as bs
-
-def sum_eq_zero_of_all_zeros
-  [Zero α] [Add α] [IsAddZeroClass α] (as: List α) : (∀a ∈ as, a = 0) -> as.sum = 0 := by
-  intro h
-  rw [←List.append_nil as]
-  apply sum_strip_prefix_zeros as []
-  assumption
-
-def prod_eq_one_of_all_one
-  [One α] [Mul α] [IsMulOneClass α] (as: List α) : (∀a ∈ as, a = 1) -> as.prod = 1 :=
-  sum_eq_zero_of_all_zeros (α := AddOfMul α) as
-
-def Fin.sum_strip_prefix [Add α] [Zero α]
-  (as bs cs: List α) (h: bs.sum = cs.sum): (as ++ bs).sum = (as ++ cs).sum := by
-  induction as with
-  | nil => assumption
-  | cons a as ih => rw [List.cons_append, List.cons_append, List.sum_cons, List.sum_cons, ih]
-
-end List
 
 namespace Fintype
 
@@ -194,6 +139,20 @@ def mul_sum
   | cons a as ih =>
     dsimp
     rw [mul_add, ih]
+
+def smul_sum
+  [f₀: Fintype ι] [MonoidOps β] [IsMonoid β] [AddMonoidOps α] [IsAddMonoid α] [SMul β α] [IsDistribMulAction β α]
+  (f: ι -> α) (k: β) :
+  k • sum f = sum (fun i => k • f i) := by
+  cases f₀ with
+  | mk all nodup complete =>
+  dsimp [sum]
+  clear complete nodup
+  induction all with
+  | nil => apply smul_zero
+  | cons a as ih =>
+    dsimp
+    rw [smul_add, ih]
 
 def sum_sum [f₀: Fintype ι₀] [f₁: Fintype ι₁]
   [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α]

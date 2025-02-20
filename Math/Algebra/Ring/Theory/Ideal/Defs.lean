@@ -9,13 +9,13 @@ variable (S: Type*) {α: Type*} [SetLike S α]
 class IsMemMulLeft [Mul α]: Prop where
   mem_mul_left (s: S): ∀(r: α) (x: α), x ∈ s -> r * x ∈ s
 
-def mem_mul_left [Mul α] [IsMemMulLeft S] (s: S): ∀(r: α) (x: α), x ∈ s -> r * x ∈ s :=
+def mem_mul_left {S α: Type*} [SetLike S α] [Mul α] [IsMemMulLeft S] (s: S): ∀(r: α) (x: α), x ∈ s -> r * x ∈ s :=
   IsMemMulLeft.mem_mul_left s
 
 class IsMemMulRight [Mul α]: Prop where
   mem_mul_right (s: S): ∀(r: α) (x: α), x ∈ s -> x * r ∈ s
 
-def mem_mul_right [Mul α] [IsMemMulRight S] (s: S): ∀(r: α) (x: α), x ∈ s -> x * r ∈ s :=
+def mem_mul_right {S α: Type*} [SetLike S α] [Mul α] [IsMemMulRight S] (s: S): ∀(r: α) (x: α), x ∈ s -> x * r ∈ s :=
   IsMemMulRight.mem_mul_right s
 
 class IsLeftIdeal [Add α] [Mul α] [Neg α] [Zero α] extends IsSubAddGroup S, IsMemMulLeft S: Prop where

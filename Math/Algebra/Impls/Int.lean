@@ -9,7 +9,7 @@ instance : One ℤ := ⟨1⟩
 instance : SMul ℕ ℤ where
   smul a b := a * b
 
-instance : IsRing Int where
+instance instRingInt : IsRing Int where
   add_comm := Int.add_comm
   add_assoc := Int.add_assoc
   zero_add := Int.zero_add
@@ -85,6 +85,8 @@ instance [RingOps R] [IsRing R] : IsAlgebra Int R where
   smul_def a b := by
     rw [←intCast_mul_eq_zsmul]
     rfl
+
+instance : IsSemiring Int := instRingInt.toIsSemiring
 
 instance : NoZeroDivisors Int where
   of_mul_eq_zero := Int.mul_eq_zero.mp
