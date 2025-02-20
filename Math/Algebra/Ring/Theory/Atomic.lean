@@ -28,7 +28,7 @@ instance (R: Ring α) : IsCoatomic (Ideal R) where
       apply Classical.byContradiction
       conv => { rw [not_exists]; arg 1; intro; rw [Classical.not_not] }
       intro h; apply hi
-      apply Ideal.carrier_inj.mp
+      apply SetLike.coe_inj
       apply Set.ext_univ
       assumption
     have ⟨mi, mi_spec⟩ := Zorn.partialorder (α := ProperIdeal i) ?_
@@ -49,30 +49,30 @@ instance (R: Ring α) : IsCoatomic (Ideal R) where
     let bound : Ideal R :=
       {
         carrier := ⋃ C.image fun x => x.val.carrier
-        mem_zero := by
+        mem_zero' := by
           have ⟨j, j_mem⟩ := h
           exists j.val.carrier
           apply And.intro
           apply Set.mem_image'; assumption
-          apply j.val.mem_zero
-        mem_add := by
+          apply mem_zero j.val
+        mem_add' := by
           intro a b ⟨_, ⟨c, c_in_C, rfl⟩, a_in_c⟩ ⟨_, ⟨d, d_in_C, rfl⟩, b_in_d⟩
           rcases Relation.total (C.Induced (· ≤ ·)) ⟨c, c_in_C⟩ ⟨d, d_in_C⟩ with h | h
           refine ⟨d.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption
-          apply d.val.mem_add
+          apply mem_add d.val
           apply h; assumption
           assumption
           refine ⟨c.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption
-          apply c.val.mem_add
+          apply mem_add c.val
           assumption
           apply h; assumption
-        mem_neg := by
+        mem_neg' := by
           intro x ⟨_, ⟨a, _, rfl⟩, _⟩
           refine ⟨a.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption
-          apply a.val.mem_neg
+          apply mem_neg a.val
           assumption
         mem_mul_left := by
           intro r x ⟨_, ⟨a, _, rfl⟩, _⟩
