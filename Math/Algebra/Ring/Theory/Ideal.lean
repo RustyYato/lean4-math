@@ -3,6 +3,7 @@ import Math.Data.Set.Basic
 import Math.Order.Lattice.Complete
 import Math.Order.GaloisConnection
 import Math.Data.Set.Lattice
+import Math.Algebra.Group.Units.Defs
 
 namespace Ring
 
@@ -69,6 +70,24 @@ def Ideal.carrier_inj {a b: Ideal R} : a.carrier = b.carrier ↔ a = b :=
     cases a; congr
     apply LeftIdeal.carrier_inj.mp
     assumption
+
+@[ext]
+def LeftIdeal.ext {a b: LeftIdeal R} : (∀x, x ∈ a.carrier ↔ x ∈ b.carrier) -> a = b := by
+  intro h
+  apply LeftIdeal.carrier_inj.mp
+  ext; apply h
+
+@[ext]
+def RightIdeal.ext {a b: RightIdeal R} : (∀x, x ∈ a.carrier ↔ x ∈ b.carrier) -> a = b := by
+  intro h
+  apply RightIdeal.carrier_inj.mp
+  ext; apply h
+
+@[ext]
+def Ideal.ext {a b: Ideal R} : (∀x, x ∈ a.carrier ↔ x ∈ b.carrier) -> a = b := by
+  intro h
+  apply Ideal.carrier_inj.mp
+  ext; apply h
 
 section Ideal.Lattice
 
@@ -437,5 +456,41 @@ instance (R: Ring α) : CompleteLattice (RightIdeal R) := {
 }
 
 end RightIdeal.Lattice
+
+def LeftIdeal.eq_univ_of_mem_unit {R: Ring α} (i: LeftIdeal R) (u: Units R) : u.val ∈ i.carrier -> i = ⊤ := by
+  intro h
+  ext r
+  apply Iff.intro
+  intro h; trivial
+  intro h; clear h
+  have : (r * u.inv) * u.val ∈ i.carrier := by
+    apply i.mem_mul_left
+    assumption
+  rw [mul_assoc, u.inv_mul_val, mul_one] at this
+  assumption
+
+def RightIdeal.eq_univ_of_mem_unit {R: Ring α} (i: RightIdeal R) (u: Units R) : u.val ∈ i.carrier -> i = ⊤ := by
+  intro h
+  ext r
+  apply Iff.intro
+  intro h; trivial
+  intro h; clear h
+  have : u.val * (u.inv * r) ∈ i.carrier := by
+    apply i.mem_mul_right
+    assumption
+  rw [←mul_assoc, u.val_mul_inv, one_mul] at this
+  assumption
+
+def Ideal.eq_univ_of_mem_unit {R: Ring α} (i: Ideal R) (u: Units R) : u.val ∈ i.carrier -> i = ⊤ := by
+  intro h
+  ext r
+  apply Iff.intro
+  intro h; trivial
+  intro h; clear h
+  have : u.val * (u.inv * r) ∈ i.carrier := by
+    apply i.mem_mul_right
+    assumption
+  rw [←mul_assoc, u.val_mul_inv, one_mul] at this
+  assumption
 
 end Ring
