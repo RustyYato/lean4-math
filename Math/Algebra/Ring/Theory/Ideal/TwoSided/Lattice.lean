@@ -4,6 +4,7 @@ import Math.Data.Set.Lattice
 import Math.Algebra.Ring.SetLike.Basic
 import Math.Order.GaloisConnection
 import Math.Algebra.Ring.Defs
+import Math.Algebra.Ring.Theory.Ideal.TwoSided.Algebra
 
 namespace Ideal
 
@@ -105,9 +106,27 @@ def giGenerate : @GaloisInsertion (Set R) (Ideal R) _ _ (toIdeal R) (fun x => x.
 instance : CompleteLattice (Ideal R) := {
   (Ideal.giGenerate R).liftCompleteLattice with
   bot := Ideal.zero R
+  sup a b := a + b
   bot_le := by
     rintro x h rfl
     apply mem_zero x
+  le_sup_left := by
+    intro a b x hx
+    refine ⟨(x, 0), ?_, ?_, ?_⟩
+    assumption
+    apply mem_zero
+    apply add_zero
+  le_sup_right := by
+    intro a b x hx
+    refine ⟨(0, x), ?_, ?_, ?_⟩
+    apply mem_zero
+    assumption
+    apply zero_add
+  sup_le := by
+    rintro a b k ak bk _ ⟨⟨x, y⟩, _, _, rfl⟩
+    apply mem_add k
+    apply ak; assumption
+    apply bk; assumption
 }
 
 end Ideal
