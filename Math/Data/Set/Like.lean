@@ -16,8 +16,9 @@ instance : Membership α S where
 instance : HasSubset S where
   Subset a b := ∀x ∈ a, x ∈ b
 
-instance  (priority := 100) : CoeSort S (Type _) :=
-  ⟨fun s => { x : α // x ∈ s }⟩
+def SetLike.Elem [SetLike S α] (s: S) := { x : α // x ∈ s }
+
+instance  (priority := 100) : CoeSort S (Type _) := ⟨SetLike.Elem⟩
 
 class IsLawfulEmptySetLike (α: Type*) [h: Inhabited α] [SetLike α β] extends IsEmpty h.default where
 
