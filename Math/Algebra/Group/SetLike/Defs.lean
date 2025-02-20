@@ -31,6 +31,9 @@ instance [Mul α] [One α] [Inv α] : IsSubGroup (SubGroup α) where
   mem_one a := a.mem_one'
   mem_inv a := a.mem_inv'
 
+@[ext]
+def SubGroup.ext [Mul α] [Inv α] [One α] (a b: SubGroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
 structure SubAddGroup (α: Type*) [Add α] [Zero α] [Neg α] extends SubAddMonoid α where
   mem_neg': ∀{a}, a ∈ carrier -> -a ∈ carrier
 
@@ -45,6 +48,9 @@ instance [Add α] [Zero α] [Neg α] : IsSubAddGroup (SubAddGroup α) where
   mem_add a := a.mem_add'
   mem_zero a := a.mem_zero'
   mem_neg a := a.mem_neg'
+
+@[ext]
+def SubAddGroup.ext [Add α] [Neg α] [Zero α] (a b: SubAddGroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 instance [SetLike S α] [Add α] [Zero α] [Neg α] [IsSubAddGroup S] : IsSubGroup (MulOfAdd S) where
   mem_inv := mem_neg (S := S)

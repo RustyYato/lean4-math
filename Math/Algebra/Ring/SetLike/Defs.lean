@@ -22,3 +22,6 @@ instance : IsSubRing (SubRing α) where
   mem_neg a := a.mem_neg'
   mem_zero a := a.mem_zero'
   mem_one a := a.mem_one'
+
+@[ext]
+def SubRing.ext (a b: SubRing α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _

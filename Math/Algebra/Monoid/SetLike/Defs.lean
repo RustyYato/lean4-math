@@ -32,6 +32,9 @@ instance [Mul α] [One α] : IsSubMonoid (SubMonoid α) where
   mem_mul a := a.mem_mul'
   mem_one a := a.mem_one'
 
+@[ext]
+def SubMonoid.ext [Mul α] [One α] (a b: SubMonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
 structure SubAddMonoid (α: Type*) [Add α] [Zero α] extends SubAddSemigroup α where
   mem_zero': 0 ∈ carrier
 
@@ -45,6 +48,9 @@ instance [Add α] [Zero α] : SetLike (SubAddMonoid α) α where
 instance [Add α] [Zero α] : IsSubAddMonoid (SubAddMonoid α) where
   mem_add a := a.mem_add'
   mem_zero a := a.mem_zero'
+
+@[ext]
+def SubAddMonoid.ext [Add α] [Zero α] (a b: SubAddMonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 instance [SetLike S α] [Add α] [Zero α] [IsSubAddMonoid S] : IsSubMonoid (MulOfAdd S) where
   mem_one := mem_zero (S := S)

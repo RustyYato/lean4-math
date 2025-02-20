@@ -20,3 +20,6 @@ instance : IsSubSemiring (SubSemiring α) where
   mem_mul a := a.mem_mul'
   mem_zero a := a.mem_zero'
   mem_one a := a.mem_one'
+
+@[ext]
+def SubSemiring.ext (a b: SubSemiring α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _

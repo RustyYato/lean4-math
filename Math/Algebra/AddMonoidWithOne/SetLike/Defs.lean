@@ -20,3 +20,6 @@ instance : IsSubAddMonoidWithOne (SubAddMonoidWithOne α) where
   mem_add a := a.mem_add'
   mem_zero a := a.mem_zero'
   mem_one a := a.mem_one'
+
+@[ext]
+def SubAddMonoidWithOne.ext (a b: SubAddMonoidWithOne α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _

@@ -5,6 +5,8 @@ import Math.Algebra.Semiring.Defs
 variable [SetLike S α] [SemiringOps α] [IsSubSemiring S] [IsSemiring α]
    (s: S)
 
+instance : SemiringOps s := inferInstance
+
 instance : IsSemiring s := {
   instIsMonoidElem s with
   left_distrib k a b := by

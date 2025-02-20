@@ -28,7 +28,7 @@ variable (p q : S)
 def coe_sort_coe : (p : Set α).Elem = p := rfl
 
 /-- Note: implementers of `SetLike` must copy this lemma in order to tag it with `@[ext]`. -/
-def ext (h : ∀ x, x ∈ p ↔ x ∈ q) : p = q :=
+def SetLike.ext (h : ∀ x, x ∈ p ↔ x ∈ q) : p = q :=
   SetLike.coe_inj <| Set.ext _ _ h
 
 @[simp]

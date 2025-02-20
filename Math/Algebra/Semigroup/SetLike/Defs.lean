@@ -27,6 +27,9 @@ instance [Mul α] : SetLike (SubSemigroup α) α where
 instance [Mul α] : IsMulMem (SubSemigroup α) where
   mem_mul := SubSemigroup.mem_mul'
 
+@[ext]
+def SubSemigroup.ext [Mul α] (a b: SubSemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
 structure SubAddSemigroup (α: Type*) [Add α] where
   carrier: Set α
   mem_add' {a b: α} : a ∈ carrier -> b ∈ carrier -> a + b ∈ carrier
@@ -38,6 +41,9 @@ instance [Add α] : SetLike (SubAddSemigroup α) α where
 
 instance [Add α] : IsAddMem (SubAddSemigroup α) where
   mem_add := SubAddSemigroup.mem_add'
+
+@[ext]
+def SubAddSemigroup.ext [Add α] (a b: SubAddSemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 instance [h: SetLike S α] : SetLike (AddOfMul S) (AddOfMul α) where
   coe a := (a.get: Set α)
