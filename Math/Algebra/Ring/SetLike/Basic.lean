@@ -1,16 +1,12 @@
-import Math.Algebra.Semiring.SetLike.Defs
-import Math.Algebra.AddMonoidWithOne.SetLike.Basic
-import Math.Algebra.Semiring.Defs
+import Math.Algebra.Ring.SetLike.Defs
+import Math.Algebra.Semiring.SetLike.Basic
+import Math.Algebra.AddGroupWithOne.SetLike.Basic
+import Math.Algebra.Ring.Defs
 
-variable [SetLike S α] [SemiringOps α] [IsSubSemiring S] [IsSemiring α]
+variable [SetLike S α] [RingOps α] [IsSubRing S] [IsRing α]
    (s: S)
 
-instance : IsSemiring s := {
-  instIsMonoidElem s with
-  left_distrib k a b := by
-    apply Subtype.val_inj
-    apply mul_add
-  right_distrib a b k := by
-    apply Subtype.val_inj
-    apply add_mul
+instance : RingOps s := {
+  instSemiringOpsElem s with
 }
+instance : IsRing s := inferInstance
