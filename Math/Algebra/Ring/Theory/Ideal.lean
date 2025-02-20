@@ -11,13 +11,67 @@ structure RightIdeal (R: Ring α) extends AddSubgroup R where
 
 structure Ideal (R: Ring α) extends LeftIdeal R, RightIdeal R where
 
+instance : SetLike (LeftIdeal R) R where
+  coe a := a.carrier
+  coe_inj := by
+    intro a b eq; cases a; congr
+    apply SetLike.coe_inj
+    assumption
+
+instance : SetLike (RightIdeal R) R where
+  coe a := a.carrier
+  coe_inj := by
+    intro a b eq; cases a; congr
+    apply SetLike.coe_inj
+    assumption
+
+instance : SetLike (Ideal R) R where
+  coe a := a.carrier
+  coe_inj := by
+    intro a b eq; cases a; congr
+    apply SetLike.coe_inj
+    assumption
+
+instance : IsSubAddGroup (LeftIdeal R) where
+  mem_add i := i.mem_add'
+  mem_neg i := i.mem_neg'
+  mem_zero i := i.mem_zero'
+
+instance : IsSubAddGroup (RightIdeal R) where
+  mem_add i := i.mem_add'
+  mem_neg i := i.mem_neg'
+  mem_zero i := i.mem_zero'
+
+instance : IsSubAddGroup (Ideal R) where
+  mem_add i := i.mem_add'
+  mem_neg i := i.mem_neg'
+  mem_zero i := i.mem_zero'
+
+instance : IsMulMem (LeftIdeal R) where
+  mem_mul i := by
+    intro a b ha hb
+    apply i.mem_mul_left
+    assumption
+
+instance : IsMulMem (RightIdeal R) where
+  mem_mul i := by
+    intro a b ha hb
+    apply i.mem_mul_right
+    assumption
+
+instance : IsMulMem (Ideal R) where
+  mem_mul i := by
+    intro a b ha hb
+    apply i.mem_mul_right
+    assumption
+
 def Ideal.zero (R: Ring α) : Ideal R where
   carrier := {0}
-  mem_zero := rfl
-  mem_add := by
+  mem_zero' := rfl
+  mem_add' := by
     rintro _ _ rfl rfl
     apply add_zero
-  mem_neg := by
+  mem_neg' := by
     rintro _ rfl
     apply neg_zero
   mem_mul_left := by
@@ -29,32 +83,11 @@ def Ideal.zero (R: Ring α) : Ideal R where
 
 def Ideal.univ (R: Ring α) : Ideal R where
   carrier := ⊤
-  mem_zero := True.intro
-  mem_add _ _ := True.intro
-  mem_neg _ := True.intro
+  mem_zero' := True.intro
+  mem_add' _ _ := True.intro
+  mem_neg' _ := True.intro
   mem_mul_left _ _ _ := True.intro
   mem_mul_right _ _ _ := True.intro
-
-def LeftIdeal.carrier_inj {a b: LeftIdeal R} : a.carrier = b.carrier ↔ a = b :=
-  Function.Injective.eq_iff (f₀ := fun a: LeftIdeal R => a.carrier) <| by
-    intro a b eq
-    cases a; congr
-    apply AddSubgroup.carrier_inj.mp
-    assumption
-
-def RightIdeal.carrier_inj {a b: RightIdeal R} : a.carrier = b.carrier ↔ a = b :=
-  Function.Injective.eq_iff (f₀ := fun a: RightIdeal R => a.carrier) <| by
-    intro a b eq
-    cases a; congr
-    apply AddSubgroup.carrier_inj.mp
-    assumption
-
-def Ideal.carrier_inj {a b: Ideal R} : a.carrier = b.carrier ↔ a = b :=
-  Function.Injective.eq_iff (f₀ := fun a: Ideal R => a.carrier) <| by
-    intro a b eq
-    cases a; congr
-    apply LeftIdeal.carrier_inj.mp
-    assumption
 
 instance (R: Ring α) : Membership R (LeftIdeal R) where
   mem i x := x ∈ i.carrier
@@ -66,22 +99,13 @@ instance (R: Ring α) : Membership R (Ideal R) where
   mem i x := x ∈ i.carrier
 
 @[ext]
-def LeftIdeal.ext {a b: LeftIdeal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
-  intro h
-  apply LeftIdeal.carrier_inj.mp
-  ext; apply h
+def LeftIdeal.ext {a b: LeftIdeal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 @[ext]
-def RightIdeal.ext {a b: RightIdeal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
-  intro h
-  apply RightIdeal.carrier_inj.mp
-  ext; apply h
+def RightIdeal.ext {a b: RightIdeal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 @[ext]
-def Ideal.ext {a b: Ideal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
-  intro h
-  apply Ideal.carrier_inj.mp
-  ext; apply h
+def Ideal.ext {a b: Ideal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 section Ideal.Lattice
 
@@ -90,42 +114,6 @@ instance : LE (Ideal R) where
 
 instance : LT (Ideal R) where
   lt a b := a ≤ b ∧ ¬b ≤ a
-
-instance (R: Ring α) : Inf (Ideal R) where
-  inf a b := {
-    carrier := a.carrier ∩ b.carrier
-    mem_zero := ⟨a.mem_zero, b.mem_zero⟩
-    mem_add | ⟨ha, hb⟩, ⟨ga, gb⟩ => ⟨a.mem_add ha ga, b.mem_add hb gb⟩
-    mem_neg | ⟨ha, hb⟩ => ⟨a.mem_neg ha, b.mem_neg hb⟩
-    mem_mul_left | r, ⟨ha, hb⟩ => ⟨a.mem_mul_left r ha, b.mem_mul_left r hb⟩
-    mem_mul_right | r, ⟨ha, hb⟩ => ⟨a.mem_mul_right r ha, b.mem_mul_right r hb⟩
-  }
-
-instance (R: Ring α) : InfSet (Ideal R) where
-  sInf U := {
-    carrier := ⋂ U.image (fun x => x.carrier)
-    mem_zero := by
-      rintro x ⟨x, _, rfl⟩
-      apply x.mem_zero
-    mem_add := by
-      rintro x y hx hy _ ⟨a, ha, rfl⟩
-      apply a.mem_add
-      apply hx; exists a
-      apply hy; exists a
-    mem_neg := by
-      rintro x hx _ ⟨a, ha, rfl⟩
-      apply a.mem_neg
-      apply hx
-      exists a
-    mem_mul_left := by
-      rintro r x hx _ ⟨a, ha, rfl⟩
-      apply a.mem_mul_left
-      apply hx; exists a
-    mem_mul_right := by
-      rintro r x hx _ ⟨a, ha, rfl⟩
-      apply a.mem_mul_right
-      apply hx; exists a
-  }
 
 inductive Ideal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 | of (x: R) : x ∈ U -> Generate R U x
@@ -137,16 +125,16 @@ inductive Ideal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 
 def toIdeal (R: Ring α) (U: Set R) : Ideal R where
   carrier := Set.mk (Ideal.Generate R U)
-  mem_zero := Ideal.Generate.zero
-  mem_add := Ideal.Generate.add _ _
-  mem_neg := Ideal.Generate.neg _
+  mem_zero' := Ideal.Generate.zero
+  mem_add' := Ideal.Generate.add _ _
+  mem_neg' := Ideal.Generate.neg _
   mem_mul_left _ _ := Ideal.Generate.mul_left _ _
   mem_mul_right _ _ := Ideal.Generate.mul_right _ _
 
 def Ideal.oemb : Ideal R ↪o Set R where
   toFun a := a.carrier
   resp_rel := Iff.rfl
-  inj _ _ := Ideal.carrier_inj.mp
+  inj := SetLike.coe_inj
 
 instance : IsLawfulLT (Ideal R) := ⟨Iff.rfl⟩
 
@@ -154,6 +142,44 @@ instance : IsPartialOrder (Ideal R) :=
   Ideal.oemb.inducedIsPartialOrder'
 
 def Ideal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (Ideal R) _ _ R.toIdeal (fun x => x.carrier) where
+  choice S hS := {
+    carrier := S
+    mem_add' := by
+      intro a b ha hb
+      apply hS
+      apply Generate.add
+      apply Generate.of
+      assumption
+      apply Generate.of
+      assumption
+    mem_neg' := by
+      intro a ha
+      apply hS
+      apply Generate.neg
+      apply Generate.of
+      assumption
+    mem_zero' := by
+      apply hS
+      apply Generate.zero
+    mem_mul_left := by
+      intro _ _ ha
+      apply hS
+      apply Generate.mul_left
+      apply Generate.of
+      assumption
+    mem_mul_right := by
+      intro _ _ ha
+      apply hS
+      apply Generate.mul_right
+      apply Generate.of
+      assumption
+  }
+  choice_eq := by
+    intro S h
+    simp
+    apply le_antisymm
+    apply Generate.of
+    apply h
   gc := by
     intro a b
     dsimp
@@ -165,9 +191,9 @@ def Ideal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (Ideal R) _ _ R.toI
       | of =>
         apply h
         assumption
-      | zero => apply b.mem_zero
-      | add => apply b.mem_add <;> assumption
-      | neg => apply b.mem_neg <;> assumption
+      | zero => apply mem_zero b
+      | add => apply mem_add b <;> assumption
+      | neg => apply mem_neg b <;> assumption
       | mul_left => apply b.mem_mul_left <;> assumption
       | mul_right => apply b.mem_mul_right <;> assumption
   le_l_u := by
@@ -178,35 +204,9 @@ def Ideal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (Ideal R) _ _ R.toI
 instance (R: Ring α) : CompleteLattice (Ideal R) := {
   (Ideal.giGenerate R).liftCompleteLattice with
   bot := Ideal.zero R
-  top := Ideal.univ R
-  inf a b := a ⊓ b
-  sInf := sInf
   bot_le := by
     rintro x h rfl
-    apply x.mem_zero
-  le_top := by
-    intro x h _
-    trivial
-  inf_le_left := by
-    intro a b x ⟨ha, hb⟩
-    assumption
-  inf_le_right := by
-    intro a b x ⟨ha, hb⟩
-    assumption
-  le_inf := by
-    intro a b x ha hb y hy
-    apply And.intro
-    apply ha <;> assumption
-    apply hb <;> assumption
-  sInf_le := by
-    intro s x hs a ha
-    apply ha
-    exists x
-  le_sInf := by
-    rintro  k U h x hx _ ⟨a, ha, rfl⟩
-    apply h
-    assumption
-    assumption
+    apply mem_zero x
 }
 
 end Ideal.Lattice
@@ -219,37 +219,6 @@ instance : LE (LeftIdeal R) where
 instance : LT (LeftIdeal R) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-instance (R: Ring α) : Inf (LeftIdeal R) where
-  inf a b := {
-    carrier := a.carrier ∩ b.carrier
-    mem_zero := ⟨a.mem_zero, b.mem_zero⟩
-    mem_add | ⟨ha, hb⟩, ⟨ga, gb⟩ => ⟨a.mem_add ha ga, b.mem_add hb gb⟩
-    mem_neg | ⟨ha, hb⟩ => ⟨a.mem_neg ha, b.mem_neg hb⟩
-    mem_mul_left | r, ⟨ha, hb⟩ => ⟨a.mem_mul_left r ha, b.mem_mul_left r hb⟩
-  }
-
-instance (R: Ring α) : InfSet (LeftIdeal R) where
-  sInf U := {
-    carrier := ⋂ U.image (fun x => x.carrier)
-    mem_zero := by
-      rintro x ⟨x, _, rfl⟩
-      apply x.mem_zero
-    mem_add := by
-      rintro x y hx hy _ ⟨a, ha, rfl⟩
-      apply a.mem_add
-      apply hx; exists a
-      apply hy; exists a
-    mem_neg := by
-      rintro x hx _ ⟨a, ha, rfl⟩
-      apply a.mem_neg
-      apply hx
-      exists a
-    mem_mul_left := by
-      rintro r x hx _ ⟨a, ha, rfl⟩
-      apply a.mem_mul_left
-      apply hx; exists a
-  }
-
 inductive LeftIdeal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 | of (x: R) : x ∈ U -> Generate R U x
 | zero : Generate R U 0
@@ -259,15 +228,15 @@ inductive LeftIdeal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 
 def toLeftIdeal (R: Ring α) (U: Set R) : LeftIdeal R where
   carrier := Set.mk (LeftIdeal.Generate R U)
-  mem_zero := LeftIdeal.Generate.zero
-  mem_add := LeftIdeal.Generate.add _ _
-  mem_neg := LeftIdeal.Generate.neg _
+  mem_zero' := LeftIdeal.Generate.zero
+  mem_add' := LeftIdeal.Generate.add _ _
+  mem_neg' := LeftIdeal.Generate.neg _
   mem_mul_left _ _ := LeftIdeal.Generate.mul_left _ _
 
 def LeftIdeal.oemb : LeftIdeal R ↪o Set R where
   toFun a := a.carrier
   resp_rel := Iff.rfl
-  inj _ _ := LeftIdeal.carrier_inj.mp
+  inj := SetLike.coe_inj
 
 instance : IsLawfulLT (LeftIdeal R) := ⟨Iff.rfl⟩
 
@@ -275,6 +244,38 @@ instance : IsPartialOrder (LeftIdeal R) :=
   LeftIdeal.oemb.inducedIsPartialOrder'
 
 def LeftIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (LeftIdeal R) _ _ R.toLeftIdeal (fun x => x.carrier) where
+  choice S hS := {
+    carrier := S
+    mem_add' := by
+      intro a b ha hb
+      apply hS
+      apply Generate.add
+      apply Generate.of
+      assumption
+      apply Generate.of
+      assumption
+    mem_neg' := by
+      intro a ha
+      apply hS
+      apply Generate.neg
+      apply Generate.of
+      assumption
+    mem_zero' := by
+      apply hS
+      apply Generate.zero
+    mem_mul_left := by
+      intro _ _ ha
+      apply hS
+      apply Generate.mul_left
+      apply Generate.of
+      assumption
+  }
+  choice_eq := by
+    intro S h
+    simp
+    apply le_antisymm
+    apply Generate.of
+    apply h
   gc := by
     intro a b
     dsimp
@@ -286,9 +287,9 @@ def LeftIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (LeftIdeal R) _
       | of =>
         apply h
         assumption
-      | zero => apply b.mem_zero
-      | add => apply b.mem_add <;> assumption
-      | neg => apply b.mem_neg <;> assumption
+      | zero => apply mem_zero b
+      | add => apply mem_add b <;> assumption
+      | neg => apply mem_neg b <;> assumption
       | mul_left => apply b.mem_mul_left <;> assumption
   le_l_u := by
     intro x r hx
@@ -298,35 +299,9 @@ def LeftIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (LeftIdeal R) _
 instance (R: Ring α) : CompleteLattice (LeftIdeal R) := {
   (LeftIdeal.giGenerate R).liftCompleteLattice with
   bot := (Ideal.zero R).toLeftIdeal
-  top := (Ideal.univ R).toLeftIdeal
-  inf a b := a ⊓ b
-  sInf := sInf
   bot_le := by
     rintro x h rfl
-    apply x.mem_zero
-  le_top := by
-    intro x h _
-    trivial
-  inf_le_left := by
-    intro a b x ⟨ha, hb⟩
-    assumption
-  inf_le_right := by
-    intro a b x ⟨ha, hb⟩
-    assumption
-  le_inf := by
-    intro a b x ha hb y hy
-    apply And.intro
-    apply ha <;> assumption
-    apply hb <;> assumption
-  sInf_le := by
-    intro s x hs a ha
-    apply ha
-    exists x
-  le_sInf := by
-    rintro  k U h x hx _ ⟨a, ha, rfl⟩
-    apply h
-    assumption
-    assumption
+    apply mem_zero x
 }
 
 end LeftIdeal.Lattice
@@ -339,37 +314,6 @@ instance : LE (RightIdeal R) where
 instance : LT (RightIdeal R) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-instance (R: Ring α) : Inf (RightIdeal R) where
-  inf a b := {
-    carrier := a.carrier ∩ b.carrier
-    mem_zero := ⟨a.mem_zero, b.mem_zero⟩
-    mem_add | ⟨ha, hb⟩, ⟨ga, gb⟩ => ⟨a.mem_add ha ga, b.mem_add hb gb⟩
-    mem_neg | ⟨ha, hb⟩ => ⟨a.mem_neg ha, b.mem_neg hb⟩
-    mem_mul_right | r, ⟨ha, hb⟩ => ⟨a.mem_mul_right r ha, b.mem_mul_right r hb⟩
-  }
-
-instance (R: Ring α) : InfSet (RightIdeal R) where
-  sInf U := {
-    carrier := ⋂ U.image (fun x => x.carrier)
-    mem_zero := by
-      rintro x ⟨x, _, rfl⟩
-      apply x.mem_zero
-    mem_add := by
-      rintro x y hx hy _ ⟨a, ha, rfl⟩
-      apply a.mem_add
-      apply hx; exists a
-      apply hy; exists a
-    mem_neg := by
-      rintro x hx _ ⟨a, ha, rfl⟩
-      apply a.mem_neg
-      apply hx
-      exists a
-    mem_mul_right := by
-      rintro r x hx _ ⟨a, ha, rfl⟩
-      apply a.mem_mul_right
-      apply hx; exists a
-  }
-
 inductive RightIdeal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 | of (x: R) : x ∈ U -> Generate R U x
 | zero : Generate R U 0
@@ -379,15 +323,15 @@ inductive RightIdeal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 
 def toRightIdeal (R: Ring α) (U: Set R) : RightIdeal R where
   carrier := Set.mk (RightIdeal.Generate R U)
-  mem_zero := RightIdeal.Generate.zero
-  mem_add := RightIdeal.Generate.add _ _
-  mem_neg := RightIdeal.Generate.neg _
+  mem_zero' := RightIdeal.Generate.zero
+  mem_add' := RightIdeal.Generate.add _ _
+  mem_neg' := RightIdeal.Generate.neg _
   mem_mul_right _ _ := RightIdeal.Generate.mul_right _ _
 
 def RightIdeal.oemb : RightIdeal R ↪o Set R where
   toFun a := a.carrier
   resp_rel := Iff.rfl
-  inj _ _ := RightIdeal.carrier_inj.mp
+  inj := SetLike.coe_inj
 
 instance : IsLawfulLT (RightIdeal R) := ⟨Iff.rfl⟩
 
@@ -395,6 +339,38 @@ instance : IsPartialOrder (RightIdeal R) :=
   RightIdeal.oemb.inducedIsPartialOrder'
 
 def RightIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (RightIdeal R) _ _ R.toRightIdeal (fun x => x.carrier) where
+  choice S hS := {
+    carrier := S
+    mem_add' := by
+      intro a b ha hb
+      apply hS
+      apply Generate.add
+      apply Generate.of
+      assumption
+      apply Generate.of
+      assumption
+    mem_neg' := by
+      intro a ha
+      apply hS
+      apply Generate.neg
+      apply Generate.of
+      assumption
+    mem_zero' := by
+      apply hS
+      apply Generate.zero
+    mem_mul_right := by
+      intro _ _ ha
+      apply hS
+      apply Generate.mul_right
+      apply Generate.of
+      assumption
+  }
+  choice_eq := by
+    intro S h
+    simp
+    apply le_antisymm
+    apply Generate.of
+    apply h
   gc := by
     intro a b
     dsimp
@@ -406,9 +382,9 @@ def RightIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (RightIdeal R)
       | of =>
         apply h
         assumption
-      | zero => apply b.mem_zero
-      | add => apply b.mem_add <;> assumption
-      | neg => apply b.mem_neg <;> assumption
+      | zero => apply mem_zero b
+      | add => apply mem_add b <;> assumption
+      | neg => apply mem_neg b <;> assumption
       | mul_right => apply b.mem_mul_right <;> assumption
   le_l_u := by
     intro x r hx
@@ -418,35 +394,9 @@ def RightIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (RightIdeal R)
 instance (R: Ring α) : CompleteLattice (RightIdeal R) := {
   (RightIdeal.giGenerate R).liftCompleteLattice with
   bot := (Ideal.zero R).toRightIdeal
-  top := (Ideal.univ R).toRightIdeal
-  inf a b := a ⊓ b
-  sInf := sInf
   bot_le := by
     rintro x h rfl
-    apply x.mem_zero
-  le_top := by
-    intro x h _
-    trivial
-  inf_le_left := by
-    intro a b x ⟨ha, hb⟩
-    assumption
-  inf_le_right := by
-    intro a b x ⟨ha, hb⟩
-    assumption
-  le_inf := by
-    intro a b x ha hb y hy
-    apply And.intro
-    apply ha <;> assumption
-    apply hb <;> assumption
-  sInf_le := by
-    intro s x hs a ha
-    apply ha
-    exists x
-  le_sInf := by
-    rintro  k U h x hx _ ⟨a, ha, rfl⟩
-    apply h
-    assumption
-    assumption
+    apply mem_zero x
 }
 
 end RightIdeal.Lattice
@@ -487,7 +437,7 @@ def Ideal.eq_univ_of_mem_unit {R: Ring α} (i: Ideal R) (u: Units R) : u.val ∈
   rw [←mul_assoc, u.val_mul_inv, one_mul] at this
   assumption
 
-def Ideal.Quot (i: Ideal R) : Type _ := Quotient i.setoid
+def Ideal.Quot (i: Ideal R) : Type _ := Quotient (AddSubgroup.setoid i.toSubAddGroup)
 
 @[cases_eliminator]
 private def Ideal.Quot.ind
@@ -503,7 +453,7 @@ def Ideal.toRing (i: Ideal R) : Ring i.Quot := by
     apply Quotient.sound
     show _ - _ ∈ i
     rw [neg_sub_neg, ←neg_sub]
-    apply i.mem_neg
+    apply mem_neg
     assumption
   case add =>
     apply Quotient.lift₂ (fun a b => Quotient.mk _ (a + b))
@@ -513,7 +463,7 @@ def Ideal.toRing (i: Ideal R) : Ring i.Quot := by
     rw [sub_eq_add_neg, neg_add_rev, add_assoc, ←add_assoc b,
       ←sub_eq_add_neg b, add_comm _ (-c), ←add_assoc,
       ←sub_eq_add_neg]
-    apply i.mem_add
+    apply mem_add
     assumption
     assumption
   case mul =>
@@ -525,7 +475,7 @@ def Ideal.toRing (i: Ideal R) : Ring i.Quot := by
       ←add_assoc (-_), add_comm _ (a * d), add_comm (_ + _),
       ←add_assoc, ←sub_eq_add_neg, ←sub_eq_add_neg,
       ←mul_sub, ←sub_mul]
-    apply i.mem_add
+    apply mem_add
     apply i.mem_mul_left
     assumption
     apply i.mem_mul_right
@@ -604,12 +554,12 @@ def Ideal.mkQuot_surj (i: Ideal R) : Function.Surjective i.mkQuot := by
 -- the kernel (preimage of 0) of a ring homomorphism generates an ideal
 def Ideal.kernel {S R: Ring α} (f: S →+* R) : Ideal S where
   carrier := Set.preimage {0} f
-  mem_zero := resp_zero _
-  mem_add := by
+  mem_zero' := resp_zero _
+  mem_add' := by
     intro a b ha hb
     rw [Set.mem_preimage, resp_add, ha, hb, add_zero]
     rfl
-  mem_neg := by
+  mem_neg' := by
     intro a ha
     rw [Set.mem_preimage, resp_neg, ha, neg_zero]
     rfl
