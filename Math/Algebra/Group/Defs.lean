@@ -43,6 +43,7 @@ def instZSMul [AddMonoidOps α] [Neg α] : SMul ℤ α := ⟨zsmulRec⟩
 def instZPow [MonoidOps α] [Inv α] : Pow α ℤ := ⟨flip zpowRec⟩
 
 class AddGroupOps (α: Type*) extends AddMonoidOps α, Neg α, Sub α where
+  sub := sub'
   zsmul: ℤ -> α -> α := by exact SMul.smul
 class GroupOps (α: Type*) extends MonoidOps α, Inv α, Div α where
   div := div'
