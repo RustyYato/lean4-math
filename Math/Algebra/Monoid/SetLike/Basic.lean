@@ -24,7 +24,7 @@ variable [SetLike S α]
 
 section
 
-variable [Mul α] [One α] [IsSubMonoid S] [Add α] [Zero α] [IsSubAddMonoid S] (s: S)
+variable [Mul α] [One α] [Add α] [Zero α] [IsOneMem S] [IsZeroMem S] [IsAddMem S] [IsMulMem S] (s: S)
 
 instance : One s where
   one := ⟨1, mem_one _⟩
