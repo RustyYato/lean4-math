@@ -17,8 +17,12 @@ structure Subring (R: Ring α) extends AddSubgroup R where
   mem_one: 1 ∈ carrier
   mem_mul: ∀{x y}, x ∈ carrier -> y ∈ carrier -> x * y ∈ carrier
 
+def Subring.Elem (s: Subring R) : Type _ := s.carrier
+
+attribute [coe] Subring.Elem
+
 instance : CoeSort (Subring R) (Type _) where
-  coe a := a.carrier
+  coe := Subring.Elem
 
 def AddSubgroup.carrier_inj {a b: AddSubgroup R} : a.carrier = b.carrier ↔ a = b :=
   Function.Injective.eq_iff <| by
@@ -242,5 +246,27 @@ def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
       assumption
       assumption
   }
+
+-- every ring homomorphism identifies a subring of R
+def Subring.ofHom {R S: Ring α} (f: S →+* R) : Subring R where
+  carrier := Set.range f
+  mem_zero := by
+    exists 0
+    rw [resp_zero]
+  mem_one := by
+    exists 1
+    rw [resp_one]
+  mem_add := by
+    rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
+    rw [←resp_add]
+    apply Set.mem_range'
+  mem_neg := by
+    rintro _ ⟨_, rfl⟩
+    rw [←resp_neg]
+    apply Set.mem_range'
+  mem_mul := by
+    rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
+    rw [←resp_mul]
+    apply Set.mem_range'
 
 end Ring

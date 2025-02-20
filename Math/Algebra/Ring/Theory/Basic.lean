@@ -1,5 +1,5 @@
 import Math.Algebra.Ring.Defs
-import Math.Algebra.Hom.Defs
+import Math.Algebra.Group.Hom
 
 structure Ring (α: Type*) where
   [ops: RingOps α]
@@ -8,6 +8,8 @@ structure Ring (α: Type*) where
 namespace Ring
 
 def Elem (_: Ring α) := α
+
+attribute [coe] Elem
 
 instance : CoeSort (Ring α) (Type _) := ⟨Elem⟩
 
