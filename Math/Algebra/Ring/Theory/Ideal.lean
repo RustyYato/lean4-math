@@ -71,20 +71,32 @@ def Ideal.carrier_inj {a b: Ideal R} : a.carrier = b.carrier ↔ a = b :=
     apply LeftIdeal.carrier_inj.mp
     assumption
 
+instance (R: Ring α) : Membership R (AddSubgroup R) where
+  mem i x := x ∈ i.carrier
+
+instance (R: Ring α) : Membership R (LeftIdeal R) where
+  mem i x := x ∈ i.carrier
+
+instance (R: Ring α) : Membership R (RightIdeal R) where
+  mem i x := x ∈ i.carrier
+
+instance (R: Ring α) : Membership R (Ideal R) where
+  mem i x := x ∈ i.carrier
+
 @[ext]
-def LeftIdeal.ext {a b: LeftIdeal R} : (∀x, x ∈ a.carrier ↔ x ∈ b.carrier) -> a = b := by
+def LeftIdeal.ext {a b: LeftIdeal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
   intro h
   apply LeftIdeal.carrier_inj.mp
   ext; apply h
 
 @[ext]
-def RightIdeal.ext {a b: RightIdeal R} : (∀x, x ∈ a.carrier ↔ x ∈ b.carrier) -> a = b := by
+def RightIdeal.ext {a b: RightIdeal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
   intro h
   apply RightIdeal.carrier_inj.mp
   ext; apply h
 
 @[ext]
-def Ideal.ext {a b: Ideal R} : (∀x, x ∈ a.carrier ↔ x ∈ b.carrier) -> a = b := by
+def Ideal.ext {a b: Ideal R} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
   intro h
   apply Ideal.carrier_inj.mp
   ext; apply h
@@ -492,5 +504,26 @@ def Ideal.eq_univ_of_mem_unit {R: Ring α} (i: Ideal R) (u: Units R) : u.val ∈
     assumption
   rw [←mul_assoc, u.val_mul_inv, one_mul] at this
   assumption
+
+def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
+  r a b := a - b ∈ i
+  iseqv := {
+    refl x := by
+      rw [sub_self]
+      apply i.mem_zero
+    symm := by
+      intro x y h
+      rw [←neg_sub]
+      apply i.mem_neg
+      assumption
+    trans := by
+      intro x y z hx hy
+      rw [←add_zero (_ - _), ←sub_self y,
+        sub_add_assoc, ←add_sub_assoc, add_comm, sub_eq_add_neg, add_assoc (_ + _),
+          add_comm _ y, add_comm _ x, ←sub_eq_add_neg, ←sub_eq_add_neg]
+      apply i.mem_add
+      assumption
+      assumption
+  }
 
 end Ring
