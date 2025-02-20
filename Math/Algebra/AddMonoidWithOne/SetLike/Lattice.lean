@@ -71,7 +71,7 @@ def giGenerate : @GaloisInsertion (Set α) (SubAddMonoidWithOne α) _ _ generate
     apply Generate.of
     assumption
 
-instance [IsAddZeroClass α] : CompleteLattice (SubAddMonoidWithOne α) :=
+instance: CompleteLattice (SubAddMonoidWithOne α) :=
   giGenerate.liftCompleteLattice
 
 end SubAddMonoidWithOne
@@ -90,7 +90,7 @@ def range_natCast : SubAddMonoidWithOne α where
     rw [←natCast_add]
     apply Set.mem_range'
 
-def bot_eq_rangeNatCast: ⊥ = range_natCast (α := α) := by
+def bot_eq_range_natCast: ⊥ = range_natCast (α := α) := by
   apply le_antisymm
   apply bot_le
   rintro _ ⟨n, rfl⟩
