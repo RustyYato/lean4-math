@@ -1,13 +1,53 @@
 import Math.Algebra.Monoid.Char
 import Math.Algebra.Semiring.Defs
+import Math.Algebra.Monoid.Hom
+
+def HasChar.of_natCast_eq_zero [SemiringOps α] [IsSemiring α] (n: Nat) (h: n = (0: α)) (g: (∀m: Nat, m = (0: α) -> n ∣ m)) : HasChar α n where
+   spec := by
+    intro m
+    apply Iff.intro
+    · intro g'
+      apply g
+      clear g
+      rw [natCast_eq_nsmul_one]
+      apply g'
+    · rintro ⟨k, rfl⟩
+      intro a
+      rw [mul_nsmul, nsmul_eq_natCast_mul, h, zero_mul]
 
 def char_eq_of_natCast_eq_zero [SemiringOps α] [IsSemiring α] (n: Nat) :
   n = (0: α) -> (∀m: Nat, m = (0: α) -> n ∣ m) -> char α = n := by
   intro h g
-  apply char_eq_of
-  intro x
-  rw [←natCast_mul_eq_nsmul, h, zero_mul]
-  intro m g'
-  apply g
-  rw [natCast_eq_nsmul_one]
-  apply g'
+  have := HasChar.of_natCast_eq_zero n h g
+  apply HasChar.eq α (HasChar.char α) this
+
+def HasChar.dvd_of_ring_hom
+  [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
+  [HasChar α n] [HasChar β m]
+  (h: α →+* β) : m ∣ n := by
+  apply HasChar.char_dvd (α := β)
+  intro b
+  rw [←one_mul b, nsmul_eq_natCast_mul, ←mul_assoc, ←nsmul_eq_natCast_mul,
+  ←resp_one h, ←resp_nsmul, char_spec α, resp_zero, zero_mul]
+
+def HasChar.of_ring_equiv
+  [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
+  [HasChar α n] [HasChar β m]
+  (eqv: α ≃+* β) : n = m := by
+  apply Nat.dvd_antisymm
+  exact dvd_of_ring_hom eqv.symm.toHom
+  exact dvd_of_ring_hom eqv.toHom
+
+def char_dvd_char (α β: Type*)
+   [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
+   (h: α →+* β) : char β ∣ char α := by
+   have := HasChar.char α
+   have := HasChar.char β
+   exact HasChar.dvd_of_ring_hom h
+
+def char_eq_char_of_eqv (α β: Type*)
+   [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
+   (eqv: α ≃+* β) : char α = char β := by
+   have := HasChar.char α
+   have := HasChar.char β
+   exact HasChar.of_ring_equiv eqv

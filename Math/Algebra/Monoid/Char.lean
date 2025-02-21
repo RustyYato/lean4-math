@@ -1,17 +1,46 @@
 import Math.Algebra.Monoid.Defs
 
 open Classical
+
 variable (α: Type*) [AddMonoidOps α] [IsAddMonoid α]
 
-private
-def HasChar (n: Nat) : Prop := ∀(m: Nat), (∀(a: α), m • a = 0) ↔ n ∣ m
+class HasChar (n: outParam <| Nat): Prop where
+  spec : ∀(m: Nat), (∀(a: α), m • a = 0) ↔ n ∣ m
 
-private
-def existsChar : ∃n, HasChar α n := by
+def HasChar.char_dvd [h: HasChar α n] : ∀(m: Nat), (∀(a: α), m • a = 0) -> n ∣ m := by
+  intro m
+  apply (h.spec _).mp
+
+def HasChar.char_spec [h: HasChar α n] : ∀a: α, n • a = 0 := by
+  intro m
+  apply (h.spec _).mpr
+  apply Nat.dvd_refl
+
+def HasChar.eq (h: HasChar α n) (g: HasChar α m) : n = m := by
+  apply Nat.dvd_antisymm
+  apply h.char_dvd
+  apply g.char_spec
+  apply g.char_dvd
+  apply h.char_spec
+
+def HasChar.of_spec (n: ℕ) (h: ∀a: α, n • a = 0) (g: ∀(m: Nat), (∀(a: α), m • a = 0) -> n ∣ m) : HasChar α n where
+  spec := by
+    intro m
+    apply Iff.intro
+    intro s
+    apply g
+    assumption
+    rintro ⟨k, rfl⟩
+    intro a
+    rw [mul_nsmul]
+    apply h
+
+def HasChar.exists : ∃n, HasChar α n := by
   by_cases h:∃n: Nat, n ≠ 0 ∧ ∀a: α, n • a = 0
   · replace h := Relation.exists_min (· < ·) h
     obtain ⟨n, ⟨npos, h⟩, min_spec⟩ := h
     exists n
+    apply HasChar.mk
     intro m
     apply Iff.intro
     · intro g
@@ -42,6 +71,7 @@ def existsChar : ∃n, HasChar α n := by
     · intro ⟨k, dvd⟩ a
       rw [dvd, mul_nsmul, h]
   · exists 0
+    apply HasChar.mk
     intro m
     apply Iff.intro
     · intro g
@@ -59,14 +89,24 @@ def existsChar : ∃n, HasChar α n := by
 -- i.e. the smallest non-zero natural such that
 -- the product with any element of α is zero
 -- or if no such non-zero natural exists, then zero
-noncomputable def char : ℕ := Classical.choose (existsChar α)
+noncomputable def char : ℕ := Classical.choose (HasChar.exists α)
 
-def char_dvd : ∀(m: Nat), (∀(a: α), m • a = 0) -> char α ∣ m := fun m => (Classical.choose_spec (existsChar α) m).mp
-def char_spec : ∀(a: α), char α • a = 0 := (Classical.choose_spec (existsChar α) _).mpr (Nat.dvd_refl _)
+def HasChar.char : HasChar α (char α) := Classical.choose_spec (HasChar.exists α)
+
+def char_dvd : ∀(m: Nat), (∀(a: α), m • a = 0) -> char α ∣ m := (HasChar.char α).char_dvd
+def char_spec : ∀(a: α), char α • a = 0 := (HasChar.char α).char_spec
+
 def char_eq_of (n: Nat) : (∀a: α, n • a = 0) -> (∀(m: Nat), (∀(a: α), m • a = 0) -> n ∣ m) -> char α = n := by
   intro h g
-  apply Nat.dvd_antisymm
-  apply char_dvd
-  assumption
-  apply g
-  apply char_spec
+  apply HasChar.eq (α := α)
+  apply HasChar.char
+  apply HasChar.of_spec <;> assumption
+
+-- any additive monoid with characteristic 1 must be subsingleton
+-- in fact, since it also contains `0`, it have exactly one value
+instance [HasChar α 1] : Subsingleton α where
+  allEq := by
+    suffices ∀x: α, x = 0 by
+      intro a b ; rw [this a, this b]
+    intro x
+    rw [←one_nsmul x, HasChar.char_spec]

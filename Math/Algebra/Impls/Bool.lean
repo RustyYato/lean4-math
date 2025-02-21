@@ -32,7 +32,6 @@ instance : IsCommMagma Bool where
   mul_comm := by decide +kernel
 
 instance : IsField Bool where
-  zero_ne_one := by decide +kernel
   add_comm := by decide +kernel
   add_assoc := by decide +kernel
   zero_add := by decide +kernel
