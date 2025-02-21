@@ -217,6 +217,12 @@ instance : IsDecidableLinearOrder (ZMod n) :=
 
 namespace ZMod
 
+instance : Repr (ZMod n) where
+  reprPrec x :=
+    match n with
+    | 0 => reprPrec (zmod_zero_eqv_int x)
+    | _ + 1 => reprPrec (zmod_succ_eqv_fin _ x)
+
 @[simp]
 def ZMod.n_eq_zero : (n: ZMod n) = 0 := by
   cases n
