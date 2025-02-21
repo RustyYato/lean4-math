@@ -2,6 +2,9 @@ import Math.Algebra.Impls.Int
 import Math.Algebra.Impls.Fin
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Quotient
 import Math.Data.Quotient.Basic
+import Math.Order.Linear
+import Math.Order.Fin
+import Math.Order.OrderIso.Linear
 
 -- the multiplies of n, as an ideal over the integers
 def Int.multiples (n: ℕ) : Ideal ℤ where
@@ -159,3 +162,44 @@ instance : DecidableEq (ZMod n) :=
   match n with
   | 0 => zmod_zero_eqv_int.toEmbedding.DecidableEq
   | _ + 1 => (zmod_succ_eqv_fin _).toEmbedding.DecidableEq
+
+instance : LE (ZMod n) where
+  le a b :=
+    match n with
+    | 0 => zmod_zero_eqv_int a ≤ zmod_zero_eqv_int b
+    | _ + 1 => zmod_succ_eqv_fin _ a ≤ zmod_succ_eqv_fin _ b
+
+instance : LT (ZMod n) where
+  lt a b :=
+    match n with
+    | 0 => zmod_zero_eqv_int a < zmod_zero_eqv_int b
+    | _ + 1 => zmod_succ_eqv_fin _ a < zmod_succ_eqv_fin _ b
+
+def zmod_zero_oeqv_int : ZMod 0 ≃o Int where
+  toEquiv := zmod_zero_eqv_int.toEquiv
+  resp_rel := Iff.rfl
+
+def zmod_succ_oeqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃o Fin n where
+  toEquiv := (zmod_succ_eqv_fin n).toEquiv
+  resp_rel := match n, h with
+    | _ + 1, _ => Iff.rfl
+
+instance : Max (ZMod n) :=
+  match n with
+  | 0 => zmod_zero_oeqv_int.instMax
+  | _ + 1  => (zmod_succ_oeqv_fin (_ + 1)).instMax
+instance : Min (ZMod n) :=
+  match n with
+  | 0 => zmod_zero_oeqv_int.instMin
+  | _ + 1  => (zmod_succ_oeqv_fin (_ + 1)).instMin
+
+instance : IsLawfulLT (ZMod n) where
+  lt_iff_le_and_not_le {a} :=
+    match n with
+    | 0 => lt_iff_le_and_not_le (a := zmod_zero_oeqv_int a)
+    | _ + 1 => lt_iff_le_and_not_le (a := zmod_succ_oeqv_fin _ a)
+
+instance : IsDecidableLinearOrder (ZMod n) :=
+  match n with
+  | 0 => zmod_zero_oeqv_int.instIsDecidableLinearOrder (fun _ _ => rfl) (fun _ _ => rfl)
+  | _ + 1  => (zmod_succ_oeqv_fin (_ + 1)).instIsDecidableLinearOrder (fun _ _ => rfl) (fun _ _ => rfl)

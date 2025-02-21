@@ -34,7 +34,7 @@ instance : IsLinearOrder (Fin n) where
     right; assumption
   le_trans := Fin.le_trans
 
-local instance : Min (Fin n) := minOfLe
-local instance : Max (Fin n) := maxOfLe
+instance : Min (Fin n) := minOfLe
+instance : Max (Fin n) := maxOfLe
 
 instance : IsDecidableLinearOrder (Fin n) where

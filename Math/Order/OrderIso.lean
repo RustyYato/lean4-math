@@ -38,6 +38,10 @@ def trans {_: LE α} {_: LE β} {_: LE γ} (h: α ↪o β) (g: β ↪o γ) : α 
 
 def resp_le {_: LE α} {_: LE β} (h: α ↪o β) : ∀{a b: α}, a ≤ b ↔ h a ≤ h b := h.resp_rel
 
+def resp_lt {_: LE α} {_: LE β} {_: LT α} {_: LT β} [IsLawfulLT α] [IsLawfulLT β] (h: α ↪o β) : ∀{a b: α}, a < b ↔ h a < h b := by
+  intro a b
+  rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, h.resp_le, h.resp_le]
+
 def inducedIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder β]
   [IsLawfulLT α]
@@ -157,6 +161,11 @@ def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   [IsLawfulLT β]
   (h: α ≃o β): _root_.IsPartialOrder β :=
   OrderEmbedding.inducedIsPartialOrder' (α := β) (β := α) h.symm
+
+def instMin [Min β] (h: α ≃o β) : Min α where
+  min a b := h.symm (min (h a) (h b))
+def instMax [Max β] (h: α ≃o β) : Max α where
+  max a b := h.symm (max (h a) (h b))
 
 end OrderIso
 
