@@ -5,6 +5,7 @@ import Math.Data.Quotient.Basic
 import Math.Order.Linear
 import Math.Order.Fin
 import Math.Order.OrderIso.Linear
+import Math.Algebra.AddGroupWithOne.Hom
 
 -- the multiplies of n, as an ideal over the integers
 def Int.multiples (n: ℕ) : Ideal ℤ where
@@ -158,6 +159,16 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n where
     refine Int.emod_nonneg _ ?_
     omega
 
+instance : IsCommMagma (ZMod n) where
+  mul_comm := by
+    intro a b; cases n
+    apply zmod_zero_eqv_int.inj
+    show zmod_zero_eqv_int _ = zmod_zero_eqv_int _
+    rw [resp_mul, resp_mul, mul_comm]
+    apply (zmod_succ_eqv_fin _).inj
+    show zmod_succ_eqv_fin _ _ = zmod_succ_eqv_fin _ _
+    rw [resp_mul, resp_mul, mul_comm]
+
 instance : DecidableEq (ZMod n) :=
   match n with
   | 0 => zmod_zero_eqv_int.toEmbedding.DecidableEq
@@ -203,3 +214,24 @@ instance : IsDecidableLinearOrder (ZMod n) :=
   match n with
   | 0 => zmod_zero_oeqv_int.instIsDecidableLinearOrder (fun _ _ => rfl) (fun _ _ => rfl)
   | _ + 1  => (zmod_succ_oeqv_fin (_ + 1)).instIsDecidableLinearOrder (fun _ _ => rfl) (fun _ _ => rfl)
+
+namespace ZMod
+
+@[simp]
+def ZMod.n_eq_zero : (n: ZMod n) = 0 := by
+  cases n
+  rfl
+  apply (zmod_succ_eqv_fin _).inj
+  show zmod_succ_eqv_fin _ _ = zmod_succ_eqv_fin _ 0
+  rw [resp_natCast, resp_zero]
+  simp [Nat.cast, NatCast.natCast]
+
+@[simp]
+def ZMod.n_nsmul (a: ZMod n) : n • a = 0 := by
+  simp [nsmul_eq_natCast_mul]
+
+@[simp]
+def ZMod.n_zsmul (a: ZMod n) : (n: ℤ) • a = 0 := by
+  simp [zsmul_eq_intCast_mul, intCast_ofNat]
+
+end ZMod
