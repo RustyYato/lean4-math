@@ -154,3 +154,8 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n where
     all_goals
     refine Int.emod_nonneg _ ?_
     omega
+
+instance : DecidableEq (ZMod n) :=
+  match n with
+  | 0 => zmod_zero_eqv_int.toEmbedding.DecidableEq
+  | _ + 1 => (zmod_succ_eqv_fin _).toEmbedding.DecidableEq
