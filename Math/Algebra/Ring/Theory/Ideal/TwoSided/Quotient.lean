@@ -1,5 +1,7 @@
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Basic
 import Math.Algebra.Ring.Theory.Basic
+import Math.Algebra.Ring.Defs
+import Math.Algebra.Impls.Unit
 
 namespace Ideal
 
@@ -152,5 +154,40 @@ def kernel_mkQuot (i: Ideal R) : Ideal.kernel i.mkQuot = i := by
   apply Quotient.sound
   show _ - _ ∈ i
   rw [sub_zero]; assumption
+
+def eqv_quot_empty : R ≃+* (Ideal.zero R).toRing where
+  toFun := mkQuot _
+  invFun := by
+    apply Quotient.lift (id (α := R))
+    intro a b eqv
+    apply eq_of_sub_eq_zero
+    assumption
+  leftInv := by
+    intro x
+    rfl
+  rightInv := by
+    intro x
+    cases x using Quot.ind
+    rfl
+  resp_zero := resp_zero _
+  resp_one := resp_one _
+  resp_add := resp_add _
+  resp_mul := resp_mul _
+
+def eqv_quot_univ : Unit ≃+* (Ideal.univ R).toRing :=
+  RingEquiv.symm {
+    toFun _ := 0
+    invFun _ := 0
+    leftInv := by
+      intro x
+      induction x using Quot.ind
+      apply Quotient.sound
+      trivial
+    rightInv _ := rfl
+    resp_zero := rfl
+    resp_one := rfl
+    resp_add := rfl
+    resp_mul := rfl
+  }
 
 end Ideal
