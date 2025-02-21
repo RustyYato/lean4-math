@@ -8,6 +8,8 @@ def Quot.out_spec {r: α -> α -> Prop} (q: Quot r) : Quot.mk r q.out = q := Cla
 noncomputable
 def Quotient.out_spec {s: Setoid α} (q: Quotient s) : Quotient.mk s q.out = q := Quot.out_spec q
 
+def Quot.mk_lift : Quot.lift f resp (Quot.mk _ x) = f x := rfl
+
 def Quotient.mk_lift : Quotient.lift f resp (Quotient.mk _ x) = f x := rfl
 
 def Quotient.iind

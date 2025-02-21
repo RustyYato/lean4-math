@@ -1,5 +1,5 @@
 import Math.Algebra.Basic
-import Math.Algebra.Group.Units
+import Math.Algebra.Group.Units.Defs
 import Math.Algebra.Semiring.Char
 
 instance : One (Fin (n + 1)) := ⟨1⟩

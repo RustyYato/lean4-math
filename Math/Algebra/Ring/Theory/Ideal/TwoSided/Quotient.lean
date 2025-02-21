@@ -190,4 +190,36 @@ def eqv_quot_univ : Unit ≃+* (Ideal.univ R).toRing :=
     resp_mul := rfl
   }
 
+def toRing_eqv_toRing_of_eq {i j: Ideal R} (h: i = j) : i.toRing ≃+* j.toRing where
+  toFun := by
+    apply Quotient.lift (fun x => mkQuot _ x)
+    intro a b eq
+    rw [←h]
+    apply Quotient.sound
+    assumption
+  invFun  := by
+    apply Quotient.lift (fun x => mkQuot _ x)
+    intro a b eq
+    rw [h]
+    apply Quotient.sound
+    assumption
+  leftInv := by
+    intro a; induction a using Quot.ind
+    rfl
+  rightInv := by
+    intro a; induction a using Quot.ind
+    rfl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := by
+    intro a b
+    cases a using Quot.ind
+    cases b using Quot.ind
+    apply resp_add
+  resp_mul := by
+    intro a b
+    cases a using Quot.ind
+    cases b using Quot.ind
+    apply resp_mul
+
 end Ideal
