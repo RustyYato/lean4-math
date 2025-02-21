@@ -51,3 +51,10 @@ def char_eq_char_of_eqv (α β: Type*)
    have := HasChar.char α
    have := HasChar.char β
    exact HasChar.of_ring_equiv eqv
+
+instance Nat.char_eq : HasChar Nat 0 := by
+  apply HasChar.of_natCast_eq_zero
+  rfl
+  intro m h
+  cases h
+  apply Nat.dvd_refl

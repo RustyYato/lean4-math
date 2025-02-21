@@ -23,17 +23,17 @@ def HasChar.eq (h: HasChar α n) (g: HasChar α m) : n = m := by
   apply g.char_dvd
   apply h.char_spec
 
-def HasChar.of_spec (n: ℕ) (h: ∀a: α, n • a = 0) (g: ∀(m: Nat), (∀(a: α), m • a = 0) -> n ∣ m) : HasChar α n where
+def HasChar.of_spec (n: ℕ) (nsmul_eq_zero: ∀a: α, n • a = 0) (is_minimal: ∀(m: Nat), (∀(a: α), m • a = 0) -> n ∣ m) : HasChar α n where
   spec := by
     intro m
     apply Iff.intro
     intro s
-    apply g
+    apply is_minimal
     assumption
     rintro ⟨k, rfl⟩
     intro a
     rw [mul_nsmul]
-    apply h
+    apply nsmul_eq_zero
 
 def HasChar.exists : ∃n, HasChar α n := by
   by_cases h:∃n: Nat, n ≠ 0 ∧ ∀a: α, n • a = 0
@@ -110,3 +110,8 @@ instance [HasChar α 1] : Subsingleton α where
       intro a b ; rw [this a, this b]
     intro x
     rw [←one_nsmul x, HasChar.char_spec]
+
+instance [Subsingleton α] : HasChar α 1 := by
+  apply HasChar.of_spec _ _ _ (fun _ _ => Nat.one_dvd _)
+  intro x
+  apply Subsingleton.allEq

@@ -19,3 +19,11 @@ instance [SemiringOps R] [IsSemiring R] : IsModule R R where
   smul_add _ _ _ := mul_add _ _ _
   add_smul _ _ _ := add_mul _ _ _
   zero_smul _ := zero_mul _
+
+instance [AddMonoidWithOneOps R] [IsAddMonoidWithOne R] [IsAddCommMagma R] : IsModule Nat R where
+  one_smul := one_nsmul
+  mul_smul _ _ _ := mul_nsmul _ _ _
+  smul_zero := nsmul_zero
+  smul_add := nsmul_add
+  add_smul := add_nsmul
+  zero_smul := zero_nsmul

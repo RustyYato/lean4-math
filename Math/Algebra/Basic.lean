@@ -1,5 +1,5 @@
 import Math.Algebra.Hom.Defs
-import Math.Algebra.Ring.Defs
+import Math.Algebra.Semiring.Defs
 import Math.Algebra.Module.Defs
 
 section
@@ -93,3 +93,18 @@ def smul_one [AlgebraMap S A] [IsAlgebra S A] (s: S) : s • (1: A) = algebraMap
   rw [smul_def, mul_one]
 
 end Algebra
+
+instance (priority := 500) [SemiringOps R] [IsSemiring R] : AlgebraMap Nat R where
+  toFun n := n
+  resp_zero := natCast_zero
+  resp_one := natCast_one
+  resp_add := natCast_add _ _
+  resp_mul := natCast_mul _ _
+
+instance [SemiringOps R] [IsSemiring R] : IsAlgebra Nat R where
+  commutes r x := by
+    show r * x = x * r
+    rw [natCast_mul_eq_nsmul, mul_natCast_eq_nsmul]
+  smul_def a b := by
+    rw [←natCast_mul_eq_nsmul]
+    rfl

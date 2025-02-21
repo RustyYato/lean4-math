@@ -1,4 +1,6 @@
-import Math.Algebra.Ring
+import Math.Algebra.Ring.Defs
+import Math.Algebra.Monoid.Char
+import Math.Algebra.Basic
 
 instance : RingOps Unit where
   add _ _ := ()
@@ -17,7 +19,7 @@ instance : RingOps Unit where
 instance : IsCommMagma Unit where
   mul_comm _ _ := rfl
 
-instance : IsRing Unit where
+instance Unit.instRing : IsRing Unit where
   add_comm _ _ := rfl
   add_assoc _ _ _ := rfl
   zero_add _ := rfl
@@ -39,9 +41,20 @@ instance : IsRing Unit where
   intCast_ofNat _ := rfl
   intCast_negSucc _ := rfl
 
-def Unit.char_eq : char Unit = 1 := by
-  apply Nat.dvd_antisymm
-  apply char_dvd
-  intro x
-  rfl
+instance : IsSemiring Unit := Unit.instRing.toIsSemiring
+
+instance : HasChar Unit 1 := by
+  apply HasChar.of_spec
+  intro; rfl
+  intros
   apply Nat.one_dvd
+
+-- every module over `Unit` is trivial
+instance Unit.subsingleton_of_module
+  (R: Type*) [SMul Unit R] [AddMonoidOps R] [IsAddCommMagma R] [IsAddMonoid R] [IsModule Unit R]:
+  Subsingleton R where
+  allEq := by
+    suffices ∀x: R, x = 0 by
+      intro a b; rw [this a, this b]
+    intro a
+    rw [←zero_smul (R := Unit) a, one_smul]
