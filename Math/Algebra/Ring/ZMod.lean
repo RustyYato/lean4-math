@@ -217,14 +217,16 @@ instance : IsDecidableLinearOrder (ZMod n) :=
 
 namespace ZMod
 
+def toInt (x: ZMod n): Int :=
+  match n with
+  | 0 => (zmod_zero_eqv_int x)
+  | _ + 1 => (zmod_succ_eqv_fin _ x)
+
 instance : Repr (ZMod n) where
-  reprPrec x :=
-    match n with
-    | 0 => reprPrec (zmod_zero_eqv_int x)
-    | _ + 1 => reprPrec (zmod_succ_eqv_fin _ x)
+  reprPrec x := reprPrec (toInt x)
 
 @[simp]
-def ZMod.n_eq_zero : (n: ZMod n) = 0 := by
+def n_eq_zero : (n: ZMod n) = 0 := by
   cases n
   rfl
   apply (zmod_succ_eqv_fin _).inj
@@ -233,11 +235,87 @@ def ZMod.n_eq_zero : (n: ZMod n) = 0 := by
   simp [Nat.cast, NatCast.natCast]
 
 @[simp]
-def ZMod.n_nsmul (a: ZMod n) : n • a = 0 := by
+def n_nsmul (a: ZMod n) : n • a = 0 := by
   simp [nsmul_eq_natCast_mul]
 
 @[simp]
-def ZMod.n_zsmul (a: ZMod n) : (n: ℤ) • a = 0 := by
+def n_zsmul (a: ZMod n) : (n: ℤ) • a = 0 := by
   simp [zsmul_eq_intCast_mul, intCast_ofNat]
+
+@[simp]
+def natCast_eq_natCast (a b: ℕ) [h: NeZero n] :
+  a % n = b % n ->
+  (a: ZMod n) = (b: ZMod n) := by
+  intro g
+  apply (zmod_succ_eqv_fin n).inj
+  show zmod_succ_eqv_fin _ _ = zmod_succ_eqv_fin _ _
+  match n, h with
+  | n + 1, h =>
+  rw [resp_natCast, resp_natCast]
+  apply Fin.val_inj.mp
+  assumption
+
+def homOfDvd (n m: ℕ) (h: m ∣ n) : ZMod n →+* ZMod m where
+  toFun n := toInt n
+  resp_zero := by
+    dsimp
+    cases n <;> unfold toInt <;> dsimp
+    rw [resp_zero, intCast_zero]
+    rw [resp_zero]
+    rfl
+  resp_one := by
+    cases n <;> unfold toInt <;> dsimp
+    rw [resp_one, intCast_one]
+    rw [resp_one]
+    rename_i n
+    cases n
+    cases Nat.dvd_one.mp h
+    decide
+    rename_i n
+    rfl
+  resp_add := by
+    intro x y
+    dsimp
+    cases n <;> unfold toInt <;> dsimp
+    rw [resp_add, intCast_add]
+    rw [resp_add]
+    rename_i n
+    generalize zmod_succ_eqv_fin (n + 1) x = x'
+    generalize zmod_succ_eqv_fin (n + 1) y = y'
+    rw [intCast_ofNat, intCast_ofNat, intCast_ofNat, ←natCast_add]
+    have : NeZero m := {
+      out := by
+        rintro rfl
+        have := Nat.zero_dvd.mp h
+        contradiction
+    }
+    apply natCast_eq_natCast
+    clear x y
+    rw [Fin.add_def]
+    dsimp
+    rw [Nat.mod_mod_of_dvd]
+    assumption
+  resp_mul := by
+    intro x y
+    dsimp
+    cases n <;> unfold toInt <;> dsimp
+    rw [resp_mul, intCast_mul]
+    rw [resp_mul]
+    rename_i n
+    generalize zmod_succ_eqv_fin (n + 1) x = x'
+    generalize zmod_succ_eqv_fin (n + 1) y = y'
+    rw [intCast_ofNat, intCast_ofNat, intCast_ofNat, ←natCast_mul]
+    have : NeZero m := {
+      out := by
+        rintro rfl
+        have := Nat.zero_dvd.mp h
+        contradiction
+    }
+    apply natCast_eq_natCast
+    clear x y
+    rw [Fin.mul_def]
+    dsimp
+    rw [Nat.mod_mod_of_dvd]
+    assumption
 
 end ZMod
