@@ -123,15 +123,10 @@ instance : IsCommMagma (Fin (n + 1)) where
     show Fin.mk _ _ = Fin.mk _ _
     simp [Nat.mul_comm]
 
-def Fin.char_eq : char (Fin (n + 1)) = n + 1 := by
+instance : HasChar (Fin (n + 1)) (n + 1) := by
   cases n
-  · dsimp
-    apply char_eq_of
-    intro
-    apply Subsingleton.allEq
-    intro m h
-    apply Nat.one_dvd
-  apply char_eq_of_natCast_eq_zero
+  simp; infer_instance
+  apply HasChar.of_natCast_eq_zero
   show Fin.mk _ _ = Fin.mk _ _
   simp
   intro m meq

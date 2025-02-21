@@ -6,6 +6,8 @@ import Math.Order.Linear
 import Math.Order.Fin
 import Math.Order.OrderIso.Linear
 import Math.Algebra.AddGroupWithOne.Hom
+import Math.Algebra.Semiring.Char
+import Math.Algebra.Ring.Basic
 
 -- the multiplies of n, as an ideal over the integers
 def Int.multiples (n: ℕ) : Ideal ℤ where
@@ -317,5 +319,10 @@ def homOfDvd (n m: ℕ) (h: m ∣ n) : ZMod n →+* ZMod m where
     dsimp
     rw [Nat.mod_mod_of_dvd]
     assumption
+
+instance : HasChar (ZMod n) n :=
+  match n with
+  | 0 => HasChar.of_ring_equiv zmod_zero_eqv_int
+  | _ + 1 => HasChar.of_ring_equiv (zmod_succ_eqv_fin _)
 
 end ZMod
