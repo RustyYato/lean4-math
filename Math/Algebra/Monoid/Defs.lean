@@ -31,10 +31,10 @@ class IsMonoid (α: Type*) [MonoidOps α] extends IsSemigroup α, IsMulOneClass 
 
 variable [AddMonoidOps α] [MonoidOps α] [IsAddMonoid α] [IsMonoid α]
 
-def zero_nsmul (a: α) : 0 • a = 0 := IsAddMonoid.zero_nsmul _
+@[simp] def zero_nsmul (a: α) : 0 • a = 0 := IsAddMonoid.zero_nsmul _
 def succ_nsmul (n: ℕ) (a: α) : (n + 1) • a = n • a + a := IsAddMonoid.succ_nsmul _ _
 
-def npow_zero (a: α) : a ^ 0 = 1 := IsMonoid.npow_zero _
+@[simp] def npow_zero (a: α) : a ^ 0 = 1 := IsMonoid.npow_zero _
 def npow_succ (n: ℕ) (a: α) : a ^ (n + 1) = a ^ n * a := IsMonoid.npow_succ _ _
 
 instance : IsAddMonoid (AddOfMul α) where
@@ -45,14 +45,14 @@ instance : IsMonoid (MulOfAdd α) where
   npow_succ := succ_nsmul (α := α)
 instance : IsAddMonoid αᵐᵒᵖ := inferInstanceAs (IsAddMonoid α)
 
-def nsmul_zero (a: ℕ) : a • (0: α) = 0 := by
+@[simp] def nsmul_zero (a: ℕ) : a • (0: α) = 0 := by
   induction a with
   | zero => rw [zero_nsmul]
   | succ a ih => rw [succ_nsmul, ih, add_zero]
-def one_npow (a: ℕ) : (1: α) ^ a = 1 := nsmul_zero (α := AddOfMul α) _
+@[simp] def one_npow (a: ℕ) : (1: α) ^ a = 1 := nsmul_zero (α := AddOfMul α) _
 
-def one_nsmul (a: α) : 1 • a = a := by rw [succ_nsmul, zero_nsmul, zero_add]
-def npow_one (a: α) : a ^ 1 = a := one_nsmul (α := AddOfMul α) _
+@[simp] def one_nsmul (a: α) : 1 • a = a := by rw [succ_nsmul, zero_nsmul, zero_add]
+@[simp] def npow_one (a: α) : a ^ 1 = a := one_nsmul (α := AddOfMul α) _
 
 def nsmul_eq_nsmulRec (n: ℕ) (a: α) : n • a = nsmulRec n a := by
   induction n with

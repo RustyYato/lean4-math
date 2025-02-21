@@ -124,12 +124,12 @@ class IsMulZeroClass (α: Type*) [Mul α] [Zero α]: Prop where
   zero_mul (a: α): 0 * a = 0
   mul_zero (a: α): a * 0 = 0
 
-def zero_add [IsAddZeroClass α] (a: α): 0 + a = a := IsAddZeroClass.zero_add a
-def add_zero [IsAddZeroClass α] (a: α): a + 0 = a := IsAddZeroClass.add_zero a
-def zero_mul [IsMulZeroClass α] (a: α): 0 * a = 0 := IsMulZeroClass.zero_mul a
-def mul_zero [IsMulZeroClass α] (a: α): a * 0 = 0 := IsMulZeroClass.mul_zero a
-def one_mul [IsMulOneClass α] (a: α): 1 * a = a := IsMulOneClass.one_mul a
-def mul_one [IsMulOneClass α] (a: α): a * 1 = a := IsMulOneClass.mul_one a
+@[simp] def zero_add [IsAddZeroClass α] (a: α): 0 + a = a := IsAddZeroClass.zero_add a
+@[simp] def add_zero [IsAddZeroClass α] (a: α): a + 0 = a := IsAddZeroClass.add_zero a
+@[simp] def zero_mul [IsMulZeroClass α] (a: α): 0 * a = 0 := IsMulZeroClass.zero_mul a
+@[simp] def mul_zero [IsMulZeroClass α] (a: α): a * 0 = 0 := IsMulZeroClass.mul_zero a
+@[simp] def one_mul [IsMulOneClass α] (a: α): 1 * a = a := IsMulOneClass.one_mul a
+@[simp] def mul_one [IsMulOneClass α] (a: α): a * 1 = a := IsMulOneClass.mul_one a
 
 instance [Mul α] [One α] [IsMulOneClass α] : IsAddZeroClass (AddOfMul α) where
   add_zero := mul_one (α := α)

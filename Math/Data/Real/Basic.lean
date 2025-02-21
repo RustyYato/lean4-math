@@ -736,7 +736,6 @@ def non_zero_of_ofNat (n: Nat) : (OfNat.ofNat (α := ℝ) n.succ) ≠ 0 := by
   have ⟨δ, prf⟩ := (Quotient.exact h) (1 /? 2) (by decide)
   have : ‖(n.succ: ℚ) - 0‖ < 1 /? 2 := prf _ _ (le_refl _) (le_refl _)
   simp at this
-  rw [sub_zero] at this
   rw [Rat.abs_of_nonneg] at this
   have two_eq : (2: ℚ) = (2: ℕ) := rfl
   rw [Rat.lt_div_iff_mul_lt_of_pos, two_eq, ←natCast_mul] at this

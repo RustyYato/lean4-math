@@ -113,8 +113,8 @@ class IsNegZeroClass (α: Type*) [Zero α] [Neg α]: Prop where
 class IsInvOneClass (α: Type*) [One α] [Inv α]: Prop where
   inv_one: (1: α)⁻¹ = 1
 
-def neg_zero [Neg α] [Zero α] [IsNegZeroClass α]: -(0: α) = 0 := IsNegZeroClass.neg_zero
-def inv_one [Inv α] [One α] [IsInvOneClass α]: (1: α)⁻¹ = 1 := IsInvOneClass.inv_one
+@[simp] def neg_zero [Neg α] [Zero α] [IsNegZeroClass α]: -(0: α) = 0 := IsNegZeroClass.neg_zero
+@[simp] def inv_one [Inv α] [One α] [IsInvOneClass α]: (1: α)⁻¹ = 1 := IsInvOneClass.inv_one
 
 instance [One α] [Inv α] [IsInvOneClass α] : IsNegZeroClass (AddOfMul α) where
   neg_zero := inv_one (α := α)
@@ -125,32 +125,32 @@ instance [Zero α] [Neg α] [IsNegZeroClass α] : IsNegZeroClass αᵐᵒᵖ :=
 instance [One α] [Inv α] [IsInvOneClass α] : IsInvOneClass αᵐᵒᵖ :=
   inferInstanceAs (IsInvOneClass α)
 
-def zsmul_zero [IsSubNegMonoid α] [IsNegZeroClass α] (a: ℤ) : a • (0: α) = 0 := by
+@[simp] def zsmul_zero [IsSubNegMonoid α] [IsNegZeroClass α] (a: ℤ) : a • (0: α) = 0 := by
   cases a
   erw [zsmul_ofNat, nsmul_zero]
   rw [zsmul_negSucc, nsmul_zero, neg_zero]
 
-def zero_zsmul [IsSubNegMonoid α] (a: α) : (0: ℤ) • a = 0 := by
+@[simp] def zero_zsmul [IsSubNegMonoid α] (a: α) : (0: ℤ) • a = 0 := by
   have : 0 = Int.ofNat 0 := rfl
   erw [this, zsmul_ofNat, zero_nsmul]
 
-def one_zsmul [IsSubNegMonoid α] (a: α) : (1: ℤ) • a = a := by
+@[simp] def one_zsmul [IsSubNegMonoid α] (a: α) : (1: ℤ) • a = a := by
   have : 1 = Int.ofNat 1 := rfl
   erw [this, zsmul_ofNat, one_nsmul]
 
-def one_zpow [IsDivInvMonoid α] [IsInvOneClass α] (a: ℤ) : (1: α) ^ a = 1 :=
+@[simp] def one_zpow [IsDivInvMonoid α] [IsInvOneClass α] (a: ℤ) : (1: α) ^ a = 1 :=
   zsmul_zero (α := AddOfMul α) _
 
-def zpow_zero [IsDivInvMonoid α] (a: α) : a ^ (0: ℤ) = 1 :=
+@[simp] def zpow_zero [IsDivInvMonoid α] (a: α) : a ^ (0: ℤ) = 1 :=
   zero_zsmul (α := AddOfMul α) _
 
-def zpow_one [IsDivInvMonoid α] (a: α) : a ^ (1: ℤ) = a :=
+@[simp] def zpow_one [IsDivInvMonoid α] (a: α) : a ^ (1: ℤ) = a :=
   one_zsmul (α := AddOfMul α) _
 
-def sub_zero [IsSubNegMonoid α] [IsNegZeroClass α] (a: α): a - 0 = a := by
+@[simp] def sub_zero [IsSubNegMonoid α] [IsNegZeroClass α] (a: α): a - 0 = a := by
   rw [sub_eq_add_neg, neg_zero, add_zero]
 
-def div_one [IsDivInvMonoid α] [IsInvOneClass α] (a: α): a / 1 = a :=
+@[simp] def div_one [IsDivInvMonoid α] [IsInvOneClass α] (a: α): a / 1 = a :=
   sub_zero (α := AddOfMul α) _
 
 end DivInvMonoid
