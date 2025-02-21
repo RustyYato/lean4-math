@@ -24,9 +24,12 @@ instance [RingOps R] [IsRing R] : IsAlgebra Int R where
     rw [←intCast_mul_eq_zsmul]
     rfl
 
-instance : HasChar Int 0 := by
-  apply HasChar.of_natCast_eq_zero
-  rfl
-  intro m h
-  cases h
-  apply Nat.dvd_refl
+def ofNatHom : ℕ ↪+* ℤ where
+  toFun := algebraMap
+  resp_zero := resp_zero _
+  resp_one := resp_one _
+  resp_add := resp_add _
+  resp_mul := resp_mul _
+  inj _ _ := Int.ofNat.inj
+
+instance : HasChar Int 0 := HasChar.of_ring_emb ofNatHom
