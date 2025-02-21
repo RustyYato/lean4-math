@@ -694,6 +694,32 @@ instance : IsCommMagma ℝ where
 
 instance : IsSemiring ℝ := inferInstance
 
+def ofRatHom : ℚ ↪+* ℝ where
+  toFun := ofRat
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
+  inj := by
+    suffices ∀a b: ℚ, ofRat a = ofRat b -> ¬a < b by
+      intro a b eq
+      apply Relation.eq_of_not_lt_or_gt (· < ·)
+      apply this
+      assumption
+      apply this; symm
+      assumption
+    intro a b eq h
+    have ⟨k, spec⟩ := Quotient.exact eq (b - a) ?_
+    have : ‖a - b‖ < b - a := spec k k (le_refl _) (le_refl _)
+    rw [Rat.abs_def, if_neg, neg_sub] at this
+    exact lt_irrefl this
+    rw [not_le, ←Rat.lt_add_iff_sub_lt, zero_add]
+    assumption
+    rw [←Rat.add_lt_iff_lt_sub, zero_add]
+    assumption
+
+instance : HasChar ℝ 0 := HasChar.of_ring_emb ofRatHom
+
 def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
   induction a, b, k using ind₃ with | mk a b k =>
   apply Iff.intro

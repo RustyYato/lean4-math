@@ -5,6 +5,8 @@ import Math.Ops.Abs
 import Math.Logic.Nontrivial
 import Math.Relation.Basic
 import Math.Algebra.Field.Defs
+import Math.Algebra.Semiring.Char
+import Math.Algebra.Ring.Basic
 
 namespace Rat
 
@@ -565,6 +567,20 @@ instance : IsField ℚ where
   div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
+
+def ofIntHom : ℤ ↪+* ℚ where
+  toFun := algebraMap
+  resp_zero := resp_zero _
+  resp_one := resp_one _
+  resp_add := resp_add _
+  resp_mul := resp_mul _
+  inj := by
+    intro x y eq
+    have : _ = _ := Quotient.exact eq
+    erw [mul_one, mul_one] at this
+    assumption
+
+instance : HasChar ℚ 0 := HasChar.of_ring_emb ofIntHom
 
 def add_half (a: ℚ) : a = a /? 2 + a /? 2 := by
   rw [←two_mul, div?_eq_mul_inv?, mul_comm, mul_assoc, inv?_mul_cancel, mul_one]

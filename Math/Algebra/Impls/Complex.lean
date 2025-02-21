@@ -4,11 +4,14 @@ namespace Complex
 
 attribute [local simp] add_zero zero_add mul_zero zero_mul one_mul mul_one sub_zero neg_add_rev mul_add add_mul
 
-instance : IsField ℂ where
-  zero_ne_one := by
+instance : IsNontrivial ℂ where
+  exists_ne := by
+    refine ⟨0, 1, ?_⟩
     intro h
     obtain ⟨h, _⟩ := Complex.mk.inj h
     exact zero_ne_one _ h
+
+instance : IsField ℂ where
   add_comm _ _ := by ext <;> apply add_comm
   add_assoc _ _ _ := by ext <;> apply add_assoc
   mul_comm := by
@@ -77,5 +80,19 @@ instance : IsField ℂ where
   intCast_negSucc _ := rfl
   div?_eq_mul_inv? _ _ _ := rfl
   ofNat_eq_natCast _ := rfl
+
+def ofRealHom : ℝ ↪+* ℂ where
+  toFun a := ⟨a, 0⟩
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := by
+    intro a b
+    ext <;> simp
+  inj := by
+    intro a b eq
+    exact (Complex.mk.inj eq).left
+
+instance : HasChar ℂ 0 := HasChar.of_ring_emb ofRealHom
 
 end Complex

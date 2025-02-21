@@ -21,6 +21,10 @@ def char_eq_of_natCast_eq_zero [SemiringOps α] [IsSemiring α] (n: Nat) :
   have := HasChar.of_natCast_eq_zero n h g
   apply HasChar.eq α (HasChar.char α) this
 
+def HasChar.natCast_eq_zero [SemiringOps α] [IsSemiring α] [HasChar α n]:
+  (n: α) = 0 := by
+  rw [natCast_eq_nsmul_one, HasChar.char_spec]
+
 def HasChar.dvd_of_ring_hom
   [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
   [HasChar α n] [HasChar β m]
@@ -38,21 +42,24 @@ def HasChar.eq_of_ring_equiv
   exact dvd_of_ring_hom eqv.symm.toHom
   exact dvd_of_ring_hom eqv.toHom
 
+def HasChar.of_ring_emb
+  [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
+  [HasChar α n]
+  (emb: α ↪+* β) : HasChar β n := by
+  apply HasChar.of_natCast_eq_zero
+  · rw [←resp_zero emb, ←HasChar.natCast_eq_zero, resp_natCast]
+  · intro m h
+    apply HasChar.char_dvd α
+    intro x
+    apply emb.inj
+    show emb _ = emb _
+    rw [resp_zero, resp_nsmul, nsmul_eq_natCast_mul, h, zero_mul]
+
 def HasChar.of_ring_equiv
   [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
   [HasChar β n]
   (eqv: α ≃+* β) : HasChar α n := by
-  apply HasChar.of_natCast_eq_zero
-  apply eqv.inj
-  show eqv _ = eqv 0
-  rw [resp_natCast, resp_zero, natCast_eq_nsmul_one,
-    HasChar.char_spec]
-  intro m h
-  apply HasChar.char_dvd β
-  intro x
-  apply eqv.symm.inj
-  show eqv.symm _ = eqv.symm _
-  rw [resp_zero, resp_nsmul, nsmul_eq_natCast_mul, h, zero_mul]
+  apply HasChar.of_ring_emb eqv.symm.toEmbedding
 
 def char_dvd_char (α β: Type*)
    [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
