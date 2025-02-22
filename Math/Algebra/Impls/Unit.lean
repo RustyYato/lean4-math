@@ -58,3 +58,9 @@ instance Unit.subsingleton_of_module
       intro a b; rw [this a, this b]
     intro a
     rw [←zero_smul (R := Unit) a, one_smul]
+
+example [Add α] [Zero α] [IsAddZeroClass α] : Unit ↪+ α where
+  toFun _ := 0
+  inj _ _ _ := rfl
+  resp_zero := rfl
+  resp_add := (add_zero _).symm

@@ -469,9 +469,7 @@ def Fin.sum_mul [Add α] [Zero α] [Mul α] [IsMulZeroClass α] [IsRightDistrib 
 def Fin.sum_pop [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α]
   (f: Fin (n + 1) -> α) : Fin.sum f = Fin.sum (fun x: Fin n => f x.castSucc) + f (Fin.last _) := by
   induction n with
-  | zero =>
-    simp [sum]
-    rw [zero_add, add_zero]
+  | zero => simp [sum]
   | succ n ih =>
     rw [sum, ih, sum, ←add_assoc]
     rfl

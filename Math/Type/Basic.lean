@@ -98,6 +98,9 @@ instance : IsEquivLike (α ≃ β) α β where
   rightInv e := e.rightInv
   inj a b h g := by cases a; cases b; congr
 
+@[ext]
+def Equiv.ext (a b: α ≃ β) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
+
 @[refl]
 def Embedding.refl : α ↪ α where
   toFun := id
@@ -694,48 +697,66 @@ def Option.swapULift.{u} : ULift.{u} (Option α) ≃ Option (ULift.{u} α) where
   leftInv := by intro ⟨x⟩; cases x <;> rfl
   rightInv := by intro x; cases x <;> rfl
 
-def Equiv.swap [DecidableEq α] (a b: α) : α ≃ α where
+-- maps a = b, and preserves as much of the other structure as possible
+def Equiv.set [DecidableEq α] (h: α ≃ β) (a: α) (b: β) : α ≃ β where
   toFun x :=
+    have := h.symm.toEmbedding.DecidableEq
     if x = a then b
-    else if x = b then a
-    else x
+    else if h x = b then
+      h a
+    else
+      h x
   invFun x :=
-    if x = a then b
-    else if x = b then a
-    else x
+    have := h.symm.toEmbedding.DecidableEq
+    if x = b then a
+    else if h.symm x = a then
+      h.symm b
+    else
+      h.symm x
   leftInv := by
     intro x
     dsimp
-    split; rw [if_pos rfl]
-    split
-    subst a; assumption
-    symm; assumption
-    split
-    rw [if_pos rfl]; symm; assumption
-    rfl
+    by_cases h₀:x = a
+    rw [if_pos h₀, if_pos rfl, h₀]
+    rw [if_neg h₀]
+    by_cases h₁:h x = b
+    rw [if_pos h₁, if_neg, if_pos, ←h₁, coe_symm]
+    rw [coe_symm]
+    rw [←h₁, Function.Injective.eq_iff h.inj]
+    apply Ne.symm; assumption
+    rw [if_neg h₁, if_neg h₁, if_neg, coe_symm]
+    rw [coe_symm]; assumption
   rightInv := by
     intro x
     dsimp
-    split; rw [if_pos rfl]
-    split
-    subst a; assumption
-    symm; assumption
-    split
-    rw [if_pos rfl]; symm; assumption
-    rfl
+    by_cases h₀:x = b
+    rw [if_pos h₀, if_pos rfl, h₀]
+    rw [if_neg h₀]
+    by_cases h₁:h.symm x = a
+    rw [if_pos h₁, if_neg, if_pos, ←h₁, symm_coe]
+    rw [symm_coe]
+    rw [←h₁, Function.Injective.eq_iff h.symm.inj]
+    apply Ne.symm; assumption
+    rw [if_neg h₁, if_neg h₁, if_neg, symm_coe]
+    rw [symm_coe]; assumption
+
+def Equiv.swap [DecidableEq α] (a b: α) : α ≃ α :=
+  Equiv.set Equiv.refl a b
 
 def Equiv.swap_symm [DecidableEq α] (a b: α) :
   (Equiv.swap a b).symm = Equiv.swap b a := by
-  simp [swap, symm]
+  simp only [swap, symm, set]
   ext x
-  split
-  subst x
-  split
-  subst b; rfl
-  rfl
-  split
-  rfl
-  rfl
+  simp [DFunLike.coe, IsEquivLike.coe, Equiv.refl]
+
+def Equiv.set_spec [DecidableEq α] (h: α ≃ β) (a: α) (b: β) :
+  h.set a b a = b := by
+  show (h.set a b).toFun a = b
+  unfold set
+  simp
+
+def Equiv.swap_spec [DecidableEq α] (a b: α):
+  Equiv.swap a b a = b := Equiv.set_spec _ _ _
 
 def Nat.not_between_succ (n m: Nat) : n < m -> m < n + 1 -> False := by
   intro h g
@@ -753,14 +774,12 @@ def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
     exact (h 0).elim0
     congr; rename_i m
     apply ih
-    let h' := h.trans (Equiv.swap (Fin.last _) (h (Fin.last _)))
+    let h' := h.trans (Equiv.swap (h (Fin.last _)) (Fin.last _))
     have hspec : h' (Fin.last _) = Fin.last _ := by
-      show ((Equiv.swap (Fin.last _) (h (Fin.last _)))) (h <| Fin.last _) = _
-      simp [Equiv.swap, DFunLike.coe, IsEquivLike.coe]
+      show ((Equiv.swap (h (Fin.last _)) (Fin.last _))) (h <| Fin.last _) = _
+      rw [Equiv.swap_spec]
     have hspec' : h'.symm (Fin.last _) = Fin.last _ := by
-      show h.symm (((Equiv.swap (Fin.last _) (h (Fin.last _)))).symm <| Fin.last _) = _
-      simp [Equiv.swap, DFunLike.coe, IsEquivLike.coe, Equiv.symm]
-      apply h.coe_symm
+      rw [←hspec, Equiv.coe_symm]
     apply Equiv.mk _ _ _ _
     · intro x
       refine ⟨h' x.castSucc, ?_⟩

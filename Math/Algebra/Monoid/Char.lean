@@ -1,4 +1,6 @@
 import Math.Algebra.Monoid.Defs
+import Math.Algebra.Monoid.Hom
+import Math.Type.Basic
 
 open Classical
 
@@ -15,6 +17,11 @@ def HasChar.char_spec [h: HasChar α n] : ∀a: α, n • a = 0 := by
   intro m
   apply (h.spec _).mpr
   apply Nat.dvd_refl
+
+def HasChar.char_spec' [h: HasChar α n] (m: ℕ) : ∀a: α, (n * m) • a = 0 := by
+  intro m
+  apply (h.spec _).mpr
+  apply Nat.dvd_mul_right
 
 def HasChar.eq (h: HasChar α n) (g: HasChar α m) : n = m := by
   apply Nat.dvd_antisymm
@@ -115,3 +122,25 @@ instance [Subsingleton α] : HasChar α 1 := by
   apply HasChar.of_spec _ _ _ (fun _ _ => Nat.one_dvd _)
   intro x
   apply Subsingleton.allEq
+
+-- this is a false statement
+-- def HasChar.of_emb
+--   [AddMonoidOps β] [IsAddMonoid β]
+--   [HasChar α n]
+--   (emb: α ↪+ β) : HasChar β n := sorry
+
+def HasChar.of_eqv
+  [AddMonoidOps β] [IsAddMonoid β]
+  [HasChar α n]
+  (eqv: α ≃+ β) : HasChar β n := by
+  apply HasChar.of_spec
+  intro x
+  apply eqv.symm.inj
+  show eqv.symm _ = eqv.symm _
+  rw [resp_nsmul, HasChar.char_spec, resp_zero]
+  intro m h
+  apply HasChar.char_dvd α
+  intro a
+  apply eqv.inj
+  show eqv _ = eqv _
+  rw [resp_nsmul, h, resp_zero]
