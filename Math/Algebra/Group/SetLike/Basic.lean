@@ -1,6 +1,7 @@
 import Math.Algebra.Group.SetLike.Defs
 import Math.Algebra.Monoid.SetLike.Basic
 import Math.Algebra.Group.Defs
+import Math.Algebra.Group.Hom
 
 variable [SetLike S α]
 
@@ -111,3 +112,23 @@ instance : IsAddGroup s where
 
 instance (s: SubGroup α) : IsGroup s := inferInstance
 instance (s: SubAddGroup α) : IsAddGroup s := inferInstance
+
+def SubGroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : SubGroup α where
+  carrier := Set.preimage {1} f
+  mem_one' := resp_one _
+  mem_inv' := by
+    intro _ ha
+    rw [Set.mem_preimage, resp_inv, ha, inv_one]; rfl
+  mem_mul' := by
+    intro a b ha hb
+    rw [Set.mem_preimage, resp_mul, ha, hb, one_mul]; rfl
+
+def SubAddGroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : SubAddGroup α where
+  carrier := Set.preimage {0} f
+  mem_zero' := resp_zero _
+  mem_neg' := by
+    intro _ ha
+    rw [Set.mem_preimage, resp_neg, ha, neg_zero]; rfl
+  mem_add' := by
+    intro a b ha hb
+    rw [Set.mem_preimage, resp_add, ha, hb, zero_add]; rfl
