@@ -558,18 +558,6 @@ def RingEquiv.toHom (h: α ≃+* β) : α →+* β where
   resp_add := h.resp_add
   resp_mul := h.resp_mul
 
--- def GroupEquiv.toEmbedding (h: α ≃* β) : α ↪* β where
---   toEmbedding := h.toEquiv.toEmbedding
---   resp_one := h.resp_one
---   resp_mul := h.resp_mul
-
--- def RingEquiv.toEmbedding (h: α ≃+* β) : α ↪+* β where
---   toEmbedding := h.toEquiv.toEmbedding
---   resp_zero := h.resp_zero
---   resp_one := h.resp_one
---   resp_add := h.resp_add
---   resp_mul := h.resp_mul
-
 def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) :
   h.symm (h x) = x := _root_.Equiv.coe_symm _ _
 def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) :
@@ -641,3 +629,99 @@ def GroupHom.toMulOpp (f: α →* β) (f_img_comm: ∀a b, f a * f b = f b * f a
 def RingHom.toMulOpp (f: α →+* β) (f_img_comm: ∀a b, f a * f b = f b * f a) : αᵐᵒᵖ →+* β := {
   f.toAddGroupHom, f.toGroupHom.toMulOpp f_img_comm with
 }
+
+def AddGroupEmbedding.inj (h: α ↪+ β) : Function.Injective h := Embedding.inj h.toEmbedding
+def GroupEmbedding.inj (h: α ↪* β) : Function.Injective h := Embedding.inj h.toEmbedding
+def RingEmbedding.inj (h: α ↪+* β) : Function.Injective h := Embedding.inj h.toEmbedding
+
+def AddGroupEquiv.inj (h: α ≃+ β) : Function.Injective h := Equiv.inj h.toEquiv
+def GroupEquiv.inj (h: α ≃* β) : Function.Injective h := Equiv.inj h.toEquiv
+def RingEquiv.inj (h: α ≃+* β) : Function.Injective h := Equiv.inj h.toEquiv
+
+instance : Coe (α ↪+ β) (α →+ β) where
+  coe h := {
+    toFun := h
+    resp_zero := resp_zero _
+    resp_add := resp_add _
+  }
+instance : Coe (α ≃+ β) (α ↪+ β) where
+  coe h := {
+    toFun := h
+    inj' := h.inj
+    resp_zero := resp_zero _
+    resp_add := resp_add _
+  }
+instance : Coe (α ↪* β) (α →* β) where
+  coe h := {
+    toFun := h
+    resp_one := resp_one _
+    resp_mul := resp_mul _
+  }
+instance : Coe (α ≃* β) (α ↪* β) where
+  coe h := {
+    toFun := h
+    inj' := h.inj
+    resp_one := resp_one _
+    resp_mul := resp_mul _
+  }
+instance : Coe (α ↪+* β) (α →+* β) where
+  coe h := {
+    toFun := h
+    resp_zero := resp_zero _
+    resp_add := resp_add _
+    resp_one := resp_one _
+    resp_mul := resp_mul _
+  }
+instance : Coe (α ≃+* β) (α ↪+* β) where
+  coe h := {
+    toFun := h
+    inj' := h.inj
+    resp_zero := resp_zero _
+    resp_add := resp_add _
+    resp_one := resp_one _
+    resp_mul := resp_mul _
+  }
+instance : Coe (α →+* β) (α →+ β) where
+  coe h := {
+    toFun := h
+    resp_zero := resp_zero _
+    resp_add := resp_add _
+  }
+instance : Coe (α ↪+* β) (α ↪+ β) where
+  coe h := {
+    toFun := h
+    inj' := h.inj
+    resp_zero := resp_zero _
+    resp_add := resp_add _
+  }
+instance : Coe (α ≃+* β) (α ≃+ β) where
+  coe h := {
+    toFun := h
+    invFun := h.invFun
+    leftInv := h.leftInv
+    rightInv := h.rightInv
+    resp_zero := resp_zero _
+    resp_add := resp_add _
+  }
+instance : Coe (α →+* β) (α →* β) where
+  coe h := {
+    toFun := h
+    resp_one := resp_one _
+    resp_mul := resp_mul _
+  }
+instance : Coe (α ↪+* β) (α ↪* β) where
+  coe h := {
+    toFun := h
+    inj' := h.inj
+    resp_one := resp_one _
+    resp_mul := resp_mul _
+  }
+instance : Coe (α ≃+* β) (α ≃* β) where
+  coe h := {
+    toFun := h
+    invFun := h.invFun
+    leftInv := h.leftInv
+    rightInv := h.rightInv
+    resp_one := resp_one _
+    resp_mul := resp_mul _
+  }
