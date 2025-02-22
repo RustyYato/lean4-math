@@ -58,7 +58,7 @@ instance : LT Ordinal where
 
 def embedZfSet : @RelEmbedding Ordinal ZfSet (· < ·) (· ∈ ·) where
   toFun x := x.set
-  inj := by
+  inj' := by
     intro x y eq; cases x; cases y; congr
   resp_rel := Iff.rfl
 

@@ -180,7 +180,7 @@ def orderIsoCongr {_: LE α} {_: LE β} (h: α ≃o β) : Opposite α ≃o Oppos
 
 def orderEmbeddingCongr {_: LE α} {_: LE β} (h: α ↪o β) : Opposite α ↪o Opposite β where
   toFun := h
-  inj := h.inj
+  inj' := h.inj
   resp_rel := h.resp_rel
 
 end Opposite
@@ -205,7 +205,7 @@ instance [LE β] : LT (α →o β) where
 
 def Embedding.oemb_fun : (α ↪ β) ↪o (α -> β) where
   toFun := Embedding.toFun
-  inj :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
   resp_rel := Iff.rfl
 
 instance : IsLawfulLT (α ↪ β) where
@@ -223,7 +223,7 @@ instance [IsPartialOrder β] : IsPartialOrder (α ↪ β) :=
 
 def OrderHom.oemb_fun : (α →o β) ↪o (α -> β) where
   toFun := RelHom.toFun
-  inj :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
   resp_rel := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α →o β) :=
@@ -234,7 +234,7 @@ instance [IsPartialOrder β] : IsPartialOrder (α →o β) :=
 
 def OrderEmbedding.oemb_fun : (α ↪o β) ↪o (α ↪ β) where
   toFun := RelEmbedding.toEmbedding
-  inj :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
   resp_rel := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α ↪o β) :=
@@ -247,7 +247,7 @@ def OrderEmbedding.toLtRelEmbedding
   [IsPreOrder α] [IsPreOrder β]
   (h: α ↪o β) : @RelEmbedding α β (· < ·) (· < ·) where
   toFun := h
-  inj := h.inj
+  inj' := h.inj
   resp_rel := by
     intro x y; dsimp
     rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, h.resp_le, h.resp_le]

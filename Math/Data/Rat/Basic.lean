@@ -574,7 +574,7 @@ def ofIntHom : ℤ ↪+* ℚ where
   resp_one := resp_one _
   resp_add := resp_add _
   resp_mul := resp_mul _
-  inj := by
+  inj' := by
     intro x y eq
     have : _ = _ := Quotient.exact eq
     erw [mul_one, mul_one] at this

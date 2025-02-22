@@ -434,7 +434,7 @@ def Pre.minType (a b: Pre) := { x: a.ty × b.ty // Ordinal.typein a.rel x.fst = 
 def Pre.minTypeRelEmbed : (fun x y: Pre.minType a b => a.rel x.val.fst y.val.fst) ↪r a.rel where
   toFun x := x.val.fst
   resp_rel := Iff.rfl
-  inj := by
+  inj' := by
     intro ⟨⟨x₀, x₁⟩, xordeq⟩ ⟨⟨y₀, y₁⟩, yordeq⟩ eq
     dsimp at eq
     cases eq
@@ -2262,7 +2262,7 @@ def mk_lift (x: Pre.{u}) : ⟦Pre.lift.{u, max u v} x⟧ = Ordinal.lift.{u, max 
 noncomputable
 def Pre.ord_is_minimal.{u,v} (o: Pre.{max u v}) (h: ∀x: Pre.{u}, x.rel ≼i o.rel): Pre.ord.{u}.rel ≼i o.rel where
   toFun x := Classical.choose (Pre.ord_min_helper o h x.out)
-  inj := by
+  inj' := by
     intro x y eq
     dsimp at eq
     have ⟨hx⟩ := Classical.choose_spec (Pre.ord_min_helper o h x.out)

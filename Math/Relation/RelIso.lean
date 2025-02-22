@@ -38,7 +38,7 @@ def RelEmbedding.toRelHom (h: r ↪r s) : r →r s where
 def RelIso.toRelEmbedding (h: r ≃r s) : r ↪r s where
   toFun := h.toFun
   resp_rel := h.resp_rel
-  inj := h.toEquiv.toFun_inj
+  inj' := h.toEquiv.toFun_inj
 
 def RelIso.toRelHom (h: r ≃r s) : r →r s := h.toRelEmbedding.toRelHom
 

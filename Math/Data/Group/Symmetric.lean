@@ -37,7 +37,7 @@ private def to_perm {g: Group} (a: g.ty) : g.ty ≃ g.ty where
 
 def Permuatation.sub (g: Group) : SubgroupEmbedding g (Permuatation g.ty) where
   toFun a := to_perm a
-  inj := by
+  inj' := by
     unfold to_perm
     intro a b eq
     dsimp at eq

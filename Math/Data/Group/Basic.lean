@@ -451,7 +451,7 @@ def nsub_eqv {a b k: Group} : a ≈ b -> k ◀ a -> k ◀ b := by
 -- the trivial group is a subgroup of every group
 def NormalSubgroupEmbedding.one_sub (a: Group) : NormalSubgroupEmbedding 1 a where
   toFun _ := 1
-  inj := by
+  inj' := by
     intro _ _ _
     apply Subsingleton.allEq
   resp_inv' := by

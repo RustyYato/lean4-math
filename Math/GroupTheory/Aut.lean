@@ -27,7 +27,7 @@ def Aut : Group (G ≃* G) := by
 
 def embedPerm : Aut G ↪* Perm α where
   toFun x := x.toEquiv
-  inj := by intro a b h; cases a; congr
+  inj' := by intro a b h; cases a; congr
   resp_one := rfl
   resp_mul := rfl
 

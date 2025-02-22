@@ -161,7 +161,7 @@ def ord_is_min' (c: Cardinal) : ∀o < c.ord, o.card < c := by
 
 noncomputable def oemb_ord : OrderEmbedding Cardinal Ordinal where
   toFun := ord
-  inj _ _ h := ord_inj h
+  inj' _ _ h := ord_inj h
   resp_rel := by
     intro a b; dsimp
     suffices a < b -> a.ord < b.ord by

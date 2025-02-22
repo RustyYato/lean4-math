@@ -700,7 +700,7 @@ def ofRatHom : ℚ ↪+* ℝ where
   resp_one := rfl
   resp_add := rfl
   resp_mul := rfl
-  inj := by
+  inj' := by
     suffices ∀a b: ℚ, ofRat a = ofRat b -> ¬a < b by
       intro a b eq
       apply Relation.eq_of_not_lt_or_gt (· < ·)

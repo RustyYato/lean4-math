@@ -44,7 +44,7 @@ def IsFinite.ofEmbedding {limit: Nat} (emb: α ↪ Fin limit) : IsFinite α := b
           intro h
           rw [h] at g
           contradiction
-      case inj =>
+      case inj' =>
         intro x y eq
         dsimp at eq
         split at eq <;> split at eq
@@ -215,7 +215,7 @@ instance {α: Sort*} {P Q: α -> Prop} [hp: IsFinite (Subtype P)] [hq: IsFinite 
       exact (peqv ⟨x, g⟩).addNat cardq
     else
       exact (qeqv ⟨x, h.resolve_left g⟩).castLE (Nat.le_add_left _ _)
-  case inj =>
+  case inj' =>
     intro ⟨x, hx⟩ ⟨y, hy⟩ eq
     dsimp at eq
     split at eq <;> split at eq <;> rename_i gx gy

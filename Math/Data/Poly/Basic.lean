@@ -4,6 +4,7 @@ import Math.Data.StdNat.Find
 import Math.Relation.Basic
 import Math.Algebra.Ring.Defs
 import Math.Data.Fin.Basic
+import Math.Algebra.Basic
 
 def Poly.DegreeLe [Zero P] (f: Nat -> P) (bound: Nat) :=
   ∀n > bound, f n = 0

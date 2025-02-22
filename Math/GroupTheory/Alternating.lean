@@ -87,7 +87,7 @@ def EvenPerm (α: Type*) : Group (EvenPermType α) := by
 -- this proves that EvenPerm is a subgroup of Perm (see [`ofEmbed`])
 def embedPerm : EvenPerm α ↪* Perm α where
   toFun x := x.perm
-  inj := by
+  inj' := by
     intro x y eq
     cases x; congr
   resp_mul := rfl

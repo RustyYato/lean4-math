@@ -75,7 +75,7 @@ def IsFinite.sUnion (a: Set (Set α)) [ha: Set.IsFinite a] (hx: ∀x: a, Set.IsF
     refine Sigma.mk ⟨a', ?_⟩ ⟨x, ?_⟩
     exact this.left
     exact this.right
-  case inj =>
+  case inj' =>
     dsimp
     intro x y eq
     dsimp at eq
@@ -105,7 +105,7 @@ def IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, Set.IsFinite x) : Set.IsF
     apply Subtype.mk x.val
     apply x.property
     assumption
-  case inj =>
+  case inj' =>
     intro ⟨x, _⟩ ⟨y, _⟩ h
     simp at h
     cases h
@@ -145,7 +145,7 @@ instance {as: Set α} {f: α -> β} [ha: Set.IsFinite as] : Set.IsFinite (Set.im
     intro ⟨x, xprop⟩
     apply Subtype.mk (Classical.choose xprop)
     exact (Classical.choose_spec xprop).left
-  case inj =>
+  case inj' =>
     intro ⟨x, xprop⟩ ⟨y, yprop⟩ eq
     simp at eq
     have ⟨_, h₀⟩ := Classical.choose_spec xprop
@@ -179,7 +179,7 @@ def IsFinite.ofSubset (s t: Set α) [h: t.IsFinite] (h: s ⊆ t) : s.IsFinite :=
   case toFun =>
     intro x
     exact ⟨x.val, h _ x.property⟩
-  case inj =>
+  case inj' =>
     intro ⟨x, _⟩ ⟨y, _⟩ eq
     cases eq
     congr

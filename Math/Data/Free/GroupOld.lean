@@ -175,7 +175,7 @@ attribute [local instance] Free.Group.setoid
 
 def ι : α ↪ FreeGroup α where
   toFun := mk ∘ .of
-  inj := by
+  inj' := by
     classical
     intro a b eq
     replace eq := Quotient.exact eq

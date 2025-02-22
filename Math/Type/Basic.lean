@@ -65,7 +65,7 @@ def IsEmpty.ofNotNonempty (h: ¬Nonempty α) : IsEmpty α where
 
 structure Embedding (α β: Sort*) where
   toFun: α -> β
-  inj: Function.Injective toFun
+  inj': Function.Injective toFun
 
 infixr:25 " ↪ " => Embedding
 
@@ -82,14 +82,14 @@ def Equiv.invFun_inj (h: α ≃ b) : Function.Injective h.invFun := h.rightInv.I
 
 def Equiv.toEmbedding (h: α ≃ β) : α ↪ β where
   toFun := h.toFun
-  inj := h.toFun_inj
+  inj' := h.toFun_inj
 
 instance : FunLike (α ↪ β) α β where
   coe e := e.toFun
   coe_inj x y h := by cases x; cases y; congr
 
 instance : IsEmbeddingLike (α ↪ β) α β where
-  coe_inj e := e.inj
+  coe_inj e := e.inj'
 
 instance : IsEquivLike (α ≃ β) α β where
   coe e := e.toFun
@@ -98,13 +98,15 @@ instance : IsEquivLike (α ≃ β) α β where
   rightInv e := e.rightInv
   inj a b h g := by cases a; cases b; congr
 
+def Embedding.inj (h: α ↪ β) : Function.Injective h := h.inj'
+
 @[ext]
 def Equiv.ext (a b: α ≃ β) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
 
 @[refl]
 def Embedding.refl : α ↪ α where
   toFun := id
-  inj _ _ := id
+  inj' _ _ := id
 
 @[refl]
 def Equiv.refl : Equiv α α where
@@ -115,7 +117,7 @@ def Equiv.refl : Equiv α α where
 
 def Embedding.trans (h: α ↪ β) (g: β ↪ γ) : α ↪ γ where
   toFun := g ∘ h
-  inj := Function.Injective.comp g.inj h.inj
+  inj' := Function.Injective.comp g.inj h.inj
 
 @[symm]
 def Equiv.symm (h: Equiv α β) : Equiv β α where
@@ -139,7 +141,7 @@ def Equiv.trans_trans {h₀: Equiv α₀ α₁} {h₁: Equiv α₁ α₂} {h₂:
 
 instance [IsEmpty α] : Embedding α β where
   toFun x := elim_empty x
-  inj x := elim_empty x
+  inj' x := elim_empty x
 
 def Equiv.coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
 def Equiv.symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
@@ -197,7 +199,7 @@ def Equiv.ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x =
 
 def Embedding.comp (b: β ↪ γ) (a: α ↪ β) : α ↪ γ where
   toFun := b.toFun ∘ a.toFun
-  inj := Function.Injective.comp b.inj a.inj
+  inj' := Function.Injective.comp b.inj a.inj
 
 def Equiv.toProd (h: a ≃ c) (g: b ≃ d) : a × b ≃ c × d where
   toFun | ⟨x, y⟩ => ⟨h x, g y⟩
@@ -520,7 +522,7 @@ def Equiv.equivSubtype {α β: Type*} : (α ≃ β) ≃ { x: (α -> β) × (β -
 
 def Embedding.congr (emb: α ↪ β) (eqa: α ≃ α₀) (eqb: β ≃ β₀) : α₀ ↪ β₀ where
   toFun := eqb.toFun ∘ emb.toFun ∘ eqa.invFun
-  inj := by
+  inj' := by
     apply Function.Injective.comp
     apply eqb.toFun_inj
     apply Function.Injective.comp
@@ -531,18 +533,18 @@ def Embedding.congr_apply (emb: α ↪ β) (eqa: α ≃ α₀) (eqb: β ≃ β�
 
 def Fin.embedNat : Fin n ↪ Nat where
   toFun := Fin.val
-  inj {_ _} := Fin.val_inj.mp
+  inj' {_ _} := Fin.val_inj.mp
 
 def Fin.embedFin (h: n ≤ m) : Fin n ↪ Fin m where
   toFun x := x.castLE h
-  inj := by
+  inj' := by
     intro ⟨x, _⟩ ⟨y, _⟩ eq
     cases eq
     rfl
 
 def Subtype.embed {P: α -> Prop} : Subtype P ↪ α where
   toFun := Subtype.val
-  inj {a b} eq := by
+  inj' {a b} eq := by
     cases a; cases b
     congr
 
@@ -611,7 +613,7 @@ def Fin.embed_reduce (emb: α ↪ Fin n) (x: Fin n) (h: ∀a, emb a ≠ x) : α 
       intro h
       exact Nat.not_lt_zero x.val (h ▸ x.isLt)
       assumption
-  inj := by
+  inj' := by
     intro a b eq
     dsimp at eq
     split at eq <;> split at eq <;> rename_i g₀ g₁
@@ -651,7 +653,7 @@ def Embedding.ofOptionEmbed (emb: Option α ↪ Option β) : α ↪ β where
       have := emb.inj (h.trans g.symm)
       contradiction
       rfl
-  inj := by
+  inj' := by
     intro x y eq
     dsimp at eq
     split at eq <;> split at eq
@@ -672,7 +674,7 @@ def Embedding.toOptionEmbed (emb: α ↪ β) : Option α ↪ Option β where
   toFun
   | .some x => emb x
   | .none => .none
-  inj := by
+  inj' := by
     intro x y eq
     dsimp at eq
     split at eq <;> split at eq
@@ -689,7 +691,7 @@ def Embedding.DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
 
 def Option.embed : α ↪ Option α where
   toFun := some
-  inj _ _ := Option.some.inj
+  inj' _ _ := Option.some.inj
 
 def Option.swapULift.{u} : ULift.{u} (Option α) ≃ Option (ULift.{u} α) where
   toFun x := x.down.map ULift.up

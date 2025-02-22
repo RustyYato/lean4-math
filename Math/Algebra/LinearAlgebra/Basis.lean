@@ -17,7 +17,7 @@ instance : IsLawfulLT (PreBasis V) where
 
 def orderEmbedSet (V: VectorSpace R A) : (PreBasis V) ↪o Set V.Vector where
   toFun a := a.set
-  inj := by intro a b eq; cases a; congr
+  inj' := by intro a b eq; cases a; congr
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (PreBasis V) :=

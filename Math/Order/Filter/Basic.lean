@@ -144,7 +144,7 @@ namespace Order
 
 def orderEmbSetOp : FilterBase α ↪o (Set α)ᵒᵖ where
   toFun f := f.set
-  inj := FilterBase.set_inj
+  inj' := FilterBase.set_inj
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (FilterBase α) :=

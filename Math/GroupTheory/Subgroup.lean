@@ -88,7 +88,7 @@ def ofEmbed {a: Group α} {b: Group β} (h: a ↪* b) : Subgroup b where
 -- the canonical injection to the subgroup based on the embedding
 def toOfEmbed {a: Group α} {b: Group β} (h: a ↪* b) : a ↪* ofEmbed h where
   toFun x := ⟨h x, Set.mem_range'⟩
-  inj := by
+  inj' := by
     intro x y eq
     exact h.inj (Subtype.mk.inj eq)
   resp_one := by
@@ -199,7 +199,7 @@ instance : IsLawfulLT (Subgroup g) where
 
 def orderEmbedSet : Subgroup g ↪o Set α where
   toFun := Subgroup.set
-  inj := by
+  inj' := by
     intro x y eq
     cases x; cases y; congr
   resp_rel := Iff.rfl

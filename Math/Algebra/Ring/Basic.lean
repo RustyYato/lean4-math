@@ -30,6 +30,6 @@ def ofNatHom : ℕ ↪+* ℤ where
   resp_one := resp_one _
   resp_add := resp_add _
   resp_mul := resp_mul _
-  inj _ _ := Int.ofNat.inj
+  inj' _ _ := Int.ofNat.inj
 
 instance : HasChar Int 0 := HasChar.of_ring_emb ofNatHom

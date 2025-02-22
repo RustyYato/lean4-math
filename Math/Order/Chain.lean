@@ -18,7 +18,7 @@ def Induced.embed (s: Set α) : s.Induced r ↪r r where
 
 def Induced.embedSub {s t: Set α} (h: s ⊆ t) : s.Induced r ↪r t.Induced r where
   toFun x := ⟨x.val, h _ x.property⟩
-  inj := by
+  inj' := by
     intro ⟨x, _⟩ ⟨y, _⟩ eq
     dsimp at eq
     cases eq
@@ -27,7 +27,7 @@ def Induced.embedSub {s t: Set α} (h: s ⊆ t) : s.Induced r ↪r t.Induced r w
 
 def Induced.embedSInter {s: Set α} {t: Set (Set α)} (h: s ∈ t) : (⋂t).Induced r ↪r s.Induced r where
   toFun x := ⟨x.val, Set.mem_sInter.mp x.property _ h⟩
-  inj := by
+  inj' := by
     intro ⟨x, _⟩ ⟨y, _⟩ eq
     dsimp at eq
     cases eq

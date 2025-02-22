@@ -83,7 +83,7 @@ def Fintype.indexOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) whe
 
 def Fintype.embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) where
   toFun := f.indexOf
-  inj := by
+  inj' := by
     intro x y eq
     replace eq := Fin.mk.inj eq
     suffices ∀z, f.all[f.all.indexOf z]? = z by

@@ -186,7 +186,7 @@ def toTrivial (g: Group α) : g →* Trivial where
 
 def ofTrivial (g: Group α) : Trivial ↪* g where
   toFun _ := 1
-  inj { _ _ } _  := rfl
+  inj' { _ _ } _  := rfl
   resp_mul := by
     intro x y
     rw [mul_one]

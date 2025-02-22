@@ -89,7 +89,7 @@ def ofRealHom : ℝ ↪+* ℂ where
   resp_mul := by
     intro a b
     ext <;> simp
-  inj := by
+  inj' := by
     intro a b eq
     exact (Complex.mk.inj eq).left
 
