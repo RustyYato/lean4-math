@@ -115,7 +115,7 @@ instance : IsDivisionMonoid G := inferInstance
 
 end
 
-def conj (G: Group α) (x: G) : G ≃* G where
+def conj [GroupOps α] [IsGroup α] (x: α) : α ≃* α where
   toFun a := x⁻¹ * a * x
   invFun a := x * a * x⁻¹
   leftInv := by

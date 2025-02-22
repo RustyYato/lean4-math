@@ -16,7 +16,7 @@ instance : IsLawfulLT (SubRing α) := IsLawfulLT.inst _
 
 def oemb : SubRing α ↪o Set α where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (SubRing α) := oemb.inducedIsPartialOrder'

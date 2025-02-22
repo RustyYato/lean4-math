@@ -15,7 +15,7 @@ instance : IsLawfulLT (SubMonoid α) := IsLawfulLT.inst _
 
 def oemb : SubMonoid α ↪o Set α where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (SubMonoid α) := oemb.inducedIsPartialOrder'
@@ -95,7 +95,7 @@ instance : IsLawfulLT (SubAddMonoid α) := IsLawfulLT.inst _
 
 def oemb : SubAddMonoid α ↪o Set α where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (SubAddMonoid α) := oemb.inducedIsPartialOrder'

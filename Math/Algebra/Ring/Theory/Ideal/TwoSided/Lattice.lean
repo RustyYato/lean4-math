@@ -35,7 +35,7 @@ def toIdeal (U: Set R) : Ideal R where
 def oemb : Ideal R ↪o Set R where
   toFun a := a.carrier
   resp_rel := Iff.rfl
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
 
 instance : IsLawfulLT (Ideal R) := ⟨Iff.rfl⟩
 

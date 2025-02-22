@@ -14,7 +14,7 @@ instance : IsLawfulLT (SubAddMonoidWithOne α) := IsLawfulLT.inst _
 
 def oemb : SubAddMonoidWithOne α ↪o Set α where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (SubAddMonoidWithOne α) := oemb.inducedIsPartialOrder'

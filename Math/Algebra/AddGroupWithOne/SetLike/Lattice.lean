@@ -14,7 +14,7 @@ instance : IsLawfulLT (SubAddGroupWithOne α) := IsLawfulLT.inst _
 
 def oemb : SubAddGroupWithOne α ↪o Set α where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (SubAddGroupWithOne α) := oemb.inducedIsPartialOrder'

@@ -10,7 +10,7 @@ variable [Sup α] [Inf α] [LE α] [LT α] [SetLike α β] [IsSetLikeLattice α]
 
 def IsSetLikeLattice.OrderEmbedding : α ↪o Set β where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := le_iff_sub _ _
 
 instance [IsSetLikeLattice α] : IsPartialOrder α :=

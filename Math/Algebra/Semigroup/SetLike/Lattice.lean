@@ -11,7 +11,7 @@ instance [Mul α] : IsLawfulLT (SubSemigroup α) := IsLawfulLT.inst _
 
 def oemb [Mul α] : SubSemigroup α ↪o Set α where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
 instance [Mul α] : IsPartialOrder (SubSemigroup α) := oemb.inducedIsPartialOrder'
@@ -79,7 +79,7 @@ instance [Add α] : IsLawfulLT (SubAddSemigroup α) := IsLawfulLT.inst _
 
 def oemb [Add α] : SubAddSemigroup α ↪o Set α where
   toFun a := a
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
 instance [Add α] : IsPartialOrder (SubAddSemigroup α) := oemb.inducedIsPartialOrder'

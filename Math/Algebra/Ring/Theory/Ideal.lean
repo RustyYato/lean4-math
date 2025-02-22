@@ -134,7 +134,7 @@ def toIdeal (R: Ring α) (U: Set R) : Ideal R where
 def Ideal.oemb : Ideal R ↪o Set R where
   toFun a := a.carrier
   resp_rel := Iff.rfl
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
 
 instance : IsLawfulLT (Ideal R) := ⟨Iff.rfl⟩
 
@@ -236,7 +236,7 @@ def toLeftIdeal (R: Ring α) (U: Set R) : LeftIdeal R where
 def LeftIdeal.oemb : LeftIdeal R ↪o Set R where
   toFun a := a.carrier
   resp_rel := Iff.rfl
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
 
 instance : IsLawfulLT (LeftIdeal R) := ⟨Iff.rfl⟩
 
@@ -331,7 +331,7 @@ def toRightIdeal (R: Ring α) (U: Set R) : RightIdeal R where
 def RightIdeal.oemb : RightIdeal R ↪o Set R where
   toFun a := a.carrier
   resp_rel := Iff.rfl
-  inj := SetLike.coe_inj
+  inj' := SetLike.coe_inj
 
 instance : IsLawfulLT (RightIdeal R) := ⟨Iff.rfl⟩
 
