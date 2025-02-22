@@ -1,5 +1,6 @@
 import Math.Algebra.Monoid.Char
 import Math.Algebra.Field.Defs
+import Math.Algebra.Semiring.Char
 
 instance : SemiringOps Bool where
   add := xor
@@ -115,14 +116,9 @@ instance : IsField Bool where
     rw [Nat.add_mod]
     cases Nat.mod_two_eq_zero_or_one (n+1) <;> (rename_i h; rw [h]; cases a <;> rfl)
 
-def Bool.char_eq : char Bool = 2 := by
-  apply char_eq_of
-  intro a
+instance : HasChar Bool 2 := by
+  apply HasChar.of_natCast_eq_zero
   rfl
-  intro m h
-  replace h : ∀a, and (m % 2 != 0) a = false := h
-  cases Nat.mod_two_eq_zero_or_one m <;> rename_i g
-  apply Nat.dvd_of_mod_eq_zero; assumption
-  rw [g] at h
-  have := h true
-  contradiction
+  intro n h
+  apply Nat.dvd_of_mod_eq_zero
+  exact bne_eq_false_iff_eq.mp h
