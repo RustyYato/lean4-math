@@ -68,3 +68,6 @@ instance : IsGroupWithZero s where
     intro _ _ _
     apply Subtype.val_inj
     apply zpow?_negSucc
+
+instance (s: SubgroupWithZero α) : GroupWithZeroOps s := inferInstance
+instance (s: SubgroupWithZero α) : IsGroupWithZero s := inferInstance
