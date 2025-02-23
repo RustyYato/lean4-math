@@ -112,7 +112,7 @@ end
 -- The category of all small "sets" (since we are in a type theory, we use `Type u`)
 -- instead of `Set`
 @[pp_with_univ]
-def Set.{u} : LargeCategory (Type u) where
+instance Set.{u} : LargeCategory (Type u) where
   Hom α β := α -> β
   id _ := _root_.id
   comp f g := f ∘ g

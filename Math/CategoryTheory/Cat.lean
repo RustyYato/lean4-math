@@ -17,4 +17,9 @@ instance : LargeCategory Cat where
   id A := 𝟭 A
   comp F G := F ⋙ G
 
+-- the forgetful functor from Cat to Set
+def Cat.toSet : Cat.{v, u} ⥤ Type u where
+  obj := Cat.Ty
+  map := Functor.obj
+
 end Category
