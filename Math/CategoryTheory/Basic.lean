@@ -14,7 +14,7 @@ class Category.{v, u} (α: Type u) where
 
 namespace Category
 
-scoped infixr:10 " ⟶ " => Category.Hom
+scoped infixr:30 " ⟶ " => Category.Hom
 scoped notation "𝟙" => Category.id
 scoped infixr:80 " ≫ " => Category.comp
 
