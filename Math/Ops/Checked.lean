@@ -12,6 +12,11 @@ class CheckedIntPow (α: Sort u) (P: outParam (α -> Prop)) where
 class CheckedMod (α: Sort u) (P: outParam (α -> Prop)) where
   checked_mod: α -> ∀den: α, P den -> α
 
+abbrev CheckedInv? (α: Sort _) [Zero α] := CheckedInvert α (fun x => x ≠ 0)
+abbrev CheckedDiv? (α: Sort _) [Zero α] := CheckedDiv α (fun x => x ≠ 0)
+abbrev CheckedIntPow? (α: Sort _) [Zero α] := CheckedIntPow α (fun x => x ≠ 0)
+abbrev CheckedMod? (α: Sort _) [Zero α] := CheckedMod α (fun x => x ≠ 0)
+
 syntax "invert_tactic" : tactic
 syntax "invert_tactic_trivial" : tactic
 

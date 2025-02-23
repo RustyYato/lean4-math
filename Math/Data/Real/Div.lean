@@ -165,9 +165,9 @@ def inv (a: ℝ) : a ≠ 0 -> ℝ := by
     assumption
     assumption
 
-instance : CheckedInvert ℝ (fun x => x ≠ 0) := ⟨.inv⟩
+instance : CheckedInv? ℝ := ⟨.inv⟩
 
-instance : CheckedDiv ℝ (fun x => x ≠ 0) where
+instance : CheckedDiv? ℝ where
   checked_div a b h := a * b⁻¹?
 
 instance : Min ℝ where
@@ -261,7 +261,7 @@ def le_iff_mul_le_mul_of_pos_left (a b k: ℝ) (h: 0 < k) : a ≤ b ↔ k * a �
 
 def div_eq_mul_inv (a b: ℝ) {h: b ≠ 0} : a /? b = a * b⁻¹? := rfl
 
-instance : CheckedIntPow ℝ (fun x => x ≠ 0) := instCheckedIntPow
+instance : CheckedIntPow? ℝ := instCheckedIntPow
 
 instance : IsField ℝ where
   mul_inv?_cancel := by

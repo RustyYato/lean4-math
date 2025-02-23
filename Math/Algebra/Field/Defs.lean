@@ -3,11 +3,9 @@ import Math.Algebra.GroupWithZero.Defs
 
 class FieldOps (α: Type*) extends RingOps α, GroupWithZeroOps α where
 
-instance [h: RingOps α] [CheckedIntPow α (P := fun x => x ≠ 0)]
-  [CheckedInvert α (P := fun x => x ≠ 0)]
-  [CheckedDiv α (P := fun x => x ≠ 0)] : FieldOps α where
+instance [h: RingOps α] [CheckedIntPow? α] [CheckedInv? α] [CheckedDiv? α] : FieldOps α where
 
-def zpow?Rec [RingOps α] [CheckedInvert α (P := fun x => x ≠ 0)] (a: α) (n: ℤ) (h: a ≠ 0 ∨ 0 ≤ n) : α :=
+def zpow?Rec [RingOps α] [CheckedInv? α] (a: α) (n: ℤ) (h: a ≠ 0 ∨ 0 ≤ n) : α :=
   match n with
   | .ofNat n => a ^ n
   | .negSucc n => (a⁻¹? ~(by

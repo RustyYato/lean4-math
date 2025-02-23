@@ -371,7 +371,7 @@ def Fract.inv.spec (a b: Fract) (h₀: ¬a ≈ 0) (h₁: ¬b ≈ 0) : a ≈ b ->
     Int.sign_ofNat_of_nonzero b.den_nz, Int.mul_one, Int.mul_one] at this
   assumption
 
-instance : CheckedInvert ℚ (fun a => a ≠ 0) where
+instance : CheckedInv? ℚ where
   checked_invert a := by
     apply a.hrecOn (motive := fun a: ℚ => a ≠ 0 -> ℚ) (fun a h => ⟦Fract.inv a (exact_ne h)⟧)
     intro a b h
@@ -395,7 +395,7 @@ macro_rules
 
 def mk_inv (a: Fract) (h: ¬a ≈ 0) : ⟦a⟧⁻¹? = ⟦a⁻¹?⟧ := rfl
 
-instance : CheckedDiv ℚ (fun a => a ≠ 0) where
+instance : CheckedDiv? ℚ where
   checked_div a b h := a * b⁻¹?
 
 def Fract.npow (a: Fract) (n: Nat) : Fract where
@@ -428,7 +428,7 @@ instance : Pow ℚ ℕ where
     apply Quotient.sound
     apply Fract.npow.spec
     assumption
-instance : CheckedIntPow ℚ (fun a => a ≠ 0) := instCheckedIntPow
+instance : CheckedIntPow? ℚ := instCheckedIntPow
 
 @[local simp] def smul_eq (n: ℕ) (a: ℚ) : n • a = n * a := rfl
 @[local simp] def zmul_eq (n: ℤ) (a: ℚ) : n • a = n * a := rfl

@@ -104,7 +104,7 @@ def mul_real (a b: ℂ) : (a * b).real = a.real * b.real - a.img * b.img := rfl
 @[simp]
 def mul_img (a b: ℂ) : (a * b).img = a.real * b.img + a.img * b.real := rfl
 
-instance : CheckedInvert ℂ (· ≠ 0) where
+instance : CheckedInv? ℂ where
   checked_invert a h := {
     real := a.real /? a.mag_sq
     img := -a.img /? a.mag_sq
@@ -115,7 +115,7 @@ def inv_real (a: ℂ) (h: a ≠ 0) : (a⁻¹?).real = a.real /? a.mag_sq := rfl
 @[simp]
 def inv_img (a: ℂ) (h: a ≠ 0) : (a⁻¹?).img = -a.img /? a.mag_sq := rfl
 
-instance : CheckedDiv ℂ (· ≠ 0) where
+instance : CheckedDiv? ℂ where
   checked_div a b h := a * b⁻¹?
 
 instance : SMul ℕ ℂ where
@@ -131,7 +131,7 @@ def zsmul_def (n: ℤ) (a: ℂ) : n • a = n * a := rfl
 instance : Pow ℂ ℕ where
   pow := flip npowRec
 
-instance : CheckedIntPow ℂ (· ≠ 0) where
+instance : CheckedIntPow? ℂ where
   checked_pow := zpow?Rec (α := ℂ)
 
 end Complex
