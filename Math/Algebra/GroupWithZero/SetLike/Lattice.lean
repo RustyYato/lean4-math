@@ -11,6 +11,9 @@ private instance builder : SetLike.LatticeBuilder (SubgroupWithZero α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
+    mem_zero' := by
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_zero s
     mem_one' := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_one s
@@ -31,19 +34,33 @@ private instance builder : SetLike.LatticeBuilder (SubgroupWithZero α) where
     intro h x hx
     induction hx with
     | of => apply h; assumption
+    | zero => apply mem_zero t
     | one => apply mem_one t
     | inv? => apply mem_inv? t <;> assumption
     | mul => apply mem_mul t <;> assumption
   bot := ⟨{
-    carrier := {1}
-    mem_one' := rfl
+    carrier := {0, 1}
+    mem_zero' := by simp
+    mem_one' := by simp
     mem_inv?' := by
-      rintro _ _ rfl
-      rw [inv?_one]; rfl
+      rintro _ _ h
+      simp at *
+      cases h; contradiction
+      right; rename_i h; subst h
+      rw [inv?_one]
     mem_mul' := by
-      rintro _ _ rfl rfl
-      rw [mul_one]; rfl
-  }, by rintro _ _ rfl; apply Generate.one⟩
+      rintro _ _ h g
+      simp at *
+      rcases h with rfl | rfl
+      left; rw [zero_mul]
+      rcases g with rfl | rfl
+      left; rw [mul_zero]
+      right; rw [mul_one]
+  }, by
+    rintro _ x h
+    rcases h with rfl | rfl
+    apply Generate.zero
+    apply Generate.one⟩
 
 private local instance : SetLike.CompleteLatticeLE (SubgroupWithZero α) := SetLike.toCompleteLattice
 

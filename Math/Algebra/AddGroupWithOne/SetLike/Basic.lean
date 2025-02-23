@@ -19,7 +19,6 @@ def mem_intCast (n: ℤ): (n: α) ∈ s := by
 instance : IntCast s where
   intCast n := ⟨n, mem_intCast _ _⟩
 
--- instance : AddGroupWithOneOps s where
 instance : IsAddGroupWithOne s := {
   instIsAddGroupElem s, instIsAddMonoidWithOneElem s with
   intCast_ofNat n := by
