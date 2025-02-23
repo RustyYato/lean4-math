@@ -236,4 +236,50 @@ def Path.symm [IsUndirected G] {a b: G} : G.Path a b -> G.Path b a
 | .refl => .refl
 | .edge e p => p.symm ++ single _ _ (Relation.symm e)
 
+class TotallyDisconnected (G: Graph) where
+  no_edges: ∀{x y: G}, ¬G.Edge x y
+
+instance [IsUndirected G] : TotallyDisconnected G.Condense where
+  no_edges := by
+    intro x y
+    induction x with | toScc a =>
+    induction y with | toScc b =>
+    intro ⟨ne, x, y, aeqx, beqy, edge⟩
+    have le := le_of_edge edge
+    apply ne
+    apply And.intro
+    apply le_trans aeqx.left
+    apply le_trans _ beqy.right
+    assumption
+    apply symm_le
+    apply le_trans aeqx.left
+    apply le_trans _ beqy.right
+    assumption
+
+class IsConnected (G: Graph) extends Relation.IsTotal (· ≤ (·: G)): Prop where
+
+instance [IsConnected G] : IsConnected G.Condense where
+  total := by
+    intro a b
+    cases a; cases b
+    rw [le_iff_condense_le, le_iff_condense_le]
+    apply Relation.total
+
+def eq_of_le [TotallyDisconnected G] {a b: G} : a ≤ b -> a = b := by
+  intro ⟨path⟩
+  cases path
+  rfl
+  rename_i e _
+  have := TotallyDisconnected.no_edges e
+  contradiction
+
+instance [TotallyDisconnected G] [IsConnected G] : Subsingleton G.Node where
+  allEq := by
+    intro a b
+    rcases Relation.total (· ≤ (·: G)) a b with h | h
+    exact eq_of_le h
+    exact (eq_of_le h).symm
+
+example [IsUndirected G] [IsConnected G] : Subsingleton (G.Condense).Node := inferInstance
+
 end Graph
