@@ -3,7 +3,7 @@ import Math.Algebra.AddMonoidWithOne.SetLike.Basic
 import Math.Algebra.Group.SetLike.Basic
 import Math.Algebra.AddGroupWithOne.Defs
 
-variable [SetLike S α] [AddGroupWithOneOps α] [IsSubAddGroupWithOne S] [IsAddGroupWithOne α]
+variable [SetLike S α] [AddGroupWithOneOps α] [IsAddSubgroupWithOne S] [IsAddGroupWithOne α]
    (s: S)
 
 def mem_intCast (n: ℤ): (n: α) ∈ s := by

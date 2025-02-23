@@ -3,21 +3,21 @@ import Math.Data.Set.Lattice
 import Math.Algebra.Semigroup.SetLike.Defs
 import Math.Order.GaloisConnection
 
-namespace SubAddMonoidWithOne
+namespace AddSubmonoidWithOne
 
 variable [Add α] [Zero α] [One α]
 
-instance : LE (SubAddMonoidWithOne α) where
+instance : LE (AddSubmonoidWithOne α) where
   le := (· ⊆ ·)
-instance : LT (SubAddMonoidWithOne α) := IsLawfulLT.instLT _
-instance : IsLawfulLT (SubAddMonoidWithOne α) := IsLawfulLT.inst _
+instance : LT (AddSubmonoidWithOne α) := IsLawfulLT.instLT _
+instance : IsLawfulLT (AddSubmonoidWithOne α) := IsLawfulLT.inst _
 
-def oemb : SubAddMonoidWithOne α ↪o Set α where
+def oemb : AddSubmonoidWithOne α ↪o Set α where
   toFun a := a
   inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
-instance : IsPartialOrder (SubAddMonoidWithOne α) := oemb.inducedIsPartialOrder'
+instance : IsPartialOrder (AddSubmonoidWithOne α) := oemb.inducedIsPartialOrder'
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
@@ -25,13 +25,13 @@ inductive Generate (U: Set α) : α -> Prop where
 | zero : Generate U 0
 | one : Generate U 1
 
-def generate (U: Set α) : SubAddMonoidWithOne α where
+def generate (U: Set α) : AddSubmonoidWithOne α where
   carrier := Set.mk (Generate U)
   mem_add' := Generate.add
   mem_zero' := Generate.zero
   mem_one' := Generate.one
 
-def giGenerate : @GaloisInsertion (Set α) (SubAddMonoidWithOne α) _ _ generate (fun a => a.carrier) where
+def giGenerate : @GaloisInsertion (Set α) (AddSubmonoidWithOne α) _ _ generate (fun a => a.carrier) where
   choice S hS := {
     carrier := S
     mem_add' := by
@@ -73,16 +73,16 @@ def giGenerate : @GaloisInsertion (Set α) (SubAddMonoidWithOne α) _ _ generate
     apply Generate.of
     assumption
 
-instance: CompleteLattice (SubAddMonoidWithOne α) :=
+instance: CompleteLattice (AddSubmonoidWithOne α) :=
   giGenerate.liftCompleteLattice
 
-end SubAddMonoidWithOne
+end AddSubmonoidWithOne
 
-namespace SubAddMonoidWithOne
+namespace AddSubmonoidWithOne
 
 variable [AddMonoidWithOneOps α] [IsAddMonoidWithOne α]
 
-def range_natCast : SubAddMonoidWithOne α where
+def range_natCast : AddSubmonoidWithOne α where
   carrier := Set.range (fun n: ℕ => (n: α))
   mem_zero' := by exists 0; symm; apply natCast_zero
   mem_one' := by exists 1; symm; apply natCast_one
@@ -98,4 +98,4 @@ def bot_eq_range_natCast: ⊥ = range_natCast (α := α) := by
   rintro _ ⟨n, rfl⟩
   apply mem_natCast
 
-end SubAddMonoidWithOne
+end AddSubmonoidWithOne

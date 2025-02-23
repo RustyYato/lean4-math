@@ -1,6 +1,6 @@
 import Math.Algebra.Monoid.Action.SetLike.Defs
 
-structure SubModule (R M: Type*) [Zero M] [Add M] [SMul R M] extends SubAddMonoid M,  SubMulAction M R where
+structure SubModule (R M: Type*) [Zero M] [Add M] [SMul R M] extends AddSubmonoid M,  SubMulAction M R where
 
 variable [Zero M] [Add M] [SMul R M]
 
@@ -11,7 +11,7 @@ instance : SetLike (SubModule R M) M where
     apply SetLike.coe_inj
     assumption
 
-instance : IsSubAddMonoid (SubModule R M) where
+instance : IsAddSubmonoid (SubModule R M) where
   mem_zero s := s.mem_zero'
   mem_add s := s.mem_add'
 

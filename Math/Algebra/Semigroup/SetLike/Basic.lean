@@ -32,5 +32,5 @@ instance [IsAddCommMagma α] : IsAddCommMagma s where
 instance [IsSemigroup α] (s: SubSemigroup α) : IsSemigroup s := inferInstance
 instance [IsCommMagma α] (s: SubSemigroup α) : IsCommMagma s := inferInstance
 
-instance [IsAddSemigroup α] (s: SubAddSemigroup α) : IsAddSemigroup s := inferInstance
-instance [IsAddCommMagma α] (s: SubAddSemigroup α) : IsAddCommMagma s := inferInstance
+instance [IsAddSemigroup α] (s: AddSubSemigroup α) : IsAddSemigroup s := inferInstance
+instance [IsAddCommMagma α] (s: AddSubSemigroup α) : IsAddCommMagma s := inferInstance

@@ -3,7 +3,7 @@ import Math.Algebra.Semigroup.SetLike.Basic
 import Math.Algebra.Monoid.Defs
 
 def mem_npow
-  [SetLike S α] [MonoidOps α] [IsSubMonoid S] [IsMonoid α]
+  [SetLike S α] [MonoidOps α] [IsSubmonoid S] [IsMonoid α]
   (s: S) {a: α} (n: ℕ) (h: a ∈ s) : a ^ n ∈ s := by
   induction n with
   | zero =>
@@ -16,7 +16,7 @@ def mem_npow
     assumption
 
 def mem_nsmul
-  [SetLike S α] [AddMonoidOps α] [IsSubAddMonoid S] [IsAddMonoid α]
+  [SetLike S α] [AddMonoidOps α] [IsAddSubmonoid S] [IsAddMonoid α]
   (s: S) {a: α} (n: ℕ) (h: a ∈ s) : n • a ∈ s :=
   mem_npow (S := MulOfAdd S) s n h
 
@@ -56,12 +56,12 @@ instance [IsAddZeroClass α] : IsAddZeroClass s where
     apply Subtype.val_inj
     apply add_zero
 
-instance [IsMulOneClass α] (s: SubMonoid α) : IsMulOneClass s := inferInstance
-instance [IsAddZeroClass α] (s: SubAddMonoid α) : IsAddZeroClass s := inferInstance
+instance [IsMulOneClass α] (s: Submonoid α) : IsMulOneClass s := inferInstance
+instance [IsAddZeroClass α] (s: AddSubmonoid α) : IsAddZeroClass s := inferInstance
 
 end
 
-variable [MonoidOps α] [IsMonoid α] [IsSubMonoid S] [AddMonoidOps α] [IsAddMonoid α] [IsSubAddMonoid S] (s: S)
+variable [MonoidOps α] [IsMonoid α] [IsSubmonoid S] [AddMonoidOps α] [IsAddMonoid α] [IsAddSubmonoid S] (s: S)
 
 instance : Pow s ℕ  where
   pow a n := ⟨a.val ^ n, mem_npow _ _ a.property⟩
@@ -85,5 +85,5 @@ instance : IsAddMonoid s where
     apply Subtype.val_inj
     apply succ_nsmul
 
-instance (s: SubMonoid α) : IsMonoid s := inferInstance
-instance (s: SubAddMonoid α) : IsAddMonoid s := inferInstance
+instance (s: Submonoid α) : IsMonoid s := inferInstance
+instance (s: AddSubmonoid α) : IsAddMonoid s := inferInstance

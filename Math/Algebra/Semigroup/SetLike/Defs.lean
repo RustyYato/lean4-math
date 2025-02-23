@@ -30,20 +30,20 @@ instance [Mul α] : IsMulMem (SubSemigroup α) where
 @[ext]
 def SubSemigroup.ext [Mul α] (a b: SubSemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
-structure SubAddSemigroup (α: Type*) [Add α] where
+structure AddSubSemigroup (α: Type*) [Add α] where
   carrier: Set α
   mem_add' {a b: α} : a ∈ carrier -> b ∈ carrier -> a + b ∈ carrier
 
-instance [Add α] : SetLike (SubAddSemigroup α) α where
-  coe := SubAddSemigroup.carrier
+instance [Add α] : SetLike (AddSubSemigroup α) α where
+  coe := AddSubSemigroup.carrier
   coe_inj := by
     intro a b eq; cases a; congr
 
-instance [Add α] : IsAddMem (SubAddSemigroup α) where
-  mem_add := SubAddSemigroup.mem_add'
+instance [Add α] : IsAddMem (AddSubSemigroup α) where
+  mem_add := AddSubSemigroup.mem_add'
 
 @[ext]
-def SubAddSemigroup.ext [Add α] (a b: SubAddSemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def AddSubSemigroup.ext [Add α] (a b: AddSubSemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 instance [h: SetLike S α] : SetLike (AddOfMul S) (AddOfMul α) where
   coe a := (a.get: Set α)

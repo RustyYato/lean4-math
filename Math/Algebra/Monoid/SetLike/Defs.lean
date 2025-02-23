@@ -15,44 +15,44 @@ class IsZeroMem [Zero α] : Prop where
 def mem_zero {S α: Type*} [SetLike S α] [Zero α] [IsZeroMem S]
   (s: S) : 0 ∈ s := IsZeroMem.mem_zero s
 
-class IsSubMonoid [Mul α] [One α] extends IsMulMem S, IsOneMem S: Prop where
-class IsSubAddMonoid [Add α] [Zero α] extends IsAddMem S, IsZeroMem S: Prop where
+class IsSubmonoid [Mul α] [One α] extends IsMulMem S, IsOneMem S: Prop where
+class IsAddSubmonoid [Add α] [Zero α] extends IsAddMem S, IsZeroMem S: Prop where
 
-structure SubMonoid (α: Type*) [Mul α] [One α] extends SubSemigroup α where
+structure Submonoid (α: Type*) [Mul α] [One α] extends SubSemigroup α where
   mem_one': 1 ∈ carrier
 
-instance [Mul α] [One α] : SetLike (SubMonoid α) α where
+instance [Mul α] [One α] : SetLike (Submonoid α) α where
   coe a := a.carrier
   coe_inj := by
     intro a b eq; cases a; congr
     apply SetLike.coe_inj
     assumption
 
-instance [Mul α] [One α] : IsSubMonoid (SubMonoid α) where
+instance [Mul α] [One α] : IsSubmonoid (Submonoid α) where
   mem_mul a := a.mem_mul'
   mem_one a := a.mem_one'
 
 @[ext]
-def SubMonoid.ext [Mul α] [One α] (a b: SubMonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def Submonoid.ext [Mul α] [One α] (a b: Submonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
-structure SubAddMonoid (α: Type*) [Add α] [Zero α] extends SubAddSemigroup α where
+structure AddSubmonoid (α: Type*) [Add α] [Zero α] extends AddSubSemigroup α where
   mem_zero': 0 ∈ carrier
 
-instance [Add α] [Zero α] : SetLike (SubAddMonoid α) α where
+instance [Add α] [Zero α] : SetLike (AddSubmonoid α) α where
   coe a := a.carrier
   coe_inj := by
     intro a b eq; cases a; congr
     apply SetLike.coe_inj
     assumption
 
-instance [Add α] [Zero α] : IsSubAddMonoid (SubAddMonoid α) where
+instance [Add α] [Zero α] : IsAddSubmonoid (AddSubmonoid α) where
   mem_add a := a.mem_add'
   mem_zero a := a.mem_zero'
 
 @[ext]
-def SubAddMonoid.ext [Add α] [Zero α] (a b: SubAddMonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def AddSubmonoid.ext [Add α] [Zero α] (a b: AddSubmonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
-instance [SetLike S α] [Add α] [Zero α] [IsSubAddMonoid S] : IsSubMonoid (MulOfAdd S) where
+instance [SetLike S α] [Add α] [Zero α] [IsAddSubmonoid S] : IsSubmonoid (MulOfAdd S) where
   mem_one := mem_zero (S := S)
-instance [SetLike S α] [Mul α] [One α] [IsSubMonoid S] : IsSubAddMonoid (AddOfMul S) where
+instance [SetLike S α] [Mul α] [One α] [IsSubmonoid S] : IsAddSubmonoid (AddOfMul S) where
   mem_zero := mem_one (S := S)

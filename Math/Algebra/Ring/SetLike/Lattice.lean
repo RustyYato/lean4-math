@@ -5,21 +5,21 @@ import Math.Algebra.Semigroup.SetLike.Defs
 import Math.Order.GaloisConnection
 import Math.Algebra.Ring.Defs
 
-namespace SubRing
+namespace Subring
 
 variable [Add α] [Mul α] [Neg α] [Zero α] [One α]
 
-instance : LE (SubRing α) where
+instance : LE (Subring α) where
   le := (· ⊆ ·)
-instance : LT (SubRing α) := IsLawfulLT.instLT _
-instance : IsLawfulLT (SubRing α) := IsLawfulLT.inst _
+instance : LT (Subring α) := IsLawfulLT.instLT _
+instance : IsLawfulLT (Subring α) := IsLawfulLT.inst _
 
-def oemb : SubRing α ↪o Set α where
+def oemb : Subring α ↪o Set α where
   toFun a := a
   inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
-instance : IsPartialOrder (SubRing α) := oemb.inducedIsPartialOrder'
+instance : IsPartialOrder (Subring α) := oemb.inducedIsPartialOrder'
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
@@ -29,7 +29,7 @@ inductive Generate (U: Set α) : α -> Prop where
 | zero : Generate U 0
 | one : Generate U 1
 
-def generate (U: Set α) : SubRing α where
+def generate (U: Set α) : Subring α where
   carrier := Set.mk (Generate U)
   mem_add' := Generate.add
   mem_mul' := Generate.mul
@@ -37,7 +37,7 @@ def generate (U: Set α) : SubRing α where
   mem_zero' := Generate.zero
   mem_one' := Generate.one
 
-def giGenerate : @GaloisInsertion (Set α) (SubRing α) _ _ generate (fun a => a.carrier) where
+def giGenerate : @GaloisInsertion (Set α) (Subring α) _ _ generate (fun a => a.carrier) where
   choice S hS := {
     carrier := S
     mem_add' := by
@@ -95,15 +95,15 @@ def giGenerate : @GaloisInsertion (Set α) (SubRing α) _ _ generate (fun a => a
     apply Generate.of
     assumption
 
-instance : CompleteLattice (SubRing α) := giGenerate.liftCompleteLattice
+instance : CompleteLattice (Subring α) := giGenerate.liftCompleteLattice
 
-end SubRing
+end Subring
 
-namespace SubRing
+namespace Subring
 
 variable [RingOps α] [IsRing α]
 
-def range_intCast : SubRing α where
+def range_intCast : Subring α where
   carrier := Set.range (fun n: ℤ => (n: α))
   mem_zero' := by exists 0; symm; apply intCast_zero
   mem_one' := by exists 1; symm; apply intCast_one
@@ -129,4 +129,4 @@ def bot_eq_range_intCast: ⊥ = range_intCast (α := α) := by
   rintro _ ⟨n, rfl⟩
   apply mem_intCast
 
-end SubRing
+end Subring

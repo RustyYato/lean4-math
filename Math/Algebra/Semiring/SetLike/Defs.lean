@@ -2,9 +2,9 @@ import Math.Algebra.AddMonoidWithOne.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsSubSemiring [Add α] [Mul α] [Zero α] [One α] extends IsSubAddMonoidWithOne S, IsSubMonoid S: Prop where
+class IsSubSemiring [Add α] [Mul α] [Zero α] [One α] extends IsAddSubmonoidWithOne S, IsSubmonoid S: Prop where
 
-structure SubSemiring (α: Type*) [Add α] [Mul α] [Zero α] [One α] extends SubAddMonoidWithOne α, SubMonoid α where
+structure SubSemiring (α: Type*) [Add α] [Mul α] [Zero α] [One α] extends AddSubmonoidWithOne α, Submonoid α where
 
 variable [Add α] [Mul α] [Zero α] [One α]
 

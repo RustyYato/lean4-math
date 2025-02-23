@@ -70,29 +70,29 @@ instance [Mul α] : CompleteLattice (SubSemigroup α) := {
 
 end SubSemigroup
 
-namespace SubAddSemigroup
+namespace AddSubSemigroup
 
-instance [Add α] : LE (SubAddSemigroup α) where
+instance [Add α] : LE (AddSubSemigroup α) where
   le := (· ⊆ ·)
-instance [Add α] : LT (SubAddSemigroup α) := IsLawfulLT.instLT _
-instance [Add α] : IsLawfulLT (SubAddSemigroup α) := IsLawfulLT.inst _
+instance [Add α] : LT (AddSubSemigroup α) := IsLawfulLT.instLT _
+instance [Add α] : IsLawfulLT (AddSubSemigroup α) := IsLawfulLT.inst _
 
-def oemb [Add α] : SubAddSemigroup α ↪o Set α where
+def oemb [Add α] : AddSubSemigroup α ↪o Set α where
   toFun a := a
   inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
-instance [Add α] : IsPartialOrder (SubAddSemigroup α) := oemb.inducedIsPartialOrder'
+instance [Add α] : IsPartialOrder (AddSubSemigroup α) := oemb.inducedIsPartialOrder'
 
 inductive Generate [Add α] (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
 | add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
 
-def generate [Add α] (U: Set α) : SubAddSemigroup α where
+def generate [Add α] (U: Set α) : AddSubSemigroup α where
   carrier := Set.mk (Generate U)
   mem_add' := Generate.add
 
-def giGenerate [Add α] : @GaloisInsertion (Set α) (SubAddSemigroup α) _ _ generate SubAddSemigroup.carrier where
+def giGenerate [Add α] : @GaloisInsertion (Set α) (AddSubSemigroup α) _ _ generate AddSubSemigroup.carrier where
   choice S hS := {
     carrier := S
     mem_add' := by
@@ -127,7 +127,7 @@ def giGenerate [Add α] : @GaloisInsertion (Set α) (SubAddSemigroup α) _ _ gen
     apply Generate.of
     assumption
 
-instance [Add α] : CompleteLattice (SubAddSemigroup α) := {
+instance [Add α] : CompleteLattice (AddSubSemigroup α) := {
   giGenerate.liftCompleteLattice with
   bot := {
     carrier := ∅
@@ -136,4 +136,4 @@ instance [Add α] : CompleteLattice (SubAddSemigroup α) := {
   bot_le _ := Set.empty_sub _
 }
 
-end SubAddSemigroup
+end AddSubSemigroup

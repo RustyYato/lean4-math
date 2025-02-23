@@ -27,18 +27,18 @@ def mem_zpow
   assumption
 
 def mem_sub
-  [SetLike S α] [AddGroupOps α] [IsSubAddGroup S] [IsAddGroup α]
+  [SetLike S α] [AddGroupOps α] [IsAddSubGroup S] [IsAddGroup α]
   (s: S) {a b: α} (ha: a ∈ s) (hb: b ∈ s) : a - b ∈ s :=
   mem_div (S := MulOfAdd S) s ha hb
 
 def mem_zsmul
-  [SetLike S α] [AddGroupOps α] [IsSubAddGroup S] [IsAddGroup α]
+  [SetLike S α] [AddGroupOps α] [IsAddSubGroup S] [IsAddGroup α]
   (s: S) {a: α} (n: ℤ) (ha: a ∈ s) : n • a ∈ s :=
   mem_zpow (S := MulOfAdd S) s n ha
 
 section
 
-variable [Mul α] [One α] [Inv α] [IsSubGroup S] [Add α] [Zero α] [Neg α] [IsSubAddGroup S] (s: S)
+variable [Mul α] [One α] [Inv α] [IsSubGroup S] [Add α] [Zero α] [Neg α] [IsAddSubGroup S] (s: S)
 
 instance : Inv s where
   inv a := ⟨a.val⁻¹, mem_inv _ a.property⟩
@@ -68,7 +68,7 @@ instance [IsNegZeroClass α] : IsNegZeroClass s where
 
 end
 
-variable [GroupOps α] [IsGroup α] [IsSubGroup S] [AddGroupOps α] [IsAddGroup α] [IsSubAddGroup S] (s: S)
+variable [GroupOps α] [IsGroup α] [IsSubGroup S] [AddGroupOps α] [IsAddGroup α] [IsAddSubGroup S] (s: S)
 
 instance : Div s where
   div a b := ⟨a.val / b.val, mem_div _ a.property b.property⟩
@@ -111,7 +111,7 @@ instance : IsAddGroup s where
     apply zsmul_negSucc
 
 instance (s: SubGroup α) : IsGroup s := inferInstance
-instance (s: SubAddGroup α) : IsAddGroup s := inferInstance
+instance (s: AddSubGroup α) : IsAddGroup s := inferInstance
 
 def SubGroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : SubGroup α where
   carrier := Set.preimage {1} f
@@ -123,7 +123,7 @@ def SubGroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α
     intro a b ha hb
     rw [Set.mem_preimage, resp_mul, ha, hb, one_mul]; rfl
 
-def SubAddGroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : SubAddGroup α where
+def AddSubGroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : AddSubGroup α where
   carrier := Set.preimage {0} f
   mem_zero' := resp_zero _
   mem_neg' := by

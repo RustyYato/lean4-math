@@ -18,8 +18,8 @@ class IsMemMulRight [Mul α]: Prop where
 def mem_mul_right {S α: Type*} [SetLike S α] [Mul α] [IsMemMulRight S] (s: S): ∀(r: α) (x: α), x ∈ s -> x * r ∈ s :=
   IsMemMulRight.mem_mul_right s
 
-class IsLeftIdeal [Add α] [Mul α] [Neg α] [Zero α] extends IsSubAddGroup S, IsMemMulLeft S: Prop where
-class IsRightIdeal [Add α] [Mul α] [Neg α] [Zero α] extends IsSubAddGroup S, IsMemMulRight S: Prop where
+class IsLeftIdeal [Add α] [Mul α] [Neg α] [Zero α] extends IsAddSubGroup S, IsMemMulLeft S: Prop where
+class IsRightIdeal [Add α] [Mul α] [Neg α] [Zero α] extends IsAddSubGroup S, IsMemMulRight S: Prop where
 class IsIdeal [Add α] [Mul α] [Neg α] [Zero α] extends IsLeftIdeal S, IsRightIdeal S: Prop where
 
 instance [Mul α] [IsMemMulLeft S] : IsMulMem S where
@@ -39,10 +39,10 @@ section
 
 variable (α: Type*) [Add α] [Mul α] [Neg α] [Zero α]
 
-structure LeftIdeal extends SubAddGroup α where
+structure LeftIdeal extends AddSubGroup α where
   mem_mul_left': ∀(r: α) {x}, x ∈ carrier -> r * x ∈ carrier
 
-structure RightIdeal extends SubAddGroup α where
+structure RightIdeal extends AddSubGroup α where
   mem_mul_right': ∀(r: α) {x}, x ∈ carrier -> x * r ∈ carrier
 
 structure Ideal extends LeftIdeal α, RightIdeal α where
@@ -68,17 +68,17 @@ instance : SetLike (Ideal α) α where
     apply SetLike.coe_inj
     assumption
 
-instance : IsSubAddGroup (LeftIdeal α) where
+instance : IsAddSubGroup (LeftIdeal α) where
   mem_add i := i.mem_add'
   mem_neg i := i.mem_neg'
   mem_zero i := i.mem_zero'
 
-instance : IsSubAddGroup (RightIdeal α) where
+instance : IsAddSubGroup (RightIdeal α) where
   mem_add i := i.mem_add'
   mem_neg i := i.mem_neg'
   mem_zero i := i.mem_zero'
 
-instance : IsSubAddGroup (Ideal α) where
+instance : IsAddSubGroup (Ideal α) where
   mem_add i := i.mem_add'
   mem_neg i := i.mem_neg'
   mem_zero i := i.mem_zero'

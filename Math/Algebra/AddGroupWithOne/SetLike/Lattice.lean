@@ -3,21 +3,21 @@ import Math.Data.Set.Lattice
 import Math.Algebra.Semigroup.SetLike.Defs
 import Math.Order.GaloisConnection
 
-namespace SubAddGroupWithOne
+namespace AddSubgroupWithOne
 
 variable [Add α] [Neg α] [Zero α] [One α]
 
-instance : LE (SubAddGroupWithOne α) where
+instance : LE (AddSubgroupWithOne α) where
   le := (· ⊆ ·)
-instance : LT (SubAddGroupWithOne α) := IsLawfulLT.instLT _
-instance : IsLawfulLT (SubAddGroupWithOne α) := IsLawfulLT.inst _
+instance : LT (AddSubgroupWithOne α) := IsLawfulLT.instLT _
+instance : IsLawfulLT (AddSubgroupWithOne α) := IsLawfulLT.inst _
 
-def oemb : SubAddGroupWithOne α ↪o Set α where
+def oemb : AddSubgroupWithOne α ↪o Set α where
   toFun a := a
   inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
-instance : IsPartialOrder (SubAddGroupWithOne α) := oemb.inducedIsPartialOrder'
+instance : IsPartialOrder (AddSubgroupWithOne α) := oemb.inducedIsPartialOrder'
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
@@ -26,14 +26,14 @@ inductive Generate (U: Set α) : α -> Prop where
 | zero : Generate U 0
 | one : Generate U 1
 
-def generate (U: Set α) : SubAddGroupWithOne α where
+def generate (U: Set α) : AddSubgroupWithOne α where
   carrier := Set.mk (Generate U)
   mem_add' := Generate.add
   mem_neg' := Generate.neg
   mem_zero' := Generate.zero
   mem_one' := Generate.one
 
-def giGenerate : @GaloisInsertion (Set α) (SubAddGroupWithOne α) _ _ generate (fun a => a.carrier) where
+def giGenerate : @GaloisInsertion (Set α) (AddSubgroupWithOne α) _ _ generate (fun a => a.carrier) where
   choice S hS := {
     carrier := S
     mem_add' := by
@@ -82,16 +82,16 @@ def giGenerate : @GaloisInsertion (Set α) (SubAddGroupWithOne α) _ _ generate 
     apply Generate.of
     assumption
 
-instance: CompleteLattice (SubAddGroupWithOne α) :=
+instance: CompleteLattice (AddSubgroupWithOne α) :=
   giGenerate.liftCompleteLattice
 
-end SubAddGroupWithOne
+end AddSubgroupWithOne
 
-namespace SubAddGroupWithOne
+namespace AddSubgroupWithOne
 
 variable [AddGroupWithOneOps α] [IsAddGroupWithOne α]
 
-def range_intCast : SubAddGroupWithOne α where
+def range_intCast : AddSubgroupWithOne α where
   carrier := Set.range (fun n: ℤ => (n: α))
   mem_zero' := by exists 0; symm; apply intCast_zero
   mem_one' := by exists 1; symm; apply intCast_one
@@ -112,4 +112,4 @@ def bot_eq_range_intCast: ⊥ = range_intCast (α := α) := by
   rintro _ ⟨n, rfl⟩
   apply mem_intCast
 
-end SubAddGroupWithOne
+end AddSubgroupWithOne

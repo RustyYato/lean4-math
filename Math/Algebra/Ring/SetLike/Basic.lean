@@ -3,7 +3,7 @@ import Math.Algebra.Semiring.SetLike.Basic
 import Math.Algebra.AddGroupWithOne.SetLike.Basic
 import Math.Algebra.Ring.Defs
 
-variable [SetLike S α] [RingOps α] [IsSubRing S] [IsRing α]
+variable [SetLike S α] [RingOps α] [IsSubring S] [IsRing α]
    (s: S)
 
 instance : RingOps s := {

@@ -2,7 +2,7 @@ import Math.Algebra.AddMonoidWithOne.SetLike.Defs
 import Math.Algebra.Monoid.SetLike.Basic
 import Math.Algebra.AddMonoidWithOne.Defs
 
-variable [SetLike S α] [AddMonoidWithOneOps α] [IsSubAddMonoidWithOne S] [IsAddMonoidWithOne α]
+variable [SetLike S α] [AddMonoidWithOneOps α] [IsAddSubmonoidWithOne S] [IsAddMonoidWithOne α]
    (s: S)
 
 def mem_natCast (n: ℕ): (n: α) ∈ s := by

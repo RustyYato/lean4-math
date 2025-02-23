@@ -96,21 +96,21 @@ instance [IsMulOneClass α] [IsInvOneClass α] : CompleteLattice (SubGroup α) :
 
 end SubGroup
 
-namespace SubAddGroup
+namespace AddSubGroup
 
 variable [Add α] [Zero α] [Neg α]
 
-instance : LE (SubAddGroup α) where
+instance : LE (AddSubGroup α) where
   le := (· ⊆ ·)
-instance : LT (SubAddGroup α) := IsLawfulLT.instLT _
-instance : IsLawfulLT (SubAddGroup α) := IsLawfulLT.inst _
+instance : LT (AddSubGroup α) := IsLawfulLT.instLT _
+instance : IsLawfulLT (AddSubGroup α) := IsLawfulLT.inst _
 
-def oemb : SubAddGroup α ↪o Set α where
+def oemb : AddSubGroup α ↪o Set α where
   toFun a := a
   inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
-instance : IsPartialOrder (SubAddGroup α) := oemb.inducedIsPartialOrder'
+instance : IsPartialOrder (AddSubGroup α) := oemb.inducedIsPartialOrder'
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
@@ -118,13 +118,13 @@ inductive Generate (U: Set α) : α -> Prop where
 | neg {a: α} : Generate U a -> Generate U (-a)
 | zero : Generate U 0
 
-def generate (U: Set α) : SubAddGroup α where
+def generate (U: Set α) : AddSubGroup α where
   carrier := Set.mk (Generate U)
   mem_add' := Generate.add
   mem_zero' := Generate.zero
   mem_neg' := Generate.neg
 
-def giGenerate : @GaloisInsertion (Set α) (SubAddGroup α) _ _ generate (fun a => a.carrier) where
+def giGenerate : @GaloisInsertion (Set α) (AddSubGroup α) _ _ generate (fun a => a.carrier) where
   choice S hS := {
     carrier := S
     mem_add' := by
@@ -169,7 +169,7 @@ def giGenerate : @GaloisInsertion (Set α) (SubAddGroup α) _ _ generate (fun a 
     apply Generate.of
     assumption
 
-instance [IsAddZeroClass α] [IsNegZeroClass α] : CompleteLattice (SubAddGroup α) := {
+instance [IsAddZeroClass α] [IsNegZeroClass α] : CompleteLattice (AddSubGroup α) := {
   giGenerate.liftCompleteLattice with
   bot := {
     carrier := {0}
@@ -186,4 +186,4 @@ instance [IsAddZeroClass α] [IsNegZeroClass α] : CompleteLattice (SubAddGroup 
     apply mem_zero
 }
 
-end SubAddGroup
+end AddSubGroup
