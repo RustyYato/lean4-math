@@ -38,7 +38,18 @@ private instance builder : SetLike.LatticeBuilder (Submonoid α) where
       rw [mul_one]; rfl
   }, by rintro _ _ rfl; apply Generate.one⟩
 
-instance : SetLike.CompleteLatticeLE (Submonoid α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (Submonoid α) := SetLike.toCompleteLattice
+
+instance : LE (Submonoid α) := inferInstance
+instance : LT (Submonoid α) := inferInstance
+instance : Top (Submonoid α) := inferInstance
+instance : Bot (Submonoid α) := inferInstance
+instance : Sup (Submonoid α) := inferInstance
+instance : Inf (Submonoid α) := inferInstance
+instance : SupSet (Submonoid α) := inferInstance
+instance : InfSet (Submonoid α) := inferInstance
+instance : IsPartialOrder (Submonoid α) := inferInstance
+instance : IsCompleteLattice (Submonoid α) := inferInstance
 
 end Submonoid
 
@@ -78,6 +89,17 @@ private instance builder : SetLike.LatticeBuilder (AddSubmonoid α) where
       rw [add_zero]; rfl
   }, by rintro _ _ rfl; apply Generate.zero⟩
 
-instance : SetLike.CompleteLatticeLE (AddSubmonoid α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (AddSubmonoid α) := SetLike.toCompleteLattice
+
+instance : LE (AddSubmonoid α) := inferInstance
+instance : LT (AddSubmonoid α) := inferInstance
+instance : Top (AddSubmonoid α) := inferInstance
+instance : Bot (AddSubmonoid α) := inferInstance
+instance : Sup (AddSubmonoid α) := inferInstance
+instance : Inf (AddSubmonoid α) := inferInstance
+instance : SupSet (AddSubmonoid α) := inferInstance
+instance : InfSet (AddSubmonoid α) := inferInstance
+instance : IsPartialOrder (AddSubmonoid α) := inferInstance
+instance : IsCompleteLattice (AddSubmonoid α) := inferInstance
 
 end AddSubmonoid

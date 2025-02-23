@@ -48,7 +48,18 @@ private instance builder : SetLike.LatticeBuilder (Subgroup α) where
       rw [inv_one]; rfl
   }, by rintro _ _ rfl; apply Generate.one⟩
 
-instance : SetLike.CompleteLatticeLE (Subgroup α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (Subgroup α) := SetLike.toCompleteLattice
+
+instance : LE (Subgroup α) := inferInstance
+instance : LT (Subgroup α) := inferInstance
+instance : Top (Subgroup α) := inferInstance
+instance : Bot (Subgroup α) := inferInstance
+instance : Sup (Subgroup α) := inferInstance
+instance : Inf (Subgroup α) := inferInstance
+instance : SupSet (Subgroup α) := inferInstance
+instance : InfSet (Subgroup α) := inferInstance
+instance : IsPartialOrder (Subgroup α) := inferInstance
+instance : IsCompleteLattice (Subgroup α) := inferInstance
 
 end Subgroup
 
@@ -95,6 +106,17 @@ private instance builder : SetLike.LatticeBuilder (AddSubgroup α) where
       rw [add_zero]; rfl
   }, by rintro _ _ rfl; apply Generate.zero⟩
 
-instance : SetLike.CompleteLatticeLE (AddSubgroup α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (AddSubgroup α) := SetLike.toCompleteLattice
+
+instance : LE (AddSubgroup α) := inferInstance
+instance : LT (AddSubgroup α) := inferInstance
+instance : Top (AddSubgroup α) := inferInstance
+instance : Bot (AddSubgroup α) := inferInstance
+instance : Sup (AddSubgroup α) := inferInstance
+instance : Inf (AddSubgroup α) := inferInstance
+instance : SupSet (AddSubgroup α) := inferInstance
+instance : InfSet (AddSubgroup α) := inferInstance
+instance : IsPartialOrder (AddSubgroup α) := inferInstance
+instance : IsCompleteLattice (AddSubgroup α) := inferInstance
 
 end AddSubgroup

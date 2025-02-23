@@ -28,7 +28,18 @@ private instance builder : SetLike.LatticeBuilder (Subsemigroup α) where
     | mul => apply mem_mul t <;> assumption
   bot := ⟨⟨∅, fun h => False.elim h⟩, fun _ => Set.empty_sub _⟩
 
-instance : SetLike.CompleteLatticeLE (Subsemigroup α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (Subsemigroup α) := SetLike.toCompleteLattice
+
+instance : LE (Subsemigroup α) := inferInstance
+instance : LT (Subsemigroup α) := inferInstance
+instance : Top (Subsemigroup α) := inferInstance
+instance : Bot (Subsemigroup α) := inferInstance
+instance : Sup (Subsemigroup α) := inferInstance
+instance : Inf (Subsemigroup α) := inferInstance
+instance : SupSet (Subsemigroup α) := inferInstance
+instance : InfSet (Subsemigroup α) := inferInstance
+instance : IsPartialOrder (Subsemigroup α) := inferInstance
+instance : IsCompleteLattice (Subsemigroup α) := inferInstance
 
 end Subsemigroup
 
@@ -58,6 +69,17 @@ private instance builder : SetLike.LatticeBuilder (AddSubsemigroup α) where
     | add => apply mem_add t <;> assumption
   bot := ⟨⟨∅, fun h => False.elim h⟩, fun _ => Set.empty_sub _⟩
 
-instance : SetLike.CompleteLatticeLE (AddSubsemigroup α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (AddSubsemigroup α) := SetLike.toCompleteLattice
+
+instance : LE (AddSubsemigroup α) := inferInstance
+instance : LT (AddSubsemigroup α) := inferInstance
+instance : Top (AddSubsemigroup α) := inferInstance
+instance : Bot (AddSubsemigroup α) := inferInstance
+instance : Sup (AddSubsemigroup α) := inferInstance
+instance : Inf (AddSubsemigroup α) := inferInstance
+instance : SupSet (AddSubsemigroup α) := inferInstance
+instance : InfSet (AddSubsemigroup α) := inferInstance
+instance : IsPartialOrder (AddSubsemigroup α) := inferInstance
+instance : IsCompleteLattice (AddSubsemigroup α) := inferInstance
 
 end AddSubsemigroup

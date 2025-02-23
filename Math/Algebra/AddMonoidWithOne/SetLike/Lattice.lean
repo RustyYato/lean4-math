@@ -46,6 +46,17 @@ private instance builder : SetLike.LatticeBuilder (AddSubmonoidWithOne α) where
     intro s
     apply natRange_sub (generate s)⟩
 
-instance : SetLike.CompleteLatticeLE (AddSubmonoidWithOne α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (AddSubmonoidWithOne α) := SetLike.toCompleteLattice
+
+instance : LE (AddSubmonoidWithOne α) := inferInstance
+instance : LT (AddSubmonoidWithOne α) := inferInstance
+instance : Top (AddSubmonoidWithOne α) := inferInstance
+instance : Bot (AddSubmonoidWithOne α) := inferInstance
+instance : Sup (AddSubmonoidWithOne α) := inferInstance
+instance : Inf (AddSubmonoidWithOne α) := inferInstance
+instance : SupSet (AddSubmonoidWithOne α) := inferInstance
+instance : InfSet (AddSubmonoidWithOne α) := inferInstance
+instance : IsPartialOrder (AddSubmonoidWithOne α) := inferInstance
+instance : IsCompleteLattice (AddSubmonoidWithOne α) := inferInstance
 
 end AddSubmonoidWithOne

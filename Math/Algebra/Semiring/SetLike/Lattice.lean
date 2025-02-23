@@ -56,6 +56,17 @@ private instance builder : SetLike.LatticeBuilder (Subsemiring α) where
     intro s
     apply natRange_sub (generate s)⟩
 
-instance : SetLike.CompleteLatticeLE (Subsemiring α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (Subsemiring α) := SetLike.toCompleteLattice
+
+instance : LE (Subsemiring α) := inferInstance
+instance : LT (Subsemiring α) := inferInstance
+instance : Top (Subsemiring α) := inferInstance
+instance : Bot (Subsemiring α) := inferInstance
+instance : Sup (Subsemiring α) := inferInstance
+instance : Inf (Subsemiring α) := inferInstance
+instance : SupSet (Subsemiring α) := inferInstance
+instance : InfSet (Subsemiring α) := inferInstance
+instance : IsPartialOrder (Subsemiring α) := inferInstance
+instance : IsCompleteLattice (Subsemiring α) := inferInstance
 
 end Subsemiring

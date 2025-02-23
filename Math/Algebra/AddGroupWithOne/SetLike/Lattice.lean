@@ -54,6 +54,17 @@ private instance builder : SetLike.LatticeBuilder (AddSubgroupWithOne α) where
     intro s
     apply intRange_sub (generate s)⟩
 
-instance : SetLike.CompleteLatticeLE (AddSubgroupWithOne α) := SetLike.toCompleteLattice
+private local instance : SetLike.CompleteLatticeLE (AddSubgroupWithOne α) := SetLike.toCompleteLattice
+
+instance : LE (AddSubgroupWithOne α) := inferInstance
+instance : LT (AddSubgroupWithOne α) := inferInstance
+instance : Top (AddSubgroupWithOne α) := inferInstance
+instance : Bot (AddSubgroupWithOne α) := inferInstance
+instance : Sup (AddSubgroupWithOne α) := inferInstance
+instance : Inf (AddSubgroupWithOne α) := inferInstance
+instance : SupSet (AddSubgroupWithOne α) := inferInstance
+instance : InfSet (AddSubgroupWithOne α) := inferInstance
+instance : IsPartialOrder (AddSubgroupWithOne α) := inferInstance
+instance : IsCompleteLattice (AddSubgroupWithOne α) := inferInstance
 
 end AddSubgroupWithOne
