@@ -17,7 +17,7 @@ def gfp : (α →o α) →o α where
   resp_rel hle := sSup_le_sSup fun a ha => le_trans ha (hle a)
 
 def lfp_le {a : α} (h : f a ≤ a) : lfp f ≤ a :=
-  sInf_le _ _ h
+  sInf_le h
 
 def lfp_le_fixed {a : α} (h : f a = a) : lfp f ≤ a :=
   f.lfp_le (le_of_eq h)
