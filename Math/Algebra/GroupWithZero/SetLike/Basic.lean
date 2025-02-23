@@ -45,6 +45,8 @@ instance : CheckedIntPow? s where
       right; assumption
     ⟨a.val ^? n, mem_zpow? _ _ _ this a.property⟩
 
+instance : GroupWithZeroOps s where
+
 instance : IsGroupWithZero s where
   exists_ne := by
     refine ⟨0, 1, ?_⟩
