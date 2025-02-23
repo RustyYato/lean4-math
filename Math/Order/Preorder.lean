@@ -140,6 +140,14 @@ instance : @Relation.IsRefl α (· ≤ ·) where
  instance : @Trans α α α (· = ·) (· < ·) (· < ·) where
   trans := lt_of_eq_of_lt
 
+def le_setoid (α: Type*) [LE α] [LT α] [IsPreOrder α] : Setoid α where
+  r a b := a ≤ b ∧ b ≤ a
+  iseqv := {
+    refl _ := ⟨le_refl _, le_refl _⟩
+    symm h := ⟨h.2, h.1⟩
+    trans h g := ⟨le_trans h.1 g.1, le_trans g.2 h.2⟩
+  }
+
 namespace Pi
 
 variable {β: α -> Sort _}
