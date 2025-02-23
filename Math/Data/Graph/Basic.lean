@@ -228,8 +228,12 @@ def toUndirected (G: Graph) : Graph where
 instance : IsUndirected G.toUndirected where
   symm := Or.symm
 
-def symm_path [IsUndirected G] {a b: G} : a ≤ b -> b ≤ a := by
+def symm_le [IsUndirected G] {a b: G} : a ≤ b -> b ≤ a := by
   rw [le_iff_refltransgen_edge, le_iff_refltransgen_edge]
   apply Relation.symm
+
+def Path.symm [IsUndirected G] {a b: G} : G.Path a b -> G.Path b a
+| .refl => .refl
+| .edge e p => p.symm ++ single _ _ (Relation.symm e)
 
 end Graph
