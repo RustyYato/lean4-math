@@ -93,3 +93,11 @@ def delab_checked_int_pow : Delab := do
   let x ← delab x
   let y ← delab y
   `($x ^? $y)
+
+def zpow?_of_neg_pow {P: α -> Prop} (a: α) (h: P a ∨ 0 ≤ Int.negSucc n) : P a := by
+  cases h; assumption
+  rename_i h
+  contradiction
+
+macro_rules | `(tactic|int_pow_tactic_trivial) => `(tactic|left; apply zpow?_of_neg_pow <;> assumption)
+macro_rules | `(tactic|int_pow_tactic_trivial) => `(tactic|apply zpow?_of_neg_pow <;> assumption)
