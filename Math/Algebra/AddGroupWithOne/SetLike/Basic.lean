@@ -29,3 +29,9 @@ instance : IsAddGroupWithOne s := {
     apply Subtype.val_inj
     apply intCast_negSucc
 }
+
+def intRange_sub: ∀s: S, Set.range (fun n: ℤ => (n: α)) ⊆  s := by
+  rintro s _ ⟨n, rfl⟩
+  dsimp
+  show ↑n ∈ s
+  apply mem_intCast

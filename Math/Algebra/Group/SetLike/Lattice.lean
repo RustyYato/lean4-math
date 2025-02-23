@@ -1,67 +1,32 @@
+import Math.Data.Set.Like.Lattice
 import Math.Algebra.Group.SetLike.Defs
 import Math.Data.Set.Lattice
 import Math.Algebra.Semigroup.SetLike.Defs
 import Math.Order.GaloisConnection
 import Math.Algebra.Group.Defs
 
-namespace SubGroup
+namespace Subgroup
 
-variable [Mul α] [One α] [Inv α]
+variable [GroupOps α] [IsGroup α]
 
-instance : LE (SubGroup α) where
-  le := (· ⊆ ·)
-instance : LT (SubGroup α) := IsLawfulLT.instLT _
-instance : IsLawfulLT (SubGroup α) := IsLawfulLT.inst _
-
-def oemb : SubGroup α ↪o Set α where
-  toFun a := a
-  inj' := SetLike.coe_inj
-  resp_rel := Iff.rfl
-
-instance : IsPartialOrder (SubGroup α) := oemb.inducedIsPartialOrder'
-
-inductive Generate (U: Set α) : α -> Prop where
-| of (a: α) : a ∈ U -> Generate U a
-| mul {a b: α} : Generate U a -> Generate U b -> Generate U (a * b)
-| inv {a: α} : Generate U a -> Generate U (a⁻¹)
-| one : Generate U 1
-
-def generate (U: Set α) : SubGroup α where
-  carrier := Set.mk (Generate U)
-  mem_mul' := Generate.mul
-  mem_one' := Generate.one
-  mem_inv' := Generate.inv
-
-def giGenerate : @GaloisInsertion (Set α) (SubGroup α) _ _ generate (fun a => a.carrier) where
-  choice S hS := {
-    carrier := S
+private instance builder : SetLike.LatticeBuilder (Subgroup α) where
+  closure := (Set.mk <| Generate ·)
+  closure_spec s := ⟨generate s, rfl⟩
+  create s P := {
+    carrier := s
     mem_mul' := by
-      intro a b ha hb
-      apply hS
-      apply Generate.mul
-      apply Generate.of
-      assumption
-      apply Generate.of
-      assumption
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_mul s <;> assumption
     mem_inv' := by
-      intro a ha
-      apply hS
-      apply Generate.inv
-      apply Generate.of
-      assumption
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_inv s <;> assumption
     mem_one' := by
-      apply hS
-      apply Generate.one
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_one s
   }
-  choice_eq := by
-    intro S h
-    simp
-    apply le_antisymm
-    apply Generate.of
-    apply h
   gc := by
-    intro a b
-    apply Iff.intro
+    intro s t
+    apply flip Iff.intro
     intro h x hx
     apply h
     apply Generate.of
@@ -69,91 +34,46 @@ def giGenerate : @GaloisInsertion (Set α) (SubGroup α) _ _ generate (fun a => 
     intro h x hx
     induction hx with
     | of => apply h; assumption
-    | one => apply mem_one
-    | inv => apply mem_inv <;> assumption
-    | mul => apply mem_mul <;> assumption
-  le_l_u := by
-    intro s x hx
-    apply Generate.of
-    assumption
-
-instance [IsMulOneClass α] [IsInvOneClass α] : CompleteLattice (SubGroup α) := {
-  giGenerate.liftCompleteLattice with
-  bot := {
+    | one => apply mem_one t
+    | inv => apply mem_inv t <;> assumption
+    | mul => apply mem_mul t <;> assumption
+  bot := ⟨{
     carrier := {1}
+    mem_one' := rfl
     mem_mul' := by
       rintro _ _ rfl rfl
       rw [mul_one]; rfl
     mem_inv' := by
       rintro _ rfl
       rw [inv_one]; rfl
-    mem_one' := rfl
-  }
-  bot_le _ := by
-    rintro x rfl
-    apply mem_one
-}
+  }, by rintro _ _ rfl; apply Generate.one⟩
 
-end SubGroup
+instance : SetLike.CompleteLatticeLE (Subgroup α) := SetLike.toCompleteLattice
 
-namespace AddSubGroup
+end Subgroup
 
-variable [Add α] [Zero α] [Neg α]
+namespace AddSubgroup
 
-instance : LE (AddSubGroup α) where
-  le := (· ⊆ ·)
-instance : LT (AddSubGroup α) := IsLawfulLT.instLT _
-instance : IsLawfulLT (AddSubGroup α) := IsLawfulLT.inst _
+variable [AddGroupOps α] [IsAddGroup α]
 
-def oemb : AddSubGroup α ↪o Set α where
-  toFun a := a
-  inj' := SetLike.coe_inj
-  resp_rel := Iff.rfl
-
-instance : IsPartialOrder (AddSubGroup α) := oemb.inducedIsPartialOrder'
-
-inductive Generate (U: Set α) : α -> Prop where
-| of (a: α) : a ∈ U -> Generate U a
-| add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
-| neg {a: α} : Generate U a -> Generate U (-a)
-| zero : Generate U 0
-
-def generate (U: Set α) : AddSubGroup α where
-  carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
-  mem_zero' := Generate.zero
-  mem_neg' := Generate.neg
-
-def giGenerate : @GaloisInsertion (Set α) (AddSubGroup α) _ _ generate (fun a => a.carrier) where
-  choice S hS := {
-    carrier := S
+private instance builder : SetLike.LatticeBuilder (AddSubgroup α) where
+  closure := (Set.mk <| Generate ·)
+  closure_spec s := ⟨generate s, rfl⟩
+  create s P := {
+    carrier := s
     mem_add' := by
-      intro a b ha hb
-      apply hS
-      apply Generate.add
-      apply Generate.of
-      assumption
-      apply Generate.of
-      assumption
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_add s <;> assumption
     mem_neg' := by
-      intro a ha
-      apply hS
-      apply Generate.neg
-      apply Generate.of
-      assumption
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_neg s <;> assumption
     mem_zero' := by
-      apply hS
-      apply Generate.zero
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_zero s
   }
-  choice_eq := by
-    intro S h
-    simp
-    apply le_antisymm
-    apply Generate.of
-    apply h
   gc := by
-    intro a b
-    apply Iff.intro
+    intro s t
+    apply flip Iff.intro
     intro h x hx
     apply h
     apply Generate.of
@@ -161,29 +81,20 @@ def giGenerate : @GaloisInsertion (Set α) (AddSubGroup α) _ _ generate (fun a 
     intro h x hx
     induction hx with
     | of => apply h; assumption
-    | zero => apply mem_zero
-    | neg => apply mem_neg <;> assumption
-    | add => apply mem_add <;> assumption
-  le_l_u := by
-    intro s x hx
-    apply Generate.of
-    assumption
-
-instance [IsAddZeroClass α] [IsNegZeroClass α] : CompleteLattice (AddSubGroup α) := {
-  giGenerate.liftCompleteLattice with
-  bot := {
+    | zero => apply mem_zero t
+    | neg => apply mem_neg t <;> assumption
+    | add => apply mem_add t <;> assumption
+  bot := ⟨{
     carrier := {0}
-    mem_add' := by
-      rintro _ _ rfl rfl
-      rw [add_zero]; rfl
+    mem_zero' := rfl
     mem_neg' := by
       rintro _ rfl
       rw [neg_zero]; rfl
-    mem_zero' := rfl
-  }
-  bot_le _ := by
-    rintro x rfl
-    apply mem_zero
-}
+    mem_add' := by
+      rintro _ _ rfl rfl
+      rw [add_zero]; rfl
+  }, by rintro _ _ rfl; apply Generate.zero⟩
 
-end AddSubGroup
+instance : SetLike.CompleteLatticeLE (AddSubgroup α) := SetLike.toCompleteLattice
+
+end AddSubgroup

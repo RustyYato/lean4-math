@@ -9,7 +9,7 @@ import Math.Algebra.Ring.SetLike.Basic
 namespace Ring
 
 abbrev Subring (R: Ring α) := Subring R
-abbrev AddSubgroup (R: Ring α) := AddSubGroup R
+abbrev AddSubgroup (R: Ring α) := AddSubgroup R
 
 def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
   r a b := a - b ∈ i

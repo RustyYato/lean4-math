@@ -6,7 +6,7 @@ import Math.Algebra.Group.Hom
 variable [SetLike S α]
 
 def mem_div
-  [SetLike S α] [GroupOps α] [IsSubGroup S] [IsGroup α]
+  [SetLike S α] [GroupOps α] [IsSubgroup S] [IsGroup α]
   (s: S) {a b: α} (ha: a ∈ s) (hb: b ∈ s) : a / b ∈ s := by
   rw [div_eq_mul_inv]
   apply mem_mul
@@ -15,7 +15,7 @@ def mem_div
   assumption
 
 def mem_zpow
-  [SetLike S α] [GroupOps α] [IsSubGroup S] [IsGroup α]
+  [SetLike S α] [GroupOps α] [IsSubgroup S] [IsGroup α]
   (s: S) {a: α} (n: ℤ) (ha: a ∈ s) : a ^ n ∈ s := by
   cases n using Int.coe_cases
   rw [zpow_ofNat]
@@ -27,18 +27,18 @@ def mem_zpow
   assumption
 
 def mem_sub
-  [SetLike S α] [AddGroupOps α] [IsAddSubGroup S] [IsAddGroup α]
+  [SetLike S α] [AddGroupOps α] [IsAddSubgroup S] [IsAddGroup α]
   (s: S) {a b: α} (ha: a ∈ s) (hb: b ∈ s) : a - b ∈ s :=
   mem_div (S := MulOfAdd S) s ha hb
 
 def mem_zsmul
-  [SetLike S α] [AddGroupOps α] [IsAddSubGroup S] [IsAddGroup α]
+  [SetLike S α] [AddGroupOps α] [IsAddSubgroup S] [IsAddGroup α]
   (s: S) {a: α} (n: ℤ) (ha: a ∈ s) : n • a ∈ s :=
   mem_zpow (S := MulOfAdd S) s n ha
 
 section
 
-variable [Mul α] [One α] [Inv α] [IsSubGroup S] [Add α] [Zero α] [Neg α] [IsAddSubGroup S] (s: S)
+variable [Mul α] [One α] [Inv α] [IsSubgroup S] [Add α] [Zero α] [Neg α] [IsAddSubgroup S] (s: S)
 
 instance : Inv s where
   inv a := ⟨a.val⁻¹, mem_inv _ a.property⟩
@@ -68,7 +68,7 @@ instance [IsNegZeroClass α] : IsNegZeroClass s where
 
 end
 
-variable [GroupOps α] [IsGroup α] [IsSubGroup S] [AddGroupOps α] [IsAddGroup α] [IsAddSubGroup S] (s: S)
+variable [GroupOps α] [IsGroup α] [IsSubgroup S] [AddGroupOps α] [IsAddGroup α] [IsAddSubgroup S] (s: S)
 
 instance : Div s where
   div a b := ⟨a.val / b.val, mem_div _ a.property b.property⟩
@@ -110,10 +110,10 @@ instance : IsAddGroup s where
     apply Subtype.val_inj
     apply zsmul_negSucc
 
-instance (s: SubGroup α) : IsGroup s := inferInstance
-instance (s: AddSubGroup α) : IsAddGroup s := inferInstance
+instance (s: Subgroup α) : IsGroup s := inferInstance
+instance (s: AddSubgroup α) : IsAddGroup s := inferInstance
 
-def SubGroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : SubGroup α where
+def Subgroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : Subgroup α where
   carrier := Set.preimage {1} f
   mem_one' := resp_one _
   mem_inv' := by
@@ -123,7 +123,7 @@ def SubGroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α
     intro a b ha hb
     rw [Set.mem_preimage, resp_mul, ha, hb, one_mul]; rfl
 
-def AddSubGroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : AddSubGroup α where
+def AddSubgroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : AddSubgroup α where
   carrier := Set.preimage {0} f
   mem_zero' := resp_zero _
   mem_neg' := by

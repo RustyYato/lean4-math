@@ -2,13 +2,13 @@ import Math.Algebra.Group.Theory.Basic
 import Math.Algebra.Group.SetLike.Basic
 
 class IsNormalSubgroup
-  (S: Type*) {α: Type*} [SetLike S α] [GroupOps α] [IsGroup α] extends IsSubGroup S where
+  (S: Type*) {α: Type*} [SetLike S α] [GroupOps α] [IsGroup α] extends IsSubgroup S where
   mem_conj (s: S): ∀x: α, ∀{a}, a ∈ s -> Group.conj x a ∈ s
 
 def mem_conj [SetLike S α] [GroupOps α] [IsGroup α] [IsNormalSubgroup S]
   (s: S): ∀x: α, ∀{a}, a ∈ s -> Group.conj x a ∈ s := IsNormalSubgroup.mem_conj _
 
-structure NormalSubgroup (α: Type*) [GroupOps α] [IsGroup α] extends SubGroup α where
+structure NormalSubgroup (α: Type*) [GroupOps α] [IsGroup α] extends Subgroup α where
   mem_conj': ∀x: α, ∀{a}, a ∈ carrier -> Group.conj x a ∈ carrier
 
 namespace NormalSubgroup

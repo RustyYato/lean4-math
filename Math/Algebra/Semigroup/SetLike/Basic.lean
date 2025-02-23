@@ -29,8 +29,8 @@ instance [IsAddCommMagma α] : IsAddCommMagma s where
     apply Subtype.val_inj
     apply add_comm
 
-instance [IsSemigroup α] (s: SubSemigroup α) : IsSemigroup s := inferInstance
-instance [IsCommMagma α] (s: SubSemigroup α) : IsCommMagma s := inferInstance
+instance [IsSemigroup α] (s: Subsemigroup α) : IsSemigroup s := inferInstance
+instance [IsCommMagma α] (s: Subsemigroup α) : IsCommMagma s := inferInstance
 
-instance [IsAddSemigroup α] (s: AddSubSemigroup α) : IsAddSemigroup s := inferInstance
-instance [IsAddCommMagma α] (s: AddSubSemigroup α) : IsAddCommMagma s := inferInstance
+instance [IsAddSemigroup α] (s: AddSubsemigroup α) : IsAddSemigroup s := inferInstance
+instance [IsAddCommMagma α] (s: AddSubsemigroup α) : IsAddCommMagma s := inferInstance

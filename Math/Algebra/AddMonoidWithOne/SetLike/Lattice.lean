@@ -1,63 +1,29 @@
+import Math.Data.Set.Like.Lattice
 import Math.Algebra.AddMonoidWithOne.SetLike.Basic
-import Math.Data.Set.Lattice
-import Math.Algebra.Semigroup.SetLike.Defs
-import Math.Order.GaloisConnection
+import Math.Algebra.AddMonoidWithOne.Defs
 
 namespace AddSubmonoidWithOne
 
-variable [Add α] [Zero α] [One α]
+variable [AddMonoidWithOneOps α] [IsAddMonoidWithOne α]
 
-instance : LE (AddSubmonoidWithOne α) where
-  le := (· ⊆ ·)
-instance : LT (AddSubmonoidWithOne α) := IsLawfulLT.instLT _
-instance : IsLawfulLT (AddSubmonoidWithOne α) := IsLawfulLT.inst _
-
-def oemb : AddSubmonoidWithOne α ↪o Set α where
-  toFun a := a
-  inj' := SetLike.coe_inj
-  resp_rel := Iff.rfl
-
-instance : IsPartialOrder (AddSubmonoidWithOne α) := oemb.inducedIsPartialOrder'
-
-inductive Generate (U: Set α) : α -> Prop where
-| of (a: α) : a ∈ U -> Generate U a
-| add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
-| zero : Generate U 0
-| one : Generate U 1
-
-def generate (U: Set α) : AddSubmonoidWithOne α where
-  carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
-  mem_zero' := Generate.zero
-  mem_one' := Generate.one
-
-def giGenerate : @GaloisInsertion (Set α) (AddSubmonoidWithOne α) _ _ generate (fun a => a.carrier) where
-  choice S hS := {
-    carrier := S
-    mem_add' := by
-      intro a b ha hb
-      apply hS
-      apply Generate.add
-      apply Generate.of
-      assumption
-      apply Generate.of
-      assumption
+private instance builder : SetLike.LatticeBuilder (AddSubmonoidWithOne α) where
+  closure := (Set.mk <| Generate ·)
+  closure_spec s := ⟨generate s, rfl⟩
+  create s P := {
+    carrier := s
     mem_zero' := by
-      apply hS
-      apply Generate.zero
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_zero s
     mem_one' := by
-      apply hS
-      apply Generate.one
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_one s
+    mem_add' := by
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_add s <;> assumption
   }
-  choice_eq := by
-    intro S h
-    simp
-    apply le_antisymm
-    apply Generate.of
-    apply h
   gc := by
-    intro a b
-    apply Iff.intro
+    intro s t
+    apply flip Iff.intro
     intro h x hx
     apply h
     apply Generate.of
@@ -65,37 +31,21 @@ def giGenerate : @GaloisInsertion (Set α) (AddSubmonoidWithOne α) _ _ generate
     intro h x hx
     induction hx with
     | of => apply h; assumption
-    | zero => apply mem_zero
-    | one => apply mem_one
-    | add => apply mem_add <;> assumption
-  le_l_u := by
-    intro s x hx
-    apply Generate.of
-    assumption
+    | zero => apply mem_zero t
+    | one => apply mem_one t
+    | add => apply mem_add t <;> assumption
+  bot := ⟨{
+    carrier := Set.range (fun n: ℕ => (n: α))
+    mem_zero' := ⟨0, natCast_zero.symm⟩
+    mem_one' := ⟨1, natCast_one.symm⟩
+    mem_add' := by
+      rintro _ _ ⟨n, rfl⟩ ⟨m, rfl⟩
+      dsimp; rw [←natCast_add]
+      apply Set.mem_range'
+  }, by
+    intro s
+    apply natRange_sub (generate s)⟩
 
-instance: CompleteLattice (AddSubmonoidWithOne α) :=
-  giGenerate.liftCompleteLattice
-
-end AddSubmonoidWithOne
-
-namespace AddSubmonoidWithOne
-
-variable [AddMonoidWithOneOps α] [IsAddMonoidWithOne α]
-
-def range_natCast : AddSubmonoidWithOne α where
-  carrier := Set.range (fun n: ℕ => (n: α))
-  mem_zero' := by exists 0; symm; apply natCast_zero
-  mem_one' := by exists 1; symm; apply natCast_one
-  mem_add' := by
-    rintro _ _ ⟨a, _, rfl⟩ ⟨b, _, rfl⟩
-    simp
-    rw [←natCast_add]
-    apply Set.mem_range'
-
-def bot_eq_range_natCast: ⊥ = range_natCast (α := α) := by
-  apply le_antisymm
-  apply bot_le
-  rintro _ ⟨n, rfl⟩
-  apply mem_natCast
+instance : SetLike.CompleteLatticeLE (AddSubmonoidWithOne α) := SetLike.toCompleteLattice
 
 end AddSubmonoidWithOne

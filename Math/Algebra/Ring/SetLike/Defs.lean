@@ -3,9 +3,11 @@ import Math.Algebra.AddGroupWithOne.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsSubring [Add α] [Mul α] [Neg α] [Zero α] [One α] extends IsSubSemiring S, IsAddSubgroupWithOne S: Prop where
+class IsSubring [Add α] [Mul α] [Neg α] [Zero α] [One α] extends IsSubsemiring S, IsAddSubgroupWithOne S: Prop where
 
-structure Subring (α: Type*) [Add α] [Mul α] [Neg α] [Zero α] [One α] extends SubSemiring α, AddSubgroupWithOne α where
+structure Subring (α: Type*) [Add α] [Mul α] [Neg α] [Zero α] [One α] extends Subsemiring α, AddSubgroupWithOne α where
+
+namespace Subring
 
 variable [Add α] [Mul α] [Neg α] [Zero α] [One α]
 
@@ -24,4 +26,22 @@ instance : IsSubring (Subring α) where
   mem_one a := a.mem_one'
 
 @[ext]
-def Subring.ext (a b: Subring α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def ext (a b: Subring α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
+inductive Generate (U: Set α) : α -> Prop where
+| of (a: α) : a ∈ U -> Generate U a
+| add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
+| mul {a b: α} : Generate U a -> Generate U b -> Generate U (a * b)
+| neg {a: α} : Generate U a -> Generate U (-a)
+| zero : Generate U 0
+| one : Generate U 1
+
+def generate (U: Set α) : Subring α where
+  carrier := Set.mk (Generate U)
+  mem_add' := Generate.add
+  mem_mul' := Generate.mul
+  mem_neg' := Generate.neg
+  mem_zero' := Generate.zero
+  mem_one' := Generate.one
+
+end Subring

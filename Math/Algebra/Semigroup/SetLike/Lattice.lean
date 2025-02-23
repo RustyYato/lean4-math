@@ -1,51 +1,23 @@
-import Math.Data.Set.Lattice
+import Math.Data.Set.Like.Lattice
 import Math.Algebra.Semigroup.SetLike.Defs
-import Math.Order.GaloisConnection
+import Math.Algebra.Semigroup.Defs
 
-namespace SubSemigroup
+namespace Subsemigroup
 
-instance [Mul α] : LE (SubSemigroup α) where
-  le := (· ⊆ ·)
-instance [Mul α] : LT (SubSemigroup α) := IsLawfulLT.instLT _
-instance [Mul α] : IsLawfulLT (SubSemigroup α) := IsLawfulLT.inst _
+variable [Mul α]
 
-def oemb [Mul α] : SubSemigroup α ↪o Set α where
-  toFun a := a
-  inj' := SetLike.coe_inj
-  resp_rel := Iff.rfl
-
-instance [Mul α] : IsPartialOrder (SubSemigroup α) := oemb.inducedIsPartialOrder'
-
-inductive Generate [Mul α] (U: Set α) : α -> Prop where
-| of (a: α) : a ∈ U -> Generate U a
-| mul {a b: α} : Generate U a -> Generate U b -> Generate U (a * b)
-
-def generate [Mul α] (U: Set α) : SubSemigroup α where
-  carrier := Set.mk (Generate U)
-  mem_mul' := Generate.mul
-
-def giGenerate [Mul α] : @GaloisInsertion (Set α) (SubSemigroup α) _ _ generate SubSemigroup.carrier where
-  choice S hS := {
-    carrier := S
+private instance builder : SetLike.LatticeBuilder (Subsemigroup α) where
+  closure := (Set.mk <| Generate ·)
+  closure_spec s := ⟨generate s, rfl⟩
+  create s P := {
+    carrier := s
     mem_mul' := by
-      intro a b ha hb
-      apply hS
-      show a * b ∈ generate S
-      apply mem_mul
-      apply Generate.of
-      assumption
-      apply Generate.of
-      assumption
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_mul s <;> assumption
   }
-  choice_eq := by
-    intro S h
-    simp
-    apply le_antisymm
-    apply Generate.of
-    apply h
   gc := by
-    intro a b
-    apply Iff.intro
+    intro s t
+    apply flip Iff.intro
     intro h x hx
     apply h
     apply Generate.of
@@ -53,67 +25,29 @@ def giGenerate [Mul α] : @GaloisInsertion (Set α) (SubSemigroup α) _ _ genera
     intro h x hx
     induction hx with
     | of => apply h; assumption
-    | mul => apply mem_mul <;> assumption
-  le_l_u := by
-    intro s x hx
-    apply Generate.of
-    assumption
+    | mul => apply mem_mul t <;> assumption
+  bot := ⟨⟨∅, fun h => False.elim h⟩, fun _ => Set.empty_sub _⟩
 
-instance [Mul α] : CompleteLattice (SubSemigroup α) := {
-  giGenerate.liftCompleteLattice with
-  bot := {
-    carrier := ∅
-    mem_mul' h := h.elim
-  }
-  bot_le _ := Set.empty_sub _
-}
+instance : SetLike.CompleteLatticeLE (Subsemigroup α) := SetLike.toCompleteLattice
 
-end SubSemigroup
+end Subsemigroup
 
-namespace AddSubSemigroup
+namespace AddSubsemigroup
 
-instance [Add α] : LE (AddSubSemigroup α) where
-  le := (· ⊆ ·)
-instance [Add α] : LT (AddSubSemigroup α) := IsLawfulLT.instLT _
-instance [Add α] : IsLawfulLT (AddSubSemigroup α) := IsLawfulLT.inst _
+variable [Add α]
 
-def oemb [Add α] : AddSubSemigroup α ↪o Set α where
-  toFun a := a
-  inj' := SetLike.coe_inj
-  resp_rel := Iff.rfl
-
-instance [Add α] : IsPartialOrder (AddSubSemigroup α) := oemb.inducedIsPartialOrder'
-
-inductive Generate [Add α] (U: Set α) : α -> Prop where
-| of (a: α) : a ∈ U -> Generate U a
-| add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
-
-def generate [Add α] (U: Set α) : AddSubSemigroup α where
-  carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
-
-def giGenerate [Add α] : @GaloisInsertion (Set α) (AddSubSemigroup α) _ _ generate AddSubSemigroup.carrier where
-  choice S hS := {
-    carrier := S
+private instance builder : SetLike.LatticeBuilder (AddSubsemigroup α) where
+  closure := (Set.mk <| Generate ·)
+  closure_spec s := ⟨generate s, rfl⟩
+  create s P := {
+    carrier := s
     mem_add' := by
-      intro a b ha hb
-      apply hS
-      show a + b ∈ generate S
-      apply mem_add
-      apply Generate.of
-      assumption
-      apply Generate.of
-      assumption
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_add s <;> assumption
   }
-  choice_eq := by
-    intro S h
-    simp
-    apply le_antisymm
-    apply Generate.of
-    apply h
   gc := by
-    intro a b
-    apply Iff.intro
+    intro s t
+    apply flip Iff.intro
     intro h x hx
     apply h
     apply Generate.of
@@ -121,19 +55,9 @@ def giGenerate [Add α] : @GaloisInsertion (Set α) (AddSubSemigroup α) _ _ gen
     intro h x hx
     induction hx with
     | of => apply h; assumption
-    | add => apply mem_add <;> assumption
-  le_l_u := by
-    intro s x hx
-    apply Generate.of
-    assumption
+    | add => apply mem_add t <;> assumption
+  bot := ⟨⟨∅, fun h => False.elim h⟩, fun _ => Set.empty_sub _⟩
 
-instance [Add α] : CompleteLattice (AddSubSemigroup α) := {
-  giGenerate.liftCompleteLattice with
-  bot := {
-    carrier := ∅
-    mem_add' h := h.elim
-  }
-  bot_le _ := Set.empty_sub _
-}
+instance : SetLike.CompleteLatticeLE (AddSubsemigroup α) := SetLike.toCompleteLattice
 
-end AddSubSemigroup
+end AddSubsemigroup

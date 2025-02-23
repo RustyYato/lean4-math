@@ -32,17 +32,17 @@ instance : SetLike (Ideal R) R where
     apply SetLike.coe_inj
     assumption
 
-instance : IsAddSubGroup (LeftIdeal R) where
+instance : IsAddSubgroup (LeftIdeal R) where
   mem_add i := i.mem_add'
   mem_neg i := i.mem_neg'
   mem_zero i := i.mem_zero'
 
-instance : IsAddSubGroup (RightIdeal R) where
+instance : IsAddSubgroup (RightIdeal R) where
   mem_add i := i.mem_add'
   mem_neg i := i.mem_neg'
   mem_zero i := i.mem_zero'
 
-instance : IsAddSubGroup (Ideal R) where
+instance : IsAddSubgroup (Ideal R) where
   mem_add i := i.mem_add'
   mem_neg i := i.mem_neg'
   mem_zero i := i.mem_zero'
@@ -437,7 +437,7 @@ def Ideal.eq_univ_of_mem_unit {R: Ring α} (i: Ideal R) (u: Units R) : u.val ∈
   rw [←mul_assoc, u.val_mul_inv, one_mul] at this
   assumption
 
-def Ideal.Quot (i: Ideal R) : Type _ := Quotient (AddSubgroup.setoid i.toAddSubGroup)
+def Ideal.Quot (i: Ideal R) : Type _ := Quotient (AddSubgroup.setoid i.toAddSubgroup)
 
 @[cases_eliminator]
 private def Ideal.Quot.ind

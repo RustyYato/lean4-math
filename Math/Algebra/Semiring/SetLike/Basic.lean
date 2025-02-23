@@ -2,7 +2,7 @@ import Math.Algebra.Semiring.SetLike.Defs
 import Math.Algebra.AddMonoidWithOne.SetLike.Basic
 import Math.Algebra.Semiring.Defs
 
-variable [SetLike S α] [SemiringOps α] [IsSubSemiring S] [IsSemiring α]
+variable [SetLike S α] [SemiringOps α] [IsSubsemiring S] [IsSemiring α]
    (s: S)
 
 instance : SemiringOps s := inferInstance

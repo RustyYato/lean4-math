@@ -35,3 +35,9 @@ instance : IsAddMonoidWithOne s where
   ofNat_eq_natCast _ := by
     apply Subtype.val_inj
     apply ofNat_eq_natCast
+
+def natRange_sub: ∀s: S, Set.range (fun n: ℕ => (n: α)) ⊆  s := by
+  rintro s _ ⟨n, rfl⟩
+  dsimp
+  show ↑n ∈ s
+  apply mem_natCast
