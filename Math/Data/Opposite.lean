@@ -4,6 +4,7 @@ def Opposite (α: Sort*) := α
 
 postfix:max "ᵒᵖ" => Opposite
 
+@[coe]
 def Opposite.mk : α -> αᵒᵖ := id
 def Opposite.get : αᵒᵖ -> α := id
 
