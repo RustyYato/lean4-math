@@ -7,10 +7,10 @@ class Category.{v, u} (α: Type u) where
   Hom : α -> α -> Type v
   id : ∀a, Hom a a
   comp : ∀{a b c: α}, Hom b c -> Hom a b -> Hom a c
-  id_comp: ∀{a b} (h: Hom a b), comp (id b) h = h
-  comp_id: ∀{a b} (h: Hom a b), comp h (id a) = h
+  id_comp: ∀{a b} (h: Hom a b), comp (id b) h = h := by intros; simp; try rfl
+  comp_id: ∀{a b} (h: Hom a b), comp h (id a) = h := by intros; simp; try rfl
   comp_assoc: ∀{a b c d: α} (f: Hom c d) (g: Hom b c) (h: Hom a b),
-    comp f (comp g h) = comp (comp f g) h
+    comp f (comp g h) = comp (comp f g) h := by intros; simp; try rfl
 
 namespace Category
 
@@ -116,8 +116,5 @@ def Set.{u} : LargeCategory (Type u) where
   Hom α β := α -> β
   id _ := _root_.id
   comp f g := f ∘ g
-  id_comp _ := rfl
-  comp_id _ := rfl
-  comp_assoc _ _ _ := rfl
 
 end Category

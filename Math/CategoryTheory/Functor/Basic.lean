@@ -2,6 +2,7 @@ import Math.CategoryTheory.Basic
 
 namespace Category
 
+@[ext]
 structure Functor (C D: Type*) [Category C] [Category D] where
   obj: C -> D
   map: ∀{X Y: C}, X ⟶ Y -> obj X ⟶ obj Y
@@ -53,5 +54,16 @@ end Functor
 
 /-- Notation for composition of functors. -/
 scoped infixr:80 " ⋙ " => Functor.comp
+
+namespace Functor
+
+variable {C D E F: Type*} [Category C] [Category D] [Category E] [Category F]
+
+@[simp] def comp_id (f: C ⥤ D) : f ⋙ 𝟭 _ = f := rfl
+@[simp] def id_comp (f: C ⥤ D) : 𝟭  _⋙ f = f := rfl
+@[simp] def comp_assoc (f: E ⥤ F) (g: D ⥤ E) (h: C ⥤ D) :
+  f ⋙ g ⋙ h = (f ⋙ g) ⋙ h := rfl
+
+end Functor
 
 end Category
