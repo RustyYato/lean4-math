@@ -43,6 +43,7 @@ instance : IsAddMonoid (AddOfMul α) where
 instance : IsMonoid (MulOfAdd α) where
   npow_zero := zero_nsmul (α := α)
   npow_succ := succ_nsmul (α := α)
+instance : IsMonoid αᵃᵒᵖ := inferInstanceAs (IsMonoid α)
 instance : IsAddMonoid αᵐᵒᵖ := inferInstanceAs (IsAddMonoid α)
 
 @[simp] def nsmul_zero (a: ℕ) : a • (0: α) = 0 := by
@@ -71,6 +72,9 @@ def succ_nsmul' (n: ℕ) (a: α) : (n + 1) • a = a + n • a := by
 def npow_succ' (n: ℕ) (a: α) : a ^ (n + 1) = a * a ^ n :=
   succ_nsmul' (α := AddOfMul α) _ _
 
+instance : IsAddMonoid αᵃᵒᵖ where
+  zero_nsmul := zero_nsmul (α := α)
+  succ_nsmul := succ_nsmul' (α := α)
 instance : IsMonoid αᵐᵒᵖ where
   npow_zero := npow_zero (α := α)
   npow_succ := npow_succ' (α := α)

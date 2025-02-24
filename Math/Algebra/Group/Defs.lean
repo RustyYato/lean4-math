@@ -16,8 +16,12 @@ instance [Neg α] [IsInvolutiveNeg α] : IsInvolutiveInv (MulOfAdd α) where
   inv_inv := neg_neg (α := α)
 instance [Neg α] [IsInvolutiveNeg α] : IsInvolutiveNeg αᵐᵒᵖ :=
   inferInstanceAs (IsInvolutiveNeg α)
-instance [Inv α] [IsInvolutiveInv α] : IsInvolutiveInv αᵐᵒᵖ where
-  inv_inv := inv_inv (α := α)
+instance [Inv α] [IsInvolutiveInv α] : IsInvolutiveInv αᵐᵒᵖ :=
+  inferInstanceAs (IsInvolutiveInv α)
+instance [Neg α] [IsInvolutiveNeg α] : IsInvolutiveNeg αᵃᵒᵖ :=
+  inferInstanceAs (IsInvolutiveNeg α)
+instance [Inv α] [IsInvolutiveInv α] : IsInvolutiveInv αᵃᵒᵖ :=
+  inferInstanceAs (IsInvolutiveInv α)
 
 def neg_inj [Neg α] [IsInvolutiveNeg α] {a b: α} : -a = -b ↔ a = b :=
   Function.Injective.eq_iff <| by
@@ -98,6 +102,13 @@ instance [IsSubNegMonoid α] : IsDivInvMonoid (MulOfAdd α) where
   zpow_ofNat := zsmul_ofNat (α := α)
   zpow_negSucc := zsmul_negSucc (α := α)
 
+instance [IsSubNegMonoid α] : IsSubNegMonoid αᵃᵒᵖ where
+  sub_eq_add_neg _ _ := rfl
+  zsmul_ofNat := zsmul_ofNat (α := α)
+  zsmul_negSucc := zsmul_negSucc (α := α)
+instance [IsDivInvMonoid α] : IsDivInvMonoid αᵃᵒᵖ :=
+  inferInstanceAs (IsDivInvMonoid α)
+
 instance [IsSubNegMonoid α] : IsSubNegMonoid αᵐᵒᵖ :=
   inferInstanceAs (IsSubNegMonoid α)
 instance [IsDivInvMonoid α] : IsDivInvMonoid αᵐᵒᵖ where
@@ -120,6 +131,10 @@ instance [One α] [Inv α] [IsInvOneClass α] : IsNegZeroClass (AddOfMul α) whe
   neg_zero := inv_one (α := α)
 instance [Zero α] [Neg α] [IsNegZeroClass α] : IsInvOneClass (MulOfAdd α) where
   inv_one := neg_zero (α := α)
+instance [Zero α] [Neg α] [IsNegZeroClass α] : IsNegZeroClass αᵃᵒᵖ :=
+  inferInstanceAs (IsNegZeroClass α)
+instance [One α] [Inv α] [IsInvOneClass α] : IsInvOneClass αᵃᵒᵖ :=
+  inferInstanceAs (IsInvOneClass α)
 instance [Zero α] [Neg α] [IsNegZeroClass α] : IsNegZeroClass αᵐᵒᵖ :=
   inferInstanceAs (IsNegZeroClass α)
 instance [One α] [Inv α] [IsInvOneClass α] : IsInvOneClass αᵐᵒᵖ :=
@@ -179,6 +194,8 @@ instance [IsDivisionMonoid α] : IsSubtractionMonoid (AddOfMul α) where
 instance [IsSubtractionMonoid α] : IsDivisionMonoid (MulOfAdd α) where
   inv_mul_rev := neg_add_rev (α := α)
   inv_eq_of_mul_left := neg_eq_of_add_left (α := α)
+instance [IsSubtractionMonoid α] : IsDivisionMonoid αᵃᵒᵖ :=
+  inferInstanceAs (IsDivisionMonoid α)
 instance [IsSubtractionMonoid α] : IsSubtractionMonoid αᵐᵒᵖ :=
   inferInstanceAs (IsSubtractionMonoid α)
 
@@ -209,6 +226,8 @@ instance [IsGroup α] : IsAddGroup (AddOfMul α) where
   neg_add_cancel := inv_mul_cancel (α := α)
 instance [IsAddGroup α] : IsGroup (MulOfAdd α) where
   inv_mul_cancel := neg_add_cancel (α := α)
+instance [IsAddGroup α] : IsGroup αᵃᵒᵖ :=
+  inferInstanceAs (IsGroup α)
 instance [IsAddGroup α] : IsAddGroup αᵐᵒᵖ :=
   inferInstanceAs (IsAddGroup α)
 
@@ -236,6 +255,8 @@ def sub_self [IsAddGroup α] (a: α) : a - a = 0 := by
 def div_self [IsGroup α] (a: α) : a / a = 1 :=
   sub_self (α := AddOfMul α) _
 
+instance [IsAddGroup α] : IsAddGroup αᵃᵒᵖ where
+  neg_add_cancel := add_neg_cancel (α := α)
 instance [IsGroup α] : IsGroup αᵐᵒᵖ where
   inv_mul_cancel := mul_inv_cancel (α := α)
 

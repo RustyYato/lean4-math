@@ -18,6 +18,12 @@ instance [Mul α] [IsSemigroup α] : IsAddSemigroup (AddOfMul α) where
   add_assoc := mul_assoc (α := α)
 instance [Add α] [IsAddSemigroup α] : IsSemigroup (MulOfAdd α) where
   mul_assoc := add_assoc (α := α)
+instance [Add α] [IsAddSemigroup α] : IsAddSemigroup αᵃᵒᵖ where
+  add_assoc _ _ _ := (add_assoc (α := α) _ _ _).symm
+instance [Mul α] [IsSemigroup α] : IsSemigroup αᵃᵒᵖ :=
+  inferInstanceAs (IsSemigroup α)
+instance [Mul α] [IsAddSemigroup α] : IsAddSemigroup αᵐᵒᵖ :=
+  inferInstanceAs (IsAddSemigroup α)
 instance [Mul α] [IsSemigroup α] : IsSemigroup αᵐᵒᵖ where
   mul_assoc _ _ _ := (mul_assoc (α := α) _ _ _).symm
 
@@ -33,6 +39,10 @@ instance [Mul α] [IsCommMagma α] : IsAddCommMagma (AddOfMul α) where
   add_comm := mul_comm (α := α)
 instance [Add α] [IsAddCommMagma α] : IsCommMagma (MulOfAdd α) where
   mul_comm := add_comm (α := α)
+instance [Add α] [IsAddCommMagma α] : IsAddCommMagma αᵃᵒᵖ where
+  add_comm _ _ := add_comm (α := α) _ _
+instance [Mul α] [IsCommMagma α] : IsCommMagma αᵃᵒᵖ :=
+  inferInstanceAs (IsCommMagma α)
 instance [Add α] [IsAddCommMagma α] : IsAddCommMagma αᵐᵒᵖ :=
   inferInstanceAs (IsAddCommMagma α)
 instance [Mul α] [IsCommMagma α] : IsCommMagma αᵐᵒᵖ where
@@ -131,18 +141,25 @@ class IsMulZeroClass (α: Type*) [Mul α] [Zero α]: Prop where
 @[simp] def one_mul [IsMulOneClass α] (a: α): 1 * a = a := IsMulOneClass.one_mul a
 @[simp] def mul_one [IsMulOneClass α] (a: α): a * 1 = a := IsMulOneClass.mul_one a
 
-instance [Mul α] [One α] [IsMulOneClass α] : IsAddZeroClass (AddOfMul α) where
+instance [IsMulOneClass α] : IsAddZeroClass (AddOfMul α) where
   add_zero := mul_one (α := α)
   zero_add := one_mul (α := α)
-instance [Add α] [Zero α] [IsAddZeroClass α] : IsMulOneClass (MulOfAdd α) where
+instance [IsAddZeroClass α] : IsMulOneClass (MulOfAdd α) where
   mul_one := add_zero (α := α)
   one_mul := zero_add (α := α)
-instance [Add α] [Zero α] [IsAddZeroClass α] : IsAddZeroClass αᵐᵒᵖ :=
+instance [IsMulOneClass α] : IsMulOneClass αᵃᵒᵖ :=
+  inferInstanceAs (IsMulOneClass α)
+instance [IsAddZeroClass α] : IsAddZeroClass αᵃᵒᵖ where
+  zero_add := add_zero (α := α)
+  add_zero := zero_add (α := α)
+instance [IsMulZeroClass α] : IsMulZeroClass αᵃᵒᵖ :=
+  inferInstanceAs (IsMulZeroClass α)
+instance [IsAddZeroClass α] : IsAddZeroClass αᵐᵒᵖ :=
   inferInstanceAs (IsAddZeroClass α)
-instance [Mul α] [One α] [IsMulOneClass α] : IsMulOneClass αᵐᵒᵖ where
+instance [IsMulOneClass α] : IsMulOneClass αᵐᵒᵖ where
   one_mul := mul_one (α := α)
   mul_one := one_mul (α := α)
-instance [Mul α] [Zero α] [IsMulZeroClass α] : IsMulZeroClass αᵐᵒᵖ where
+instance [IsMulZeroClass α] : IsMulZeroClass αᵐᵒᵖ where
   zero_mul := mul_zero (α := α)
   mul_zero := zero_mul (α := α)
 

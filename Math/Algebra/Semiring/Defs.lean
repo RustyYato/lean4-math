@@ -8,6 +8,11 @@ class IsRightDistrib (α: Type*) [Add α] [Mul α]: Prop where
 def mul_add [Add α] [Mul α] [IsLeftDistrib α] (k a b: α): k * (a + b) = k * a + k * b := IsLeftDistrib.left_distrib k a b
 def add_mul [Add α] [Mul α] [IsRightDistrib α] (a b k: α): (a + b) * k = a * k + b * k := IsRightDistrib.right_distrib a b k
 
+instance [Add α] [Mul α] [IsLeftDistrib α] : IsLeftDistrib αᵃᵒᵖ where
+  left_distrib _ _ _ := mul_add (α := α) _ _ _
+instance [Add α] [Mul α] [IsRightDistrib α] : IsRightDistrib αᵃᵒᵖ where
+  right_distrib _ _ _ := add_mul (α := α) _ _ _
+
 instance [Add α] [Mul α] [IsLeftDistrib α] : IsRightDistrib αᵐᵒᵖ where
   right_distrib _ _ _ := mul_add (α := α) _ _ _
 instance [Add α] [Mul α] [IsRightDistrib α] : IsLeftDistrib αᵐᵒᵖ where
@@ -34,6 +39,7 @@ instance [SemiringOps α] [IsAddCommMagma α] [IsAddMonoidWithOne α] [IsSemigro
   npow_zero := npow_zero
   npow_succ := npow_succ
 
+instance [SemiringOps α] [IsSemiring α] : IsSemiring αᵃᵒᵖ := inferInstance
 instance [SemiringOps α] [IsSemiring α] : IsSemiring αᵐᵒᵖ := inferInstance
 
 def natCast_mul_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : r * x = r • x := by

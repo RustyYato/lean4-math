@@ -8,10 +8,15 @@ def MulOfAdd (α: Sort u) := α
 def MulOfAdd.get : MulOfAdd α -> α := id
 def MulOfAdd.mk : α -> MulOfAdd α := id
 
+def AddOpp (α: Sort u) := α
+def AddOpp.get : AddOpp α -> α := id
+def AddOpp.mk : α -> AddOpp α := id
+
 def MulOpp (α: Sort u) := α
 def MulOpp.get : MulOpp α -> α := id
 def MulOpp.mk : α -> MulOpp α := id
 
+postfix:max "ᵃᵒᵖ" => AddOpp
 postfix:max "ᵐᵒᵖ" => MulOpp
 
 instance [One α] : Zero (AddOfMul α) where
@@ -50,6 +55,36 @@ instance [SMul ℕ α] : Pow (MulOfAdd α) ℕ where
 instance [SMul ℤ α] : Pow (MulOfAdd α) ℤ where
   pow a n := .mk (n • a.get)
 
+instance [Zero α] : Zero αᵃᵒᵖ where
+  zero := (0: α)
+
+instance [One α] : One αᵃᵒᵖ where
+  one := (1: α)
+
+instance [Add α] : Add αᵃᵒᵖ where
+  add a b := b.get + a.get
+
+instance [Neg α] : Neg αᵃᵒᵖ := ⟨(.mk <| -·.get)⟩
+instance [Add α] [Neg α] : Sub αᵃᵒᵖ where
+  sub a b := a + -b
+
+instance [Pow α ℕ] : Pow αᵃᵒᵖ ℕ where
+  pow a n := .mk (a.get ^ n)
+
+instance [Pow α ℤ] : Pow αᵃᵒᵖ ℤ where
+  pow a n := .mk (a.get ^ n)
+
+instance [Mul α] : Mul αᵃᵒᵖ := ⟨(.mk <| ·.get * ·.get)⟩
+instance [Inv α] : Inv αᵃᵒᵖ := ⟨(.mk <| ·.get⁻¹)⟩
+instance [Div α] : Div αᵃᵒᵖ := ⟨(.mk <| ·.get / ·.get)⟩
+instance [SMul Nat α] : SMul Nat αᵃᵒᵖ := ⟨(.mk <| · • ·.get)⟩
+instance [SMul Int α] : SMul Int αᵃᵒᵖ := ⟨(.mk <| · • ·.get)⟩
+
+instance [NatCast α] : NatCast αᵃᵒᵖ := ⟨(.mk ·)⟩
+instance [IntCast α] : IntCast αᵃᵒᵖ := ⟨(.mk ·)⟩
+
+instance [OfNat α (n + 2)] : OfNat αᵃᵒᵖ (n + 2) := ⟨(.mk (OfNat.ofNat (n + 2)))⟩
+
 instance [Zero α] : Zero αᵐᵒᵖ where
   zero := (0: α)
 
@@ -85,7 +120,30 @@ instance [IntCast α] : IntCast αᵐᵒᵖ := ⟨(.mk ·)⟩
 
 instance [OfNat α (n + 2)] : OfNat αᵐᵒᵖ (n + 2) := ⟨(.mk (OfNat.ofNat (n + 2)))⟩
 
+namespace AddOpp
+
+@[cases_eliminator]
+def cases {motive: αᵃᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, motive x := mk
+
+@[simp]
+def mk_zero [Zero α] : mk (0: α) = 0 :=rfl
+@[simp]
+def mk_one [One α] : mk (1: α) = 1 :=rfl
+@[simp]
+def mk_ofNat [OfNat α (n + 2)] : mk (OfNat.ofNat (n + 2): α) = OfNat.ofNat (n + 2) :=rfl
+@[simp]
+def mk_add [Add α] (a b: α) : mk (a + b) = mk b + mk a :=rfl
+@[simp]
+def mk_neg [Neg α] (a: α) : mk (-a) = -mk a :=rfl
+@[simp]
+def mk_mul [Mul α] (a b: α) : mk (a * b) = mk a * mk b :=rfl
+
+end AddOpp
+
 namespace MulOpp
+
+@[cases_eliminator]
+def cases {motive: αᵐᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, motive x := mk
 
 @[simp]
 def mk_zero [Zero α] : mk (0: α) = 0 :=rfl

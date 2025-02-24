@@ -18,12 +18,17 @@ variable [AddGroupWithOneOps α] [IsAddGroupWithOne α]
 def intCast_ofNat (n: ℕ) : ((n: Int): α) = (n: α) := IsAddGroupWithOne.intCast_ofNat _
 def intCast_negSucc (n: ℕ) : (Int.negSucc n) = -(n.succ: α) := IsAddGroupWithOne.intCast_negSucc _
 
-instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne αᵐᵒᵖ where
-  natCast_zero := natCast_zero (α := α)
-  natCast_succ := natCast_succ (α := α)
-  ofNat_eq_natCast := ofNat_eq_natCast (α := α)
+instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne αᵃᵒᵖ := {
+  inferInstanceAs (IsAddMonoidWithOne αᵃᵒᵖ), inferInstanceAs (IsAddGroup αᵃᵒᵖ) with
   intCast_ofNat := intCast_ofNat (α := α)
   intCast_negSucc := intCast_negSucc (α := α)
+}
+
+instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne αᵐᵒᵖ := {
+  inferInstanceAs (IsAddMonoidWithOne αᵐᵒᵖ), inferInstanceAs (IsAddGroup αᵐᵒᵖ) with
+  intCast_ofNat := intCast_ofNat (α := α)
+  intCast_negSucc := intCast_negSucc (α := α)
+}
 
 def intCast_eq_zsmul_one [AddGroupWithOneOps α] [IsAddGroupWithOne α] (n: Int) : (n: α) = n • 1  := by
   cases n with

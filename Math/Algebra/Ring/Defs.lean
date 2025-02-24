@@ -14,6 +14,7 @@ instance [RingOps α] [IsSemiring α] [IsAddGroupWithOne α] : IsRing α where
   zsmul_negSucc := zsmul_negSucc
   neg_add_cancel := neg_add_cancel
 
+instance [RingOps α] [IsRing α] : IsRing αᵃᵒᵖ := inferInstance
 instance [RingOps α] [IsRing α] : IsRing αᵐᵒᵖ := inferInstance
 
 def mul_sub [AddGroupOps α] [IsAddGroup α] [Mul α] [IsLeftDistrib α] [IsMulZeroClass α] (k a b: α): k * (a - b) = k * a - k * b := by
