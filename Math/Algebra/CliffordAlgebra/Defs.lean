@@ -105,7 +105,7 @@ def lift [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R
     apply (RingQuot.liftAlgHom_mkAlgHom_apply _ _ _ _).trans
     apply TensorAlgebra.lift_ι_apply
 
-@[elab_as_elim]
+@[elab_as_elim, induction_eliminator]
 def induction {C : CliffordAlgebra Q → Prop}
   (algebraMap: ∀r: R, C (algebraMap r)) (ι: ∀ x, C (ι Q x))
   (mul: ∀ a b, C a → C b → C (a * b)) (add: ∀ a b, C a → C b → C (a + b))

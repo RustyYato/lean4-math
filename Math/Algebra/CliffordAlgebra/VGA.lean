@@ -1,6 +1,7 @@
 import Math.Algebra.QuadraticForm.Signature
 import Math.Algebra.CliffordAlgebra.Defs
 import Math.Data.Real.Basic
+import Math.Data.Fin.Basic
 
 namespace VGA
 
@@ -26,13 +27,78 @@ def ι : (Vector n) →ₗ[ℝ] VGA n := CliffordAlgebra.ι (R := ℝ) (QF n)
 def ι_sq (v: Vector n) : ι v * ι v = algebraMap (QF n v) := CliffordAlgebra.ι_sq_scalar _ _
 def ι_mul_add_comm_mul (v w: Vector n) : ι v * ι w + ι w * ι v = algebraMap ((QF n).polar v w) := CliffordAlgebra.ι_mul_add_comm_mul _ _ _
 
+set_option linter.unusedVariables false in
+@[induction_eliminator]
+def induction {C : VGA n → Prop} :
+  ∀(algebraMap: ∀r: ℝ, C (algebraMap r)) (ι: ∀ x, C (ι x))
+   (mul: ∀ a b, C a → C b → C (a * b)) (add: ∀ a b, C a → C b → C (a + b))
+   (a : VGA n), C a := CliffordAlgebra.induction (C := C)
+
+def basis_vector (i: Fin n) : Vector n := fun j => if i = j then 1 else 0
+
+def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
+  Fin.prod fun j: Fin n =>
+    if i &&& (1 <<< j.val) == 0 then
+      1
+    else
+      ι (basis_vector j)
+
+def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • sorry := by
+  induction v with
+  | algebraMap v =>
+    refine ⟨fun
+      | 0 => v
+      | ⟨_ + 1, _⟩ => 0, ?_⟩
+    simp [zero_smul]
+  | ι v =>
+    refine ⟨fun
+      | 1 => v 0
+      | 2 => v 1
+      | 3 => v 2
+      | _ => 0, ?_⟩
+    simp [zero_smul, resp_zero]
+    rw [ι_eq_lincomb]
+  | add a b ha hb =>
+    obtain ⟨a, rfl⟩ := ha
+    obtain ⟨b, rfl⟩ := hb
+    refine ⟨fun i => a i + b i, ?_⟩
+    simp [resp_add, add_smul]
+    ac_rfl
+  | mul a b ha hb =>
+    obtain ⟨a, rfl⟩ := ha
+    obtain ⟨b, rfl⟩ := hb
+    refine ⟨?_, ?_⟩
+    exact fun
+      | 0 => algebraMap (a 0 * b 0)
+      | 1 => sorry
+      | 2 => sorry
+      | 3 => sorry
+      | 4 => sorry
+      | 5 => sorry
+      | 6 => sorry
+      | 7 => sorry
+    simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
+    simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
+      smul_mul]
+    simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]
+
+    -- repeat rw [add_assoc]
+    -- congr 1
+
+
+
+
+    congr
+    sorry
+
+
 namespace VGA3
 
 def dot (v w: Vector 3) : ℝ := v 0 * w 0 + v 1 * w 1 + v 2 * w 2
 
-def i : Vector 3 := fun i => if i = 0 then 1 else 0
-def j : Vector 3 := fun i => if i = 1 then 1 else 0
-def k : Vector 3 := fun i => if i = 2 then 1 else 0
+def i : Vector 3 := basis_vector 0
+def j : Vector 3 := basis_vector 1
+def k : Vector 3 := basis_vector 2
 
 def ι_eq_lincomb (v: Vector 3) : ι v = v 0 • ι i + v 1 • ι j + v 2 • ι k := by
   simp only [←resp_smul, ←resp_add]
@@ -111,7 +177,56 @@ def ijk_sq : (ι i * ι j * ι k) ^ 2 = -1 := by
     ι_sq, ι_sq]
   simp [neg_neg]
 
+def basis (v: VGA 3) : ∃c: Fin 8 -> ℝ, v = algebraMap (A := VGA 3) (c 0)
+  + c 1 • ι i + c 2 • ι j + c 3 • ι k
+  + c 4 • (ι i * ι j) + c 5 • (ι i * ι k) + c 6 • (ι j * ι k)
+  + c 7 • (ι i * ι j * ι k) := by
+  induction v with
+  | algebraMap v =>
+    refine ⟨fun
+      | 0 => v
+      | ⟨_ + 1, _⟩ => 0, ?_⟩
+    simp [zero_smul]
+  | ι v =>
+    refine ⟨fun
+      | 1 => v 0
+      | 2 => v 1
+      | 3 => v 2
+      | _ => 0, ?_⟩
+    simp [zero_smul, resp_zero]
+    rw [ι_eq_lincomb]
+  | add a b ha hb =>
+    obtain ⟨a, rfl⟩ := ha
+    obtain ⟨b, rfl⟩ := hb
+    refine ⟨fun i => a i + b i, ?_⟩
+    simp [resp_add, add_smul]
+    ac_rfl
+  | mul a b ha hb =>
+    obtain ⟨a, rfl⟩ := ha
+    obtain ⟨b, rfl⟩ := hb
+    refine ⟨?_, ?_⟩
+    exact fun
+      | 0 => algebraMap (a 0 * b 0)
+      | 1 => sorry
+      | 2 => sorry
+      | 3 => sorry
+      | 4 => sorry
+      | 5 => sorry
+      | 6 => sorry
+      | 7 => sorry
+    simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
+    simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
+      smul_mul]
+    simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]
 
+    -- repeat rw [add_assoc]
+    -- congr 1
+
+
+
+
+    congr
+    sorry
 
 end VGA3
 

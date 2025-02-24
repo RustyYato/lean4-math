@@ -85,6 +85,8 @@ instance (priority := 900) : AlgebraMap R R where
   resp_add := rfl
   resp_mul := rfl
 
+def algebraMap_id : algebraMap (R := R) (A := R) x = x := rfl
+
 instance : IsAlgebra R R where
   commutes := mul_comm
   smul_def _ _ := rfl
