@@ -99,6 +99,20 @@ def anticomm' (v w: Vector 3) : ι v * ι w = -ι w * ι v + 2 * algebraMap (dot
   rw [resp_mul]
   rfl
 
+def ijk_sq : (ι i * ι j * ι k) ^ 2 = -1 := by
+  rw [npow_two, ←mul_assoc, ←mul_assoc]
+  repeat rw [mul_assoc (ι i)]
+  repeat rw [mul_assoc (ι j)]
+  rw [anticomm_ik]; simp only [←neg_mul_left, ←neg_mul_right]
+  rw [mul_assoc (ι i), anticomm_jk]; simp only [←neg_mul_left, ←neg_mul_right]
+  rw [mul_assoc, mul_assoc, ι_sq,
+    ←mul_assoc (ι j), anticomm_ij]; simp only [←neg_mul_left, ←neg_mul_right]
+  rw [←mul_assoc, ←mul_assoc, ←mul_assoc, mul_assoc (_ * ι i),
+    ι_sq, ι_sq]
+  simp [neg_neg]
+
+
+
 end VGA3
 
 end VGA
