@@ -97,6 +97,11 @@ def lift_ι_apply [IsSemiring A] [IsAlgebra R A] (f : M →ₗ[R] A) (x) :
     conv => { rhs; rw [←ι_comp_lift f] }
     rfl
 
+@[ext]
+def hom_ext [IsAlgebra R A] {f g : TensorAlgebra R M →ₐ[R] A}
+  (w : f.toLinearMap.comp (ι R) = g.toLinearMap.comp (ι R)) : f = g :=
+  (lift R (A := A)  (M := M)).symm.inj w
+
 @[induction_eliminator]
 def induction {motive: TensorAlgebra R M -> Prop}
   (algebraMap: ∀r: R, motive (algebraMap r))

@@ -576,6 +576,12 @@ def ringQuot_ext {s : A → A → Prop} (f g : RingQuot s →ₐ[S] B)
   show (f.comp (mkAlgHom S s)) x = _
   rw [w]; rfl
 
+def ringQuot_ext'
+  {s : A → A → Prop} (f g : RingQuot s →ₐ[S] B)
+  (w : f.comp (RingQuot.mkAlgHom S s) = g.comp (RingQuot.mkAlgHom S s)) : f = g := by
+  ext
+  assumption
+
 attribute [irreducible] instZero instOne add mul neg sub npow nsmul zsmul mkRingHom preLift lift preLiftAlgHom liftAlgHom
 
 end RingQuot

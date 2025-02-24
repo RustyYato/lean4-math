@@ -79,6 +79,32 @@ def ι_sq_scalar (v: V) : ι Q v * ι Q v = algebraMap (Q v) := by
   apply (RingQuot.mkAlgHom_rel R (CliffordAlgebra.Rel.intro v)).trans
   apply resp_algebraMap
 
+def lift [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R A]  :
+    { f : V →ₗ[R] A // ∀ m, f m * f m = algebraMap (Q m) } ≃ (CliffordAlgebra Q →ₐ[R] A) where
+  toFun f := RingQuot.liftAlgHom (S := R) ⟨TensorAlgebra.lift R f.val, by
+      intro a b r
+      induction r with | intro v =>
+      rw [resp_mul, TensorAlgebra.lift_ι_apply, f.property,
+        resp_algebraMap]⟩
+  invFun f := {
+    val := f.toLinearMap.comp (ι Q)
+    property := by
+      intro v
+      rw [LinearMap.comp]
+      show f (ι Q v) * f (ι Q v) = _
+      rw [←resp_mul, ι_sq_scalar, resp_algebraMap]
+  }
+  leftInv f := by
+    ext v
+    apply (RingQuot.liftAlgHom_mkAlgHom_apply _ _ _ _).trans
+    apply TensorAlgebra.lift_ι_apply
+  rightInv f := by
+    simp
+    apply RingQuot.ringQuot_ext'
+    ext v
+    apply (RingQuot.liftAlgHom_mkAlgHom_apply _ _ _ _).trans
+    apply TensorAlgebra.lift_ι_apply
+
 end CliffordAlgebra
 
 -- the canonical map from a TensorAlgebra to a CliffordAlgebra
