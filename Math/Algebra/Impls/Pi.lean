@@ -42,6 +42,36 @@ instance [∀i, Neg (β i)] : Neg (∀i, β i) where
 instance [∀i, Inv (β i)] : Inv (∀i, β i) where
   inv f i := (f i)⁻¹
 
+def Pi.zero_eq [∀i, Zero (β i)] : (0: ∀i, β i) = fun _ => 0 := rfl
+def Pi.one_eq [∀i, One (β i)] : (1: ∀i, β i) = fun _ => 1 := rfl
+def Pi.ofNat_eq [∀i, OfNat (β i) (n + 2)]: (OfNat.ofNat (n + 2): ∀i, β i) = fun _ => OfNat.ofNat (n + 2) := rfl
+def Pi.natCast_eq [∀i, NatCast (β i)] (n: ℕ): (n: ∀i, β i) = fun _ => (n: β _) := rfl
+def Pi.intCast_eq [∀i, IntCast (β i)] (n: ℤ): (n: ∀i, β i) = fun _ => (n: β _) := rfl
+def Pi.add_eq [∀i, Add (β i)] (f g: ∀i, β i): f + g = fun x => f x + g x := rfl
+def Pi.mul_eq [∀i, Mul (β i)] (f g: ∀i, β i): f * g = fun x => f x * g x := rfl
+def Pi.sub_eq [∀i, Sub (β i)] (f g: ∀i, β i): f - g = fun x => f x - g x := rfl
+def Pi.div_eq [∀i, Div (β i)] (f g: ∀i, β i): f / g = fun x => f x / g x := rfl
+def Pi.smul_eq [∀i, SMul R (β i)] (r: R) (f: ∀i, β i): r • f = fun x => r • f x := rfl
+def Pi.npow_eq [∀i, Pow (β i) ℕ] (f: ∀i, β i) (n: ℕ): f ^ n = fun x => f x ^ n := rfl
+def Pi.zpow_eq [∀i, Pow (β i) ℤ] (f: ∀i, β i) (n: ℤ): f ^ n = fun x => f x ^ n := rfl
+def Pi.neg_eq [∀i, Neg (β i)] (f: ∀i, β i): -f = fun x => -f x := rfl
+def Pi.inv_eq [∀i, Inv (β i)] (f: ∀i, β i): f⁻¹ = fun x => (f x)⁻¹ := rfl
+
+@[simp] def Pi.apply_zero [∀i, Zero (β i)] (i: ι) : (0: ∀i, β i) i = 0 := rfl
+@[simp] def Pi.apply_one [∀i, One (β i)] (i: ι) : (1: ∀i, β i) i = 1 := rfl
+@[simp] def Pi.apply_ofNat [∀i, OfNat (β i) (n + 2)] (i: ι): (OfNat.ofNat (n + 2): ∀i, β i) i = OfNat.ofNat (n + 2) := rfl
+@[simp] def Pi.apply_natCast [∀i, NatCast (β i)] (n: ℕ) (i: ι): (n: ∀i, β i) i = (n: β _) := rfl
+@[simp] def Pi.apply_intCast [∀i, IntCast (β i)] (n: ℤ) (i: ι): (n: ∀i, β i) i = (n: β _) := rfl
+@[simp] def Pi.apply_add [∀i, Add (β i)] (f g: ∀i, β i) (i: ι): (f + g) i = f i + g i := rfl
+@[simp] def Pi.apply_mul [∀i, Mul (β i)] (f g: ∀i, β i) (i: ι): (f * g) i = f i * g i := rfl
+@[simp] def Pi.apply_sub [∀i, Sub (β i)] (f g: ∀i, β i) (i: ι): (f - g) i = f i - g i := rfl
+@[simp] def Pi.apply_div [∀i, Div (β i)] (f g: ∀i, β i) (i: ι): (f / g) i = f i / g i := rfl
+@[simp] def Pi.apply_smul [∀i, SMul R (β i)] (r: R) (f: ∀i, β i): (r • f) i = r • f i := rfl
+@[simp] def Pi.apply_npow [∀i, Pow (β i) ℕ] (f: ∀i, β i) (n: ℕ): (f ^ n) i = f i ^ n := rfl
+@[simp] def Pi.apply_zpow [∀i, Pow (β i) ℤ] (f: ∀i, β i) (n: ℤ): (f ^ n) i = f i ^ n := rfl
+@[simp] def Pi.apply_neg [∀i, Neg (β i)] (f: ∀i, β i): (-f) i = -f i := rfl
+@[simp] def Pi.apply_inv [∀i, Inv (β i)] (f: ∀i, β i): (f⁻¹) i = (f i)⁻¹ := rfl
+
 instance [∀i, Zero (β i)] [∀i, Add (β i)] [∀i, IsAddZeroClass (β i)] : IsAddZeroClass (∀i, β i) where
   zero_add := by
     intro f; ext i
@@ -220,6 +250,36 @@ instance [Neg β] : Neg (ι -> β) :=
   inferInstance
 instance [Inv β] : Inv (ι -> β) :=
   inferInstance
+
+def Function.zero_eq [Zero β] : (0: ι -> β) = fun _ => 0 := rfl
+def Function.one_eq [One β] : (1: ι -> β) = fun _ => 1 := rfl
+def Function.ofNat_eq [OfNat β (n + 2)]: (OfNat.ofNat (n + 2): ι -> β) = fun _ => OfNat.ofNat (n + 2) := rfl
+def Function.natCast_eq [NatCast β] (n: ℕ): (n: ι -> β) = fun _ => (n: β) := rfl
+def Function.intCast_eq [IntCast β] (n: ℤ): (n: ι -> β) = fun _ => (n: β) := rfl
+def Function.add_eq [Add β] (f g: ι -> β): f + g = fun x => f x + g x := rfl
+def Function.mul_eq [Mul β] (f g: ι -> β): f * g = fun x => f x * g x := rfl
+def Function.sub_eq [Sub β] (f g: ι -> β): f - g = fun x => f x - g x := rfl
+def Function.div_eq [Div β] (f g: ι -> β): f / g = fun x => f x / g x := rfl
+def Function.smul_eq [SMul R β] (r: R) (f: ι -> β): r • f = fun x => r • f x := rfl
+def Function.npow_eq [Pow β ℕ] (f: ι -> β) (n: ℕ): f ^ n = fun x => f x ^ n := rfl
+def Function.zpow_eq [Pow β ℤ] (f: ι -> β) (n: ℤ): f ^ n = fun x => f x ^ n := rfl
+def Function.neg_eq [Neg β] (f: ι -> β): -f = fun x => -f x := rfl
+def Function.inv_eq [Inv β] (f: ι -> β): f⁻¹ = fun x => (f x)⁻¹ := rfl
+
+@[simp] def Function.apply_zero [Zero β] (i: ι) : (0: ι -> β) i = 0 := rfl
+@[simp] def Function.apply_one [One β] (i: ι) : (1: ι -> β) i = 1 := rfl
+@[simp] def Function.apply_ofNat [OfNat β (n + 2)] (i: ι): (OfNat.ofNat (n + 2): ι -> β) i = OfNat.ofNat (n + 2) := rfl
+@[simp] def Function.apply_natCast [NatCast β] (n: ℕ) (i: ι): (n: ι -> β) i = (n: β) := rfl
+@[simp] def Function.apply_intCast [IntCast β] (n: ℤ) (i: ι): (n: ι -> β) i = (n: β) := rfl
+@[simp] def Function.apply_add [Add β] (f g: ι -> β) (i: ι): (f + g) i = f i + g i := rfl
+@[simp] def Function.apply_mul [Mul β] (f g: ι -> β) (i: ι): (f * g) i = f i * g i := rfl
+@[simp] def Function.apply_sub [Sub β] (f g: ι -> β) (i: ι): (f - g) i = f i - g i := rfl
+@[simp] def Function.apply_div [Div β] (f g: ι -> β) (i: ι): (f / g) i = f i / g i := rfl
+@[simp] def Function.apply_smul [SMul R β] (r: R) (f: ι -> β): (r • f) i = r • f i := rfl
+@[simp] def Function.apply_npow [Pow β ℕ] (f: ι -> β) (n: ℕ): (f ^ n) i = f i ^ n := rfl
+@[simp] def Function.apply_zpow [Pow β ℤ] (f: ι -> β) (n: ℤ): (f ^ n) i = f i ^ n := rfl
+@[simp] def Function.apply_neg [Neg β] (f: ι -> β): (-f) i = -f i := rfl
+@[simp] def Function.apply_inv [Inv β] (f: ι -> β): (f⁻¹) i = (f i)⁻¹ := rfl
 
 instance [Zero β] [Add β] [IsAddZeroClass β] : IsAddZeroClass (ι -> β) :=
   inferInstance

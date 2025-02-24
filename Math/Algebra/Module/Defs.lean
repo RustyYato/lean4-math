@@ -14,9 +14,11 @@ def neg_smul [SMul R M] [RingOps R] [AddGroupOps M] [IsRing R] [IsAddGroup M] [I
   refine neg_eq_of_add_right ?_
   rw [←add_smul, neg_add_cancel, zero_smul]
 
-instance [SemiringOps R] [IsSemiring R] : IsModule R R where
+instance instDistribMulActionSelf [AddMonoidOps R] [IsAddMonoid R] [MonoidOps R] [IsMonoid R] [IsLeftDistrib R] [IsMulZeroClass R] : IsDistribMulAction R R where
   smul_zero _ := mul_zero _
   smul_add _ _ _ := mul_add _ _ _
+
+instance instModuleSelf [SemiringOps R] [IsSemiring R] : IsModule R R where
   add_smul _ _ _ := add_mul _ _ _
   zero_smul _ := zero_mul _
 

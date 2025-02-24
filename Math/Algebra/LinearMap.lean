@@ -184,6 +184,17 @@ instance
       rw [resp_smul, smul_comm]
   }
 
+@[simp] def LineraMap.apply_add
+  [Add A] [AddMonoidOps B] [MonoidOps R]
+  [IsAddMonoid B] [IsAddCommMagma B]
+  [IsMonoid R] [IsDistribMulAction R B]
+  (f g: A →ₗ[R] B) (x: A) : (f + g) x = f x + g x := rfl
+@[simp] def LineraMap.apply_smul
+  [Add A] [AddMonoidOps B] [MonoidOps R]
+  [IsMonoid R] [IsAddMonoid B]
+  [IsSMulComm R R B] [IsDistribMulAction R B]
+  (f: A →ₗ[R] B) (r: R) (x: A) : (r • f) x = r • f x := rfl
+
 /-- A shorthand for the type of `R`-bilinear `Nₗ`-valued maps on `M`. -/
 abbrev BilinMap
   (R A B: Type*)

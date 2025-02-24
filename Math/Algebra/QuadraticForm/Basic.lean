@@ -1,4 +1,5 @@
 import Math.Algebra.LinearMap
+import Math.Algebra.Impls.Pi
 
 structure QuadraticMap (R M N: Type*)
   [SemiringOps R] [IsSemiring R] [IsCommMagma R]
@@ -15,6 +16,8 @@ abbrev QuadraticForm (R M: Type*)
   [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M]
   [SMul R M] [IsModule R M]: Type _ := QuadraticMap R M R
 
+section
+
 variable
   [SemiringOps R] [IsSemiring R] [IsCommMagma R]
   [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M]
@@ -26,3 +29,73 @@ instance : FunLike (QuadraticMap R M N) M N where
   coe f := f.toFun
   coe_inj := by
     intro a b _; cases a; congr
+
+def smul_eq_smul_sq (Q: QuadraticMap R M N) (r: R) (x: M) :
+  Q (r • x) = (r * r) • Q x := Q.toFun_smul _ _
+
+end
+
+namespace QuadraticMap
+
+variable
+  [SemiringOps R] [IsSemiring R] [IsCommMagma R]
+  [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M]
+  [AddGroupOps N] [IsAddGroup N] [IsAddCommMagma N]
+  [SMul R M] [IsModule R M] [SMul R N] [IsModule R N]
+
+def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
+  refine BilinMap.mk (fun a b => Q (a + b) - Q a - Q b) ?_ ?_ ?_ ?_
+  · intro a b k
+    dsimp only
+    have ⟨B, spec⟩ := Q.exists_companion
+    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
+    iterate 4 rw [spec]
+    simp only [resp_add, LineraMap.apply_add, sub_eq_add_neg, neg_add_rev]
+    rw [
+      show Q a + Q b + (B a) b + Q k + ((B a) k + (B b) k) + (-(B a) b + (-Q b + -Q a)) + -Q k
+         = ((Q a + -Q a) + Q b + (-Q b)) + ((B a) b + (-(B a) b)) + (Q k + -Q k) + ((B a) k + (B b) k) by ac_rfl,
+      show Q a + Q k + (B a) k + -Q a + -Q k + (Q b + Q k + (B b) k + -Q b + -Q k)
+         = (Q a + -Q a) + (Q k + -Q k) + (B a) k+ (B b) k  + (Q b + -Q b) + (Q k + -Q k) by ac_rfl
+    ]
+    simp [add_neg_cancel]
+  · intro k a b
+    dsimp only
+    have ⟨B, spec⟩ := Q.exists_companion
+    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
+    iterate 4 rw [spec]
+    simp only [resp_add, LineraMap.apply_add, sub_eq_add_neg, neg_add_rev]
+    rw [
+      show Q k + (Q a + Q b + (B a) b) + ((B k) a + (B k) b) + -Q k + (-(B a) b + (-Q b + -Q a))
+         = (Q k + -Q k) + ((Q a + -Q a)+ (Q b + -Q b) + ((B a) b + (-(B a) b))) + ((B k) a + (B k) b) by ac_rfl,
+      show Q k + Q a + (B k) a + -Q k + -Q a + (Q k + Q b + (B k) b + -Q k + -Q b)
+         = (Q k + -Q k) + (Q a + -Q a) + (B k) a + ((Q k + -Q k) + (Q b + -Q b)) + (B k) b by ac_rfl
+    ]
+    simp [add_neg_cancel]
+  · intro r a b
+    dsimp only
+    have ⟨B, spec⟩ := Q.exists_companion
+    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
+    iterate 2 rw [spec]
+    simp only [sub_eq_add_neg, smul_add, smul_neg]
+    rw [
+      show Q (r • a) + Q b + (B (r • a)) b + -Q (r • a) + -Q b
+         = (Q (r • a) + -Q (r • a)) + (Q b + -Q b) + (B (r • a)) b by ac_rfl,
+      show r • Q a + r • Q b + r • (B a) b + -(r • Q a) + -(r • Q b)
+         = (r • Q a + -(r • Q a)) + (r • Q b + -(r • Q b)) + r • (B a) b by ac_rfl
+    ]
+    simp [add_neg_cancel, resp_smul]
+  · intro r b a
+    dsimp only
+    have ⟨B, spec⟩ := Q.exists_companion
+    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
+    iterate 2 rw [spec]
+    simp only [sub_eq_add_neg, smul_add, smul_neg]
+    rw [
+      show Q a + Q (r • b) + (B a) (r • b) + -Q a + -Q (r • b)
+         = (Q (r • b) + -Q (r • b)) + (Q a + -Q a) + (B a) (r • b) by ac_rfl,
+      show r • Q a + r • Q b + r • (B a) b + -(r • Q a) + -(r • Q b)
+         = (r • Q a + -(r • Q a)) + (r • Q b + -(r • Q b)) + r • (B a) b by ac_rfl
+    ]
+    simp [add_neg_cancel, resp_smul]
+
+end QuadraticMap
