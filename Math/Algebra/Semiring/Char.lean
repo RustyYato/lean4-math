@@ -87,3 +87,23 @@ def HasChar.char_dvd_natCast_eq_zero [SemiringOps α] [IsSemiring α] [HasChar �
   apply char_dvd (α := α)
   intro x
   rw [nsmul_eq_natCast_mul, h, zero_mul]
+
+def HasChar.natCast_inj [SemiringOps α] [IsSemiring α] [IsAddCancel α] [HasChar α 0]: Function.Injective (fun n: ℕ => (n: α)) := by
+  suffices ∀n m: ℕ, (n: α) = m -> n ≤ m -> n = m by
+    intro n m eq
+    rcases Nat.le_total n m with h | h
+    apply this
+    assumption
+    assumption
+    symm; apply this
+    symm; assumption
+    assumption
+  intro n m eq h
+  have : ((m - n: ℕ): α) + n = 0 + m := by
+    rw [←natCast_add, Nat.sub_add_cancel h, zero_add]
+  rw [eq] at this
+  have := add_right_cancel this
+  have := HasChar.char_dvd_natCast_eq_zero _ this
+  have := Nat.zero_dvd.mp this
+  have := Nat.le_of_sub_eq_zero this
+  apply Nat.le_antisymm <;> assumption
