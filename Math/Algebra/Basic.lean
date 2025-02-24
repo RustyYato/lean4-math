@@ -23,6 +23,15 @@ instance [SemiringOps A] [IsSemiring A] [a: Algebra R A] : IsAlgebra R A where
   commutes := a.commutes
   smul_def := a.smul_def
 
+variable [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A]
+  [IsAlgebra R A]
+
+def smul_mul
+  (r s: R) (a b: A) : r • a * s • b = (r * s) • (a * b) := by
+  simp [smul_def, resp_mul]
+  rw [mul_assoc, mul_assoc]; congr 1
+  rw [←mul_assoc, ←mul_assoc, commutes]
+
 end
 
 section Algebra

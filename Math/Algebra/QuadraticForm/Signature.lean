@@ -1,5 +1,5 @@
 import Math.Algebra.Impls.Pi
-import Math.Algebra.QuadraticForm
+import Math.Algebra.QuadraticForm.Basic
 import Math.Data.Fintype.Algebra
 import Math.Data.Fintype.Fin
 import Math.Data.Fintype.Prod
@@ -35,12 +35,11 @@ def QuadraticForm.ofNonnegSignature [SemiringOps R] [IsSemiring R] [IsCommMagma 
       simp [Fintype.mul_sum]
       congr; ext i
       rw [←mul_assoc, mul_left_comm]
-      rfl
+      ac_rfl
     · intro r a k
       simp [Fintype.mul_sum]
       congr; ext i
       rw [mul_left_comm]
-      rfl
     · intro a b
       simp [DFunLike.coe, BilinMap.mk]
       rw [Fintype.sum_add, Fintype.sum_add]
@@ -102,11 +101,11 @@ def QuadraticForm.ofSignature [RingOps R] [IsRing R] [IsCommMagma R] (z p n: ℕ
       · ext i
         simp
         rw [←mul_assoc, mul_left_comm]
-        rfl
+        ac_rfl
       · ext i
         simp
         rw [←neg_mul_right, ←mul_assoc, mul_left_comm]
-        rfl
+        ac_rfl
     · intro r a k
       rw [smul_add, smul_eq_mul, smul_eq_mul]
       rw [Fintype.mul_sum, Fintype.mul_sum]
@@ -114,11 +113,9 @@ def QuadraticForm.ofSignature [RingOps R] [IsRing R] [IsCommMagma R] (z p n: ℕ
       · ext i
         simp
         rw [mul_left_comm]
-        rfl
       · ext i
         simp
         rw [←neg_mul_right, mul_left_comm]
-        rfl
     · intro a b
       simp [BilinMap.mk, DFunLike.coe]
       ac_nf
@@ -131,3 +128,12 @@ def QuadraticForm.ofSignature [RingOps R] [IsRing R] [IsCommMagma R] (z p n: ℕ
       · ext i
         simp [mul_two, add_mul, mul_add, ←neg_add_rev]
         ac_rfl
+
+def QuadraticForm.ofSignature' [RingOps R] [IsRing R] [IsCommMagma R] (z p n: ℕ) (k: ℕ) (keq: k = z + p + n) : QuadraticForm R (Fin k -> R) where
+  toFun v := QuadraticForm.ofSignature z p n (fun x => v (x.cast keq.symm))
+  toFun_smul a v := by
+    dsimp
+    apply QuadraticMap.toFun_smul
+  exists_companion' := by
+    subst k
+    apply QuadraticMap.exists_companion
