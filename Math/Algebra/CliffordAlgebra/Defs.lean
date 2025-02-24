@@ -105,6 +105,28 @@ def lift [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R
     apply (RingQuot.liftAlgHom_mkAlgHom_apply _ _ _ _).trans
     apply TensorAlgebra.lift_ι_apply
 
+@[elab_as_elim]
+def induction {C : CliffordAlgebra Q → Prop}
+  (algebraMap: ∀r: R, C (algebraMap r)) (ι: ∀ x, C (ι Q x))
+  (mul: ∀ a b, C a → C b → C (a * b)) (add: ∀ a b, C a → C b → C (a + b))
+  (a : CliffordAlgebra Q) : C a := by
+  obtain ⟨a, rfl⟩  := RingQuot.mkAlgHom_surj R _ a
+  induction a with
+  | algebraMap =>
+    rw [resp_algebraMap]
+    apply algebraMap
+  | ι v => apply ι
+  | add =>
+    rw [resp_add]
+    apply add
+    assumption
+    assumption
+  | mul =>
+    rw [resp_mul]
+    apply mul
+    assumption
+    assumption
+
 end CliffordAlgebra
 
 -- the canonical map from a TensorAlgebra to a CliffordAlgebra
