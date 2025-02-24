@@ -1,5 +1,5 @@
-import Math.Data.StdNat.Prime
-import Math.Data.StdNat.Find
+import Math.Data.Nat.Prime
+import Math.Data.Nat.Find
 
 namespace Nat
 

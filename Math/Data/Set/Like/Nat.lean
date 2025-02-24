@@ -1,7 +1,7 @@
 import Math.Data.Set.Like
 import Math.Type.Finite
 import Math.Order.Lattice.SetLike
-import Math.Data.StdNat.Lattice
+import Math.Data.Nat.Lattice
 
 instance : SetLike Nat Nat where
   coe lim := Set.mk fun x => x < lim

@@ -1,5 +1,5 @@
-import Math.Data.StdNat.Gcd
-import Math.Data.StdInt.Basic
+import Math.Data.Nat.Gcd
+import Math.Data.Int.Basic
 import Math.Ops.Checked
 import Math.Ops.Abs
 import Math.Logic.Nontrivial

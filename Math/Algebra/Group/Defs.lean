@@ -1,5 +1,5 @@
 import Math.Algebra.Monoid.Defs
-import Math.Data.StdInt.Basic
+import Math.Data.Int.Basic
 import Math.Function.Basic
 
 class IsInvolutiveNeg (α: Type*) [Neg α]: Prop where

@@ -1,6 +1,6 @@
 import Math.Function.Basic
 import Math.Data.Like.Func
-import Math.Data.StdNat.Find
+import Math.Data.Nat.Find
 import Math.Relation.Basic
 import Math.Algebra.Ring.Defs
 import Math.Data.Fin.Basic

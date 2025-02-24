@@ -2,7 +2,7 @@ import Math.Type.Basic
 import Math.Tactics.PPWithUniv
 import Math.Algebra.Ring
 import Math.Data.Fin.Basic
-import Math.Data.StdNat.Basic
+import Math.Data.Nat.Basic
 import Math.Data.Fintype.Fin
 import Math.Data.Fintype.Pi
 import Math.Order.Linear

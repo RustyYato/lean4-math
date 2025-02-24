@@ -1,5 +1,5 @@
 import Math.Type.Basic
-import Math.Data.StdNat.Find
+import Math.Data.Nat.Find
 import Math.Function.Basic
 
 class Encodable (α: Type*) where

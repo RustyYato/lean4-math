@@ -1,6 +1,6 @@
 import Math.Algebra.Monoid.Defs
 import Math.Ops.Checked
-import Math.Data.StdInt.Basic
+import Math.Data.Int.Basic
 
 class NoZeroDivisors (α: Type*) [Mul α] [Zero α] where
   of_mul_eq_zero: ∀{a b: α}, a * b = 0 -> a = 0 ∨ b = 0

@@ -1,6 +1,6 @@
 import Math.GroupTheory.Subgroup
 import Math.Algebra.Impls.Fin
-import Math.Data.StdNat.Gcd
+import Math.Data.Nat.Gcd
 import Math.Relation.Basic
 import Math.Data.Set.Finite
 

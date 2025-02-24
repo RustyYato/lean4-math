@@ -4,8 +4,8 @@ import Math.Type.Finite
 import Math.Data.Set.Finite
 import Math.Data.Fin.Basic
 import Math.Data.Set.Basic
-import Math.Data.StdNat.Prime
-import Math.Data.StdNat.Find
+import Math.Data.Nat.Prime
+import Math.Data.Nat.Find
 
 attribute [local simp] IsEquivLike.coe
 attribute [local simp] DFunLike.coe
