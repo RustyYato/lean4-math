@@ -81,3 +81,9 @@ instance Nat.char_eq : HasChar Nat 0 := by
   intro m h
   cases h
   apply Nat.dvd_refl
+
+def HasChar.char_dvd_natCast_eq_zero [SemiringOps α] [IsSemiring α] [HasChar α n]
+  (m: ℕ) (h: (m: α) = 0): n ∣ m := by
+  apply char_dvd (α := α)
+  intro x
+  rw [nsmul_eq_natCast_mul, h, zero_mul]

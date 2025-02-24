@@ -418,4 +418,10 @@ def sub_neg [IsAddGroup α] (a b: α) : a - -b = a + b := by
 def div_inv [IsGroup α] (a b: α) : a / b⁻¹ = a * b :=
   sub_neg (α := AddOfMul α) a b
 
+def add_eq_zero_of_eq_neg [IsAddGroup α] {a b: α} : a = -b -> a + b = 0 := by
+  intro h; rw [h, neg_add_cancel]
+
+def mul_eq_one_of_eq_inv [IsGroup α] {a b: α} : a = b⁻¹ -> a * b = 1 :=
+  add_eq_zero_of_eq_neg (α := AddOfMul α)
+
 end Group
