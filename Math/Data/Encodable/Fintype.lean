@@ -2,7 +2,7 @@ import Math.Data.Encodable.Basic
 import Math.Data.Fintype.Defs
 
 instance [f: Fintype α] [DecidableEq α] : Encodable α where
-  encode a := f.indexOf a
+  encode a := f.idxOf a
   decode' x :=
     if h:x < f.card then
       .some f[x]
@@ -11,7 +11,7 @@ instance [f: Fintype α] [DecidableEq α] : Encodable α where
   spec := by
     intro x
     dsimp
-    erw [dif_pos, Fintype.getElem_indexOf]
+    erw [dif_pos, Fintype.getElem_idxOf]
 
 namespace Encodable
 

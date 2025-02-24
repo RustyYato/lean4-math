@@ -61,8 +61,8 @@ def Fintype.card_eq (a b: Fintype α) : a.card = b.card := by
   rw [List.Perm.length_eq]
   exact a.perm b
 
-def Fintype.indexOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) where
-  val := f.all.indexOf x
+def Fintype.idxOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) where
+  val := f.all.idxOf x
   isLt := by
     cases f with | mk all nodup compl =>
     unfold Fintype.card
@@ -71,10 +71,10 @@ def Fintype.indexOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) whe
     clear nodup compl
     induction this with
     | head _ =>
-      rw [List.indexOf_cons]
+      rw [List.idxOf_cons]
       simp
     | tail _ _ ih =>
-      rw [List.indexOf_cons]
+      rw [List.idxOf_cons]
       unfold cond
       split
       apply Nat.zero_lt_succ
@@ -82,11 +82,11 @@ def Fintype.indexOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) whe
       assumption
 
 def Fintype.embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) where
-  toFun := f.indexOf
+  toFun := f.idxOf
   inj' := by
     intro x y eq
     replace eq := Fin.mk.inj eq
-    suffices ∀z, f.all[f.all.indexOf z]? = z by
+    suffices ∀z, f.all[f.all.idxOf z]? = z by
       have opteq := this y
       rw [←eq, this x] at opteq
       exact Option.some.inj opteq
@@ -98,10 +98,10 @@ def Fintype.embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) whe
     clear nodup compl
     induction this with
     | head _ =>
-      rw [List.indexOf_cons]
+      rw [List.idxOf_cons]
       simp
     | tail _ _ ih =>
-      rw [List.indexOf_cons]
+      rw [List.idxOf_cons]
       unfold cond
       split
       rename_i h
@@ -113,16 +113,16 @@ def Fintype.embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) whe
 instance : GetElem (Fintype α) Nat α (fun _ n => n < Fintype.card α) where
   getElem f x p := f.all[x]
 
-def Fintype.getElem_indexOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.indexOf x] = x := by
+def Fintype.getElem_idxOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.idxOf x] = x := by
   cases f with | mk all nodup complete =>
-  show all[all.indexOf _]'_ = _
+  show all[all.idxOf _]'_ = _
   have : x ∈ all := complete x
-  suffices ∀(as: List α) (x: α) (h: x ∈ as), as[as.indexOf x]'(by
+  suffices ∀(as: List α) (x: α) (h: x ∈ as), as[as.idxOf x]'(by
     induction h
-    rw [List.indexOf_cons, cond_eq_if, if_pos]
+    rw [List.idxOf_cons, cond_eq_if, if_pos]
     apply Nat.zero_lt_succ
     apply LawfulBEq.rfl
-    rw [List.indexOf_cons, cond_eq_if]
+    rw [List.idxOf_cons, cond_eq_if]
     split
     apply Nat.zero_lt_succ
     apply Nat.succ_lt_succ
@@ -134,9 +134,9 @@ def Fintype.getElem_indexOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.index
   apply Option.some.inj
   rw [←List.getElem?_eq_getElem]
   induction h
-  rw [List.indexOf_cons, cond_eq_if, if_pos, List.getElem?_cons_zero]
+  rw [List.idxOf_cons, cond_eq_if, if_pos, List.getElem?_cons_zero]
   apply LawfulBEq.rfl
-  rw [List.indexOf_cons, cond_eq_if]
+  rw [List.idxOf_cons, cond_eq_if]
   split
   rename_i h
   cases LawfulBEq.eq_of_beq h
@@ -144,16 +144,16 @@ def Fintype.getElem_indexOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.index
   rw [List.getElem?_cons_succ]
   assumption
 
-def Fintype.indexOf_getElem [DecidableEq α] {f: Fintype α} (x: Fin (card α)) : f.indexOf f[x] = x := by
+def Fintype.idxOf_getElem [DecidableEq α] {f: Fintype α} (x: Fin (card α)) : f.idxOf f[x] = x := by
   cases f with | mk all nodup complete =>
-  unfold indexOf GetElem.getElem Fin.instGetElemFinVal GetElem.getElem instGetElemFintypeNatLtCard
+  unfold idxOf GetElem.getElem Fin.instGetElemFinVal GetElem.getElem instGetElemFintypeNatLtCard
   dsimp
   cases x with | mk x xLt =>
   congr
   unfold card Fintype.all at xLt
   dsimp at xLt
   dsimp
-  suffices ∀(as: List α) (x: Fin as.length), as.Nodup -> as.indexOf as[x] = x by
+  suffices ∀(as: List α) (x: Fin as.length), as.Nodup -> as.idxOf as[x] = x by
     apply this _ ⟨x, _⟩
     assumption
     assumption
@@ -167,10 +167,10 @@ def Fintype.indexOf_getElem [DecidableEq α] {f: Fintype α} (x: Fin (card α)) 
     cases x with | mk x xLt =>
     cases x with
     | zero =>
-      erw [List.getElem_cons_zero, List.indexOf_cons, cond_eq_if, if_pos]
+      erw [List.getElem_cons_zero, List.idxOf_cons, cond_eq_if, if_pos]
       apply LawfulBEq.rfl
     | succ x =>
-    erw [List.getElem_cons_succ, List.indexOf_cons, cond_eq_if, if_neg]
+    erw [List.getElem_cons_succ, List.idxOf_cons, cond_eq_if, if_neg]
     dsimp; congr; apply ih ⟨_, _⟩
     apply Nat.lt_of_succ_lt_succ
     assumption
@@ -197,14 +197,14 @@ def Fintype.ofEquiv {a b: Type _} (eq: a ≃ b) [f: Fintype b] : Fintype a where
 def Fintype.ofEquiv' {a b: Type _} (eq: a ≃ b) [f: Fintype a] : Fintype b := Fintype.ofEquiv eq.symm
 
 def Fintype.equivFin [f: Fintype α] [DecidableEq α] : α ≃ Fin f.card where
-  toFun := f.indexOf
+  toFun := f.idxOf
   invFun a := f[a]
   leftInv x := by
     dsimp
-    erw [Fintype.getElem_indexOf]
+    erw [Fintype.getElem_idxOf]
   rightInv x := by
     dsimp
-    erw [Fintype.indexOf_getElem]
+    erw [Fintype.idxOf_getElem]
 
 def Fintype.equivOfEqCard [DecidableEq α] [DecidableEq β] {fa: Fintype α} {fb: Fintype β} (h: fa.card = fb.card) : α ≃ β := by
   apply (fa.equivFin).trans
