@@ -387,7 +387,7 @@ instance instIsSemiring [SemiringOps R] [IsSemiring R] : IsSemiring (RingQuot r)
     simp [natCast_succ]
   ofNat_eq_natCast n := by
     show ⟦_⟧ = ⟦_⟧
-    simp [ofNat_eq_natCast]
+    rw [ofNat_eq_natCast]
   zero_mul a := by
     cases a
     simp [zero_mul]

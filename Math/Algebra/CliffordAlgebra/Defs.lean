@@ -1,5 +1,5 @@
 import Math.Algebra.TensorAlgebra.Basic
-import Math.Algebra.QuadraticForm
+import Math.Algebra.QuadraticForm.Basic
 
 section
 

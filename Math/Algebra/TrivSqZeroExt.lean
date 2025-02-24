@@ -116,7 +116,7 @@ def inrHom [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddCommMagma M] [I
   [SMul R M] [IsModule R M] : M →ₗ[R] TrivSqZeroExt R M where
   toFun := inr
   resp_add {x y} := by ext <;> simp [add_zero]
-  resp_smul {n x} := by ext <;> simp; apply (mul_zero _).symm
+  resp_smul {n x} := by ext <;> simp
 
 def sndHom [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddCommMagma M] [IsAddMonoid M]
   [SMul R M] [IsModule R M] : TrivSqZeroExt R M →ₗ[R] M where
@@ -225,7 +225,7 @@ instance [OfNat R (n + 2)] [Zero M] : OfNat (TrivSqZeroExt R M) (n + 2) where
 instance instAddMonoidWithOne [AddMonoidWithOneOps R] [AddMonoidOps M] [IsAddMonoidWithOne R] [IsAddMonoid M] : IsAddMonoidWithOne (TrivSqZeroExt R M) where
   natCast_zero := by ext <;> simp [natCast_zero]
   natCast_succ n := by ext <;> simp [natCast_succ, add_zero]
-  ofNat_eq_natCast n := by ext <;> simp [ofNat_eq_natCast]
+  ofNat_eq_natCast n := by ext <;> (simp; try rw [ofNat_eq_natCast])
 
 instance instAddGroupWithOne [AddGroupWithOneOps R] [AddGroupOps M] [IsAddGroupWithOne R] [IsAddGroup M] : IsAddGroupWithOne (TrivSqZeroExt R M) where
   natCast_zero := natCast_zero
