@@ -3,6 +3,7 @@ import Init.Data.Fin.Basic
 import Math.Data.List.Algebra
 import Math.Algebra.AddGroupWithOne.SetLike.Basic
 import Math.Algebra.Impls.Int
+import Math.Algebra.Ring.Basic
 
 namespace Ideal
 
@@ -140,7 +141,7 @@ instance : IsMulOneClass (Ideal α) where
       exact y.property
     · intro h
       exists [(⟨1, True.intro⟩, ⟨x, h⟩)]
-      simp; rw [one_mul, add_zero]
+      simp
   mul_one a := by
     ext x
     apply Iff.intro
@@ -155,7 +156,7 @@ instance : IsMulOneClass (Ideal α) where
       exact x.property
     · intro h
       exists [(⟨x, h⟩, ⟨1, True.intro⟩)]
-      simp; rw [mul_one, add_zero]
+      simp
 
 instance : IsAddSemigroup (Ideal α) where
   add_assoc a b c := by
@@ -186,7 +187,6 @@ instance : IsMulZeroClass (Ideal α) where
     rintro rfl
     exists [(0, 0)]
     simp
-    rw [add_zero]
     apply mul_zero
   mul_zero a := by
     ext x
@@ -201,7 +201,6 @@ instance : IsMulZeroClass (Ideal α) where
     rintro rfl
     exists [(0, 0)]
     simp
-    rw [add_zero]
     apply mul_zero
 
 instance : IsAddCommMagma (Ideal α) where

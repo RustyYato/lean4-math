@@ -99,7 +99,9 @@ instance : IsMulMem (Ideal α) := inferInstance
 
 end
 
-def Ideal.zero (α: Type*) [AddGroupOps α] [Mul α] [IsAddGroup α] [IsMulZeroClass α] : Ideal α where
+namespace Ideal
+
+def zero (α: Type*) [AddGroupOps α] [Mul α] [IsAddGroup α] [IsMulZeroClass α] : Ideal α where
   carrier := {0}
   mem_zero' := rfl
   mem_add' := by
@@ -115,7 +117,7 @@ def Ideal.zero (α: Type*) [AddGroupOps α] [Mul α] [IsAddGroup α] [IsMulZeroC
     rintro r _ rfl
     apply zero_mul
 
-def Ideal.univ (α: Type*) [Add α] [Mul α] [Neg α] [Zero α] : Ideal α where
+def univ (α: Type*) [Add α] [Mul α] [Neg α] [Zero α] : Ideal α where
   carrier := ⊤
   mem_zero' := True.intro
   mem_add' _ _ := True.intro
@@ -123,13 +125,71 @@ def Ideal.univ (α: Type*) [Add α] [Mul α] [Neg α] [Zero α] : Ideal α where
   mem_mul_left' _ _ _ := True.intro
   mem_mul_right' _ _ _ := True.intro
 
+end Ideal
+
 variable {α: Type*} [Add α] [Mul α] [Neg α] [Zero α]
 
-@[ext]
-def LeftIdeal.ext {a b: LeftIdeal α} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+namespace Ideal
+
+inductive Generate (U: Set α) : α -> Prop where
+| of (x: α) : x ∈ U -> Generate U x
+| zero : Generate U 0
+| add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
+| neg {a: α} : Generate U a -> Generate U (-a)
+| mul_left (r: α) {x: α} : Generate U x -> Generate U (r * x)
+| mul_right (r: α) {x: α} : Generate U x -> Generate U (x * r)
+
+def generate (U: Set α) : Ideal α where
+  carrier := Set.mk (Generate U)
+  mem_zero' := Generate.zero
+  mem_add' := Generate.add
+  mem_neg' := Generate.neg
+  mem_mul_left' := Generate.mul_left
+  mem_mul_right' := Generate.mul_right
 
 @[ext]
-def RightIdeal.ext {a b: RightIdeal α} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def ext {a b: Ideal α} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
+end Ideal
+
+namespace LeftIdeal
+
+inductive Generate (U: Set α) : α -> Prop where
+| of (x: α) : x ∈ U -> Generate U x
+| zero : Generate U 0
+| add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
+| neg {a: α} : Generate U a -> Generate U (-a)
+| mul_left (r: α) {x: α} : Generate U x -> Generate U (r * x)
+
+def generate (U: Set α) : LeftIdeal α where
+  carrier := Set.mk (Generate U)
+  mem_zero' := Generate.zero
+  mem_add' := Generate.add
+  mem_neg' := Generate.neg
+  mem_mul_left' := Generate.mul_left
 
 @[ext]
-def Ideal.ext {a b: Ideal α} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def ext {a b: LeftIdeal α} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
+end LeftIdeal
+
+namespace RightIdeal
+
+inductive Generate (U: Set α) : α -> Prop where
+| of (x: α) : x ∈ U -> Generate U x
+| zero : Generate U 0
+| add {a b: α} : Generate U a -> Generate U b -> Generate U (a + b)
+| neg {a: α} : Generate U a -> Generate U (-a)
+| mul_right (r: α) {x: α} : Generate U x -> Generate U (x * r)
+
+def generate (U: Set α) : RightIdeal α where
+  carrier := Set.mk (Generate U)
+  mem_zero' := Generate.zero
+  mem_add' := Generate.add
+  mem_neg' := Generate.neg
+  mem_mul_right' := Generate.mul_right
+
+@[ext]
+def ext {a b: RightIdeal α} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
+end RightIdeal
