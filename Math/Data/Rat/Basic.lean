@@ -107,8 +107,8 @@ def Fract.isReduced.spec (a b: Fract) : a.isReduced -> b.isReduced -> a ≈ b ->
   unfold isReduced at ared bred
   simp at *
   have sign_eq : (an * bd).sign = (bn * ad).sign := by rw [h]
-  rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero (Nat.not_eq_zero_of_lt adpos)
-    , Int.sign_ofNat_of_nonzero (Nat.not_eq_zero_of_lt bdpos), Int.mul_one, Int.mul_one] at sign_eq
+  rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero (Nat.ne_zero_of_lt adpos)
+    , Int.sign_ofNat_of_nonzero (Nat.ne_zero_of_lt bdpos), Int.mul_one, Int.mul_one] at sign_eq
   have val_eq : (an * bd).natAbs = (bn * ad).natAbs := by rw [h]
   rw [Int.natAbs_mul, Int.natAbs_mul, Int.natAbs_ofNat, Int.natAbs_ofNat] at val_eq
   replace val_eq : ‖an‖ * bd = ‖bn‖ * ad := val_eq
@@ -401,7 +401,7 @@ instance : CheckedDiv? ℚ where
 def Fract.npow (a: Fract) (n: Nat) : Fract where
   num := a.num ^ n
   den := a.den ^ n
-  den_pos := Nat.pos_pow_of_pos n a.den_pos
+  den_pos := Nat.pow_pos a.den_pos
 
 instance : Pow Fract ℕ := ⟨.npow⟩
 
