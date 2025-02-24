@@ -182,3 +182,7 @@ instance (priority := 100) [Add α] [IsAddCommMagma α] : @Std.Commutative α (�
   comm := add_comm
 instance (priority := 100) [Mul α] [IsCommMagma α] : @Std.Commutative α (· * ·) where
   comm := mul_comm
+
+instance : IsAddCancel ℕ where
+  add_left_cancel := Nat.add_left_cancel
+  add_right_cancel := Nat.add_right_cancel
