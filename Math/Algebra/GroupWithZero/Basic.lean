@@ -3,6 +3,11 @@ import Math.Algebra.Group.Units.Defs
 
 variable [GroupWithZeroOps α] [IsGroupWithZero α]
 
+def ne_zero_of_NeZero {a: α} [h: NeZero a] : a ≠ 0 := h.out
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply ne_zero_of_NeZero)
+
 def toUnit? (x: α) (h: x ≠ 0 := by invert_tactic) : Units α where
   val := x
   inv := x⁻¹?

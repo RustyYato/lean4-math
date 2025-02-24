@@ -2,6 +2,7 @@ import Math.Data.Rat.Basic
 import Math.Order.Linear
 import Math.Algebra.GroupWithZero.Basic
 import Math.Ops.CheckedOrder
+import Math.Algebra.Field.Basic
 
 namespace Rat
 
@@ -617,6 +618,16 @@ def eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ ‖a‖ = 0 := by
   assumption
   apply neg_inj.mp
   assumption
+
+def midpoint_of_lt {a b: ℚ} (h: a < b) : a < midpoint a b ∧ midpoint a b < b := by
+  rw [midpoint]
+  rw [lt_div_iff_mul_lt_of_pos, div_lt_iff_lt_mul_of_pos,
+    mul_two, mul_two]
+  apply And.intro
+  exact add_lt_add_left.mp h
+  exact add_lt_add_right.mp h
+  decide
+  decide
 
 -- def floor (a: ℚ) : Int := a.num.ediv (a.den: Int)
 -- def ceil (a: ℚ) : Int := -Rat.floor (-a)

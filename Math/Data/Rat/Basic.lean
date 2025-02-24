@@ -616,4 +616,12 @@ def natCast_nonzero (n: Nat) : ((n + 1: ℕ): ℚ) ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply natCast_nonzero)
 
+instance (q: ℚ) : Decidable (NeZero q) :=
+  if h:q = 0 then
+    .isFalse fun g => g.out h
+  else
+    .isTrue ⟨h⟩
+
+instance : NeZero (2: ℚ) := by decide
+
 end Rat
