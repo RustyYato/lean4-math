@@ -9,7 +9,7 @@ structure QuadraticMap (R M N: Type*)
   [IsModule R M] [IsModule R N] where
   toFun : M → N
   toFun_smul : ∀ (a : R) (x : M), toFun (a • x) = (a * a) • toFun x
-  exists_companion : ∃ B : BilinMap R M N, ∀ x y, toFun (x + y) = toFun x + toFun y + B x y
+  exists_companion' : ∃ B : BilinMap R M N, ∀ x y, toFun (x + y) = toFun x + toFun y + B x y
 
 abbrev QuadraticForm (R M: Type*)
   [SemiringOps R] [IsSemiring R] [IsCommMagma R]
@@ -30,8 +30,10 @@ instance : FunLike (QuadraticMap R M N) M N where
   coe_inj := by
     intro a b _; cases a; congr
 
-def smul_eq_smul_sq (Q: QuadraticMap R M N) (r: R) (x: M) :
+def QuadraticMap.smul_eq_smul_sq (Q: QuadraticMap R M N) (r: R) (x: M) :
   Q (r • x) = (r * r) • Q x := Q.toFun_smul _ _
+
+def QuadraticMap.exists_companion (Q: QuadraticMap R M N) : ∃ B : BilinMap R M N, ∀ x y, Q (x + y) = Q x + Q y + B x y := Q.exists_companion'
 
 end
 
@@ -48,7 +50,6 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
   · intro a b k
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
-    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
     iterate 4 rw [spec]
     simp only [resp_add, LineraMap.apply_add, sub_eq_add_neg, neg_add_rev]
     rw [
@@ -61,7 +62,6 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
   · intro k a b
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
-    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
     iterate 4 rw [spec]
     simp only [resp_add, LineraMap.apply_add, sub_eq_add_neg, neg_add_rev]
     rw [
@@ -74,7 +74,6 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
   · intro r a b
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
-    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
     iterate 2 rw [spec]
     simp only [sub_eq_add_neg, smul_add, smul_neg]
     rw [
@@ -87,7 +86,6 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
   · intro r b a
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
-    replace spec: ∀x y: M, Q (x + y) = Q x + Q y + B x y := spec
     iterate 2 rw [spec]
     simp only [sub_eq_add_neg, smul_add, smul_neg]
     rw [
@@ -99,3 +97,15 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
     simp [add_neg_cancel, resp_smul]
 
 end QuadraticMap
+
+namespace QuadraticFrom
+
+variable
+  [RingOps R] [IsRing R] [IsCommMagma R]
+  [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M]
+  [SMul R M] [IsModule R M]
+
+def polar (Q: QuadraticForm R M) : BilinMap R M R :=
+  QuadraticMap.polar Q
+
+end QuadraticFrom

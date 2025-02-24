@@ -18,7 +18,7 @@ def QuadraticForm.ofNonnegSignature [SemiringOps R] [IsSemiring R] [IsCommMagma 
     congr; ext i
     simp [SMul.smul]
     ac_rfl
-  exists_companion := by
+  exists_companion' := by
     refine ⟨?_, ?_⟩
     apply BilinMap.mk (fun a b => Fintype.sum (fun x: Fin p => 2 * a (x.natAdd z) * b (x.natAdd z)))
     · intro a b k
@@ -65,7 +65,7 @@ def QuadraticForm.ofSignature [RingOps R] [IsRing R] [IsCommMagma R] (z p n: ℕ
     simp [SMul.smul]
     rw [←neg_mul_right]
     ac_rfl
-  exists_companion := by
+  exists_companion' := by
     refine ⟨?_, ?_⟩
     apply BilinMap.mk (fun a b => Fintype.sum (fun x: Fin p =>
       let x := (x.natAdd z).castAdd n

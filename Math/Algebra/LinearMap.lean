@@ -235,3 +235,16 @@ def BilinMap.mk
     intro a b
     ext k
     apply resp_smul_left
+
+@[simp]
+def BilinMap.apply_mk
+  [Add A] [AddMonoidOps B] [MonoidOps R]
+  [IsMonoid R] [IsCommMagma R]
+  [IsAddMonoid B] [IsAddCommMagma B]
+  [SMul R A] [SMul R B] [IsDistribMulAction R B]
+  (f: A -> A -> B)
+  {resp_add_left: ∀(a b k: A), f (a + b) k = f a k + f b k}
+  {resp_add_right: ∀(k a b: A), f k (a + b) = f k a + f k b}
+  {resp_smul_left: ∀(r: R) (a k: A), f (r • a) k = r • f a k}
+  {resp_smul_right: ∀(r: R) (a k: A), f k (r • a) = r • f k a}
+  (a b: A) : BilinMap.mk f resp_add_left resp_add_right resp_smul_left resp_smul_right a b = f a b := rfl

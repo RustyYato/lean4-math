@@ -71,7 +71,7 @@ private def algmap_coe_eq
 
 /-- As well as being linear, `ι Q` squares to the quadratic form -/
 @[simp]
-theorem ι_sq_scalar (v: V) : ι Q v * ι Q v = algebraMap (Q v) := by
+def ι_sq_scalar (v: V) : ι Q v * ι Q v = algebraMap (Q v) := by
   rw [ι]
   dsimp [LinearMap.comp, DFunLike.coe, AlgHom.toLinearMap]
   rw [algmap_coe_eq, ←resp_mul (f := RingQuot.mkAlgHom R (CliffordAlgebra.Rel Q))]
@@ -90,3 +90,25 @@ theorem toClifford_ι (v: V) : toClifford Q (TensorAlgebra.ι R v) = CliffordAlg
   simp [toClifford]
 
 end ι
+
+namespace CliffordAlgebra
+
+-- a shortcut instance to prevent timeouts
+local instance (priority := 5000) [RingOps α] [IsRing α] : IsSemiring α := IsRing.toIsSemiring
+
+variable
+  [RingOps R] [IsRing R] [IsCommMagma R]
+  [AddGroupOps V] [IsAddGroup V] [IsAddCommMagma V]
+  [SMul R V] [IsModule R V]
+
+def ι_mul_add_comm_mul (Q: QuadraticForm R V) (v w: V) : ι Q v * ι Q w + ι Q w * ι Q v = algebraMap (Q.polar v w) := by
+  simp only [QuadraticMap.polar, BilinMap.apply_mk]
+  have : (ι Q v + ι Q w) * (ι Q v + ι Q w) =
+    (ι Q) v * (ι Q) w + (ι Q) w * (ι Q) v + algebraMap (Q w) + algebraMap (Q v) := by
+    simp only [mul_add, add_mul, ι_sq_scalar]
+    ac_rfl
+  rw [resp_sub, resp_sub]
+  apply add_right_cancel (k := algebraMap (Q w) + algebraMap (Q v))
+  rw [←add_assoc, ←add_assoc, sub_add_cancel, sub_add_cancel, ←this, ←resp_add, ι_sq_scalar]
+
+end CliffordAlgebra
