@@ -1,69 +1,33 @@
+import Math.Data.Set.Like.Lattice
 import Math.Algebra.Module.SetLike.Defs
 import Math.Algebra.Module.Defs
-import Math.Data.Set.Lattice
-import Math.Order.GaloisConnection
-import Math.Algebra.Semiring.Defs
+
+-- import Math.Data.Set.Lattice
+-- import Math.Order.GaloisConnection
+-- import Math.Algebra.Semiring.Defs
 
 namespace Submodule
 
-section
+variable [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
 
-variable [Add M] [Zero M] [SMul R M]
-
-instance : LE (Submodule R M) where
-  le := (· ⊆ ·)
-instance : LT (Submodule R M) := IsLawfulLT.instLT _
-instance : IsLawfulLT (Submodule R M) := IsLawfulLT.inst _
-
-def oemb : Submodule R M ↪o Set M where
-  toFun a := a
-  inj' := SetLike.coe_inj
-  resp_rel := Iff.rfl
-
-instance : IsPartialOrder (Submodule R M) := oemb.inducedIsPartialOrder'
-
-inductive Generate (U: Set M) : M -> Prop where
-| of (x: M) : x ∈ U -> Generate U x
-| zero : Generate U 0
-| add : Generate U a -> Generate U b -> Generate U (a + b)
-| smul (r: R) {a: M} : Generate U a -> Generate U (r • a)
-
-def generate (U: Set M) : Submodule R M where
-  carrier := Set.mk (Generate U)
-  mem_zero' := Generate.zero
-  mem_add' := Generate.add
-  mem_smul' := Generate.smul
-
-def giGenerate : @GaloisInsertion (Set M) (Submodule R M) _ _ generate (fun a => a.carrier) where
-  choice S hS := {
-    carrier := S
-    mem_add' := by
-      intro a b ha hb
-      apply hS
-      apply Generate.add
-      apply Generate.of
-      assumption
-      apply Generate.of
-      assumption
-    mem_smul' := by
-      intro r m hm
-      apply hS
-      apply Generate.smul
-      apply Generate.of
-      assumption
+private instance builder : SetLike.LatticeBuilder (Submodule R M) where
+  closure := (Set.mk <| Generate ·)
+  closure_spec s := ⟨generate s, rfl⟩
+  create s P := {
+    carrier := s
     mem_zero' := by
-      apply hS
-      apply Generate.zero
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_zero s
+    mem_add' := by
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_add s <;> assumption
+    mem_smul' := by
+      obtain ⟨s, rfl⟩ := P
+      intros; apply mem_smul s <;> assumption
   }
-  choice_eq := by
-    intro S h
-    simp
-    apply le_antisymm
-    apply Generate.of
-    apply h
   gc := by
-    intro a b
-    apply Iff.intro
+    intro s t
+    apply flip Iff.intro
     intro h x hx
     apply h
     apply Generate.of
@@ -71,33 +35,31 @@ def giGenerate : @GaloisInsertion (Set M) (Submodule R M) _ _ generate (fun a =>
     intro h x hx
     induction hx with
     | of => apply h; assumption
-    | zero => apply mem_zero
-    | smul => apply mem_smul <;> assumption
-    | add => apply mem_add <;> assumption
-  le_l_u := by
-    intro s x hx
-    apply Generate.of
-    assumption
-
-end
-
-instance [SemiringOps R] [AddMonoidOps M]
-  [IsSemiring R] [IsAddMonoid M] [IsAddCommMagma M]
-  [SMul R M] [IsModule R M] : CompleteLattice (Submodule R M) := {
-  giGenerate.liftCompleteLattice with
-  bot := {
+    | zero => apply mem_zero t
+    | add => apply mem_add t <;> assumption
+    | smul => apply mem_smul t <;> assumption
+  bot := ⟨{
     carrier := {0}
+    mem_zero' := rfl
     mem_add' := by
       rintro _ _ rfl rfl
       rw [add_zero]; rfl
     mem_smul' := by
-      rintro r m rfl
+      rintro _ _ rfl
       rw [smul_zero]; rfl
-    mem_zero' := rfl
-  }
-  bot_le _ := by
-    rintro x rfl
-    apply mem_zero
-}
+  }, by rintro _ _ rfl; apply Generate.zero⟩
+
+private local instance : SetLike.CompleteLatticeLE (Submodule R M) := SetLike.toCompleteLattice
+
+instance : LE (Submodule R M) := inferInstance
+instance : LT (Submodule R M) := inferInstance
+instance : Top (Submodule R M) := inferInstance
+instance : Bot (Submodule R M) := inferInstance
+instance : Sup (Submodule R M) := inferInstance
+instance : Inf (Submodule R M) := inferInstance
+instance : SupSet (Submodule R M) := inferInstance
+instance : InfSet (Submodule R M) := inferInstance
+instance : IsPartialOrder (Submodule R M) := inferInstance
+instance : IsCompleteLattice (Submodule R M) := inferInstance
 
 end Submodule
