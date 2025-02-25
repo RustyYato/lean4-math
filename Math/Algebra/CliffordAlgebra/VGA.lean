@@ -46,6 +46,60 @@ def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
     else
       ι (basis_vector j)
 
+def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • basis_mvector i := by
+  induction v with
+  | algebraMap r =>
+    refine ⟨fun
+      | ⟨0, _⟩ => r
+      | ⟨_ + 1, _⟩ => 0, ?_⟩
+    rw [
+      Fin.sum_cast (m := (2 ^ n - 1 + 1)),
+      Fin.sum_succ', Fin.sum_eq_zero]
+    simp
+    unfold OfNat.ofNat Fin.instOfNat instOfNatNat
+      Fin.ofNat'
+    simp
+    rw [smul_def]
+    rw [show basis_mvector ⟨0, _⟩ = 1 from ?_, mul_one]
+    unfold basis_mvector
+    rw [Fin.prod_eq_one]
+    intro x
+    rw [if_pos]
+    simp
+    intro x
+    simp
+    rw [Fin.cast]
+    simp [zero_smul]
+    rw [Nat.sub_add_cancel]
+    exact Nat.one_le_two_pow
+  | ι v =>
+    refine ⟨fun i =>
+      if h:∃m < n, i.val == (1 <<< m) then
+        v ⟨Nat.findP h, (Nat.findP_spec h).left⟩
+      else
+        0, ?_⟩
+    induction n with
+    | zero =>
+      rw [Fin.sum_succ, Fin.sum_zero]
+      dsimp
+      rw [zero_add, zero_smul]
+      rw [←zero_smul (R := ℝ) (ι v), ←resp_smul]
+      congr
+      ext i; exact i.elim0
+    | succ n ih =>
+      simp at *
+      rw [Fin.sum_cast (m := 2 ^ n + (2 ^ n - 1) + 1) (by
+        rw [Nat.add_assoc, Nat.sub_add_cancel]
+        omega
+        exact Nat.one_le_two_pow),
+        Fin.sum_succ, Fin.sum_limit (m := 2 ^ n) (by
+          exact Nat.le_add_right (2 ^ n) (2 ^ n - 1))]
+      simp only [Function.comp_def, Fin.cast, Fin.castLE, Fin.castSucc, Fin.castAdd]
+      sorry
+      sorry
+  | add => sorry
+  | mul => sorry
+
 -- def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • basis_mvector i := by
 --   induction v with
 --   | algebraMap v =>
