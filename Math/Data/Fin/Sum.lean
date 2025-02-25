@@ -160,4 +160,12 @@ def sum_add_sum [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α] (f: F
 def prod_mul_prod [One α] [Mul α] [IsSemigroup α] [IsMulOneClass α] (f: Fin n -> α) (g: Fin m -> α) : Fin.prod f * Fin.prod g = Fin.prod (func_append f g) :=
   sum_add_sum (α := AddOfMul α) _ _
 
+def list_sum_eq [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α] (as: List α) :
+  as.sum = Fin.sum fun x: Fin as.length => as[x] := by
+  induction as with
+  | nil => rfl
+  | cons a as ih =>
+    rw [sum_succ', List.sum_cons, ih]
+    congr
+
 end Fin
