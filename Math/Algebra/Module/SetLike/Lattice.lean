@@ -4,23 +4,23 @@ import Math.Data.Set.Lattice
 import Math.Order.GaloisConnection
 import Math.Algebra.Semiring.Defs
 
-namespace SubModule
+namespace Submodule
 
 section
 
 variable [Add M] [Zero M] [SMul R M]
 
-instance : LE (SubModule R M) where
+instance : LE (Submodule R M) where
   le := (· ⊆ ·)
-instance : LT (SubModule R M) := IsLawfulLT.instLT _
-instance : IsLawfulLT (SubModule R M) := IsLawfulLT.inst _
+instance : LT (Submodule R M) := IsLawfulLT.instLT _
+instance : IsLawfulLT (Submodule R M) := IsLawfulLT.inst _
 
-def oemb : SubModule R M ↪o Set M where
+def oemb : Submodule R M ↪o Set M where
   toFun a := a
   inj' := SetLike.coe_inj
   resp_rel := Iff.rfl
 
-instance : IsPartialOrder (SubModule R M) := oemb.inducedIsPartialOrder'
+instance : IsPartialOrder (Submodule R M) := oemb.inducedIsPartialOrder'
 
 inductive Generate (U: Set M) : M -> Prop where
 | of (x: M) : x ∈ U -> Generate U x
@@ -28,13 +28,13 @@ inductive Generate (U: Set M) : M -> Prop where
 | add : Generate U a -> Generate U b -> Generate U (a + b)
 | smul (r: R) {a: M} : Generate U a -> Generate U (r • a)
 
-def generate (U: Set M) : SubModule R M where
+def generate (U: Set M) : Submodule R M where
   carrier := Set.mk (Generate U)
   mem_zero' := Generate.zero
   mem_add' := Generate.add
   mem_smul' := Generate.smul
 
-def giGenerate : @GaloisInsertion (Set M) (SubModule R M) _ _ generate (fun a => a.carrier) where
+def giGenerate : @GaloisInsertion (Set M) (Submodule R M) _ _ generate (fun a => a.carrier) where
   choice S hS := {
     carrier := S
     mem_add' := by
@@ -83,7 +83,7 @@ end
 
 instance [SemiringOps R] [AddMonoidOps M]
   [IsSemiring R] [IsAddMonoid M] [IsAddCommMagma M]
-  [SMul R M] [IsModule R M] : CompleteLattice (SubModule R M) := {
+  [SMul R M] [IsModule R M] : CompleteLattice (Submodule R M) := {
   giGenerate.liftCompleteLattice with
   bot := {
     carrier := {0}
@@ -100,4 +100,4 @@ instance [SemiringOps R] [AddMonoidOps M]
     apply mem_zero
 }
 
-end SubModule
+end Submodule
