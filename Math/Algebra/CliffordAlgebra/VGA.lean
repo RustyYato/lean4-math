@@ -1,7 +1,7 @@
 import Math.Algebra.QuadraticForm.Signature
 import Math.Algebra.CliffordAlgebra.Defs
 import Math.Data.Real.Basic
-import Math.Data.Fin.Basic
+import Math.Data.Fin.Sum
 
 namespace VGA
 
@@ -27,6 +27,9 @@ def ι : (Vector n) →ₗ[ℝ] VGA n := CliffordAlgebra.ι (R := ℝ) (QF n)
 def ι_sq (v: Vector n) : ι v * ι v = algebraMap (QF n v) := CliffordAlgebra.ι_sq_scalar _ _
 def ι_mul_add_comm_mul (v w: Vector n) : ι v * ι w + ι w * ι v = algebraMap ((QF n).polar v w) := CliffordAlgebra.ι_mul_add_comm_mul _ _ _
 
+instance : IsZeroHom ((Vector n) →ₗ[ℝ] VGA n) (Vector n) (VGA n) where
+  resp_zero f := by rw [←smul_zero (0: ℝ), resp_smul, zero_smul]
+
 set_option linter.unusedVariables false in
 @[induction_eliminator]
 def induction {C : VGA n → Prop} :
@@ -43,54 +46,92 @@ def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
     else
       ι (basis_vector j)
 
-def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • sorry := by
-  induction v with
-  | algebraMap v =>
-    refine ⟨fun
-      | 0 => v
-      | ⟨_ + 1, _⟩ => 0, ?_⟩
-    simp [zero_smul]
-  | ι v =>
-    refine ⟨fun
-      | 1 => v 0
-      | 2 => v 1
-      | 3 => v 2
-      | _ => 0, ?_⟩
-    simp [zero_smul, resp_zero]
-    rw [ι_eq_lincomb]
-  | add a b ha hb =>
-    obtain ⟨a, rfl⟩ := ha
-    obtain ⟨b, rfl⟩ := hb
-    refine ⟨fun i => a i + b i, ?_⟩
-    simp [resp_add, add_smul]
-    ac_rfl
-  | mul a b ha hb =>
-    obtain ⟨a, rfl⟩ := ha
-    obtain ⟨b, rfl⟩ := hb
-    refine ⟨?_, ?_⟩
-    exact fun
-      | 0 => algebraMap (a 0 * b 0)
-      | 1 => sorry
-      | 2 => sorry
-      | 3 => sorry
-      | 4 => sorry
-      | 5 => sorry
-      | 6 => sorry
-      | 7 => sorry
-    simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
-    simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
-      smul_mul]
-    simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]
+-- def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • basis_mvector i := by
+--   induction v with
+--   | algebraMap v =>
+--     refine ⟨fun
+--       | ⟨0, _⟩ => v
+--       | ⟨_ + 1, _⟩ => 0, ?_⟩
+--     rw [
+--       Fin.sum_cast (m := (2 ^ n - 1 + 1)),
+--       Fin.sum_succ', Fin.sum_eq_zero]
+--     simp
+--     unfold OfNat.ofNat Fin.instOfNat instOfNatNat
+--       Fin.ofNat'
+--     simp
+--     rw [smul_def]
+--     rw [show basis_mvector ⟨0, _⟩ = 1 from ?_, mul_one]
+--     unfold basis_mvector
+--     rw [Fin.prod_eq_one]
+--     intro x
+--     rw [if_pos]
+--     simp
+--     intro x
+--     simp
+--     rw [Fin.cast]
+--     simp [zero_smul]
+--     rw [Nat.sub_add_cancel]
+--     exact Nat.one_le_two_pow
+--   | ι v =>
+--     refine ⟨fun i =>
+--       if h:i.val = 0 then
+--         0
+--       else if g: i <= n then
+--         v ⟨i.val - 1, by
+--           refine Nat.sub_one_lt_of_le ?_ g
+--           refine Nat.zero_lt_of_ne_zero ?_
+--           assumption⟩
+--       else
+--         0, ?_⟩
+--     rw [Fin.sum_limit (n + 1) (by sorry)]
+--     · sorry
+--       -- induction n with
+--       -- | zero =>
+--       --   rw [Fin.sum_succ, Fin.sum_zero, zero_add]
+--       --   simp
+--       --   rw [zero_smul, show v = ((0: ℝ) • 0) from ?_, resp_smul, zero_smul]
+--       --   rw [zero_smul]
+--       --   ext i
+--       --   exact i.elim0
+--       -- | succ n ih =>
+--       --   rw [Fin.sum_succ]
+--       --   sorry
+--     · intro x hx
+--       simp
+--       split
+--       rw [zero_smul]
+--       split
+--       rename_i h
+--       have := not_lt_of_le (le_trans hx h) (Nat.lt_succ_self _)
+--       contradiction
+--       rw [zero_smul]
+--   | add a b ha hb =>
+--     obtain ⟨a, rfl⟩ := ha
+--     obtain ⟨b, rfl⟩ := hb
+--     refine ⟨fun i => a i + b i, ?_⟩
+--     simp [resp_add, add_smul]
+--     ac_rfl
+--   | mul a b ha hb =>
+--     sorry
+--     -- obtain ⟨a, rfl⟩ := ha
+--     -- obtain ⟨b, rfl⟩ := hb
+--     -- refine ⟨?_, ?_⟩
+--     -- exact fun
+--     --   | 0 => algebraMap (a 0 * b 0)
+--     --   | 1 => sorry
+--     --   | 2 => sorry
+--     --   | 3 => sorry
+--     --   | 4 => sorry
+--     --   | 5 => sorry
+--     --   | 6 => sorry
+--     --   | 7 => sorry
+--     -- simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
+--     -- simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
+--     --   smul_mul]
+--     -- simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]
 
-    -- repeat rw [add_assoc]
-    -- congr 1
-
-
-
-
-    congr
-    sorry
-
+--     -- repeat rw [add_assoc]
+--     -- congr 1
 
 namespace VGA3
 
