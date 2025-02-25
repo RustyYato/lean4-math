@@ -96,7 +96,6 @@ def resp_smul
 instance [SMul R A] [SMul R B] : IsSMulHom (SMulHom R A B) R A B where
   resp_smul := SMulHom.resp_smul
 
-
 structure AddGroupHom extends ZeroHom α β, AddHom α β where
 
 instance : FunLike (AddGroupHom α β) α β where
