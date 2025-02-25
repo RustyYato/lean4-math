@@ -125,11 +125,39 @@ def prod_from_mul_prod_from_pairwise [Mul α] [IsSemigroup α] [IsCommMagma α] 
 def prod_mul_prod_pairwise [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f g: Fin n -> α) : Fin.prod f * Fin.prod g = Fin.prod (f * g) :=
   sum_add_sum_pairwise (α := AddOfMul α) _ _
 
-def add_apend [Add α] (f: Fin n -> α) (g: Fin m -> α) : Fin (n + m) -> α :=
+def func_append (f: Fin n -> α) (g: Fin m -> α) : Fin (n + m) -> α :=
   fun x =>
     if h:x < n then f ⟨x, h⟩  else g ⟨x.val - n, by
       refine Nat.sub_lt_left_of_lt_add ?_ ?_
       exact Nat.le_of_not_lt h
       exact x.isLt⟩
+
+def sum_from_add_sum [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α] (fs: α) (f: Fin n -> α) (g: Fin m -> α) : Fin.sum_from fs f + Fin.sum g = Fin.sum_from fs (func_append f g) := by
+  induction m with
+  | zero =>
+    rw [sum_zero, add_zero]
+    apply sum_from_ext
+    rfl
+    intro x
+    rw [func_append]
+    rw [dif_pos x.isLt]
+  | succ m ih =>
+    rw [sum_from_succ, sum_succ, ←add_assoc, ih]
+    congr
+    rw [func_append]
+    rw [dif_neg]; unfold last
+    congr; dsimp
+    rw [Nat.add_sub_cancel_left]
+    refine Nat.not_lt.mpr ?_
+    apply Nat.le_add_right
+
+def prod_from_mul_prod [One α] [Mul α] [IsSemigroup α] [IsMulOneClass α] (fs: α) (f: Fin n -> α) (g: Fin m -> α) : Fin.prod_from fs f * Fin.prod g = Fin.prod_from fs (func_append f g) :=
+  sum_from_add_sum (α := AddOfMul α) _ _ _
+
+def sum_add_sum [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α] (f: Fin n -> α) (g: Fin m -> α) : Fin.sum f + Fin.sum g = Fin.sum (func_append f g) := by
+  apply sum_from_add_sum
+
+def prod_mul_prod [One α] [Mul α] [IsSemigroup α] [IsMulOneClass α] (f: Fin n -> α) (g: Fin m -> α) : Fin.prod f * Fin.prod g = Fin.prod (func_append f g) :=
+  sum_add_sum (α := AddOfMul α) _ _
 
 end Fin
