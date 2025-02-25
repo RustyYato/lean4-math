@@ -1,6 +1,7 @@
 import Math.Function.Basic
 import Math.Type.Basic
 import Math.Algebra.Ring.Basic
+import Math.Algebra.Basic
 import Math.Algebra.Impls.Pi
 import Math.Algebra.Hom.Defs
 
@@ -167,5 +168,79 @@ def list_sum_eq [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α] (as: 
   | cons a as ih =>
     rw [sum_succ', List.sum_cons, ih]
     congr
+
+def sum_eq_zero [Zero α] [Add α] [IsAddZeroClass α] (f: Fin n -> α) :
+  (∀x, f x = 0) -> sum f = 0  := by
+  intro h
+  rw [sum_ext f 0]
+  · clear f h
+    induction n with
+    | zero => rfl
+    | succ n ih =>
+      rw [sum_succ]
+      show sum 0 + 0 = 0
+      rw [ih, add_zero]
+  · apply h
+
+def prod_eq_one [One α] [Mul α] [IsMulOneClass α] (f: Fin n -> α) :
+  (∀x, f x = 1) -> prod f = 1 :=
+  sum_eq_zero (α := AddOfMul α) _
+
+def prod_eq_zero [IsNontrivial α] [Zero α] [One α] [Mul α] [NoZeroDivisors α] [IsMulOneClass α] [IsMulZeroClass α] (f: Fin n -> α) :
+  (∃x, f x = 0) ↔ prod f = 0 := by
+  induction n with
+  | zero =>
+    apply Iff.intro
+    intro ⟨x, _⟩; exact x.elim0
+    intro h
+    rw [prod_zero] at h
+    have := _root_.zero_ne_one _ h.symm
+    contradiction
+  | succ n ih =>
+    rw [prod_succ]
+    apply Iff.intro
+    intro ⟨x, hx⟩
+    cases x using Fin.lastCases
+    rw [hx, mul_zero]
+    rw [(ih _).mp, zero_mul]
+    refine ⟨_, hx⟩
+    intro h
+    rcases of_mul_eq_zero h with h | h
+    have ⟨x, _⟩  := (ih _).mpr h
+    exists x.castSucc
+    exists (last _)
+
+def sum_cast [Zero α] [Add α] (h: n = m) (f: Fin n -> α) :
+  sum f = sum (f ∘ (Fin.cast h.symm)) := by
+  subst h
+  rfl
+
+def sum_limit [Zero α] [Add α] [IsAddZeroClass α] (m: Nat) (h: m ≤ n) (f: Fin n -> α) (g: ∀x: Fin n, x.val ≥ m -> f x = 0) :
+  sum f = sum (fun x: Fin m => f (x.castLE h)) := by
+  induction h with
+  | refl => rfl
+  | step h ih =>
+    rename_i n
+    rw [sum_succ, g, add_zero, ih]; rfl
+    intro _ _
+    apply g
+    assumption
+    assumption
+
+def prod_limit [One α] [Mul α] [IsMulOneClass α] (m: Nat) (h: m ≤ n) (f: Fin n -> α) (g: ∀x: Fin n, x.val ≥ m -> f x = 1) :
+  prod f = prod (fun x: Fin m => f (x.castLE h)) :=
+  sum_limit (α := AddOfMul α) m h f g
+
+def sum_smul
+  [SemiringOps α] [AddMonoidOps β] [IsSemiring α] [IsAddMonoid β] [IsAddCommMagma β]
+  [SMul α β] [IsModule α β] (f: Fin n -> α) (x: β) : sum f • x = sum (fun i => f i • x) := by
+  let smul_hom: α →+ β := {
+    toFun a := a • x
+    resp_zero := zero_smul _
+    resp_add := add_smul _ _ _
+  }
+  show smul_hom (sum f) = _
+  rw [resp_sum]
+  rfl
 
 end Fin
