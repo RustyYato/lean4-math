@@ -10,3 +10,8 @@ instance : RingOps s := {
   instSemiringOpsElem s with
 }
 instance : IsRing s := inferInstance
+
+instance (s: Subring α) : RingOps s := {
+  instSemiringOpsElem s with
+}
+instance (s: Subring α) : IsRing s := inferInstance
