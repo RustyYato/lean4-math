@@ -2,10 +2,6 @@ import Math.Data.Set.Like.Lattice
 import Math.Algebra.Module.SetLike.Defs
 import Math.Algebra.Module.Defs
 
--- import Math.Data.Set.Lattice
--- import Math.Order.GaloisConnection
--- import Math.Algebra.Semiring.Defs
-
 namespace Submodule
 
 variable [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]

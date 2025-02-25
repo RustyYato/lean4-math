@@ -6,11 +6,6 @@ import Math.Data.Set.Lattice
 import Math.Algebra.Group.Units.Defs
 import Math.Algebra.Ring.SetLike.Basic
 
-namespace Ring
-
-abbrev Subring (R: Ring α) := Subring R
-abbrev AddSubgroup (R: Ring α) := AddSubgroup R
-
 def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
   r a b := a - b ∈ i
   iseqv := {
@@ -33,7 +28,7 @@ def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
   }
 
 -- every ring homomorphism identifies a subring of R
-def Subring.ofHom {R S: Ring α} (f: S →+* R) : Subring R where
+def Subring.ofHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S →+* R) : Subring R where
   carrier := Set.range f
   mem_zero' := by
     exists 0
@@ -54,4 +49,13 @@ def Subring.ofHom {R S: Ring α} (f: S →+* R) : Subring R where
     rw [←resp_mul]
     apply Set.mem_range'
 
-end Ring
+-- there is a homomorphism between to a subring from each of it's subsets
+def Subring.Hom [RingOps R] (s t: Subring R) (h: s ⊆ t) : s ↪+* t where
+  toFun x := ⟨x.val, h _ x.property⟩
+  inj' := by
+    intro a b eq
+    cases a; cases eq; rfl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
