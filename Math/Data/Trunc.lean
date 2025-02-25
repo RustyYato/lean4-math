@@ -1,14 +1,7 @@
 import Math.Type.Notation
+import Math.Data.Setoid.Basic
 
-def trueSetoid (α: Sort*) : Setoid α where
-  r _ _ := True
-  iseqv := {
-    refl _ := True.intro
-    symm _ := True.intro
-    trans _ _ := True.intro
-  }
-
-def Trunc (α: Sort*) := Quotient (trueSetoid α)
+def Trunc (α: Sort*) := Quotient (Setoid.trueSetoid α)
 
 namespace Trunc
 
