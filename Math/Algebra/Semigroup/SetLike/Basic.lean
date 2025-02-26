@@ -1,5 +1,6 @@
 import Math.Algebra.Semigroup.SetLike.Defs
 import Math.Algebra.Semigroup.Defs
+import Math.Logic.Equiv.Basic
 
 variable [SetLike S α] [Mul α] [IsMulMem S] [Add α] [IsAddMem S] (s: S)
 

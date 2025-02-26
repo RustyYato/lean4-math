@@ -1,27 +1,29 @@
-import Math.Algebra.Ring.Theory.Ideal
+import Math.Algebra.Ring.Theory.Ideal.TwoSided.Lattice
 import Math.Order.Zorn
 
 namespace Ring
 
-private def ProperIdeal {R: Ring α} (i: Ideal R) := { j: Ideal R // j ≠ ⊤ ∧ i ≤ j }
+variable [RingOps R] [IsRing R] {i: Ideal R}
 
-private instance : LE (ProperIdeal R) where
+private def ProperIdeal (i: Ideal R) := { j: Ideal R // j ≠ ⊤ ∧ i ≤ j }
+
+private instance : LE (ProperIdeal i) where
   le a b := a.val ≤ b.val
 
-private instance : LT (ProperIdeal R) where
+private instance : LT (ProperIdeal i) where
   lt a b := a.val < b.val
 
-private instance : IsLawfulLT (ProperIdeal R) where
+private instance : IsLawfulLT (ProperIdeal i) where
   lt_iff_le_and_not_le := Iff.rfl
 
 private def ProperIdeal.oemb (i: Ideal R) : ProperIdeal i ↪o Ideal R where
   toFun x := x.val
-  inj := Subtype.val_inj
+  inj' := Subtype.val_inj
   resp_rel := Iff.rfl
 
-private instance : IsPartialOrder (ProperIdeal R) := (ProperIdeal.oemb _).inducedIsPartialOrder'
+private instance : IsPartialOrder (ProperIdeal i) := (ProperIdeal.oemb _).inducedIsPartialOrder'
 
-instance (R: Ring α) : IsCoatomic (Ideal R) where
+instance : IsCoatomic (Ideal R) where
   exists_coatom_of_ne_top := by
     intro i hi
     have ⟨a, ha⟩ : ∃a, a ∉ i := by
@@ -74,17 +76,19 @@ instance (R: Ring α) : IsCoatomic (Ideal R) where
           apply Set.mem_image'; assumption
           apply mem_neg a.val
           assumption
-        mem_mul_left := by
+        mem_mul_left' := by
           intro r x ⟨_, ⟨a, _, rfl⟩, _⟩
           refine ⟨a.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption
-          apply a.val.mem_mul_left
+          show _ ∈ a.val
+          apply mem_mul_left
           assumption
-        mem_mul_right := by
+        mem_mul_right' := by
           intro r x ⟨_, ⟨a, _, rfl⟩, _⟩
           refine ⟨a.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption
-          apply a.val.mem_mul_right
+          show _ ∈ a.val
+          apply mem_mul_right
           assumption
       }
     refine ⟨⟨bound, ?_, ?_⟩ , ?_⟩

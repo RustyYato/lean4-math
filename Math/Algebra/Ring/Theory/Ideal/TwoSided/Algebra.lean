@@ -231,7 +231,7 @@ instance : IsSemigroup (Ideal α) where
         simp [add_zero]
       dsimp only
       conv => {
-        rw [List.map_flatMap]; lhs; arg 1; arg 2; intro x
+        rw [List.map_flatMap]; lhs; arg 1; arg 1; intro x
         rw [List.map_map]
       }
       induction l with
@@ -256,7 +256,7 @@ instance : IsSemigroup (Ideal α) where
         simp [add_zero]
       dsimp only
       conv => {
-        rw [List.map_flatMap]; lhs; arg 1; arg 2; intro x
+        rw [List.map_flatMap]; lhs; arg 1; arg 1; intro x
         rw [List.map_map]
       }
       induction l with

@@ -2,6 +2,7 @@ import Math.Data.Set.Like.Lattice
 import Math.Algebra.Ring.Theory.Ideal.Defs
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Algebra
 import Math.Algebra.Ring.Defs
+import Math.Order.Atom.Basic
 
 namespace Ideal
 
@@ -78,5 +79,7 @@ instance : Inf (Ideal R) := inferInstance
 instance : SupSet (Ideal R) := inferInstance
 instance : InfSet (Ideal R) := inferInstance
 instance : IsCompleteLattice (Ideal R) := inferInstance
+
+def isMaximal (i: Ideal R): Prop := IsCoatom i
 
 end Ideal
