@@ -80,3 +80,5 @@ def empty_or_nonempty {motive: Sort u -> Prop} (empty: ∀t, IsEmpty t -> motive
   assumption
   apply empty
   exact IsEmpty.ofNotNonempty h
+
+def empty_inj [IsEmpty α] (f: α -> β) : Function.Injective f := fun x => elim_empty x

@@ -206,7 +206,7 @@ def trans' (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r where
 end RelIso
 
 def RelEmbedding.congr (eqr: r₀ ≃r r₁) (eqs: s₀ ≃r s₁) (h: r₀ ↪r s₀) : r₁ ↪r s₁ where
-  toEmbedding := Equiv.embedCongr eqr.toEquiv eqs.toEquiv h.toEmbedding
+  toEmbedding := Equiv.congrEmbed eqr.toEquiv eqs.toEquiv h.toEmbedding
   resp_rel := by
     intro a b
     apply Iff.trans _ eqs.resp_rel
@@ -230,7 +230,7 @@ def Subtype.relEmbed {P: α -> Prop} (r: α -> α -> Prop) : (fun a b: Subtype P
   resp_rel := Iff.rfl
 
 def ULift.relIso (r: α -> α -> Prop) : (fun a b: ULift α => r a.down b.down) ≃r r where
-  toEquiv := (Equiv.ulift _).symm
+  toEquiv := (Equiv.ulift _)
   resp_rel := Iff.rfl
 
 def empty_reliso_empty {α β: Sort*} [IsEmpty α] [IsEmpty β] (r: α -> α -> Prop) (s: β -> β -> Prop) : r ≃r s where

@@ -154,7 +154,7 @@ def collapse_helper [IsWellOrder s] (f: r ↪r s) : ∀ a, { b // ¬s (f a) b } 
     contradiction
     exfalso
     apply this
-    apply Relation.trans _ s'
+    apply IsTrans.trans _ s'
     apply f.resp_rel.mp
     assumption
   have g: S.Nonempty := ⟨_, this⟩
@@ -229,7 +229,7 @@ namespace PrincipalSegment
 theorem init [IsTrans s] (f : r ≺i s) (a : α) (b : β) (h : s b (f a)) : b ∈ Set.range f := by
   obtain ⟨top, down⟩  := f.exists_top
   apply (down _).mp
-  apply Relation.trans h
+  apply IsTrans.trans h
   apply (down _).mpr
   apply Set.mem_range'
 
@@ -375,7 +375,7 @@ def toInitial_inj : Function.Injective (toInitial (r := r) (s := s)) := by
   intro ⟨x, _⟩ ⟨y, _⟩ eq
   congr
   have : x.toFun = y.toFun := Embedding.mk.inj (RelEmbedding.mk.inj (InitialSegment.mk.inj eq))
-  apply Equiv.toFun_inj'
+  apply DFunLike.coe_inj
   exact this
 
 instance [IsWellOrder s] : Subsingleton (r ≃r s) where

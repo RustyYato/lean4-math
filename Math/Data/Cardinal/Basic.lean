@@ -1,4 +1,3 @@
-import Math.Type.Basic
 import Math.Tactics.PPWithUniv
 import Math.Algebra.Ring
 import Math.Data.Fin.Basic
@@ -9,8 +8,7 @@ import Math.Order.Linear
 
 def type_setoid : Setoid (Type u) where
   r a b := Nonempty (a ≃ b)
-  iseqv := ⟨fun _ => ⟨Equiv.refl⟩, fun ⟨a⟩ => ⟨a.symm⟩, fun ⟨a⟩ ⟨b⟩ => ⟨a.trans b ⟩⟩
-
+  iseqv := ⟨fun _ => ⟨Equiv.rfl⟩, fun ⟨a⟩ => ⟨a.symm⟩, fun ⟨a⟩ ⟨b⟩ => ⟨a.trans b ⟩⟩
 
 attribute [local refl] Setoid.refl
 attribute [local symm] Setoid.symm
@@ -45,8 +43,8 @@ def lift : Cardinal.{u} -> Cardinal.{max u v} := by
   apply Quotient.lift (mk ∘ ULift)
   intro a b ⟨eq⟩
   apply sound
-  apply ULift.equiv.trans
-  apply Equiv.trans _ ULift.equiv.symm
+  apply (Equiv.ulift _).trans
+  apply Equiv.trans _ (Equiv.ulift _).symm
   assumption
 
 def ofNat (n: Nat) : Cardinal :=  ⟦Fin n⟧
@@ -59,7 +57,7 @@ def add : Cardinal -> Cardinal -> Cardinal := by
   exact a ⊕ b
   intro a b c d ⟨ac⟩ ⟨bd⟩
   apply sound
-  apply Sum.equivCongr <;> assumption
+  apply Equiv.congrSum <;> assumption
 
 def mul : Cardinal -> Cardinal -> Cardinal := by
   apply Quotient.lift₂ (fun _ _ => ⟦_⟧) _
@@ -67,7 +65,7 @@ def mul : Cardinal -> Cardinal -> Cardinal := by
   exact a × b
   intro a b c d ⟨ac⟩ ⟨bd⟩
   apply sound
-  apply Prod.equivCongr <;> assumption
+  apply Equiv.congrProd <;> assumption
 
 def pow : Cardinal -> Cardinal -> Cardinal := by
   apply Quotient.lift₂ (fun _ _ => ⟦_⟧) _
@@ -75,7 +73,7 @@ def pow : Cardinal -> Cardinal -> Cardinal := by
   exact b -> a
   intro a b c d ⟨ac⟩ ⟨bd⟩
   apply sound
-  apply Function.congrEquiv <;> assumption
+  apply Equiv.congrFunction <;> assumption
 
 instance : Add Cardinal := ⟨add⟩
 instance : Mul Cardinal := ⟨mul⟩
@@ -94,9 +92,9 @@ def lift_add (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.add b = (a.add b).lift
   cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
-  symm; apply ULift.equiv
-  apply Sum.equivCongr
-  apply ULift.equiv
+  symm; apply Equiv.ulift
+  apply Equiv.congrSum
+  apply Equiv.ulift
   rfl
 
 @[simp]
@@ -104,19 +102,19 @@ def add_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.add b.lift = (a.add b).lift
   cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
-  symm; apply ULift.equiv
-  apply Sum.equivCongr
+  symm; apply Equiv.ulift
+  apply Equiv.congrSum
   rfl
-  apply ULift.equiv
+  apply Equiv.ulift
 
 @[simp]
 def lift_mul (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.mul b = (a.mul b).lift := by
   cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
-  symm; apply ULift.equiv
-  apply Prod.equivCongr
-  apply ULift.equiv
+  symm; apply Equiv.ulift
+  apply Equiv.congrProd
+  apply Equiv.ulift
   rfl
 
 @[simp]
@@ -124,29 +122,29 @@ def mul_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.mul b.lift = (a.mul b).lift
   cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
-  symm; apply ULift.equiv
-  apply Prod.equivCongr
+  symm; apply Equiv.ulift
+  apply Equiv.congrProd
   rfl
-  apply ULift.equiv
+  apply Equiv.ulift
 
 @[simp]
 def lift_pow (a: Cardinal.{u}) (b: Cardinal.{v}) : a.lift.pow b = (a.pow b).lift := by
   cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
-  symm; apply ULift.equiv
-  apply Function.congrEquiv
+  symm; apply Equiv.ulift
+  apply Equiv.congrFunction
   rfl
-  apply ULift.equiv
+  apply Equiv.ulift
 
 @[simp]
 def pow_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.pow b.lift = (a.pow b).lift := by
   cases a, b with | mk a b =>
   apply sound
   apply Equiv.trans _
-  symm; apply ULift.equiv
-  apply Function.congrEquiv
-  apply ULift.equiv
+  symm; apply Equiv.ulift
+  apply Equiv.congrFunction
+  apply Equiv.ulift
   rfl
 
 @[simp]
@@ -154,11 +152,11 @@ def lift_lift (a: Cardinal.{u}) : (Cardinal.lift.{max u v, w} (Cardinal.lift.{u,
   cases a with | mk a =>
   apply sound
   apply Equiv.trans
-  apply ULift.equiv
+  apply Equiv.ulift
   apply Equiv.trans
-  apply ULift.equiv
+  apply Equiv.ulift
   apply flip Equiv.trans
-  symm; apply ULift.equiv
+  symm; apply Equiv.ulift
   rfl
 
 def ofNat_add (n m: Nat) : ofNat (n + m) = ofNat n + ofNat m := by
@@ -170,9 +168,9 @@ def OfNat_add (n m: Nat) : (OfNat.ofNat (n + m): Cardinal) = OfNat.ofNat n + OfN
   simp
   apply sound
   apply Equiv.trans
-  apply ULift.equiv
+  apply Equiv.ulift
   apply flip Equiv.trans; symm
-  apply ULift.equiv
+  apply Equiv.ulift
   exact (Fin.equivAdd _ _).symm
 
 def ofNat_mul (n m: Nat) : ofNat (n * m) = ofNat n * ofNat m := by
@@ -184,9 +182,9 @@ def OfNat_mul (n m: Nat) : (OfNat.ofNat (n * m): Cardinal) = OfNat.ofNat n * OfN
   simp
   apply sound
   apply Equiv.trans
-  apply ULift.equiv
+  apply Equiv.ulift
   apply flip Equiv.trans; symm
-  apply ULift.equiv
+  apply Equiv.ulift
   exact (Fin.equivMul _ _).symm
 
 def Fin.equivPow (n m: Nat) : (Fin m -> Fin n) ≃ Fin (n ^ m) := by
@@ -204,22 +202,22 @@ def OfNat_pow (n m: Nat) : (OfNat.ofNat (n ^ m): Cardinal) = OfNat.ofNat n ^ OfN
   simp
   apply sound
   apply Equiv.trans
-  apply ULift.equiv
+  apply Equiv.ulift
   apply flip Equiv.trans; symm
-  apply ULift.equiv
+  apply Equiv.ulift
   exact (Fin.equivPow _ _).symm
 
 instance : IsAddCommMagma Cardinal where
   add_comm (a b: Cardinal) := by
     cases a, b with | mk a b =>
     apply sound
-    exact Sum.equivComm
+    apply Equiv.commSum
 
 instance : IsCommMagma Cardinal where
   mul_comm (a b: Cardinal) := by
     cases a, b with | mk a b =>
     apply sound
-    exact Prod.equivComm
+    apply Equiv.commProd
 
 instance : IsAddZeroClass Cardinal := by
   apply IsAddZeroClass.ofAddCommMagma
@@ -229,7 +227,7 @@ instance : IsAddZeroClass Cardinal := by
   rw [lift_add]
   apply sound
   apply Equiv.trans
-  apply ULift.equiv
+  apply Equiv.ulift
   apply Equiv.mk _ _ _ _
   intro h
   match h with
@@ -251,7 +249,7 @@ instance : IsMulZeroClass Cardinal := by
   rw [lift_mul]
   apply sound
   apply flip Equiv.trans; symm
-  apply ULift.equiv
+  apply Equiv.ulift
   apply Equiv.mk _ _ _ _
   intro ⟨h, _⟩
   exact h
@@ -356,12 +354,12 @@ instance : IsMonoid Cardinal where
     cases a with | mk A =>
     apply sound
     apply Equiv.trans
-    apply Function.congrEquiv
-    apply ULift.equiv
+    apply Equiv.congrFunction
+    apply Equiv.ulift
     rfl
     apply flip Equiv.trans; symm
-    apply Prod.equivCongr
-    apply Function.congrEquiv ULift.equiv (by rfl)
+    apply Equiv.congrProd
+    apply Equiv.congrFunction (Equiv.ulift _) (by rfl)
     rfl
     apply Equiv.mk _ _ _ _
     intro f

@@ -1,4 +1,4 @@
-import Math.Type.Basic
+import Math.Logic.Equiv.Basic
 import Math.Algebra.Notation
 import Math.Algebra.AddMul
 
@@ -369,34 +369,34 @@ def RingHom.comp (a: RingHom β γ) (b: RingHom α β) : α →+* γ where
   resp_mul { _ _ } := by dsimp; rw [b.resp_mul, a.resp_mul]
 
 def AddGroupEmbedding.refl : α ↪+ α where
-  toEmbedding := Embedding.refl
+  toEmbedding := Embedding.rfl
   resp_zero := rfl
   resp_add := rfl
 
 def GroupEmbedding.refl : α ↪* α where
-  toEmbedding := Embedding.refl
+  toEmbedding := Embedding.rfl
   resp_one := rfl
   resp_mul := rfl
 
 def RingEmbedding.refl : α ↪+* α where
-  toEmbedding := Embedding.refl
+  toEmbedding := Embedding.rfl
   resp_zero := rfl
   resp_one := rfl
   resp_add := rfl
   resp_mul := rfl
 
 def AddGroupEquiv.refl : α ≃+ α where
-  toEquiv := Equiv.refl
+  toEquiv := Equiv.rfl
   resp_zero := rfl
   resp_add := rfl
 
 def GroupEquiv.refl : α ≃* α where
-  toEquiv := Equiv.refl
+  toEquiv := Equiv.rfl
   resp_one := rfl
   resp_mul := rfl
 
 def RingEquiv.refl : α ≃+* α where
-  toEquiv := Equiv.refl
+  toEquiv := Equiv.rfl
   resp_zero := rfl
   resp_one := rfl
   resp_add := rfl

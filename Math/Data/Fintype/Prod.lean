@@ -24,7 +24,7 @@ instance {β: α -> Type _} [as: Fintype α] [bs: ∀x, Fintype (β x)] : Fintyp
     rfl
 
 instance [Fintype α] [Fintype β] : Fintype (α × β) :=
-  Fintype.ofEquiv Prod.equivSigma
+  Fintype.ofEquiv (Equiv.prod_equiv_sigma _ _)
 
 instance {β: α -> Type _} [IsEmpty α] : Fintype ((x: α) × β x) where
   all := []
@@ -57,7 +57,7 @@ def Sigma.card_eq {β: α -> Type _} (as: Fintype α) (bs: ∀x, Fintype (β x))
 
 def Prod.card_eq (as: Fintype α) (bs: Fintype β) :
   Fintype.card (α × β) = as.card * bs.card := by
-  rw [Fintype.eqCardOfEquiv Prod.equivSigma, Sigma.card_eq as (fun _ => bs)]
+  rw [Fintype.eqCardOfEquiv (Equiv.prod_equiv_sigma _ _), Sigma.card_eq as (fun _ => bs)]
   cases as with | mk as asnodup ascomplete =>
   cases bs with | mk bs bsnodup bscomplete =>
   dsimp

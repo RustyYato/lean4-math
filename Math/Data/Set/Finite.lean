@@ -98,7 +98,7 @@ def IsFinite.sUnion (a: Set (Set α)) [ha: Set.IsFinite a] (hx: ∀x: a, Set.IsF
 def IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, Set.IsFinite x) : Set.IsFinite (⋂ a) := by
   obtain ⟨a', a'_in_a, lim, eqv⟩ := hx
   apply IsFinite.ofEmbedding (limit := lim)
-  apply Embedding.congr _ (by rfl) eqv
+  apply Equiv.congrEmbed (by rfl) eqv _
   apply Embedding.mk
   case toFun =>
     intro x
@@ -260,7 +260,7 @@ def IsFinite.rec {motive : Set α → Sort*} (s : Set α) [h : s.IsFinite]
 termination_by h.card
 decreasing_by
   show IsFinite.card ((s \ {x}): Set _) < _
-  have : IsFinite.card s = IsFinite.card ((insert x (s \ {x}): Set _)) := IsFinite.card_of_equiv ⟨this ▸ Equiv.refl⟩
+  have : IsFinite.card s = IsFinite.card ((insert x (s \ {x}): Set _)) := IsFinite.card_of_equiv ⟨this ▸ Equiv.rfl⟩
   rw [this, insert_card, if_neg]
   apply Nat.lt_succ_self
   rw [Set.mem_sdiff]
@@ -302,7 +302,7 @@ def IsFinite.spec (s: Set α) [h: s.IsFinite] : ∃s': List α, s'.Nodup ∧ ∀
 
 instance (n: Nat) : Set.IsFinite (Set.mk (· < n)) := by
   apply IsFinite.intro n
-  exact (Fin.equivSubtype n).symm
+  exact Equiv.fin_equiv_nat_subtype.symm
 
 instance (n: Nat) : Set.IsFinite (Set.mk (· ≤ n)) := by
   suffices Set.mk (· ≤ n) = Set.mk (· < (n + 1)) by
@@ -313,6 +313,6 @@ instance (n: Nat) : Set.IsFinite (Set.mk (· ≤ n)) := by
 
 instance [IsFinite α] (s: Set α) : Set.IsFinite s := by
   apply IsFinite.ofEmbed α
-  exact Subtype.embed
+  exact Embedding.subtypeVal
 
 end Set

@@ -1,4 +1,4 @@
-import Math.Type.Basic
+import Math.Logic.Equiv.Basic
 import Math.Data.Finset.Basic
 import Math.Data.Set.Basic
 
@@ -184,7 +184,7 @@ def Fintype.ofEquiv {a b: Type _} (eq: a ≃ b) [f: Fintype b] : Fintype a where
   all := f.all.map eq.invFun
   nodup := by
     apply List.nodup_map
-    apply eq.invFun_inj
+    apply eq.symm.inj
     exact f.nodup
   complete := by
     intro x
@@ -209,7 +209,7 @@ def Fintype.equivFin [f: Fintype α] [DecidableEq α] : α ≃ Fin f.card where
 def Fintype.equivOfEqCard [DecidableEq α] [DecidableEq β] {fa: Fintype α} {fb: Fintype β} (h: fa.card = fb.card) : α ≃ β := by
   apply (fa.equivFin).trans
   apply Equiv.trans _ (fb.equivFin).symm
-  apply Fin.equivOfEq
+  apply Equiv.fin
   assumption
 
 def Fintype.eqCardOfEquiv {fa: Fintype α} {fb: Fintype β} (h: α ≃ β) : fa.card = fb.card := by

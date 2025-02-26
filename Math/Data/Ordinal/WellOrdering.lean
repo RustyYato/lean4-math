@@ -1,4 +1,3 @@
-import Math.Data.Ordinal.Basic
 import Math.Order.Zorn
 
 namespace WellOrdering
@@ -130,7 +129,7 @@ def SubWellOrder.insert_wo (top: α) (s: Set α) (h: top ∉ s) {r: α -> α -> 
     let b': s := ⟨b.val, ?_⟩
     let c': s := ⟨c.val, ?_⟩
     show Set.Induced r s a' c'
-    apply Relation.trans (r := Set.Induced r s)
+    apply Relation.trans' (r := Set.Induced r s)
     show Set.Induced r s a' b'
     exact ab
     exact bc

@@ -1,7 +1,7 @@
 import Math.Order.Lattice.Complete
 import Math.Data.Set.Basic
 
-def Set.Induced (s: Set α) (r: α -> α -> Prop) :=
+def Set.Induced (r: α -> α -> Prop) (s: Set α) :=
   fun x y: s => r x y
 
 instance : IsPartialOrder (Set α) where

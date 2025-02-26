@@ -1,4 +1,4 @@
-import Math.Type.Basic
+import Math.Logic.Equiv.Defs
 import Math.Data.Nat.Find
 import Math.Function.Basic
 
@@ -65,7 +65,7 @@ def Encoding (α: Type*) [Encodable α] := { x: Nat // ∃a: α, encode a = x }
 
 def Embedding [Encodable α] : α ↪ Nat where
   toFun := encode
-  inj := encode_inj
+  inj' := encode_inj
 
 instance : Encodable Nat where
   encode := id

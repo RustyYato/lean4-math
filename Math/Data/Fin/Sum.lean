@@ -1,5 +1,4 @@
 import Math.Function.Basic
-import Math.Type.Basic
 import Math.Algebra.Ring.Basic
 import Math.Algebra.Basic
 import Math.Algebra.Impls.Pi

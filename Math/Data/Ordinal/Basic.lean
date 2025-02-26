@@ -216,7 +216,7 @@ def zero_eq : 0 = zero := by
 def one_eq : 1 = one := by
   apply sound
   refine ⟨?_, ?_⟩
-  apply unique_eq_unique
+  apply Equiv.unique
   intro a b
   apply Iff.intro
   intro h
@@ -309,7 +309,7 @@ def typein_lt_typein_iff [Relation.IsWellOrder r] : typein r a < typein r b ↔ 
     apply Nonempty.intro
     refine ⟨⟨⟨?_, ?_⟩ , ?_⟩ , ?_⟩
     intro ⟨x, g⟩
-    exact ⟨x, Relation.trans g h⟩
+    exact ⟨x, trans g h⟩
     intro ⟨_, _⟩ ⟨_, _⟩ eq
     cases eq
     congr
@@ -542,7 +542,7 @@ def min_eq_left_iff {a b: Ordinal} : a ≤ b ↔ min a b = a := by
     have : x.val.snd = y.val.snd := by
       apply typein_inj a.rel
       rw [←x.property, ←y.property, eq]
-    exact Subtype.embed.inj <| Prod.ext eq this
+    exact Subtype.val_inj <| Prod.ext eq this
     rfl
     intro x y h
     replace h : b.rel y x.val.fst := h
@@ -553,10 +553,10 @@ def min_eq_left_iff {a b: Ordinal} : a ≤ b ↔ min a b = a := by
     have: typein _ (g ⟨y, h⟩) = typein (Pre.typein _ _).rel (Subtype.mk y h) := typein_congr_initial g.toInitial
     let ainit := Subtype.initalSegment a.rel (P := fun y => a.rel y x.val.snd) <| by
       intro a₀ a₁
-      exact flip Relation.trans
+      exact flip trans
     let binit := Subtype.initalSegment b.rel (P := fun y => b.rel y x.val.fst) <| by
       intro a₀ a₁
-      exact flip Relation.trans
+      exact flip trans
     have awo := ainit.wo
     have bwo := binit.wo
     have : typein b.rel y = _ := typein_congr_initial binit (rwo := inferInstance) (swo := inferInstance) (a := ⟨y, h⟩)
@@ -575,7 +575,7 @@ def Pre.mul (a b: Pre) : Pre where
   rel := Prod.Lex a.rel b.rel
 
 def Pre.add.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd: b.rel ≃r d.rel) : Sum.Lex a.rel b.rel ≃r Sum.Lex c.rel d.rel where
-  toEquiv := Sum.equivCongr ac.toEquiv bd.toEquiv
+  toEquiv := Equiv.congrSum ac.toEquiv bd.toEquiv
   resp_rel := by
     intro x y
     cases x <;> cases y <;> rename_i x y
@@ -592,7 +592,7 @@ def Pre.add.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd: b.rel ≃r d.rel) : 
     apply bd.resp_rel.mpr; assumption
 
 def Pre.mul.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd: b.rel ≃r d.rel) : Prod.Lex a.rel b.rel ≃r Prod.Lex c.rel d.rel where
-  toEquiv := Prod.equivCongr ac.toEquiv bd.toEquiv
+  toEquiv := Equiv.congrProd ac.toEquiv bd.toEquiv
   resp_rel := by
     intro x y
     cases x <;> cases y <;> rename_i x y
@@ -603,18 +603,19 @@ def Pre.mul.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd: b.rel ≃r d.rel) : 
     apply ac.resp_rel.mp; assumption
     apply Prod.Lex.right
     apply bd.resp_rel.mp; assumption
-    unfold Prod.equivCongr Prod.equivSigma Sigma.equivCongr
-      Sigma.equivPSigma PSigma.equivCongr Equiv.trans Equiv.symm at h
+    unfold Equiv.congrProd Equiv.prod_equiv_pprod Equiv.congrPProd
+      Equiv.trans Equiv.symm at h
     dsimp at h
     rename_i a₀ b₀
-    generalize ha₁:ac.toFun a₀=a₁
-    generalize hb₁:bd.toFun b₀=b₁
+    generalize ha₁:ac a₀=a₁
+    generalize hb₁:bd b₀=b₁
+    replace h : Prod.Lex _ _ (ac a₀, bd b₀) (ac x, bd y) := h
     rw [ha₁, hb₁] at h
     cases h
     apply Prod.Lex.left
     subst a₁; subst b₁
     apply ac.resp_rel.mpr; assumption
-    cases ac.toFun_inj ha₁
+    cases ac.inj ha₁
     apply Prod.Lex.right
     subst b₁
     apply bd.resp_rel.mpr; assumption
@@ -765,11 +766,11 @@ instance : Relation.IsWellOrder (Pre.maxType.LT (r := r) (s := s)) where
     any_goals apply LT.mk_inl
     any_goals apply LT.mk_inr
     apply LT.inl
-    apply Relation.trans <;> assumption
+    apply Relation.trans' <;> assumption
     apply LT.mk
-    apply Relation.trans <;> assumption
+    apply Relation.trans' <;> assumption
     apply LT.inr
-    apply Relation.trans <;> assumption
+    apply Relation.trans' <;> assumption
   tri := by
     intro a b
     cases a <;> cases b
@@ -1559,7 +1560,7 @@ instance [Relation.IsTrans r] : Relation.IsTrans (Pre.succRel r) where
     cases ab <;> cases bc
     apply Pre.succRel.none
     apply Pre.succRel.some
-    apply Relation.trans <;> assumption
+    apply Relation.trans' <;> assumption
 instance [Relation.IsTrichotomous r] : Relation.IsTrichotomous (Pre.succRel r) where
   tri := by
     intro a b
@@ -1595,7 +1596,7 @@ def Pre.succ (p: Pre) : Pre where
   rel := Pre.succRel p.rel
 
 def Pre.succ.spec (a b: Pre) (h: a.rel ≃r b.rel) : a.succ.rel ≃r b.succ.rel where
-  toEquiv := Option.congrEquiv h.toEquiv
+  toEquiv := Equiv.congrOption h.toEquiv
   resp_rel := by
     intro x y
     apply Iff.intro
@@ -1701,7 +1702,7 @@ def succ_le_of_lt (a b: Ordinal) : a < b -> a + 1 ≤ b := by
   exists .some a
   rename_i a
   replace r : B.rel b (h a) := r
-  replace r : B.rel b top := Relation.trans r (hx_lt_top _)
+  replace r : B.rel b top := Relation.trans' r (hx_lt_top _)
   have ⟨a, eq⟩ := Set.mem_range.mp <| (spec _).mp r
   subst eq
   apply Set.mem_range.mpr
@@ -1782,7 +1783,7 @@ def succ_lt_succ_of_lt {a b: Ordinal} : a < b -> a + 1 < b + 1 := by
       apply Pre.succRel.some
       assumption
       apply Pre.succRel.some
-      apply Relation.trans _ top_lt
+      apply Relation.trans' _ top_lt
       apply (top_spec _).mpr
       apply Set.mem_range'
     else

@@ -1,4 +1,3 @@
-import Math.Type.Basic
 import Math.Order.Fin
 import Math.Data.Fin.Basic
 import Math.Data.Fintype.Basic
@@ -126,46 +125,35 @@ def IsFinite.ofEquiv' {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ≃ β) :
 def IsFinite.ofEmbed {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ↪ β) : IsFinite α := by
   obtain ⟨limit, hb⟩ := hb
   apply IsFinite.ofEmbedding (limit := limit)
-  apply Embedding.congr
-  assumption
-  rfl
-  assumption
+  exact Equiv.congrEmbed .rfl hb h
 
 instance (α: Sort*) [IsFinite α] : IsFinite (PLift α) :=
-  IsFinite.ofEquiv PLift.equiv
+  IsFinite.ofEquiv (Equiv.plift _)
 instance (α: Type*) [IsFinite α] : IsFinite (ULift α) :=
-  IsFinite.ofEquiv ULift.equiv
+  IsFinite.ofEquiv (Equiv.ulift _)
 
 instance {α β: Sort*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ⊕' β) := by
   apply IsFinite.ofEquiv' (PLift α ⊕ PLift β)
   apply Equiv.trans
-  apply PSum.equivCongr
-  apply PLift.equiv.symm
-  apply PLift.equiv.symm
-  apply Sum.equivPSum.symm
+  apply Equiv.congrPSum
+  apply (Equiv.plift _).symm
+  apply (Equiv.plift _).symm
+  apply (Equiv.sum_equiv_psum _ _).symm
 
 instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) ×' β x) := by
   have := Fintype.ofIsFinite (PLift α)
   have : ∀x: PLift α, Fintype (PLift (β x.down)) := fun ⟨x⟩ =>
     Fintype.ofIsFinite (PLift (β x))
   apply IsFinite.ofEquiv' ((x : PLift α) × PLift (β x.down))
-  apply Equiv.trans  _ Sigma.equivPSigma.symm
-  apply PSigma.equivCongr PLift.equiv.symm
-  intro x x₀ eq
-  subst x₀
-  apply Equiv.trans _ PLift.equiv.symm
+  apply Equiv.trans  _ (Equiv.sigma_equiv_psigma _).symm
+  apply Equiv.congrPSigma (Equiv.plift _).symm
+  intro x
+  apply Equiv.trans _ (Equiv.plift _).symm
   rfl
 
 instance {α: Type*} {β: α -> Type*} [IsFinite α]  [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) × β x) := by
-  have := Fintype.ofIsFinite (PLift α)
-  have : ∀x: PLift α, Fintype (PLift (β x.down)) := fun ⟨x⟩ =>
-    Fintype.ofIsFinite (PLift (β x))
-  apply IsFinite.ofEquiv' ((x : PLift α) × PLift (β x.down))
-  apply Sigma.equivCongr PLift.equiv.symm
-  intro x x₀ eq
-  subst x₀
-  apply Equiv.trans _ PLift.equiv.symm
-  rfl
+  apply IsFinite.ofEquiv' ((x : α) ×' (β x))
+  exact Equiv.sigma_equiv_psigma β
 
 instance {α: Type*} {β: Type*} [IsFinite α]  [IsFinite β] : IsFinite (α × β) := by
   have := Fintype.ofIsFinite α
@@ -175,10 +163,10 @@ instance {α: Type*} {β: Type*} [IsFinite α]  [IsFinite β] : IsFinite (α × 
 instance {α: Sort*} {β: Sort*} [IsFinite α]  [IsFinite β] : IsFinite (α ×' β) := by
   apply IsFinite.ofEquiv' (PLift α × PLift β)
   apply Equiv.trans
-  apply PProd.equivCongr
-  apply PLift.equiv.symm
-  apply PLift.equiv.symm
-  apply Prod.equivPProd.symm
+  apply Equiv.congrPProd
+  apply (Equiv.plift _).symm
+  apply (Equiv.plift _).symm
+  apply (Equiv.prod_equiv_pprod _ _).symm
 
 open Classical in
 instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : IsFinite (∀x, β x) := by
@@ -200,8 +188,8 @@ open Classical
 instance {α: Sort*} {P: α -> Prop} [IsFinite α] : IsFinite (Subtype P) := by
   have := Fintype.ofIsFinite (PLift α)
   apply IsFinite.ofEquiv' (Subtype fun x: PLift α => P x.down)
-  apply Subtype.congrEquiv _ _
-  apply PLift.equiv.symm
+  apply Equiv.congrSubtype _ _
+  apply (Equiv.plift _).symm
   rfl
 
 instance {α: Sort*} {P Q: α -> Prop} [hp: IsFinite (Subtype P)] [hq: IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∨ Q x)) := by
@@ -219,7 +207,7 @@ instance {α: Sort*} {P Q: α -> Prop} [hp: IsFinite (Subtype P)] [hq: IsFinite 
     intro ⟨x, hx⟩ ⟨y, hy⟩ eq
     dsimp at eq
     split at eq <;> split at eq <;> rename_i gx gy
-    cases peqv.toFun_inj (Fin.addNat_inj eq)
+    cases peqv.inj (Fin.addNat_inj eq)
     rfl
     replace eq := Fin.val_inj.mpr eq
     dsimp at eq
@@ -237,7 +225,7 @@ instance {α: Sort*} {P Q: α -> Prop} [hp: IsFinite (Subtype P)] [hq: IsFinite 
     replace eq := Fin.val_inj.mpr eq
     dsimp at eq
     replace eq := Fin.val_inj.mp eq
-    cases qeqv.toFun_inj eq
+    cases qeqv.inj eq
     rfl
 
 instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
@@ -254,7 +242,7 @@ instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype
 
 instance [IsEmpty α] : IsFinite α := by
   apply IsFinite.intro 0
-  apply empty_equiv_empty
+  apply Equiv.empty
 
 instance [Subsingleton α] [h: Nonempty α] : IsFinite α := by
   obtain ⟨x⟩ := h

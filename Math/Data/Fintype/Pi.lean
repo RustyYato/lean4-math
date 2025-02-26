@@ -71,7 +71,7 @@ instance Pi.FintypeInst {β: α -> Type _} [DecidableEq α] [fa: Fintype α] [�
   have := Pi.finArgFintype (fun x => β (eqvFin.invFun x))
   apply Fintype.ofEquiv' (a := (∀x: (Fin (Fintype.card α)), β (eqvFin.invFun x)))
   clear this
-  apply Pi.congrEquiv _ _
+  apply Equiv.congrPi _ _
   symm; assumption
   intro
   rfl

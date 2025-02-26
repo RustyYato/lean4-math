@@ -1,4 +1,4 @@
-import Math.Type.Basic
+import Math.Logic.Equiv.Basic
 import Math.Function.Basic
 import Math.Data.Fin.Pairing
 
@@ -163,7 +163,7 @@ def getElem_replicate (i: Fin n) :  (replicate n a)[i] = a := by
 def flatten (v: Vector (Vector α n) m) : Vector α (m * n) where
   val := v.toList.flatMap toList
   property := by
-    rw [List.length_flatMap, length_comp_toList, map_const']
+    rw [List.length_flatMap, ←Function.comp_def, length_comp_toList, map_const']
     rw [coe_length]
     clear v
     induction m with

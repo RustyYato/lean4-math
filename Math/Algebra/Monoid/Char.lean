@@ -1,6 +1,6 @@
 import Math.Algebra.Monoid.Defs
 import Math.Algebra.Monoid.Hom
-import Math.Type.Basic
+import Math.Logic.Equiv.Basic
 
 open Classical
 

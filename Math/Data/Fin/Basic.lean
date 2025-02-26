@@ -1,5 +1,5 @@
 import Math.Function.Basic
-import Math.Type.Basic
+import Math.Logic.Equiv.Basic
 import Math.Algebra.Order
 import Math.Algebra.Impls.Nat
 import Math.Data.Fin.Pairing

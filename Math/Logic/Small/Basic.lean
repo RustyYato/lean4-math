@@ -1,5 +1,5 @@
 import Math.Tactics.PPWithUniv
-import Math.Type.Basic
+import Math.Logic.Equiv.Basic
 import Math.Type.Notation
 
 -- a type is `u` small if there exists an equivalent type in `Type u`
@@ -16,13 +16,13 @@ def Small.map [g: Small.{u} α] (h: α ≃ β) : Small.{u} β where
     ⟨α₀, ⟨h.symm.trans eqv⟩⟩
 
 def Small.lift [g: Small.{u} α] : Small.{u} (ULift.{v} α) :=
-  Small.map ULift.equiv.symm
+  Small.map (Equiv.ulift _).symm
 
 def Small.down [g: Small.{u} (ULift α)] : Small.{u} α :=
-  Small.map ULift.equiv
+  Small.map (Equiv.ulift _)
 
 instance (priority := 1001) Small.refl (α: Type u) : Small.{u, u} α where
-  exists_equiv := ⟨α, ⟨Equiv.refl⟩⟩
+  exists_equiv := ⟨α, ⟨Equiv.rfl⟩⟩
 instance {α: Type} : Small.{u, 0} α := @Small.down α (Small.refl (ULift.{u} α))
 instance {α: Type u} : Small.{u+1} α := @Small.down α (Small.refl (ULift.{u+1} α))
 instance {α: Type u} : Small.{u, max v u} (ULift α) := Small.lift.{u}
@@ -41,8 +41,8 @@ instance {α: Type*} {β: α -> Type*} [ha: Small.{u} α] [hb: ∀a: α, Small.{
   exists_equiv := by
     let β₀: Shrink α -> Type u := fun a: Shrink α => Shrink (β ((Shrink.spec α).symm a))
     refine ⟨Σa: Shrink α, β₀ a, ⟨?_⟩⟩
-    apply Sigma.equivCongr (Shrink.spec α)
-    rintro x x₀ rfl
+    apply Equiv.congrSigma (Shrink.spec α)
+    rintro x
     apply (Shrink.spec (β x)).trans
     show Shrink _ ≃ Shrink (β _)
     show Shrink _ ≃ Shrink (β ((Shrink.spec α).symm ((Shrink.spec α) x)))
@@ -52,7 +52,7 @@ instance {α: Type*} {β: α -> Type*} [ha: Small.{u} α] [hb: ∀a: α, Small.{
   exists_equiv := by
     let β₀: Shrink α -> Type u := fun a: Shrink α => Shrink (β ((Shrink.spec α).symm a))
     refine ⟨∀a: Shrink α, β₀ a, ⟨?_⟩⟩
-    apply Pi.congrEquiv (Shrink.spec α)
+    apply Equiv.congrPi (Shrink.spec α)
     intro x
     apply (Shrink.spec (β x)).trans
     show Shrink _ ≃ Shrink (β _)

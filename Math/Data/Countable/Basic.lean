@@ -1,5 +1,5 @@
-import Math.Type.Basic
 import Math.Data.Encodable.Basic
+import Math.Logic.Equiv.Basic
 
 class inductive IsCountable (α: Sort u): Prop where
 | intro (x: α ↪ Nat)
@@ -41,14 +41,12 @@ def decode_eq_none : decode n (α := α) = .none ↔ ∀x: α, encode x ≠ n :=
   apply h x
   assumption
 
-instance : IsCountable Nat := .intro .refl
+instance : IsCountable Nat := .intro .rfl
 
 def ofEquiv (h: α ≃ β) : IsCountable β := by
   apply IsCountable.intro
   rename_i g
-  apply (encode (α := α)).congr
-  assumption
-  exact .refl
+  exact Equiv.congrEmbed h .rfl encode
 
 def ofEmbed (h: β ↪ α) : IsCountable β := by
   apply IsCountable.intro

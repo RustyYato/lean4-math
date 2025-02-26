@@ -1,7 +1,6 @@
 import Math.Algebra.Hom.Defs
 import Math.Algebra.Impls.Int
 import Math.Function.Basic
-import Math.Type.Basic
 import Math.Data.Int.Basic
 
 inductive BitInt.Pre where

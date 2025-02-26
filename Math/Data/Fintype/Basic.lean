@@ -7,13 +7,13 @@ import Math.Data.Fintype.Subtype
 import Math.Data.Fintype.Option
 import Math.Data.Fintype.Prop
 
-instance [Fintype α] [Fintype β] : Fintype (Except α β) := Fintype.ofEquiv Except.equivSum
+-- instance [Fintype α] [Fintype β] : Fintype (Except α β) := Fintype.ofEquiv Except.equivSum
 
-instance : Fintype UInt8 := Fintype.ofEquiv UInt8.equivFin
-instance : Fintype UInt16 := Fintype.ofEquiv UInt16.equivFin
-instance : Fintype UInt32 := Fintype.ofEquiv UInt32.equivFin
-instance : Fintype UInt64 := Fintype.ofEquiv UInt64.equivFin
-instance : Fintype Char := Fintype.ofEquiv Char.equivSubtype
+-- instance : Fintype UInt8 := Fintype.ofEquiv UInt8.equivFin
+-- instance : Fintype UInt16 := Fintype.ofEquiv UInt16.equivFin
+-- instance : Fintype UInt32 := Fintype.ofEquiv UInt32.equivFin
+-- instance : Fintype UInt64 := Fintype.ofEquiv UInt64.equivFin
+-- instance : Fintype Char := Fintype.ofEquiv Char.equivSubtype
 instance : Fintype Bool where
   all := [false, true]
   nodup := by decide
@@ -32,29 +32,29 @@ instance [IsEmpty α] : Fintype α where
 instance [Decidable α] : Inhabited (Decidable α) where
   default := inferInstance
 
-instance [Fintype α] : Fintype (PLift α) := Fintype.ofEquiv PLift.equiv
-instance [Fintype α] : Fintype (ULift α) := Fintype.ofEquiv ULift.equiv
+instance [Fintype α] : Fintype (PLift α) := Fintype.ofEquiv (Equiv.plift _)
+instance [Fintype α] : Fintype (ULift α) := Fintype.ofEquiv (Equiv.ulift _)
 
 instance [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] : Fintype (α ↪ β) :=
-  Fintype.ofEquiv Embedding.equivSubtype
+  Fintype.ofEquiv (Equiv.embed_equiv_subtype _ _)
 
 instance [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β] : Fintype (α ≃ β) :=
-  Fintype.ofEquiv Equiv.equivSubtype
+  Fintype.ofEquiv (Equiv.eqv_equiv_subtype _ _)
 
 open Fintype in
 def ULift.card_eq [f: Fintype α] [fu: Fintype (ULift α)] : card (ULift α) = card α := by
   apply Fintype.eqCardOfEquiv
-  apply ULift.equiv
+  apply Equiv.ulift
 open Fintype in
 def PLift.card_eq [f: Fintype α] [fu: Fintype (PLift α)] : card (PLift α) = card α := by
   apply Fintype.eqCardOfEquiv
-  apply PLift.equiv
+  apply Equiv.plift
 
 def Fintype.embedding_of_card_le [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
-  (h: card α ≤ card β) : α ↪ β := (Fin.embedFin h).congr equivFin.symm equivFin.symm
+  (h: card α ≤ card β) : α ↪ β := Equiv.congrEmbed equivFin.symm equivFin.symm (Fin.embedFin h)
 
 def Fintype.equiv_of_card_eq [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
-  (h: card α = card β) : α ≃ β := equivFin.trans <| (Fin.equivOfEq h).trans equivFin.symm
+  (h: card α = card β) : α ≃ β := equivFin.trans <| (Equiv.fin h).trans equivFin.symm
 
 def Fintype.IsEmpty [f: Fintype α] (h: card α = 0) : IsEmpty α where
   elim x := by
@@ -72,7 +72,7 @@ def Fintype.recType
   refine Nat.rec (motive := fun n => ∀α: Type u, [Fintype α] -> [DecidableEq α] -> card α = n -> motive α) ?_ ?_ (card α) _ rfl
   intro α _ _ eq
   have := Fintype.IsEmpty eq
-  apply equiv _ _ nil (empty_equiv_empty _ _)
+  apply equiv _ _ nil Equiv.empty
   intro n ih α f _ eq
   -- choose an arbitrary value from the fintype
   have max: α := f.all[0]'(by
@@ -118,7 +118,7 @@ def Fintype.cases
   (α: Type u) [Fintype α] [DecidableEq α]: motive α := recType nil (fun α _ _ => cons α) equiv
 
 private def decEqOfOption (α: Type _) : DecidableEq (Option α) -> DecidableEq α :=
-  fun _ => Option.embed.DecidableEq
+  fun _ => Embedding.optionSome.DecidableEq
 
 def Fintype.existsEmbedding_iff_card_le
   {α: Type u} {β: Type v}
@@ -150,9 +150,22 @@ def Fintype.existsEmbedding_iff_card_le
       rw [ULift.card_eq, Fin.card_eq (n := c) inferInstance] at ih
       apply ih
       refine ⟨Embedding.ofOptionEmbed ?_⟩
-      refine (Embedding.congr ?_ Option.swapULift .refl)
+      refine (Equiv.congrEmbed (?_: ULift.{u} (Option (Fin c)) ≃ _) .rfl ?_)
+      · refine { toFun := ?_, invFun := ?_, leftInv := ?_, rightInv := ?_ }
+        · intro ⟨x⟩
+          match x with
+          | .some x => exact .some ⟨x⟩
+          | .none => exact .none
+        · intro x
+          match x with
+          | .some ⟨x⟩ => exact ⟨.some x⟩
+          | .none => exact ⟨.none⟩
+        · intro ⟨x⟩
+          cases x <;> rfl
+        · intro x
+          cases x <;> rfl
       apply h.comp
-      refine Embedding.congr ?_ ULift.equiv.symm Fintype.equivFin.symm
+      apply Equiv.congrEmbed (Equiv.ulift _).symm Fintype.equivFin.symm _
       rw [g]; apply Option.equivFinSucc.symm.toEmbedding
   case a.equiv =>
     intro α β _ _ ih eqv _ γ _ _
@@ -160,7 +173,7 @@ def Fintype.existsEmbedding_iff_card_le
     have := eqv.toEmbedding.DecidableEq
     intro ⟨h⟩
     apply ih
-    refine ⟨h.congr .refl eqv.symm⟩
+    refine ⟨Equiv.congrEmbed .rfl eqv.symm h⟩
 
 private def List.collectNonempty [DecidableEq α] {β: α -> Sort*}
   (f: ∀x: α, Nonempty (β x)) : ∀as: List α, Nonempty (∀x: α, x ∈ as -> β x) := by

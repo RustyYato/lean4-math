@@ -55,6 +55,7 @@ def refl (α: Sort*) : α ≃ α where
 
 def rfl {α: Sort*} : α ≃ α := .refl _
 
+@[symm]
 def symm {α β: Sort*} (h: α ≃ β) : β ≃ α where
   toFun := h.invFun
   invFun := h.toFun

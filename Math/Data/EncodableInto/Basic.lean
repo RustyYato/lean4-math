@@ -1,4 +1,4 @@
-import Math.Type.Basic
+import Math.Logic.Equiv.Defs
 import Math.Function.Basic
 import Math.Data.Fintype.Basic
 

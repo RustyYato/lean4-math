@@ -99,7 +99,7 @@ def sum_eq {f₀: Fintype ι} {f₁: Fintype ι}
   [IsAddZeroClass α] [IsAddCommMagma α]
   (f: ι -> α) :
   @Fintype.sum ι α f₀ _ _ f  = @Fintype.sum ι α f₁ _ _ f := by
-  apply sum_of_equiv Equiv.refl
+  apply sum_of_equiv Equiv.rfl
 
 -- prove that the value of the sum is independent of the ordering
 -- of the values, given that `α` is a commutative monoid
@@ -162,7 +162,7 @@ def sum_sum [f₀: Fintype ι₀] [f₁: Fintype ι₁]
     cases f₁ with | mk f₁ nodup₁ complete₁ =>
     dsimp [sum]
     unfold Fintype.all instFintypeProd Fintype.ofEquiv Fintype.all
-      instFintypeSigma Prod.equivSigma
+      instFintypeSigma Equiv.prod_equiv_sigma
     dsimp
     clear complete₀ complete₁ nodup₀ nodup₁
     simp [Function.comp_def, List.map_flatMap]
