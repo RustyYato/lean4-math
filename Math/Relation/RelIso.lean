@@ -1,4 +1,4 @@
-import Math.Type.Basic
+import Math.Logic.Equiv.Basic
 import Math.Relation.Basic
 
 section
@@ -38,7 +38,7 @@ def RelEmbedding.toRelHom (h: r ↪r s) : r →r s where
 def RelIso.toRelEmbedding (h: r ≃r s) : r ↪r s where
   toFun := h.toFun
   resp_rel := h.resp_rel
-  inj' := h.toEquiv.toFun_inj
+  inj' := h.toEquiv.inj
 
 def RelIso.toRelHom (h: r ≃r s) : r →r s := h.toRelEmbedding.toRelHom
 
@@ -124,7 +124,7 @@ end RelHom
 namespace RelEmbedding
 
 def refl : r ↪r r where
-  toEmbedding := .refl
+  toEmbedding := .rfl
   resp_rel := Iff.rfl
 
 def trans (h: r ↪r s) (g: s ↪r t) : r ↪r t where
@@ -157,7 +157,7 @@ def inv_resp_rel (h: r ≃r s) : _root_.resp_rel s r h.invFun := by
 
 @[refl]
 def refl : rel ≃r rel where
-  toEquiv := .refl
+  toEquiv := .rfl
   resp_rel := Iff.refl _
 
 @[symm]
@@ -175,7 +175,7 @@ def symm_coe (h: r ≃r s) (x: β) : h (h.symm x) = x := h.rightInv _
 def symm_inj : Function.Injective (symm (r := r) (s := s)) := by
   intro ⟨x, _⟩ ⟨y, _⟩ h
   congr
-  apply Equiv.symm_inj
+  apply Equiv.equiv_symm.inj
   exact RelIso.mk.inj h
 
 end RelIso
@@ -192,7 +192,7 @@ def tri (h: s ≃r r) [Relation.IsTrichotomous s] : Relation.IsTrichotomous r wh
   tri a b := by
     rcases Relation.trichotomous s (h.symm a) (h.symm b) with ab | eq | ba
     exact .inl <| h.inv_resp_rel.mpr ab
-    exact .inr <| .inl <| h.invFun_inj eq
+    exact .inr <| .inl <| h.symm.inj eq
     exact .inr <| .inr <| h.inv_resp_rel.mpr ba
 
 def trans' (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r where
@@ -206,11 +206,9 @@ def trans' (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r where
 end RelIso
 
 def RelEmbedding.congr (eqr: r₀ ≃r r₁) (eqs: s₀ ≃r s₁) (h: r₀ ↪r s₀) : r₁ ↪r s₁ where
-  toEmbedding := h.toEmbedding.congr eqr.toEquiv eqs.toEquiv
+  toEmbedding := Equiv.embedCongr eqr.toEquiv eqs.toEquiv h.toEmbedding
   resp_rel := by
     intro a b
-    unfold Embedding.congr
-    dsimp
     apply Iff.trans _ eqs.resp_rel
     apply Iff.trans _ h.resp_rel
     exact eqr.symm.resp_rel
@@ -228,15 +226,15 @@ def Fin.relEmbedFin (h: n ≤ m) : (· < (·: Fin n)) ↪r (· < (·: Fin m)) wh
   resp_rel := Iff.rfl
 
 def Subtype.relEmbed {P: α -> Prop} (r: α -> α -> Prop) : (fun a b: Subtype P => r a b) ↪r r where
-  toEmbedding := Subtype.embed
+  toEmbedding := Embedding.subtypeVal
   resp_rel := Iff.rfl
 
 def ULift.relIso (r: α -> α -> Prop) : (fun a b: ULift α => r a.down b.down) ≃r r where
-  toEquiv := ULift.equiv
+  toEquiv := (Equiv.ulift _).symm
   resp_rel := Iff.rfl
 
 def empty_reliso_empty {α β: Sort*} [IsEmpty α] [IsEmpty β] (r: α -> α -> Prop) (s: β -> β -> Prop) : r ≃r s where
-  toEquiv := empty_equiv_empty _ _
+  toEquiv := Equiv.empty
   resp_rel {x} := elim_empty x
 
 def Fin.gt_reqv_lt : (· > (·: Fin n)) ≃r (· < (·: Fin n)) where

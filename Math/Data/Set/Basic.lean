@@ -1,4 +1,4 @@
-import Math.Type.Basic
+import Math.Logic.IsEmpty
 import Math.Function.Basic
 import Math.Order.Notation
 import Math.Relation.Basic

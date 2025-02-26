@@ -1,4 +1,3 @@
-import Math.Type.Basic
 import Math.Logic.Basic
 import Math.Order.Notation
 import Math.Relation.Basic

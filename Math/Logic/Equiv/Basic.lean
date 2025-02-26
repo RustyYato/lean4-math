@@ -189,7 +189,7 @@ def array_equiv_list (α: Type*) : Array α ≃ List α where
   leftInv x := by rfl
   rightInv x := by rfl
 
-def isempty [IsEmpty α] [IsEmpty β] : α ≃ β where
+def empty [IsEmpty α] [IsEmpty β] : α ≃ β where
   toFun := elim_empty
   invFun := elim_empty
   leftInv x := elim_empty x
@@ -247,5 +247,12 @@ def empty [IsEmpty α] : α ↪ β where
   inj' x := elim_empty x
 
 end Embedding
+
+def Fin.embedNat : Fin n ↪ Nat :=
+  Equiv.fin_equiv_nat_subtype.toEmbedding.trans Embedding.subtypeVal
+
+def Fin.embedFin (h: n ≤ m) : Fin n ↪ Fin m where
+  toFun x := ⟨x, Nat.lt_of_lt_of_le x.isLt h⟩
+  inj' x y eq := by cases x; cases y; cases eq; rfl
 
 def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj

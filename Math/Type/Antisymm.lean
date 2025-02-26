@@ -1,5 +1,4 @@
 import Math.Data.Set.Lattice
-import Math.Type.Basic
 import Math.Order.OrderIso
 import Math.Order.FixedPoints
 

@@ -125,4 +125,10 @@ def equivIff {P Q: Prop} : (P ≃ Q) ≃ (P ↔ Q) where
   leftInv x := by rfl
   rightInv x := by rfl
 
+def equiv_symm {α β: Sort*} : (α ≃ β) ≃ (β ≃ α) where
+  toFun := symm
+  invFun := symm
+  leftInv x := by rfl
+  rightInv x := by rfl
+
 end Equiv
