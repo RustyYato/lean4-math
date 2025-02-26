@@ -219,7 +219,7 @@ instance condense_acyclic : IsAcyclic G.Condense where
     apply (lt_of_condense_edge _).left
     assumption
 
-class IsUndirected (G: Graph) extends Relation.IsSymmetric G.Edge: Prop where
+class IsUndirected (G: Graph) : Prop extends Relation.IsSymmetric G.Edge where
 
 def toUndirected (G: Graph) : Graph where
   Node := G.Node
@@ -256,7 +256,7 @@ instance [IsUndirected G] : TotallyDisconnected G.Condense where
     apply le_trans _ beqy.right
     assumption
 
-class IsConnected (G: Graph) extends Relation.IsTotal (· ≤ (·: G)): Prop where
+class IsConnected (G: Graph) : Prop extends Relation.IsTotal (· ≤ (·: G)) where
 
 instance [IsConnected G] : IsConnected G.Condense where
   total := by

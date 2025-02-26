@@ -7,17 +7,17 @@ section
 variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 
-class IsCompleteSemiLatticeSup extends IsLawfulSupSet α, IsSemiLatticeSup α: Prop where
+class IsCompleteSemiLatticeSup : Prop extends IsLawfulSupSet α, IsSemiLatticeSup α where
   sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> sSup s ≤ k
 
 export IsCompleteSemiLatticeSup (sSup_le)
 
-class IsCompleteSemiLatticeInf extends IsLawfulInfSet α, IsSemiLatticeInf α: Prop where
+class IsCompleteSemiLatticeInf : Prop extends IsLawfulInfSet α, IsSemiLatticeInf α where
   le_sInf: ∀k: α, ∀s: Set α, (∀x ∈ s, k ≤ x) -> k ≤ sInf s
 
 export IsCompleteSemiLatticeInf (le_sInf)
 
-class IsCompleteLattice extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, IsLawfulBot α, IsLawfulTop α: Prop where
+class IsCompleteLattice : Prop extends IsLattice α, IsCompleteSemiLatticeSup α, IsCompleteSemiLatticeInf α, IsLawfulBot α, IsLawfulTop α where
   mk' ::
 
 instance IsCompleteLattice.mk [IsLattice α] [IsCompleteSemiLatticeSup α] [IsCompleteSemiLatticeInf α] [IsLawfulBot α] [IsLawfulTop α] : IsCompleteLattice α where

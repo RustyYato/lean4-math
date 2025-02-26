@@ -72,7 +72,7 @@ def nsmul_eq_natCast_mul [SemiringOps α] [IsSemiring α] (n: ℕ) (x: α) : n �
   | zero => rw [zero_nsmul, natCast_zero, zero_mul]
   | succ n ih => rw [succ_nsmul, ih, natCast_succ, add_mul, one_mul]
 
-class IsNonUnitalNonAssocSemiring (α: Type*) [AddMonoidOps α] [Mul α] extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α: Prop
+class IsNonUnitalNonAssocSemiring (α: Type*) [AddMonoidOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α
 
 instance
   [AddMonoidOps α] [Mul α]
@@ -81,7 +81,7 @@ instance
   [IsMulZeroClass α]
   : IsNonUnitalNonAssocSemiring α where
 
-class IsNonAssocSemiring (α: Type*) [AddMonoidWithOneOps α] [Mul α] extends IsNonUnitalNonAssocSemiring α, IsMulOneClass α, IsAddMonoidWithOne α: Prop
+class IsNonAssocSemiring (α: Type*) [AddMonoidWithOneOps α] [Mul α] : Prop extends IsNonUnitalNonAssocSemiring α, IsMulOneClass α, IsAddMonoidWithOne α
 
 instance
   [AddMonoidWithOneOps α] [Mul α]

@@ -86,8 +86,8 @@ class IsLeftCancel (α: Type*) [Mul α]: Prop where
 class IsRightCancel (α: Type*) [Mul α]: Prop where
   mul_right_cancel {a b k: α}: a * k = b * k -> a = b
 
-class IsAddCancel (α: Type*) [Add α] extends IsAddLeftCancel α, IsAddRightCancel α: Prop
-class IsMulCancel (α: Type*) [Mul α] extends IsLeftCancel α, IsRightCancel α: Prop
+class IsAddCancel (α: Type*) [Add α] : Prop extends IsAddLeftCancel α, IsAddRightCancel α
+class IsMulCancel (α: Type*) [Mul α] : Prop extends IsLeftCancel α, IsRightCancel α
 
 instance [Add α] [IsAddLeftCancel α] [IsAddRightCancel α] : IsAddCancel α where
 instance [Mul α] [IsLeftCancel α] [IsRightCancel α] : IsMulCancel α where

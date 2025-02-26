@@ -65,12 +65,12 @@ variable [AddGroupOps α] [GroupOps α]
 
 section DivInvMonoid
 
-class IsSubNegMonoid (α: Type*) [AddGroupOps α] extends IsAddMonoid α: Prop where
+class IsSubNegMonoid (α: Type*) [AddGroupOps α] : Prop extends IsAddMonoid α where
   sub_eq_add_neg (a b: α) : a - b = a + -b
   zsmul_ofNat (n: ℕ) (a: α) : (n: ℤ) • a = n • a
   zsmul_negSucc (n: ℕ) (a: α) : (Int.negSucc n) • a = -(n.succ • a)
 
-class IsDivInvMonoid (α: Type*) [GroupOps α] extends IsMonoid α: Prop where
+class IsDivInvMonoid (α: Type*) [GroupOps α] : Prop extends IsMonoid α where
   div_eq_mul_inv (a b: α) : a / b = a * b⁻¹
   zpow_ofNat (n: ℕ) (a: α) : a ^ (n: ℤ) = a ^ n
   zpow_negSucc (n: ℕ) (a: α) : a ^ (Int.negSucc n) = (a ^ n.succ)⁻¹
@@ -172,11 +172,11 @@ end DivInvMonoid
 
 section DivisionMonoid
 
-class IsSubtractionMonoid (α: Type*) [AddGroupOps α] extends IsSubNegMonoid α, IsInvolutiveNeg α: Prop where
+class IsSubtractionMonoid (α: Type*) [AddGroupOps α] : Prop extends IsSubNegMonoid α, IsInvolutiveNeg α where
   neg_add_rev (a b: α) : -(a + b) = -b + -a
   neg_eq_of_add_left {a b: α} : a + b = 0 -> -a = b
 
-class IsDivisionMonoid (α: Type*) [GroupOps α] extends IsDivInvMonoid α, IsInvolutiveInv α: Prop where
+class IsDivisionMonoid (α: Type*) [GroupOps α] : Prop extends IsDivInvMonoid α, IsInvolutiveInv α where
   inv_mul_rev (a b: α) : (a * b)⁻¹ = b⁻¹ * a⁻¹
   inv_eq_of_mul_left {a b: α} : a * b = 1 -> a⁻¹ = b
 
@@ -212,9 +212,9 @@ end DivisionMonoid
 
 section Group
 
-class IsAddGroup (α: Type*) [AddGroupOps α] extends IsSubNegMonoid α: Prop where
+class IsAddGroup (α: Type*) [AddGroupOps α] : Prop extends IsSubNegMonoid α where
   neg_add_cancel (a: α): -a + a = 0
-class IsGroup (α: Type*) [GroupOps α] extends IsDivInvMonoid α: Prop where
+class IsGroup (α: Type*) [GroupOps α] : Prop extends IsDivInvMonoid α where
   inv_mul_cancel (a: α): a⁻¹ * a = 1
 
 variable [IsAddGroup α] [IsGroup α]

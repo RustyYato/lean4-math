@@ -225,7 +225,7 @@ def foldl'_add [Zero S] [Add S] [IsAddSemigroup S] [IsAddZeroClass S] (f: P -> â
   | zero => simp [foldl'_zero, add_zero]
   | succ n ih =>
     simp [foldl'_succ]
-    rw [ih (init := init + _), ih (init := _ + _), zero_add, add_assoc]
+    rw [ih (init := init + _), ih (init := (f _ _)), add_assoc]
 
 def foldl'_add_succ [Zero S] [Add S] [IsAddSemigroup S] [IsAddZeroClass S] (f: P -> â„• -> S) :
   foldl' (bound + 1) p 0 (fun p n s => s + f p n) =

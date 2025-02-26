@@ -1,6 +1,6 @@
 import Math.Order.Partial
 
-class IsLinearOrder (α: Type*) [LT α] [LE α] extends IsLawfulLT α: Prop where
+class IsLinearOrder (α: Type*) [LT α] [LE α] : Prop extends IsLawfulLT α where
   le_antisymm: ∀{a b: α}, a ≤ b -> b ≤ a -> a = b
   lt_or_le: ∀a b: α, a < b ∨ b ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
@@ -18,7 +18,7 @@ instance [LT α] [LE α] [IsLinearOrder α] : IsPartialOrder α where
     assumption
   le_trans := IsLinearOrder.le_trans
 
-class IsLinearMinMaxOrder (α: Type*) [LT α] [LE α] [Min α] [Max α] extends IsLinearOrder α: Prop where
+class IsLinearMinMaxOrder (α: Type*) [LT α] [LE α] [Min α] [Max α] : Prop extends IsLinearOrder α where
   min_iff_le_left: ∀{a b: α}, a ≤ b ↔ min a b = a := by
     intro a b
     apply Iff.intro

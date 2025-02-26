@@ -1,7 +1,7 @@
 import Math.Data.Set.Lattice
 import Math.Data.Set.Like
 
-class IsSetLikeLattice (α: Type*) {β: outParam Type*} [Sup α] [Inf α] [LE α] [LT α] [SetLike α β] extends IsLawfulLT α: Prop where
+class IsSetLikeLattice (α: Type*) {β: outParam Type*} [Sup α] [Inf α] [LE α] [LT α] [SetLike α β] : Prop extends IsLawfulLT α where
   inf_eq_set_inf: ∀a b: α, (a ⊓ b: α) = (a ⊓ b: Set β)
   sup_eq_set_sup: ∀a b: α, (a ⊔ b: α) = (a ⊔ b: Set β)
   le_iff_sub: ∀a b: α, a ≤ b ↔ (a: Set β) ≤ b

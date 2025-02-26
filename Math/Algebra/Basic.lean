@@ -9,7 +9,7 @@ class AlgebraMap (R A: Type*) [SemiringOps R] [SemiringOps A] extends R →+* A 
 def algebraMap {R A: Type*} [SemiringOps R] [SemiringOps A] [f: AlgebraMap R A]
   : R →+* A := f.toRingHom
 
-class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A] extends IsSemiring R: Prop where
+class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A] : Prop extends IsSemiring R where
   commutes: ∀(r: R) (x: A), algebraMap r * x = x * algebraMap r
   smul_def: ∀(r: R) (x: A), r • x = algebraMap r * x
 

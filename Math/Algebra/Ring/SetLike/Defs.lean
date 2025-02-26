@@ -3,7 +3,7 @@ import Math.Algebra.AddGroupWithOne.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsSubring [Add α] [Mul α] [Neg α] [Zero α] [One α] extends IsSubsemiring S, IsAddSubgroupWithOne S: Prop where
+class IsSubring [Add α] [Mul α] [Neg α] [Zero α] [One α] : Prop extends IsSubsemiring S, IsAddSubgroupWithOne S where
 
 structure Subring (α: Type*) [Add α] [Mul α] [Neg α] [Zero α] [One α] extends Subsemiring α, AddSubgroupWithOne α where
 

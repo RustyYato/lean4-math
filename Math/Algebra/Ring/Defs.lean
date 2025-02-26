@@ -4,7 +4,7 @@ import Math.Algebra.AddGroupWithOne.Defs
 class RingOps (α: Type*) extends SemiringOps α, AddGroupWithOneOps α where
 instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where
 
-class IsRing (α: Type*) [RingOps α] extends IsSemiring α, IsAddGroupWithOne α : Prop where
+class IsRing (α: Type*) [RingOps α] : Prop extends IsSemiring α, IsAddGroupWithOne α  where
 
 instance [RingOps α] [IsSemiring α] [IsAddGroupWithOne α] : IsRing α where
   intCast_ofNat := intCast_ofNat
@@ -77,7 +77,7 @@ def zero_sub [AddGroupOps α] [IsAddGroup α]
   refine neg_eq_of_add_right ?_
   rw [sub_add_assoc, neg_add_cancel, add_zero]
 
-class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] extends IsNonAssocSemiring α, IsAddGroupWithOne α: Prop
+class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] : Prop extends IsNonAssocSemiring α, IsAddGroupWithOne α
 
 instance
   [AddGroupWithOneOps α] [Mul α]

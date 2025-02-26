@@ -13,7 +13,7 @@ instance [AddMonoidOps α] [One α] [NatCast α] [∀n, OfNat α (n + 2)] : AddM
 
 instance (priority := 50) [AddMonoidWithOneOps α] : OfNat α (n + 2) := AddMonoidWithOneOps.ofNat n
 
-class IsAddMonoidWithOne (α: Type*) [AddMonoidWithOneOps α] extends IsAddMonoid α: Prop where
+class IsAddMonoidWithOne (α: Type*) [AddMonoidWithOneOps α] : Prop extends IsAddMonoid α where
   natCast_zero : ((0: Nat): α) = (0: α)
   natCast_succ (n: ℕ) : (n.succ: α) = (n: α) + (1: α)
   ofNat_eq_natCast (n: ℕ): OfNat.ofNat (α := α) (n + 2) = ((n + 2: Nat): α)

@@ -6,10 +6,10 @@ variable [LT α] [LE α] [LT β] [LE β]
 class ZeroLeOne (α: Type*) [Zero α] [One α] [LE α] where
   zero_le_one: 0 ≤ (1: α)
 
-class IsOrderedAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] extends IsAddCommMagma α, IsAddMonoid α, IsPartialOrder α : Prop where
+class IsOrderedAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsPartialOrder α  where
   protected add_le_add_left: ∀a b : α, a ≤ b → ∀ c, c + a ≤ c + b
 
-class IsOrderedCommMonoid (α: Type*) [MonoidOps α] [LT α] [LE α] extends IsCommMagma α, IsMonoid α, IsPartialOrder α : Prop where
+class IsOrderedCommMonoid (α: Type*) [MonoidOps α] [LT α] [LE α] : Prop extends IsCommMagma α, IsMonoid α, IsPartialOrder α  where
   protected mul_le_mul_left: ∀a b : α, a ≤ b → ∀ c, c * a ≤ c * b
 
 class IsOrderedCancelAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] extends IsOrderedAddCommMonoid α where

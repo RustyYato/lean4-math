@@ -13,8 +13,8 @@ def zpow?Rec [RingOps α] [CheckedInv? α] (a: α) (n: ℤ) (h: a ≠ 0 ∨ 0 �
     apply Int.not_le.mpr
     apply Int.negSucc_lt_zero)) ^ n.succ
 
-class IsNonCommField (α: Type*) [FieldOps α] extends IsRing α, IsGroupWithZero α: Prop where
-class IsField (α: Type*) [FieldOps α] extends IsNonCommField α, IsCommMagma α : Prop where
+class IsNonCommField (α: Type*) [FieldOps α] : Prop extends IsRing α, IsGroupWithZero α where
+class IsField (α: Type*) [FieldOps α] : Prop extends IsNonCommField α, IsCommMagma α  where
 
 instance [FieldOps α] [h: IsRing α] [g: IsGroupWithZero α] : IsNonCommField α := { h, g with }
 instance [FieldOps α] [IsNonCommField α] [IsCommMagma α] : IsField α := {  }

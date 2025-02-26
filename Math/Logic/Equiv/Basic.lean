@@ -61,7 +61,7 @@ private def cantorProp (α: Sort*) : ((α -> Prop) ↪ α) -> False := by
   apply p
   exists cantorFun
 
--- it's not possible to embed functions from α to some non-trival type into α
+-- it's not possible to embed functions from α to some non-trivial type into α
 def cantor (α β: Sort*) [h: IsNontrivial β] : ((α -> β) ↪ α) -> False := by
   classical
   obtain ⟨b₀, b₁, h⟩ := h

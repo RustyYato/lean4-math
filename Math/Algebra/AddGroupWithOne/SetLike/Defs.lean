@@ -3,7 +3,7 @@ import Math.Algebra.Group.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsAddSubgroupWithOne [Add α] [Zero α] [Neg α] [One α] extends IsAddSubmonoidWithOne S, IsAddSubgroup S: Prop where
+class IsAddSubgroupWithOne [Add α] [Zero α] [Neg α] [One α] : Prop extends IsAddSubmonoidWithOne S, IsAddSubgroup S where
 
 structure AddSubgroupWithOne (α: Type*) [Add α] [Neg α] [Zero α] [One α] extends AddSubmonoidWithOne α, AddSubgroup α where
 

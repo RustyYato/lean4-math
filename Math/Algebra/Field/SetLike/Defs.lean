@@ -4,7 +4,7 @@ import Math.Algebra.GroupWithZero.SetLike.Defs
 variable (S: Type*) {α: Type*} [SetLike S α]
 
 class IsSubfield [Zero α] [One α] [Neg α] [CheckedInv? α] [Add α] [Mul α]
-  extends IsSubring S, IsSubgroupWithZero S: Prop where
+  : Prop extends IsSubring S, IsSubgroupWithZero S where
 
 structure Subfield (α: Type*) [Zero α] [One α] [Neg α] [CheckedInv? α] [Add α] [Mul α]
   extends Subring α, SubgroupWithZero α where

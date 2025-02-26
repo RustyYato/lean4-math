@@ -2,7 +2,7 @@ import Math.Algebra.AddMonoidWithOne.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsSubsemiring [Add α] [Mul α] [Zero α] [One α] extends IsAddSubmonoidWithOne S, IsSubmonoid S: Prop where
+class IsSubsemiring [Add α] [Mul α] [Zero α] [One α] : Prop extends IsAddSubmonoidWithOne S, IsSubmonoid S where
 
 structure Subsemiring (α: Type*) [Add α] [Mul α] [Zero α] [One α] extends AddSubmonoidWithOne α, Submonoid α where
 

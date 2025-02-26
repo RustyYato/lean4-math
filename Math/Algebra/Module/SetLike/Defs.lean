@@ -1,6 +1,6 @@
 import Math.Algebra.Monoid.Action.SetLike.Defs
 
-class IsSubmodule (S R: Type*) {M: Type*} [SetLike S M] [Zero M] [Add M] [SMul R M] extends IsAddSubmonoid S,  IsSMulMem S R: Prop where
+class IsSubmodule (S R: Type*) {M: Type*} [SetLike S M] [Zero M] [Add M] [SMul R M] : Prop extends IsAddSubmonoid S,  IsSMulMem S R where
 
 structure Submodule (R M: Type*) [Zero M] [Add M] [SMul R M] extends AddSubmonoid M,  SubMulAction M R where
 

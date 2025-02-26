@@ -2,7 +2,7 @@ import Math.Algebra.Monoid.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsAddSubmonoidWithOne [Add α] [Zero α] [One α] extends IsAddSubmonoid S, IsOneMem S: Prop where
+class IsAddSubmonoidWithOne [Add α] [Zero α] [One α] : Prop extends IsAddSubmonoid S, IsOneMem S where
 
 structure AddSubmonoidWithOne (α: Type*) [Add α] [Zero α] [One α] extends AddSubmonoid α where
   mem_one' : 1 ∈ carrier

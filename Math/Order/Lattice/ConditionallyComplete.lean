@@ -8,7 +8,7 @@ section
 
 variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α]
 
-class IsConditionallyCompleteLattice extends IsLattice α: Prop where
+class IsConditionallyCompleteLattice : Prop extends IsLattice α where
   le_csSup : ∀{s} {a: α}, BoundedAbove s → a ∈ s → a ≤ sSup s
   csSup_le : ∀{s} {a: α}, Set.Nonempty s → a ∈ upperBounds s → sSup s ≤ a
   csInf_le : ∀{s} {a: α}, BoundedBelow s → a ∈ s → sInf s ≤ a

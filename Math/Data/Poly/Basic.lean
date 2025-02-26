@@ -117,7 +117,7 @@ def ofCoeffs [Zero P] (coeffs: List P) : P[X] where
     intro n h
     dsimp
     unfold List.getD
-    rw [List.get?_eq_none]
+    rw [List.getElem?_eq_none]
     rfl
     apply Nat.le_of_lt
     assumption

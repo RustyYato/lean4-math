@@ -9,7 +9,7 @@ class AddGroupWithOneOps (α: Type*) extends AddGroupOps α, AddMonoidWithOneOps
 
 instance [AddMonoidWithOneOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : AddGroupWithOneOps α where
 
-class IsAddGroupWithOne (α: Type*) [AddGroupWithOneOps α] extends IsAddGroup α, IsAddMonoidWithOne α: Prop where
+class IsAddGroupWithOne (α: Type*) [AddGroupWithOneOps α] : Prop extends IsAddGroup α, IsAddMonoidWithOne α where
   intCast_ofNat (n: ℕ) : ((n: Int): α) = (n: α)
   intCast_negSucc (n: ℕ) : (Int.negSucc n) = -(n.succ: α)
 

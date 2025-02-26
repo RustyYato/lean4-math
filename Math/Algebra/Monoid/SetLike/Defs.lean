@@ -15,8 +15,8 @@ class IsZeroMem [Zero α] : Prop where
 def mem_zero {S α: Type*} [SetLike S α] [Zero α] [IsZeroMem S]
   (s: S) : 0 ∈ s := IsZeroMem.mem_zero s
 
-class IsSubmonoid [Mul α] [One α] extends IsMulMem S, IsOneMem S: Prop where
-class IsAddSubmonoid [Add α] [Zero α] extends IsAddMem S, IsZeroMem S: Prop where
+class IsSubmonoid [Mul α] [One α] : Prop extends IsMulMem S, IsOneMem S where
+class IsAddSubmonoid [Add α] [Zero α] : Prop extends IsAddMem S, IsZeroMem S where
 
 structure Submonoid (α: Type*) [Mul α] [One α] extends Subsemigroup α where
   mem_one': 1 ∈ carrier

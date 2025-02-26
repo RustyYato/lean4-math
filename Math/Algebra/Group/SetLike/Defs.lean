@@ -13,8 +13,8 @@ class IsNegMem [Neg α] : Prop where
 
 def mem_neg {S α: Type*} [SetLike S α] [Neg α] [IsNegMem S] (s: S) {a: α} (h: a ∈ s) : -a ∈ s := IsNegMem.mem_neg s h
 
-class IsSubgroup [Mul α] [One α] [Inv α] extends IsSubmonoid S, IsInvMem S: Prop where
-class IsAddSubgroup [Add α] [Zero α] [Neg α] extends IsAddSubmonoid S, IsNegMem S: Prop where
+class IsSubgroup [Mul α] [One α] [Inv α] : Prop extends IsSubmonoid S, IsInvMem S where
+class IsAddSubgroup [Add α] [Zero α] [Neg α] : Prop extends IsAddSubmonoid S, IsNegMem S where
 
 structure Subgroup (α: Type*) [Mul α] [One α] [Inv α] extends Submonoid α where
   mem_inv': ∀{a}, a ∈ carrier -> a⁻¹ ∈ carrier

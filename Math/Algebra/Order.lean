@@ -5,11 +5,11 @@ import Math.Ops.CheckedOrder
 
 variable [LT α] [LE α] [LT β] [LE β]
 
-class IsOrderedAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] extends IsAddCommMagma α, IsAddMonoid α, IsPartialOrder α : Prop where
+class IsOrderedAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsPartialOrder α  where
   add_le_add_left : ∀ a b : α, a ≤ b → ∀ c, c + a ≤ c + b
   le_iff_nsmul_le: ∀a b: α, ∀n > 0, a ≤ b ↔ n • a ≤ n • b
 
-class IsOrderedCommMonoid (α: Type*) [MonoidOps α] [LT α] [LE α] extends IsCommMagma α, IsMonoid α, IsPartialOrder α : Prop where
+class IsOrderedCommMonoid (α: Type*) [MonoidOps α] [LT α] [LE α] : Prop extends IsCommMagma α, IsMonoid α, IsPartialOrder α  where
   mul_le_mul_left : ∀ a b : α, a ≤ b → ∀ c, c * a ≤ c * b
 
 export IsOrderedAddCommMonoid (

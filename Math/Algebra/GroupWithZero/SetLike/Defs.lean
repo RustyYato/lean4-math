@@ -8,7 +8,7 @@ class IsInv?Mem [Zero α] [CheckedInv? α] : Prop where
 
 def mem_inv? {S α: Type*} [SetLike S α] [Zero α] [CheckedInv? α] [IsInv?Mem S] (s: S) {a: α} (nz: a ≠ 0) (h: a ∈ s) : a⁻¹? ∈ s := IsInv?Mem.mem_inv? s nz h
 
-class IsSubgroupWithZero [Mul α] [One α] [Zero α] [CheckedInv? α] extends IsSubmonoid S, IsInv?Mem S, IsZeroMem S : Prop where
+class IsSubgroupWithZero [Mul α] [One α] [Zero α] [CheckedInv? α] : Prop extends IsSubmonoid S, IsInv?Mem S, IsZeroMem S  where
 
 structure SubgroupWithZero (α: Type*) [Mul α] [One α] [Zero α] [CheckedInv? α] extends Submonoid α where
   mem_inv?': ∀{a} (h: a ≠ 0), a ∈ carrier -> a⁻¹? ∈ carrier

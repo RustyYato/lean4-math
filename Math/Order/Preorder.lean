@@ -3,7 +3,7 @@ import Math.Order.Notation
 import Math.Relation.Basic
 import Math.Order.Monotone
 
-class IsPreOrder (α: Type*) [LT α] [LE α] extends IsLawfulLT α: Prop where
+class IsPreOrder (α: Type*) [LT α] [LE α] : Prop extends IsLawfulLT α where
   le_refl: ∀a: α, a ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
 

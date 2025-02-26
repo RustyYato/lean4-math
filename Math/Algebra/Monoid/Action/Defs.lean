@@ -8,7 +8,7 @@ class IsMulAction (R M: Type*) [SMul R M] [MonoidOps R] [IsMonoid R]: Prop where
 def one_smul [MonoidOps R] [SMul R M] [IsMonoid R] [IsMulAction R M]: ∀a: M, (1: R) • a = a := IsMulAction.one_smul
 def mul_smul [MonoidOps R] [SMul R M] [IsMonoid R] [IsMulAction R M]: ∀x y: R, ∀b: M, (x * y) • b = x • y • b := IsMulAction.mul_smul
 
-class IsDistribMulAction (R M: Type*) [SMul R M] [MonoidOps R] [AddMonoidOps M] [IsMonoid R] [IsAddMonoid M] extends IsMulAction R M: Prop where
+class IsDistribMulAction (R M: Type*) [SMul R M] [MonoidOps R] [AddMonoidOps M] [IsMonoid R] [IsAddMonoid M] : Prop extends IsMulAction R M where
   smul_zero: ∀a: R, a • (0: M) = 0
   smul_add: ∀a: R, ∀x y: M, a • (x + y) = a • x + a • y
 

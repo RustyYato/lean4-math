@@ -5,13 +5,13 @@ import Math.Order.TopBot
 variable (α: Type*) [LE α] [LT α]
 variable {α₀: Type*} [Sup α₀] [Inf α₀] [LE α₀] [LT α₀]
 
-class IsSemiLatticeSup  [Sup α] extends IsLawfulSup α, IsPartialOrder α: Prop where
+class IsSemiLatticeSup  [Sup α] : Prop extends IsLawfulSup α, IsPartialOrder α where
   sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
 
-class IsSemiLatticeInf [Inf α] extends IsLawfulInf α, IsPartialOrder α: Prop where
+class IsSemiLatticeInf [Inf α] : Prop extends IsLawfulInf α, IsPartialOrder α where
   le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
 
-class IsLattice [Sup α] [Inf α] extends IsSemiLatticeSup α, IsSemiLatticeInf α, IsPartialOrder α: Prop where
+class IsLattice [Sup α] [Inf α] : Prop extends IsSemiLatticeSup α, IsSemiLatticeInf α, IsPartialOrder α where
 
 class SemiLatticeSup extends LawfulSup α, IsPartialOrder α where
   sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k

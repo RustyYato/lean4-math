@@ -1,6 +1,6 @@
 import Math.Order.Preorder
 
-class IsPartialOrder (α: Type*) [LT α] [LE α] extends IsPreOrder α: Prop where
+class IsPartialOrder (α: Type*) [LT α] [LE α] : Prop extends IsPreOrder α where
   le_antisymm: ∀{a b: α}, a ≤ b -> b ≤ a -> a = b
 
 -- do not use this in bounds directly, this is only meant to be used to create a PreOrder

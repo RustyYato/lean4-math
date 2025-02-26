@@ -22,10 +22,10 @@ instance (priority := 50) [AddMonoidOps α] : SMul ℕ α where
 instance (priority := 50) [MonoidOps α] : Pow α ℕ where
   pow := MonoidOps.npow
 
-class IsAddMonoid (α: Type*) [AddMonoidOps α] extends IsAddSemigroup α, IsAddZeroClass α: Prop where
+class IsAddMonoid (α: Type*) [AddMonoidOps α] : Prop extends IsAddSemigroup α, IsAddZeroClass α where
   zero_nsmul (a: α) : 0 • a = 0 := by intros; rfl
   succ_nsmul (n: ℕ) (a: α) : (n + 1) • a = n • a + a := by intros; rfl
-class IsMonoid (α: Type*) [MonoidOps α] extends IsSemigroup α, IsMulOneClass α: Prop where
+class IsMonoid (α: Type*) [MonoidOps α] : Prop extends IsSemigroup α, IsMulOneClass α where
   npow_zero (a: α) : a ^ 0 = 1 := by intros; rfl
   npow_succ (n: ℕ) (a: α) : a ^ (n + 1) = a ^ n * a := by intros; rfl
 

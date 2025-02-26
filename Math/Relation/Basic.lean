@@ -90,7 +90,7 @@ export IsIrrefl (irrefl)
 instance [wf: IsWellFounded rel] : IsIrrefl rel where
   irrefl := wf.wf.irrefl
 
-class IsWellOrder extends IsWellFounded rel, IsTrans rel, IsTrichotomous rel: Prop where
+class IsWellOrder : Prop extends IsWellFounded rel, IsTrans rel, IsTrichotomous rel where
 instance [IsWellFounded rel] [IsTrans rel] [IsTrichotomous rel] : IsWellOrder rel where
 
 instance [wo: IsWellOrder rel] : IsIrrefl rel where
@@ -101,7 +101,7 @@ class IsSymmetric: Prop where
 
 export IsSymmetric (symm)
 
-class IsEquiv extends IsRefl rel, IsSymmetric rel, IsTrans rel: Prop where
+class IsEquiv : Prop extends IsRefl rel, IsSymmetric rel, IsTrans rel where
 
 class IsAsymm: Prop where
   asymm: ∀{a b}, rel a b -> rel b a -> False
