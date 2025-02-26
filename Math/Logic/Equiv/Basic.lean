@@ -201,13 +201,40 @@ def unique (α β: Sort*) [Subsingleton α] [Subsingleton β] [Inhabited α] [In
   leftInv _ := Subsingleton.allEq _ _
   rightInv _ := Subsingleton.allEq _ _
 
+def embed_equiv_subtype (α β: Sort*) : (α ↪ β) ≃ { f: α -> β // f.Injective } where
+  toFun f := ⟨f.1, f.2⟩
+  invFun f := ⟨f.1, f.2⟩
+  leftInv x := by rfl
+  rightInv x := by rfl
+
+def embedCongr {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ↪ β₀) ≃ (α₁ ↪ β₁) := by
+  refine trans (embed_equiv_subtype _ _) (trans (congrSubtype (congrFunction h g) ?_) (embed_equiv_subtype _ _).symm)
+  intro f
+  unfold congrFunction congrPi
+  dsimp
+  show _ ↔ Function.Injective (g ∘ f ∘ _)
+  apply Iff.trans _ (Function.Injective.of_comp_iff g.inj _).symm
+  apply Iff.intro
+  intro finj
+  apply Function.Injective.comp
+  assumption
+  apply h.symm.inj
+  intro i x y eq
+  rw [←coe_symm h x, ←coe_symm h y] at eq
+  exact h.inj (i eq)
+
 end Equiv
 
 namespace Embedding
 
-def optionSome (α: Type*) : α ↪ Option α where
+def optionSome {α: Type*} : α ↪ Option α where
   toFun := .some
   inj' _ _ := Option.some.inj
+
+def subtypeVal {P: α -> Prop} : Subtype P ↪ α where
+  toFun := Subtype.val
+  inj' a b eq := by
+    cases a; cases b; congr
 
 def DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
   fun a b =>
@@ -215,4 +242,10 @@ def DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
   | .isTrue h => .isTrue (emb.inj h)
   | .isFalse h => .isFalse fun g => h (g ▸ _root_.rfl)
 
+def empty [IsEmpty α] : α ↪ β where
+  toFun := elim_empty
+  inj' x := elim_empty x
+
 end Embedding
+
+def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj
