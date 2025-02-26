@@ -326,4 +326,91 @@ def pow_gcd_pow (a b n: Nat) : (a ^ n).gcd (b ^ n) = (a.gcd b) ^ n := by
   rw [Nat.zero_pow, Nat.gcd_zero_left, Nat.gcd_zero_left]
   apply Nat.zero_lt_of_ne_zero; symm; assumption
 
+def xgcdAux (r oldr: Nat) (s olds t oldt: Int): Int × Int × Nat :=
+  if r = 0 then
+    (olds, oldt, oldr)
+  else
+    let q := oldr / r
+    xgcdAux (oldr - q * r) r (olds - q * s) s (oldt - q * t) t
+termination_by r
+decreasing_by
+  conv => {
+    lhs; lhs; rw [←Nat.mod_add_div oldr r]
+  }
+  rw [Nat.mul_comm r, Nat.add_sub_cancel]
+  refine mod_lt oldr ?_
+  apply zero_lt_of_ne_zero
+  assumption
+
+def gcdA (a b: Nat) : Int :=
+  have ⟨a, _, _⟩ := (xgcdAux a b  1 0 0 1)
+  a
+
+def gcdB (a b: Nat) : Int :=
+  have ⟨_, b, _⟩ := (xgcdAux a b  1 0 0 1)
+  b
+
+@[simp]
+def gcdA_zero_left : gcdA 0 a = 0 := by
+  rw [gcdA, xgcdAux, xgcdAux]
+  simp
+
+@[simp]
+def gcdB_zero_left : gcdB 0 a = 1 := by
+  rw [gcdB, xgcdAux, xgcdAux]
+  simp
+
+@[simp]
+def gcdA_zero_right (h: a ≠ 0) : gcdA a 0 = 1 := by
+  simp [gcdA, xgcdAux, h]
+
+@[simp]
+def gcdB_zero_right (h: a ≠ 0) : gcdB a 0 = 0 := by
+  simp [gcdB, xgcdAux, h]
+
+-- @[simp]
+def xgcdAux_eq_gcd (a b: Nat) : ∀olds s oldt t: Int, (xgcdAux a b olds s oldt t).2.2 = gcd a b := by
+  induction a, b using Nat.gcd.induction with
+  | H0 =>
+    intro olds s oldt t
+    rw [xgcdAux, if_pos rfl, gcd_zero_left]
+  | H1 a b apos ih =>
+    intro olds s oldt t
+    rw [xgcdAux, if_neg]
+    dsimp
+    rw [Nat.mul_comm, ←Nat.mod_eq_sub, gcd_def, if_neg]
+    apply ih
+    iterate 2 exact Nat.ne_zero_of_lt apos
+
+private def P (x y: Nat) : Int × Int × Nat → Prop
+| (s, t, r) => (r : Int) = x * s + y * t
+
+private def xgcdAux_P {r r': Nat} :
+  ∀ {s t s' t'}, P x y (s, t, r) → P x y (s', t', r') → P x y (xgcdAux r r' s s' t t') := by
+  intro s t s' t' p oldp
+  induction r, r', s, s', t, t' using xgcdAux.induct with
+  | case1 oldr s olds t oldt =>
+    simp [Nat.P] at *
+    rw [xgcdAux, if_pos rfl]
+    assumption
+  | case2 r oldr s olds t oldt h q ih =>
+    rw [xgcdAux, if_neg h]
+    simp only
+    apply ih _ p
+    show _ = _
+    rw [Int.mul_sub, Int.mul_sub,
+      Int.ofNat_sub, oldp, Int.ofNat_mul, p]
+    simp only [Int.sub_eq_add_neg, Int.neg_mul, Int.mul_add, Int.neg_add]
+    ac_rfl
+    exact div_mul_le_self oldr r
+
+/-- Bézout's lemma --/
+def gcd_eq_gcd_ab : gcd x y = x * gcdA x y + y * gcdB x y := by
+  have := @xgcdAux_P x y x y 1 0 0 1 (by simp [P]) (by simp [P])
+  conv => { lhs; arg 1; rw [←xgcdAux_eq_gcd x y 1 0 0 1] }
+  rw [gcdA, gcdB]
+  unfold Nat.P at this
+  dsimp at *
+  assumption
+
 end Nat
