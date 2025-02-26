@@ -1,7 +1,7 @@
 import Math.Type.Notation
 import Math.Data.Opposite
 
-class IsNontrivial (α: Type*): Prop where
+class IsNontrivial (α: Sort*): Prop where
   exists_ne: ∃a b: α, a ≠ b
 
 def IsNontrivial.iff_exists_ne :

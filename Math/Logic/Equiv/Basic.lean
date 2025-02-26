@@ -1,6 +1,7 @@
 import Math.Logic.Equiv.Defs
 import Math.Logic.Basic
 import Math.Logic.IsEmpty
+import Math.Logic.Nontrivial
 
 namespace Embedding
 
@@ -48,6 +49,41 @@ def of_option_embed_option (emb: Option α ↪ Option β) : α ↪ β where
     have := emb.inj h₁; contradiction
     rename_i h₀ h₁
     exact Option.some.inj <| emb.inj (h₀.trans h₁.symm)
+
+private def cantorProp (α: Sort*) : ((α -> Prop) ↪ α) -> False := by
+  intro h
+  let cantorFun (x: α) : Prop := ∃f: α -> Prop, h f = x ∧ ¬f x
+  let P := cantorFun (h cantorFun)
+  by_cases p:P
+  have ⟨f, eq, spec⟩  := p
+  cases h.inj eq
+  contradiction
+  apply p
+  exists cantorFun
+
+-- it's not possible to embed functions from α to some non-trival type into α
+def cantor (α β: Sort*) [h: IsNontrivial β] : ((α -> β) ↪ α) -> False := by
+  classical
+  obtain ⟨b₀, b₁, h⟩ := h
+  intro g
+  apply Embedding.cantorProp α
+  refine ⟨?_, ?_⟩
+  intro f
+  refine g ?_
+  intro x
+  exact if f x then b₀ else b₁
+  intro x y eq
+  dsimp at eq
+  ext a
+  have := congrFun (g.inj eq) a
+  split at this <;> split at this
+  rename_i hx hy
+  exact (iff_true_right hy).mpr hx
+  contradiction
+  have := this.symm
+  contradiction
+  rename_i hx hy
+  exact (iff_false_right hy).mpr hx
 
 end Embedding
 
@@ -412,6 +448,17 @@ def of_equiv_option_option {α β: Type*} (h: Option α ≃ Option β) : α ≃ 
     conv => { lhs; lhs; rw [symm_coe] }
     rfl
   }
+
+-- booleans are classically equivalent to Prop
+open Classical in noncomputable def bool_equiv_prop : Bool ≃ Prop where
+  toFun p := p
+  invFun p := decide p
+  leftInv x := by
+    dsimp
+    rw [Bool.decide_coe]
+  rightInv x := by
+    dsimp
+    exact decide_eq_true_eq
 
 end Equiv
 
