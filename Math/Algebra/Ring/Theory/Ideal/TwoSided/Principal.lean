@@ -78,4 +78,27 @@ def principal_spec (a: α) : principal a = sInf (Set.mk fun i => a ∈ i) := by
   rw [Set.singleton_sub]
   rfl
 
+def bot_is_principal : IsPrincipal (α := α) ⊥ := by
+  exists 0
+  rw [principal_eq_generate]
+  ext x
+  apply Iff.intro
+  apply bot_le (α := Ideal α)
+  intro h
+  apply of_mem_generate _ _ _ _ h
+  rintro _ rfl
+  apply mem_zero
+
+def top_is_principal : IsPrincipal (α := α) ⊤ := by
+  exists 1
+  rw [principal_eq_generate]
+  ext x
+  apply flip Iff.intro
+  apply le_top (α := Ideal α)
+  intro
+  rw [←mul_one x]
+  apply mem_mul_left
+  apply Generate.of
+  rfl
+
 end Ideal
