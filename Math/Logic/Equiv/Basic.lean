@@ -284,17 +284,46 @@ def eqv_equiv_subtype (α β: Type*) : (α ≃ β) ≃ { fg: (α -> β) × (β -
   leftInv x := by rfl
   rightInv x := by rfl
 
+def fin_equiv_option (n: Nat) : Fin (n + 1) ≃ Option (Fin n) where
+  toFun x := if h:x.val = n then .none else .some ⟨x.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ x.isLt) h⟩
+  invFun
+  | .some x => x.castSucc
+  | .none => Fin.last _
+  leftInv := by
+    intro x
+    dsimp
+    cases x using Fin.lastCases
+    dsimp; rw [dif_pos _root_.rfl]
+    rw [dif_neg]
+    rfl
+    rename_i x
+    intro h
+    replace h : x.val = n := h
+    exact Nat.lt_irrefl _ (h ▸ x.isLt)
+  rightInv := by
+    intro x
+    cases x
+    simp
+    simp
+    rename_i x
+    intro h
+    replace h : x.val = n := h
+    exact Nat.lt_irrefl _ (h ▸ x.isLt)
+
+def empty_not_equiv_nonempty (α β: Sort*) [IsEmpty α] [g: Nonempty β] : α ≃ β -> False := by
+  intro h
+  obtain ⟨b⟩ := g
+  exact elim_empty (h.symm b)
+
 -- maps a = b, and preserves as much of the other structure as possible
-def set [DecidableEq α] (h: α ≃ β) (a: α) (b: β) : α ≃ β where
+def set (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)] : α ≃ β where
   toFun x :=
-    have := h.symm.toEmbedding.DecidableEq
     if x = a then b
     else if h x = b then
       h a
     else
       h x
   invFun x :=
-    have := h.symm.toEmbedding.DecidableEq
     if x = b then a
     else if h.symm x = a then
       h.symm b
@@ -327,7 +356,7 @@ def set [DecidableEq α] (h: α ≃ β) (a: α) (b: β) : α ≃ β where
     rw [if_neg h₁, if_neg h₁, if_neg, symm_coe]
     rw [symm_coe]; assumption
 
-def swap [DecidableEq α] (a b: α) : α ≃ α :=
+def swap (a b: α) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)] : α ≃ α :=
   Equiv.set Equiv.rfl a b
 
 def swap_symm [DecidableEq α] (a b: α) :
@@ -337,14 +366,52 @@ def swap_symm [DecidableEq α] (a b: α) :
   simp [DFunLike.coe, Equiv.refl]
   rfl
 
-def set_spec [DecidableEq α] (h: α ≃ β) (a: α) (b: β) :
+def set_spec (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)] :
   h.set a b a = b := by
   show (h.set a b).toFun a = b
   unfold set
   simp
 
-def swap_spec [DecidableEq α] (a b: α):
+def symm_set_spec (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)] :
+  (h.set a b).symm b = a := by
+  symm; apply eq_coe_of_symm_eq
+  rw [symm_symm, set_spec]
+
+def swap_spec (a b: α) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)]:
   Equiv.swap a b a = b := Equiv.set_spec _ _ _
+
+private instance : ∀(x: Option α), Decidable (x = .none)
+| .none => .isTrue _root_.rfl
+| .some _ => .isFalse Option.noConfusion
+
+def of_equiv_option {α β: Type*} (h: Option α ≃ Option β) : α ≃ β :=
+  let h := h.set .none .none
+  {
+  toFun x := (h x).get (by
+    apply Decidable.byContradiction
+    intro g
+    have := (Option.not_isSome_iff_eq_none.mp g)
+    have := eq_symm_of_coe_eq _ this
+    rw [symm_set_spec] at this
+    contradiction)
+  invFun x := (h.symm x).get (by
+    apply Decidable.byContradiction
+    intro g
+    have := (Option.not_isSome_iff_eq_none.mp g)
+    have := eq_coe_of_symm_eq _ this
+    rw [set_spec] at this
+    contradiction)
+  leftInv := by
+    intro x
+    simp
+    conv => { lhs; lhs; rw [coe_symm] }
+    rfl
+  rightInv := by
+    intro x
+    simp
+    conv => { lhs; lhs; rw [symm_coe] }
+    rfl
+  }
 
 end Equiv
 
@@ -365,62 +432,15 @@ def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
   | zero =>
     cases m
     rfl
-    exact (h.symm 0).elim0
+    have := Equiv.empty_not_equiv_nonempty _ _ h
+    contradiction
   | succ n ih =>
-    cases m
-    exact (h 0).elim0
-    congr; rename_i m
-    apply ih
-    let h' := h.trans (Equiv.swap (h (Fin.last _)) (Fin.last _))
-    have hspec : h' (Fin.last _) = Fin.last _ := by
-      show ((Equiv.swap (h (Fin.last _)) (Fin.last _))) (h <| Fin.last _) = _
-      rw [Equiv.swap_spec]
-    have hspec' : h'.symm (Fin.last _) = Fin.last _ := by
-      rw [←hspec, Equiv.coe_symm]
-    apply Equiv.mk _ _ _ _
-    · intro x
-      refine ⟨h' x.castSucc, ?_⟩
-      apply Nat.lt_of_not_le
-      intro g
-      cases Nat.lt_or_eq_of_le g <;> rename_i g
-      exact Nat.not_between_succ _ _ g (Fin.isLt _)
-      rename_i g'; clear g'
-      have eq : last m = h' x.castSucc := by
-        rw [←Fin.val_inj]; assumption
-      rw [←hspec] at eq
-      have := (Fin.castSucc_lt_iff_succ_le (i := x) (j := Fin.last _)).mpr (by
-        apply Nat.le_of_lt_succ
-        apply Nat.succ_lt_succ
-        apply Fin.isLt)
-      rw [h'.inj eq] at this
-      have := Nat.lt_irrefl _ this
+    cases m with
+    | zero =>
+      have := Equiv.empty_not_equiv_nonempty _ _ h.symm
       contradiction
-    · intro x
-      refine ⟨h'.symm x.castSucc, ?_⟩
-      apply Nat.lt_of_not_le
-      intro g
-      cases Nat.lt_or_eq_of_le g <;> rename_i g
-      exact Nat.not_between_succ _ _ g (Fin.isLt _)
-      rename_i g'; clear g'
-      have eq : last n = h'.symm x.castSucc := by
-        rw [←Fin.val_inj]; assumption
-      rw [←hspec'] at eq
-      have := (Fin.castSucc_lt_iff_succ_le (i := x) (j := Fin.last _)).mpr (by
-        apply Nat.le_of_lt_succ
-        apply Nat.succ_lt_succ
-        apply Fin.isLt)
-      rw [h'.symm.inj eq] at this
-      have := Nat.lt_irrefl _ this
-      contradiction
-    · intro x
-      dsimp
-      congr 1
-      rw [h'.coe_symm]
-      rfl
-    · intro x
-      dsimp
-      congr 1
-      rw [h'.symm_coe]
-      rfl
+    | succ m =>
+      replace h := (Equiv.fin_equiv_option n).symm.trans <| h.trans (Equiv.fin_equiv_option m)
+      rw [ih (Equiv.of_equiv_option h)]
 
 def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj

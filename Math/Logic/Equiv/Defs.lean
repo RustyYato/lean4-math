@@ -132,4 +132,14 @@ def equiv_symm {α β: Sort*} : (α ≃ β) ≃ (β ≃ α) where
   leftInv x := by rfl
   rightInv x := by rfl
 
+def eq_coe_of_symm_eq (h: α ≃ β) : h.symm x = y -> x = h y := by
+  intro g
+  rw [←g, symm_coe]
+
+def eq_symm_of_coe_eq (h: α ≃ β) : h x = y -> x = h.symm y := by
+  intro g
+  rw [←g, coe_symm]
+
+def symm_symm (h: α ≃ β) : h.symm.symm = h := _root_.rfl
+
 end Equiv
