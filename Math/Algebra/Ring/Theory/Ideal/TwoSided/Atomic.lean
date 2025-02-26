@@ -1,8 +1,6 @@
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Lattice
 import Math.Order.Zorn
 
-namespace Ring
-
 variable [RingOps R] [IsRing R] {i: Ideal R}
 
 private def ProperIdeal (i: Ideal R) := { j: Ideal R // j ≠ ⊤ ∧ i ≤ j }
@@ -111,4 +109,6 @@ instance : IsCoatomic (Ideal R) where
       cases Set.not_nonempty _ h
       intro _ _; contradiction
 
-end Ring
+-- there is always a maximal ideal larger than every proper ideal
+def Ideal.le_maximal_of_ne_top (i: Ideal R) (h: i ≠ ⊤) : ∃m: Ideal R, m.isMaximal ∧ i ≤ m :=
+  exists_coatom_of_ne_top i h
