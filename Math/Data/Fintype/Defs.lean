@@ -31,7 +31,9 @@ def Finset.compl_compl [Fintype α] [DecidableEq α] (f: Finset α) : fᶜᶜ = 
   ext x
   simp [mem_compl]
 
-def Fintype.perm (a b: Fintype α) : a.all.Perm b.all := by
+namespace Fintype
+
+def perm (a b: Fintype α) : a.all.Perm b.all := by
   cases a with | mk a anodup acomplete =>
   cases b with | mk b bnodup bcomplete =>
   apply List.MinCount.iff_perm.mpr
@@ -54,18 +56,18 @@ def Fintype.perm (a b: Fintype α) : a.all.Perm b.all := by
   have := List.minCount_of_nodup _ bnodup h
   contradiction
 
-def Fintype.card (α: Type _) [f: Fintype α] : Nat := f.all.length
+def card (α: Type _) [f: Fintype α] : Nat := f.all.length
 
-def Fintype.card_eq (a b: Fintype α) : a.card = b.card := by
+def card_eq (a b: Fintype α) : a.card = b.card := by
   unfold card
   rw [List.Perm.length_eq]
   exact a.perm b
 
-def Fintype.idxOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) where
+def idxOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) where
   val := f.all.idxOf x
   isLt := by
     cases f with | mk all nodup compl =>
-    unfold Fintype.card
+    unfold card
     dsimp
     have : x ∈ all := compl _
     clear nodup compl
@@ -81,7 +83,7 @@ def Fintype.idxOf [DecidableEq α] (f: Fintype α) (x: α) : Fin (card α) where
       apply Nat.succ_lt_succ
       assumption
 
-def Fintype.embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) where
+def embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) where
   toFun := f.idxOf
   inj' := by
     intro x y eq
@@ -110,10 +112,10 @@ def Fintype.embedFin [DecidableEq α] [f: Fintype α] : α ↪ Fin (card α) whe
       rw [List.getElem?_cons_succ]
       rw [ih]
 
-instance : GetElem (Fintype α) Nat α (fun _ n => n < Fintype.card α) where
+instance : GetElem (Fintype α) Nat α (fun _ n => n < card α) where
   getElem f x p := f.all[x]
 
-def Fintype.getElem_idxOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.idxOf x] = x := by
+def getElem_idxOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.idxOf x] = x := by
   cases f with | mk all nodup complete =>
   show all[all.idxOf _]'_ = _
   have : x ∈ all := complete x
@@ -144,15 +146,12 @@ def Fintype.getElem_idxOf [DecidableEq α] {f: Fintype α} (x: α) : f[f.idxOf x
   rw [List.getElem?_cons_succ]
   assumption
 
-def Fintype.idxOf_getElem [DecidableEq α] {f: Fintype α} (x: Fin (card α)) : f.idxOf f[x] = x := by
+def idxOf_getElem [DecidableEq α] {f: Fintype α} (x: Fin (card α)) : f.idxOf f[x] = x := by
   cases f with | mk all nodup complete =>
-  unfold idxOf GetElem.getElem Fin.instGetElemFinVal GetElem.getElem instGetElemFintypeNatLtCard
-  dsimp
+  simp only [idxOf, GetElem.getElem]
   cases x with | mk x xLt =>
   congr
-  unfold card Fintype.all at xLt
-  dsimp at xLt
-  dsimp
+  dsimp only [List.get_eq_getElem]
   suffices ∀(as: List α) (x: Fin as.length), as.Nodup -> as.idxOf as[x] = x by
     apply this _ ⟨x, _⟩
     assumption
@@ -180,7 +179,7 @@ def Fintype.idxOf_getElem [DecidableEq α] {f: Fintype α} (x: Fin (card α)) : 
     apply List.getElem_mem (Nat.lt_of_succ_lt_succ xLt)
     assumption
 
-def Fintype.ofEquiv {a b: Type _} (eq: a ≃ b) [f: Fintype b] : Fintype a where
+def ofEquiv {a b: Type _} (eq: a ≃ b) [f: Fintype b] : Fintype a where
   all := f.all.map eq.invFun
   nodup := by
     apply List.nodup_map
@@ -194,39 +193,52 @@ def Fintype.ofEquiv {a b: Type _} (eq: a ≃ b) [f: Fintype b] : Fintype a where
     apply f.complete
     rw [eq.leftInv]
 
-def Fintype.ofEquiv' {a b: Type _} (eq: a ≃ b) [f: Fintype a] : Fintype b := Fintype.ofEquiv eq.symm
+def ofEquiv' {a b: Type _} (eq: a ≃ b) [f: Fintype a] : Fintype b := ofEquiv eq.symm
 
-def Fintype.equivFin [f: Fintype α] [DecidableEq α] : α ≃ Fin f.card where
+def equivFin [f: Fintype α] [DecidableEq α] : α ≃ Fin f.card where
   toFun := f.idxOf
   invFun a := f[a]
   leftInv x := by
     dsimp
-    erw [Fintype.getElem_idxOf]
+    erw [getElem_idxOf]
   rightInv x := by
     dsimp
-    erw [Fintype.idxOf_getElem]
+    erw [idxOf_getElem]
 
-def Fintype.equivOfEqCard [DecidableEq α] [DecidableEq β] {fa: Fintype α} {fb: Fintype β} (h: fa.card = fb.card) : α ≃ β := by
+def equivOfEqCard [DecidableEq α] [DecidableEq β] {fa: Fintype α} {fb: Fintype β} (h: fa.card = fb.card) : α ≃ β := by
   apply (fa.equivFin).trans
   apply Equiv.trans _ (fb.equivFin).symm
   apply Equiv.fin
   assumption
 
-def Fintype.eqCardOfEquiv {fa: Fintype α} {fb: Fintype β} (h: α ≃ β) : fa.card = fb.card := by
-  rw [Fintype.card_eq fb (fa.ofEquiv' h)]
+def eqCardOfEquiv {fa: Fintype α} {fb: Fintype β} (h: α ≃ β) : fa.card = fb.card := by
+  rw [card_eq fb (fa.ofEquiv' h)]
   show _  = (List.map _ _).length
   rw [List.length_map]
   rfl
 
-def Fintype.ofEquiv_card_eq {fa: Fintype β} (h: α ≃ β) : (fa.ofEquiv h).card = fa.card := by
+def ofEquiv_card_eq {fa: Fintype β} (h: α ≃ β) : (fa.ofEquiv h).card = fa.card := by
   unfold card all ofEquiv
   dsimp
   rw [List.length_map]
   rfl
 
-def Fintype.ofEquiv'_card_eq {fa: Fintype α} (h: α ≃ β) : (fa.ofEquiv' h).card = fa.card := by
+def ofEquiv'_card_eq {fa: Fintype α} (h: α ≃ β) : (fa.ofEquiv' h).card = fa.card := by
   unfold ofEquiv'
   rw [ofEquiv_card_eq]
+
+def IsEmpty [f: Fintype α] (h: card α = 0) : IsEmpty α where
+  elim x := by
+    match f with
+    | .mk [] nodup complete =>
+    have := complete x
+    contradiction
+
+def card_ne_zero_iff_nonempty [h:Fintype α] : card α ≠ 0 ↔ Nonempty α where
+  mp x := ⟨h[0]⟩
+  mpr x h :=
+    have ⟨x⟩ := x
+    (IsEmpty h).elim x
 
 instance {P: α -> Prop} [DecidablePred P] [f: Fintype α] : Decidable (∃x, P x) :=
   decidable_of_iff (∃x ∈ f.all, P x) <| by
@@ -263,3 +275,5 @@ instance [Fintype β] [DecidableEq β] {f: α -> β} {g: β -> α} : Decidable (
 instance [Fintype α][DecidableEq α] {f: α -> β} {g: β -> α} : Decidable (Function.IsRightInverse f g) := by
   delta Function.IsRightInverse
   exact inferInstance
+
+end Fintype

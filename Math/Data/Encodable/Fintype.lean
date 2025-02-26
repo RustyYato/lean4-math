@@ -17,7 +17,7 @@ namespace Encodable
 
 section
 
-variable {α : Type*} [Fintype α] [DecidableEq α] (p : α → Prop) [DecidablePred p] (h : Nonempty α)
+variable {α : Type*} [Fintype α] [DecidableEq α] (p : α → Prop) [DecidablePred p] [h: Nonempty α]
 
 def strongIndefiniteDescription : {x : α // (∃ y : α, p y) → p x} :=
   @dite _ (∃ x : α, p x) (inferInstance)
@@ -28,8 +28,8 @@ def strongIndefiniteDescription : {x : α // (∃ y : α, p y) → p x} :=
     (fun hp => ⟨choice h, fun h => absurd h hp⟩)
 
 -- a computable version of Hilbert's Epsilon function
-def epsilon : α := strongIndefiniteDescription p h
-def epsilon_spec (h: ∃x, p x) : p (epsilon p (nonempty_of_exists h)) := (strongIndefiniteDescription p (nonempty_of_exists h)).property h
+def epsilon : α := strongIndefiniteDescription p
+def epsilon_spec (h: ∃x, p x) : p (@epsilon _ _ _ p _ (nonempty_of_exists h)) := (@strongIndefiniteDescription _ _ _ p _ (nonempty_of_exists h)).property h
 
 end
 

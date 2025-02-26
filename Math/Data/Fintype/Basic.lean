@@ -56,13 +56,6 @@ def Fintype.embedding_of_card_le [Fintype α] [Fintype β] [DecidableEq α] [Dec
 def Fintype.equiv_of_card_eq [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
   (h: card α = card β) : α ≃ β := equivFin.trans <| (Equiv.fin h).trans equivFin.symm
 
-def Fintype.IsEmpty [f: Fintype α] (h: card α = 0) : IsEmpty α where
-  elim x := by
-    match f with
-    | .mk [] nodup complete =>
-    have := complete x
-    contradiction
-
 def Fintype.recType
   {motive: ∀α: Type u, [Fintype α] -> Sort v}
   (nil: motive PEmpty)
