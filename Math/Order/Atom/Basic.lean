@@ -25,7 +25,7 @@ section IsAtom
 
 variable [Top α] [LE α] [LT α] [IsPartialOrder α] [IsLawfulTop α] {x a: α}
 
--- if a is the smallest element larger than bot
+-- if a is the largest element smaller than top
 def IsCoatom (a: α) := a ≠ ⊤ ∧ ∀b > a, b = ⊤
 
 def IsCoatom.gt_iff (h : IsCoatom a) : a < x ↔ x = ⊤ :=

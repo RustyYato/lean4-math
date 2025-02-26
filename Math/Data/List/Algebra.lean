@@ -1,5 +1,6 @@
 import Math.Algebra.Semiring.Defs
 import Math.Algebra.Monoid.Action.Defs
+import Math.Algebra.Monoid.SetLike.Defs
 
 namespace List
 
@@ -85,3 +86,16 @@ def map_sum_map
     ac_rfl
 
 end List
+
+def mem_list_sum [SetLike S α] [Add α] [Zero α ] [IsAddSubmonoid S] (as: List α) (s: S) (h: ∀x ∈ as, x ∈ s) : as.sum ∈ s := by
+  induction as with
+  | nil => apply mem_zero
+  | cons a as ih =>
+    apply mem_add
+    apply h
+    apply List.Mem.head
+    apply ih
+    intro x hx
+    apply h
+    apply List.Mem.tail
+    assumption

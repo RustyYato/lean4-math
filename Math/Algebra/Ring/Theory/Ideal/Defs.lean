@@ -147,6 +147,31 @@ def generate (U: Set α) : Ideal α where
   mem_mul_left' := Generate.mul_left
   mem_mul_right' := Generate.mul_right
 
+def of_mem_generate [SetLike S α] [IsIdeal S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> (generate U).carrier ⊆ s := by
+  intro g
+  intro x h
+  show x ∈ s
+  induction h with
+  | of =>
+    apply g
+    assumption
+  | zero =>
+    apply mem_zero
+  | neg =>
+    apply mem_neg
+    assumption
+  | add =>
+    apply mem_add
+    assumption
+    assumption
+  | mul_left =>
+    apply mem_mul_left
+    assumption
+  | mul_right =>
+    apply mem_mul_right
+    assumption
+
 @[ext]
 def ext {a b: Ideal α} : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 

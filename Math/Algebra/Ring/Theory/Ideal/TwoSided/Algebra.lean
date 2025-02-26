@@ -83,18 +83,6 @@ instance : Zero (Ideal α) where
 instance : One (Ideal α) where
   one := .univ α
 
-def mem_listsum (i: Ideal α) (as: List α) (h: ∀a ∈ as, a ∈ i): as.sum ∈ i := by
-  induction as with
-  | nil => apply mem_zero
-  | cons a as ih =>
-    apply mem_add
-    apply h; apply List.Mem.head
-    apply ih
-    intro a ha
-    apply h
-    apply List.Mem.tail
-    assumption
-
 instance : SMul ℕ (Ideal α) := instNSMulrec
 instance : Pow (Ideal α) ℕ := instNPowrec
 
@@ -132,7 +120,7 @@ instance : IsMulOneClass (Ideal α) where
     apply Iff.intro
     · rintro ⟨l, rfl⟩
       dsimp only
-      apply mem_listsum
+      apply mem_list_sum
       intro x hx
       rw [List.mem_map] at hx
       obtain ⟨⟨x, y⟩, h, rfl⟩ := hx
@@ -147,7 +135,7 @@ instance : IsMulOneClass (Ideal α) where
     apply Iff.intro
     · rintro ⟨l, rfl⟩
       dsimp only
-      apply mem_listsum
+      apply mem_list_sum
       intro x hx
       rw [List.mem_map] at hx
       obtain ⟨⟨x, y⟩, h, rfl⟩ := hx

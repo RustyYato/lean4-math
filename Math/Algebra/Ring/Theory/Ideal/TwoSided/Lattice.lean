@@ -82,4 +82,13 @@ instance : IsCompleteLattice (Ideal R) := inferInstance
 
 def isMaximal (i: Ideal R): Prop := IsCoatom i
 
+def generate_spec (U: Set R) : generate U = sInf (Set.mk fun i: Ideal R => U ⊆ i) := by
+  refine Eq.symm (Set.IsLeast.csInf_eq ?_)
+  refine ⟨?_, ?_⟩
+  apply Generate.of
+  rintro i h _ hx
+  simp
+  apply of_mem_generate _ _ _ _ hx
+  apply h
+
 end Ideal
