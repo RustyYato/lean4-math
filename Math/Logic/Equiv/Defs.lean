@@ -117,4 +117,12 @@ def ofBij {f: α -> β} (b: Function.Bijective f) : ∃x: Equiv α β, x = f := 
   symm; apply finvdef
   rfl
 
+instance : Coe (α ≃ β) (α ↪ β) := ⟨toEmbedding⟩
+
+def equivIff {P Q: Prop} : (P ≃ Q) ≃ (P ↔ Q) where
+  toFun h := ⟨h, h.symm⟩
+  invFun h := ⟨h.mp, h.mpr, fun _ => proof_irrel _ _, fun _ => proof_irrel _ _⟩
+  leftInv x := by rfl
+  rightInv x := by rfl
+
 end Equiv

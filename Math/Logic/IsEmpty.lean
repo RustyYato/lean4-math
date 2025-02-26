@@ -62,3 +62,21 @@ instance [IsEmpty α] : Subsingleton (α -> β) := inferInstance
 
 def IsEmpty.ofNotNonempty (h: ¬Nonempty α) : IsEmpty α where
   elim x := h ⟨x⟩
+
+instance [IsEmpty α] : Subsingleton (Option α) where
+  allEq := by
+    intro a b
+    cases a; cases b
+    rfl
+    rename_i x
+    exact elim_empty x
+    rename_i x
+    exact elim_empty x
+
+def empty_or_nonempty {motive: Sort u -> Prop} (empty: ∀t, IsEmpty t -> motive t) (nonempty: ∀t, Nonempty t -> motive t) : ∀t, motive t := by
+  intro t
+  by_cases h:Nonempty t
+  apply nonempty
+  assumption
+  apply empty
+  exact IsEmpty.ofNotNonempty h

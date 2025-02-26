@@ -39,3 +39,10 @@ def Option.get_inj (a b: Option α) (ha: a.isSome) (hb: b.isSome) :
     rw [h]
   rw [Option.some_get, Option.some_get] at this
   assumption
+
+def cast_eq_of_heq
+  {a: α}
+  {b: β}
+  (h: HEq a b) : cast g a = b := by
+  cases h
+  rfl
