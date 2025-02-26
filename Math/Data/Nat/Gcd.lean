@@ -405,7 +405,7 @@ private def xgcdAux_P {r r': Nat} :
     exact div_mul_le_self oldr r
 
 /-- Bézout's lemma --/
-def gcd_eq_gcd_ab : gcd x y = x * gcdA x y + y * gcdB x y := by
+def gcd_eq_gcd_ab (x y: Nat) : gcd x y = x * gcdA x y + y * gcdB x y := by
   have := @xgcdAux_P x y x y 1 0 0 1 (by simp [P]) (by simp [P])
   conv => { lhs; arg 1; rw [←xgcdAux_eq_gcd x y 1 0 0 1] }
   rw [gcdA, gcdB]

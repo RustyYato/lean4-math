@@ -1,6 +1,7 @@
 import Math.Algebra.Basic
 import Math.Algebra.Group.Units.Defs
 import Math.Algebra.Semiring.Char
+import Math.Data.Nat.Gcd
 
 instance : One (Fin (n + 1)) := ⟨1⟩
 
@@ -132,12 +133,55 @@ instance : HasChar (Fin (n + 1)) (n + 1) := by
   intro m meq
   exact Nat.dvd_of_mod_eq_zero (Fin.mk.inj meq)
 
--- FIXME: implement xGCD to find the multiplicative inverse
--- def Fin.toUnit (x: Fin (n + 1)) (coprime: Nat.gcd x.val n = 1 := by decide) : Units (Fin (n + 1)) where
---   val := x
---   inv := by
---     replace coprime: x.val.gcd n = 1 := coprime
---     -- have := Int
---     sorry
---   val_mul_inv := sorry
---   inv_mul_val := sorry
+unseal Nat.xgcdAux in def Fin.toUnit (x: Fin (n + 1)) (coprime: Nat.gcd x.val (n+1) = 1 := by decide) : Units (Fin (n + 1)) :=
+  have eq_one : 0 < n -> 1 = ↑x.val * x.val.gcdA (n + 1) % (↑n + 1) := by
+    intro h
+    replace coprime: x.val.gcd (n+1) = 1 := coprime
+    have := Nat.gcd_eq_gcd_ab x.val (n+1)
+    rw [coprime, natCast_one] at this
+    match n with
+    | 0 =>  contradiction
+    | n + 1 =>
+    have : 1 = (↑↑x * x.val.gcdA (n + 1 + 1) + ↑(n + 1 + 1) * x.val.gcdB (n + 1 + 1)) % (n + 1 + 1: Nat) := by
+      rw [←this]
+      rfl
+    rw [Int.add_emod, Int.mul_emod_right, Int.add_zero, Int.emod_emod] at this
+    assumption
+  {
+    val := x
+    inv := ⟨((x.val.gcdA (n + 1)) % (n + 1)).toNat, by
+      apply (Int.toNat_lt _).mpr
+      apply Int.emod_lt_of_pos
+      omega
+      apply Int.emod_nonneg
+      omega⟩
+    val_mul_inv := by
+      cases n with
+      | zero => apply Subsingleton.allEq
+      | succ n =>
+      apply Fin.val_inj.mp
+      apply Int.ofNat_inj.mp
+      show _ = ((1 % (n + 2)): Int)
+      simp [Fin.val_mul]
+      rw [Int.max_eq_left, Int.mul_emod, Int.emod_emod, ←Int.mul_emod]
+      symm
+      apply eq_one
+      apply Nat.zero_lt_succ
+      apply Int.emod_nonneg
+      omega
+    inv_mul_val := by
+      cases n with
+      | zero => apply Subsingleton.allEq
+      | succ n =>
+      rw [Fin.mul_comm]
+      apply Fin.val_inj.mp
+      apply Int.ofNat_inj.mp
+      show _ = ((1 % (n + 2)): Int)
+      simp [Fin.val_mul]
+      rw [Int.max_eq_left, Int.mul_emod, Int.emod_emod, ←Int.mul_emod]
+      symm
+      apply eq_one
+      apply Nat.zero_lt_succ
+      apply Int.emod_nonneg
+      omega
+  }
