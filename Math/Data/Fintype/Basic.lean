@@ -149,7 +149,7 @@ def Fintype.existsEmbedding_iff_card_le
       replace ih := ih (ULift (Fin c))
       rw [ULift.card_eq, Fin.card_eq (n := c) inferInstance] at ih
       apply ih
-      refine ⟨Embedding.ofOptionEmbed ?_⟩
+      refine ⟨Embedding.of_option_embed_option ?_⟩
       refine (Equiv.congrEmbed (?_: ULift.{u} (Option (Fin c)) ≃ _) .rfl ?_)
       · refine { toFun := ?_, invFun := ?_, leftInv := ?_, rightInv := ?_ }
         · intro ⟨x⟩

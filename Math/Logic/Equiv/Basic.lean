@@ -23,7 +23,7 @@ def empty [IsEmpty α] : α ↪ β where
   toFun := elim_empty
   inj' x := elim_empty x
 
-def ofOptionEmbed (emb: Option α ↪ Option β) : α ↪ β where
+def of_option_embed_option (emb: Option α ↪ Option β) : α ↪ β where
   toFun a :=
     match h:emb a with
     | .some x => x
@@ -384,7 +384,7 @@ private instance : ∀(x: Option α), Decidable (x = .none)
 | .none => .isTrue _root_.rfl
 | .some _ => .isFalse Option.noConfusion
 
-def of_equiv_option {α β: Type*} (h: Option α ≃ Option β) : α ≃ β :=
+def of_equiv_option_option {α β: Type*} (h: Option α ≃ Option β) : α ≃ β :=
   let h := h.set .none .none
   {
   toFun x := (h x).get (by
@@ -441,6 +441,6 @@ def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
       contradiction
     | succ m =>
       replace h := (Equiv.fin_equiv_option n).symm.trans <| h.trans (Equiv.fin_equiv_option m)
-      rw [ih (Equiv.of_equiv_option h)]
+      rw [ih (Equiv.of_equiv_option_option h)]
 
 def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj
