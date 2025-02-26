@@ -1,5 +1,6 @@
 import Math.Relation.RelIso
 import Math.Order.Partial
+import Math.Logic.Equiv.Like
 
 variable {α β: Type*} [LE α] [LT α] [LE β] [LT β]
 
@@ -24,12 +25,13 @@ instance : FunLike (α ↪o β) α β where
     intro ⟨⟨_, _⟩, _⟩ ⟨⟨_, _⟩, _⟩ eq
     congr
 
-instance : IsEmbeddingLike (α ↪o β) α β where
-  coe_inj e := e.inj
+instance : EmbeddingLike (α ↪o β) α β where
+  coe e := e.toEmbedding
+  coe_inj := by intro a b eq; cases a; cases b; congr
 
 @[refl]
 def refl [LE α] : α ↪o α where
-  toEmbedding := .refl
+  toEmbedding := .rfl
   resp_rel := Iff.rfl
 
 def trans {_: LE α} {_: LE β} {_: LE γ} (h: α ↪o β) (g: β ↪o γ) : α ↪o γ where
@@ -103,7 +105,7 @@ namespace OrderIso
 
 @[refl]
 def refl [LE α] : α ≃o α where
-  toEquiv := .refl
+  toEquiv := .rfl
   resp_rel := Iff.rfl
 
 @[symm]
@@ -123,14 +125,9 @@ instance : Coe (α ≃o β) (α ↪o β) where
 
 def toEmbedding (h: α ≃o β) : α ↪o β := h
 
-instance : IsEquivLike (α ≃o β) α β where
-  coe e := e.toFun
-  inv e := e.invFun
-  leftInv e := e.leftInv
-  rightInv e := e.rightInv
-  inj := by
-    intro ⟨⟨_, _, _, _⟩, _⟩ ⟨⟨_, _, _, _⟩, _⟩ _ _
-    congr
+instance : EquivLike (α ≃o β) α β where
+  coe e := e.toEquiv
+  coe_inj := by intro a b eq; cases a; cases b; congr
 
 instance : FunLike (α →o β) α β where
   coe e := e.toFun
