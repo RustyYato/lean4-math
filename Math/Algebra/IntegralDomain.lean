@@ -1,4 +1,4 @@
-import Math.Algebra.Monoid.Units
+import Math.Algebra.Monoid.Units.Defs
 import Math.Algebra.Impls.Nat
 import Math.Algebra.Impls.Int
 

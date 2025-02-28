@@ -5,6 +5,8 @@ import Math.Relation.Basic
 import Math.Algebra.Ring.Defs
 import Math.Data.Fin.Basic
 import Math.Algebra.Basic
+import Math.Algebra.IntegralDomain
+import Math.Algebra.Impls.Pi
 
 def Poly.DegreeLe [Zero P] (f: Nat -> P) (bound: Nat) :=
   ∀n > bound, f n = 0
@@ -165,6 +167,11 @@ def const [Zero P] (k: P) : P[X] where
     match x with
     | x + 1 =>
     rfl
+
+def const_inj [Zero P] : Function.Injective (const (P := P)) := by
+  intro a b eq
+  show (const a).coeffs 0 = (const b).coeffs 0
+  rw [eq]
 
 instance [Zero P] [Add P] [IsAddZeroClass P] : Add P[X] where
   add a b := Poly.mk (fun n => a.coeffs n + b.coeffs n) <| by
@@ -496,6 +503,16 @@ def zero_eq_const : (0: P[X]) = const 0 := by
   ext n
   cases n <;> rfl
 
+def zero_eq_mul_var : (0: P[X]) = mul_var 0 := by
+  apply ext_coeffs
+  ext n
+  cases n
+  rfl
+  rfl
+
+def zero_eq_mul_var_add_const : (0: P[X]) = mul_var 0 + const 0 := by
+  rw [←zero_eq_mul_var, ←zero_eq_const, add_zero]
+
 def const_mul_const (a b: P) : const a * const b = const (a * b) := by
   apply ext_coeffs
   ext n
@@ -779,9 +796,46 @@ instance [Zero P] [h: IsNontrivial P] : IsNontrivial P[X] where
     have : (const a).coeffs 0 = (const b).coeffs 0 := by rw [h]
     contradiction
 
-def constHom [SemiringOps P] [IsSemiring P] : P →+* P[X] := algebraMap
+def mul_var_add_const_inj [Zero P] [Add P] [IsAddZeroClass P] : Function.Injective₂ (fun (a: P[X]) (b: P) => a.mul_var + const b) := by
+  intro a b c d eq
+  let x := a.mul_var + const b
+  let y := c.mul_var + const d
+  apply And.intro
+  dsimp at eq
+  apply ext_coeffs; ext i
+  have : x.coeffs (i + 1) = y.coeffs (i + 1) := by congr
+  have : a.coeffs i + 0 = c.coeffs i + 0 := this
+  rw [add_zero, add_zero] at this
+  assumption
+  show (const b).coeffs 0 = (const d).coeffs 0
+  rw [←zero_add ((const b).coeffs 0), ←zero_add ((const d).coeffs 0)]
+  have : x.coeffs 0 = y.coeffs 0 := by congr
+  apply this
+
+def constHom [SemiringOps P] [IsSemiring P] : P ↪+* P[X] where
+  toFun := algebraMap
+  inj' := const_inj
+  resp_zero := resp_zero _
+  resp_one := resp_one _
+  resp_add := resp_add _
+  resp_mul := resp_mul _
+
+def C [SemiringOps P] [IsSemiring P] : P ↪+* P[X] := constHom
 
 def X [Zero P] [One P] : P[X] := Poly.ofCoeffs [0, 1]
+
+@[simp] def X_coeffs_zero [Zero P] [One P]  : X.coeffs 0 = (0: P) := rfl
+@[simp] def X_coeffs_one [Zero P] [One P]  : X.coeffs 1 = (1: P) := rfl
+@[simp] def X_coeffs_add_two [Zero P] [One P]  : X.coeffs (n + 2) = (0: P) := rfl
+
+@[simp] def C_coeffs_zero [SemiringOps P] [IsSemiring P] (a: P) : (C a).coeffs 0 = (a: P) := rfl
+@[simp] def C_coeffs_succ [SemiringOps P] [IsSemiring P] (a: P) : (C a).coeffs (n + 1) = (0: P) := rfl
+
+@[simp] def coeffs_add [SemiringOps P] [IsSemiring P] (a b: P[X]) :
+  (a + b).coeffs = a.coeffs + b.coeffs := rfl
+
+def coeffs_mul [SemiringOps P] [IsSemiring P] (a b: P[X]) :
+  (a * b).coeffs = fun i => Fin.sum fun x: Fin (i + 1) => a.coeffs x.val * b.coeffs (i - x.val) := rfl
 
 def mul_X [SemiringOps P] [IsSemiring P] (p: P[X]) : p * X = p.mul_var := by
   apply ext_coeffs
@@ -792,25 +846,212 @@ def mul_X [SemiringOps P] [IsSemiring P] (p: P[X]) : p * X = p.mul_var := by
     intro x
     match x with
     | 0 => erw [mul_zero]
-  | 1 =>
-    show Fin.sum _ = p.coeffs 0
-    rw [Fin.sum, Fin.sum, Fin.sum, add_zero]
-    erw [mul_one]
-    simp
-    erw [mul_zero, add_zero]
+  | 1 => simp [Fin.sum, coeffs_mul, mul_var]
   | i + 2 =>
     show Fin.sum _ = p.coeffs (i + 1)
     rw [Fin.sum_succ', Fin.sum_succ', Fin.sum_eq_zero_of_each_eq_zero, zero_add]
-    simp [Fin.last]
-    erw [mul_zero, Nat.add_sub_cancel_left, mul_one, add_zero]
-    intro ⟨x, xLt⟩
+    simp [Fin.last, Nat.add_sub_cancel_left]
+    intro i
     simp
-    rw [Nat.lt_succ] at xLt
-    rcases lt_or_eq_of_le xLt with xLt | rfl
-    simp [X, ofCoeffs]
-    rw [List.getElem?_eq_none, Option.getD, mul_zero]
-    simp; omega
-    erw [Nat.add_sub_cancel_left, mul_zero]
+    rw [Nat.add_comm _ 2, Nat.add_sub_assoc, Nat.add_comm 2]
+    simp
+    exact Fin.is_le _
 
+def X_mul [SemiringOps P] [IsSemiring P] (p: P[X]) : X * p = p.mul_var := by
+  apply ext_coeffs
+  ext i
+  match i with
+  | 0 =>
+    apply Fin.sum_eq_zero_of_each_eq_zero
+    intro x
+    match x with
+    | 0 => erw [zero_mul]
+  | 1 =>
+    show Fin.sum _ = p.coeffs 0
+    rw [Fin.sum, Fin.sum, Fin.sum, add_zero]
+    simp
+  | i + 2 =>
+    show Fin.sum _ = p.coeffs (i + 1)
+    rw [Fin.sum_succ, Fin.sum_succ, Fin.sum_eq_zero_of_each_eq_zero, add_zero]
+    simp [Fin.last]
+    simp
+
+def mul_X_add_C_inj [SemiringOps P] [IsSemiring P] : Function.Injective₂ (fun (a: P[X]) (b: P) => a * X + C b) := by
+  intro a b c d eq
+  apply mul_var_add_const_inj
+  dsimp at *
+  rw [←mul_X, ←mul_X]
+  assumption
+
+instance [RingOps P] [IsRing P] [NoZeroDivisors P] : NoZeroDivisors P[X] where
+  of_mul_eq_zero := by
+    intro a b eq
+    induction a generalizing b with
+    | const a =>
+      induction b with
+      | const b =>
+        rw [const_mul_const, zero_eq_const] at eq
+        rcases of_mul_eq_zero (const_inj eq) with rfl | rfl
+        left; rw [zero_eq_const]
+        right; rw [zero_eq_const]
+      | mul_add b bs bs_ne_zero ih₀ ih₁ =>
+        rw [mul_add, mul_mul_var, const_mul_const,
+          zero_eq_mul_var_add_const] at eq
+        have ⟨const_eq_zero, eq_zero⟩ := mul_var_add_const_inj (P := P) eq
+        rcases ih₀ const_eq_zero with _ | rfl
+        left; assumption
+        rcases of_mul_eq_zero eq_zero with rfl | rfl
+        left; rw [zero_eq_const]
+        right
+        rw [←zero_eq_mul_var_add_const]
+    | mul_add a as as_ne_zero ih₀ ih₁ =>
+      rw [add_mul, mul_var_mul] at eq
+      induction b with
+      | const b =>
+        rw [const_mul_const, zero_eq_mul_var_add_const] at eq
+        have ⟨const_eq_zero, eq_zero⟩ := mul_var_add_const_inj (P := P) eq
+        rcases ih₀ const_eq_zero with rfl | _
+        rcases of_mul_eq_zero eq_zero with rfl | rfl
+        left; rw [zero_eq_const]
+        rw [←zero_eq_const, add_zero, ←zero_eq_mul_var]
+        right; rw [←zero_eq_const]
+        right; assumption
+      | mul_add b bs bs_ne_zero _ _ =>
+        rw [mul_add, mul_add, ] at eq
+
+        sorry
+
+@[induction_eliminator]
+def inductionX [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop}
+  (const: ∀a, motive (C a))
+  (mul_add: ∀a: P, ∀p: P[X], p ≠ 0 -> motive p -> motive (C a) -> motive (p * X + C a)): ∀p, motive p := by
+  intro p
+  induction p with
+  | const => apply const
+  | mul_add =>
+    rw [←mul_X]
+    apply mul_add
+    assumption
+    assumption
+    assumption
+
+def zero_eq_mul_X_add_C [SemiringOps P] [IsSemiring P] :
+  (0: P[X]) = 0 * X + C 0 := by
+  simp [resp_zero]
+
+def X_mul_eq_mul_X [SemiringOps P] [IsSemiring P] (a: P[X]) : X * a = a * X := by
+  rw [mul_X, X_mul]
+
+def degree_C [SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] (a: P) : (C a).degree = 0 := by
+  apply flip le_antisymm
+  apply Nat.zero_le
+  apply degree_is_minimal
+  intro n h
+  cases n; contradiction
+  simp
+
+def degree_X [IsNontrivial P][SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] : (X: P[X]).degree = 1 := by
+  apply flip le_antisymm
+  apply Nat.succ_le_of_lt
+  apply lt_of_not_le
+  intro h
+  replace h := Nat.le_zero.mp h
+  have := degree.DegreeLe (P := P) X 1
+  rw [h] at this
+  replace this := this (by decide)
+  exact zero_ne_one _ this.symm
+  apply degree_is_minimal
+  intro n h
+  cases n; contradiction
+  rename_i n
+  cases n; contradiction
+  simp
+
+def degree_add_le [SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] (a b: P[X]) : (a + b).degree ≤ max a.degree b.degree := by
+  apply degree_is_minimal
+  intro n h
+  show a.coeffs n + b.coeffs n = 0
+  rw [degree.DegreeLe, degree.DegreeLe, add_zero]
+  apply lt_of_le_of_lt _ h
+  exact le_max_right a.degree b.degree
+  apply lt_of_le_of_lt _ h
+  exact le_max_left a.degree b.degree
+
+def mul_degree_le [SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] (a b: P[X]) : (a * b).degree ≤ a.degree + b.degree := by
+  apply degree_is_minimal
+  intro n h
+  rw [coeffs_mul]
+  dsimp
+  apply Fin.sum_eq_zero_of_each_eq_zero
+  intro ⟨x, xLt⟩
+  dsimp
+  rcases lt_or_le a.degree x with g | g
+  rw [degree.DegreeLe, zero_mul]
+  assumption
+  rw [degree.DegreeLe b, mul_zero]
+  refine Nat.lt_sub_of_add_lt ?_
+  apply lt_of_le_of_lt _ h
+  rw [Nat.add_comm]
+  exact Nat.add_le_add_right g b.degree
+
+def mul_degree [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [BEq P] [LawfulBEq P] (a b: P[X]) : (a * b).degree = a.degree + b.degree := by
+  apply le_antisymm
+  apply mul_degree_le
+  apply le_of_not_lt
+  intro h
+  have := degree.DegreeLe (P := P) _ _ h
+  sorry
+
+instance [RingOps P] [IsRing P] [NoZeroDivisors P] : NoZeroDivisors P[X] where
+  of_mul_eq_zero := by
+    intro a b eq
+    induction a generalizing b with
+    | const a =>
+      induction b with
+      | const b =>
+        rw [←resp_mul, ←resp_zero C] at eq
+        rcases of_mul_eq_zero (C.inj eq) with rfl |rfl
+        left; rw [resp_zero]
+        right; rw [resp_zero]
+      | mul_add b bs bs_ne_zero ih₀ ih₁ =>
+        rw [mul_add, ←resp_mul, ←mul_assoc, zero_eq_mul_X_add_C] at eq
+        have ⟨const_eq_zero, eq_zero⟩ := mul_X_add_C_inj (P := P) eq
+        rcases ih₀ const_eq_zero with _ | rfl
+        left; assumption
+        rcases of_mul_eq_zero eq_zero with rfl | rfl
+        left; rw [resp_zero]
+        right
+        simp [resp_zero]
+    | mul_add a as as_ne_zero ih₀ ih₁ =>
+      rw [add_mul, mul_assoc, X_mul_eq_mul_X, ←mul_assoc] at eq
+      sorry
+
+      -- induction b with
+      -- | const b =>
+      --   rw [mul_assoc, X_mul_eq_mul_X, ←mul_assoc, ←resp_mul,
+      --     zero_eq_mul_X_add_C] at eq
+      --   have ⟨const_eq_zero, eq_zero⟩ := mul_X_add_C_inj (P := P) eq
+      --   rcases ih₀ const_eq_zero with rfl | _
+      --   rcases of_mul_eq_zero eq_zero with rfl | rfl
+      --   left; simp [resp_zero]
+      --   simp [resp_zero]
+      --   right; assumption
+      -- | mul_add b bs bs_ne_zero _ _ =>
+      --   rw [mul_assoc, X_mul_eq_mul_X, add_mul,
+      --     mul_add, mul_add] at eq
+      --   repeat rw [←mul_assoc] at eq
+      --   repeat rw [←add_assoc] at eq
+      --   rw [←add_mul, ←add_mul, ←resp_mul] at eq
+      --   rw [zero_eq_mul_X_add_C] at eq
+      --   have ⟨const_eq_zero, eq_zero⟩ := mul_X_add_C_inj (P := P) eq
+      --   rw [zero_eq_mul_X_add_C] at const_eq_zero
+      --   erw [] at const_eq_zero
+
+
+
+
+      --   sorry
+
+instance [RingOps P] [IsIntegralDomain P] : IsIntegralDomain P[X] where
 
 end Poly
