@@ -32,4 +32,16 @@ def generate (U: Set M) : Submodule R M where
   mem_add' := Generate.add
   mem_smul' := Generate.smul
 
+def of_mem_generate [SetLike S M] [IsSubmodule S R] (U: Set M) (s: S) :
+  (∀x ∈ U, x ∈ s) -> (generate (R := R) U).carrier ⊆ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | zero => apply mem_zero
+  | add => apply mem_add <;> assumption
+  | smul => apply mem_smul <;> assumption
+
 end Submodule
