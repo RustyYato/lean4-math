@@ -3,6 +3,7 @@ import Math.Algebra.Ring.Basic
 import Math.Algebra.Basic
 import Math.Algebra.Impls.Pi
 import Math.Algebra.Hom.Defs
+import Math.Order.Linear
 
 namespace Fin
 
@@ -160,6 +161,33 @@ def sum_add_sum [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α] (f: F
 def prod_mul_prod [One α] [Mul α] [IsSemigroup α] [IsMulOneClass α] (f: Fin n -> α) (g: Fin m -> α) : Fin.prod f * Fin.prod g = Fin.prod (func_append f g) :=
   sum_add_sum (α := AddOfMul α) _ _
 
+def val_eq_of_heq (h: n = m) (x: Fin n) (y: Fin m) : HEq x y -> x.val = y.val := by
+  subst h
+  intro h
+  subst h
+  rfl
+
+def sum_split [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α]
+  (m: ℕ) (h: m ≤ n) (f: Fin n -> α) : Fin.sum f = Fin.sum (fun x: Fin m => f (x.castLE h)) + Fin.sum (fun x: Fin (n - m) => f ⟨x.val + m, by
+    refine Nat.add_lt_of_lt_sub ?_
+    exact x.isLt⟩ ) := by
+  rw [sum_add_sum]
+  congr 1
+  rw [Nat.add_sub_cancel' h]
+  apply Function.hfunext
+  rw [Nat.add_sub_cancel' h]
+  rintro ⟨x, xLt⟩ ⟨y, yLt⟩ eq
+  unfold func_append
+  dsimp
+  cases val_eq_of_heq (by rw [Nat.add_sub_cancel' h]) _ _ eq
+  simp
+  split
+  rfl
+  congr
+  rw [Nat.sub_add_cancel]
+  refine Nat.le_of_not_lt ?_
+  assumption
+
 def list_sum_eq [Zero α] [Add α] [IsAddSemigroup α] [IsAddZeroClass α] (as: List α) :
   as.sum = Fin.sum fun x: Fin as.length => as[x] := by
   induction as with
@@ -241,5 +269,43 @@ def sum_smul
   show smul_hom (sum f) = _
   rw [resp_sum]
   rfl
+
+def sum_mul
+  [SemiringOps α] [AddMonoidOps β] [IsSemiring α] [IsAddMonoid β] [IsAddCommMagma β]
+  [IsRightDistrib α] [IsMulZeroClass α]
+   (f: Fin n -> α) (x: α) : sum f * x = sum (fun i => f i * x) := by
+  let smul_hom: α →+ α := {
+    toFun a := a * x
+    resp_zero := zero_mul _
+    resp_add := add_mul _ _ _
+  }
+  show smul_hom (sum f) = _
+  rw [resp_sum]
+  rfl
+
+def mul_sum
+  [SemiringOps α] [AddMonoidOps β] [IsSemiring α] [IsAddMonoid β] [IsAddCommMagma β]
+  [IsLeftDistrib α] [IsMulZeroClass α]
+   (f: Fin n -> α) (x: α) : x * sum f = sum (fun i => x * f i) := by
+  let smul_hom: α →+ α := {
+    toFun a := x * a
+    resp_zero := mul_zero _
+    resp_add := mul_add _ _ _
+  }
+  show smul_hom (sum f) = _
+  rw [resp_sum]
+  rfl
+
+def sum_rev [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: Fin n -> α) : Fin.sum f = Fin.sum (fun x => f x.rev) := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [sum_succ, sum_succ', ih, add_comm]
+    congr
+    ext i
+    simp [Fin.rev_succ]
+
+def prod_rev [MonoidOps α] [IsMonoid α] [IsCommMagma α] (f: Fin n -> α) : Fin.prod f = Fin.prod (fun x => f x.rev) :=
+  sum_rev (α := AddOfMul α) f
 
 end Fin
