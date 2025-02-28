@@ -144,6 +144,23 @@ instance : IsOneHom (RingHom α β) α β where
 instance : IsMulHom (RingHom α β) α β where
   resp_mul f := f.resp_mul
 
+structure RngHom extends AddGroupHom α β, MulHom α β where
+
+instance : FunLike (RngHom α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr
+
+instance : IsZeroHom (RngHom α β) α β where
+  resp_zero f := f.resp_zero
+
+instance : IsAddHom (RngHom α β) α β where
+  resp_add f := f.resp_add
+
+instance : IsMulHom (RngHom α β) α β where
+  resp_mul f := f.resp_mul
+
 structure AddGroupEmbedding extends α ↪ β, AddGroupHom α β where
 
 instance : FunLike (AddGroupEmbedding α β) α β where
@@ -190,6 +207,23 @@ instance : IsOneHom (RingEmbedding α β) α β where
   resp_one f := f.resp_one
 
 instance : IsMulHom (RingEmbedding α β) α β where
+  resp_mul f := f.resp_mul
+
+structure RngEmbedding extends α ↪ β, RngHom α β where
+
+instance : FunLike (RngEmbedding α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr
+
+instance : IsZeroHom (RngEmbedding α β) α β where
+  resp_zero f := f.resp_zero
+
+instance : IsAddHom (RngEmbedding α β) α β where
+  resp_add f := f.resp_add
+
+instance : IsMulHom (RngEmbedding α β) α β where
   resp_mul f := f.resp_mul
 
 structure AddGroupEquiv extends α ≃ β, AddGroupHom α β where
@@ -246,20 +280,42 @@ instance : IsOneHom (RingEquiv α β) α β where
 instance : IsMulHom (RingEquiv α β) α β where
   resp_mul f := f.resp_mul
 
+structure RngEquiv extends α ≃ β, RngHom α β where
+
+instance : FunLike (RngEquiv α β) α β where
+  coe f := f.toFun
+  coe_inj := by
+    intro f g _; repeat obtain ⟨f, _⟩ := f
+    congr 1
+    apply DFunLike.coe_inj
+    assumption
+
+instance : IsZeroHom (RngEquiv α β) α β where
+  resp_zero f := f.resp_zero
+
+instance : IsAddHom (RngEquiv α β) α β where
+  resp_add f := f.resp_add
+
+instance : IsMulHom (RngEquiv α β) α β where
+  resp_mul f := f.resp_mul
+
 infixr:25 " →+ " => AddGroupHom
 infixr:25 " →* " => GroupHom
 
 infixr:25 " →+* " => RingHom
+infixr:25 " →+*₀ " => RngHom
 
 infixr:25 " ↪+ " => AddGroupEmbedding
 infixr:25 " ↪* " => GroupEmbedding
 
 infixr:25 " ↪+* " => RingEmbedding
+infixr:25 " ↪+*₀ " => RngEmbedding
 
 infixr:25 " ≃+ " => AddGroupEquiv
 infixr:25 " ≃* " => GroupEquiv
 
 infixr:25 " ≃+* " => RingEquiv
+infixr:25 " ≃+*₀ " => RngEquiv
 
 end
 
@@ -402,6 +458,12 @@ def RingEquiv.refl : α ≃+* α where
   resp_add := rfl
   resp_mul := rfl
 
+def RngEquiv.refl : α ≃+*₀ α where
+  toEquiv := Equiv.rfl
+  resp_zero := rfl
+  resp_add := rfl
+  resp_mul := rfl
+
 def AddGroupEmbedding.trans
   (h: α ↪+ β) (g: β ↪+ γ) : α ↪+ γ where
   toEmbedding := h.toEmbedding.trans g.toEmbedding
@@ -482,6 +544,21 @@ def RingEquiv.trans
     rw [resp_mul, resp_mul]
     rfl
 
+def RngEquiv.trans
+  (h: α ≃+*₀ β) (g: β ≃+*₀ γ) : α ≃+*₀ γ where
+  toEquiv := h.toEquiv.trans g.toEquiv
+  resp_zero := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_zero, resp_zero]
+  resp_add {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_add, resp_add]
+    rfl
+  resp_mul {a b} := by
+    show g.toFun (h.toFun _) = _
+    rw [resp_mul, resp_mul]
+    rfl
+
 def AddGroupEquiv.symm (h: α ≃+ β) : β ≃+ α where
   toEquiv := h.toEquiv.symm
   resp_zero := by
@@ -523,6 +600,21 @@ def RingEquiv.symm (h: α ≃+* β) : β ≃+* α where
     show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
     erw [h.resp_mul, h.rightInv, h.rightInv]
 
+def RngEquiv.symm (h: α ≃+*₀ β) : β ≃+*₀ α where
+  toEquiv := h.toEquiv.symm
+  resp_zero := by
+    rw [←h.coe_symm 0]
+    show h.toEquiv.symm 0 = h.toEquiv.symm (h.toFun 0)
+    rw [h.resp_zero]
+  resp_add {a b} := by
+    rw [←h.coe_symm (_ + _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.resp_add, h.rightInv, h.rightInv]
+  resp_mul {a b} := by
+    rw [←h.coe_symm (_ * _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.resp_mul, h.rightInv, h.rightInv]
+
 def AddGroupEquiv.toEmbedding (h: α ≃+ β) : α ↪+ β where
   toEmbedding := h.toEquiv.toEmbedding
   resp_zero := h.resp_zero
@@ -537,6 +629,12 @@ def RingEquiv.toEmbedding (h: α ≃+* β) : α ↪+* β where
   toEmbedding := h.toEquiv.toEmbedding
   resp_zero := h.resp_zero
   resp_one := h.resp_one
+  resp_add := h.resp_add
+  resp_mul := h.resp_mul
+
+def RngEquiv.toEmbedding (h: α ≃+*₀ β) : α ↪+*₀ β where
+  toEmbedding := h.toEquiv.toEmbedding
+  resp_zero := h.resp_zero
   resp_add := h.resp_add
   resp_mul := h.resp_mul
 
@@ -557,6 +655,12 @@ def RingEquiv.toHom (h: α ≃+* β) : α →+* β where
   resp_add := h.resp_add
   resp_mul := h.resp_mul
 
+def RngEquiv.toHom (h: α ≃+*₀ β) : α →+*₀ β where
+  toFun := h.toEquiv.toEmbedding
+  resp_zero := h.resp_zero
+  resp_add := h.resp_add
+  resp_mul := h.resp_mul
+
 def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) :
   h.symm (h x) = x := _root_.Equiv.coe_symm _ _
 def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) :
@@ -570,6 +674,11 @@ def GroupEquiv.symm_coe (h: α ≃* β) (x: β) :
 def RingEquiv.coe_symm (h: α ≃+* β) (x: α) :
   h.symm (h x) = x := _root_.Equiv.coe_symm _ _
 def RingEquiv.symm_coe (h: α ≃+* β) (x: β) :
+  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+
+def RngEquiv.coe_symm (h: α ≃+*₀ β) (x: α) :
+  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+def RngEquiv.symm_coe (h: α ≃+*₀ β) (x: β) :
   h (h.symm x) = x := _root_.Equiv.symm_coe _ _
 
 def AddGroupEquiv.trans_symm (h: α ≃+ β) :
@@ -614,6 +723,13 @@ def RingEquiv.symm_trans (h: α ≃+* β) :
   show h (h.symm x) = x
   rw [h.symm_coe]
 
+def RngEquiv.symm_trans (h: α ≃+*₀ β) :
+  h.symm.trans h = .refl := by
+  apply DFunLike.ext
+  intro x
+  show h (h.symm x) = x
+  rw [h.symm_coe]
+
 def MulHom.toMulOpp (f: MulHom α β) (f_img_comm: ∀a b, f a * f b = f b * f a) : MulHom αᵐᵒᵖ β where
   toFun x := f x.get
   resp_mul {x y} := by
@@ -636,6 +752,7 @@ def RingEmbedding.inj (h: α ↪+* β) : Function.Injective h := Embedding.inj h
 def AddGroupEquiv.inj (h: α ≃+ β) : Function.Injective h := Equiv.inj h.toEquiv
 def GroupEquiv.inj (h: α ≃* β) : Function.Injective h := Equiv.inj h.toEquiv
 def RingEquiv.inj (h: α ≃+* β) : Function.Injective h := Equiv.inj h.toEquiv
+def RngEquiv.inj (h: α ≃+*₀ β) : Function.Injective h := Equiv.inj h.toEquiv
 
 @[ext] def AddGroupHom.ext (f g: α →+ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def GroupHom.ext (f g: α →* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _

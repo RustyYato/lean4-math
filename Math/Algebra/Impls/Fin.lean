@@ -19,7 +19,13 @@ instance : SMul ℤ (Fin (n + 1)) where
 instance : NatCast (Fin (n + 1)) where
   natCast m := ⟨m % (n + 1), Nat.mod_lt _ (Nat.zero_lt_succ _)⟩
 instance : IntCast (Fin (n + 1)) where
-  intCast := intCastRec
+  intCast m := ⟨(m % (n + 1)).toNat, by
+    apply Int.ofNat_lt.mp
+    rw [Int.toNat_of_nonneg]
+    refine Int.emod_lt_of_pos m ?_
+    omega
+    refine Int.emod_nonneg m ?_
+    omega⟩
 
 instance : IsAddCommMagma (Fin (n + 1)) where
   add_comm := by
@@ -27,7 +33,7 @@ instance : IsAddCommMagma (Fin (n + 1)) where
     show ⟨_, _⟩ = Fin.mk _ _
     simp [Nat.add_comm]
 
-instance : IsAddGroupWithOne (Fin (n + 1)) where
+instance : IsAddGroup (Fin (n + 1)) where
   add_assoc := by
     intro a b c
     show ⟨_, _⟩ = Fin.mk _ _
@@ -49,14 +55,6 @@ instance : IsAddGroupWithOne (Fin (n + 1)) where
     intro a
     show Fin.mk _ _ = Fin.mk _ _
     simp
-  natCast_zero := rfl
-  natCast_succ := by
-    intro a
-    show Fin.mk _ _ = Fin.mk _ _
-    simp
-  ofNat_eq_natCast _ := rfl
-  intCast_ofNat _ := rfl
-  intCast_negSucc _ := rfl
   zero_nsmul _ := by
     show Fin.mk _ _ = Fin.mk _ _
     simp
@@ -65,6 +63,42 @@ instance : IsAddGroupWithOne (Fin (n + 1)) where
     show Fin.mk _ _ = Fin.mk _ _
     simp
     rw [Nat.add_mul, Nat.one_mul]
+
+instance : IsAddGroupWithOne (Fin (n + 1)) where
+  natCast_zero := rfl
+  natCast_succ := by
+    intro a
+    show Fin.mk _ _ = Fin.mk _ _
+    simp
+  ofNat_eq_natCast _ := rfl
+  intCast_ofNat _ := rfl
+  intCast_negSucc x := by
+    apply neg_inj.mp
+    show Fin.mk _ _ = Fin.mk _ _
+    apply Fin.val_inj.mp
+    apply Int.ofNat_inj.mp
+    simp
+    rw [Int.ofNat_sub, Int.ofNat_sub, Int.toNat_of_nonneg]
+    rw [Int.sub_emod]
+    simp [Int.negSucc_emod, Int.add_emod, Int.emod_emod, Int.neg_emod]
+    conv => { rhs; rw [Int.sub_emod] }
+    rw [←Int.sub_emod,  Int.ofNat_sub]
+    conv => { rhs; rw [sub_sub, add_sub_assoc, Int.ofNat_add, natCast_one, add_sub_cancel] }
+    rw [sub_sub, Int.add_assoc, add_sub_assoc, add_sub_cancel]
+    simp [add_comm]
+    any_goals
+      apply Nat.le_of_lt
+      refine Nat.mod_lt _ ?_
+      exact Nat.zero_lt_succ n
+    refine Int.emod_nonneg (Int.negSucc x) ?_
+    omega
+    apply Int.ofNat_le.mp
+    rw [Int.toNat_of_nonneg]
+    apply Int.le_of_lt
+    refine Int.emod_lt_of_pos _ ?_
+    omega
+    refine Int.emod_nonneg (Int.negSucc x) ?_
+    omega
 
 instance : IsSemiring (Fin (n + 1)) where
   mul_assoc := by
