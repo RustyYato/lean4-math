@@ -934,7 +934,7 @@ def degree_C [SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] (a: P) : (C a)
   simp
 
 @[simp]
-def degree_X [IsNontrivial P][SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] : (X: P[X]).degree = 1 := by
+def degree_X [IsNontrivial P] [SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] : (X: P[X]).degree = 1 := by
   apply flip le_antisymm
   apply Nat.succ_le_of_lt
   apply lt_of_not_le
@@ -1035,6 +1035,56 @@ def mul_degree [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [BEq P] [Lawful
   omega
   omega
 
+def x_ne_zero [SemiringOps P] [IsSemiring P] [IsNontrivial P] : (X: P[X]) ≠ 0 := by
+  intro h
+  have : (X: P[X]).coeffs 1 = 1 := rfl
+  rw [h] at this
+  exact zero_ne_one _ this
+
+section
+
+open Classical
+
+@[simp]
+def degree_mul_X_add_C [IsNontrivial P] [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [BEq P] [LawfulBEq P]
+  (a: P[X]) (a₀: P) : (a * X + C a₀).degree = a.degree + if a = 0 then 0 else 1 := by
+  split
+  subst a
+  rw [zero_mul, zero_add]
+  simp
+  apply le_antisymm
+  apply Nat.zero_le
+  apply degree_is_minimal
+  intro i h
+  cases i; rfl
+  rfl
+  rename_i h
+  apply le_antisymm
+  apply degree_is_minimal
+  intro i x
+  cases i
+  contradiction
+  simp
+  rw [degree.DegreeLe]
+  apply Nat.lt_of_succ_lt_succ
+  assumption
+  rw [←degree_X (P := P), ←mul_degree a X]
+  apply degree_is_minimal
+  intro i h
+  cases i
+  simp
+  simp
+  rename_i i
+  have : (a * X + C a₀).coeffs (i+1) = 0 := by
+    rw [degree.DegreeLe]
+    assumption
+  simp at this
+  assumption
+  assumption
+  exact x_ne_zero
+
+end
+
 @[simp]
 def neg_degree [RingOps P] [IsRing P] [BEq P] [LawfulBEq P] (a: P[X]) : (-a).degree = a.degree := by
   apply le_antisymm
@@ -1049,12 +1099,6 @@ def neg_degree [RingOps P] [IsRing P] [BEq P] [LawfulBEq P] (a: P[X]) : (-a).deg
   show -(-a).coeffs i = 0
   rw [degree.DegreeLe, neg_zero]
   assumption
-
-def x_ne_zero [SemiringOps P] [IsSemiring P] [IsNontrivial P] : (X: P[X]) ≠ 0 := by
-  intro h
-  have : (X: P[X]).coeffs 1 = 1 := rfl
-  rw [h] at this
-  exact zero_ne_one _ this
 
 instance [RingOps P] [IsRing P] [NoZeroDivisors P] : NoZeroDivisors P[X] where
   of_mul_eq_zero := by
@@ -1118,7 +1162,7 @@ instance [SemiringOps P] [IsSemiring P] : Dvd P[X] where
 instance [SemiringOps P] [IsSemiring P] : IsLawfulDvd P[X] where
 
 @[cases_eliminator]
-def cases [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop} (mul_add: ∀(a: P[X]) (b: P), motive (a * X + C b)) (p: P[X]) :  motive p := by
+def mul_add_cases [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop} (mul_add: ∀(a: P[X]) (b: P), motive (a * X + C b)) (p: P[X]) :  motive p := by
   induction p with
   | mul_add => apply mul_add
   | const p =>

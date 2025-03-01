@@ -258,6 +258,26 @@ def prod_limit [One α] [Mul α] [IsMulOneClass α] (m: Nat) (h: m ≤ n) (f: Fi
   prod f = prod (fun x: Fin m => f (x.castLE h)) :=
   sum_limit (α := AddOfMul α) m h f g
 
+def sum_extend [Zero α] [Add α] [IsAddZeroClass α] (m: Nat) (h: n ≤ m) (f: Fin n -> α) :
+  sum f = sum (fun x: Fin m => if h:x.val < n then f ⟨x.val, h⟩ else 0) := by
+  induction m with
+  | zero =>
+    cases Nat.le_zero.mp h
+    rfl
+  | succ m ih =>
+    rcases lt_or_eq_of_le h with h | h
+    replace h := Nat.le_of_lt_succ h
+    rw [sum_succ, ih, dif_neg, add_zero]
+    apply sum_ext
+    intro x
+    simp
+    simp; assumption
+    assumption
+    subst n
+    apply sum_ext
+    intro x
+    rw [dif_pos]
+
 def sum_smul
   [SemiringOps α] [AddMonoidOps β] [IsSemiring α] [IsAddMonoid β] [IsAddCommMagma β]
   [SMul α β] [IsModule α β] (f: Fin n -> α) (x: β) : sum f • x = sum (fun i => f i • x) := by
@@ -270,9 +290,7 @@ def sum_smul
   rw [resp_sum]
   rfl
 
-def sum_mul
-  [SemiringOps α] [AddMonoidOps β] [IsSemiring α] [IsAddMonoid β] [IsAddCommMagma β]
-  [IsRightDistrib α] [IsMulZeroClass α]
+def sum_mul [SemiringOps α] [IsSemiring α] [IsMulZeroClass α]
    (f: Fin n -> α) (x: α) : sum f * x = sum (fun i => f i * x) := by
   let smul_hom: α →+ α := {
     toFun a := a * x
@@ -283,9 +301,7 @@ def sum_mul
   rw [resp_sum]
   rfl
 
-def mul_sum
-  [SemiringOps α] [AddMonoidOps β] [IsSemiring α] [IsAddMonoid β] [IsAddCommMagma β]
-  [IsLeftDistrib α] [IsMulZeroClass α]
+def mul_sum [SemiringOps α] [IsSemiring α] [IsMulZeroClass α]
    (f: Fin n -> α) (x: α) : x * sum f = sum (fun i => x * f i) := by
   let smul_hom: α →+ α := {
     toFun a := x * a

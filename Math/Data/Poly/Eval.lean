@@ -109,7 +109,7 @@ def foldl'_sum [Zero P] [Zero S] [Add S] [IsAddZeroClass S] [IsAddSemigroup S] (
   induction n generalizing p with
   | zero => rfl
   | succ n ih =>
-    rw [foldl'_succ', Fin.sum_succ', ih]
+    rw [foldl'_succ', Fin.sum_succ, ih]
     rfl
 
 def foldl [Zero P] (p: P[X]) (init: S) (f: P -> ℕ -> S -> S) (resp_zero: ∀n x, f 0 n x = x): S := by
@@ -118,8 +118,8 @@ def foldl [Zero P] (p: P[X]) (init: S) (f: P -> ℕ -> S -> S) (resp_zero: ∀n 
   refine foldl' (bound+1) p.coeffs init f
   intro ⟨a, bound_a⟩ ⟨b, bound_b⟩ _
   dsimp
-  cases p with
-  | mk  p h =>
+  match p with
+  | .mk p h =>
   dsimp [foldl']
   dsimp at bound_a bound_b
   clear h
@@ -205,7 +205,8 @@ def foldl_mul_var (a: P[X]) : Poly.foldl a.mul_var init f resp_zero = Poly.foldl
     intro n x
     simp
     rw [resp_zero]) := by
-  cases a with | mk a ha =>
+  match a with
+  | .mk a ha =>
   cases ha using Quot.ind with | mk ha =>
   obtain ⟨bound, ha⟩ := ha
   unfold mul_var foldl
@@ -243,7 +244,7 @@ variable [SemiringOps P] [SemiringOps S] [FunLike F P S]
   (f: F)
 
 @[simp]
-def evalWith_const (p: P) (x: S) : (const p).evalWith f x = f p := by
+def evalWith_const (p: P) (x: S) : (C p).evalWith f x = f p := by
   apply (foldl_const _).trans
   rw [npow_zero, mul_one, zero_add]
 
@@ -251,7 +252,8 @@ def evalWith_const (p: P) (x: S) : (const p).evalWith f x = f p := by
 def evalWith_mul_var (p: P[X]) (x: S) : (mul_var p).evalWith f x = p.evalWith f x * x := by
   apply (foldl_mul_var _).trans
   rw [evalWith]
-  cases p with | mk p hp =>
+  match p with
+  | .mk p hp =>
   cases hp using Squash.ind with | h deg =>
   obtain ⟨deg, hp⟩ := deg
   rw [foldl_mk, foldl_mk, foldl'_sum, foldl'_sum, Fin.sum_mul]
@@ -259,9 +261,13 @@ def evalWith_mul_var (p: P[X]) (x: S) : (mul_var p).evalWith f x = p.evalWith f 
   rw [mul_assoc, npow_succ]
 
 @[simp]
+def evalWith_mul_X (p: P[X]) (x: S) : (p * X).evalWith f x = p.evalWith f x * x := by
+  simp [mul_X]
+
+@[simp]
 def evalWith_add (p q: P[X]) (x: S) : (p + q).evalWith f x = p.evalWith f x + q.evalWith f x := by
-  cases p with | mk p hp =>
-  cases q with | mk q hq =>
+  match p, q with
+  | .mk p hp, .mk q hq =>
   induction hp using Squash.ind with | h hp =>
   induction hq using Squash.ind with | h hq =>
   obtain ⟨deg_p, hp⟩ := hp
@@ -272,7 +278,7 @@ def evalWith_add (p q: P[X]) (x: S) : (p + q).evalWith f x = p.evalWith f x + q.
   simp [foldl'_sum]
   rw [Fin.sum_extend (n := deg_p + 1) (m := max deg_p deg_q + 1),
     Fin.sum_extend (n := deg_q + 1) (m := max deg_p deg_q + 1),
-    Fin.sum_add_sum]
+    Fin.sum_add_sum_pairwise]
   congr; ext ⟨i, hi⟩
   simp;
   split <;> split <;> rename_i h g
@@ -289,16 +295,19 @@ def evalWith_mul [IsCommMagma S] (p q: P[X]) (x: S) : (p * q).evalWith f x = p.e
   induction p generalizing q with
   | const p =>
     induction q with
-    | const q => rw [const_mul_const, evalWith_const, evalWith_const, evalWith_const, resp_mul]
+    | const q =>
+      rw [←resp_mul]; simp
+      rw [resp_mul]
     | mul_add q qs _ ih₀ ih₁ =>
-      simp only [mul_add, mul_mul_var, evalWith_add, evalWith_mul_var, ih₀, evalWith_const, mul_assoc, ih₁]
+      rw [mul_add]
+      simp [ih₀, ih₁, ←mul_assoc]
+      rw [mul_assoc, mul_add]
   | mul_add p ps _ ih₀ ih₁ =>
-    simp only [add_mul, mul_var_mul, evalWith_add, ih₀, evalWith_const, mul_assoc, ih₀, ih₁,
-      evalWith_mul_var]
-    rw [mul_comm x]
+    simp [add_mul, mul_add, mul_assoc]
+    simp [ih₀, ih₁, X_mul_eq_mul_X, mul_comm x]
 
 def evalWith_zero : (0: P[X]).evalWith f (x: S) = 0 := by
-  rw [zero_eq_const, evalWith_const, resp_zero]
+  rw [←resp_zero C, evalWith_const, resp_zero]
 
 def evalWith_one : (1: P[X]).evalWith f (x: S) = 1 := by
   erw [evalWith_const, resp_one]
@@ -310,7 +319,7 @@ def evalWithHom [IsCommMagma S] (x: S) : P[X] →+* S where
   resp_add := evalWith_add _ _ _ _
   resp_mul := evalWith_mul _ _ _ _
 
-def lift [IsCommMagma S] : P[X] →+* S[X] := evalWithHom (constHom.comp (toRingHom f)) X
+def lift [IsCommMagma S] : P[X] →+* S[X] := evalWithHom (constHom.toRingHom.comp (toRingHom f)) X
 
 end
 
@@ -319,11 +328,11 @@ section
 variable [SemiringOps P] [SemiringOps S] [IsSemiring P] [IsSemiring S] [SMul P S] [AlgebraMap P S] [IsAlgebra P S]
 
 @[simp]
-def eval_const (p: P) (x: S) : (const p).eval x = algebraMap p := by
+def eval_const (p: P) (x: S) : (C p).eval x = algebraMap p := by
   simp [eval_eq_evalWith]
 
 @[simp]
-def eval_mul_var (p: P[X]) (x: S) : (mul_var p).eval x = p.eval x * x := by
+def eval_mul_X (p: P[X]) (x: S) : (p * X).eval x = p.eval x * x := by
   simp [eval_eq_evalWith]
 
 @[simp]
@@ -334,11 +343,18 @@ def eval_add (p q: P[X]) (x: S) : (p + q).eval x = p.eval x + q.eval x := by
 def eval_mul [IsCommMagma S] (p q: P[X]) (x: S) : (p * q).eval x = p.eval x * q.eval x := by
   simp [eval_eq_evalWith]
 
+@[simp]
 def eval_zero : (0: P[X]).eval (x: S) = 0 := by
-  rw [zero_eq_const, eval_const, resp_zero]
+  rw [←resp_zero C, eval_const, resp_zero]
 
+@[simp]
 def eval_one : (1: P[X]).eval (x: S) = 1 := by
   erw [eval_const, resp_one]
+
+@[simp]
+def eval_X [IsCommMagma S] (x: S) : (X: P[X]).eval x = x := by
+  rw [←one_mul X, eval_mul_X]
+  simp
 
 def evalHom [IsCommMagma S] (x: S) : P[X] →+* S where
   toFun := (eval · x)
@@ -382,13 +398,13 @@ def compHom : P[X] -> P[X] →+* P[X] := evalHom (S := P[X])
 def comp : P[X] -> P[X] -> P[X] := fun x y => compHom y x
 
 @[simp]
-def compHom_const (p: P) (q: P[X]) : q.compHom (const p) = const p := by
+def compHom_const (p: P) (q: P[X]) : q.compHom (C p) = C p := by
   rw [compHom, evalHom_def, eval_const]
   rfl
 
 @[simp]
-def comp_mul_var (p q: P[X]) : q.compHom p.mul_var = q.compHom p * q := by
-  rw [compHom, evalHom_def, eval_mul_var]
+def comp_mul_X (p q: P[X]) : q.compHom (p * X) = q.compHom p * q := by
+  rw [compHom, evalHom_def, eval_mul_X]
   rfl
 
 def eval_compHom (p q: P[X]) : (p.compHom q).eval x = q.eval (p.eval x (S := P)) := by
