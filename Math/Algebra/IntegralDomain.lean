@@ -35,7 +35,11 @@ instance : IsLawfulDvd Int where
 
 section
 
-variable {α: Type*} [MonoidOps α] [Dvd α] [IsMonoid α] [IsLawfulDvd α]
+variable {α: Type*} [Dvd α]
+
+section
+
+variable [MonoidOps α] [IsMonoid α] [IsLawfulDvd α]
 
 def unit_dvd (a b: α) [IsUnit a] : a ∣ b := by
   rw [dvd_iff]
@@ -62,6 +66,44 @@ structure IsPrime [Zero α] (x: α) : Prop where
   ne_zero: x ≠ 0
   notUnit: ¬IsUnit x
   of_dvd_prod: ∀a b, x ∣ a * b -> x ∣ a ∨ x ∣ b
+
+end
+
+def dvd_mul_left [Mul α] [IsLawfulDvd α] (a b: α) : a ∣ a * b := by
+  rw [dvd_iff]
+  exists b
+
+def dvd_mul_right [Mul α] [IsCommMagma α] [IsLawfulDvd α] (a b: α) : a ∣ b * a := by
+  rw [mul_comm]
+  apply dvd_mul_left
+
+def dvd_add {k a b: α} [Mul α] [AddMonoidOps α] [IsNonUnitalNonAssocSemiring α] [IsLawfulDvd α] : k ∣ a -> k ∣ b -> k ∣ a + b := by
+  rw [dvd_iff, dvd_iff]
+  rintro ⟨a, rfl⟩ ⟨b, rfl⟩
+  rw [←mul_add]
+  apply dvd_mul_left
+
+def dvd_trans {a b c: α} [Mul α] [IsSemigroup α] [IsLawfulDvd α] : a ∣ b -> b ∣ c -> a ∣ c := by
+  rw [dvd_iff, dvd_iff, dvd_iff]
+  rintro ⟨a, rfl⟩ ⟨b, rfl⟩
+  exists a * b
+  rw [mul_assoc]
+
+def dvd_neg [RingOps α] [h: IsRing α] [IsLawfulDvd α] {a b: α} : a ∣ b ↔ a ∣ -b := by
+  have := h.toIsSemiring
+  rw [dvd_iff, dvd_iff]
+  apply Iff.intro
+  rintro ⟨k, rfl⟩
+  exists -k
+  rw [neg_mul_right]
+  intro ⟨k, eq⟩
+  exists -k
+  rw [←neg_mul_right, ←eq, neg_neg]
+
+def dvd_zero [Mul α] [Zero α] [IsMulZeroClass α] [IsLawfulDvd α] (a: α) : a ∣ 0 := by
+  rw [dvd_iff]
+  exists 0
+  rw [mul_zero]
 
 end
 

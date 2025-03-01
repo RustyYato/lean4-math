@@ -858,6 +858,46 @@ def mul_X_add_C_inj [SemiringOps P] [IsSemiring P] : Function.Injective₂ (fun 
   rw [←mul_X, ←mul_X]
   assumption
 
+@[simp] def coeffs_zero_mul_X [SemiringOps P] [IsSemiring P] (a: P[X]) : (a * X).coeffs 0 = (0: P) := by
+  rw [coeffs_mul]
+  simp [Fin.sum, Fin.sum_from]
+
+@[simp] def coeffs_succ_mul_X [SemiringOps P] [IsSemiring P] (a: P[X]) : (a * X).coeffs (n+1) = a.coeffs n := by
+  rw [coeffs_mul]
+  dsimp
+  rw [Fin.sum_succ, Fin.sum_succ, Fin.sum_eq_zero]
+  simp [Nat.add_sub_cancel_left]
+  intro x
+  simp
+  rw [Nat.succ_sub]
+  cases n
+  exact x.elim0
+  rw [Nat.succ_sub]
+  simp
+  omega
+  omega
+
+@[simp] def coeffs_lt_mul_X_npow [SemiringOps P] [IsSemiring P] (a: P[X]) (m: ℕ) (h: n < m) : (a * X ^ m).coeffs n = 0 := by
+  induction m generalizing n with
+  | zero =>
+    contradiction
+  | succ m ih =>
+    cases n
+    rw [npow_succ, ←mul_assoc]
+    simp
+    rw [npow_succ, ←mul_assoc]
+    simp [ih (Nat.lt_of_succ_lt_succ h)]
+@[simp] def coeffs_ge_mul_X_npow [SemiringOps P] [IsSemiring P] (a: P[X]) (m: ℕ) : (a * X ^ m).coeffs (n + m) = a.coeffs n := by
+  induction m with
+  | zero => rw [npow_zero, mul_one]; rfl
+  | succ m ih =>
+    rw [npow_succ, ←mul_assoc, ←add_assoc]
+    simp [ih]
+
+-- @[simp] def coeffs_X_npow_lt [Zero P] [One P]  : X.coeffs 0 = (0: P) := rfl
+-- @[simp] def coeffs_X_npow_eq [Zero P] [One P]  : X.coeffs 1 = (1: P) := rfl
+-- @[simp] def coeffs_X_npow_gt [Zero P] [One P]  : X.coeffs 1 = (1: P) := rfl
+
 @[induction_eliminator]
 def inductionX [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop}
   (const: ∀a, motive (C a))
@@ -878,6 +918,11 @@ def zero_eq_mul_X_add_C [SemiringOps P] [IsSemiring P] :
 
 def X_mul_eq_mul_X [SemiringOps P] [IsSemiring P] (a: P[X]) : X * a = a * X := by
   rw [mul_X, X_mul]
+
+def X_npow_mul_eq_mul_X_npow [SemiringOps P] [IsSemiring P] (a: P[X]) (n: ℕ) : X ^ n * a = a * X ^ n := by
+  induction n with
+  | zero => rw [npow_zero, mul_one, one_mul]
+  | succ n ih => rw [npow_succ, mul_assoc, X_mul_eq_mul_X, ←mul_assoc, ih, mul_assoc]
 
 @[simp]
 def degree_C [SemiringOps P] [IsSemiring P] [BEq P] [LawfulBEq P] (a: P) : (C a).degree = 0 := by
@@ -1067,5 +1112,17 @@ instance [RingOps P] [IsRing P] [NoZeroDivisors P] : NoZeroDivisors P[X] where
       apply congrFun this (_ + 1)
 
 instance [RingOps P] [IsIntegralDomain P] : IsIntegralDomain P[X] where
+
+instance [SemiringOps P] [IsSemiring P] : Dvd P[X] where
+  dvd a b := ∃ k, b = a * k
+instance [SemiringOps P] [IsSemiring P] : IsLawfulDvd P[X] where
+
+@[cases_eliminator]
+def cases [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop} (mul_add: ∀(a: P[X]) (b: P), motive (a * X + C b)) (p: P[X]) :  motive p := by
+  induction p with
+  | mul_add => apply mul_add
+  | const p =>
+    rw [←zero_add (C p), zero_eq_mul_var, ←mul_X]
+    apply mul_add
 
 end Poly
