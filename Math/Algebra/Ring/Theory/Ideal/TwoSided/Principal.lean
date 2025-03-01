@@ -1,5 +1,6 @@
 import Math.Data.List.Algebra
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Lattice
+import Math.Algebra.Dvd
 
 namespace Ideal
 
@@ -100,5 +101,49 @@ def top_is_principal : IsPrincipal (α := α) ⊤ := by
   apply mem_mul_left
   apply Generate.of
   rfl
+
+section Dvd
+
+variable [Dvd α] [IsCommMagma α] [IsLawfulDvd α]
+
+def of_dvd (a: α) : Ideal α where
+  carrier := Set.mk fun x => a ∣ x
+  mem_zero' := dvd_zero _
+  mem_add' := by
+    intro x y hx hy
+    apply dvd_add
+    assumption
+    assumption
+  mem_neg' := by
+    intro x hx
+    apply dvd_neg.mp
+    assumption
+  mem_mul_left' := by
+    intro r x hx
+    apply dvd_trans hx
+    exact dvd_mul_right x r
+  mem_mul_right' := by
+    intro r x hx
+    apply dvd_trans hx
+    exact dvd_mul_left x r
+
+def of_dvd_principal (a: α) : IsPrincipal (of_dvd a) := by
+  exists a
+  rw [principal_eq_generate]
+  apply flip le_antisymm
+  rintro x h
+  apply of_mem_generate _ _ _ _ h
+  rintro x rfl
+  apply dvd_refl
+  rintro _ h
+  obtain h : a ∣ _ := h
+  rw [dvd_iff] at h
+  obtain ⟨k, rfl⟩ := h
+  show _ ∈ generate {a}
+  apply mem_mul_right
+  apply Generate.of
+  rfl
+
+end Dvd
 
 end Ideal
