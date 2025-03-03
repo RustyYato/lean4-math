@@ -400,3 +400,13 @@ instance Opposite.instLattice {α} [LE α] [LT α] [Sup α] [Inf α] [IsLattice 
 def SemiLatticeSup.opposite (c: SemiLatticeSup α) : SemiLatticeInf αᵒᵖ := inferInstance
 def SemiLatticeInf.opposite (c: SemiLatticeInf α) : SemiLatticeSup αᵒᵖ := inferInstance
 def Lattice.opposite (c: Lattice α) : Lattice αᵒᵖ := inferInstance
+
+instance : Lattice Nat where
+  sup := Nat.max
+  inf := Nat.min
+  le_sup_left := Nat.le_max_left
+  le_sup_right := Nat.le_max_right
+  inf_le_left := Nat.min_le_left
+  inf_le_right := Nat.min_le_right
+  sup_le := Nat.max_le_of_le_of_le
+  le_inf := Nat.le_min_of_le_of_le

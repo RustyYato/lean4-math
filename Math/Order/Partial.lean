@@ -108,3 +108,9 @@ def ofMonoInj [IsPreOrder α] (m: Monotone f) (h: Function.Injective f) : Strict
   assumption
 
 end StrictMonotone
+
+instance : IsPartialOrder Nat where
+  lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
+  le_refl := Nat.le_refl
+  le_trans := Nat.le_trans
+  le_antisymm := Nat.le_antisymm

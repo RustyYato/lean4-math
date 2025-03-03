@@ -37,3 +37,55 @@ def mem_coe {x : α} : x ∈ (p : Finset α) ↔ x ∈ p :=
 instance : FinsetLike (Finset α) α where
   coe := id
   coe_inj _ _ := id
+
+instance : IsLawfulEmptyFinsetLike (Finset α) where
+  elim x := Finset.not_mem_empty _ x.property
+
+instance : FinsetLike Nat Nat where
+  coe n := {
+    val := Multiset.mk (List.ofFn (n := n) Fin.val)
+    property := by
+      apply (List.nodup_ofFn _).mp
+      intro x y
+      apply Fin.val_inj.mp
+  }
+  coe_inj := by
+    intro a b eq
+    dsimp at eq
+    replace eq := Quotient.exact (Subtype.mk.inj eq)
+    rcases Nat.lt_trichotomy a b with lt | rfl | gt
+    · have : a ∈ List.ofFn (n := b) Fin.val := by
+        refine (List.mem_ofFn Fin.val a).mpr ?_
+        exists ⟨a, lt⟩
+      have := (List.Perm.mem_iff eq).mpr this
+      simp at this
+      obtain ⟨⟨_, lt⟩, eq⟩ := this
+      dsimp at eq
+      subst eq
+      have := Nat.lt_irrefl _ lt
+      contradiction
+    · rfl
+    · have : b ∈ List.ofFn (n := a) Fin.val := by
+        refine (List.mem_ofFn Fin.val b).mpr ?_
+        exists ⟨b, gt⟩
+      have := (List.Perm.mem_iff eq).mp this
+      simp at this
+      obtain ⟨⟨_, lt⟩, eq⟩ := this
+      dsimp at eq
+      subst eq
+      have := Nat.lt_irrefl _ lt
+      contradiction
+
+instance : IsLawfulEmptyFinsetLike Nat where
+  elim x := by
+    have : x.val ∈ (0: Nat) := x.property
+    contradiction
+
+def Nat.mem_iff_lt (a b: Nat) : a ∈ b ↔ a < b := by
+  apply Iff.trans (List.mem_ofFn _ _)
+  apply Iff.intro
+  intro ⟨⟨i, _⟩, h⟩
+  dsimp at h; subst h
+  assumption
+  intro h
+  exact ⟨⟨a, h⟩, rfl⟩

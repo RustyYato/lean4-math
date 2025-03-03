@@ -54,14 +54,90 @@ instance : EmptyCollection (Finset α) where
     property := List.Pairwise.nil
   }
 
+instance : Inhabited (Finset α) := ⟨∅⟩
+
+def not_mem_empty (x: α) : x ∉ (∅: Finset α) := by
+  intro h
+  contradiction
+
 instance : Singleton α (Finset α) where
   singleton x := {
     val := {x}
     property := List.Pairwise.cons (fun _ => (nomatch ·)) List.Pairwise.nil
   }
 
+def mem_singleton {a: α} : ∀{x}, x ∈ ({a}: Finset α) ↔ x = a := by
+  intro x
+  apply Iff.intro
+  intro h
+  cases h
+  rfl; contradiction
+  rintro rfl
+  apply List.Mem.head
+
 instance : Insert α (Finset α) where
   insert x as := {x} ∪ as
+
+def erase (a: α) (s: Finset α) : Finset α where
+  val := s.val.erase a
+  property := by
+    cases s with | mk s h =>
+    induction s using Quotient.ind
+    apply List.Nodup.erase
+    assumption
+
+def mem_erase {a: α} {s: Finset α} : ∀{x}, x ∈ s.erase a ↔ x ∈ s ∧ x ≠ a := by
+  intro x
+  apply Iff.intro
+  intro h
+  have := Multiset.of_mem_erase _ _ _ h
+  apply And.intro
+  assumption
+  clear this
+  · cases s with | mk s g =>
+    unfold erase at h
+    replace h : x ∈ Multiset.erase _ _ := h
+    induction s with
+      | nil =>
+        rw [Multiset.erase_nil] at h
+        contradiction
+      | cons a₀ as ih =>
+        rw [Multiset.erase_cons] at h
+        split at h
+        subst a₀
+        rintro rfl
+        have := g.head
+        contradiction
+        simp at h
+        cases h
+        subst x
+        symm; assumption
+        apply ih
+        dsimp
+        assumption
+        exact g.tail
+  · intro ⟨mem, ne⟩
+    cases s with | mk s h =>
+    show x ∈ Multiset.erase _ _
+    replace mem : x ∈ s := mem
+    induction s with
+    | nil => contradiction
+    | cons a₀ as ih =>
+      rw [Multiset.erase_cons]
+      simp at mem
+      split
+      subst a₀
+      cases mem
+      subst x
+      contradiction
+      assumption
+      simp
+      cases mem
+      left; assumption
+      right
+      apply ih
+      exact h.tail
+      assumption
 
 def mem_union {a b: Finset α} : ∀{x: α}, x ∈ a ∪ b ↔ x ∈ a ∨ x ∈ b := by
   intro x

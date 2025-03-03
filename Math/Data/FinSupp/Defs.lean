@@ -39,6 +39,38 @@ def inf_coe_sub_coe_inf (a b: S) : ((a ⊓ b: S): Finset α) ≤ (a ⊓ b: Finse
 
 end FiniteSupportSet
 
+instance [DecidableEq α] : FiniteSupportSet (Finset α) α where
+  coe_resp_le := Iff.rfl
+  singleton a := {a}
+  mem_singleton _ := Finset.mem_singleton.mpr rfl
+  remove a s := s.erase a
+  mem_remove _ _ _ h g := Finset.mem_erase.mpr ⟨h, g.symm⟩
+
+instance : FiniteSupportSet Nat Nat where
+  coe_resp_le {a b} := by
+    conv => {
+      rhs; rw [LE.le, Finset.instLE]
+    }
+    dsimp [HasSubset.Subset]
+    conv => {
+      rhs; intro x
+      erw [Nat.mem_iff_lt, Nat.mem_iff_lt]
+    }
+    apply Iff.intro
+    intro h x hx
+    apply Nat.lt_of_lt_of_le
+    assumption
+    assumption
+    intro h
+    rcases Nat.lt_or_ge b a with g | g
+    have := Nat.lt_irrefl _ (h _ g)
+    contradiction
+    assumption
+  singleton a := a+1
+  mem_singleton _ := (Nat.mem_iff_lt _ _).mpr (Nat.lt_succ_self _)
+  remove a s := s
+  mem_remove _ _ _ h _ := h
+
 namespace FinSupp
 
 variable [FiniteSupportSet S α]

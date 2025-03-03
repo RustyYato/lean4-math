@@ -1,4 +1,5 @@
 import Math.Logic.Basic
+import Math.Logic.IsEmpty
 import Math.Function.Basic
 
 inductive List.MinCountBy (P: α -> Prop) : List α -> Nat -> Prop where
@@ -706,6 +707,25 @@ def List.nodup_getElem_inj {as: List α} (h: as.Nodup)
       assumption
       assumption
 
+def List.nodup_iff_getElem_inj {as: List α}:
+  as.Nodup ↔ Function.Injective (fun i: Fin as.length => as[i]) := by
+  apply Iff.intro
+  intro h i j eq
+  exact Fin.val_inj.mp (List.nodup_getElem_inj h eq)
+  intro h
+  induction as with
+  | nil => apply List.Pairwise.nil
+  | cons a as ih =>
+    apply List.Pairwise.cons
+    rintro _ mem rfl
+    have ⟨i, iLt, g⟩ := List.getElem_of_mem mem
+    subst a
+    have := Fin.mk.inj (@h ⟨0, Nat.zero_lt_succ _⟩ ⟨i+1, Nat.succ_lt_succ iLt⟩ rfl)
+    contradiction
+    apply ih
+    intro x y eq
+    exact Fin.succ_inj.mp (@h x.succ y.succ eq)
+
 def List.eraseIdx_zip (as: List α) (bs: List β) (i: Nat) :
   (as.zip bs).eraseIdx i = (as.eraseIdx i).zip (bs.eraseIdx i) := by
   induction i generalizing as bs with
@@ -756,3 +776,22 @@ def List.MinCount.append
   (hb: MinCount bs x m):
   MinCount (as ++ bs) x (n + m) :=
   MinCountBy.append ha hb
+
+def List.nodup_ofFn (f: Fin n -> α) : Function.Injective f ↔ (List.ofFn f).Nodup := by
+  rw [List.nodup_iff_getElem_inj]
+  apply Iff.intro
+  intro finj
+  intro x y eq
+  simp at eq
+  apply Fin.val_inj.mp
+  apply Fin.mk.inj (finj eq)
+  intro inj x y eq
+  have := @inj ⟨x.val, ?_⟩ ⟨y.val, ?_⟩
+  simp at this
+  replace := this eq
+  apply Fin.val_inj.mp
+  assumption
+  rw [List.length_ofFn]
+  apply Fin.isLt
+  rw [List.length_ofFn]
+  apply Fin.isLt

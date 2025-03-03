@@ -72,6 +72,20 @@ def cons (x: α) : Multiset α -> Multiset α := Quot.lift (⟦List.cons x ·⟧
 
 infixr:67 " ::ₘ " => cons
 
+def Nodup.head : Nodup (a::ₘas) -> a ∉ as := by
+  intro h  g
+  induction as using Quotient.ind
+  cases h
+  rename_i h
+  exact h _ g rfl
+
+def Nodup.tail : Nodup (a::ₘas) -> Nodup as := by
+  intro h
+  induction as using Quotient.ind
+  cases h
+  rename_i h
+  assumption
+
 instance : Insert α (Multiset α) := ⟨.cons⟩
 instance : Singleton α (Multiset α) := ⟨(.cons · ∅)⟩
 
@@ -742,6 +756,11 @@ def count_elem_erase_if_mem [DecidableEq α] (x: α) (as: Multiset α) (h: x ∈
   assumption
   rfl
 
+def of_mem_erase [DecidableEq α] (x: α) (a: α) (as: Multiset α) (h: x ∈ as.erase a) : x ∈ as := by
+  induction as using Quotient.ind
+  apply List.mem_of_mem_erase
+  assumption
+
 def count_elem_erase [DecidableEq α] (x: α) (as: Multiset α) : as.MinCount x n -> (as.erase x).MinCount x n.pred := by
   intro h
   by_cases mem:x ∈ as
@@ -753,6 +772,21 @@ def count_erase [DecidableEq α] (x: α) (as: Multiset α) : ∀{y n}, x ≠ y -
   intro y n ne
   apply count_by_erase
   right; assumption
+
+def erase_nil [DecidableEq α] : (∅: Multiset α).erase a = ∅ := rfl
+
+def erase_cons_head [DecidableEq α] (a: α) (s: Multiset α) : (a::ₘs).erase a = s := by
+  induction s using Quotient.ind
+  show Quotient.mk _ _ = _
+  rw [List.erase_cons_head]
+
+def erase_cons_tail [DecidableEq α] (a x: α) (s: Multiset α) (h: x ≠ a) : (x::ₘs).erase a = x::ₘ(s.erase a) := by
+  induction s using Quotient.ind
+  show Quotient.mk _ _ = _
+  rw [List.erase_cons_tail]
+  rfl
+  intro g
+  exact h (LawfulBEq.eq_of_beq g)
 
 def MinCount.iff_mem {x: α} {as: Multiset α} : as.MinCount x 1 ↔ x ∈ as := by
   induction as with
