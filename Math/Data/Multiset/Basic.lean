@@ -1193,6 +1193,16 @@ instance [DecidableEq α] (as: Multiset α) : Decidable (x ∈ as) := by
   intro
   infer_instance
 
+def fold (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b)) (as: Multiset α) : β :=
+  as.lift (fun as => as.foldr f start) <| by
+    intro as bs perm
+    dsimp
+    induction perm with
+    | nil => rfl
+    | cons _ _ ih => rw [List.foldr, List.foldr, ih]
+    | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
+    | swap => simp [List.foldr, h]
+
 -- theorem flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
 --   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
 --   quot_ind (m n)

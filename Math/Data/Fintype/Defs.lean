@@ -224,4 +224,51 @@ def Fintype.subsingleton [f: Fintype α] (h: card α ≤ 1) : Subsingleton α wh
       cases List.mem_singleton.mp (complete b)
       rfl
 
+instance : Fintype (Fin n) :=
+  Fintype.ofList (List.finRange n) (by
+    refine List.nodup_iff_getElem_inj.mpr ?_
+    intro ⟨x, _⟩ ⟨y, _⟩ eq
+    dsimp at eq
+    simp at eq
+    cases eq
+    rfl) (by
+    intro x
+    apply (List.mem_ofFn _ _).mpr
+    exists x)
+
+instance : Fintype Prop :=
+  Fintype.ofList [False, True] (by simp) (by
+    intro x
+    simp; symm
+    exact Classical.em x)
+
+instance : Fintype Bool :=
+  Fintype.ofList [false, true] (by simp) (by intro x; simp)
+
+def fold [Fintype α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b)) : β :=
+  Fintype.all.val.fold f start h
+
+def nat_not_fintype : Fintype Nat -> False := by
+  intro f
+  let m := f.fold max 0 (by
+    intro a₀ a₁ b
+    rw [
+      ←Nat.max_assoc,
+      Nat.max_comm a₀,
+      Nat.max_assoc])
+  have : ∀x, x ≤ m := by
+    induction f with
+    | mk all nodup complete =>
+    intro x
+    show x ≤ List.foldr _ _ _
+    have mem := complete x
+    clear m nodup complete
+    induction mem with
+    | head => apply Nat.le_max_left
+    | tail =>
+      apply flip Nat.le_trans
+      apply Nat.le_max_right
+      assumption
+  exact Nat.not_lt_of_le (this (m + 1)) (Nat.lt_succ_self _)
+
 end Fintype
