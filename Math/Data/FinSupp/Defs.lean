@@ -298,4 +298,81 @@ def applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) : FinSupp α β S �
   resp_zero := rfl
   resp_add := rfl
 
+def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): FinSupp α β S where
+  toFun x := if x ∈ s then f x else 0
+  spec := Trunc.mk {
+    val := s
+    property := by
+      intro x h
+      dsimp at h
+      split at h
+      assumption
+      contradiction
+  }
+
+@[simp] def apply_on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β) (x: α) :
+  on s f x = if x ∈ s then f x else 0 := rfl
+
+def support [Zero β] [dec: ∀x: β, Decidable (x = 0)] (f: FinSupp α β S) : Finset α :=
+  f.spec.lift (fun s => (s.val: Finset α).filter fun x => decide (f x ≠ 0)) <| by
+    intro ⟨a, ha⟩ ⟨b, hb⟩
+    dsimp
+    ext x
+    simp [Finset.mem_filter]
+    intro h
+    apply Iff.intro <;> intro
+    apply hb; assumption
+    apply ha; assumption
+
+def mem_support [Zero β] [dec: ∀x: β, Decidable (x = 0)] {f: FinSupp α β S} :
+  ∀{x}, x ∈ f.support ↔ f x ≠ 0 := by
+  intro x
+  cases f with | mk f h =>
+  induction h with | mk h =>
+  obtain ⟨s, h⟩ := h
+  unfold support
+  show x ∈ Finset.filter (fun x => f x ≠ 0) s ↔ f x ≠ 0
+  simp [Finset.mem_filter]
+  apply h
+
+def support_on_subset [Zero β] (s: S) [DecidablePred (· ∈ s)] [dec: ∀x: β, Decidable (x = 0)] (f: α -> β) :
+  support (on s f) ⊆ s := by
+  intro x
+  simp [mem_support]
+  intros; assumption
+
+def support_on [Zero β] (s: S) [DecidablePred (· ∈ s)] [dec: ∀x: β, Decidable (x = 0)] (f: α -> β) :
+  support (on s f) = (s: Finset α).filter (fun x => f x ≠ 0) := by
+  ext x
+  simp [mem_support, Finset.mem_filter]
+
+def mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: FinSupp α β S): FinSupp α γ S where
+  toFun x  := g (f x)
+  spec := f.spec.map fun ⟨s, h⟩ => {
+    val := s
+    property := by
+      intro x hx
+      dsimp at hx
+      by_cases hf:f x = 0
+      rw [hf, resp_zero] at hx
+      contradiction
+      apply h
+      assumption
+  }
+
+@[simp] def apply_mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: FinSupp α β S) (x: α) : mapRange g f x = g (f x) := rfl
+
+def mapRange_zero [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) :
+  mapRange g (0: FinSupp α β S) = 0 := by
+  ext x; simp [resp_zero]
+
+def toFinset [DecidableEq α] [Zero β] (f: FinSupp α β S) : FinSupp α β (Finset α) where
+  toFun := f
+  spec := f.spec.map fun ⟨s, h⟩ => {
+    val := s
+    property := h
+  }
+
+@[simp] def toFinset_coe_eq [DecidableEq α] [Zero β] (f: FinSupp α β S) : (f.toFinset: α -> β) = f := rfl
+
 end FinSupp

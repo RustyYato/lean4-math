@@ -1,4 +1,5 @@
 import Math.Data.Multiset.Basic
+import Math.Logic.Equiv.Defs
 
 def Finset (α: Type*) := { x: Multiset α // x.Nodup }
 
@@ -165,6 +166,43 @@ def mem_filter {f: α -> Bool} {a: Finset α} : ∀{x: α}, x ∈ a.filter f ↔
 
 def map (f: α -> β) (as: Finset α) : Finset β :=
   .ofMultiset <| as.val.map (fun x => f x)
+
+def map_emb (f: α ↪ β) (as: Finset α) : Finset β where
+  val := as.val.map f
+  property := by
+    cases as with | mk as ih =>
+    cases as using Quotient.ind
+    apply List.nodup_map
+    exact f.inj
+    assumption
+
+def mem_map_emb {f: α ↪ β} {as: Finset α} : ∀{x}, x ∈ as.map_emb f ↔ ∃a, a ∈ as ∧ f a = x := by
+  intro x
+  unfold map_emb
+  show x ∈ Multiset.map _ _ ↔ _
+  rw [Multiset.mem_map]
+  rfl
+
+def map_emb_inj (f: α ↪ β) : Function.Injective (map_emb f) := by
+  intro x y eq
+  ext i
+  apply Iff.intro
+  intro h
+  have : f i ∈ y.map_emb f := by
+    rw [←eq, mem_map_emb]
+    exists i
+  rw [mem_map_emb] at this
+  obtain ⟨j, j_in_y, eq⟩ := this
+  cases f.inj eq
+  assumption
+  intro h
+  have : f i ∈ x.map_emb f := by
+    rw [eq, mem_map_emb]
+    exists i
+  rw [mem_map_emb] at this
+  obtain ⟨j, j_in_y, eq⟩ := this
+  cases f.inj eq
+  assumption
 
 def flatMap (f: α -> Finset β) (as: Finset α) : Finset β :=
   .ofMultiset <| as.val.flatMap (fun x => (f x).val)

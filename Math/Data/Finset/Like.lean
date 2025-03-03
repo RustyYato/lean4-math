@@ -89,3 +89,6 @@ def Nat.mem_iff_lt (a b: Nat) : a ∈ b ↔ a < b := by
   assumption
   intro h
   exact ⟨⟨a, h⟩, rfl⟩
+
+instance (a b: Nat) : Decidable (a ∈ b) :=
+  decidable_of_iff _ (Nat.mem_iff_lt _ _).symm

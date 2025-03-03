@@ -72,6 +72,13 @@ def cons (x: α) : Multiset α -> Multiset α := Quot.lift (⟦List.cons x ·⟧
 
 infixr:67 " ::ₘ " => cons
 
+def nil_ne_cons {a: α} {as: Multiset α} : ∅ ≠ a::ₘas := by
+  cases as
+  intro h
+  replace h := Quotient.exact h
+  have := List.Perm.length_eq h
+  contradiction
+
 def Nodup.head : Nodup (a::ₘas) -> a ∉ as := by
   intro h  g
   induction as using Quotient.ind
@@ -1108,6 +1115,10 @@ def mem_filter {f: α -> Bool} {as: Multiset α} : ∀{x}, x ∈ as.filter f ↔
   intro h
   cases as
   apply List.mem_filter
+
+def map_cons {f: α -> β} {a: α} {as: Multiset α} : (a::ₘas).map f = f a::ₘas.map f := by
+  cases as
+  rfl
 
 def mem_map {f: α -> β} {as: Multiset α} : ∀{x}, x ∈ as.map f ↔ ∃a ∈ as, f a = x := by
   intro h
