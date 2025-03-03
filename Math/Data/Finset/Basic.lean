@@ -286,4 +286,41 @@ def eq_of_sub_of_card_eq {a b: Finset α} : a ⊆ b -> a.card = b.card -> a = b 
     assumption
     exact (perm.nodup hb).tail
 
+def zip (as: Finset α) (bs: Finset β) : Finset (α × β) where
+  val := as.val.flatMap fun a => bs.val.map fun b => (a, b)
+  property := by
+    cases as with | mk as ha =>
+    cases bs with | mk bs hb =>
+    induction as generalizing bs  with
+    | nil => apply List.Pairwise.nil
+    | cons a as ih =>
+      rw [Multiset.flatMap_cons]
+      apply Multiset.nodup_append
+      apply Multiset.nodup_map
+      assumption
+      intro x y eq
+      cases eq; rfl
+      apply ih
+      exact ha.tail
+      intro (a₀, y)
+      dsimp
+      simp [Multiset.mem_map, Multiset.mem_flatMap]
+      rintro _ rfl h
+      have := ha.head
+      contradiction
+
+def mem_mk (as: Multiset α) (h: as.Nodup) : ∀{x: α},
+  (Membership.mem (γ := Finset α) ({val := as, property := h}: Finset α) x) ↔ x ∈ as := Iff.rfl
+
+def mem_zip (as: Finset α) (bs: Finset β) : ∀{x}, x ∈ zip as bs ↔ x.1 ∈ as ∧ x.2 ∈ bs := by
+  intro x
+  simp [zip, Multiset.mem_flatMap, Multiset.mem_map, mem_mk]
+  apply Iff.intro
+  rintro ⟨a, _, b, _, rfl⟩
+  trivial
+  intro ⟨_, _⟩
+  refine ⟨x.fst, ?_, x.snd, ?_, rfl⟩
+  assumption
+  assumption
+
 end Finset

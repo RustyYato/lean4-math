@@ -92,3 +92,12 @@ def Nat.mem_iff_lt (a b: Nat) : a ∈ b ↔ a < b := by
 
 instance (a b: Nat) : Decidable (a ∈ b) :=
   decidable_of_iff _ (Nat.mem_iff_lt _ _).symm
+
+-- this isn't possible to do, since the coercion isn't injective because zip is degenerate
+-- if either input is empty
+-- instance [FinsetLike α α₀] [FinsetLike β β₀] : FinsetLike (α × β) (α₀ × β₀) where
+--   coe x := (x.1: Finset α₀).zip (x.2: Finset β₀)
+--   coe_inj := by
+--     intro x y eq
+--     dsimp at eq
+--     sorry

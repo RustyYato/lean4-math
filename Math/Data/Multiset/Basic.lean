@@ -218,6 +218,14 @@ def append_assoc (as bs cs: Multiset α) : as ++ bs ++ cs = as ++ (bs ++ cs) := 
   cases as, bs, cs
   simp
 
+def nodup_append {α} (as bs : Multiset α) (ha: as.Nodup) (hb: bs.Nodup) :
+   (∀ (x : α), x ∈ as -> x ∈ bs -> False) -> (as ++ bs).Nodup := by
+   cases as
+   cases bs
+   apply List.nodup_append
+   assumption
+   assumption
+
 def map {β: Type _} (f: α -> β) (as: Multiset α) : Multiset β := by
   apply Quot.lift (⟦·.map f⟧) _ as
   intro a b h
@@ -232,6 +240,13 @@ def map {β: Type _} (f: α -> β) (as: Multiset α) : Multiset β := by
 
 @[simp]
 def mk_map (a: List α) (f: α -> β) : ⟦a⟧.map f = ⟦a.map f⟧ := rfl
+
+def nodup_map {α} (f: α -> β) (as : Multiset α) (ha: as.Nodup) (h: Function.Injective f):
+   (as.map f).Nodup := by
+   cases as
+   apply List.nodup_map
+   assumption
+   assumption
 
 def flatten (as: Multiset (Multiset α)) : Multiset α := by
   apply Quot.lift _ _ as
