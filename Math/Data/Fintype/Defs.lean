@@ -236,14 +236,21 @@ instance : Fintype (Fin n) :=
     apply (List.mem_ofFn _ _).mpr
     exists x)
 
+def card_fin (n: Nat) : card (Fin n) = n := by
+  apply List.length_ofFn
+
 instance : Fintype Prop :=
   Fintype.ofList [False, True] (by simp) (by
     intro x
     simp; symm
     exact Classical.em x)
 
+def card_prop : card Prop = 2 := rfl
+
 instance : Fintype Bool :=
   Fintype.ofList [false, true] (by simp) (by intro x; simp)
+
+def card_bool : card Bool = 2 := rfl
 
 def fold [Fintype α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b)) : β :=
   Fintype.all.val.fold f start h
