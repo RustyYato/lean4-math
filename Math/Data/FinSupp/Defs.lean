@@ -2,13 +2,15 @@ import Math.Data.Finset.Like
 import Math.Data.Trunc
 import Math.Order.Lattice.Basic
 import Math.Data.Finset.Lattice
-import Math.Algebra.Group.Defs
+import Math.Algebra.Group.Hom
 import Math.Logic.Basic
 
 class FiniteSupportSet (S: Type*) (α: outParam Type*) extends FinsetLike S α, Sup S, Inf S, LE S, LT S, IsLattice S, Inhabited S, IsLawfulEmptyFinsetLike S where
   coe_resp_le: ∀{a b: S}, a ≤ b ↔ (a: Finset α) ≤ (b: Finset α)
   singleton: α -> S
   mem_singleton: ∀a: α, a ∈ singleton a
+  remove: α -> S -> S
+  mem_remove: ∀(s: S) (x a: α), x ∈ s -> a ≠ x -> x ∈ remove a s
 
 structure FinSupp (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
   toFun: α -> β
@@ -16,9 +18,7 @@ structure FinSupp (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
 
 namespace FiniteSupportSet
 
-open Classical
-
-variable [FiniteSupportSet S α]
+variable [FiniteSupportSet S α] [DecidableEq α]
 
 def coe_resp_lt {a b: S} : a < b ↔ (a: Finset α) < (b: Finset α) := by
   simp only [lt_iff_le_and_not_le, coe_resp_le]
@@ -221,5 +221,49 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : IsSubNegMono
 
 instance [AddGroupOps β] [IsAddGroup β] : IsAddGroup (FinSupp α β S) where
   neg_add_cancel a := by ext; simp [neg_add_cancel]
+
+def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: FinSupp α β S) : FinSupp α β S where
+  toFun x := if x = a then b else f x
+  spec := do
+    let ⟨fs, hf⟩←f.spec
+    return {
+      val := FiniteSupportSet.singleton a ⊔ fs
+      property x ne := by
+        dsimp only at ne
+        apply FiniteSupportSet.coe_sup_sub_sup_coe
+        apply Finset.mem_union.mpr
+        split at ne
+        subst x
+        left; apply FiniteSupportSet.mem_singleton
+        right
+        apply hf
+        assumption
+    }
+
+def erase [DecidableEq α] [Zero β] (a: α) (f: FinSupp α β S) : FinSupp α β S where
+  toFun x := if x = a then 0 else f x
+  spec := do
+    let ⟨fs, hf⟩←f.spec
+    return {
+      val := FiniteSupportSet.remove a fs
+      property x ne := by
+        dsimp only at ne
+        split at ne
+        contradiction
+        have := hf x ne
+        apply FiniteSupportSet.mem_remove
+        assumption
+        symm; assumption
+    }
+
+def singleHom [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (a: α) : β →+ FinSupp α β S where
+  toFun := single a
+  resp_zero := by ext; simp [apply_single]
+  resp_add {f g} := by ext; simp only [apply_single, apply_add]; split <;> simp
+
+def applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) : FinSupp α β S →+ β where
+  toFun f := f a
+  resp_zero := rfl
+  resp_add := rfl
 
 end FinSupp
