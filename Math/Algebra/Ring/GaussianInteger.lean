@@ -1,4 +1,4 @@
-import Math.Data.Poly.Eval
+import Math.Data.Poly.Basic
 -- import Math.Algebra.Ring.Theory.Ideal.TwoSided.Quotient
 -- import Math.Algebra.Ring.Theory.Ideal.TwoSided.Lattice
 import Math.Algebra.Ring.Theory.RMod.Basic

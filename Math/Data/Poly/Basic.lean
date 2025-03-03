@@ -580,6 +580,9 @@ variable [IsLeftDistrib P] [IsRightDistrib P] [IsAddSemigroup P] [IsAddCommMagma
 @[simp] def coeffs_add (a b: P[X]) :
   (a + b).coeffs = a.coeffs + b.coeffs := rfl
 
+@[simp] def coeffs_smul (x: P) (a: P[X]) :
+  (x • a).coeffs = x • a.coeffs := rfl
+
 def coeffs_mul (a b: P[X]) :
   (a * b).coeffs = fun i => Fin.sum fun x: Fin (i + 1) => a.coeffs x.val * b.coeffs (i - x.val) := rfl
 
@@ -893,6 +896,11 @@ def mul_X_add_C_inj [SemiringOps P] [IsSemiring P] : Function.Injective₂ (fun 
   | succ m ih =>
     rw [npow_succ, ←mul_assoc, ←add_assoc]
     simp [ih]
+
+@[simp] def coeffs_sub [RingOps P] [IsRing P] (a b: P[X]) :
+  (a - b).coeffs = a.coeffs - b.coeffs := rfl
+@[simp] def coeffs_neg [RingOps P] [IsRing P] (a: P[X]) :
+  (-a).coeffs = -a.coeffs := rfl
 
 -- @[simp] def coeffs_X_npow_lt [Zero P] [One P]  : X.coeffs 0 = (0: P) := rfl
 -- @[simp] def coeffs_X_npow_eq [Zero P] [One P]  : X.coeffs 1 = (1: P) := rfl
