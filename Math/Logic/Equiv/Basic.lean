@@ -474,20 +474,25 @@ def Nat.not_between_succ (n m: Nat) : n < m -> m < n + 1 -> False := by
   replace g := Nat.le_of_lt_succ g
   exact Nat.lt_irrefl _ (Nat.lt_of_lt_of_le h g)
 
-def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
+def Fin.le_of_emebd (h: Fin n ↪ Fin m) : n ≤ m := by
   induction n generalizing m with
-  | zero =>
-    cases m
-    rfl
-    have := Equiv.empty_not_equiv_nonempty _ _ h
-    contradiction
+  | zero => apply Nat.zero_le
   | succ n ih =>
     cases m with
-    | zero =>
-      have := Equiv.empty_not_equiv_nonempty _ _ h.symm
-      contradiction
+    | zero => exact (h 0).elim0
     | succ m =>
-      replace h := (Equiv.fin_equiv_option n).symm.trans <| h.trans (Equiv.fin_equiv_option m)
-      rw [ih (Equiv.of_equiv_option_option h)]
+      apply Nat.succ_le_succ
+      apply ih
+      apply Embedding.of_option_embed_option
+      apply Equiv.congrEmbed _ _ h
+      apply Equiv.fin_equiv_option
+      apply Equiv.fin_equiv_option
+
+def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
+  apply Nat.le_antisymm
+  apply Fin.le_of_emebd
+  apply h.toEmbedding
+  apply Fin.le_of_emebd
+  apply h.symm.toEmbedding
 
 def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj
