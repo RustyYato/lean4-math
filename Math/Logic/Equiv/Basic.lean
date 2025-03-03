@@ -346,6 +346,20 @@ def fin_equiv_option (n: Nat) : Fin (n + 1) ≃ Option (Fin n) where
     replace h : x.val = n := h
     exact Nat.lt_irrefl _ (h ▸ x.isLt)
 
+def option_equiv_unit_sum (α: Type*) : Option α ≃ Unit ⊕ α where
+  toFun
+  | .some a => .inr a
+  | .none => .inl ()
+  invFun
+  | .inr x => .some x
+  | .inl () => .none
+  leftInv := by
+    intro x
+    cases x <;> rfl
+  rightInv := by
+    intro x
+    cases x <;> rfl
+
 def empty_not_equiv_nonempty (α β: Sort*) [IsEmpty α] [g: Nonempty β] : α ≃ β -> False := by
   intro h
   obtain ⟨b⟩ := g

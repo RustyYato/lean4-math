@@ -278,4 +278,14 @@ def nat_not_fintype : Fintype Nat -> False := by
       assumption
   exact Nat.not_lt_of_le (this (m + 1)) (Nat.lt_succ_self _)
 
+instance [Inhabited α] [Subsingleton α] : Fintype α :=
+  Fintype.ofList [default] (by simp) (by intro x; rw [Subsingleton.allEq x default]; apply List.Mem.head)
+
+instance [IsEmpty α] : Fintype α :=
+  Fintype.ofList [] (by simp) (by intro x; exact elim_empty x)
+
+def card_unit : card Unit = 1 := rfl
+
+def card_empty : card Empty = 0 := rfl
+
 end Fintype
