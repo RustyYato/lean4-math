@@ -323,4 +323,52 @@ def mem_zip (as: Finset α) (bs: Finset β) : ∀{x}, x ∈ zip as bs ↔ x.1 �
   assumption
   assumption
 
+def filterMap_embed (f: α -> Option β) (h: ∀⦃x y: α⦄, f x = f y -> f x = .none ∨ x = y) (a: Finset α) : Finset β where
+  val := a.val.filterMap f
+  property := by
+    apply Multiset.nodup_filterMap _ _ a.property
+    intro x y not_none g
+    rcases @h x y g with g | g
+    rw [g] at not_none; contradiction
+    assumption
+
+def flatMap_embed (f: α -> Finset β) (as: Finset α)
+  (no_overlap: (∀{x y}, x ∈ as -> y ∈ as -> ∀z, z ∈ f x -> z ∈ f y -> x = y)): Finset β where
+  val := as.val.flatMap (fun x => (f x).val)
+  property := by
+    cases as with | mk as nodup =>
+    induction as with
+    | nil => apply List.Pairwise.nil
+    | cons _ _ ih  =>
+      rw [Multiset.flatMap_cons]
+      apply Multiset.nodup_append
+      apply Subtype.property
+      refine ih ?_ ?_
+      exact nodup.tail
+      · intro x y hx hy
+        apply no_overlap (Multiset.mem_cons.mpr (.inr hx)) (Multiset.mem_cons.mpr (.inr hy))
+      · intro x h g
+        rename_i a as
+        simp [Multiset.mem_flatMap] at g
+        obtain ⟨a', mem, h'⟩ := g
+        cases no_overlap (Multiset.mem_cons.mpr (.inl rfl)) (Multiset.mem_cons.mpr (.inr mem)) x h h'
+        have := nodup.head
+        contradiction
+
+def mem_flatMap_embed {f: α -> Finset β} {as: Finset α}
+  {no_overlap: (∀{x y}, x ∈ as -> y ∈ as -> ∀z, z ∈ f x -> z ∈ f y -> x = y)} : ∀{x}, x ∈ as.flatMap_embed f no_overlap ↔ ∃a, a ∈ as ∧ x ∈ f a := by
+  intro x
+  apply Multiset.mem_flatMap
+
+end Finset
+
+namespace Finset
+
+def hext (a: Finset α) (b: Finset β) (h: α = β) : (∀x, x ∈ a ↔ h ▸ x ∈ b) -> HEq a b := by
+  intro g
+  subst h
+  apply heq_of_eq
+  ext
+  apply g
+
 end Finset

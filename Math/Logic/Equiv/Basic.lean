@@ -474,6 +474,46 @@ open Classical in noncomputable def bool_equiv_prop : Bool ≃ Prop where
     dsimp
     exact decide_eq_true_eq
 
+def bind_subtype (P Q: α -> Prop) : {x:Subtype P // Q x} ≃ {x: α // P x ∧ Q x} where
+  toFun x := ⟨x.val.val, x.val.property, x.property⟩
+  invFun x := ⟨⟨x.val, x.property.left⟩, x.property.right⟩
+  leftInv _ := by rfl
+  rightInv _ := by rfl
+
+def subtype_quot_equiv_quot_subtype (p₁ : α → Prop) {s₁ : Setoid α} {s₂ : Setoid (Subtype p₁)}
+    (p₂ : Quotient s₁ → Prop) (hp₂ : ∀ a, p₁ a ↔ p₂ (Quotient.mk _ a))
+    (h : ∀ x y : Subtype p₁, s₂.r x y ↔ s₁.r x y) : {x // p₂ x} ≃ Quotient s₂ where
+    toFun | ⟨val, hval⟩ => val.hrecOn (motive := fun x => p₂ x -> _) (by
+      intro x hx
+      apply Quotient.mk _ ⟨x, (hp₂ _).mpr hx⟩) (by
+        intro a b eqv
+        dsimp
+        apply Function.hfunext
+        rw [Quotient.sound eqv]
+        intro pa pb peq
+        apply heq_of_eq
+        apply Quotient.sound
+        simp [HasEquiv.Equiv]
+        apply (h _ _).mpr
+        assumption) hval
+    invFun := Quotient.lift (fun ⟨x, hx⟩ => ⟨Quotient.mk _ x, (hp₂ _).mp hx⟩) (by
+        intro a b eq
+        dsimp
+        congr  1
+        apply Quotient.sound
+        apply (h _ _).mp
+        assumption)
+    leftInv := by
+      intro ⟨x, hx⟩
+      dsimp
+      cases x using Quotient.ind
+      rfl
+    rightInv := by
+      intro x
+      dsimp
+      cases x using Quotient.ind
+      rfl
+
 end Equiv
 
 def Fin.embedNat : Fin n ↪ Nat :=

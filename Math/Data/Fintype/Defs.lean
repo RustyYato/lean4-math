@@ -36,6 +36,27 @@ def ofList (list: List α) (h: list.Nodup) (g: ∀x, x ∈ list) : Fintype α wh
   }
   complete := g
 
+def hrecOn {α: Type*}
+  {motive: Fintype α -> Sort*}
+  (mk: ∀all: List α, (h: all.Nodup) -> (g: ∀x, x ∈ all) -> motive (Fintype.ofList all h g))
+  (eq: ∀(as bs: List α) (has: as.Nodup) (hbs: bs.Nodup) (gas: ∀x, x ∈ as) (gbs: ∀x, x ∈ bs),
+    HEq (mk as has gas) (mk bs hbs gbs))
+  (h: Fintype α) : motive h :=
+  match h with
+  | .mk ⟨all, nodup⟩ complete => by
+    refine all.hrecOn (motive := fun all => (h: Multiset.Nodup all) -> (g: ∀x, Multiset.mem x all) -> motive ⟨⟨all, h⟩, g⟩) ?_ ?_ ?_ ?_
+    intro a h g
+    apply mk
+    intro as bs as_perm_bs
+    apply Function.hfunext
+    show List.Nodup as = List.Nodup bs
+    ext; exact List.Perm.nodup_iff as_perm_bs
+    intro as_nodup bs_nodup nodup_eq
+    apply Function.hfunext
+    rw [Quotient.sound as_perm_bs]
+    intro as_complete bs_complete  complete_eq
+    apply eq
+
 def recOnSubsingleton (α: Type*)
   {motive: Fintype α -> Sort*}
   [∀f, Subsingleton (motive f)]

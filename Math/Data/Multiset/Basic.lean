@@ -1131,6 +1131,50 @@ def mem_filter {f: α -> Bool} {as: Multiset α} : ∀{x}, x ∈ as.filter f ↔
   cases as
   apply List.mem_filter
 
+def filterMap (f: α -> Option β) : Multiset α -> Multiset β := by
+  apply Quotient.lift
+  case f =>
+    intro as
+    exact ⟦as.filterMap f⟧
+  case a =>
+    intro a b eq
+    apply Quotient.sound
+    induction eq with
+    | nil => apply List.Perm.nil
+    | cons x perm ih =>
+      rename_i as bs
+      unfold List.filterMap
+      split
+      assumption
+      apply List.Perm.cons
+      assumption
+    | trans _ _ ih₀ ih₁ => exact ih₀.trans ih₁
+    | swap =>
+      unfold List.filterMap
+      unfold List.filterMap
+      rename_i x y as
+      cases f x <;> cases f y <;> simp
+      apply List.Perm.refl
+      apply List.Perm.cons
+      apply List.Perm.refl
+      apply List.Perm.cons
+      apply List.Perm.refl
+      apply List.Perm.swap
+
+def mem_filterMap {f: α -> Option β} {as: Multiset α} : ∀{x}, x ∈ as.filterMap f ↔ ∃a ∈ as, x ∈ f a := by
+  intro x
+  cases as
+  apply List.mem_filterMap
+
+def nodup_filterMap (as: Multiset α) (f: α -> Option β) :
+  as.Nodup ->
+  (∀{x y}, (f x).isSome -> f x = f y -> x = y) ->
+  (as.filterMap f).Nodup := by
+  intro x
+  cases as
+  apply List.nodup_filterMap
+  assumption
+
 def map_cons {f: α -> β} {a: α} {as: Multiset α} : (a::ₘas).map f = f a::ₘas.map f := by
   cases as
   rfl

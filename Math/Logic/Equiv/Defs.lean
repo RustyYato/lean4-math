@@ -42,6 +42,9 @@ def inj (h: α ↪ b) : Function.Injective h := h.inj'
 @[ext]
 def ext (a b: α ↪ β) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
 
+@[simp]
+def mk_apply (f: α -> β) (h: Function.Injective f) (x: α) : Embedding.mk f h x = f x := by rfl
+
 end Embedding
 
 namespace Equiv
@@ -141,5 +144,8 @@ def eq_symm_of_coe_eq (h: α ≃ β) : h x = y -> x = h.symm y := by
   rw [←g, coe_symm]
 
 def symm_symm (h: α ≃ β) : h.symm.symm = h := _root_.rfl
+
+@[simp]
+def mk_apply (f: α -> β) (g: β -> α) (h: Function.IsLeftInverse f g) (h': Function.IsRightInverse f g) (x: α) : Equiv.mk f g h' h x = f x := by rfl
 
 end Equiv
