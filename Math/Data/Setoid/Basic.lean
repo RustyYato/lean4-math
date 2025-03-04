@@ -23,7 +23,7 @@ def trueSetoid (α: Sort _) : Setoid α where
   r := Relation.trivial
   iseqv := Relation.equiv _
 
-instance (priority := 900) (P: α -> Prop) [Setoid α] : Setoid (Subtype P) where
+def subtypeSetoid (P: α -> Prop) [Setoid α] : Setoid (Subtype P) where
   r a b := a.val ≈ b.val
   iseqv := {
     refl _ := Relation.refl _

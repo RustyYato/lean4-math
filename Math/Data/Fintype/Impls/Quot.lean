@@ -99,6 +99,7 @@ def fin_choice (f: ∀i, Quotient (S i)): Quotient (Setoid.forallSetoid α) := b
   let e := Equiv.subtype_quot_equiv_quot_subtype
     (fun l : List ι ↦ ∀ i, i ∈ l)
     (fun s : Multiset ι ↦ ∀ i, i ∈ s)
+    (s₂ := Setoid.subtypeSetoid _)
     (fun i ↦ Iff.rfl)
     (fun _ _ ↦ Iff.rfl) ⟨_, Finset.mem_univ⟩
   refine e.lift ?_ ?_
@@ -146,7 +147,7 @@ def mk_fin_choice_equiv_symm (f: ∀i, α i): fin_choice_equiv.symm (Quotient.mk
   rw [Equiv.symm_coe, mk_fin_choice_equiv]
 
 def fin_ilift
-  [S: ∀i, Setoid (α i)]
+  {S: ∀i, Setoid (α i)}
   (f: (∀i, α i) -> β) (resp: ∀a b: ∀i, α i, (∀i, a i ≈ b i) -> f a = f b)
   (q: ∀i, Quotient (S i)) : β := (fin_choice_equiv q).lift f resp
 
@@ -160,3 +161,25 @@ def mk_fin_ilift
   rfl
 
 end Quotient
+
+namespace Fintype
+
+def equiv_trunc_subtype  : Fintype α ≃ Trunc { list: List α // list.Nodup ∧ ∀x, x ∈ list } where
+  toFun f := by
+    apply f.recOnSubsingleton
+    intro all nodup complete
+    exact Trunc.mk {
+      val := all
+      property := ⟨nodup, complete⟩
+    }
+  invFun f := by
+    apply f.recOnSubsingleton (motive := fun _ => _)
+    intro ⟨all, ⟨nodup, complete⟩⟩
+    exact {
+      all := ⟨Multiset.mk all, nodup⟩
+      complete := complete
+    }
+  leftInv _ := by apply Subsingleton.allEq
+  rightInv _ := by apply Subsingleton.allEq
+
+end Fintype
