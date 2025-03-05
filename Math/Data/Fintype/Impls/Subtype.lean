@@ -1,7 +1,7 @@
 import Math.Data.Fintype.Defs
 import Math.Logic.Equiv.Basic
 
-instance {P: α -> Prop} [dec: DecidablePred P] [fa: Fintype α] : Fintype { x: α // P x } where
+instance instFintypeSubtype {P: α -> Prop} [dec: DecidablePred P] [fa: Fintype α] : Fintype { x: α // P x } where
   all := fa.all.filterMap_embed (fun x => if h:P x then .some ⟨_, h⟩ else .none) (by
     intro x y eq
     dsimp at eq

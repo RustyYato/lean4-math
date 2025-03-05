@@ -1436,4 +1436,12 @@ def replicate (n: Nat) (a: α) : Multiset α := ⟦List.replicate n a⟧
 
 @[simp] def map_singleton (f: α -> β) (a: α) : map f {a} = {f a} := rfl
 
+def length_append (as bs: Multiset α) : (as ++ bs).length = as.length + bs.length := by
+  cases as, bs
+  apply List.length_append
+
+def length_map (as: Multiset α) : (as.map f).length = as.length := by
+  cases as
+  apply List.length_map
+
 end Multiset

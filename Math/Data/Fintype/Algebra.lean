@@ -60,6 +60,18 @@ def prod_congr [One α] [Mul α] [IsSemigroup α] [IsCommMagma α]
   apply prod_eq_of_equiv _ _ .rfl
   assumption
 
+def sum_reindex [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (f: ι₁ -> α) (h: ι₀ ≃ ι₁) : ∑i, f i = ∑i, f (h i) := by
+  apply sum_eq_of_equiv _  _ h.symm
+  intro;
+  rw [Equiv.symm_coe]
+
+def prod_reindex [One α] [Mul α] [IsSemigroup α] [IsCommMagma α]
+  (f: ι₁ -> α) (h: ι₀ ≃ ι₁) : ∏i, f i = ∏i, f (h i) := by
+  apply prod_eq_of_equiv _  _ h.symm
+  intro;
+  rw [Equiv.symm_coe]
+
 def sum_empty [IsEmpty ι'] [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι' -> α) : ∑i, f i = 0 := rfl
 def sum_option [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: Option ι -> α) : ∑i, f i = f .none + ∑i, f (.some i) := by
   rw [sum]
@@ -72,3 +84,7 @@ def sum_option [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAdd
 def prod_empty [IsEmpty ι'] [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι' -> α) : ∏i, f i = 1 := rfl
 def prod_option [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: Option ι -> α) : ∏i, f i = f .none * ∏i, f (.some i) :=
   sum_option (α := AddOfMul α) f
+
+-- def sum_sum [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι₀ -> ι₁ -> α) :
+--   ∑i j, f i j = ∑i: ι₀ × ι₁, f i.1 i.2 := by
+--   sorry
