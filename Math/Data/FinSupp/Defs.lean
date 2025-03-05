@@ -12,7 +12,7 @@ class FiniteSupportSet (S: Type*) (α: outParam Type*) extends FinsetLike S α, 
   remove: α -> S -> S
   mem_remove: ∀(s: S) (x a: α), x ∈ s -> a ≠ x -> x ∈ remove a s
 
-structure FinSupp (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
+structure Finsupp (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
   toFun: α -> β
   spec: Trunc { set : S // ∀x, toFun x ≠ 0 -> x ∈ set }
 
@@ -71,11 +71,11 @@ instance : FiniteSupportSet Nat Nat where
   remove a s := s
   mem_remove _ _ _ h _ := h
 
-namespace FinSupp
+namespace Finsupp
 
 variable [FiniteSupportSet S α]
 
-instance [Zero β] : FunLike (FinSupp α β S) α β where
+instance [Zero β] : FunLike (Finsupp α β S) α β where
   coe f := f.toFun
   coe_inj := by
     intro a b eq; cases a ; cases b; congr
@@ -83,9 +83,9 @@ instance [Zero β] : FunLike (FinSupp α β S) α β where
     exact Subsingleton.helim rfl _ _
 
 @[ext]
-def ext [Zero β] (f g: FinSupp α β S) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+def ext [Zero β] (f g: Finsupp α β S) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 
-instance [Zero β] : Zero (FinSupp α β S) where
+instance [Zero β] : Zero (Finsupp α β S) where
   zero := {
     toFun _ := 0
     spec := Trunc.mk {
@@ -94,9 +94,9 @@ instance [Zero β] : Zero (FinSupp α β S) where
     }
   }
 
-@[simp] def apply_zero [Zero β] (x: α) : (0: FinSupp α β S) x = 0 := rfl
+@[simp] def apply_zero [Zero β] (x: α) : (0: Finsupp α β S) x = 0 := rfl
 
-def single [Zero β] [DecidableEq α] (a: α) (b: β) : FinSupp α β S where
+def single [Zero β] [DecidableEq α] (a: α) (b: β) : Finsupp α β S where
   toFun x := if x = a then b else 0
   spec := Trunc.mk {
     val := FiniteSupportSet.singleton a
@@ -110,7 +110,7 @@ def single [Zero β] [DecidableEq α] (a: α) (b: β) : FinSupp α β S where
 
 def apply_single [Zero β] [DecidableEq α] {a: α} {b: β} (x: α) : single (S := S) a b x = if x = a then b else 0 := rfl
 
-instance [Zero β] [Add β] [IsAddZeroClass β] : Add (FinSupp α β S) where
+instance [Zero β] [Add β] [IsAddZeroClass β] : Add (Finsupp α β S) where
   add f g := {
     toFun x := f x + g x
     spec := do
@@ -137,7 +137,7 @@ instance [Zero β] [Add β] [IsAddZeroClass β] : Add (FinSupp α β S) where
       }
   }
 
-instance [Zero β] [Neg β] [IsNegZeroClass β] : Neg (FinSupp α β S) where
+instance [Zero β] [Neg β] [IsNegZeroClass β] : Neg (Finsupp α β S) where
   neg f := {
     toFun x := -f x
     spec := do
@@ -155,7 +155,7 @@ instance [Zero β] [Neg β] [IsNegZeroClass β] : Neg (FinSupp α β S) where
       }
   }
 
-instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (FinSupp α β S) where
+instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (Finsupp α β S) where
   smul n f := {
     toFun x := n • f x
     spec := do
@@ -173,7 +173,7 @@ instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (FinSupp α β S) where
       }
   }
 
-instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (FinSupp α β S) where
+instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (Finsupp α β S) where
   sub f g := {
     toFun x := f x - g x
     spec := do
@@ -200,7 +200,7 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (FinSupp
       }
   }
 
-instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (FinSupp α β S) where
+instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (Finsupp α β S) where
   smul n f := {
     toFun x := n • f x
     spec := do
@@ -218,43 +218,43 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (Fi
       }
   }
 
-@[simp] def apply_add [Zero β] [Add β] [IsAddZeroClass β] (f g: FinSupp α β S) (x: α) : (f + g) x = f x + g x := rfl
+@[simp] def apply_add [Zero β] [Add β] [IsAddZeroClass β] (f g: Finsupp α β S) (x: α) : (f + g) x = f x + g x := rfl
 
-@[simp] def apply_neg [Zero β] [Neg β] [IsNegZeroClass β] (f: FinSupp α β S) (x: α) : (-f) x = -f x := rfl
+@[simp] def apply_neg [Zero β] [Neg β] [IsNegZeroClass β] (f: Finsupp α β S) (x: α) : (-f) x = -f x := rfl
 
-@[simp] def apply_nsmul [AddMonoidOps β] [IsAddMonoid β] (n: ℕ) (f: FinSupp α β S) (x: α) : (n • f) x = n • f x := rfl
+@[simp] def apply_nsmul [AddMonoidOps β] [IsAddMonoid β] (n: ℕ) (f: Finsupp α β S) (x: α) : (n • f) x = n • f x := rfl
 
-@[simp] def apply_sub [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] (f g: FinSupp α β S) (x: α) : (f - g) x = f x - g x := rfl
+@[simp] def apply_sub [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] (f g: Finsupp α β S) (x: α) : (f - g) x = f x - g x := rfl
 
-@[simp] def apply_zsmul [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] (n: ℤ) (f: FinSupp α β S) (x: α) : (n • f) x = n • f x := rfl
+@[simp] def apply_zsmul [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] (n: ℤ) (f: Finsupp α β S) (x: α) : (n • f) x = n • f x := rfl
 
-instance [Zero β] [Add β] [IsAddZeroClass β] : IsAddZeroClass (FinSupp α β S) where
+instance [Zero β] [Add β] [IsAddZeroClass β] : IsAddZeroClass (Finsupp α β S) where
   zero_add _ := by ext; simp
   add_zero _ := by ext; simp
 
-instance [Zero β] [Add β] [IsAddZeroClass β] [IsAddSemigroup β] : IsAddSemigroup (FinSupp α β S) where
+instance [Zero β] [Add β] [IsAddZeroClass β] [IsAddSemigroup β] : IsAddSemigroup (Finsupp α β S) where
   add_assoc a b c := by ext; simp [add_assoc]
 
-instance [AddMonoidOps β] [IsAddMonoid β] : IsAddMonoid (FinSupp α β S) where
+instance [AddMonoidOps β] [IsAddMonoid β] : IsAddMonoid (Finsupp α β S) where
   zero_nsmul a := by ext; simp
   succ_nsmul n a := by ext x; simp [succ_nsmul]
 
-instance [AddMonoidOps β] [IsAddMonoid β] : IsAddMonoid (FinSupp α β S) where
+instance [AddMonoidOps β] [IsAddMonoid β] : IsAddMonoid (Finsupp α β S) where
   zero_nsmul a := by ext; simp
   succ_nsmul n a := by ext x; simp [succ_nsmul]
 
-instance [Zero β] [Neg β] [IsNegZeroClass β] : IsNegZeroClass (FinSupp α β S) where
+instance [Zero β] [Neg β] [IsNegZeroClass β] : IsNegZeroClass (Finsupp α β S) where
   neg_zero := by ext x; simp
 
-instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : IsSubNegMonoid (FinSupp α β S) where
+instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : IsSubNegMonoid (Finsupp α β S) where
   sub_eq_add_neg f g := by ext; simp [sub_eq_add_neg]
   zsmul_ofNat n f := by ext; simp [zsmul_ofNat]
   zsmul_negSucc n f := by ext; simp [zsmul_negSucc]
 
-instance [AddGroupOps β] [IsAddGroup β] : IsAddGroup (FinSupp α β S) where
+instance [AddGroupOps β] [IsAddGroup β] : IsAddGroup (Finsupp α β S) where
   neg_add_cancel a := by ext; simp [neg_add_cancel]
 
-def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: FinSupp α β S) : FinSupp α β S where
+def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: Finsupp α β S) : Finsupp α β S where
   toFun x := if x = a then b else f x
   spec := do
     let ⟨fs, hf⟩←f.spec
@@ -272,7 +272,7 @@ def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: FinSupp α β S) : Fin
         assumption
     }
 
-def erase [DecidableEq α] [Zero β] (a: α) (f: FinSupp α β S) : FinSupp α β S where
+def erase [DecidableEq α] [Zero β] (a: α) (f: Finsupp α β S) : Finsupp α β S where
   toFun x := if x = a then 0 else f x
   spec := do
     let ⟨fs, hf⟩←f.spec
@@ -288,17 +288,17 @@ def erase [DecidableEq α] [Zero β] (a: α) (f: FinSupp α β S) : FinSupp α �
         symm; assumption
     }
 
-def singleHom [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (a: α) : β →+ FinSupp α β S where
+def singleHom [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (a: α) : β →+ Finsupp α β S where
   toFun := single a
   resp_zero := by ext; simp [apply_single]
   resp_add {f g} := by ext; simp only [apply_single, apply_add]; split <;> simp
 
-def applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) : FinSupp α β S →+ β where
+def applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) : Finsupp α β S →+ β where
   toFun f := f a
   resp_zero := rfl
   resp_add := rfl
 
-def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): FinSupp α β S where
+def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): Finsupp α β S where
   toFun x := if x ∈ s then f x else 0
   spec := Trunc.mk {
     val := s
@@ -313,7 +313,7 @@ def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): FinSupp α β 
 @[simp] def apply_on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β) (x: α) :
   on s f x = if x ∈ s then f x else 0 := rfl
 
-def support [Zero β] [dec: ∀x: β, Decidable (x = 0)] (f: FinSupp α β S) : Finset α :=
+def support [Zero β] [dec: ∀x: β, Decidable (x = 0)] (f: Finsupp α β S) : Finset α :=
   f.spec.lift (fun s => (s.val: Finset α).filter fun x => decide (f x ≠ 0)) <| by
     intro ⟨a, ha⟩ ⟨b, hb⟩
     dsimp
@@ -324,7 +324,7 @@ def support [Zero β] [dec: ∀x: β, Decidable (x = 0)] (f: FinSupp α β S) : 
     apply hb; assumption
     apply ha; assumption
 
-def mem_support [Zero β] [dec: ∀x: β, Decidable (x = 0)] {f: FinSupp α β S} :
+def mem_support [Zero β] [dec: ∀x: β, Decidable (x = 0)] {f: Finsupp α β S} :
   ∀{x}, x ∈ f.support ↔ f x ≠ 0 := by
   intro x
   cases f with | mk f h =>
@@ -346,7 +346,7 @@ def support_on [Zero β] (s: S) [DecidablePred (· ∈ s)] [dec: ∀x: β, Decid
   ext x
   simp [mem_support, Finset.mem_filter]
 
-def mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: FinSupp α β S): FinSupp α γ S where
+def mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: Finsupp α β S): Finsupp α γ S where
   toFun x  := g (f x)
   spec := f.spec.map fun ⟨s, h⟩ => {
     val := s
@@ -360,19 +360,19 @@ def mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f
       assumption
   }
 
-@[simp] def apply_mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: FinSupp α β S) (x: α) : mapRange g f x = g (f x) := rfl
+@[simp] def apply_mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: Finsupp α β S) (x: α) : mapRange g f x = g (f x) := rfl
 
 def mapRange_zero [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) :
-  mapRange g (0: FinSupp α β S) = 0 := by
+  mapRange g (0: Finsupp α β S) = 0 := by
   ext x; simp [resp_zero]
 
-def toFinset [DecidableEq α] [Zero β] (f: FinSupp α β S) : FinSupp α β (Finset α) where
+def toFinset [DecidableEq α] [Zero β] (f: Finsupp α β S) : Finsupp α β (Finset α) where
   toFun := f
   spec := f.spec.map fun ⟨s, h⟩ => {
     val := s
     property := h
   }
 
-@[simp] def toFinset_coe_eq [DecidableEq α] [Zero β] (f: FinSupp α β S) : (f.toFinset: α -> β) = f := rfl
+@[simp] def toFinset_coe_eq [DecidableEq α] [Zero β] (f: Finsupp α β S) : (f.toFinset: α -> β) = f := rfl
 
-end FinSupp
+end Finsupp

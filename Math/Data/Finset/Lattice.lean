@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Defs
+import Math.Data.Fintype.Basic
 import Math.Order.Lattice.Basic
 
 namespace Finset
