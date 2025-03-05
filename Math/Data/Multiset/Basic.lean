@@ -2,6 +2,7 @@ import Math.Type.Notation
 import Math.Data.List.Basic
 import Math.Function.Basic
 import Math.Relation.Basic
+import Math.Data.Quotient.Basic
 
 def Multiset (α: Type*) := Quotient (List.isSetoid α)
 
@@ -1247,36 +1248,170 @@ def fold (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ 
     | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
     | swap => simp [List.foldr, h]
 
--- theorem flatMap_flatMap {m : Multiset α} {n: Multiset β} {f : α → β -> Multiset γ} :
---   m.flatMap (fun a => n.flatMap (fun b => f a b)) = n.flatMap (fun b => m.flatMap (fun a => f a b)) := by
---   quot_ind (m n)
---   induction m generalizing n with
---   | nil =>
---     show ∅ = _
---     symm
---     show flatMap (fun _ => ∅) _ = ∅
---     induction n with
---     | nil => rfl
---     | cons n ns ih =>
---       simp [ih, flatMap_cons, ←mk_cons]
---       rfl
---   | cons m ms ih =>
---     cases n
---     simp [ih, flatMap_cons, ←mk_cons]
---     rfl
---     rw [←mk_cons, flatMap_cons]
---     rw [←mk_cons, flatMap_cons]
---     rw [flatMap_cons]
---     rw [flatMap_cons]
---     simp [append_assoc]
---     congr 1
---     rw [ih]
---     rw [←mk_cons, flatMap_cons]
---     rw [←append_assoc, append_comm (flatMap _ _), append_assoc]
---     congr 1
---     sorry
+nonrec def pmap {p : α → Prop} (f : ∀ a, p a → β) (s : Multiset α) : (∀ a ∈ s, p a) → Multiset β :=
+  Quot.recOn s (fun l H => Multiset.mk (List.pmap f l H)) fun l₁ l₂ (pp : l₁ ≈ l₂) =>
+    funext fun H₂ : ∀ a ∈ l₂, p a =>
+      have H₁ : ∀ a ∈ l₁, p a := fun a h => H₂ a (pp.subset h)
+      have : ∀ {s₂ e H}, @Eq.ndrec (Multiset α) (Multiset.mk l₁) (fun s => (∀ a ∈ s, p a) → Multiset β)
+          (fun _ => Multiset.mk (List.pmap f l₁ H₁)) s₂ e H = Multiset.mk (List.pmap f l₁ H₁) := by
+        intro s₂ e _; subst e; rfl
+      this.trans <| Quot.sound <| pp.pmap f
 
--- theorem bind_bind (m : Multiset α) (n : Multiset β) {f : α → β → Multiset γ} :
---     ((bind m) fun a => (bind n) fun b => f a b) = (bind n) fun b => (bind m) fun a => f a b :=
+def mem_pmap {p : α → Prop} {f : ∀ a, p a → β} {s H b} :
+    b ∈ pmap f s H ↔ ∃ (a : _) (h : a ∈ s), f a (H a h) = b :=
+  Quot.inductionOn s (fun _l _H => List.mem_pmap) H
+
+def attach (s: Multiset α) : Multiset { x // x ∈ s } :=
+  pmap Subtype.mk s (fun _ => id)
+
+def mem_attach (s : Multiset α) : ∀x, x ∈ s.attach :=
+  Quot.inductionOn s fun _l => List.mem_attach _
+
+def nodup_attach (s : Multiset α) (h: s.Nodup) : s.attach.Nodup := by
+  induction s using ind
+  apply (List.nodup_attach _).mp
+  assumption
+
+instance : @Std.Associative (Multiset α) (· ++ ·) := ⟨append_assoc⟩
+instance : @Std.Commutative (Multiset α) (· ++ ·) := ⟨append_comm⟩
+
+def mem_singleton {a: α} : ∀{x}, x ∈ ({a}: Multiset α) ↔ x = a := by
+  intro h
+  apply List.mem_singleton
+
+def powerset (s: Multiset α) : Multiset (Multiset α) := by
+  apply s.rec
+  case nil => exact Multiset.mk [∅]
+  case cons =>
+    intro a as ih
+    exact ih ++ ih.map (fun as => a::ₘas)
+  case swap =>
+    intro a₀ a₁ as ih
+    apply heq_of_eq
+    simp [map_append, map_map, Function.comp_def, cons_comm a₁]
+    ac_rfl
+
+def powerset_nil : powerset (α := α) ∅ = {∅} := rfl
+def powerset_cons (a: α) (as: Multiset α) : powerset (a::ₘas) = powerset as ++ (powerset as).map (a::ₘ·) := by
+  rw [powerset]
+  dsimp
+  rw [rec_cons]
+  rfl
+
+def mem_powerset {s: Multiset α} :
+  ∀{x}, x ∈ powerset s ↔ ∀(a: α) (n: Nat), x.MinCount a n -> s.MinCount a n := by
+  intro x
+  induction s generalizing x with
+  | nil =>
+    rw [powerset_nil, mem_singleton]
+    apply Iff.intro
+    rintro rfl
+    intros; assumption
+    intro h
+    induction x
+    rfl
+    rename_i a as _
+    have := h a 1 (.head .zero)
+    contradiction
+  | cons a as ih =>
+    rw [powerset_cons, mem_append]
+    apply Iff.intro
+    · intro h a₀ n hx
+      rcases h with h | h
+      · rw [ih] at h
+        apply MinCount.cons
+        apply h
+        assumption
+      · rw [mem_map] at h
+        obtain ⟨as', h, rfl⟩ := h
+        rw [ih] at h
+        cases hx using MinCount.casesCons with
+        | cons =>
+          apply MinCount.cons
+          apply h
+          assumption
+        | head =>
+          apply MinCount.head
+          apply h
+          assumption
+    · intro h
+      by_cases ha:a ∈ x
+      · rw [mem_spec] at ha
+        obtain ⟨x, rfl⟩ := ha
+        right
+        rw [mem_map]
+        refine ⟨_ ,?_, rfl⟩
+        apply ih.mpr
+        intro a n ha
+        cases h a n ha.cons using MinCount.casesCons
+        assumption
+        rename_i n ha'
+        exact (h a _ ha.head).pop_head
+      · left
+        apply ih.mpr
+        intro a₀ n ha
+        cases h _ _ ha using MinCount.casesCons
+        assumption
+        have := ha.reduce 1 (Nat.succ_le_of_lt (Nat.zero_lt_succ _))
+        have := MinCount.iff_mem.mp this
+        contradiction
+
+def nodup_powerset (s: Multiset α) (h: s.Nodup) : s.powerset.Nodup := by
+  induction s with
+  | nil => apply List.Nodup.singleton
+  | cons a as ih =>
+    rw [powerset_cons]
+    apply nodup_append
+    apply ih h.tail
+    apply nodup_map
+    apply ih h.tail
+    intro x y eq
+    dsimp at eq
+    cases x; cases y
+    apply Quotient.sound
+    exact (List.perm_cons _).mp (Quotient.exact eq)
+    intro s hs h
+    rw [mem_map] at h
+    obtain ⟨t, ht, rfl⟩ := h
+    rw [mem_powerset] at hs
+    have := hs a 1 (.head .zero)
+    rw [MinCount.iff_mem] at this
+    have := h.head
+    contradiction
+
+def mincount_le_one_iff_nodup {s: Multiset α} : s.Nodup ↔ ∀a n, s.MinCount a n -> n ≤ 1 := by
+  cases s
+  apply List.mincount_le_one_iff_nodup
+
+def pmap_append (s t: Multiset α)
+  {p: α -> Prop} (f: ∀a, p a → β) (h: ∀ a ∈ s ++ t, p a):
+  (s ++ t).pmap f h = s.pmap f (by intros _ g; apply h; simp [g]) ++ t.pmap f (by intros _ g; apply h; simp [g]) := by
+  cases s; cases t
+  show pmap f ⟦_⟧ _ = _
+  simp [pmap, Quot.recOn, Multiset.mk, Quotient.mk, Quot.rec]
+  rfl
+
+def Pairwise.pmap
+  {R: α -> α -> Prop}
+  [Relation.IsSymmetric R]
+  {l : Multiset α} (hl : Pairwise R l) {p : α → Prop} {f : ∀ a, p a → β}
+    (h : ∀ x ∈ l, p x) {S : β → β → Prop}
+  [Relation.IsSymmetric S]
+    (hS : ∀ ⦃x⦄ (hx : p x) ⦃y⦄ (hy : p y), R x y → S (f x hx) (f y hy)) :
+    Pairwise S (l.pmap f h) := by
+    cases l
+    apply List.Pairwise.pmap
+    assumption
+    assumption
+
+def nodup_pmap (s: Multiset α)
+  {p: α -> Prop} (f: ∀a, p a → β) (h: ∀ a ∈ s, p a) (finj: ∀a b pa pb, f a pa = f b pb -> a = b) :
+  s.Nodup -> (s.pmap f h).Nodup := by
+  intro h
+  apply Pairwise.pmap h
+  intros _ _ _ _ h' g
+  apply h'
+  apply finj
+  assumption
 
 end Multiset

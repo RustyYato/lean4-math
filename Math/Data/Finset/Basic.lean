@@ -371,4 +371,66 @@ def hext (a: Finset α) (b: Finset β) (h: α = β) : (∀x, x ∈ a ↔ h ▸ x
   ext
   apply g
 
+def Elem (f: Finset α) := {x // x ∈ f}
+
+instance {α: Type*} : CoeSort (Finset α) (Type _) := ⟨Elem⟩
+
+def attach (f: Finset α) : Finset f where
+  val := f.val.attach
+  property := Multiset.nodup_attach _ f.property
+
+def mem_attach (f: Finset α) : ∀x, x ∈ f.attach := Multiset.mem_attach _
+
+def insert_unique (f: Finset α) (x: α) (h: x ∉ f) : Finset α where
+  val := x::ₘf.val
+  property := by
+    induction f with | mk f nodup =>
+    cases f
+    apply List.nodup_cons.mpr
+    apply And.intro
+    assumption
+    assumption
+
+def powerset (as: Finset α): Finset (Finset α) where
+  val := by
+    apply (Multiset.powerset as.val).pmap (p := Multiset.Nodup)
+    apply Subtype.mk
+    intro x hx
+    apply Multiset.mincount_le_one_iff_nodup.mpr
+    intro a n h
+    exact Multiset.mincount_le_one_iff_nodup.mp as.property _ _
+      (Multiset.mem_powerset.mp hx a n h)
+  property := by
+    cases as with | mk as nodup =>
+    dsimp
+    apply Multiset.nodup_pmap
+    intros a b pa pb eq
+    cases eq; rfl
+    apply Multiset.nodup_powerset
+    assumption
+
+def mem_powerset {as: Finset α} : ∀{x}, x ∈ as.powerset ↔ x ⊆ as := by
+  intro x
+  cases as with | mk as asnodup =>
+  cases x with | mk x xnodup =>
+  apply Iff.trans Multiset.mem_pmap
+  apply Iff.intro
+  intro ⟨s, smem, h⟩; cases h
+  dsimp at smem
+  rw [Multiset.mem_powerset] at smem
+  replace smem := fun a => smem a 1
+  conv at smem => { intro; rw [Multiset.MinCount.iff_mem, Multiset.MinCount.iff_mem] }
+  assumption
+  intro h
+  refine ⟨x, ?_, rfl⟩
+  rw [Multiset.mem_powerset]
+  intro a n ha
+  have := Multiset.mincount_le_one_iff_nodup.mp xnodup _ _ ha
+  match n with
+  | 0 => apply Multiset.MinCount.zero
+  | 1 =>
+    rw [Multiset.MinCount.iff_mem] at *
+    apply h
+    assumption
+
 end Finset

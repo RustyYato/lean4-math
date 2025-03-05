@@ -47,3 +47,19 @@ def Quotient.mk_ilift
   dsimp
   apply Quotient.exact
   apply Quotient.out_spec _
+
+def Quot.hsound
+  {r: α -> α -> Prop}
+  {s: β -> β -> Prop}
+  (a: α)
+  (b: β)
+  (tyeq: α = β)
+  (releq: HEq r s) :
+  r a (tyeq ▸ b) ->
+  HEq (Quot.mk r a) (Quot.mk s b) := by
+  intro h
+  subst tyeq
+  subst releq
+  apply heq_of_eq
+  apply sound
+  assumption

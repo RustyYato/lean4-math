@@ -3,6 +3,9 @@ import Math.Data.Set.Basic
 import Math.Logic.Equiv.Basic
 import Math.Logic.IsEmpty
 
+import Math.Data.Fintype.Impls.Pi
+import Math.Data.Fintype.Impls.Subtype
+
 namespace Finset
 
 instance [Fintype α] [DecidableEq α] : SetComplement (Finset α) where

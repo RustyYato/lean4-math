@@ -46,7 +46,7 @@ def list_exists_rep
   {α: ι -> Sort*}
   [S: ∀i, Setoid (α i)]
   (f: ∀i, Quotient (S i)) :
-  ∀(list: List ι), ∃g: ∀i ∈ list, α i, (fun i (h: i ∈ list) => f i) = fun i (h: i ∈ list) => Quotient.mk _ (g i h) := by
+  ∀(list: List ι), ∃g: ∀i ∈ list, α i, (fun i (_: i ∈ list) => f i) = fun i (h: i ∈ list) => Quotient.mk _ (g i h) := by
   intro list
   induction list with
   | nil =>
