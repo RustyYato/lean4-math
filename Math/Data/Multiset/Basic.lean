@@ -300,6 +300,7 @@ def map_append (as bs: Multiset α) (f: α -> β) : (as ++ bs).map f = as.map f 
   cases as, bs
   simp
 
+@[simp]
 def map_map (ms: Multiset α) (f: α -> β) (g: β -> γ) : (ms.map f).map g = ms.map (g ∘ f) := by
   cases ms with | mk ms =>
   apply Quotient.sound
@@ -1413,5 +1414,24 @@ def nodup_pmap (s: Multiset α)
   apply h'
   apply finj
   assumption
+
+@[simp] def nil_append (as: Multiset α) : ∅ ++ as = as := by
+  cases as
+  rfl
+
+@[simp] def cons_append (a: α) (as bs: Multiset α) : a::ₘas ++ bs = a::ₘ(as ++ bs) := by
+  cases as, bs
+  rfl
+
+@[simp] def nil_map (f: α -> β) : map f ∅ = ∅ := rfl
+
+@[simp] def cons_map (f: α -> β) (a: α) (as: Multiset α) : (a::ₘas).map f = f a::ₘ(as.map f) := by
+  cases as
+  rfl
+
+def replicate (n: Nat) (a: α) : Multiset α := ⟦List.replicate n a⟧
+
+@[simp] def replicate_zero : replicate 0 a = ∅ := rfl
+@[simp] def replicate_cons : replicate (n+1) a = a::ₘreplicate n a := rfl
 
 end Multiset
