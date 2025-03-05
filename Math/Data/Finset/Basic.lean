@@ -204,6 +204,19 @@ def map_emb_inj (f: α ↪ β) : Function.Injective (map_emb f) := by
   cases f.inj eq
   assumption
 
+def union_disjoint (as bs: Finset α) (h: ∀x, x ∈ as -> x ∈ bs -> False) : Finset α where
+  val := as.val ++ bs.val
+  property := by
+    apply Multiset.nodup_append
+    exact as.property
+    exact bs.property
+    apply h
+
+def mem_union_disjoint {as bs: Finset α} {h: ∀x, x ∈ as -> x ∈ bs -> False} :
+  ∀{x}, x ∈ as.union_disjoint bs h ↔ x ∈ as ∨ x ∈ bs := by
+  intro x
+  apply Multiset.mem_append
+
 def flatMap (f: α -> Finset β) (as: Finset α) : Finset β :=
   .ofMultiset <| as.val.flatMap (fun x => (f x).val)
 
@@ -432,5 +445,7 @@ def mem_powerset {as: Finset α} : ∀{x}, x ∈ as.powerset ↔ x ⊆ as := by
     rw [Multiset.MinCount.iff_mem] at *
     apply h
     assumption
+
+@[simp] def singleton_val (x: α) : (singleton (β := Finset α) x).val = {x} := rfl
 
 end Finset

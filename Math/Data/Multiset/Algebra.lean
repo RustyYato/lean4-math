@@ -135,4 +135,9 @@ def sum_replicate [AddMonoidOps α] [IsAddCommMagma α] [IsAddMonoid α] (n: ℕ
 def prod_replicate [MonoidOps α] [IsCommMagma α] [IsMonoid α] (n: ℕ) (a: α) :
   prod (replicate n a) = a ^ n := sum_replicate (α := AddOfMul α) _ _
 
+@[simp] def sum_singleton [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α] [IsAddZeroClass α] (a: α) : sum {a} = a := by
+  simp [singleton]
+@[simp] def prod_singleton [One α] [Mul α] [IsCommMagma α] [IsSemigroup α] [IsMulOneClass α] (a: α) : prod {a} = a := by
+  simp [singleton]
+
 end Multiset

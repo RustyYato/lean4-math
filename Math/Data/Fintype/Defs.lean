@@ -8,7 +8,7 @@ class Fintype (α: Type*) where
 namespace Finset
 
 def univ (α: Type*) [Fintype α] : Finset α := Fintype.all
-def mem_univ {α: Type*} [Fintype α] : ∀x, x ∈ univ α := Fintype.complete
+@[simp] def mem_univ {α: Type*} [Fintype α] : ∀x, x ∈ univ α := Fintype.complete
 
 end Finset
 
@@ -138,14 +138,15 @@ def equivFin (α: Type*) [DecidableEq α] [h: Fintype α] : Trunc (α ≃ Fin (c
       assumption
   }
 
-def ofEquiv' (h: α ≃ β) [f: Fintype α] : Fintype β :=
-  f.map fun all nodup complete => Fintype.ofList (all.map h) (List.nodup_map _ _ h.inj nodup) (by
+def ofEquiv' (h: α ≃ β) [f: Fintype α] : Fintype β where
+  all := f.all.map_emb h.toEmbedding
+  complete := by
     intro x
-    rw [List.mem_map]
+    rw [Finset.mem_map_emb]
     exists h.symm x
     apply And.intro
-    apply complete
-    rw [Equiv.symm_coe])
+    apply Fintype.complete
+    apply Equiv.symm_coe
 
 def ofEquiv (h: α ≃ β) [Fintype β] : Fintype α := ofEquiv' h.symm
 

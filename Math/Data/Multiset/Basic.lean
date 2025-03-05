@@ -1434,4 +1434,6 @@ def replicate (n: Nat) (a: α) : Multiset α := ⟦List.replicate n a⟧
 @[simp] def replicate_zero : replicate 0 a = ∅ := rfl
 @[simp] def replicate_cons : replicate (n+1) a = a::ₘreplicate n a := rfl
 
+@[simp] def map_singleton (f: α -> β) (a: α) : map f {a} = {f a} := rfl
+
 end Multiset
