@@ -132,3 +132,93 @@ def AddSubgroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddG
   mem_add' := by
     intro a b ha hb
     rw [Set.mem_preimage, resp_add, ha, hb, zero_add]; rfl
+
+def Subgroup.embed (S: Subgroup α) : S ↪* α where
+  toFun x := x.val
+  inj' := Subtype.val_inj
+  resp_one := rfl
+  resp_mul := rfl
+
+def AddSubgroup.embed (S: AddSubgroup α) : S ↪+ α where
+  toFun x := x.val
+  inj' := Subtype.val_inj
+  resp_zero := rfl
+  resp_add := rfl
+
+def Subgroup.of_hom [GroupOps β] [IsGroup β] (h: α →* β) : Subgroup β where
+  carrier := Set.range h
+  mem_one' := by
+    apply Set.mem_range.mpr
+    exists 1; rw [resp_one]
+  mem_mul' := by
+    rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
+    apply Set.mem_range.mpr
+    exists a * b
+    rw [resp_mul]
+  mem_inv' := by
+    rintro _ ⟨a, rfl⟩
+    apply Set.mem_range.mpr
+    exists a⁻¹
+    rw [resp_inv]
+
+def AddSubgroup.of_hom [AddGroupOps β] [IsAddGroup β] (h: α →+ β) : AddSubgroup β where
+  carrier := Set.range h
+  mem_zero' := by
+    apply Set.mem_range.mpr
+    exists 0; rw [resp_zero]
+  mem_add' := by
+    rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
+    apply Set.mem_range.mpr
+    exists a + b
+    rw [resp_add]
+  mem_neg' := by
+    rintro _ ⟨a, rfl⟩
+    apply Set.mem_range.mpr
+    exists -a
+    rw [resp_neg]
+
+noncomputable
+def Subgroup.equiv_of_embed [GroupOps β] [IsGroup β] (h: α ↪* β) : α ≃* Subgroup.of_hom (toGroupHom h) where
+  toFun a := ⟨h a, Set.mem_range'⟩
+  invFun x := Classical.choose x.property
+  leftInv := by
+    intro x
+    dsimp
+    apply h.inj
+    have : h x ∈ Set.range h := Set.mem_range'
+    exact (Classical.choose_spec this).symm
+  rightInv := by
+    intro x
+    dsimp
+    congr
+    exact (Classical.choose_spec x.property).symm
+  resp_one := by
+    dsimp; congr
+    rw [resp_one]
+  resp_mul := by
+    intro a b
+    dsimp; congr
+    rw [resp_mul]
+
+noncomputable
+def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) : α ≃+ AddSubgroup.of_hom (toAddGroupHom h) where
+  toFun a := ⟨h a, Set.mem_range'⟩
+  invFun x := Classical.choose x.property
+  leftInv := by
+    intro x
+    dsimp
+    apply h.inj
+    have : h x ∈ Set.range h := Set.mem_range'
+    exact (Classical.choose_spec this).symm
+  rightInv := by
+    intro x
+    dsimp
+    congr
+    exact (Classical.choose_spec x.property).symm
+  resp_zero := by
+    dsimp; congr
+    rw [resp_zero]
+  resp_add := by
+    intro a b
+    dsimp; congr
+    rw [resp_add]
