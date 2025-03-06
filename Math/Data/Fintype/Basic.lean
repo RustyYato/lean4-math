@@ -90,6 +90,17 @@ instance [fa: Fintype α] [fb: Fintype β] : Fintype (α × β) where
     intro (a, b)
     simp [Finset.mem_flatMap_embed, Finset.mem_map_emb]
 
+instance {β: α -> Type*} [fa: Fintype α] [fb: ∀x, Fintype (β x)] : Fintype (Σx, β x) where
+  all :=
+    (Finset.univ α).flatMap_embed (fun a =>
+    (Finset.univ (β a)).map_emb ⟨fun b => ⟨a, b⟩, by intro a b eq; cases eq; rfl⟩) <| by
+    intro x y hx hy ⟨a, b⟩ ha hb
+    simp [Finset.mem_map_emb] at ha hb
+    rw [ha.left, hb.left]
+  complete := by
+    intro ⟨a, b⟩
+    simp [Finset.mem_flatMap_embed, Finset.mem_map_emb]
+
 instance [fa: Fintype α] : Fintype (Option α) :=
   ofEquiv (Equiv.option_equiv_unit_sum α)
 

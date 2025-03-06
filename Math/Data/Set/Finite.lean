@@ -45,13 +45,13 @@ instance [ha: Set.IsFinite a] [hb: Set.IsFinite b] : Set.IsFinite (a ∪ b) := b
   have := Fintype.ofIsFinite a
   have := Fintype.ofIsFinite b
   unfold Set.Elem at *
-  have : Fintype ((a ∪ b).Elem) := inferInstanceAs (Fintype (Subtype fun x => x ∈ a ∨ x ∈ b))
+  have : Fintype ((a ∪ b).Elem) := Fintype.subtypeOr
   infer_instance
 
 instance [ha: Set.IsFinite a] : Set.IsFinite (a ∩ b) := by
   have := Fintype.ofIsFinite a
   unfold Set.Elem at *
-  have : Fintype ((a ∩ b).Elem) := inferInstanceAs (Fintype (Subtype fun x => x ∈ a ∧ x ∈ b))
+  have : Fintype ((a ∩ b).Elem) := Fintype.subtypeAnd
   infer_instance
 
 instance [hb: Set.IsFinite b] : Set.IsFinite (a ∩ b) := by

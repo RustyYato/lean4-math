@@ -98,14 +98,14 @@ def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=
 
 def IsFinite.card_eq_card (α: Type _) [IsFinite α] :
   IsFinite.card α = @Fintype.card α (Fintype.ofIsFinite α) := by
-  rw [Fintype.ofIsFinite, Fintype.eqCardOfEquiv (IsFinite.toEquiv α),
-    Fin.card_eq]
-  infer_instance
+  let inst := Fintype.ofIsFinite α
+  rw [Fintype.ofIsFinite, Fintype.card_eq_of_equiv (IsFinite.toEquiv α),
+    Fintype.card_fin]
 
 open Classical in
 instance [f: Fintype α] : IsFinite α := by
+  induction Fintype.equivFin α with | mk h =>
   exists Fintype.card α
-  apply Fintype.equivFin
 
 instance {α β: Type*} [IsFinite α] [IsFinite β] : IsFinite (α ⊕ β) := by
   have := Fintype.ofIsFinite α
@@ -266,4 +266,4 @@ instance [IsFinite α] : IsFinite (Option α) := by
 def Option.card'_eq [IsFinite α] :
   IsFinite.card (Option α) = IsFinite.card α + 1 := by
   have := Fintype.ofIsFinite α
-  rw [IsFinite.card_eq_card, IsFinite.card_eq_card, card_eq']
+  rw [IsFinite.card_eq_card, IsFinite.card_eq_card, Fintype.card_option]
