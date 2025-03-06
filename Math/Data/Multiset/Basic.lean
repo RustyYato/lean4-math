@@ -1523,4 +1523,7 @@ def removeAl_append_replicate [DecidableEq α] (x: α) (as: Multiset α) :
     apply length_removeAll_le
     simp [ih]
 
+def zip (as: Multiset α) (bs: Multiset β) : Multiset (α × β) :=
+  as.flatMap fun a => bs.map fun b => (a, b)
+
 end Multiset

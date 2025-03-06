@@ -163,16 +163,52 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAss
     ext a₀ b₀ a₁
     rw [single_add, add_mul]
 
+def sum_toFinsupp
+  [FiniteSupportSet S ι]
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀ h₁} : (f.sum g₀ h₀).toFinsupp =
+    f.sum (fun i a => (g₀ i a).toFinsupp) h₁ := sorry
+
 instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β]
   [IsNonUnitalNonAssocSemiring β] [IsSemigroup β] : IsSemigroup (AddMonoidAlgebra α β S) where
   mul_assoc := by
     intro a b c
     simp [mul_def, mul']
     classical
-    simp [Finsupp.sum_eq_support_sum]
-    generalize a.toFinsupp.support.val = asupp
-    generalize b.toFinsupp.support.val = bsupp
+
+
+    rw [sum_toFinsupp]
+    rw [Finsupp.sum_sum_index (f := a.toFinsupp)]
+    -- simp [Multiset.sum_sum_reindex]
+
+    -- generalize a.toFinsupp.support.val = asupp
+    -- generalize b.toFinsupp.support.val = bsupp
+
 
     sorry
 
 end AddMonoidAlgebra
+
+/-
+
+(Multiset.map
+      (fun i =>
+        (Multiset.map
+            (fun i_1 =>
+              single (i + i_1)
+                ((Multiset.map
+                          (fun i =>
+                            (Multiset.map (fun i_2 => single (i + i_2) (a.toFinsupp i * b.toFinsupp i_2))
+                                b.toFinsupp.support.val).sum)
+                          a.toFinsupp.support.val).sum.toFinsupp
+                    i *
+                  c.toFinsupp i_1))
+            c.toFinsupp.support.val).sum)
+      (Multiset.map
+                (fun i =>
+                  (Multiset.map (fun i_1 => single (i + i_1) (a.toFinsupp i * b.toFinsupp i_1))
+                      b.toFinsupp.support.val).sum)
+                a.toFinsupp.support.val).sum.toFinsupp.support.val).sum
+
+-/

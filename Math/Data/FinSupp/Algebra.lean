@@ -129,4 +129,22 @@ def add_sum'
   simp [sum_eq_support_sum]
   apply Multiset.sum_pairwise
 
+def sum_sum_index
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  [AddMonoidOps γ₁] [IsAddCommMagma γ₁] [IsAddMonoid γ₁]
+  (f: Finsupp ι α S) (g₀: ι -> α -> Finsupp ι γ S) (g₁: ι -> γ -> γ₁)
+  {h₀: ∀i, g₀ i 0 = 0}
+  {h₁: ∀i, g₁ i 0 = 0}:
+  (f.sum g₀ (by intro i eq; rw [eq, h₀])).sum g₁ (by
+    intro i eq; rw [eq]
+    apply h₁) = f.sum (fun a b => (g₀ a b).sum g₁ (by intro i eq; rw [eq, h₁])) (by
+    intro i eq; rw [eq]
+    dsimp
+    rw [sum_eq_zero]
+    intro i
+    rw [h₀]
+    apply h₁) := by
+    sorry
+
 end Finsupp

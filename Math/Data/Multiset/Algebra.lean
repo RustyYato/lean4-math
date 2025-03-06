@@ -148,4 +148,9 @@ def sum_pairwise [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α] [IsA
     simp [←ih]
     ac_rfl
 
+def sum_sum_reindex [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α]
+  (as: Multiset ι) (f: ι -> Multiset α) :
+  (as.map (fun i => (f i).sum)).sum =
+  (as.flatMap f).sum := sorry
+
 end Multiset

@@ -254,6 +254,9 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : IsSubNegMono
 instance [AddGroupOps β] [IsAddGroup β] : IsAddGroup (Finsupp α β S) where
   neg_add_cancel a := by ext; simp [neg_add_cancel]
 
+instance [Zero β] [Add β] [IsAddZeroClass β] [IsAddCommMagma β] : IsAddCommMagma (Finsupp α β S) where
+  add_comm a b := by ext; apply add_comm
+
 def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: Finsupp α β S) : Finsupp α β S where
   toFun x := if x = a then b else f x
   spec := do
