@@ -50,6 +50,7 @@ def single_zero [DecidableEq α] [Zero β] (a: α) : single (S := S) a (0: β) =
   rw [apply_single]
   split <;> rfl
 
+def add_def [Zero β] [Add β] [IsAddZeroClass β] (f g: AddMonoidAlgebra α β S) : f + g = ⟨f.toFinsupp + g.toFinsupp⟩ := rfl
 @[simp] def apply_add [Zero β] [Add β] [IsAddZeroClass β] (f g: AddMonoidAlgebra α β S) (x: α) : (f + g) x = f x + g x := rfl
 
 @[simp] def apply_neg [Zero β] [Neg β] [IsNegZeroClass β] (f: AddMonoidAlgebra α β S) (x: α) : (-f) x = -f x := rfl
@@ -89,8 +90,8 @@ instance [AddGroupOps β] [IsAddGroup β] : IsAddGroup (AddMonoidAlgebra α β S
 instance [Zero β] [Add β] [IsAddZeroClass β] [IsAddCommMagma β] : IsAddCommMagma (AddMonoidAlgebra α β S) where
   add_comm a b := by ext; apply add_comm
 
-instance [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β] : Mul (AddMonoidAlgebra α β S) where
-  mul f g :=
+def mul' [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]
+  (f g: AddMonoidAlgebra α β S) : AddMonoidAlgebra α β S :=
     f.toFinsupp.sum
       (fun i a =>
         g.toFinsupp.sum
@@ -101,5 +102,29 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddComm
         simp [eq]
         rw [Finsupp.sum_eq_zero]
         intro; rfl)
+
+instance [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β] : Mul (AddMonoidAlgebra α β S) where
+  mul := mul'
+
+def mul_def [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]
+  (f g: AddMonoidAlgebra α β S) : f * g = mul' f g := rfl
+
+instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAssocSemiring β] : IsNonUnitalNonAssocSemiring (AddMonoidAlgebra α β S) where
+  zero_mul := by
+    intro a; ext; rw [mul_def, mul']
+    have : toFinsupp 0 = (0: Finsupp α β S) := rfl
+    conv => { lhs; arg 1; arg 1; rw [this] }
+    rw [Finsupp.zero_sum]
+  mul_zero := by
+    intro a; rw [mul_def, mul']
+    rw [Finsupp.sum_eq_zero]
+    intro i
+    apply Finsupp.zero_sum
+  left_distrib := by
+    intro ⟨k⟩ ⟨a⟩ ⟨b⟩
+    simp [mul_def, mul', add_def]
+
+    sorry
+  right_distrib := sorry
 
 end AddMonoidAlgebra

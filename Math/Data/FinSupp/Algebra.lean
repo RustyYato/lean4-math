@@ -51,4 +51,32 @@ def sum_eq_zero
   obtain ⟨i, _, rfl⟩ := h
   rw [eq]
 
+def zero_sum
+  [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  (g: ι -> α -> γ) (eq: ∀i, (0: Finsupp ι α S) i = 0 -> g i ((0: Finsupp ι α S) i) = 0) : sum 0 g eq = 0 := by
+  rw [sum_eq_zero]
+  intro i
+  rw [eq]
+  rfl
+
+def coe_def [Zero α] (f: Finsupp ι α S) (i: ι) : f i = f.toFun i := rfl
+
+def add_sum
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  (f₀ f₁: Finsupp ι α S) (g: ι -> α -> γ)
+  (resp_add: ∀i a b, g i (a + b) = g i a + g i b)
+  (eq₀: ∀i, f₀ i = 0 -> g i (f₀ i) = 0)
+  (eq₁: ∀i, f₁ i = 0 -> g i (f₁ i) = 0)
+  (eq₂: ∀i, f₀ i + f₁ i = 0 -> g i (f₀ i + f₁ i) = 0) :
+  sum (f₀ + f₁) g eq₂ = sum f₀ g eq₀ + sum f₁ g eq₁ := by
+  cases f₀ with | mk f₀ spec₀ =>
+  cases f₁ with | mk f₁ spec₁ =>
+  induction spec₀ with | mk spec₀ =>
+  induction spec₁ with | mk spec₁ =>
+  show Multiset.sum _ = Multiset.sum _ + Multiset.sum _
+  rw [←Multiset.sum_append]
+  simp; simp [coe_def]
+  sorry
+
 end Finsupp
