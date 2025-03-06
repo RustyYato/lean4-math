@@ -140,23 +140,31 @@ def conj [GroupOps α] [IsGroup α] (x: α) : α ≃* α where
 def Trivial : Group Unit := Group.ofAxiomsLeft () (fun _ _ => ()) (fun _ => ())
     (fun _ => rfl) (fun _ => rfl) (fun _ _ _ => rfl)
 
-def toTrival (G: Group α) : G →* Trivial where
+def toTrival (G: Type*) [GroupOps G] [IsGroup G] : G →* Trivial where
   toFun _ := 1
   resp_one := rfl
   resp_mul := rfl
 
-def ofTrival (G: Group α) : Trivial ↪* G where
+def ofTrival (G: Type*) [GroupOps G] [IsGroup G] : Trivial ↪* G where
   toFun _ := 1
   inj' _ _ _ := rfl
   resp_one := rfl
   resp_mul { _ _ } := (mul_one 1).symm
 
-instance (G: Group α) : Subsingleton (G →* Trivial) where
+def eqv_trivial (G: Type*) [GroupOps G] [IsGroup G] [Subsingleton G] : G ≃* Trivial where
+  toFun _ := 1
+  invFun _ := 1
+  leftInv _ := Subsingleton.allEq _ _
+  rightInv _ := rfl
+  resp_one := rfl
+  resp_mul := rfl
+
+instance (G: Type*) [GroupOps G] [IsGroup G] : Subsingleton (G →* Trivial) where
   allEq a b := by
     ext x
     rfl
 
-instance (G: Group α) : Subsingleton (Trivial →* G) where
+instance (G: Type*) [GroupOps G] [IsGroup G] : Subsingleton (Trivial →* G) where
   allEq a b := by
     ext x; show a 1 = b 1
     rw [resp_one, resp_one]

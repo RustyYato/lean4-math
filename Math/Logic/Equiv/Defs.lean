@@ -100,6 +100,8 @@ def trans_assoc {h₀: α₀ ≃ α₁} {h₁: α₁ ≃  α₂} {h₂: α₂ �
 def coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
 def symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
 
+def apply_trans {α β γ: Sort*} (h: α ≃ β) (g: β ≃ γ) (x: α) : (h.trans g) x = g (h x) := by rfl
+
 def trans_symm (h: α ≃ β) : h.trans h.symm = .rfl := by
   ext x
   show h.symm (h x) = x

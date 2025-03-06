@@ -430,6 +430,20 @@ def symm_set_spec (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x
 def swap_spec (a b: α) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)]:
   Equiv.swap a b a = b := Equiv.set_spec _ _ _
 
+def swap_comm [DecidableEq α] (a b: α) : swap a b = swap b a := by
+  ext x
+  unfold swap set
+  simp
+  split <;> split
+  subst a b; rfl
+  subst a; rw [if_pos]; rfl
+  rfl
+  rw [if_pos]; rfl
+  assumption
+  rw [if_neg, if_neg]
+  assumption
+  assumption
+
 private instance : ∀(x: Option α), Decidable (x = .none)
 | .none => .isTrue _root_.rfl
 | .some _ => .isFalse Option.noConfusion
