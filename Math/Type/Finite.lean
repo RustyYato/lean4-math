@@ -168,8 +168,8 @@ instance {α: Sort*} {β: Sort*} [IsFinite α]  [IsFinite β] : IsFinite (α ×'
   apply (Equiv.plift _).symm
   apply (Equiv.prod_equiv_pprod _ _).symm
 
-open Classical in
 instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : IsFinite (∀x, β x) := by
+  classical
   have := Fintype.ofIsFinite (PLift α)
   have := fun x: PLift α => Fintype.ofIsFinite (PLift (β x.down))
   apply IsFinite.ofEquiv' (∀x: PLift α, PLift (β x.down))
@@ -184,8 +184,9 @@ instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : 
   case rightInv => intro _; rfl
 
 instance {α: Sort*} {β: Sort*} [IsFinite α] [IsFinite β] : IsFinite (α -> β) := inferInstance
-open Classical
+
 instance {α: Sort*} {P: α -> Prop} [IsFinite α] : IsFinite (Subtype P) := by
+  classical
   have := Fintype.ofIsFinite (PLift α)
   apply IsFinite.ofEquiv' (Subtype fun x: PLift α => P x.down)
   apply Equiv.congrSubtype _ _
@@ -228,17 +229,21 @@ instance {α: Sort*} {P Q: α -> Prop} [hp: IsFinite (Subtype P)] [hq: IsFinite 
     cases qeqv.inj eq
     rfl
 
-instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
-  apply IsFinite.ofEquiv' (Subtype fun x: Subtype P => Q x.val)
-  apply Equiv.mk
-  case toFun =>
-    intro ⟨x, _, _⟩
-    refine ⟨⟨x, ?_⟩, ?_⟩ <;> assumption
-  case invFun =>
-    intro ⟨⟨x, _⟩, _⟩
-    refine ⟨x, ?_, ?_⟩ <;> assumption
-  case leftInv => intro ⟨x, _, _⟩; rfl
-  case rightInv => intro ⟨⟨x, _⟩, _⟩; rfl
+instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
+  classical
+  apply IsFinite.ofEmbed (Subtype P)
+  refine ⟨?_, ?_⟩
+  intro ⟨x, h, g⟩
+  exact ⟨x, h⟩
+  intro ⟨_, _, _⟩ ⟨_, _, _⟩ eq; cases eq; rfl
+
+instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
+  classical
+  apply IsFinite.ofEmbed (Subtype Q)
+  refine ⟨?_, ?_⟩
+  intro ⟨x, h, g⟩
+  exact ⟨x, g⟩
+  intro ⟨_, _, _⟩ ⟨_, _, _⟩ eq; cases eq; rfl
 
 instance [IsEmpty α] : IsFinite α := by
   apply IsFinite.intro 0
