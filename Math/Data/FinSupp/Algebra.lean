@@ -61,6 +61,43 @@ def zero_sum
 
 def coe_def [Zero α] (f: Finsupp ι α S) (i: ι) : f i = f.toFun i := rfl
 
+def sum_eq_support_sum
+   [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0):
+   f.sum g resp = (f.support.val.map (fun i => g i (f i))).sum := by
+   cases f with | mk f spec =>
+   induction spec with | mk spec =>
+   unfold sum
+   show Multiset.sum _ = _
+   dsimp [DFunLike.coe]
+   obtain ⟨rest, disjoint, eq⟩ := Finsupp.eq_support_union ⟨f, Trunc.mk spec⟩ spec.val spec.property
+   rw [eq]
+   rw [Finset.union_disjoint,Multiset.map_append, Multiset.sum_append]
+   conv => { rhs; rw [←add_zero (Multiset.sum _)] }
+   congr
+   rw [Multiset.sum_eq_zero]
+   intro x h
+   rw [Multiset.mem_map] at h
+   obtain ⟨i, mem_rest, rfl⟩ := h
+   have : f i = 0 := Classical.not_not.mp <| Iff.not_iff_not (Finsupp.mem_support (f := ⟨f, Trunc.mk spec⟩) (x := i)) |>.mp (disjoint _ · mem_rest)
+   exact resp _ this
+
+def sum_eq_support_sup_sum
+   [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0)
+   (s: Finset ι) (h: f.support ⊆ s):
+   f.sum g resp = (s.val.map (fun i => g i (f i))).sum := by
+   rw [sum_eq_support_sum]
+   classical
+   obtain ⟨s, hs, rfl⟩ := Finset.exists_union_eq_of_sub h
+   rw [Finset.union_disjoint, Multiset.map_append, Multiset.sum_append]
+   conv => { lhs; rw [←add_zero (Multiset.sum _)] }
+   congr
+   rw [Multiset.sum_eq_zero]
+   intro x hx
+   rw [Multiset.mem_map] at hx
+   obtain ⟨i, mem, rfl⟩ := hx
+   apply resp
+   exact Classical.not_not.mp ((Iff.not_iff_not f.mem_support).mp (hs i · mem))
+
 def add_sum
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
@@ -70,13 +107,26 @@ def add_sum
   (eq₁: ∀i, f₁ i = 0 -> g i (f₁ i) = 0)
   (eq₂: ∀i, f₀ i + f₁ i = 0 -> g i (f₀ i + f₁ i) = 0) :
   sum (f₀ + f₁) g eq₂ = sum f₀ g eq₀ + sum f₁ g eq₁ := by
-  cases f₀ with | mk f₀ spec₀ =>
-  cases f₁ with | mk f₁ spec₁ =>
-  induction spec₀ with | mk spec₀ =>
-  induction spec₁ with | mk spec₁ =>
-  show Multiset.sum _ = Multiset.sum _ + Multiset.sum _
-  rw [←Multiset.sum_append]
-  simp; simp [coe_def]
-  sorry
+  classical
+  rw [sum_eq_support_sup_sum (f := f₀ + f₁) (h := Finsupp.support_add f₀ f₁),
+    sum_eq_support_sup_sum (f := f₀) (h := Finset.sub_union_left f₀.support f₁.support),
+    sum_eq_support_sup_sum (f := f₁) (h := Finset.sub_union_right f₀.support f₁.support)]
+  rw [Multiset.sum_pairwise]
+  congr; ext i
+  apply resp_add
+
+def add_sum'
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  (f: Finsupp ι α S) (g₀ g₁: ι -> α -> γ)
+  (eq₀: ∀i, f i = 0 -> g₀ i (f i) = 0)
+  (eq₁: ∀i, f i = 0 -> g₁ i (f i) = 0) :
+  sum f g₀ eq₀ + sum f g₁ eq₁ = sum f (fun i a => g₀ i a + g₁ i a ) (by
+    intro i feq
+    dsimp
+    rw [eq₀, eq₁, add_zero] <;> assumption) := by
+  classical
+  simp [sum_eq_support_sum]
+  apply Multiset.sum_pairwise
 
 end Finsupp

@@ -140,4 +140,12 @@ def prod_replicate [MonoidOps α] [IsCommMagma α] [IsMonoid α] (n: ℕ) (a: α
 @[simp] def prod_singleton [One α] [Mul α] [IsCommMagma α] [IsSemigroup α] [IsMulOneClass α] (a: α) : prod {a} = a := by
   simp [singleton]
 
+def sum_pairwise [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α] [IsAddZeroClass α] (as: Multiset ι) (f g: ι -> α) :
+  (as.map f).sum + (as.map g).sum = (as.map (fun i => f i + g i)).sum := by
+  induction as with
+  | nil => simp
+  | cons a as ih =>
+    simp [←ih]
+    ac_rfl
+
 end Multiset

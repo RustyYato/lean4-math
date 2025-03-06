@@ -448,4 +448,31 @@ def mem_powerset {as: Finset α} : ∀{x}, x ∈ as.powerset ↔ x ⊆ as := by
 
 @[simp] def singleton_val (x: α) : (singleton (β := Finset α) x).val = {x} := rfl
 
+def exists_union_eq_of_sub [DecidableEq α] {a b: Finset α} (h: a ⊆ b) :
+  ∃(c: Finset α), ∃(h: ∀x ∈ a, ¬x ∈ c), b = a.union_disjoint c h := by
+  refine ⟨b \ a, ?_, ?_⟩
+  intro x h g
+  rw [mem_sdiff] at g
+  exact g.right h
+  ext i; simp [mem_union_disjoint, mem_sdiff]
+  apply Iff.intro
+  intro h
+  apply Classical.or_iff_not_imp_left.mpr
+  intro; apply And.intro <;> assumption
+  intro g
+  rcases g with g | ⟨_, _⟩
+  apply h
+  assumption
+  assumption
+
+def sub_union_left [DecidableEq α] (a b: Finset α) : a ⊆ a ∪ b := by
+  intro i
+  rw [mem_union]
+  exact .inl
+
+def sub_union_right [DecidableEq α] (a b: Finset α) : b ⊆ a ∪ b := by
+  intro i
+  rw [mem_union]
+  exact .inr
+
 end Finset

@@ -396,4 +396,12 @@ def eq_support_union [Zero β] [∀b: β, Decidable (b = 0)] (f: Finsupp α β S
   assumption
   assumption
 
+def support_add [Zero β] [Add β] [IsAddZeroClass β] [∀b: β, Decidable (b = 0)] [DecidableEq α] (f g: Finsupp α β S) :
+  (f + g).support ⊆ f.support ∪ g.support := by
+  intro i
+  simp [mem_support, Finset.mem_union]
+  rw [←Classical.not_and_iff_or_not_not, Classical.contrapositive]
+  intro ⟨ha, hb⟩
+  rw [ha, hb, add_zero]
+
 end Finsupp

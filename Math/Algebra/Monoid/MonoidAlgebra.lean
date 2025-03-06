@@ -1,5 +1,6 @@
 import Math.Data.FinSupp.Defs
 import Math.Data.FinSupp.Algebra
+import Math.AxiomBlame
 
 structure AddMonoidAlgebra (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
   ofFinsupp ::
@@ -23,6 +24,9 @@ instance [Zero β] : Zero (AddMonoidAlgebra α β S) where
   zero := ⟨0⟩
 
 @[simp] def apply_zero [Zero β] (x: α) : (0: AddMonoidAlgebra α β S) x = 0 := rfl
+
+def toFinsupp_inj [Zero β] : Function.Injective (toFinsupp (α := α) (β := β) (S := S)) := by
+  intro a b eq; cases a; congr
 
 def single [Zero β] [DecidableEq α] (a: α) (b: β) : AddMonoidAlgebra α β S where
   toFinsupp := .single a b
@@ -51,6 +55,7 @@ def single_zero [DecidableEq α] [Zero β] (a: α) : single (S := S) a (0: β) =
   split <;> rfl
 
 def add_def [Zero β] [Add β] [IsAddZeroClass β] (f g: AddMonoidAlgebra α β S) : f + g = ⟨f.toFinsupp + g.toFinsupp⟩ := rfl
+def add_def' [Zero β] [Add β] [IsAddZeroClass β] (f g: AddMonoidAlgebra α β S) : f.toFinsupp + g.toFinsupp = (f + g).toFinsupp := rfl
 @[simp] def apply_add [Zero β] [Add β] [IsAddZeroClass β] (f g: AddMonoidAlgebra α β S) (x: α) : (f + g) x = f x + g x := rfl
 
 @[simp] def apply_neg [Zero β] [Neg β] [IsNegZeroClass β] (f: AddMonoidAlgebra α β S) (x: α) : (-f) x = -f x := rfl
@@ -109,7 +114,18 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddComm
 def mul_def [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]
   (f g: AddMonoidAlgebra α β S) : f * g = mul' f g := rfl
 
-instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAssocSemiring β] : IsNonUnitalNonAssocSemiring (AddMonoidAlgebra α β S) where
+def single_add [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (i: α) (a b: β) : single (S := S) i a + single i b = single i (a + b) := by
+  ext x
+  simp [apply_single]
+  split
+  rfl
+  rw [add_zero]
+
+
+axiom MySorry {α}: α
+
+instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAssocSemiring β] :
+  IsNonUnitalNonAssocSemiring (AddMonoidAlgebra α β S) where
   zero_mul := by
     intro a; ext; rw [mul_def, mul']
     have : toFinsupp 0 = (0: Finsupp α β S) := rfl
@@ -123,8 +139,40 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAss
   left_distrib := by
     intro ⟨k⟩ ⟨a⟩ ⟨b⟩
     simp [mul_def, mul', add_def]
+    apply toFinsupp_inj
+    simp
+    conv => { rhs; rw [add_def'] }
+    congr
+    rw [Finsupp.add_sum']
+    congr; ext a₀ b₀ a₁
+    rw [Finsupp.add_sum]
+    intro i b₁ b₂
+    rw [mul_add, single_add]
+  right_distrib := by
+    intro ⟨a⟩ ⟨b⟩ ⟨k⟩
+    simp [mul_def, mul', add_def]
+    apply toFinsupp_inj
+    simp
+    conv => { rhs; rw [add_def'] }
+    congr
+    rw [Finsupp.add_sum]
+    intro i b₁ b₂
+    congr; ext i
+    rw [Finsupp.add_sum']
+    congr
+    ext a₀ b₀ a₁
+    rw [single_add, add_mul]
+
+instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β]
+  [IsNonUnitalNonAssocSemiring β] [IsSemigroup β] : IsSemigroup (AddMonoidAlgebra α β S) where
+  mul_assoc := by
+    intro a b c
+    simp [mul_def, mul']
+    classical
+    simp [Finsupp.sum_eq_support_sum]
+    generalize a.toFinsupp.support.val = asupp
+    generalize b.toFinsupp.support.val = bsupp
 
     sorry
-  right_distrib := sorry
 
 end AddMonoidAlgebra
