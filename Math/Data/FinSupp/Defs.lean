@@ -375,4 +375,25 @@ def toFinset [DecidableEq α] [Zero β] (f: Finsupp α β S) : Finsupp α β (Fi
 
 @[simp] def toFinset_coe_eq [DecidableEq α] [Zero β] (f: Finsupp α β S) : (f.toFinset: α -> β) = f := rfl
 
+def eq_support_union [Zero β] [∀b: β, Decidable (b = 0)] (f: Finsupp α β S)
+  (supp: Finset α) (supp_spec: ∀ (x : α), f x ≠ 0 → x ∈ supp) :
+  ∃rest, ∃h, supp = f.support.union_disjoint rest h := by
+  classical
+  refine ⟨supp \ f.support, ?_, ?_⟩
+  intro x h g
+  rw [Finset.mem_sdiff] at g
+  exact g.right h
+  ext x
+  simp [Finset.mem_sdiff, Finset.mem_union_disjoint]
+  apply Iff.intro
+  intro h
+  simp [h]
+  apply Classical.em
+  intro h
+  rcases h with h | ⟨h, h₀⟩
+  apply supp_spec
+  apply mem_support.mp
+  assumption
+  assumption
+
 end Finsupp

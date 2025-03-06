@@ -1444,4 +1444,83 @@ def length_map (as: Multiset α) : (as.map f).length = as.length := by
   cases as
   apply List.length_map
 
+@[simp]
+def length_cons (a: α) (as: Multiset α) : (a::ₘas).length = as.length + 1 := by
+  cases as
+  rfl
+
+def removeAll [DecidableEq α] (x: α) : Multiset α -> Multiset α := by
+  apply Quotient.lift (⟦·.filter (·≠x)⟧)
+  intro a b perm
+  apply Quotient.sound
+  induction perm with
+  | nil => rfl
+  | trans _ _ ih₀ ih₁ => apply ih₀.trans ih₁
+  | cons a perm ih =>
+    rw [List.filter_cons, List.filter_cons]
+    split
+    apply List.Perm.cons
+    assumption
+    assumption
+  | swap a b xs =>
+    simp only [List.filter_cons, decide_eq_true_eq]
+    split <;> split
+    apply List.Perm.swap
+    all_goals rfl
+
+@[simp]
+def removeAll_nil [DecidableEq α] (x: α) : removeAll x ∅ = ∅ := rfl
+def removeAll_cons [DecidableEq α] (x a: α) (as: Multiset α) :
+  removeAll x (a::ₘas) = if a = x then as.removeAll x else a::ₘ(as.removeAll x) := by
+  cases as
+  show ⟦_⟧ = _
+  rw [List.filter_cons]
+  by_cases h:a = x
+  rw [if_pos h, if_neg]; rfl
+  simp [h]
+  rw [if_neg h, if_pos]; rfl
+  simp [h]
+
+def length_removeAll_le [DecidableEq α] (x: α) (as: Multiset α) : (as.removeAll x).length ≤ as.length := by
+  induction as with
+  | nil => apply Nat.zero_le
+  | cons _ _ ih =>
+    rw [removeAll_cons]
+    split
+    apply Nat.le_trans ih
+    rw [length_cons]
+    apply Nat.le_succ
+    simp [length_cons, ih]
+
+def removeAll_append [DecidableEq α] (x: α) (as bs: Multiset α) :
+  (as ++ bs).removeAll x = as.removeAll x ++ bs.removeAll x := by
+  cases as, bs
+  apply Quotient.sound
+  rw [List.filter_append]
+
+def removeAll_replicate [DecidableEq α] (x: α) :
+  (replicate n x).removeAll x = ∅ := by
+  apply Quotient.sound
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [List.replicate_succ, List.filter_cons_of_neg]
+    assumption
+    simp
+
+def removeAl_append_replicate [DecidableEq α] (x: α) (as: Multiset α) :
+  as.removeAll x ++ replicate (as.length - (as.removeAll x).length) x = as := by
+  induction as with
+  | nil => simp
+  | cons _ _ ih =>
+    simp [removeAll_cons]
+    split
+    rw [Nat.succ_sub]
+    simp [ih]
+    rw [append_comm, cons_append, append_comm]
+    subst x
+    simp [ih]
+    apply length_removeAll_le
+    simp [ih]
+
 end Multiset
