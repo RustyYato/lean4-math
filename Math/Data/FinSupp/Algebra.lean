@@ -129,6 +129,19 @@ def add_sum'
   simp [sum_eq_support_sum]
   apply Multiset.sum_pairwise
 
+def single_sum
+  [DecidableEq ι]
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  (f: ι -> α -> γ) {h}:
+  (single a b: Finsupp ι α S).sum f h = f a b := by
+  classical
+  rw [sum_eq_support_sup_sum (h := Finsupp.support_single)]
+  simp; congr
+  rw [Finsupp.single]
+  show (if _ then _ else _) = b
+  rw [if_pos rfl]
+
 def sum_sum_index
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]

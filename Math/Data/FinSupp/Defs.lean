@@ -399,6 +399,17 @@ def eq_support_union [Zero β] [∀b: β, Decidable (b = 0)] (f: Finsupp α β S
   assumption
   assumption
 
+def support_single [DecidableEq α] [Zero β] [∀b: β, Decidable (b = 0)] :
+ (single a b: Finsupp α β S).support ⊆ {a} := by
+ intro i h
+ rw [Finset.mem_singleton,]
+ rw [mem_support] at h
+ unfold single at h
+ replace h : (if i = a then b else 0) ≠ (0: β) := h
+ split at h
+ assumption
+ contradiction
+
 def support_add [Zero β] [Add β] [IsAddZeroClass β] [∀b: β, Decidable (b = 0)] [DecidableEq α] (f g: Finsupp α β S) :
   (f + g).support ⊆ f.support ∪ g.support := by
   intro i

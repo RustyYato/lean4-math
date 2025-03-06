@@ -167,26 +167,77 @@ def sum_toFinsupp
   [FiniteSupportSet S ι]
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
-  (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀ h₁} : (f.sum g₀ h₀).toFinsupp =
-    f.sum (fun i a => (g₀ i a).toFinsupp) h₁ := sorry
+  (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀ h₁} :
+  (f.sum g₀ h₀).toFinsupp = f.sum (fun i a => (g₀ i a).toFinsupp) h₁ := sorry
 
-instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β]
+@[simp]
+def single_toFinsupp
+  [FiniteSupportSet S ι] [Zero α] [DecidableEq ι] :
+  (single a b: AddMonoidAlgebra ι α S).toFinsupp  = Finsupp.single a b := rfl
+
+instance [Add α] [IsAddSemigroup α] [DecidableEq α] [AddMonoidOps β] [Mul β]
   [IsNonUnitalNonAssocSemiring β] [IsSemigroup β] : IsSemigroup (AddMonoidAlgebra α β S) where
   mul_assoc := by
     intro a b c
     simp [mul_def, mul']
     classical
-
-
-    rw [sum_toFinsupp]
-    rw [Finsupp.sum_sum_index (f := a.toFinsupp)]
-    -- simp [Multiset.sum_sum_reindex]
-
-    -- generalize a.toFinsupp.support.val = asupp
-    -- generalize b.toFinsupp.support.val = bsupp
-
-
-    sorry
+    conv => {
+      lhs; arg 1
+      rw [sum_toFinsupp a.toFinsupp (h₁ := by
+        intro i h
+        rw [h]
+        dsimp
+        rw [Finsupp.sum_eq_zero]; rfl
+        intro i₀
+        rw [zero_mul, single_zero])]
+    }
+    rw [Finsupp.sum_sum_index]
+    conv => {
+      lhs; arg 2; intro a b
+      rw [sum_toFinsupp (h₁ := by
+        intro i h
+        rw [h]
+        dsimp
+        rw [mul_zero, single_zero]; rfl)]
+    }
+    conv => {
+      rhs
+      arg 2; intro a b
+      arg 1
+      rw [sum_toFinsupp (h₁ := by
+        intro i eq; rw [eq]
+        dsimp; rw [Finsupp.sum_eq_zero]; rfl
+        intro i₀; rw [zero_mul, single_zero])]
+    }
+    congr 1
+    ext a₀ b₀ a₁
+    rw [Finsupp.sum_sum_index]
+    conv => {
+      lhs; lhs; lhs; intro a b; rw [single]
+    }
+    rw [Finsupp.sum_sum_index]
+    congr
+    ext a₂ b₁ a₃
+    simp
+    rw [Finsupp.single_sum,
+      sum_toFinsupp,
+      Finsupp.sum_sum_index]
+    simp [Finsupp.single_sum]
+    congr
+    ext _ _
+    rw [add_assoc, mul_assoc]
+    intro i; simp; rfl
+    intro; simp
+    intro i; simp; rw [Finsupp.sum_eq_zero]; rfl
+    intros; rfl
+    intros; simp
+    intros; simp; rfl
+    intro i; simp; rw [Finsupp.sum_eq_zero]
+    intros; rfl
+    intros; rw [Finsupp.sum_eq_zero]; rfl
+    intros; simp
+    intros; simp; rw [Finsupp.sum_eq_zero]
+    intros; rfl
 
 end AddMonoidAlgebra
 
