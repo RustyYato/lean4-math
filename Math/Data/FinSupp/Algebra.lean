@@ -256,4 +256,20 @@ def sum_sum_index
     simp [resp_add]
     symm; apply Multiset.sum_pairwise
 
+def sum_eq_pairwise [Zero α] [Zero β]  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  (f₀: Finsupp ι α S)
+  (f₁: Finsupp ι β S)
+  (g₀: ι -> α -> γ)
+  (g₁: ι -> β -> γ)
+  (h₀: ∀i: ι, f₀ i = 0 -> g₀ i (f₀ i) = 0)
+  (h₁: ∀i: ι, f₁ i = 0 -> g₁ i (f₁ i) = 0)
+  (eq₀: ∀i, g₀ i (f₀ i) = g₁ i (f₁ i))
+  : f₀.sum g₀ h₀ = f₁.sum g₁ h₁ := by
+  classical
+  rw [sum_eq_support_sup_sum (s := f₀.support ∪ f₁.support),
+    sum_eq_support_sup_sum (s := f₀.support ∪ f₁.support)]
+  congr; ext i; apply eq₀
+  exact Finset.sub_union_right f₀.support f₁.support
+  exact Finset.sub_union_left f₀.support f₁.support
+
 end Finsupp

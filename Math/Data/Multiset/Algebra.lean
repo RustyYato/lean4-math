@@ -148,9 +148,21 @@ def sum_pairwise [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α] [IsA
     simp [←ih]
     ac_rfl
 
-def sum_sum_reindex [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α]
-  (as: Multiset ι) (f: ι -> Multiset α) :
-  (as.map (fun i => (f i).sum)).sum =
-  (as.flatMap f).sum := sorry
+def sum_comm
+  [AddMonoidOps γ] [IsAddMonoid γ] [IsAddCommMagma γ]
+  (as: Multiset α) (bs: Multiset β) (f: α -> β -> γ) :
+  (as.map (fun a => (bs.map (fun b => f a b)).sum)).sum =
+  (bs.map (fun b => (as.map (fun a => f a b)).sum)).sum := by
+  induction as with
+  | nil =>
+    show 0 = _
+    rw [sum_eq_zero]
+    intro i eq
+    rw [mem_map] at eq
+    obtain ⟨b, h, rfl⟩ := eq
+    rfl
+  | cons a as ih =>
+    simp
+    rw [←sum_pairwise, ih]
 
 end Multiset

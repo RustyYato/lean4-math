@@ -271,6 +271,16 @@ instance [Add α] [IsAddSemigroup α] [DecidableEq α] [AddMonoidOps β] [Mul β
     intros; simp; rw [Finsupp.sum_eq_zero]
     intros; rfl
 
+instance [Add α] [IsAddCommMagma α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAssocSemiring β] [IsCommMagma β] : IsCommMagma (AddMonoidAlgebra α β S) where
+  mul_comm a b := by
+    rw [mul_def, mul_def]; unfold mul'
+    classical
+    simp [Finsupp.sum_eq_support_sum]
+    rw [Multiset.sum_comm]
+    congr; ext a₀ a₁
+    congr; ext a₂ a₃
+    rw [mul_comm, add_comm]
+
 def erase [Zero β] [DecidableEq α] (f: AddMonoidAlgebra α β S) (a: α) : AddMonoidAlgebra α β S where
   toFinsupp := f.toFinsupp.erase a
 

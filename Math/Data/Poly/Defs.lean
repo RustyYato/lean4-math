@@ -30,6 +30,8 @@ instance [SemiringOps P] [IsSemiring P] : IsSemigroup P[X] :=
   inferInstanceAs (IsSemigroup (AddMonoidAlgebra _ _ _))
 instance [SemiringOps P] [IsSemiring P] : IsNonUnitalNonAssocSemiring P[X] :=
   inferInstanceAs (IsNonUnitalNonAssocSemiring (AddMonoidAlgebra _ _ _))
+instance [SemiringOps P] [IsSemiring P] [IsCommMagma P] : IsCommMagma P[X] :=
+  inferInstanceAs (IsCommMagma (AddMonoidAlgebra _ _ _))
 
 instance [SemiringOps P] [IsSemiring P] : One P[X] where
   one := AddMonoidAlgebra.single 0 1
@@ -205,6 +207,5 @@ instance instIsAddGroupWithOne [RingOps P] [IsRing P] : IsAddGroupWithOne P[X] :
 instance [RingOps P] [IsRing P] : IsRing P[X] := {
   instIsAddGroupWithOne with
 }
-
 
 end Poly
