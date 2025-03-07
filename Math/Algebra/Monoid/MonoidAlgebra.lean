@@ -180,6 +180,21 @@ def single_toFinsupp
   [FiniteSupportSet S ι] [Zero α] [DecidableEq ι] :
   (single a b: AddMonoidAlgebra ι α S).toFinsupp  = Finsupp.single a b := rfl
 
+def single_mul [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]
+  (a₀ a₁: α) (b₀ b₁: β) : single (S := S) a₀ b₀ * single a₁ b₁ = single (a₀ + a₁) (b₀ * b₁) := by
+  rw [mul_def, mul']
+  conv => { lhs; arg 1; rw [single_toFinsupp] }
+  rw [Finsupp.single_sum]
+  conv => { lhs; arg 1; rw [single_toFinsupp] }
+  rw [Finsupp.single_sum]
+
+def single_inj [Zero β] [DecidableEq α] : Function.Injective (single (S := S) (β := β) a) := by
+  intro x y eq
+  have : (single (S := S) a x).toFinsupp a = (single (S := S) a y).toFinsupp a := by rw [eq]
+  rw [single_toFinsupp, single_toFinsupp, Finsupp.apply_single, Finsupp.apply_single] at this
+  rw [if_pos rfl, if_pos rfl] at this
+  assumption
+
 instance [Add α] [IsAddSemigroup α] [DecidableEq α] [AddMonoidOps β] [Mul β]
   [IsNonUnitalNonAssocSemiring β] [IsSemigroup β] : IsSemigroup (AddMonoidAlgebra α β S) where
   mul_assoc := by
@@ -231,33 +246,30 @@ instance [Add α] [IsAddSemigroup α] [DecidableEq α] [AddMonoidOps β] [Mul β
     congr
     ext _ _
     rw [add_assoc, mul_assoc]
+    intro i a b; simp [single_add, single_mul, mul_add]
     intro i; simp; rfl
     intro; simp
+    intro i a b; simp [single_add, single_mul, mul_add]
     intro i; simp; rw [Finsupp.sum_eq_zero]; rfl
     intros; rfl
     intros; simp
+    · intro i a b
+      rw [Finsupp.sum_pairwise]
+      congr
+      ext i b
+      simp [single_add, single_mul, add_mul]
     intros; simp; rfl
     intro i; simp; rw [Finsupp.sum_eq_zero]
     intros; rfl
+    · intro i a b
+      rw [Finsupp.sum_pairwise]
+      congr
+      ext i b
+      simp [single_add, single_mul, add_mul]
     intros; rw [Finsupp.sum_eq_zero]; rfl
     intros; simp
     intros; simp; rw [Finsupp.sum_eq_zero]
     intros; rfl
-
-def single_mul [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]
-  (a₀ a₁: α) (b₀ b₁: β) : single (S := S) a₀ b₀ * single a₁ b₁ = single (a₀ + a₁) (b₀ * b₁) := by
-  rw [mul_def, mul']
-  conv => { lhs; arg 1; rw [single_toFinsupp] }
-  rw [Finsupp.single_sum]
-  conv => { lhs; arg 1; rw [single_toFinsupp] }
-  rw [Finsupp.single_sum]
-
-def single_inj [Zero β] [DecidableEq α] : Function.Injective (single (S := S) (β := β) a) := by
-  intro x y eq
-  have : (single (S := S) a x).toFinsupp a = (single (S := S) a y).toFinsupp a := by rw [eq]
-  rw [single_toFinsupp, single_toFinsupp, Finsupp.apply_single, Finsupp.apply_single] at this
-  rw [if_pos rfl, if_pos rfl] at this
-  assumption
 
 def erase [Zero β] [DecidableEq α] (f: AddMonoidAlgebra α β S) (a: α) : AddMonoidAlgebra α β S where
   toFinsupp := f.toFinsupp.erase a

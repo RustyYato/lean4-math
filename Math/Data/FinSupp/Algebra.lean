@@ -194,11 +194,31 @@ def sum_single [DecidableEq ι] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMag
     have := this.head
     contradiction
 
+private def sum' [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) :=
+  (f.support.val.map (fun i => g i (f i))).sum
+
+private def sum_eq_sum'
+   [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0):
+   f.sum g resp = f.sum' g := by
+   rw [sum', sum_eq_support_sum]
+
+def sum_pairwise
+   [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S)
+   (g₀: ι -> α -> γ) (resp₀: ∀i: ι, f i = 0 -> g₀ i (f i) = 0)
+   (g₁: ι -> α -> γ) (resp₁: ∀i: ι, f i = 0 -> g₁ i (f i) = 0) :
+   f.sum g₀ resp₀ + f.sum g₁ resp₁ = f.sum (fun i a => g₀ i a + g₁ i a) (by
+    intro i eq
+    dsimp; rw [resp₀ _ eq, resp₁ _ eq, add_zero]) := by
+  classical
+  simp [sum_eq_support_sum]
+  apply Multiset.sum_pairwise
+
 def sum_sum_index
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   [AddMonoidOps γ₁] [IsAddCommMagma γ₁] [IsAddMonoid γ₁]
   (f: Finsupp ι α S) (g₀: ι -> α -> Finsupp ι γ S) (g₁: ι -> γ -> γ₁)
+  (resp_add: ∀i a b, g₁ i (a + b) = g₁ i a + g₁ i b)
   {h₀: ∀i, g₀ i 0 = 0}
   {h₁: ∀i, g₁ i 0 = 0}:
   (f.sum g₀ (by intro i eq; rw [eq, h₀])).sum g₁ (by
@@ -211,19 +231,29 @@ def sum_sum_index
     rw [h₀]
     apply h₁) := by
     classical
-    simp [sum_eq_support_sum]
-    generalize f.support.val=fsupp
-    induction fsupp with
-    | nil =>
-      simp
-      rw [support_zero]
-      rfl
-    | cons a as ih =>
-      simp [←ih]; clear ih
-      rw [←Multiset.sum_append]
-      generalize hx:(Multiset.map (fun i => g₀ i (f i)) as).sum = x
-      have ⟨s', hs', eq⟩ := Finset.exists_union_eq_of_sub (h := Finsupp.support_add (g₀ a (f a)) x)
-      have : ∀x ∈ s', f x = 0 := sorry
-      sorry
+    simp [sum_eq_sum' (g := g₁)]
+    let sum'_hom : Finsupp ι γ S →+ γ₁ := {
+      toFun f := Finsupp.sum' f g₁
+      resp_zero := ?_
+      resp_add := ?_
+    }
+    show sum'_hom _ = _
+    rw [resp_sum (f₀ := sum'_hom) (f := f) (g := g₀)]
+    rfl
+    apply Multiset.sum_eq_zero
+    intro x h
+    rw [Multiset.mem_map] at h
+    obtain ⟨i, _, rfl⟩ := h
+    apply h₁
+    intro x y
+    dsimp; repeat rw [←sum_eq_sum' (g := g₁) (resp := by
+      intro i h
+      rw [h, h₁])]
+    rw [sum_eq_support_sup_sum _ _ _ _ (Finsupp.support_add x y)]
+    rw [sum_eq_support_sup_sum _ _ _ _ (Finset.sub_union_left x.support y.support)]
+    rw [sum_eq_support_sup_sum _ _ _ _ (Finset.sub_union_right x.support y.support)]
+    generalize (x.support ∪ y.support).val = supp
+    simp [resp_add]
+    symm; apply Multiset.sum_pairwise
 
 end Finsupp
