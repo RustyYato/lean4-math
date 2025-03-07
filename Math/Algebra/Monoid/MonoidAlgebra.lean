@@ -121,9 +121,6 @@ def single_add [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (i: α) (
   rfl
   rw [add_zero]
 
-
-axiom MySorry {α}: α
-
 instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAssocSemiring β] :
   IsNonUnitalNonAssocSemiring (AddMonoidAlgebra α β S) where
   zero_mul := by
@@ -168,7 +165,15 @@ def sum_toFinsupp
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀ h₁} :
-  (f.sum g₀ h₀).toFinsupp = f.sum (fun i a => (g₀ i a).toFinsupp) h₁ := sorry
+  (f.sum g₀ h₀).toFinsupp = f.sum (fun i a => (g₀ i a).toFinsupp) h₁ := by
+  let f' : AddGroupHom (AddMonoidAlgebra ι γ S) (Finsupp ι γ S) := {
+    toFun := toFinsupp
+    resp_zero := rfl
+    resp_add := rfl
+  }
+  show f' (f.sum g₀ h₀) = _
+  rw [Finsupp.resp_sum]
+  rfl
 
 @[simp]
 def single_toFinsupp
@@ -239,27 +244,29 @@ instance [Add α] [IsAddSemigroup α] [DecidableEq α] [AddMonoidOps β] [Mul β
     intros; simp; rw [Finsupp.sum_eq_zero]
     intros; rfl
 
+def single_mul [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]
+  (a₀ a₁: α) (b₀ b₁: β) : single (S := S) a₀ b₀ * single a₁ b₁ = single (a₀ + a₁) (b₀ * b₁) := by
+  rw [mul_def, mul']
+  conv => { lhs; arg 1; rw [single_toFinsupp] }
+  rw [Finsupp.single_sum]
+  conv => { lhs; arg 1; rw [single_toFinsupp] }
+  rw [Finsupp.single_sum]
+
+def single_inj [Zero β] [DecidableEq α] : Function.Injective (single (S := S) (β := β) a) := by
+  intro x y eq
+  have : (single (S := S) a x).toFinsupp a = (single (S := S) a y).toFinsupp a := by rw [eq]
+  rw [single_toFinsupp, single_toFinsupp, Finsupp.apply_single, Finsupp.apply_single] at this
+  rw [if_pos rfl, if_pos rfl] at this
+  assumption
+
+def erase [Zero β] [DecidableEq α] (f: AddMonoidAlgebra α β S) (a: α) : AddMonoidAlgebra α β S where
+  toFinsupp := f.toFinsupp.erase a
+
+abbrev applyHom [Add β] [Zero β] [IsAddZeroClass β] (a: α) :  AddMonoidAlgebra α β S →+ β where
+  toFun f := f a
+  resp_zero := rfl
+  resp_add := rfl
+
+def applyHom_eq [Add β] [Zero β] [IsAddZeroClass β] (f: AddMonoidAlgebra α β S) (a: α) : applyHom a f = f.toFinsupp a := rfl
+
 end AddMonoidAlgebra
-
-/-
-
-(Multiset.map
-      (fun i =>
-        (Multiset.map
-            (fun i_1 =>
-              single (i + i_1)
-                ((Multiset.map
-                          (fun i =>
-                            (Multiset.map (fun i_2 => single (i + i_2) (a.toFinsupp i * b.toFinsupp i_2))
-                                b.toFinsupp.support.val).sum)
-                          a.toFinsupp.support.val).sum.toFinsupp
-                    i *
-                  c.toFinsupp i_1))
-            c.toFinsupp.support.val).sum)
-      (Multiset.map
-                (fun i =>
-                  (Multiset.map (fun i_1 => single (i + i_1) (a.toFinsupp i * b.toFinsupp i_1))
-                      b.toFinsupp.support.val).sum)
-                a.toFinsupp.support.val).sum.toFinsupp.support.val).sum
-
--/

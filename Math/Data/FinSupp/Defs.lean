@@ -418,4 +418,9 @@ def support_add [Zero β] [Add β] [IsAddZeroClass β] [∀b: β, Decidable (b =
   intro ⟨ha, hb⟩
   rw [ha, hb, add_zero]
 
+def support_zero [Zero β] [∀b: β, Decidable (b = 0)] : support (S := S) (β := β) 0 = ∅ := by
+  ext
+  simp [mem_support]
+  apply Finset.not_mem_empty
+
 end Finsupp

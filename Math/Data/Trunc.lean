@@ -60,4 +60,7 @@ def nonempty_iff : Nonempty α ↔ Nonempty (Trunc α) := by
 noncomputable def out (x: Trunc α) : α := Classical.choice x.nonempty
 def out_spec (x: Trunc x) : ⟦x.out⟧ = x := Subsingleton.allEq _ _
 
+@[simp]
+def mk_lift : lift f resp (mk x) = f x := rfl
+
 end Trunc

@@ -142,6 +142,58 @@ def single_sum
   show (if _ then _ else _) = b
   rw [if_pos rfl]
 
+def resp_sum
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  [AddMonoidOps γ'] [IsAddCommMagma γ'] [IsAddMonoid γ']
+  [FunLike F γ γ'] [IsZeroHom F γ γ'] [IsAddHom F γ γ']
+  (f: Finsupp ι α S) (g: ι -> α -> γ) {h} (f₀: F) : f₀ (f.sum g h) = f.sum (fun i a => f₀ (g i a)) (by
+    intro i eq
+    dsimp
+    rw [h _ eq, resp_zero]) := by
+    cases f with | mk f spec =>
+    induction spec with | mk spec =>
+    apply Eq.trans
+    apply Multiset.resp_sum
+    rw [Multiset.map_map]
+    rfl
+
+def sum_single [DecidableEq ι] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
+  (f: Finsupp ι α S) : f.sum single (by
+    intro i eq
+    rw [eq]; ext i ; rw [apply_single]; split <;> rfl) = f := by
+    ext i
+    let f' : Finsupp ι α S →+ α := {
+      toFun x := x i
+      resp_zero := rfl
+      resp_add := rfl
+    }
+    show f' _ = _
+    rw [resp_sum]
+    show f.sum (fun x a => single (S := S) x a i) _ = _
+    by_cases h:f i = 0
+    rw [sum_eq_zero, h]
+    intro i'
+    rw [apply_single]; split
+    subst i; assumption; rfl
+    classical
+    rw [sum_eq_support_sum]
+    have : i ∈ f.support.val := by
+      apply mem_support.mpr
+      assumption
+    rw [Multiset.mem_spec] at this
+    obtain ⟨as, eq⟩ := this
+    rw [eq]
+    rw [Multiset.map_cons, Multiset.sum_cons, Multiset.sum_eq_zero, add_zero, apply_single, if_pos rfl]
+    intro i₀ h₀
+    rw [Multiset.mem_map] at h₀
+    obtain ⟨i₀, h₀, rfl⟩ := h₀
+    rw [apply_single, if_neg]
+    rintro rfl
+    have : (i::ₘas).Nodup := by rw [←eq]; apply f.support.property
+    have := this.head
+    contradiction
+
 def sum_sum_index
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
@@ -158,6 +210,20 @@ def sum_sum_index
     intro i
     rw [h₀]
     apply h₁) := by
-    sorry
+    classical
+    simp [sum_eq_support_sum]
+    generalize f.support.val=fsupp
+    induction fsupp with
+    | nil =>
+      simp
+      rw [support_zero]
+      rfl
+    | cons a as ih =>
+      simp [←ih]; clear ih
+      rw [←Multiset.sum_append]
+      generalize hx:(Multiset.map (fun i => g₀ i (f i)) as).sum = x
+      have ⟨s', hs', eq⟩ := Finset.exists_union_eq_of_sub (h := Finsupp.support_add (g₀ a (f a)) x)
+      have : ∀x ∈ s', f x = 0 := sorry
+      sorry
 
 end Finsupp
