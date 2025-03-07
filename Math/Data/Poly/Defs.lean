@@ -21,7 +21,7 @@ instance [RingOps P] [IsRing P] : Neg P[X] :=
   inferInstanceAs (Neg (AddMonoidAlgebra _ _ _))
 instance [RingOps P] [IsRing P] : SMul ℤ P[X] :=
   inferInstanceAs (SMul ℤ (AddMonoidAlgebra _ _ _))
-instance [RingOps P] [IsRing P] : IsAddGroup P[X] :=
+instance instIsAddGroup [RingOps P] [IsRing P] : IsAddGroup P[X] :=
   inferInstanceAs (IsAddGroup (AddMonoidAlgebra _ _ _))
 
 instance [SemiringOps P] [IsSemiring P] : Mul P[X] :=
@@ -172,5 +172,39 @@ def induction
     split
     rw [zero_add]; subst i; rfl
     rw [add_zero]; rfl
+
+instance [SemiringOps P] [IsSemiring P] : NatCast P[X] where
+  natCast n := C n
+instance [SemiringOps P] [IsSemiring P] : OfNat P[X] (n+2) where
+  ofNat := C (OfNat.ofNat (n+2))
+instance [RingOps P] [IsRing P] : IntCast P[X] where
+  intCast n := C n
+
+instance instIsAddMonoidWithOne [SemiringOps P] [IsSemiring P] : IsAddMonoidWithOne P[X] where
+  natCast_zero := by
+    show C (Nat.cast 0) = 0
+    rw [natCast_zero, resp_zero]
+  natCast_succ n := by
+    show C _ = _
+    rw [natCast_succ, resp_add, resp_one]
+    rfl
+  ofNat_eq_natCast n := by
+    show C _ = C _
+    rw [ofNat_eq_natCast]
+
+instance instIsAddGroupWithOne [RingOps P] [IsRing P] : IsAddGroupWithOne P[X] := {
+  instIsAddMonoidWithOne, instIsAddGroup with
+  intCast_ofNat n := by
+    show C _ = C _
+    rw [intCast_ofNat]
+  intCast_negSucc n := by
+    show C _ = -C _
+    rw [intCast_negSucc, resp_neg]
+}
+
+instance [RingOps P] [IsRing P] : IsRing P[X] := {
+  instIsAddGroupWithOne with
+}
+
 
 end Poly
