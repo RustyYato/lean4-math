@@ -549,4 +549,33 @@ theorem tendsto_id {x : Filter α} : TendsTo id x x := le_refl x
 
 end Limit
 
+/-- The tail of a sequence is the set of all values that occur after N -/
+def tail (seq: ℕ -> α) (N: ℕ) : Set α := Set.image (Set.Ici N) seq
+
+def of_seq (seq: ℕ -> α) : Filter α where
+  set := Set.mk fun A => ∃N, tail seq N ⊆ A
+  nonempty := ⟨tail seq 0, 0, Set.sub_refl _⟩
+  closed_inf := by
+    intro x y ⟨n, hx⟩ ⟨m, hy⟩
+    exists max n m
+    intro i h
+    obtain ⟨k, nm_le_k, rfl⟩ := h
+    apply And.intro
+    apply hx
+    apply Set.mem_image.mpr
+    refine ⟨_, ?_, rfl⟩
+    apply Nat.le_trans _ nm_le_k
+    apply Nat.le_max_left
+    apply hy
+    apply Set.mem_image.mpr
+    refine ⟨_, ?_, rfl⟩
+    apply Nat.le_trans _ nm_le_k
+    apply Nat.le_max_right
+  closed_upward := by
+    intro x y hx hy
+    obtain ⟨n, h⟩ := hx
+    exists n
+    apply Set.sub_trans _ hy
+    assumption
+
 end Filter
