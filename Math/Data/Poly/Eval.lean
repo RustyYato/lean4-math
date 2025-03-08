@@ -104,6 +104,9 @@ def evalWithHom (x: M) : P[X] →+* M where
   resp_add := evalWith_add _ _ _ _
   resp_mul := evalWith_mul _ _ _ _
 
+def evalWithHom_C (x: M) (p: P) : evalWithHom f x (C p) = f p := evalWith_C _ _ _
+def evalWithHom_X (x: M) : evalWithHom f x (X: P[X]) = x := evalWith_X _ _
+
 end EvalWith
 
 section Semiring
@@ -116,6 +119,9 @@ def eval (x: M) (p: P[X]) : M :=
   p.evalWith (F := P →+* M) algebraMap x
 
 def evalHom (x: M) : P[X] →+* M := evalWithHom algebraMap x
+
+def evalHom_C (x: M) (p: P) : evalHom x (C p) = algebraMap p := evalWith_C _ _ _
+def evalHom_X (x: M) : evalHom x (X: P[X]) = x := evalWith_X _ _
 
 def eval_C (x: M) (p: P) : eval x (C p) = algebraMap p := evalWith_C _ _ _
 def eval_X (x: M) : eval x (X: P[X]) = x := evalWith_X _ _

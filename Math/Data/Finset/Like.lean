@@ -9,6 +9,8 @@ attribute [coe] FinsetLike.coe
 
 variable [FinsetLike S α]
 
+namespace FinsetLike
+
 instance : CoeTC S (Finset α) where
   coe := FinsetLike.coe
 
@@ -18,9 +20,12 @@ instance : HasSubset S where
   Subset a b := ∀x ∈ a, x ∈ b
 
 @[coe]
-def FinsetLike.Elem [FinsetLike S α] (s: S) := { x : α // x ∈ s }
+def Elem [FinsetLike S α] (s: S) := { x : α // x ∈ s }
 
 instance  (priority := 100) : CoeSort S (Type _) := ⟨FinsetLike.Elem⟩
+
+end FinsetLike
+
 
 class IsLawfulEmptyFinsetLike (α: Type*) [h: Inhabited α] [FinsetLike α β] extends IsEmpty h.default where
 
@@ -31,7 +36,7 @@ def FinsetLike.ext (h : ∀ x, x ∈ p ↔ x ∈ q) : p = q :=
   FinsetLike.coe_inj <| Finset.ext _ _ (fun {_} => h _)
 
 @[simp]
-def mem_coe {x : α} : x ∈ (p : Finset α) ↔ x ∈ p :=
+def mem_coe_finset {x : α} : x ∈ (p : Finset α) ↔ x ∈ p :=
   Iff.rfl
 
 instance : FinsetLike (Finset α) α where

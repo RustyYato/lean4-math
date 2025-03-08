@@ -1,4 +1,5 @@
-import Math.Data.Poly.Basic
+import Math.Data.Poly.Dvd
+import Math.Data.Poly.Eval
 -- import Math.Algebra.Ring.Theory.Ideal.TwoSided.Quotient
 -- import Math.Algebra.Ring.Theory.Ideal.TwoSided.Lattice
 import Math.Algebra.Ring.Theory.RMod.Basic
@@ -59,19 +60,18 @@ def real : GaussianInteger →+* ℤ where
     show a.evalHom (0: ℤ) - b.evalHom (0: ℤ) = 0
     rw [←resp_sub]
     induction a generalizing b with
-    | const a =>
+    | C a =>
       induction b with
-      | const b =>
-        rw [←resp_sub] at eq
-        obtain ⟨k, eq⟩ := eq
-        rw [add_mul, one_mul, X_npow_mul_eq_mul_X_npow] at eq
-        cases k with | mul_add k₀ k =>
-        rw [add_mul] at eq
+      | C b =>
+        rw [←resp_sub, Poly.evalHom_C] at *
         sorry
-      | mul_add b b₀ b_ne_zero ih₀ ih =>
+      | monomial => sorry
+      | add b b₀ ih₀ ih =>
         simp [resp_sub, resp_add]
         sorry
-    | mul_add a a₀ a_ne_zero ih₀ ih =>
+    | monomial =>
+      sorry
+    | add a a₀ ih₀ ih =>
       sorry
   resp_zero := sorry
   resp_one := sorry
