@@ -263,3 +263,40 @@ instance [LE α] [LT α] [IsPartialOrder α] : IsPartialOrder (WithTop α) where
 
 instance [LE α] [LT α] [IsPartialOrder α] : IsPartialOrder (WithBot α) :=
   WithBot.orderIsoWithTop.symm.instIsPartialOrder
+
+instance [LE α] [dec: ∀a b: α, Decidable (a ≤ b)] : ∀a b: WithTop α,  Decidable (a ≤ b)
+| .of a, .of b =>
+  match dec a b with
+  | .isTrue h => .isTrue (.of h)
+  | .isFalse h => .isFalse (fun
+    | .of g => h g)
+| .none, .of _ => .isFalse nofun
+| _, .none => .isTrue (WithTop.LE.top _)
+
+instance [LT α] [dec: ∀a b: α, Decidable (a < b)] : ∀a b: WithTop α,  Decidable (a < b)
+| .of a, .of b =>
+  match dec a b with
+  | .isTrue h => .isTrue (.of h)
+  | .isFalse h => .isFalse (fun
+    | .of g => h g)
+| .none, .of _ => .isFalse nofun
+| .of _, .none => .isTrue (WithTop.LT.top _)
+| .none, .none => .isFalse nofun
+
+instance [LE α] [dec: ∀a b: α, Decidable (a ≤ b)] : ∀a b: WithBot α, Decidable (a ≤ b)
+| .of a, .of b =>
+  match dec a b with
+  | .isTrue h => .isTrue (.of h)
+  | .isFalse h => .isFalse (fun
+    | .of g => h g)
+| .none, _ => .isTrue (WithBot.LE.bot _)
+| .of _, .none => .isFalse nofun
+
+instance [LT α] [dec: ∀a b: α, Decidable (a < b)] : ∀a b: WithBot α,  Decidable (a < b)
+| .of a, .of b =>
+  match dec a b with
+  | .isTrue h => .isTrue (.of h)
+  | .isFalse h => .isFalse (fun
+    | .of g => h g)
+| .none, .of _ => .isTrue (WithBot.LT.bot _)
+| _, .none => .isFalse nofun
