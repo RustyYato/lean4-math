@@ -427,45 +427,45 @@ def sq_add_le_sq_succ {n k: Nat} :
   replace h := Nat.lt_of_add_lt_add_left h
   omega
 
-def inv_triangle_add (h: k ≤ n) : inv_triangle (triangle n + k) = n := by
-  unfold inv_triangle
-  rw [Nat.add_comm _ k, Nat.mul_add, Nat.add_assoc, Nat.add_comm, inv_triangle_helper]
-  rw [Nat.div_eq_iff]
-  apply And.intro
-  rw [←Nat.pred_eq_sub_one, Nat.pred_le_iff_le_succ, Nat.succ_eq_add_one]
-  rw [←Nat.lt_succ, sqrt_lt_iff]
-  rw [Nat.sub_add_cancel, Nat.mul_comm _ 2]
-  show _ < (2 * n + 3) * (2 * n + 3)
-  apply sq_add_le_sq_succ.mp
-  rw [Nat.mul_add]
-  apply Nat.lt_of_succ_le
-  apply Nat.succ_le_succ
-  rw [←Nat.mul_assoc]
-  apply Nat.le_trans
-  apply Nat.mul_le_mul_left
-  assumption
-  apply Nat.le_add_right
-  apply Nat.succ_le_succ
-  apply Nat.zero_le
-  rw [Nat.sub_one]
-  apply Nat.le_pred_of_lt
-  -- apply Nat.lt_sqrt
-  sorry
+-- def inv_triangle_add (h: k ≤ n) : inv_triangle (triangle n + k) = n := by
+--   unfold inv_triangle
+--   rw [Nat.add_comm _ k, Nat.mul_add, Nat.add_assoc, Nat.add_comm, inv_triangle_helper]
+--   rw [Nat.div_eq_iff]
+--   apply And.intro
+--   rw [←Nat.pred_eq_sub_one, Nat.pred_le_iff_le_succ, Nat.succ_eq_add_one]
+--   rw [←Nat.lt_succ, sqrt_lt_iff]
+--   rw [Nat.sub_add_cancel, Nat.mul_comm _ 2]
+--   show _ < (2 * n + 3) * (2 * n + 3)
+--   apply sq_add_le_sq_succ.mp
+--   rw [Nat.mul_add]
+--   apply Nat.lt_of_succ_le
+--   apply Nat.succ_le_succ
+--   rw [←Nat.mul_assoc]
+--   apply Nat.le_trans
+--   apply Nat.mul_le_mul_left
+--   assumption
+--   apply Nat.le_add_right
+--   apply Nat.succ_le_succ
+--   apply Nat.zero_le
+--   rw [Nat.sub_one]
+--   apply Nat.le_pred_of_lt
+--   -- apply Nat.lt_sqrt
+--   sorry
 
 
 
 
 
 
-  -- rw [sqrt_add_eq, Nat.add_sub_cancel, Nat.mul_div_cancel_left]
-  -- decide
+--   -- rw [sqrt_add_eq, Nat.add_sub_cancel, Nat.mul_div_cancel_left]
+--   -- decide
 
-  -- have ⟨i, k_eq, i_le⟩ := sqrt_sq_add k
-  -- rw [k_eq]
+--   -- have ⟨i, k_eq, i_le⟩ := sqrt_sq_add k
+--   -- rw [k_eq]
 
 
 
-  sorry
+--   sorry
 
 def triangle_strict_monotone (a b: Nat) : a < b -> triangle a < triangle b := by
   intro lt
@@ -547,11 +547,11 @@ def sqrt_pos (a: Nat) : 0 < a -> 0 < a.sqrt := by
 --   apply Nat.div_mul_le_self
 --   apply Nat.div_mul_le_self
 
-def pair_unpair (a b: Nat) : unpair (pair a b) = ⟨a, b⟩ := by
-  unfold pair unpair
-  dsimp
-  rw [inv_triangle_add, Nat.add_sub_cancel_left, Nat.add_sub_cancel_left]
-  apply Nat.le_add_right
+-- def pair_unpair (a b: Nat) : unpair (pair a b) = ⟨a, b⟩ := by
+--   unfold pair unpair
+--   dsimp
+--   rw [inv_triangle_add, Nat.add_sub_cancel_left, Nat.add_sub_cancel_left]
+--   apply Nat.le_add_right
   -- generalize hw:a + b = w
   -- generalize ht:(w * (w + 1)) / 2 = t
   -- generalize hz:t + a = z

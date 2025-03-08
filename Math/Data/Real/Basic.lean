@@ -189,7 +189,6 @@ def CauchySeq.ofRat (q: ℚ) : CauchySeq where
     refine ⟨0, ?_⟩
     intro n m _ _
     simp
-    rw [sub_self]
     assumption
 
 def Real.ofRat (q: ℚ) : ℝ := ⟦.ofRat q⟧
@@ -791,44 +790,44 @@ scoped notation "⟦" v "⟧" => Real.mk v
 
 end Real
 
-def CauchySeq.ofIncreasingBounded
-  (f: Nat -> ℚ)
-  (inc: ∀n, f n ≤ f (n + 1))
-  (bounded: ∃B, ∀n, f n ≤ B) : CauchySeq where
-  seq := f
-  is_cacuhy := by
-    intro ε ε_pos
-    obtain ⟨B, bounded⟩ := bounded
-    have mono : Monotone f := by
-      intro x y h
-      induction y generalizing x with
-      | zero =>
-        cases Nat.le_zero.mp h
-        rfl
-      | succ y ih =>
-        cases lt_or_eq_of_le h
-        apply flip le_trans
-        apply inc
-        apply ih
-        apply Nat.le_of_lt_succ
-        assumption
-        subst x; rfl
-    apply Classical.byContradiction
-    intro h
-    unfold Eventually₂ at h
-    conv at h => {
-      rw [not_exists]; intro k
-      rw [Classical.not_forall]
-      arg 1; intro n
-      rw [Classical.not_forall]
-      arg 1; intro m
-      rw [not_imp, not_imp]
-      dsimp
-      rw [←le_iff_not_lt]
-    }
-    replace h := h 0
-    obtain ⟨n, m, hn, hm, h⟩ := h; clear hn hm
-    rcases le_total n m with n_le_m | m_le_n
-    have := mono n_le_m
+-- def CauchySeq.ofIncreasingBounded
+--   (f: Nat -> ℚ)
+--   (inc: ∀n, f n ≤ f (n + 1))
+--   (bounded: ∃B, ∀n, f n ≤ B) : CauchySeq where
+--   seq := f
+--   is_cacuhy := by
+--     intro ε ε_pos
+--     obtain ⟨B, bounded⟩ := bounded
+--     have mono : Monotone f := by
+--       intro x y h
+--       induction y generalizing x with
+--       | zero =>
+--         cases Nat.le_zero.mp h
+--         rfl
+--       | succ y ih =>
+--         cases lt_or_eq_of_le h
+--         apply flip le_trans
+--         apply inc
+--         apply ih
+--         apply Nat.le_of_lt_succ
+--         assumption
+--         subst x; rfl
+--     apply Classical.byContradiction
+--     intro h
+--     unfold Eventually₂ at h
+--     conv at h => {
+--       rw [not_exists]; intro k
+--       rw [Classical.not_forall]
+--       arg 1; intro n
+--       rw [Classical.not_forall]
+--       arg 1; intro m
+--       rw [not_imp, not_imp]
+--       dsimp
+--       rw [←le_iff_not_lt]
+--     }
+--     replace h := h 0
+--     obtain ⟨n, m, hn, hm, h⟩ := h; clear hn hm
+--     rcases le_total n m with n_le_m | m_le_n
+--     have := mono n_le_m
 
-    repeat sorry
+--     repeat sorry

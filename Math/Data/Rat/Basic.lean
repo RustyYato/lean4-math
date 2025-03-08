@@ -133,7 +133,7 @@ def Fract.reduce.spec (a: Fract) : a ≈ a.reduce := by
   show _ * _ = _ * _
   unfold reduce
   dsimp
-  rw [←Int.mul_ediv_assoc, Int.mul_comm n, Int.mul_ediv_assoc, Int.mul_comm]
+  rw [Int.ofNat_ediv, ←Int.mul_ediv_assoc, Int.mul_comm n, Int.mul_ediv_assoc, Int.mul_comm]
   apply Int.dvd_natAbs.mp
   apply Int.ofNat_dvd.mpr
   apply Nat.gcd_dvd_left
@@ -541,7 +541,7 @@ instance : IsField ℚ where
     apply sound
     show _ = _
     simp [Fract.inv]
-    rw [←Int.mul_assoc, Int.mul_sign, Int.mul_comm]
+    rw [←Int.mul_assoc, Int.mul_sign_self, Int.mul_comm]
     rfl
   zero_nsmul a := by
     cases a
