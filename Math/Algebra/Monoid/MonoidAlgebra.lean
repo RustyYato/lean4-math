@@ -1,5 +1,6 @@
-import Math.Data.FinSupp.Defs
+import Math.Data.FinSupp.Basic
 import Math.Data.FinSupp.Algebra
+import Math.Algebra.Module.Defs
 import Math.AxiomBlame
 
 structure AddMonoidAlgebra (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
@@ -46,6 +47,9 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (AddMono
   sub f g := ⟨f.toFinsupp - g.toFinsupp⟩
 
 instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (AddMonoidAlgebra α β S) where
+  smul n f := ⟨n • f.toFinsupp⟩
+
+instance [Zero β] [Mul β] [IsMulZeroClass β] : SMul β (AddMonoidAlgebra α β S) where
   smul n f := ⟨n • f.toFinsupp⟩
 
 @[simp]
@@ -290,5 +294,25 @@ abbrev applyHom [Add β] [Zero β] [IsAddZeroClass β] (a: α) :  AddMonoidAlgeb
   resp_add := rfl
 
 def applyHom_eq [Add β] [Zero β] [IsAddZeroClass β] (f: AddMonoidAlgebra α β S) (a: α) : applyHom a f = f.toFinsupp a := rfl
+
+instance [SemiringOps β] [IsSemiring β] : IsModule β (AddMonoidAlgebra α β S) where
+  one_smul a := by
+    ext i
+    apply one_mul
+  mul_smul a b c := by
+    ext i
+    apply mul_assoc
+  smul_zero a := by
+    ext i
+    apply mul_zero
+  smul_add a b c := by
+    ext i
+    apply mul_add
+  add_smul a b c := by
+    ext i
+    apply add_mul
+  zero_smul a := by
+    ext i
+    apply zero_mul
 
 end AddMonoidAlgebra

@@ -218,6 +218,24 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (Fi
       }
   }
 
+instance [Zero β] [Mul β] [IsMulZeroClass β] : SMul β (Finsupp α β S) where
+  smul n f := {
+    toFun x := n * f x
+    spec := do
+      let ⟨fs, hf⟩←f.spec
+      return {
+        val := fs
+        property x ne := by
+          classical
+          replace ne : n * f x ≠ 0 := ne
+          by_cases f x = 0 <;> rename_i h
+          rw [h, mul_zero] at ne
+          contradiction
+          apply hf
+          assumption
+      }
+  }
+
 @[simp] def apply_add [Zero β] [Add β] [IsAddZeroClass β] (f g: Finsupp α β S) (x: α) : (f + g) x = f x + g x := rfl
 
 @[simp] def apply_neg [Zero β] [Neg β] [IsNegZeroClass β] (f: Finsupp α β S) (x: α) : (-f) x = -f x := rfl

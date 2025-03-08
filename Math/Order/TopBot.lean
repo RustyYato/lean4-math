@@ -300,3 +300,23 @@ instance [LT α] [dec: ∀a b: α, Decidable (a < b)] : ∀a b: WithBot α,  Dec
     | .of g => h g)
 | .none, .of _ => .isTrue (WithBot.LT.bot _)
 | _, .none => .isFalse nofun
+
+instance [wf: WellFoundedRelation α] : WellFoundedRelation (WithBot α) where
+  rel := @WithBot.LT α ⟨wf.rel⟩
+  wf := by
+    apply WellFounded.intro
+    intro x
+    cases wf with | mk rel wf =>
+    cases x
+    apply Acc.intro
+    intro y h; contradiction
+    rename_i x
+    induction x using wf.induction with
+    | h x ih =>
+    apply Acc.intro
+    intro y h
+    cases h
+    apply Acc.intro
+    intro y h; contradiction
+    apply ih
+    assumption
