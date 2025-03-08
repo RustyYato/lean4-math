@@ -30,10 +30,10 @@ instance (priority := 100) [Add α] [Mul α] [IsCommMagma α] [IsRightDistrib α
 class SemiringOps (α: Type*) extends AddMonoidWithOneOps α, MonoidOps α where
 instance [AddMonoidWithOneOps α] [MonoidOps α] : SemiringOps α where
 
-class IsSemiring (α: Type*) [SemiringOps α] extends
+class IsSemiring (α: Type*) [SemiringOps α] : Prop extends
   IsAddCommMagma α, IsAddMonoidWithOne α,
   IsSemigroup α, IsMulZeroClass α, IsMulOneClass α,
-  IsLeftDistrib α, IsRightDistrib α, IsMonoid α : Prop where
+  IsLeftDistrib α, IsRightDistrib α, IsMonoid α where
 
 instance [SemiringOps α] [IsAddCommMagma α] [IsAddMonoidWithOne α] [IsSemigroup α] [IsMulZeroClass α] [IsMulOneClass α] [IsLeftDistrib α] [IsRightDistrib α] [IsMonoid α] : IsSemiring α where
   npow_zero := npow_zero

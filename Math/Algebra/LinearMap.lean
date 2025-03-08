@@ -54,7 +54,7 @@ instance
     rw [←smul_zero (0: R), resp_smul, zero_smul]
 
 def LinearEmbedding.refl (R A: Type*) [Add A] [SMul R A] : A ↪ₗ[R] A where
-  toEmbedding := .refl
+  toEmbedding := .rfl
   resp_add := rfl
   resp_smul := rfl
 
@@ -95,7 +95,7 @@ instance
     rw [←smul_zero (0: R), resp_smul, zero_smul]
 
 def LinearEquiv.refl (R A: Type*) [Add A] [SMul R A] : A ≃ₗ[R] A where
-  toEquiv := .refl
+  toEquiv := .rfl
   resp_add := rfl
   resp_smul := rfl
 
