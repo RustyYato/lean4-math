@@ -219,8 +219,8 @@ class IsGroup (α: Type*) [GroupOps α] : Prop extends IsDivInvMonoid α where
 
 variable [IsAddGroup α] [IsGroup α]
 
-def neg_add_cancel (a: α): -a + a = 0 := IsAddGroup.neg_add_cancel _
-def inv_mul_cancel (a: α): a⁻¹ * a = 1 := IsGroup.inv_mul_cancel _
+@[simp] def neg_add_cancel (a: α): -a + a = 0 := IsAddGroup.neg_add_cancel _
+@[simp] def inv_mul_cancel (a: α): a⁻¹ * a = 1 := IsGroup.inv_mul_cancel _
 
 instance [IsGroup α] : IsAddGroup (AddOfMul α) where
   neg_add_cancel := inv_mul_cancel (α := α)
@@ -244,15 +244,15 @@ instance IsAddGroup.toInvolutNeg [IsAddGroup α] : IsInvolutiveNeg α where
 instance IsGroup.toInvolutInv [IsGroup α] : IsInvolutiveInv α where
   inv_inv := neg_neg (α := AddOfMul α)
 
-def add_neg_cancel [IsAddGroup α] (a: α): a + -a = 0 := by
+@[simp] def add_neg_cancel [IsAddGroup α] (a: α): a + -a = 0 := by
   conv => { lhs; lhs; rw [←neg_neg a] }
   rw [neg_add_cancel]
-def mul_inv_cancel [IsGroup α] (a: α): a * a⁻¹ = 1 :=
+@[simp] def mul_inv_cancel [IsGroup α] (a: α): a * a⁻¹ = 1 :=
   add_neg_cancel (α := AddOfMul α) _
 
-def sub_self [IsAddGroup α] (a: α) : a - a = 0 := by
+@[simp] def sub_self [IsAddGroup α] (a: α) : a - a = 0 := by
   rw [sub_eq_add_neg, add_neg_cancel]
-def div_self [IsGroup α] (a: α) : a / a = 1 :=
+@[simp] def div_self [IsGroup α] (a: α) : a / a = 1 :=
   sub_self (α := AddOfMul α) _
 
 instance [IsAddGroup α] : IsAddGroup αᵃᵒᵖ where

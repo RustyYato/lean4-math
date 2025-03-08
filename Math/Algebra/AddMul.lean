@@ -160,4 +160,6 @@ def cases {motive: αᵐᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 @[simp] def get_neg [Neg α] (a: αᵐᵒᵖ) : get (-a) = -get a := rfl
 @[simp] def get_mul [Mul α] (a b: αᵐᵒᵖ) : mk (a * b) = get b * get a := rfl
 
+@[simp] def mk_get (a: α) : (mk a).get = a := rfl
+
 end MulOpp

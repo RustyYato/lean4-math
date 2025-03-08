@@ -137,6 +137,11 @@ def conj [GroupOps α] [IsGroup α] (x: α) : α ≃* α where
       mul_inv_cancel, one_mul]
     ac_nf
 
+def apply_conj [GroupOps α] [IsGroup α] (x: α) :
+  ∀{a}, conj x a = x⁻¹ * a * x := rfl
+def apply_conj_symm [GroupOps α] [IsGroup α] (x: α) :
+  ∀{a}, (conj x).symm a = x * a * x⁻¹ := rfl
+
 def Trivial : Group Unit := Group.ofAxiomsLeft () (fun _ _ => ()) (fun _ => ())
     (fun _ => rfl) (fun _ => rfl) (fun _ _ _ => rfl)
 

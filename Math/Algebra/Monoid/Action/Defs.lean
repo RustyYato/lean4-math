@@ -5,14 +5,14 @@ class IsMulAction (R M: Type*) [SMul R M] [MonoidOps R] [IsMonoid R]: Prop where
   one_smul: ∀a: M, (1: R) • a = a
   mul_smul: ∀x y: R, ∀b: M, (x * y) • b = x • y • b
 
-def one_smul [MonoidOps R] [SMul R M] [IsMonoid R] [IsMulAction R M]: ∀a: M, (1: R) • a = a := IsMulAction.one_smul
+@[simp] def one_smul [MonoidOps R] [SMul R M] [IsMonoid R] [IsMulAction R M]: ∀a: M, (1: R) • a = a := IsMulAction.one_smul
 def mul_smul [MonoidOps R] [SMul R M] [IsMonoid R] [IsMulAction R M]: ∀x y: R, ∀b: M, (x * y) • b = x • y • b := IsMulAction.mul_smul
 
 class IsDistribMulAction (R M: Type*) [SMul R M] [MonoidOps R] [AddMonoidOps M] [IsMonoid R] [IsAddMonoid M] : Prop extends IsMulAction R M where
   smul_zero: ∀a: R, a • (0: M) = 0
   smul_add: ∀a: R, ∀x y: M, a • (x + y) = a • x + a • y
 
-def smul_zero [MonoidOps R] [AddMonoidOps M] [SMul R M] [IsMonoid R] [IsAddMonoid M] [IsDistribMulAction R M]: ∀a: R, a • (0: M) = 0 := IsDistribMulAction.smul_zero
+@[simp] def smul_zero [MonoidOps R] [AddMonoidOps M] [SMul R M] [IsMonoid R] [IsAddMonoid M] [IsDistribMulAction R M]: ∀a: R, a • (0: M) = 0 := IsDistribMulAction.smul_zero
 def smul_add [MonoidOps R] [AddMonoidOps M] [SMul R M] [IsMonoid R] [IsAddMonoid M] [IsDistribMulAction R M]: ∀a: R, ∀x y: M, a • (x + y) = a • x + a • y := IsDistribMulAction.smul_add
 
 class IsSMulComm (R S A: Type*) [SMul R A] [SMul S A]: Prop where
