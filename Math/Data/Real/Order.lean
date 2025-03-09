@@ -570,6 +570,12 @@ def mul_le_mul_of_nonneg {a b c d: ℝ} :
 
 def mul_nonneg {a b: ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b) : 0 ≤ a * b := mul_nonneg_of_nonneg_of_nonneg a b ha hb
 
+def mul_pos {a b: ℝ} (ha: 0 < a) (hb: 0 < b) : 0 < a * b := by
+  rw [zero_lt_iff_pos] at *
+  apply mul_pos_of_pos_of_pos
+  assumption
+  assumption
+
 @[norm_cast]
 def ofRat_lt {a b: ℚ} : (a: ℝ) < b ↔ a < b := by
   apply Iff.intro

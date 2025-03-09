@@ -1,14 +1,59 @@
 import Math.Order.Lattice.ConditionallyComplete
 import Math.Data.Real.Div
+import Math.Data.Real.Archimedean
+import Math.Data.Int.Lattice
 
 noncomputable section
 
-open Classical
+open Classical Real
 
 instance : Sup ℝ where
   sup := max
 instance : Inf ℝ where
   inf := min
+
+instance : NeZero (2: ℝ) where
+  out := by
+    intro h
+    have ⟨k, spec⟩ := Quotient.exact h (1 /? 2) (by decide)
+    replace spec := spec _ _ (le_refl _) (le_refl _)
+    contradiction
+
+def exists_isLUB {S : Set ℝ} (hne : S.Nonempty) (hbdd : S.BoundedAbove) : ∃ x, S.IsLUB x := by
+  classical
+  obtain ⟨L, hL⟩ := hne
+  obtain ⟨U, hU⟩ := hbdd
+  let S' (d: ℕ) := (Set.mk fun m: ℤ => ∃ y ∈ S, (m : ℝ) ≤ y * d)
+  have : ∀ d : ℕ, Set.BoundedAbove (S' d) := by
+    sorry
+  let f := fun d => sSup (S' d)
+  have hf₁ : ∀n (hn: 0 < n), ∃ y ∈ S, ((f n /? n ~(by
+    intro h
+    sorry): ℚ) : ℝ) ≤ y := by
+    intro n hn
+    sorry
+  -- have := by
+  --   intro S a h ha
+  --   simp [sSup]
+  --   rw [dif_pos ⟨⟨_, ha⟩, h⟩]
+  --   have := Classical.choose_spec (exists_max_of_bounded_above S ⟨_, ha⟩ h)
+  --   apply this.right
+  --   assumption
+  -- cases L, U with | mk L U =>
+  -- exists ⟦{
+  --   seq n := Rat.binarySearch (fun x => x ∈ S.upperBounds) (L n) (U n) n
+  --   is_cacuhy := (by
+  --     sorry)
+  -- }⟧
+  -- apply And.intro
+  -- intro x hx
+
+
+
+  sorry
+
+instance : SupSet ℝ where
+  sSup := sorry
 
 -- this needs exists_isLUB, which requires proving that the reals
 -- are an Archemedian set

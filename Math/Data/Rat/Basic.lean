@@ -4,7 +4,7 @@ import Math.Ops.Checked
 import Math.Ops.Abs
 import Math.Logic.Nontrivial
 import Math.Relation.Basic
-import Math.Algebra.Field.Defs
+import Math.Algebra.Field.Basic
 import Math.Algebra.Semiring.Char
 import Math.Algebra.Ring.Basic
 
@@ -623,5 +623,13 @@ instance (q: ℚ) : Decidable (NeZero q) :=
     .isTrue ⟨h⟩
 
 instance : NeZero (2: ℚ) := by decide
+
+def binarySearch (P: ℚ -> Bool) (a b: ℚ) : ℕ -> ℚ
+| 0 => a
+| n + 1 =>
+  if P (midpoint a b) then
+    binarySearch P a (midpoint a b) n
+  else
+    binarySearch P (midpoint a b) b n
 
 end Rat

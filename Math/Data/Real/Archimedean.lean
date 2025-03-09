@@ -20,16 +20,4 @@ instance : Archimedean ℝ := archimedean_iff_nat_lt.mpr <| by
   rw [←Rat.add_lt_iff_lt_sub, zero_add] at spec
   exact lt_asymm spec (ub_spec _)
 
-def exists_isLUB {S : Set ℝ} (hne : S.Nonempty) (hbdd : S.BoundedAbove) : ∃ x, S.IsLUB x := by
-  sorry
-
-instance : SupSet ℝ where
-  sSup := sorry
-
-def Real.ofIncreasingBounded
-  (f: Nat -> ℝ)
-  (inc: ∀n, f n ≤ f (n + 1))
-  (bounded: ∃B, ∀n, f n ≤ B) : ℝ := by
-  sorry
-
 end Real

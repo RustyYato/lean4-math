@@ -84,6 +84,8 @@ class LinearMinMaxOrder (α: Type*) extends LT α, LE α, Min α, Max α, IsLine
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [Min α] [Max α]
 
+def clamp (x a b: α) := min (max x a) b
+
 section
 
 variable [IsLinearOrder α]
@@ -444,6 +446,38 @@ def max_assoc (a b c: α) : max a (max b c) = max (max a b) c := by
     apply Or.inr
     apply le_max_right
 
+def clamp_eq_left (h: a ≤ b) : x ≤ a -> clamp x a b = a := by
+  intro g
+  unfold clamp
+  rw [min_of_le, max_of_le]
+  assumption
+  apply max_le_iff.mpr
+  apply And.intro
+  apply le_trans; all_goals assumption
+def clamp_eq_right (_h: a ≤ b) : b ≤ x -> clamp x a b = b := by
+  intro g; unfold clamp
+  rw [min_comm, min_of_le]
+  apply le_trans
+  assumption
+  apply le_max_left
+def left_le_clamp (h: a ≤ b) : a ≤ clamp x a b := by
+  unfold clamp
+  rcases lt_or_le a x with g | g
+  rw [max_comm, max_of_le]
+  apply le_min_iff.mpr
+  apply And.intro
+  any_goals apply le_of_lt g
+  assumption
+  rw [max_of_le]
+  apply le_min_iff.mpr
+  apply And.intro
+  rfl
+  assumption
+  assumption
+def clamp_le_right (_h: a ≤ b) : clamp x a b ≤ b := by apply min_le_right
+
+attribute [irreducible] clamp
+
 class IsDecidableLinearOrder (α: Type _) [LE α] [LT α] [Min α] [Max α] extends IsLinearMinMaxOrder α where
   decLE (a b: α): Decidable (a ≤ b) := by intros; exact inferInstance
   decLT (a b: α): Decidable (a < b) := decidable_of_iff _ (lt_iff_le_and_not_le (a := a) (b := b)).symm
@@ -478,6 +512,22 @@ def min_def [IsDecidableLinearOrder α] : ∀a b: α, min a b = if a ≤ b then 
 def max_def [IsDecidableLinearOrder α] : ∀a b: α, max a b = if a ≤ b then b else a := by
   intro a b
   rw [IsDecidableLinearOrder.max_def]
+
+def clamp_def (h: a ≤ b) : clamp x a b = if x < a then a else if b < x then b else x := by
+  split
+  rw [clamp_eq_left]
+  assumption
+  apply le_of_lt; assumption
+  split
+  rw [clamp_eq_right]
+  assumption
+  apply le_of_lt; assumption
+  unfold clamp
+  rename_i g₀ g₁
+  rw [not_lt] at g₀ g₁
+  rw [max_comm, max_of_le, min_of_le]
+  assumption
+  assumption
 
 instance : IsDecidableLinearOrder Bool where
   decLE := by intros; exact inferInstance
