@@ -4,6 +4,18 @@ import Math.Algebra.GroupWithZero.Basic
 import Math.Ops.CheckedOrder
 import Math.Algebra.Field.Basic
 
+def Int.neg_le_neg_iff {a b: Int} : -a ≤ -b ↔ b ≤ a := by
+  apply Iff.intro
+  intro h
+  have := Int.neg_le_neg h
+  simp at this
+  assumption
+  apply Int.neg_le_neg
+
+def Int.neg_lt_neg_iff {a b: Int} : -a < -b ↔ b < a := by
+  apply lt_iff_of_le_iff
+  apply Int.neg_le_neg_iff
+
 namespace Rat
 
 def Fract.isNonneg (f: Fract) : Prop := 0 ≤ f.num
@@ -629,24 +641,219 @@ def midpoint_of_lt {a b: ℚ} (h: a < b) : a < midpoint a b ∧ midpoint a b < b
   decide
   decide
 
--- def floor (a: ℚ) : Int := a.num.ediv (a.den: Int)
--- def ceil (a: ℚ) : Int := -Rat.floor (-a)
--- private def Fract.sub_one_num (a: Fract) : (a - 1).num = a.num - a.den := by sorry
--- private def Fract.sub_one_den (a: Fract) : (a - 1).den = a.den := Nat.mul_one _
--- private def int_div_one (a: Int) : a / (1: Nat) = a := by sorry
--- private def sub_one_num (a: ℚ) : (a - 1).num = a.num - a.den := by sorry
--- private def sub_one_den (a: ℚ) : (a - 1).den = a.den := by sorry
--- private def add_one_num (a: ℚ) : (a + 1).num = a.num + a.den := by sorry
--- private def add_one_den (a: ℚ) : (a + 1).den = a.den := by sorry
--- def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by sorry
--- def ceil_spec (a: ℚ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by sorry
--- def intCast_lt (a b: Int) : (a: ℚ) < (b: ℚ) ↔ a < b := by sorry
--- def intCast_le (a b: Int) : (a: ℚ) ≤ (b: ℚ) ↔ a ≤ b := by sorry
--- def fract (a: ℚ) : ℚ := a - a.floor
--- def floor_add_fract (a: ℚ) : a.floor + a.fract = a := by sorry
--- def sub_fract (a: ℚ) : a - a.fract = a.floor := by sorry
--- def fract_spec (a: ℚ) : 0 ≤ a.fract ∧ a.fract < 1 := by sorry
--- def zero_le_floor (a: ℚ) : 0 ≤ a.floor ↔ 0 ≤ a := by sorry
--- def ceil_le_zero (a: ℚ) : a.ceil ≤ 0 ↔ a ≤ 0 := by sorry
+def ofInt_le (a b: ℤ) : a ≤ b ↔ a ≤ (b: ℚ) := by
+  show _ ↔ (b - (a: ℚ)).isNonneg
+  rw [←intCast_sub]
+  show _ ↔ 0 ≤ (b - a)
+  omega
+def intCast_le (a b: Int) : (a: ℚ) ≤ (b: ℚ) ↔ a ≤ b := by
+  show (b - (a: ℚ)).isNonneg ↔ _
+  rw [←intCast_sub]
+  show 0 ≤ (b - a) ↔ _
+  omega
+def intCast_lt (a b: Int) : (a: ℚ) < (b: ℚ) ↔ a < b := by
+  apply lt_iff_of_le_iff
+  apply intCast_le
+
+def Fract.floor (a: Fract) := a.num / (a.den: Int)
+def Fract.floor.spec (a b: Fract) : a ≈ b -> a.floor = b.floor := by
+  intro h
+  unfold floor
+  suffices ∀a: Fract, a.num / (a.den: ℤ) = a.reduce.num / a.reduce.den by
+    rw [this, this b]
+    rw [Fract.isReduced.spec a.reduce b.reduce (Fract.reduce.isReduced _) (Fract.reduce.isReduced _)]
+    apply (Fract.reduce.spec a).symm.trans
+    apply h.trans
+    apply Fract.reduce.spec b
+  intro a
+  let g := ‖a.num‖.gcd a.den
+  have g_nz : g ≠ 0 := by
+    unfold g
+    intro h'
+    rw [Nat.gcd_eq_zero_iff] at h'
+    exact a.den_nz h'.right
+  unfold reduce
+  simp
+  rw (occs := [1]) [←mul_one a.num, ←mul_one (a.den: ℤ)]
+  rw (occs := [1, 2]) [←Int.ediv_self (Int.ofNat_ne_zero.mpr g_nz)]
+  rw [←Int.mul_ediv_assoc, ←Int.mul_ediv_assoc]
+  rw [mul_comm _ (g: ℤ), mul_comm _ (g: ℤ)]
+  rw [Int.mul_ediv_assoc, Int.mul_ediv_assoc _ (b := a.den)]
+  show _ = (a.num / g) / (a.den / g)
+  apply Int.mul_ediv_mul_of_pos
+  refine Int.ofNat_pos.mpr ?_
+  exact Nat.zero_lt_of_ne_zero g_nz
+  refine Int.ofNat_dvd.mpr ?_
+  all_goals unfold g
+  apply Nat.gcd_dvd_right
+  rw [←Int.natAbs_ofNat a.den]
+  show (Int.gcd a.num a.den: ℤ) ∣ _
+  exact Int.gcd_dvd_left
+  apply Int.dvd_refl
+  apply Int.dvd_refl
+
+def floor : ℚ -> Int := by
+  apply Quotient.lift Fract.floor
+  apply Fract.floor.spec
+def ceil (a: ℚ) : Int := -Rat.floor (-a)
+def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by
+  cases a with | mk a =>
+  show a.floor = _ ↔ _
+  apply Iff.intro
+  · rintro rfl
+    rw [le_def, lt_def]
+    apply And.intro
+    · show Fract.isNonneg _
+      unfold Fract.floor
+      unfold Fract.isNonneg
+      rw [Fract.sub_eq_add_neg]
+      show 0 ≤ _ + _
+      simp
+      apply Int.le_sub_left_of_add_le
+      simp; rw [Int.mul_comm]
+      apply Int.mul_ediv_self_le
+      exact a.den_nz'
+    · show 0 < _
+      simp [Fract.floor, Int.add_mul]
+      rw (occs := [2]) [←Int.ediv_add_emod a.num a.den]
+      rw [sub_eq_add_neg, neg_add_rev]
+      rw [show a.num / ↑a.den * ↑a.den + ↑a.den + (-(a.num % ↑a.den) + -(↑a.den * (a.num / ↑a.den)))
+        = (↑a.den * (a.num / ↑a.den) + -(↑a.den * (a.num / ↑a.den))) + (↑a.den + -(a.num % ↑a.den)) by ac_rfl]
+      rw [add_neg_cancel, zero_add]
+      apply Int.lt_sub_left_of_add_lt
+      rw [add_zero]
+      refine Int.emod_lt_of_pos a.num ?_
+      exact Int.ofNat_pos.mpr a.den_pos
+  · show Fract.isNonneg _ ∧ Fract.isPos _ -> _
+    simp [Fract.isNonneg, Fract.isPos, add_mul]
+    intro h g
+    unfold Fract.floor
+    apply Relation.eq_of_not_lt_or_gt (· < ·)
+    intro floor_lt
+    replace h := Int.add_le_add_right h (x * a.den)
+    simp [sub_add_cancel] at h
+    have := not_lt_of_le ((Int.le_ediv_iff_mul_le ?_).mpr h)
+    contradiction
+    apply Int.ofNat_pos.mpr a.den_pos
+    intro lt_floor
+    rw (occs := [2]) [←one_mul (a.den: ℤ)] at g
+    rw [←add_mul] at g
+    replace g := Int.add_lt_add_right g a.num
+    rw [zero_add, sub_add_cancel] at g
+    replace g := Int.ediv_lt_of_lt_mul (Int.ofNat_pos.mpr a.den_pos) g
+    have := not_lt_of_le (Int.le_iff_lt_add_one.mpr g)
+    contradiction
+def ceil_spec (a: ℚ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by
+  unfold ceil
+  rw (occs := [1]) [←neg_neg x]
+  rw [neg_inj, floor_spec, intCast_neg, ←neg_le_neg_iff]
+  rw [←intCast_neg, ←intCast_one, ←intCast_add, ←intCast_sub,
+    ←neg_neg ((-x + 1: ℤ): ℚ), ←intCast_neg,
+    neg_add_rev, neg_neg, add_comm _ x, ←sub_eq_add_neg,
+    ←neg_lt_neg_iff]
+  apply And.comm
+def ceil_eq_neg_floor_neg (a: ℚ) : a.ceil = -(-a).floor := rfl
+def floor_eq_neg_ceil_neg (a: ℚ) : a.floor = -(-a).ceil := by
+  rw [ceil_eq_neg_floor_neg, neg_neg, neg_neg]
+
+attribute [irreducible] floor ceil
+
+def floor_le_self (a: ℚ) : a.floor ≤ a := ((floor_spec a a.floor).mp rfl).left
+def self_le_ceil (a: ℚ) : a ≤ a.ceil := ((ceil_spec a a.ceil).mp rfl).right
+def floor_le (a: ℚ) : ∀x: ℤ, a ≤ x -> a.floor ≤ x := by
+  intro x hx
+  have := le_trans ((floor_spec a a.floor).mp rfl).left hx
+  rw [←ofInt_le] at this
+  assumption
+def le_ceil (a: ℚ) : ∀x: ℤ, x ≤ a -> x ≤ a.ceil := by
+  intro x hx
+  have := le_trans hx ((ceil_spec a a.ceil).mp rfl).right
+  rw [←ofInt_le] at this
+  assumption
+def of_floor_lt (a: ℚ) : ∀x: ℤ, a.floor < x -> a < x := by
+  intro x hx
+  have := ((floor_spec a a.floor).mp rfl).right
+  rw [←intCast_one, ←intCast_add] at this
+  apply lt_of_lt_of_le this
+  rw [intCast_le, Int.add_one_le_iff]
+  assumption
+def of_lt_ceil (a: ℚ) : ∀x: ℤ, x < a.ceil -> x < a := by
+  intro x hx
+  rw [ceil_eq_neg_floor_neg,
+    ←neg_neg x, Int.neg_lt_neg_iff] at hx
+  have := of_floor_lt _ _ hx
+  rw [intCast_neg, ←neg_lt_neg_iff] at this
+  assumption
+def of_le_floor (a: ℚ) : ∀x: ℤ, x ≤ a.floor -> x ≤ a := by
+  intro x h
+  rw [←intCast_le] at h
+  apply le_trans h
+  apply floor_le_self
+def of_ceil_le (a: ℚ) : ∀x: ℤ, a.ceil ≤ x -> a ≤ x := by
+  intro x h
+  rw [←intCast_le] at h
+  apply le_trans _ h
+  apply self_le_ceil
+def of_lt_floor (a: ℚ) : ∀x: ℤ, x < a.floor -> x < a := by
+  intro x h
+  rw [←intCast_lt] at h
+  apply lt_of_lt_of_le h
+  apply floor_le_self
+def of_ceil_lt (a: ℚ) : ∀x: ℤ, a.ceil < x -> a < x := by
+  intro x h
+  rw [←intCast_lt] at h
+  apply lt_of_le_of_lt _ h
+  apply self_le_ceil
+def ceil_lt (a: ℚ) : ∀x: ℤ, x ≤ a -> x ≤ a.ceil := by
+  intro x hx
+  have := le_trans hx ((ceil_spec a a.ceil).mp rfl).right
+  rw [←ofInt_le] at this
+  assumption
+def fract (a: ℚ) : ℚ := a - a.floor
+def floor_add_fract (a: ℚ) : a.floor + a.fract = a := add_sub_cancel _ _
+def sub_fract (a: ℚ) : a - a.fract = a.floor := by
+  unfold fract
+  rw [sub_sub, add_sub_assoc, add_sub_cancel]
+def fract_spec (a: ℚ) : 0 ≤ a.fract ∧ a.fract < 1 := by
+  unfold fract
+  rw [←add_le_iff_le_sub, zero_add, ←lt_add_iff_sub_lt, add_comm]
+  apply (floor_spec _ _).mp
+  rfl
+
+def le_floor_of_lt_ceil (a: ℚ) : ∀x: ℤ, x < a.ceil -> x ≤ a.floor := by
+  intro x h
+  have := of_lt_ceil _ _ h
+  have :=  lt_trans this ((floor_spec a a.floor).mp rfl).right
+  rw [←intCast_succ, intCast_lt] at this
+  apply Int.le_of_lt_add_one
+  assumption
+
+@[simp]
+def intCast_floor (a: ℤ) : floor a = a := by
+  apply (floor_spec _ _).mpr
+  rw [←intCast_succ, intCast_le, intCast_lt]
+  omega
+
+@[simp]
+def intCast_ceil (a: ℤ) : ceil a = a := by
+  apply (ceil_spec _ _).mpr
+  rw [←intCast_pred, intCast_le, intCast_lt]
+  omega
+
+def le_floor (a: ℚ) : ∀x: ℤ, x ≤ a.floor ↔ x ≤ a := by
+  intro x
+  apply Iff.intro
+  apply of_le_floor
+  intro h
+  rcases lt_or_eq_of_le (le_ceil _ _ h) with h | h
+  apply le_floor_of_lt_ceil; assumption
+  subst x
+  have := le_antisymm h (self_le_ceil _)
+  rw [←this]
+  simp
+def ceil_le (a: ℚ) : ∀x: ℤ, a.ceil ≤ x ↔ a ≤ x := by
+  intro x
+  rw [ceil_eq_neg_floor_neg, ←Int.neg_le_neg_iff, neg_neg]
+  rw [le_floor, intCast_neg, ←neg_le_neg_iff]
 
 end Rat
