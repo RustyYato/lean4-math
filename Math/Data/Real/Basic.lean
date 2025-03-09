@@ -191,6 +191,7 @@ def CauchySeq.ofRat (q: ℚ) : CauchySeq where
     simp
     assumption
 
+@[coe]
 def Real.ofRat (q: ℚ) : ℝ := ⟦.ofRat q⟧
 
 @[refl]

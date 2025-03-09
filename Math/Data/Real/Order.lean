@@ -570,6 +570,30 @@ def mul_le_mul_of_nonneg {a b c d: ℝ} :
 
 def mul_nonneg {a b: ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b) : 0 ≤ a * b := mul_nonneg_of_nonneg_of_nonneg a b ha hb
 
+@[norm_cast]
+def ofRat_lt {a b: ℚ} : (a: ℝ) < b ↔ a < b := by
+  apply Iff.intro
+  · intro h
+    obtain ⟨B, B_pos, k, spec⟩ := h
+    have : B ≤ b - a := spec k (le_refl _)
+    rw [←Rat.add_le_iff_le_sub] at this
+    apply lt_of_lt_of_le _ this
+    rw (occs := [1]) [←zero_add a]
+    apply Rat.add_lt_add_right.mp
+    assumption
+  · intro h
+    exists b - a
+    apply And.intro
+    rw [←Rat.add_lt_iff_lt_sub, zero_add]; assumption
+    exists 0
+    intro n _
+    apply le_refl
+
+@[norm_cast]
+def ofRat_le {a b: ℚ} : (a: ℝ) ≤ b ↔ a ≤ b := by
+  apply le_iff_of_lt_iff
+  apply ofRat_lt
+
 end Real
 
 namespace CauchySeq

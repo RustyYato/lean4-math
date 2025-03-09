@@ -1,5 +1,6 @@
 import Math.Data.Rat.Order
 import Math.Algebra.Order
+import Math.Algebra.Archimedean.Basic
 
 instance : IsStrictOrderedRing ℚ where
   add_le_add_left := by
@@ -49,3 +50,16 @@ instance : IsOrderedAbsRing ℚ where
   zsmul_ofNat := zsmul_ofNat
   zsmul_negSucc := zsmul_negSucc
   neg_add_cancel := neg_add_cancel
+
+instance : Archimedean ℚ := by
+  apply archimedean_iff_nat_lt.mpr
+  intro x
+  exists (x.ceil + 1).natAbs
+  apply flip lt_of_lt_of_le
+  show ((x.ceil + 1: ℤ): ℚ) ≤ _
+  rw [←intCast_ofNat, Rat.intCast_le]
+  apply Int.le_natAbs
+  apply lt_of_le_of_lt
+  apply Rat.self_le_ceil
+  rw [Rat.intCast_lt]
+  exact Int.lt_succ x.ceil
