@@ -204,3 +204,68 @@ instance (f: ℝ × ℝ -> ℝ) (a: ℝ) [hf: Topology.IsContinuous f]
     simp [IsPseudoMetricSpace.Ball, dist]
     rw [dist_self, add_zero]
     assumption
+
+instance instContℝadd₂
+  (f g: ℝ × ℝ -> ℝ) [Topology.IsContinuous f] [Topology.IsContinuous g]
+ : Topology.IsContinuous (fun x: ℝ × ℝ => f x + g x) :=
+  Topology.IsContinuous.comp (fun x => (f x, g x)) (fun x => x.1 + x.2)
+
+instance instContℝadd₂'
+  (f g: ℝ -> ℝ) [Topology.IsContinuous f] [Topology.IsContinuous g]
+ : Topology.IsContinuous (fun x: ℝ => f x + g x) := by
+  show Topology.IsContinuous <| (fun x: ℝ × ℝ => x.1 + x.2) ∘ (fun x: ℝ × ℝ => ((fun x => f x.1) x, (fun x => g x.2) x)) ∘ (fun x: ℝ => (x, x))
+  suffices Topology.IsContinuous ((fun x => ((fun x => f x.fst) x, (fun x => g x.snd) x)) ∘ fun x => (x, x)) by
+    apply Topology.IsContinuous.comp
+  suffices Topology.IsContinuous fun x: ℝ×ℝ => ((fun x => f x.fst) x, (fun x => g x.snd) x) by
+    apply Topology.IsContinuous.comp
+  have : Topology.IsContinuous fun x: ℝ×ℝ => f x.fst := Topology.IsContinuous.comp _ _
+  have : Topology.IsContinuous fun x: ℝ×ℝ => g x.snd := Topology.IsContinuous.comp _ _
+  infer_instance
+
+instance instContℝmul₂
+  (f g: ℝ × ℝ -> ℝ) [Topology.IsContinuous f] [Topology.IsContinuous g]
+ : Topology.IsContinuous (fun x: ℝ × ℝ => f x * g x) :=
+  Topology.IsContinuous.comp (fun x => (f x, g x)) (fun x => x.1 * x.2)
+
+instance instContℝmul₂'
+  (f g: ℝ -> ℝ) [Topology.IsContinuous f] [Topology.IsContinuous g]
+ : Topology.IsContinuous (fun x: ℝ => f x * g x) := by
+  show Topology.IsContinuous <| (fun x: ℝ × ℝ => x.1 * x.2) ∘ (fun x: ℝ × ℝ => ((fun x => f x.1) x, (fun x => g x.2) x)) ∘ (fun x: ℝ => (x, x))
+  suffices Topology.IsContinuous ((fun x => ((fun x => f x.fst) x, (fun x => g x.snd) x)) ∘ fun x => (x, x)) by
+    apply Topology.IsContinuous.comp
+  suffices Topology.IsContinuous fun x: ℝ×ℝ => ((fun x => f x.fst) x, (fun x => g x.snd) x) by
+    apply Topology.IsContinuous.comp
+  have : Topology.IsContinuous fun x: ℝ×ℝ => f x.fst := Topology.IsContinuous.comp _ _
+  have : Topology.IsContinuous fun x: ℝ×ℝ => g x.snd := Topology.IsContinuous.comp _ _
+  infer_instance
+
+-- instance instContℝnpow (n: ℕ) : Topology.IsContinuous (fun x: ℝ => x ^ n) := by
+--   induction n with
+--   | zero =>
+--     conv => { arg 1; intro x; rw [npow_zero] }
+--     infer_instance
+--   | succ n ih =>
+--     conv => { arg 1; intro x; rw [npow_succ] }
+--     infer_instance
+
+-- instance instContℝinv? (n: ℤ) : Topology.IsContinuous (fun x: { x: ℝ // x ≠ 0 } => x.val⁻¹? ~(x.property)) where
+--   isOpen_preimage := by
+--     intro S sopen
+--     refine ⟨?_, sorry, ?_⟩
+--     exact (S \ {0}).attach.image fun x => x.val⁻¹? ~(x.property)
+--     sorry
+--     ext x
+--     rw [Set.mem_preimage, Set.mem_preimage]
+
+
+--     sorry
+
+-- instance instContℝzpow (n: ℤ) : Topology.IsContinuous (fun x: { x: ℝ // x ≠ 0 } => x.val ^? n ~(.inl x.property)) := by
+--   cases n using Int.coe_cases with
+--   | ofNat n =>
+--     conv => { arg 1; intro x; rw [zpow?_ofNat] }
+--     show Topology.IsContinuous ((fun x: ℝ => x ^ n) ∘ Subtype.val)
+--     apply Topology.IsContinuous.comp
+--   | negSucc n =>
+--     -- conv => { arg 1; intro x; rw [zpow?_negSucc] }
+--     sorry

@@ -332,6 +332,11 @@ def coinduced (f: α -> β) (t: Topology α) : Topology β where
 instance {P: α -> Prop} [Topology α] : Topology (Subtype P) :=
   Topology.induced Subtype.val inferInstance
 
+instance {P: α -> Prop} [Topology α] : Topology.IsContinuous (Subtype.val (p := P)) where
+  isOpen_preimage := by
+    intro S Sopen
+    exists S
+
 end Topology
 
 def Topology.IsContinuous.bot_dom (f: α -> β) [Tα: Topology.Discrete α] [Tβ: Topology β] : IsContinuous f where
