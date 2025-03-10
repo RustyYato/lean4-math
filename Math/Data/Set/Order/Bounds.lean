@@ -8,6 +8,24 @@ variable [LE α] [LT α] [IsPreOrder α]
 def lowerBounds (s: Set α) : Set α := mk fun b => ∀a ∈ s, b ≤ a
 def upperBounds (s: Set α) : Set α := mk fun b => ∀a ∈ s, a ≤ b
 
+instance (s: Set α) : IsInterval (upperBounds s) where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    intro a ha
+    apply le_trans
+    apply hx
+    assumption
+    assumption
+
+instance (s: Set α) : IsInterval (lowerBounds s) where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    intro a ha
+    apply flip le_trans
+    apply hy
+    assumption
+    assumption
+
 def BoundedAbove (s: Set α): Prop := (upperBounds s).Nonempty
 def BoundedBelow (s: Set α): Prop := (lowerBounds s).Nonempty
 

@@ -38,6 +38,10 @@ def inv_sub_inv (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : a⁻¹? - b⁻¹? = (b -
 
 def midpoint (a b: α) [NeZero (2: α)] : α := (a + b) /? 2
 
+def midpoint_comm (a b: α) [NeZero (2: α)] : midpoint a b = midpoint b a := by
+  unfold midpoint
+  rw [add_comm]
+
 def mul_div?_mul (a b c d: α) (hb: b ≠ 0) (hd: d ≠ 0) : (a /? b) * (c /? d) = (a * c) /? (b * d) := by
   simp [div?_eq_mul_inv?]
   rw [inv?_mul_rev]; ac_rfl

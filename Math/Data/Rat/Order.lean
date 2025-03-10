@@ -646,12 +646,14 @@ def ofInt_le (a b: ℤ) : a ≤ b ↔ a ≤ (b: ℚ) := by
   rw [←intCast_sub]
   show _ ↔ 0 ≤ (b - a)
   omega
-def intCast_le (a b: Int) : (a: ℚ) ≤ (b: ℚ) ↔ a ≤ b := by
+@[norm_cast]
+def intCast_le {a b: Int} : (a: ℚ) ≤ (b: ℚ) ↔ a ≤ b := by
   show (b - (a: ℚ)).isNonneg ↔ _
   rw [←intCast_sub]
   show 0 ≤ (b - a) ↔ _
   omega
-def intCast_lt (a b: Int) : (a: ℚ) < (b: ℚ) ↔ a < b := by
+@[norm_cast]
+def intCast_lt {a b: Int} : (a: ℚ) < (b: ℚ) ↔ a < b := by
   apply lt_iff_of_le_iff
   apply intCast_le
 
