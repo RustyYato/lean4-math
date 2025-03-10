@@ -131,6 +131,22 @@ instance instContℝxℝsnd : Topology.IsContinuous (fun x: ℝ×ℝ => x.2) whe
     apply dist_nonneg
     rfl
 
+instance : Topology.IsContinuous (fun x: ℝ => (x, x)) where
+  isOpen_preimage S Sopen := by
+    intro x hx
+    rw [Set.mem_preimage] at hx
+    obtain ⟨δ, δpos, spec⟩ := Sopen _ hx
+    refine ⟨_, half_pos δpos, ?_⟩
+    intro y hy
+    apply spec
+    dsimp
+    show _ + _ < δ
+    dsimp
+    rw [←add_half δ]
+    apply add_lt_add
+    apply hy
+    apply hy
+
 -- instance instContℝxℝmap₂
 --   (f g: ℝ × ℝ -> ℝ)
 --   [Topology.IsContinuous f]
