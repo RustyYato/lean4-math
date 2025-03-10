@@ -234,8 +234,7 @@ def rec'_cons  { motive: Map α β -> Sort* }
   rw [Multiset.rec_cons]
   rfl
 
-def get_elem_of_mem_data (map: Map α β) :
-  ∀{x}, (h: x ∈ map.data) -> map[x.1]'⟨_, h⟩ = x.2 := by
+def get_elem_of_mem_data (map: Map α β) : ∀{x}, (h: x ∈ map.data) -> map[x.1]'⟨_, h⟩ = x.2 := by
     intro x mem
     induction map
     contradiction
@@ -307,8 +306,7 @@ def erase_insert_no_dup_comm_of_ne {k v key} {map: Map α β} (h: k ≠ key) (g:
   intro g
   exact h (of_decide_eq_true g).symm
 
-def erase_insert_no_dup_cancel {k v} {map: Map α β} (g: k ∉ map) :
-  (map.insert_no_dup k v g).erase k = map := by
+def erase_insert_no_dup_cancel {k v} {map: Map α β} (g: k ∉ map) : (map.insert_no_dup k v g).erase k = map := by
   unfold erase insert_no_dup
   dsimp
   congr
@@ -445,8 +443,7 @@ def ext (a b: Map α β) :
       left; assumption
       left; assumption
 
-def mem_insert {kv: α × β} {map: Map α β}:
-  ∀{x}, x ∈ insert kv map ↔ x ∈ map ∨ x = kv.1 := by
+def mem_insert {kv: α × β} {map: Map α β}: ∀{x}, x ∈ insert kv map ↔ x ∈ map ∨ x = kv.1 := by
   intro x
   simp [insert]
   split
@@ -458,8 +455,7 @@ def mem_insert {kv: α × β} {map: Map α β}:
   assumption
   apply mem_insert_no_dup
 
-def insert_comm {x y: α × β} {map: Map α β} (h: x.1 ≠ y.1):
-  insert x (insert y map) = insert y (insert x map) := by
+def insert_comm {x y: α × β} {map: Map α β} (h: x.1 ≠ y.1): insert x (insert y map) = insert y (insert x map) := by
   simp [insert]
   repeat any_goals split
   any_goals rfl
@@ -484,8 +480,7 @@ def insert_comm {x y: α × β} {map: Map α β} (h: x.1 ≠ y.1):
   rw [insert_no_dup_comm]
   assumption
 
-def erase_insert_comm_of_ne {key} {map: Map α β} (h: x.fst ≠ key) :
-  (insert x map).erase key = (insert x  (map.erase key)) := by
+def erase_insert_comm_of_ne {key} {map: Map α β} (h: x.fst ≠ key) : (insert x map).erase key = (insert x  (map.erase key)) := by
   simp [insert]
   split <;> split
   rfl
@@ -498,23 +493,20 @@ def erase_insert_comm_of_ne {key} {map: Map α β} (h: x.fst ≠ key) :
   rw [erase_insert_no_dup_comm_of_ne]
   assumption
 
-def insert_get_elem_head {map: Map α β} (h: x.fst ∉ map) :
-  (insert x map)[x.fst]'(mem_insert.mpr (.inr rfl)) = x.snd  := by
+def insert_get_elem_head {map: Map α β} (h: x.fst ∉ map) : (insert x map)[x.fst]'(mem_insert.mpr (.inr rfl)) = x.snd  := by
   simp [insert]
   split
   contradiction
   rw [insert_nodup_get_elem, dif_pos rfl]
   right; rfl
 
-def erase_insert_cancel {map: Map α β} (h: x.fst ∉ map) :
-  (insert x map).erase x.fst = map := by
+def erase_insert_cancel {map: Map α β} (h: x.fst ∉ map) : (insert x map).erase x.fst = map := by
   simp [insert]
   split
   contradiction
   rw [erase_insert_no_dup_cancel]
 
-def insert_get_elem_tail {key} {map: Map α β} (h: key ∈ map) :
-  (insert x map)[key]'(mem_insert.mpr (.inl h)) = map[key]  := by
+def insert_get_elem_tail {key} {map: Map α β} (h: key ∈ map) : (insert x map)[key]'(mem_insert.mpr (.inl h)) = map[key]  := by
   simp [insert]
   split
   rfl
@@ -525,16 +517,14 @@ def insert_get_elem_tail {key} {map: Map α β} (h: key ∈ map) :
   left
   assumption
 
-def erase_get_elem {map: Map α β} (h: key ∈ erase k map) :
-  (erase k map)[key] = map[key]'(mem_erase.mp h).left := by
+def erase_get_elem {map: Map α β} (h: key ∈ erase k map) : (erase k map)[key] = map[key]'(mem_erase.mp h).left := by
   obtain ⟨v, h⟩ := h
   rw [get_elem_of_mem_data _ h]
   unfold erase at h
   have := Multiset.sub_mem Multiset.eraseP_sub h
   rw [get_elem_of_mem_data _ this]
 
-def insert_insert_eq {map: Map α β} (key: α) (v₀ v₁: β):
-  insert ⟨key, v₀⟩ (insert ⟨key, v₁⟩ map) = (insert ⟨key, v₁⟩ map) := by
+def insert_insert_eq {map: Map α β} (key: α) (v₀ v₁: β): insert ⟨key, v₀⟩ (insert ⟨key, v₁⟩ map) = (insert ⟨key, v₁⟩ map) := by
   conv => {
     lhs; arg 0; unfold insert
   }
