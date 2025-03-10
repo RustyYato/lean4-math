@@ -1,5 +1,6 @@
 import Math.Data.Real.Order
 import Math.Algebra.Field.Basic
+import Math.Algebra.QAlgebra.Defs
 
 def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
   is_cauchy_equiv (fun n => if h:a n = 0 then 0 else (a n)⁻¹?) (fun n => if h:b n = 0 then 0 else (b n)⁻¹?) := by
@@ -302,6 +303,39 @@ instance : IsField ℝ where
     rfl
   zpow?_ofNat n a := rfl
   zpow?_negSucc n a _ := rfl
+
+instance : RatCast ℝ where
+  ratCast := ofRat
+instance : SMul ℚ ℝ where
+  smul q r := q * r
+
+def ratCast_ne_zero (a: ℚ) (ha: a ≠ 0) : (a: ℝ) ≠ 0 := by
+  intro h
+  replace h := Quotient.exact h
+  have ⟨k, spec⟩ := h ‖a‖ (Rat.abs_pos a ha)
+  have := spec k k (le_refl _) (le_refl _)
+  dsimp [CauchySeq.ofRat] at this
+  rw [natCast_zero, sub_zero] at this
+  exact lt_irrefl this
+
+macro_rules
+| `(tactic|invert_tactic_trivial)  => `(tactic|apply ratCast_ne_zero <;> invert_tactic_trivial)
+
+def ofRat_div (a b: ℚ) (h: b ≠ 0) : (a: ℝ) /? (b: ℝ) = (a /? b: ℚ) := by
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  simp [CauchySeq.ofRat, CauchySeq.inv, Mul.mul]
+  rw [dif_neg h, div?_eq_mul_inv?]
+
+instance : IsQAlgebra ℝ where
+  ratCast_eq_ratCastRec := by
+    intro q
+    cases q with | mk q =>
+    show _ = (ofRat _) /? (ofRat _) ~(_)
+    rw [ofRat_div]
+    congr 1
+    apply ratCast_eq_ratCastRec (Rat.mk q)
 
 section
 
