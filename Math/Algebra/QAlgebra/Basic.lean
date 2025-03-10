@@ -1,6 +1,8 @@
 import Math.Algebra.Basic
 import Math.Algebra.QAlgebra.Defs
-import Math.Algebra.Field.Basic
+import Math.Algebra.Field.Hom
+
+section
 
 variable [QAlgebraOps α] [IsQAlgebra α]
 
@@ -64,3 +66,23 @@ instance : IsAlgebra ℚ α where
   smul_def _ _ := by
     rw [qsmul_eq_ratCast_mul]
     rfl
+
+end
+
+-- given a non-trivial ring which is an algebra over ℚ, we can show that it must
+-- have characteristic 0. This follows pretty much directly from the fact that
+-- all ring homomorphisms from fields to non-trivial rings are injective
+def HasChar.ofQAlgebra [IsNontrivial α] [RingOps α] [IsRing α] [SMul ℚ α] [AlgebraMap ℚ α] [IsAlgebra ℚ α] : HasChar α 0 := by
+  apply HasChar.of_natCast_eq_zero
+  rw [natCast_zero]
+  intro m h
+  have : (algebraMap (m: ℚ): α) = m := by
+    clear h
+    induction m with
+    | zero => simp [natCast_zero, resp_zero]
+    | succ m ih =>
+      simp [natCast_succ, resp_add, resp_one, ih]
+  rw [h, ←resp_zero (algebraMap (R := ℚ) (A := α))] at this
+  replace this := field_hom_inj (F := ℚ) (R := α) algebraMap this
+  rw [natCast_inj this]
+  apply Nat.dvd_refl

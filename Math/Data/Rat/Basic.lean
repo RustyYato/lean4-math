@@ -568,6 +568,10 @@ instance : IsField ℚ where
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
 
+instance : IsNonCommField ℚ := (inferInstanceAs (IsField ℚ)).toIsNonCommField
+instance : IsRing ℚ := (inferInstanceAs (IsField ℚ)).toIsRing
+instance : IsSemiring ℚ := (inferInstanceAs (IsField ℚ)).toIsSemiring
+
 def ofIntHom : ℤ ↪+* ℚ where
   toFun := algebraMap
   resp_zero := resp_zero _
