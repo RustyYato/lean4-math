@@ -19,6 +19,10 @@ def neg_inv? (a: α) (h: a ≠ 0) : (-a)⁻¹? = -a⁻¹? := by
   refine inv?_eq_of_mul_right (-a) (-a⁻¹?) ?_
   rw [←neg_mul_right, ←neg_mul_left, neg_neg, inv?_mul_cancel]
 
+def add_div_add₀ (a b c: α) (hc: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
+  simp [div?_eq_mul_inv?]
+  rw [add_mul]
+
 end
 
 section
@@ -33,5 +37,9 @@ def inv_sub_inv (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : a⁻¹? - b⁻¹? = (b -
   rw [mul_comm, mul_assoc, inv?_mul_cancel, mul_one]
 
 def midpoint (a b: α) [NeZero (2: α)] : α := (a + b) /? 2
+
+def mul_div?_mul (a b c d: α) (hb: b ≠ 0) (hd: d ≠ 0) : (a /? b) * (c /? d) = (a * c) /? (b * d) := by
+  simp [div?_eq_mul_inv?]
+  rw [inv?_mul_rev]; ac_rfl
 
 end
