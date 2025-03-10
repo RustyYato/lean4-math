@@ -13,11 +13,11 @@ def Iii := Set.univ
 def Iio (upper_bound: α) := mk fun x => x < upper_bound
 def Iic (upper_bound: α) := mk fun x => x ≤ upper_bound
 def Ioi (lower_bound: α) := mk fun x => lower_bound < x
-def Ioo (lower_bound upper_bound: α) := mk fun x => lower_bound < x ∧ x < upper_bound
-def Ioc (lower_bound upper_bound: α) := mk fun x => lower_bound < x ∧ x ≤ upper_bound
+def Ioo (lower_bound upper_bound: α) := Ioi lower_bound ∩ Iio upper_bound
+def Ioc (lower_bound upper_bound: α) := Ioi lower_bound ∩ Iic upper_bound
 def Ici (lower_bound: α) := mk fun x => lower_bound ≤ x
-def Ico (lower_bound upper_bound: α) := mk fun x => lower_bound ≤ x ∧ x < upper_bound
-def Icc (lower_bound upper_bound: α) := mk fun x => lower_bound ≤ x ∧ x ≤ upper_bound
+def Ico (lower_bound upper_bound: α) := Ici lower_bound ∩ Iio upper_bound
+def Icc (lower_bound upper_bound: α) := Ici lower_bound ∩ Iic upper_bound
 
 end
 
@@ -125,6 +125,9 @@ def nonempty_Icc : (Icc a b).Nonempty ↔ a ≤ b := by
   apply le_trans <;> assumption
   intro h
   exists a
+  apply And.intro
+  apply le_refl
+  assumption
 
 instance [NoMinOrder α] : NoMinOrder (Iio a) where
   exists_lt := by
@@ -147,5 +150,80 @@ instance [NoMaxOrder α] : NoMaxOrder (Ioi a) :=
 
 instance [NoMaxOrder α] : NoMaxOrder (Ici a) :=
   inferInstanceAs (NoMaxOrder (α := Opposite (Iic (Opposite.mk a))))
+
+
+class _root_.IsInterval (I: Set α): Prop where
+  isInterval: ∀⦃x y⦄, x ∈ I -> y ∈ I -> ∀z, x ≤ z -> z ≤ y -> z ∈ I
+
+def isInterval (I: Set α) : Prop :=
+  ∀⦃x y⦄, x ∈ I -> y ∈ I -> ∀z, x ≤ z -> z ≤ y -> z ∈ I
+
+def mem_interval (I: Set α) [IsInterval I] : isInterval I :=
+  IsInterval.isInterval
+
+namespace isInterval
+
+-- the intersection of two intervals is always an interval
+instance (A B: Set α) [IsInterval A] [IsInterval B] : IsInterval (A ∩ B) where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    apply And.intro
+    apply mem_interval
+    apply hx.left
+    apply hy.left
+    assumption
+    assumption
+    apply mem_interval
+    apply hx.right
+    apply hy.right
+    assumption
+    assumption
+
+-- the entire set is always an interval
+instance : @IsInterval α _ ⊤ where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    trivial
+-- the empty set is always an interval
+instance : @IsInterval α _ ⊥ where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    trivial
+
+variable {a b: α}
+
+-- the above defined intervals are also intervals
+
+instance : IsInterval (Set.Ici a) where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    show a ≤ _
+    apply le_trans hx
+    assumption
+instance : IsInterval (Set.Ioi a) where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    show a < _
+    apply lt_of_lt_of_le hx
+    assumption
+instance : IsInterval (Set.Iic a) where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    show _ ≤ a
+    apply le_trans _ hy
+    assumption
+instance : IsInterval (Set.Iio a) where
+  isInterval := by
+    intro x y hx hy z x₀ y₀
+    show _ < a
+    apply lt_of_le_of_lt _ hy
+    assumption
+
+instance : IsInterval (Set.Icc a b) := inferInstanceAs (IsInterval (_ ∩ _))
+instance : IsInterval (Set.Ico a b) := inferInstanceAs (IsInterval (_ ∩ _))
+instance : IsInterval (Set.Ioc a b) := inferInstanceAs (IsInterval (_ ∩ _))
+instance : IsInterval (Set.Ioo a b) := inferInstanceAs (IsInterval (_ ∩ _))
+
+end isInterval
 
 end Set
