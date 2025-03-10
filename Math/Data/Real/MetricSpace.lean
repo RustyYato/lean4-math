@@ -147,78 +147,39 @@ instance : Topology.IsContinuous (fun x: ℝ => (x, x)) where
     apply hy
     apply hy
 
--- instance instContℝxℝmap₂
---   (f g: ℝ × ℝ -> ℝ)
---   [Topology.IsContinuous f]
---   [Topology.IsContinuous g]
---   : Topology.IsContinuous (fun x: ℝ×ℝ => (f x, g x)) where
---   isOpen_preimage S Sopen := by
-
---     have hf := Topology.IsOpen.preimage f (S.image Prod.fst) (by
---       rintro ε ⟨⟨_, ε₁⟩, hε, rfl⟩
---       have ⟨δ, δpos, ball_sub⟩  := Sopen (ε, ε₁) hε
---       refine ⟨_, δpos, ?_⟩
---       intro y hy
---       rw [Set.mem_image]
---       refine ⟨(y, ε₁), ?_, rfl⟩
---       apply ball_sub
---       show dist _ _ < δ
---       simp [dist]
---       rw [dist_self, add_zero]
---       apply hy)
---     have hg := Topology.IsOpen.preimage g (S.image Prod.snd) (by
---       rintro ε ⟨⟨ε₁, _⟩, hε, rfl⟩
---       have ⟨δ, δpos, ball_sub⟩  := Sopen (ε₁, ε) hε
---       refine ⟨_, δpos, ?_⟩
---       intro y hy
---       rw [Set.mem_image]
---       refine ⟨(ε₁, y), ?_, rfl⟩
---       apply ball_sub
---       show dist _ _ < δ
---       simp [dist]
---       rw [dist_self, zero_add]
---       apply hy)
---     intro x hx
---     rw [Set.mem_preimage] at hx
---     have ⟨δ₀, δ₀pos, ball₀⟩  := hf x (by
---       rw [Set.mem_preimage, Set.mem_image]
---       exact ⟨_, hx, rfl⟩)
---     have ⟨δ₁, δ₁pos, ball₁⟩  := hg x (by
---       rw [Set.mem_preimage, Set.mem_image]
---       exact ⟨_, hx, rfl⟩)
---     refine ⟨min δ₀ δ₁, ?_, ?_⟩
---     apply lt_min_iff.mpr
---     apply And.intro <;> assumption
---     intro x₀ hx₀
---     rw [Set.mem_preimage]
---     sorry
-
-    -- have := ball₀ x₀ ?_
-    -- rw [Set.mem_preimage, Set.mem_image] at this
-    -- obtain ⟨⟨x₁, x₂⟩, mem₀, rfl⟩ := this
-    -- have := ball₁ x₀ ?_
-    -- rw [Set.mem_preimage, Set.mem_image] at this
-    -- obtain ⟨⟨x₃, x₄⟩, mem₁, rfl⟩ := this
-
-
-
-
-
-
-
-
-
-
-    -- have ⟨δ, δ_pos, ball_sub⟩ := Sopen _ hx
-    -- refine ⟨δ, δ_pos, ?_⟩
-    -- intro y hy
-    -- apply ball_sub
-    -- simp [IsPseudoMetricSpace.Ball, dist] at *
-    -- rw [←zero_add (dist _ _)]
-    -- apply lt_of_le_of_lt _ hy
-    -- apply add_le_add
-    -- apply dist_nonneg
-    -- rfl
+instance instContℝxℝmap₂ (f g: ℝ × ℝ -> ℝ) [Topology.IsContinuous f] [Topology.IsContinuous g] : Topology.IsContinuous (fun x: ℝ×ℝ => (f x, g x)) where
+  isOpen_preimage S Sopen := by
+    intro x hx
+    have ⟨δ, δ_pos, spec⟩ := Sopen _ hx
+    dsimp at spec
+    have ⟨δ₀, δ₀pos, spec₀⟩ := Topology.IsOpen.preimage f (IsPseudoMetricSpace.Ball (f x) (δ /? 2)) Topology.IsOpen.Ball
+      x (by
+      show dist _ _ < δ /? 2
+      rw [dist_self]
+      apply half_pos
+      assumption)
+    have ⟨δ₁, δ₁pos, spec₁⟩ := Topology.IsOpen.preimage g (IsPseudoMetricSpace.Ball (g x) (δ /? 2)) Topology.IsOpen.Ball
+      x (by
+      show dist _ _ < δ /? 2
+      rw [dist_self]
+      apply half_pos
+      assumption)
+    refine ⟨min δ₀ δ₁, ?_, ?_⟩
+    · apply lt_min_iff.mpr
+      apply And.intro <;> assumption
+    intro y hy
+    apply spec
+    dsimp
+    show _ + _ < δ
+    dsimp
+    rw [←add_half δ]
+    apply add_lt_add
+    apply spec₀ y
+    · apply IsPseudoMetricSpace.ball_sub _ _ _ _ _ hy
+      apply min_le_left
+    apply spec₁ y
+    · apply IsPseudoMetricSpace.ball_sub _ _ _ _ _ hy
+      apply min_le_right
 
 instance (f: ℝ × ℝ -> ℝ) (a: ℝ) [hf: Topology.IsContinuous f]
   : Topology.IsContinuous (fun x: ℝ => f (a, x)) where
