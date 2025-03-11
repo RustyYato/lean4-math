@@ -143,6 +143,8 @@ def CauchySeq.eventually_pointwise_ne_of_ne (a b: CauchySeq) (h: ¬a ≈ b) : Ev
 
 namespace Real
 
+local instance : Coe ℚ ℝ := ⟨.ofRat⟩
+
 def inv (a: ℝ) : a ≠ 0 -> ℝ := by
   apply a.hrecOn (motive := fun a => a ≠ (0: ℝ) -> ℝ)
   case f =>

@@ -1,6 +1,7 @@
 import Math.Data.Real.Archimedean
 import Math.Data.Nat.Lattice
 import Math.Data.Int.Lattice
+import Math.Algebra.QAlgebra.Basic
 
 noncomputable section
 
@@ -16,6 +17,19 @@ def intCast_le {a b: ℤ} :  a ≤ (b: ℝ) ↔ a ≤ b := by
 def intCast_lt {a b: ℤ} :  a < (b: ℝ) ↔ a < b := by
   apply ofRat_lt.trans
   apply Rat.intCast_lt
+
+@[norm_cast]
+def natCast_le {a b: ℕ} :  a ≤ (b: ℝ) ↔ a ≤ b := by
+  apply ofRat_le.trans
+  rw [←intCast_ofNat, ←intCast_ofNat b]
+  apply Rat.intCast_le.trans
+  apply Int.ofNat_le
+@[norm_cast]
+def natCast_lt {a b: ℕ} :  a < (b: ℝ) ↔ a < b := by
+  apply ofRat_lt.trans
+  rw [←intCast_ofNat, ←intCast_ofNat b]
+  apply Rat.intCast_lt.trans
+  apply Int.ofNat_lt
 
 def exists_floor (r: ℝ) : ∃n: ℤ, n ≤ r ∧ r < n + 1 := by
   have ⟨n, hn⟩ := exists_nat_gt r
@@ -196,6 +210,55 @@ def ceil_le (a: ℝ) : ∀x: ℤ, a.ceil ≤ x ↔ a ≤ x := by
   intro x
   rw [ceil_eq_neg_floor_neg, ←Int.neg_le_neg_iff, neg_neg]
   rw [le_floor, ←intCast_neg, neg_le_neg_iff]
+
+def exists_rat_between (a b: ℝ) (h: a < b) : ∃r: ℚ, a < r ∧ r < b := by
+  classical
+  have ⟨n, hn⟩ := exists_nat_gt (1 /? (b - a))
+  replace hn := mul_lt_mul_of_pos_right (k := (b - a)) ?_ hn
+  rw [div?_mul_cancel] at hn
+  have npos : 0 < n := by
+    cases n
+    rw [natCast_zero, zero_mul] at hn
+    have := lt_asymm hn zero_lt_one
+    contradiction
+    apply Nat.zero_lt_succ
+  replace hn := mul_lt_mul_of_pos_left (k := 1 /? n) ?_ hn
+  rw [mul_one, ←mul_assoc, div?_mul_cancel, one_mul] at hn
+  let k₀ := (a * n).floor + 1
+  exists (k₀: ℚ) /? (n: ℚ)
+  apply And.intro
+  show a < (((k₀: ℚ) /? (n: ℚ): ℚ): ℝ)
+  rw [←ratCast_div?]
+  apply (lt_iff_mul_lt_mul_of_pos_right _ _ (n: ℚ) _).mpr
+  rw [div?_mul_cancel]; norm_cast
+  unfold k₀
+  rw [intCast_succ]
+  apply (lt_iff_add_lt_add_right (k := -Real.floor (a * n))).mpr
+  rw [←sub_eq_add_neg, add_comm_right, add_neg_cancel, zero_add]
+  show Real.fract (a * n) < _
+  apply (fract_spec _).right
+  norm_cast
+  exact_mod_cast npos
+  have : a + 1 /? (n: ℝ) < b := by
+    apply lt_of_lt_of_le
+    apply add_lt_add_left
+    assumption
+    rw [add_sub_cancel]
+  apply lt_of_le_of_lt _ this
+  rw [←ratCast_div?]
+  apply (le_iff_mul_le_mul_of_pos_right _ _ (n: ℚ) _).mpr
+  norm_cast
+  rw [add_mul, div?_mul_cancel, div?_mul_cancel]
+  unfold k₀
+  rw [intCast_succ]
+  apply add_le_add_right
+  apply floor_le_self
+  norm_cast
+  exact_mod_cast npos
+  rw [div?_eq_mul_inv?, one_mul]
+  apply inv?_pos
+  exact_mod_cast npos
+  exact zero_lt_iff_pos.mpr h
 
 end Real
 

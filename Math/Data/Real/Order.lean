@@ -133,6 +133,8 @@ end CauchySeq
 
 namespace Real
 
+local instance : Coe ℚ ℝ := ⟨.ofRat⟩
+
 def IsPos : ℝ -> Prop := by
   apply Quotient.lift CauchySeq.IsPos
   intro a b ab

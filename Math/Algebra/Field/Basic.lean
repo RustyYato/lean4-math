@@ -1,5 +1,6 @@
 import Math.Algebra.Field.Defs
 import Math.Algebra.GroupWithZero.Basic
+import Math.Algebra.Semiring.Char
 
 section
 
@@ -51,3 +52,14 @@ def mul_div?_mul (a b c d: α) (hb: b ≠ 0) (hd: d ≠ 0) : (a /? b) * (c /? d)
   rw [inv?_mul_rev]; ac_rfl
 
 end
+
+-- we don't use Semiring here to prevent invert_tactic cycles
+-- by using Ring we ensure that Nat is not a valid option
+def ne_zero_of_char0 [RingOps α] [IsRing α] [HasChar α 0] (n: ℕ) :
+  n ≠ 0 -> (n: α) ≠ 0 := by
+  intro h g
+  rw [←natCast_zero] at g
+  exact h (HasChar.natCast_inj g)
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply ne_zero_of_char0 <;> invert_tactic)

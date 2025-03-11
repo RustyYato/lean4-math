@@ -61,5 +61,27 @@ instance : IsQAlgebra ℚ where
     show _ = _
     simp
 
-def qsmul_eq_ratCast_mul [QAlgebraOps α] [IsQAlgebra α]: ∀(q: ℚ) (a: α), q • a = q * a := IsQAlgebra.qsmul_eq_ratCast_mul
-def ratCast_eq_ratCastRec [QAlgebraOps α] [IsQAlgebra α]: ∀q: ℚ, (q: α) = ratCastRec q := IsQAlgebra.ratCast_eq_ratCastRec
+variable [QAlgebraOps α] [IsQAlgebra α]
+
+def qsmul_eq_ratCast_mul: ∀(q: ℚ) (a: α), q • a = q * a := IsQAlgebra.qsmul_eq_ratCast_mul
+def ratCast_eq_ratCastRec: ∀q: ℚ, (q: α) = ratCastRec q := IsQAlgebra.ratCast_eq_ratCastRec
+
+@[norm_cast]
+def ratCast_intCast (n: ℤ) : ((n: ℚ): α) = n := by
+  rw [ratCast_eq_ratCastRec]
+  show ((n: ℤ): α) /? (1:) = _
+  rw [div?_eq_mul_inv?]
+  conv => { lhs; rhs; arg 1; rw [natCast_one] }
+  rw [inv?_one, mul_one]
+
+@[norm_cast]
+def ratCast_natCast (n: ℕ) : ((n: ℚ): α) = n := by
+  rw [←intCast_ofNat (n := n)]
+  rw [ratCast_intCast, intCast_ofNat]
+
+@[norm_cast]
+def ratCast_zero : ((0: ℚ): α) = 0 := by
+  rw [←natCast_zero, ratCast_natCast, natCast_zero]
+@[norm_cast]
+def ratCast_one : ((1: ℚ): α) = 1 := by
+  rw [←natCast_one, ratCast_natCast, natCast_one]

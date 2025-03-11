@@ -217,8 +217,7 @@ def CauchySeq.eventually_pointwise (a b: CauchySeq) : Eventually (fun n => a n =
   rw [←eq]
   assumption
 
-instance : Coe ℚ ℝ := ⟨.ofRat⟩
-instance : Coe ℚ ℝ := ⟨.ofRat⟩
+local instance : Coe ℚ ℝ := ⟨.ofRat⟩
 instance : NatCast ℝ where
   natCast n := (n: ℚ)
 instance : IntCast ℝ where
