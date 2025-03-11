@@ -6,6 +6,7 @@ def cases {motive: Int -> Sort _}
 | .negSucc _ => neg _
 | .ofNat (.succ _) => pos _
 
+@[cases_eliminator, induction_eliminator]
 def coe_cases {motive: Int -> Sort _}
   (ofNat: ∀n: Nat, motive n)
   (negSucc: ∀n: Nat, motive (Int.negSucc n)): ∀x, motive x

@@ -353,7 +353,7 @@ def succ_zsmul [IsAddGroup α] (x: ℤ) (a: α) : (x + 1) • a = x • a + a :=
   cases x with
   | ofNat x =>
     have : (1: ℤ) = ↑(1: ℕ) := rfl
-    erw [this, Int.ofNat_eq_coe, Int.ofNat_add_ofNat, ←Int.ofNat_eq_coe, ←Int.ofNat_eq_coe, zsmul_ofNat, zsmul_ofNat, succ_nsmul]
+    erw [this, Int.ofNat_add_ofNat, zsmul_ofNat, zsmul_ofNat, succ_nsmul]
   | negSucc x =>
   cases x with
   | zero =>

@@ -258,7 +258,7 @@ private def zsmul [RingOps R] [IsRing R] (n: Int) : RingQuot r -> RingQuot r := 
   intro a b eq
   cases n with
   | ofNat n =>
-    rw [Int.ofNat_eq_coe, zsmul_ofNat, zsmul_ofNat]
+    rw [zsmul_ofNat, zsmul_ofNat]
     show nsmul n ⟦a⟧ = nsmul n ⟦b⟧
     congr 1
     apply Quot.sound

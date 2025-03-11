@@ -1,4 +1,4 @@
-import Math.Algebra.Ring
+import Math.Algebra.Field.Basic
 import Math.Order.Linear
 import Math.Ops.Abs
 import Math.Ops.CheckedOrder
@@ -110,6 +110,25 @@ instance
   abs_one := abs_one
   mul_abs := mul_abs
 
+instance : IsOrderedAddCommMonoid ℤ where
+  add_le_add_left := by
+    intro a b h c
+    apply Int.add_le_add_left
+    assumption
+  le_iff_nsmul_le := by
+    intro a b n h
+    apply Iff.intro
+    show a ≤ b -> n * a ≤ n * b
+    intro h
+    apply Int.mul_le_mul_of_nonneg_left
+    exact h
+    exact Int.ofNat_zero_le n
+    intro h
+    apply Int.le_of_mul_le_mul_left
+    assumption
+    apply Int.ofNat_pos.mpr
+    assumption
+
 section
 
 variable [AddMonoidOps α] [AddMonoidOps β] [IsAddMonoid α] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] [IsOrderedAbsAddMonoid α]
@@ -154,6 +173,28 @@ def add_lt_add_of_le_of_lt [IsAddRightCancel β] (a b c d: β) : a ≤ c -> b < 
   apply add_le_add_right
   assumption
   apply add_lt_add_left
+  assumption
+
+end
+
+section
+
+variable [AddGroupOps α] [IsAddGroup α] [IsOrderedAddCommMonoid α]
+
+def neg_le_neg_iff (a b: α) : -a ≤ -b ↔ b ≤ a := by
+  revert a b
+  suffices ∀a b: α, a ≤ b -> -b ≤ -a by
+    intro a b
+    apply Iff.intro _ (this _ _)
+    intro h
+    have := this _ _ h
+    rw [neg_neg, neg_neg] at this
+    assumption
+  intro a b h
+  have := add_le_add_left _ _ h (-a)
+  rw [neg_add_cancel] at this
+  have := add_le_add_right _ _ this (-b)
+  rw [zero_add, add_assoc, add_neg_cancel, add_zero] at this
   assumption
 
 end
@@ -217,6 +258,107 @@ end
 
 section
 
+variable [SemiringOps α] [IsOrderedSemiring α] [IsNontrivial α]
+
+def le_succ_self (a: α) : a ≤ a + 1 := by
+  rw (occs := [1]) [←add_zero a]
+  apply add_le_add_left
+  apply zero_le_one
+
+end
+
+section
+
+variable [RingOps α] [IsOrderedRing α] [IsNontrivial α]
+
+local instance : IsPartialOrder α :=
+  (inferInstanceAs (IsOrderedRing α)).toIsPartialOrder
+local instance : IsLawfulLT α :=
+  (inferInstanceAs (IsOrderedRing α)).toIsLawfulLT
+
+@[norm_cast]
+def le_iff_natCast_le {n m: ℕ} : n ≤ (m: α) ↔ n ≤ m := by
+  induction n generalizing m with
+  | zero =>
+    simp [natCast_zero]
+    induction m with
+    | zero => rw [natCast_zero]
+    | succ m ih =>
+      rw [natCast_add]
+      rw [←add_zero 0]
+      apply add_le_add
+      assumption
+      rw [natCast_one]
+      apply zero_le_one
+  | succ n ih =>
+    cases m with
+    | zero =>
+      simp [natCast_succ]
+      intro h
+      cases Nat.le_zero.mp <| ih.mp <| le_trans (le_succ_self (n: α)) h
+      simp [natCast_zero] at h
+      exact not_lt_of_le h zero_lt_one
+    | succ m =>
+      simp [natCast_succ]
+      rw [←ih]
+      apply Iff.intro
+      intro h
+      have := add_le_add_right _ _ h (-1)
+      rw [add_assoc, add_assoc, add_neg_cancel] at this
+      simpa [this]
+      intro h
+      apply add_le_add_right
+      assumption
+
+@[norm_cast]
+def le_iff_intCast_le {n m: ℤ} : n ≤ (m: α) ↔ n ≤ m := by
+  cases n <;> cases m <;> rename_i n m
+  norm_cast
+  apply le_iff_natCast_le
+  · apply flip Iff.intro
+    intro h
+    have := lt_of_le_of_lt h (Int.negSucc_lt_zero m)
+    contradiction
+    norm_cast
+    rw [intCast_negSucc]
+    intro h
+    have := add_le_add_right _ _ h (m.succ)
+    rw [neg_add_cancel, ←natCast_add, ←natCast_zero] at this
+    norm_cast at this
+  · apply Iff.intro
+    intro h
+    apply le_trans
+    apply le_of_lt
+    apply Int.negSucc_lt_zero
+    apply Int.ofNat_zero_le
+    intro
+    norm_cast
+    rw [intCast_negSucc]
+    have := add_le_add_right 0 (m + n.succ: α) ?_ (-n.succ)
+    rw [zero_add, add_assoc, add_neg_cancel, add_zero] at this
+    assumption
+    rw [←natCast_add, ←natCast_zero]
+    apply le_iff_natCast_le.mpr
+    apply Nat.zero_le
+  · rw [intCast_negSucc, intCast_negSucc, neg_le_neg_iff,
+      Int.negSucc_eq, Int.negSucc_eq, neg_le_neg_iff,
+      ←natCast_succ, ←natCast_succ, Int.ofNat_le]
+    apply le_iff_natCast_le
+
+@[norm_cast]
+def lt_iff_natCast_lt {n m: ℕ} : n < (m: α) ↔ n < m := by
+  iterate 2 rw [lt_iff_le_and_not_le]
+  iterate 2 rw [le_iff_natCast_le]
+
+@[norm_cast]
+def lt_iff_intCast_lt {n m: ℤ} : n < (m: α) ↔ n < m := by
+  iterate 2 rw [lt_iff_le_and_not_le]
+  iterate 2 rw [le_iff_intCast_le]
+
+end
+
+section
+
 variable [MonoidOps α] [MonoidOps β] [IsMonoid α] [IsMonoid β] [Zero β] [IsOrderedCommMonoid β] [AbsoluteValue α β] [IsOrderedAbsMonoid α]
 
 def abs_pow (a: α) (n: ℕ) : ‖a ^ n‖ = ‖a‖ ^ n := by
@@ -274,7 +416,24 @@ def mul_lt_mul_of_pos_right: ∀(a b : α), a < b → ∀ (c : α), 0 < c → a 
   subst b
   exact lt_irrefl ab
 
-def inv?_pos [IsLinearOrder α] (a: α) (h: 0 < a): 0 < a⁻¹? := by
+def two_pos : 0 < (2: α) := by
+  show (0: α) < OfNat.ofNat (0 + 2)
+  have := ofNat_eq_natCast (α := α) 0
+  rw [ofNat_eq_natCast (α := α) 0, Nat.zero_add, show 2 = 1 + 1 by rfl, natCast_add]
+  apply lt_of_lt_of_le
+  apply zero_lt_one
+  rw [←add_zero (1: α), natCast_one]
+  apply add_le_add_left
+  apply zero_le_one
+
+def add_half (a: α) : a /? 2 ~(by symm; apply ne_of_lt two_pos) + a /? 2 ~(by symm; apply ne_of_lt two_pos) = a := by
+  rw [add_div?_add', ←mul_two, div?_eq_mul_inv?, mul_assoc, mul_inv?_cancel, mul_one]
+
+section
+
+variable [IsLinearOrder α]
+
+def inv?_pos (a: α) (h: 0 < a): 0 < a⁻¹? := by
   have anz : a ≠ 0 := by
     intro g; rw [g] at h
     exact lt_irrefl h
@@ -288,30 +447,100 @@ def inv?_pos [IsLinearOrder α] (a: α) (h: 0 < a): 0 < a⁻¹? := by
     rw [g, mul_zero] at this
     exact zero_ne_one _ this
 
-def div?_pos [IsLinearOrder α] (a b: α) (ha: 0 < a) (hb: 0 < b): 0 < a /? b := by
+def div?_pos (a b: α) (ha: 0 < a) (hb: 0 < b): 0 < a /? b := by
   rw [div?_eq_mul_inv?]; conv => { lhs; rw [←mul_zero a] }
   apply mul_lt_mul_of_pos_left
   apply inv?_pos
   assumption
   assumption
 
-def two_pos : 0 < (2: α) := by
-  show (0: α) < OfNat.ofNat (0 + 2)
-  have := ofNat_eq_natCast (α := α) 0
-  rw [ofNat_eq_natCast (α := α) 0, Nat.zero_add, show 2 = 1 + 1 by rfl, natCast_add]
-  apply lt_of_lt_of_le
-  apply zero_lt_one
-  rw [←add_zero (1: α), natCast_one]
-  apply add_le_add_left
-  apply zero_le_one
-
-def half_pos [IsLinearOrder α] {ε: α} (h: 0 < ε) : 0 < ε /? 2 ~(((ne_of_lt two_pos).symm: (2: α) ≠ 0)) := by
+def half_pos {ε: α} (h: 0 < ε) : 0 < ε /? 2 ~(((ne_of_lt two_pos).symm: (2: α) ≠ 0)) := by
   have := mul_lt_mul_of_pos_left _ _ (inv?_pos _ two_pos) _ h
   rw [mul_zero, ←div?_eq_mul_inv?] at this
   assumption
 
-def add_half (a: α) : a /? 2 ~(by symm; apply ne_of_lt two_pos) + a /? 2 ~(by symm; apply ne_of_lt two_pos) = a := by
-  rw [add_div?_add', ←mul_two, div?_eq_mul_inv?, mul_assoc, mul_inv?_cancel, mul_one]
+def lt_iff_mul_lt_mul_of_pos_right (a b k: α) (h: 0 < k) : a < b ↔ a * k < b * k := by
+  revert a b k
+  suffices ∀(a b k : α), 0 < k → a < b -> a * k < b * k by
+    intro a b k kpos
+    apply Iff.intro
+    apply this
+    assumption
+    intro h
+    have := this _ _ k⁻¹? (inv?_pos _ kpos) h
+    rw [mul_assoc, mul_assoc, mul_inv?_cancel, mul_one, mul_one] at this
+    assumption
+  intro a b k kpos altb
+  apply mul_lt_mul_of_pos_right
+  assumption
+  assumption
+
+def lt_iff_mul_lt_mul_of_pos_left (a b k: α) (h: 0 < k) : a < b ↔ k * a < k * b := by
+  revert a b k
+  suffices ∀(a b k : α), 0 < k → a < b -> k * a < k * b by
+    intro a b k kpos
+    apply Iff.intro
+    apply this
+    assumption
+    intro h
+    have := this _ _ k⁻¹? (inv?_pos _ kpos) h
+    rw [←mul_assoc, ←mul_assoc, inv?_mul_cancel, one_mul, one_mul] at this
+    assumption
+  intro a b k kpos altb
+  apply mul_lt_mul_of_pos_left
+  assumption
+  assumption
+
+def le_iff_mul_le_mul_of_pos_right (a b k: α) (h: 0 < k) : a ≤ b ↔ a * k ≤ b * k := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_mul_lt_mul_of_pos_right
+  assumption
+
+def le_iff_mul_le_mul_of_pos_left (a b k: α) (h: 0 < k) : a ≤ b ↔ k * a ≤ k * b := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_mul_lt_mul_of_pos_left
+  assumption
+
+end
+
+section
+
+variable [Min α] [Max α] [IsLinearMinMaxOrder α] [NeZero (2: α)]
+
+local instance : IsLinearOrder α :=
+  (inferInstanceAs (IsLinearMinMaxOrder α)).toIsLinearOrder
+
+def min_le_midpoint (a b: α) : min a b ≤ midpoint a b := by
+  apply min_le_iff.mpr
+  unfold midpoint
+  rcases lt_or_le a b
+  left; apply (le_iff_mul_le_mul_of_pos_right _ _ 2 _).mpr
+  rw [div?_mul_cancel, mul_two]
+  apply add_le_add_left
+  apply le_of_lt; assumption
+  apply two_pos
+  right; apply (le_iff_mul_le_mul_of_pos_right _ _ 2 _).mpr
+  rw [div?_mul_cancel, mul_two]
+  apply add_le_add_right
+  assumption
+  exact two_pos
+
+def midpoint_le_max (a b: α) : midpoint a b ≤ max a b := by
+  apply le_max_iff.mpr
+  unfold midpoint
+  rcases lt_or_le b a
+  left; apply (le_iff_mul_le_mul_of_pos_right _ _ 2 _).mpr
+  rw [div?_mul_cancel, mul_two]
+  apply add_le_add_left
+  apply le_of_lt; assumption
+  apply two_pos
+  right; apply (le_iff_mul_le_mul_of_pos_right _ _ 2 _).mpr
+  rw [div?_mul_cancel, mul_two]
+  apply add_le_add_right
+  assumption
+  apply two_pos
+
+end
 
 end
 

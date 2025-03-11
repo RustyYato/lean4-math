@@ -34,7 +34,7 @@ instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne α�
 
 def intCast_eq_zsmul_one [AddGroupWithOneOps α] [IsAddGroupWithOne α] (n: Int) : (n: α) = n • 1  := by
   cases n with
-  | ofNat n => rw [Int.ofNat_eq_coe, intCast_ofNat, natCast_eq_nsmul_one, zsmul_ofNat]
+  | ofNat n => rw [intCast_ofNat, natCast_eq_nsmul_one, zsmul_ofNat]
   | negSucc n => rw [intCast_negSucc, zsmul_negSucc, natCast_eq_nsmul_one]
 
 @[norm_cast]

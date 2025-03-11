@@ -1,6 +1,7 @@
 import Math.Algebra.AddGroupWithOne.Defs
 import Math.Algebra.AddMonoidWithOne.Hom
 import Math.Algebra.Group.Hom
+import Math.Data.Int.Basic
 
 def resp_intCast
   [FunLike F α β]
@@ -9,7 +10,7 @@ def resp_intCast
   [IsAddGroupWithOne α] [IsAddGroupWithOne β]
   (f: F) (n: Int) : f n = n := by
   induction n with
-  | ofNat n => rw [Int.ofNat_eq_coe, intCast_ofNat, intCast_ofNat, resp_natCast]
+  | ofNat n => rw [intCast_ofNat, intCast_ofNat, resp_natCast]
   | negSucc n => rw [intCast_negSucc, intCast_negSucc, resp_neg, resp_natCast]
 
 def intCast_AddGroupHom

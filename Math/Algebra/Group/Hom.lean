@@ -21,7 +21,7 @@ def resp_zsmul
   [IsAddGroup α] [IsAddGroup β]
   (f: F) (n: ℤ) (x: α) : f (n • x) = n • f x := by
   induction n with
-  | ofNat n => rw [Int.ofNat_eq_coe, zsmul_ofNat, zsmul_ofNat, resp_nsmul]
+  | ofNat n => rw [zsmul_ofNat, zsmul_ofNat, resp_nsmul]
   | negSucc n => rw [zsmul_negSucc, zsmul_negSucc, resp_neg, resp_nsmul]
 
 def resp_zpow

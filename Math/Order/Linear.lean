@@ -383,6 +383,16 @@ def le_max_right (a b: α) : b ≤ max a b := by
   apply Or.inr
   rfl
 
+def max_le : a ≤ k -> b ≤ k -> max a b ≤ k := by
+  intro h g
+  apply max_le_iff.mpr
+  apply And.intro <;> assumption
+
+def le_min : k ≤ a -> k ≤ b -> k ≤ min a b := by
+  intro h g
+  apply le_min_iff.mpr
+  apply And.intro <;> assumption
+
 def min_of_le (a b: α) : a ≤ b -> min a b = a := min_iff_le_left.mp
 def max_of_le (a b: α) : a ≤ b -> max a b = b := max_iff_le_left.mp
 
