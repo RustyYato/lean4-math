@@ -78,26 +78,42 @@ instance : IsAddGroupWithOne (Fin (n + 1)) where
     apply Fin.val_inj.mp
     apply Int.ofNat_inj.mp
     simp
-    rw [Int.ofNat_sub, Int.ofNat_sub, Int.toNat_of_nonneg]
-    rw [Int.sub_emod]
-    simp [Int.negSucc_emod, Int.add_emod, Int.emod_emod, Int.neg_emod]
-    conv => { rhs; rw [Int.sub_emod] }
-    rw [←Int.sub_emod,  Int.ofNat_sub]
-    conv => { rhs; rw [sub_sub, add_sub_assoc, Int.ofNat_add, natCast_one, add_sub_cancel] }
-    rw [sub_sub, Int.add_assoc, add_sub_assoc, add_sub_cancel]
-    simp [add_comm]
+    rw [Int.negSucc_emod, Int.add_sub_cancel, Int.ofNat_sub]
+    rw [Int.toNat_of_nonneg, Int.sub_emod, Int.sub_emod n (_ % _),
+      Int.emod_emod, ←Int.sub_emod n, ←Int.sub_emod]
+    rw [Int.ofNat_sub, Int.ofNat_emod, Int.ofNat_sub, Int.ofNat_emod]
+    norm_cast
+    conv => {
+      rhs
+      rw [Int.sub_emod, Int.emod_emod, Int.sub_emod (n + 1: ℕ),
+        Int.ofNat_emod, Int.emod_emod]
+      rw (occs := [2]) [←Int.sub_emod]
+      rw [←Int.sub_emod, Int.ofNat_succ, Int.ofNat_succ]
+    }
+    rw [Int.add_comm x 1, ←Int.sub_sub, Int.add_sub_cancel]
+    rfl
     any_goals
       apply Nat.le_of_lt
-      refine Nat.mod_lt _ ?_
-      exact Nat.zero_lt_succ n
-    refine Int.emod_nonneg (Int.negSucc x) ?_
+      apply Nat.mod_lt
+      apply Nat.zero_lt_succ
+    refine Int.sub_nonneg_of_le ?_
+    apply Int.le_of_lt_add_one
+    apply Int.emod_lt
     omega
     apply Int.ofNat_le.mp
     rw [Int.toNat_of_nonneg]
-    apply Int.le_of_lt
-    refine Int.emod_lt_of_pos _ ?_
+    refine Int.sub_left_le_of_le_add ?_
+    rw [Int.ofNat_add]
+    erw [show (x: ℤ) % (n + ((1: ℕ): ℤ)) + (↑n + 1) = n + (↑x % (↑n + 1) + ↑1) by ac_rfl]
+    show (n: ℤ) ≤ (n: ℤ) + _
+    apply Int.le_add_of_nonneg_right
+    rw [←Int.ofNat_one, ←Int.ofNat_add, ←Int.ofNat_emod, ←Int.ofNat_add]
+    apply Int.ofNat_zero_le
+    apply Int.le_sub_left_of_add_le
+    rw [add_zero]
+    apply Int.le_of_lt_add_one
+    apply Int.emod_lt
     omega
-    refine Int.emod_nonneg (Int.negSucc x) ?_
     omega
 
 instance : IsSemiring (Fin (n + 1)) where

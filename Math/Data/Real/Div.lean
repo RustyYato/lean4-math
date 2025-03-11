@@ -337,6 +337,24 @@ instance : IsQAlgebra ℝ where
     congr 1
     apply ratCast_eq_ratCastRec (Rat.mk q)
 
+def lt_iff_div_lt_div_of_pos_right (a b k: ℝ) (h: 0 < k) : a < b ↔ a /? k < b /? k := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?]
+  apply lt_iff_mul_lt_mul_of_pos_right
+  apply (lt_iff_mul_lt_mul_of_pos_right 0 k⁻¹? k _).mpr
+  rw [zero_mul, inv?_mul_cancel]
+  · refine ⟨1 /? 2, by decide, ?_⟩
+    exists 0
+    intro n h
+    dsimp
+    show 1 /? 2 ≤ 1
+    decide
+  assumption
+
+def le_iff_div_le_div_of_pos_right (a b k: ℝ) (h: 0 < k) : a ≤ b ↔ a /? k ≤ b /? k := by
+  apply le_iff_of_lt_iff
+  apply lt_iff_div_lt_div_of_pos_right
+  assumption
+
 section
 
 open Classical

@@ -1877,7 +1877,7 @@ def equivInt : Int ≃+* BitInt where
   rightInv := toInt_intCast
   resp_zero := rfl
   resp_one := rfl
-  resp_add := intCast_add _ _
-  resp_mul := intCast_mul _ _
+  resp_add := (intCast_add _ _).symm
+  resp_mul := (intCast_mul _ _).symm
 
 end BitInt

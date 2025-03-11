@@ -643,13 +643,13 @@ def midpoint_of_lt {a b: ℚ} (h: a < b) : a < midpoint a b ∧ midpoint a b < b
 
 def ofInt_le (a b: ℤ) : a ≤ b ↔ a ≤ (b: ℚ) := by
   show _ ↔ (b - (a: ℚ)).isNonneg
-  rw [←intCast_sub]
+  norm_cast
   show _ ↔ 0 ≤ (b - a)
   omega
 @[norm_cast]
 def intCast_le {a b: Int} : (a: ℚ) ≤ (b: ℚ) ↔ a ≤ b := by
   show (b - (a: ℚ)).isNonneg ↔ _
-  rw [←intCast_sub]
+  norm_cast
   show 0 ≤ (b - a) ↔ _
   omega
 @[norm_cast]
@@ -748,9 +748,9 @@ def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by
 def ceil_spec (a: ℚ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by
   unfold ceil
   rw (occs := [1]) [←neg_neg x]
-  rw [neg_inj, floor_spec, intCast_neg, ←neg_le_neg_iff]
-  rw [←intCast_neg, ←intCast_one, ←intCast_add, ←intCast_sub,
-    ←neg_neg ((-x + 1: ℤ): ℚ), ←intCast_neg,
+  rw [neg_inj, floor_spec, ←intCast_neg, ←neg_le_neg_iff]
+  norm_cast
+  rw [←neg_neg ((-x + 1: ℤ): ℚ), intCast_neg,
     neg_add_rev, neg_neg, add_comm _ x, ←sub_eq_add_neg,
     ←neg_lt_neg_iff]
   apply And.comm
@@ -775,7 +775,7 @@ def le_ceil (a: ℚ) : ∀x: ℤ, x ≤ a -> x ≤ a.ceil := by
 def of_floor_lt (a: ℚ) : ∀x: ℤ, a.floor < x -> a < x := by
   intro x hx
   have := ((floor_spec a a.floor).mp rfl).right
-  rw [←intCast_one, ←intCast_add] at this
+  rw [←intCast_one, intCast_add] at this
   apply lt_of_lt_of_le this
   rw [intCast_le, Int.add_one_le_iff]
   assumption
@@ -784,7 +784,7 @@ def of_lt_ceil (a: ℚ) : ∀x: ℤ, x < a.ceil -> x < a := by
   rw [ceil_eq_neg_floor_neg,
     ←neg_neg x, Int.neg_lt_neg_iff] at hx
   have := of_floor_lt _ _ hx
-  rw [intCast_neg, ←neg_lt_neg_iff] at this
+  rw [←intCast_neg, ←neg_lt_neg_iff] at this
   assumption
 def of_le_floor (a: ℚ) : ∀x: ℤ, x ≤ a.floor -> x ≤ a := by
   intro x h
@@ -856,6 +856,6 @@ def le_floor (a: ℚ) : ∀x: ℤ, x ≤ a.floor ↔ x ≤ a := by
 def ceil_le (a: ℚ) : ∀x: ℤ, a.ceil ≤ x ↔ a ≤ x := by
   intro x
   rw [ceil_eq_neg_floor_neg, ←Int.neg_le_neg_iff, neg_neg]
-  rw [le_floor, intCast_neg, ←neg_le_neg_iff]
+  rw [le_floor, ←intCast_neg, ←neg_le_neg_iff]
 
 end Rat

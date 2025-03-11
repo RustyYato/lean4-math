@@ -2,6 +2,7 @@ import Math.Function.Basic
 import Math.Data.Like.Func
 import Math.Type.Notation
 
+-- FIXME: replace all instances with Math/Logic/Equiv/Like.lean
 class IsEmbeddingLike (F: Sort*) (α β: outParam (Sort*)) [FunLike F α β]: Prop where
   coe_inj: ∀f: F, Function.Injective (DFunLike.coe f)
 

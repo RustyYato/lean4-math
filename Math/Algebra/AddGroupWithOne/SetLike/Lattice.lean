@@ -44,11 +44,11 @@ private instance builder : SetLike.LatticeBuilder (AddSubgroupWithOne α) where
     mem_one' := ⟨1, intCast_one.symm⟩
     mem_neg' := by
       rintro _ ⟨n, rfl⟩
-      dsimp; rw [←intCast_neg]
+      dsimp; rw [intCast_neg]
       apply Set.mem_range'
     mem_add' := by
       rintro _ _ ⟨n, rfl⟩ ⟨m, rfl⟩
-      dsimp; rw [←intCast_add]
+      dsimp; rw [intCast_add]
       apply Set.mem_range'
   }, by
     intro s

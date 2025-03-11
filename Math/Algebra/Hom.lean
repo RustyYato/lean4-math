@@ -1,6 +1,8 @@
 import Math.Algebra.Hom.Defs
 import Math.Algebra.LinearMap
 import Math.Algebra.Basic
+import Math.Data.Like.Embedding
+import Math.Logic.Equiv.Like
 
 section
 
@@ -82,16 +84,11 @@ instance : IsMulHom (A ↪ₐ[R] B) A B where
 instance : IsAlgebraMapHom (A ↪ₐ[R] B) R A B where
   resp_algebraMap f := f.resp_algebraMap
 
-instance : IsEquivLike (A ≃ₐ[R] B) A B where
-  coe f := f.toFun
-  inv f := f.invFun
-  leftInv f := f.leftInv
-  rightInv f := f.rightInv
-  inj := by
-    intro a b _ _; cases a
+instance : EquivLike (A ≃ₐ[R] B) A B where
+  coe := AlgEquiv.toEquiv
+  coe_inj := by
+    intro a b eq; cases a
     congr
-    apply DFunLike.coe_inj
-    assumption
 
 instance : IsZeroHom (A ≃ₐ[R] B) A B where
   resp_zero f := f.resp_zero
@@ -233,7 +230,7 @@ def AlgEmbedding.trans (h: A ↪ₐ[R] B) (g: B ↪ₐ[R] C) : A ↪ₐ[R] C := 
 def AlgEquiv.trans (h: A ≃ₐ[R] B) (g: B ≃ₐ[R] C) : A ≃ₐ[R] C := g.comp h
 
 def AlgEmbedding.refl : A ↪ₐ[R] A where
-  toEmbedding := .refl
+  toEmbedding := .rfl
   resp_zero := rfl
   resp_one := rfl
   resp_add := rfl
@@ -241,7 +238,7 @@ def AlgEmbedding.refl : A ↪ₐ[R] A where
   resp_algebraMap _ := rfl
 
 def AlgEquiv.refl : A ≃ₐ[R] A where
-  toEquiv := .refl
+  toEquiv := .rfl
   resp_zero := rfl
   resp_one := rfl
   resp_add := rfl

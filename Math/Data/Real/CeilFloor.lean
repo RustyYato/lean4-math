@@ -42,10 +42,9 @@ def exists_floor (r: ℝ) : ∃n: ℤ, n ≤ r ∧ r < n + 1 := by
     show i₀ < i
     rw [hi]
     exact Nat.lt_add_one i₀
-    rw [natCast_add, intCast_sub, intCast_sub,
-      intCast_add]
+    norm_cast
+    rw [natCast_succ]
     rw [sub_eq_add_neg, sub_eq_add_neg,
-      natCast_one, intCast_one,
       neg_add_rev, add_comm (-1), add_assoc,
       add_assoc, neg_add_cancel, add_zero]
   exists (n - z).toNat
@@ -76,21 +75,21 @@ def floor_spec (r: ℝ) (x: Int) : r.floor = x ↔ x ≤ r ∧ r < x + 1 := by
     apply ofRat_lt.mp
     apply lt_of_le_of_lt
     exact g.left
-    rw [intCast_add]
+    rw [←intCast_add]
     exact h.right
   · apply Int.le_of_lt_add_one
     apply Rat.intCast_lt.mp
     apply ofRat_lt.mp
     apply lt_of_le_of_lt
     exact h.left
-    rw [intCast_add]
+    rw [←intCast_add]
     exact g.right
 def ceil_spec (a: ℝ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by
   unfold ceil
   rw (occs := [1]) [←neg_neg x]
-  rw [neg_inj, floor_spec, intCast_neg, neg_le_neg_iff]
-  rw [←intCast_neg, ←intCast_one, ←intCast_add, ←intCast_sub,
-    ←neg_neg ((-x + 1: ℤ): ℝ), ←intCast_neg,
+  rw [neg_inj, floor_spec, ←intCast_neg, neg_le_neg_iff]
+  norm_cast
+  rw [←neg_neg ((-x + 1: ℤ): ℝ), intCast_neg,
     neg_add_rev, neg_neg, add_comm _ x, ←sub_eq_add_neg,
     neg_lt_neg_iff]
   apply And.comm
@@ -115,7 +114,7 @@ def le_ceil (a: ℝ) : ∀x: ℤ, x ≤ a -> x ≤ a.ceil := by
 def of_floor_lt (a: ℝ) : ∀x: ℤ, a.floor < x -> a < x := by
   intro x hx
   have := ((floor_spec a a.floor).mp rfl).right
-  rw [←intCast_one, ←intCast_add] at this
+  rw [←intCast_one, intCast_add] at this
   apply lt_of_lt_of_le this
   rw [intCast_le, Int.add_one_le_iff]
   assumption
@@ -124,7 +123,7 @@ def of_lt_ceil (a: ℝ) : ∀x: ℤ, x < a.ceil -> x < a := by
   rw [ceil_eq_neg_floor_neg,
     ←neg_neg x, Int.neg_lt_neg_iff] at hx
   have := of_floor_lt _ _ hx
-  rw [intCast_neg, neg_lt_neg_iff] at this
+  rw [←intCast_neg, neg_lt_neg_iff] at this
   assumption
 def of_le_floor (a: ℝ) : ∀x: ℤ, x ≤ a.floor -> x ≤ a := by
   intro x h
@@ -196,7 +195,7 @@ def le_floor (a: ℝ) : ∀x: ℤ, x ≤ a.floor ↔ x ≤ a := by
 def ceil_le (a: ℝ) : ∀x: ℤ, a.ceil ≤ x ↔ a ≤ x := by
   intro x
   rw [ceil_eq_neg_floor_neg, ←Int.neg_le_neg_iff, neg_neg]
-  rw [le_floor, intCast_neg, neg_le_neg_iff]
+  rw [le_floor, ←intCast_neg, neg_le_neg_iff]
 
 end Real
 

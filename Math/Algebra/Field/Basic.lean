@@ -19,9 +19,13 @@ def neg_inv? (a: α) (h: a ≠ 0) : (-a)⁻¹? = -a⁻¹? := by
   refine inv?_eq_of_mul_right (-a) (-a⁻¹?) ?_
   rw [←neg_mul_right, ←neg_mul_left, neg_neg, inv?_mul_cancel]
 
-def add_div_add₀ (a b c: α) (hc: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
+def add_div?_add₀ (a b c: α) (hc: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
   simp [div?_eq_mul_inv?]
   rw [add_mul]
+
+def sub_div?_sub₀ (a b c: α) (hc: c ≠ 0) : a /? c - b /? c = (a - b) /? c := by
+  simp [div?_eq_mul_inv?]
+  rw [sub_mul]
 
 end
 

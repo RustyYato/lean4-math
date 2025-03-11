@@ -35,11 +35,11 @@ instance : AlgebraMap ℚ α where
       ←one_mul ((b.num: α) /? (b.den: α) ~(_))]
     rw (occs := [1]) [←div?_self (α := α) b.den]
     rw (occs := [1]) [←div?_self (α := α) a.den]
-    rw [mul_div?_mul, mul_div?_mul, add_div_add₀]
+    rw [mul_div?_mul, mul_div?_mul, add_div?_add₀]
     congr
     rw (occs := [2]) [←intCast_ofNat a.den]
     rw (occs := [2]) [←intCast_ofNat b.den]
-    rw [←intCast_mul, ←intCast_mul, ←intCast_add]
+    norm_cast
     ac_rfl
     rw [natCast_mul]
     intro h

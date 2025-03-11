@@ -13,8 +13,8 @@ instance (priority := 500) [RingOps R] [IsRing R] : AlgebraMap Int R where
   toFun n := n
   resp_zero := intCast_zero
   resp_one := intCast_one
-  resp_add := intCast_add _ _
-  resp_mul := intCast_mul _ _
+  resp_add := (intCast_add _ _).symm
+  resp_mul := (intCast_mul _ _).symm
 
 instance [RingOps R] [IsRing R] : IsAlgebra Int R where
   commutes r x := by

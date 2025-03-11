@@ -20,7 +20,9 @@ class IsAddMonoidWithOne (α: Type*) [AddMonoidWithOneOps α] : Prop extends IsA
 
 variable [AddMonoidWithOneOps α] [IsAddMonoidWithOne α]
 
+@[norm_cast]
 def natCast_zero : ((0: Nat): α) = (0: α) := IsAddMonoidWithOne.natCast_zero
+@[norm_cast]
 def natCast_succ (n: ℕ) : (n.succ: α) = (n: α) + (1: α) := IsAddMonoidWithOne.natCast_succ _
 def ofNat_eq_natCast (n: ℕ): OfNat.ofNat (α := α) (n + 2) = ((n + 2: Nat): α) := IsAddMonoidWithOne.ofNat_eq_natCast _
 
@@ -29,9 +31,11 @@ def natCast_eq_nsmul_one (n: Nat) : (n: α) = n • 1  := by
   | zero => rw [zero_nsmul, natCast_zero]
   | succ n ih => rw [natCast_succ, ih, succ_nsmul]
 
+@[norm_cast]
 def natCast_one : ((1: Nat): α) = 1 := by
   rw [natCast_succ, natCast_zero, zero_add]
 
+@[norm_cast]
 def natCast_add (a b: ℕ) : ((a + b: Nat): α) = a + b := by
   simp [natCast_eq_nsmul_one, add_nsmul]
 

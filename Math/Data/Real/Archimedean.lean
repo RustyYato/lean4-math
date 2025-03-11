@@ -35,7 +35,7 @@ def exists_int_lt (r: ℝ) : ∃n: ℤ, n < r := by
   exists 0
   have ⟨n, spec⟩ := exists_nat_gt (-r)
   exists -n
-  rw [intCast_neg, intCast_ofNat, ←neg_lt_neg_iff, neg_neg]
+  rw [←intCast_neg, intCast_ofNat, ←neg_lt_neg_iff, neg_neg]
   assumption
 
 end Real

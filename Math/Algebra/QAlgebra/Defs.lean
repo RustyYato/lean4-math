@@ -31,8 +31,7 @@ def ratCastRec [FieldOps α] [IsField α] (q: ℚ) [HasChar α 0] : α :=
         rw [←natCast_zero] at h
         exact b.den_nz (HasChar.natCast_inj h)
       rw [mul_comm_right, div?_mul_cancel]
-      rw [←intCast_ofNat , ←intCast_ofNat aden,
-        ←intCast_mul, ←intCast_mul, eq])
+      rw [←intCast_ofNat , ←intCast_ofNat aden, intCast_mul, intCast_mul, eq])
 
 
 class QAlgebraOps (α: Type*) extends FieldOps α, RatCast α, SMul ℚ α where

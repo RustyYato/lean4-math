@@ -227,7 +227,7 @@ def natCast_mod_n (a: ℕ) : ((a % n): ZMod n) = a := by
 
 def intCast_mod_n (a: ℤ) : ((a % (n: ℤ)): ZMod n) = a := by
   conv => { rhs; rw [←Int.ediv_add_emod a n] }
-  rw [intCast_add, intCast_mul]
+  rw [←intCast_add, ←intCast_mul]
   simp [intCast_ofNat, n_eq_zero]
 
 @[simp]
