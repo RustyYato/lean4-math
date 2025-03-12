@@ -19,6 +19,115 @@ instance : NeZero (2: ℝ) where
     replace spec := spec _ _ (le_refl _) (le_refl _)
     contradiction
 
+def left_lt_midpoint_of_lt (a b: ℝ) (h: a < b) : a < midpoint a b := by
+  unfold midpoint
+  rw (occs := [1]) [←add_half a]
+  rw [add_div_add₀, div?_eq_mul_inv?, div?_eq_mul_inv?]
+  apply Real.mul_lt_mul_of_pos_right
+  apply inv?_pos
+  exact two_pos
+  exact lt_iff_add_lt_add_left.mp h
+
+def midpoint_lt_right_of_lt (a b: ℝ) (h: a < b) : midpoint a b < b := by
+  unfold midpoint
+  rw (occs := [2]) [←add_half b]
+  rw [add_div_add₀, div?_eq_mul_inv?, div?_eq_mul_inv?]
+  apply Real.mul_lt_mul_of_pos_right
+  apply inv?_pos
+  exact two_pos
+  exact lt_iff_add_lt_add_right.mp h
+
+def exists_isLUB {S : Set ℝ} (hne : S.Nonempty) (hbdd : S.BoundedAbove) : ∃ x, S.IsLUB x := by
+  -- the set of all values which is strictly smaller than *some* value of S
+  let L := Set.mk fun a => ∃x ∈ S, a < x
+  let R := Lᶜ
+  have R_eq_S_ub : R = S.upperBounds := by
+    ext x
+    apply Iff.intro
+    · intro hx y hy
+      have := not_exists.mp hx y
+      rw [not_and] at this
+      rw [←not_lt]
+      apply this
+      assumption
+    · intro hx ⟨y, hy, x_lt_y⟩
+      have := not_lt_of_le (hx y hy)
+      contradiction
+  have l_u_r_eq_univ : L ∪ R = ⊤ := Set.union_compl L
+  have l_no_greatest : ∀x, ¬L.IsGreatest x := by
+    intro x ⟨⟨a, ha, hx⟩ , h⟩
+    have : midpoint x a ∈ L := by
+      refine ⟨_, ha, ?_⟩
+      apply midpoint_lt_right_of_lt
+      assumption
+    apply not_lt_of_le <| h (midpoint x a) this
+    apply left_lt_midpoint_of_lt
+    assumption
+  have : ∀l ∈ L, ∀r ∈ R, l < r := by
+    intro l ⟨x, hx, hl⟩  r hr
+    apply lt_of_lt_of_le
+    assumption
+    rw [R_eq_S_ub] at hr
+    apply hr
+    assumption
+  suffices ∃x ∈ R, R.IsLeast x by
+    obtain ⟨x, hx, rleast⟩ := this
+    rw [R_eq_S_ub] at hx
+    exists x
+    apply And.intro
+    apply hx
+    intro y hy
+    obtain ⟨_, rleast⟩ := rleast
+    apply rleast y
+    rw [R_eq_S_ub]; assumption
+  let L₁: Set ℚ := L.preimage ofRat
+  let R₁: Set ℚ := R.preimage ofRat
+  have : L₁ ∪ R₁ = ⊤ := by
+    apply Set.ext_univ
+    intro x
+    apply Classical.or_iff_not_imp_left.mpr
+    intro h
+    apply h
+  sorry
+
+-- this is a sequence of rational numbers which
+-- is monotonically decreasing and bounded below by the Set S
+-- thus it must be a cauchy sequence
+def sSup' (S: Set ℝ) : ℕ -> ℚ
+| 0 =>
+  if h:∃x: ℚ, (x: ℝ) ∈ S.upperBounds then
+    Classical.choose h
+  else
+    0
+| n + 1 =>
+  if h:∃x: ℚ, (x: ℝ) ∈ S.upperBounds ∧ ∀m, m <= n -> x ≤ sSup' S m then
+    Classical.choose h
+  else
+    sSup' S n
+
+def CauchySeq.sSup (S: Set ℝ) (hS: S.Nonempty) : CauchySeq where
+  seq := sSup' S
+  is_cacuhy := by
+    intro ε εpos
+    apply Classical.byContradiction
+    intro h
+    replace h := fun k => not_exists.mp h k
+    conv at h => {
+      intro k;
+      rw [not_forall]; arg 1; intro a
+      rw [not_forall]; arg 1; intro b
+      rw [not_imp, not_imp, ]
+      dsimp
+      rw [not_lt]
+    }
+    obtain ⟨r, hr⟩ := hS
+    let d := ((r - sSup' S 0) /? ε).ceil.natAbs
+    have ⟨a, b, ha, hb, εle⟩ := h d
+
+
+
+    sorry
+
 def exists_isLUB {S : Set ℝ} (hne : S.Nonempty) (hbdd : S.BoundedAbove) : ∃ x, S.IsLUB x := by
   classical
   obtain ⟨L, hL⟩ := hne
