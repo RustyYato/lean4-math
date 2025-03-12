@@ -1,4 +1,5 @@
 import Math.Data.Map.Basic
+import Math.Logic.Equiv.Defs
 
 structure Name where
   ofNat :: toNat : Nat
@@ -216,9 +217,42 @@ def unique_typing {term: Term}:
     cases wt₁
     rfl
 
-def LamTerm.IsWellTyped.NotEmptyValue {term: Term} :
+def IsWellTyped.NotEmptyValue {term: Term} :
   term.IsWellTyped ctx .Empty -> ¬term.IsValue := by
   intro wt val
   cases wt <;> contradiction
+
+def relabel (f: Name ↪ Name) : Term -> Term
+| .Var x => .Var (f x)
+| .Lambda arg_ty n body => .Lambda arg_ty (f n) (body.relabel f)
+| .App func arg => .App (func.relabel f) (arg.relabel f)
+| .Panic body ret_ty => .Panic (body.relabel f) ret_ty
+
+def IsWellTyped.relabel' (term: Term) (f: Name ↪ Name) :
+  term.IsWellTyped ctx ty -> (term.relabel f).IsWellTyped (ctx.map_keys f) ty := by
+  intro wt
+  induction wt with
+  | Var =>
+    apply IsWellTyped.Var
+    rw [Map.map_keys_get_elem]
+    assumption
+  | Lambda arg_ty arg_name body h wt ih =>
+    apply IsWellTyped.Lambda
+    rw [←Map.map_keys_insert_no_dup]
+    assumption
+  | App =>
+    apply IsWellTyped.App
+    assumption
+    assumption
+  | Panic =>
+    apply IsWellTyped.Panic
+    assumption
+
+def IsWellTyped.relabel (term: Term) (f: Name ↪ Name) : term.IsWellTyped ctx ty -> (∀x ∈ ctx, f x = x) -> (term.relabel f).IsWellTyped ctx ty := by
+  intro wt h
+  have := relabel' term f wt
+  rw [Map.map_keys_id_on] at this
+  assumption
+  assumption
 
 end Term
