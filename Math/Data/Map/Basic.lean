@@ -535,6 +535,21 @@ def insert_insert_eq {map: Map α β} (key: α) (v₀ v₁: β): insert ⟨key, 
   rw [dif_pos]
   apply mem_insert.mpr; right ; rfl
 
+def insert_no_dup_eq_insert {ctx: Map α β} {h: k ∉ ctx} :
+  Map.insert_no_dup k v ctx h = insert (k, v) ctx := by
+  ext k₀
+  rw [mem_insert_no_dup, mem_insert]
+  rename_i h₀ h₁
+  rw [mem_insert_no_dup] at h₀
+  rcases h₀ with h₀ | rfl
+  rw [insert_nodup_get_elem, dif_neg, insert_get_elem_tail]
+  rintro rfl; contradiction
+  left; assumption
+  rw [insert_nodup_get_elem, insert_get_elem_head]
+  rw [dif_pos rfl]
+  right; rfl
+  assumption
+
 @[simp]
 def not_mem_empty (x: α) : ¬x ∈ (∅: Map α β) := by
   intro h
