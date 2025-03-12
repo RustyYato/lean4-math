@@ -85,6 +85,16 @@ def prod_empty [IsEmpty ι'] [One α] [Mul α] [IsSemigroup α] [IsCommMagma α]
 def prod_option [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: Option ι -> α) : ∏i, f i = f .none * ∏i, f (.some i) :=
   sum_option (α := AddOfMul α) f
 
+def sum_const [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (x: α) : ∑_: ι, x = Fintype.card ι • x := by
+  unfold sum
+  rw [show Multiset.map _ _ = Multiset.replicate (Fintype.card ι) x from ?_,
+    Multiset.sum_replicate]
+  rw [Multiset.map_const_eq_replicate]
+  rfl
+
+def prod_const [MonoidOps α] [IsMonoid α] [IsCommMagma α] (x: α) : ∏_: ι, x = x ^ Fintype.card ι :=
+  sum_const (α := AddOfMul α) _
+
 -- def sum_sum [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι₀ -> ι₁ -> α) :
 --   ∑i j, f i j = ∑i: ι₀ × ι₁, f i.1 i.2 := by
 --   sorry

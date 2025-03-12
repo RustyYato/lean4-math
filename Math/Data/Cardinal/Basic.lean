@@ -2,8 +2,7 @@ import Math.Tactics.PPWithUniv
 import Math.Algebra.Ring
 import Math.Data.Fin.Basic
 import Math.Data.Nat.Basic
-import Math.Data.Fintype.Fin
-import Math.Data.Fintype.Pi
+import Math.Data.Fintype.Card
 import Math.Order.Linear
 
 def type_setoid : Setoid (Type u) where
@@ -187,25 +186,24 @@ def OfNat_mul (n m: Nat) : (OfNat.ofNat (n * m): Cardinal) = OfNat.ofNat n * OfN
   apply Equiv.ulift
   exact (Fin.equivMul _ _).symm
 
-def Fin.equivPow (n m: Nat) : (Fin m -> Fin n) ≃ Fin (n ^ m) := by
-  apply Fintype.equivOfEqCard
-  simp [Function.card_eq, Fin.card_eq]
-  exact inferInstance
-  exact inferInstance
+def Fin.equivPow (n m: Nat) : Trunc ((Fin m -> Fin n) ≃ Fin (n ^ m)) := by
+  apply Fintype.equivOfCardEq
+  simp [Fintype.card_function, Fintype.card_fin]
 
-def ofNat_pow (n m: Nat) : ofNat (n ^ m) = ofNat n ^ ofNat m := by
-  apply sound
-  exact (Fin.equivPow _ _).symm
+-- def ofNat_pow (n m: Nat) : ofNat (n ^ m) = ofNat n ^ ofNat m := by
+--   apply sound
+--   exact (Fin.equivPow _ _).symm
 
 def OfNat_pow (n m: Nat) : (OfNat.ofNat (n ^ m): Cardinal) = OfNat.ofNat n ^ OfNat.ofNat m := by
   show lift _ = (lift _).pow (lift _)
   simp
+  induction Fin.equivPow n m with | mk h =>
   apply sound
   apply Equiv.trans
   apply Equiv.ulift
   apply flip Equiv.trans; symm
   apply Equiv.ulift
-  exact (Fin.equivPow _ _).symm
+  exact h.symm
 
 instance : IsAddCommMagma Cardinal where
   add_comm (a b: Cardinal) := by

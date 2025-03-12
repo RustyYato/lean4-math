@@ -91,7 +91,7 @@ private def allOn_complete
 
 end Pi
 
-instance {α: Type*} {β: α -> Type*} [DecidableEq α] [ha: Fintype α] [hb: ∀x, Fintype (β x)] : Fintype (∀x, β x) := by
+instance Fintype.instPi {α: Type*} {β: α -> Type*} [DecidableEq α] [ha: Fintype α] [hb: ∀x, Fintype (β x)] : Fintype (∀x, β x) := by
   apply ha.recOnSubsingleton
   intro as as_nodup as_complete
   refine Quotient.fin_ilift ?_ ?_ (fun a: α => Fintype.equiv_trunc_subtype (hb a))

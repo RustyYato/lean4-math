@@ -1526,4 +1526,10 @@ def removeAl_append_replicate [DecidableEq α] (x: α) (as: Multiset α) :
 def zip (as: Multiset α) (bs: Multiset β) : Multiset (α × β) :=
   as.flatMap fun a => bs.map fun b => (a, b)
 
+def map_const_eq_replicate (m: Multiset α) (x: β) :
+  m.map (fun _ => x) = Multiset.replicate m.length x := by
+  induction m with
+  | nil => rfl
+  | cons a as ih => simp [ih]
+
 end Multiset
