@@ -190,5 +190,35 @@ def IsWellTyped.subst
       apply Introduces.PanicBody
       assumption
 
+-- there every well typed term has exactly one valid type
+def unique_typing {term: Term}:
+  term.IsWellTyped ctx ty₀ ->
+  term.IsWellTyped ctx ty₁ ->
+  ty₀ = ty₁ := by
+  intro wt₀ wt₁
+  induction wt₀ generalizing ty₁ with
+  | Var _ _ h =>
+    cases wt₁ with
+    | Var _ _ g =>
+    subst h; subst g; rfl
+  | Lambda _ _ _ _ _ ih  =>
+    cases wt₁ with
+    | Lambda =>
+    congr
+    apply ih
+    assumption
+  | App _ _ _ _ ih =>
+    cases wt₁ with
+    | App _ _  wt₁ =>
+    cases ih wt₁
+    rfl
+  | Panic =>
+    cases wt₁
+    rfl
+
+def LamTerm.IsWellTyped.NotEmptyValue {term: Term} :
+  term.IsWellTyped ctx .Empty -> ¬term.IsValue := by
+  intro wt val
+  cases wt <;> contradiction
 
 end Term
