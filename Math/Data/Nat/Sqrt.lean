@@ -266,24 +266,9 @@ def sqrt_of_perfect_square (a: Nat) :
   apply sqrt_eq_of_sq_eq
   assumption
 
-def square_add (a b: Nat) : (a + b) * (a + b) = a * a + 2 * a * b + b * b := by
-  rw [Nat.add_mul, Nat.mul_add, Nat.mul_add, Nat.mul_assoc, Nat.two_mul]
-  ac_rfl
-
-def square_sub (a b: Nat) (h: b ≤ a) : (a - b) * (a - b) = a * a + b * b - 2 * a * b := by
-  apply Int.ofNat_inj.mp
-  rw [Nat.two_mul, Nat.add_mul, Int.ofNat_sub]
-  simp [Int.ofNat_sub h, Int.sub_mul, Int.mul_sub]
-  rw [Int.mul_comm b a]
-  omega
-  rw [le_iff_exists_sum] at *
-  obtain ⟨k, h⟩ := h
-  subst a
-  exists k * k
-  simp [Nat.add_mul, Nat.mul_add]
-  ac_rfl
-
-def sqrt_add_eq (n : Nat) (h : a ≤ 2 * n) : sqrt (n * n + a) = n := by
+def sqrt_add_eq (n : Nat) {a: Nat} : a ≤ 2 * n ↔ sqrt (n * n + a) = n := by
+  apply Iff.intro
+  intro h
   apply Nat.le_antisymm
   apply le_of_lt_succ
   apply (sqrt_lt_iff _).mpr
@@ -294,6 +279,13 @@ def sqrt_add_eq (n : Nat) (h : a ≤ 2 * n) : sqrt (n * n + a) = n := by
   assumption
   rw [le_sqrt_iff]
   apply Nat.le_add_right
+  intro h
+  have ⟨ha, hb⟩ := (sqrt_eq_iff _ _).mp h.symm
+  rw [square_add] at hb
+  simp at hb
+  rw [Nat.add_assoc] at hb
+  apply Nat.le_of_lt_succ
+  exact Nat.lt_of_add_lt_add_left hb
 
 def lt_succ_sqrt (n : Nat) : n < succ (sqrt n) * succ (sqrt n) :=
   ((sqrt_eq_iff _ _).mp rfl).right

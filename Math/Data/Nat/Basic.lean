@@ -82,4 +82,21 @@ def mul_eq_one_iff {a b: Nat} : a * b = 1 ↔ a = 1 ∧ b = 1 := by
   · intro ⟨h, g⟩
     rw [h, g]
 
+def square_add (a b: Nat) : (a + b) * (a + b) = a * a + 2 * a * b + b * b := by
+  rw [Nat.add_mul, Nat.mul_add, Nat.mul_add, Nat.mul_assoc, Nat.two_mul]
+  ac_rfl
+
+def square_sub (a b: Nat) (h: b ≤ a) : (a - b) * (a - b) = a * a + b * b - 2 * a * b := by
+  apply Int.ofNat_inj.mp
+  rw [Nat.two_mul, Nat.add_mul, Int.ofNat_sub]
+  simp [Int.ofNat_sub h, Int.sub_mul, Int.mul_sub]
+  rw [Int.mul_comm b a]
+  omega
+  rw [le_iff_exists_sum] at *
+  obtain ⟨k, h⟩ := h
+  subst a
+  exists k * k
+  simp [Nat.add_mul, Nat.mul_add]
+  ac_rfl
+
 end Nat
