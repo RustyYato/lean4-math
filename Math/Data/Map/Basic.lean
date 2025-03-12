@@ -1,4 +1,5 @@
 import Math.Data.Multiset.Basic
+import Math.Logic.Equiv.Defs
 
 def NodupKeys (data: Multiset (α × β)) := data.Pairwise <| fun x y => x.1 ≠ y.1
 
@@ -555,5 +556,98 @@ def not_mem_empty (x: α) : ¬x ∈ (∅: Map α β) := by
   intro h
   obtain ⟨_, _⟩ := h
   contradiction
+
+def map_keys (f: α₀ ↪ α₁) (m: Map α₀ β) : Map α₁ β where
+  data := m.data.map (fun x => (f x.fst, x.snd))
+  nodup_keys := by
+    cases m with | mk m nodup =>
+    cases m with | mk m =>
+    simp [NodupKeys, Multiset.Pairwise, Multiset.map]
+    show List.Pairwise _ _
+    induction nodup with
+    | nil => apply List.Pairwise.nil
+    | cons nothead tail ih =>
+      apply List.Pairwise.cons
+      intro (a₁, b) h
+      rw [List.mem_map] at h
+      obtain ⟨⟨a₀, b'⟩, h, h'⟩ := h
+      cases h'; dsimp
+      intro eq; cases f.inj eq
+      have := nothead _ h; contradiction
+      apply ih
+
+def mem_map_keys (f: α₀ ↪ α₁) (m: Map α₀ β) :
+  ∀{x}, x ∈ m.map_keys f ↔ ∃y ∈ m, f y = x := by
+  intro x
+  cases m with | mk m =>
+  cases m with | mk m =>
+  apply Iff.intro
+  intro ⟨v, h⟩
+  have ⟨(k, v), h, h'⟩ := List.mem_map.mp h
+  cases h'
+  dsimp at h
+  exists k
+  apply And.intro
+  exists v
+  rfl
+  rintro ⟨k, ⟨v, mem⟩, rfl⟩
+  dsimp at mem
+  exists v
+  apply List.mem_map.mpr
+  exists (k, v)
+
+def map_keys_nil (f: α₀ ↪ α₁) : map_keys (β := β) f ∅ = ∅ := rfl
+def map_keys_insert_no_dup (f: α₀ ↪ α₁) :
+  map_keys (β := β) f (insert_no_dup k v ctx h) = insert_no_dup (f k) v (map_keys f ctx) (by
+    rw [mem_map_keys]
+    intro ⟨_, _, eq⟩
+    cases f.inj eq
+    contradiction) := by
+  cases ctx with  | mk ctx =>
+  cases ctx
+  rfl
+
+def map_keys_get_elem
+  [DecidableEq α₀] [DecidableEq α₁]
+  (ctx: Map α₀ β) (f: α₀ ↪ α₁) {x: α₀} (h: x ∈ ctx) :
+  (ctx.map_keys f)[f x]'(by
+    rw [mem_map_keys]
+    exists x) = ctx[x] := by
+  induction ctx with
+  | nil => rfl
+  | cons k v ctx g ih =>
+    rw [mem_insert_no_dup] at h
+    conv => { lhs; arg 1; rw [map_keys_insert_no_dup] }
+    rw [insert_nodup_get_elem, insert_nodup_get_elem]
+    split <;> rename_i h
+    rw [dif_pos]
+    apply f.inj; assumption
+    rw [dif_neg]; apply ih
+    rw [←f.inj.eq_iff]; assumption
+    assumption
+    rw [mem_map_keys]
+    rcases h with h | rfl
+    left; exists x
+    right; rfl
+
+def map_keys_id_on (m: Map α β) (f: α ↪ α) (h: ∀x ∈ m, f x = x) : m.map_keys f = m := by
+  ext x
+  rw [mem_map_keys]
+  apply Iff.intro
+  rintro ⟨n, g, rfl⟩
+  rw [h]; assumption
+  assumption
+  intro g
+  exists x
+  apply And.intro
+  assumption
+  apply h
+  assumption
+  rename_i h₀ h₁
+  conv => {
+    lhs; lhs
+    rw [←h x h₁]
+  }
+  rw [map_keys_get_elem]
 
 end Map

@@ -13,7 +13,7 @@ inductive Term where
 | Lambda (arg_ty: LamType) (arg_name: Name) (body: Term)
 | App (func arg: Term)
 | Var (name: Name)
-| Panic (body: Term) (ret_ty: LamTerm)
+| Panic (body: Term) (ret_ty: LamType)
 
 namespace Term
 
@@ -254,5 +254,75 @@ def IsWellTyped.relabel (term: Term) (f: Name ↪ Name) : term.IsWellTyped ctx t
   rw [Map.map_keys_id_on] at this
   assumption
   assumption
+
+def relabel_comp (f g: Name ↪ Name) (term: Term) :
+  (term.relabel f).relabel g = term.relabel (f.trans g) := by
+  induction term with
+  | Var => rfl
+  | Lambda arg_ty name body ih =>
+    dsimp [relabel]
+    congr
+  | App =>
+    dsimp [relabel]
+    congr
+  | Panic =>
+    dsimp [relabel]
+    congr
+
+def relabel_id (term: Term) : term.relabel .rfl = term := by
+  induction term with
+  | Var => rfl
+  | Lambda arg_ty arg_name body ih =>
+    simp [relabel, ih]; rfl
+  | App _ _ ih₀ ih₁ => simp [relabel, ih₀, ih₁]
+  | Panic _ _ ih => simp [relabel, ih]
+
+instance equiv : Setoid Term where
+  r a b := ∃f: Name ≃ Name, a.relabel f = b
+  iseqv := {
+    refl := by
+      intro x
+      exists .rfl
+      apply relabel_id
+    symm := by
+      rintro x y ⟨f, rfl⟩
+      exists f.symm
+      rw [relabel_comp]
+      show relabel (f.trans f.symm) _ = _
+      rw [Equiv.trans_symm]
+      apply relabel_id
+    trans := by
+      rintro x y z ⟨f, rfl⟩ ⟨g,  rfl⟩
+      exists f.trans g
+      rw [relabel_comp]
+      rfl
+  }
+
+def app_congr (h: a ≈ c) (g: b ≈ d): Term.App a b ≈ Term.App c d := by
+  obtain ⟨h, rfl⟩ := h
+  obtain ⟨g, rfl⟩ := g
+
+  sorry
+
+def subst_congr (a: Term) (s t: Term) :
+  (∀n, a.Introduces n -> s.Introduces n -> False) ->
+  (∀n, a.Introduces n -> t.Introduces n -> False) ->
+  s ≈ t -> a.subst s n ≈ a.subst t n := by
+  intro nocomm₀ nocomm₁ h
+  induction a with
+  | Var =>
+    simp [subst]
+    split
+    assumption
+    rfl
+  | Lambda _ _ _ ih  =>
+    simp [subst, ih]
+    sorry
+  | App _ _ ih₀ ih₁ =>
+    simp [subst, ih₀, ih₁]
+    sorry
+  | Panic body ret_ty ih  =>
+    simp [subst, ih]
+    sorry
 
 end Term
