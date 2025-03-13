@@ -35,8 +35,7 @@ instance : LE Cardinal.{u} where
       symm; assumption
       assumption
     intro a b c d ac bd ab
-    apply Embedding.congr
-    assumption
+    apply Equiv.congrEmbed _ _ ab
     assumption
     assumption
 

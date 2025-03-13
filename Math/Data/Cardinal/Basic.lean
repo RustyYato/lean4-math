@@ -18,6 +18,7 @@ def Cardinal := Quotient type_setoid
 namespace Cardinal
 
 def mk : Type u -> Cardinal.{u} := Quotient.mk _
+prefix:max "#" => Cardinal.mk
 scoped notation "⟦" x "⟧" => Cardinal.mk x
 @[cases_eliminator]
 def ind {motive: Cardinal -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quotient.ind

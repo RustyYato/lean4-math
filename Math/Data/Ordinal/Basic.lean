@@ -1427,8 +1427,8 @@ instance : IsConditionallyCompleteLattice Ordinal where
 def ofNat_le_ofNat (n m: Nat) : Ordinal.ofNat n ≤ Ordinal.ofNat m ↔ n ≤ m := by
   apply Iff.intro
   intro ⟨h⟩
-  have := Fintype.existsEmbedding_iff_card_le.mp ⟨h.toEmbedding⟩
-  rw [Fin.card_eq, Fin.card_eq] at this
+  have := Fintype.embed_iff_card_le.mp ⟨h.toEmbedding⟩
+  rw [Fintype.card_fin, Fintype.card_fin] at this
   assumption
   intro h
   refine ⟨Fin.relEmbedFin h, ?_⟩

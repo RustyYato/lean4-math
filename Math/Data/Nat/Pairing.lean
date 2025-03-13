@@ -88,3 +88,13 @@ def Equiv.nat_equiv_nat_prod_nat : Nat ≃ Nat × Nat where
   invFun x := Nat.pair x.1 x.2
   leftInv x := by simp
   rightInv x := by simp
+
+def Equiv.int_equiv_nat_sum_nat : Int ≃ Nat ⊕ Nat where
+  toFun
+  | .ofNat x => .inl x
+  | .negSucc x => .inr x
+  invFun
+  | .inl x => .ofNat x
+  | .inr x => .negSucc x
+  leftInv x := by cases x <;> rfl
+  rightInv x := by cases x <;> rfl

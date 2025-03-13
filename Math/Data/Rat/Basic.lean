@@ -10,6 +10,7 @@ import Math.Algebra.Ring.Basic
 
 namespace Rat
 
+@[ext]
 structure Fract where
   num: Int
   den: Nat
