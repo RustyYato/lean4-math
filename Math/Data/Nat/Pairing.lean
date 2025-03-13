@@ -74,6 +74,47 @@ def triangle_monotone : ∀{n m: Nat}, n ≤ m ↔ triangle n ≤ triangle m := 
   intro n m
   rw [←Nat.not_lt, ←Nat.not_lt, triangle_increasing]
 
+def inv_triangle_helper : 8 * (triangle n) + 1 = (2 * n + 1) * (2 * n + 1) := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [triangle_succ, Nat.add_comm n.triangle, Nat.mul_add,
+      Nat.add_assoc, ih]
+    simp [Nat.add_mul, Nat.mul_add]
+    omega
+
+def triangle_left_inv: Function.IsLeftInverse inv_triangle triangle := by
+  intro n
+  unfold inv_triangle
+  rw [inv_triangle_helper, sqrt_sq, Nat.add_sub_cancel, Nat.mul_div_cancel_left]
+  decide
+
+def sqrt_sq_add (n: Nat) : ∃m, n = n.sqrt * n.sqrt + m ∧ m ≤ 2 * n.sqrt := by
+  have := sqrt_sq_le_self n
+  rw [Nat.le_iff_exists_sum] at this
+  obtain ⟨m, eq⟩ := this
+  exists m
+  apply And.intro eq
+  apply Nat.le_of_lt_succ
+  show m < 2 * _ + 1
+  apply Nat.lt_of_add_lt_add_left
+  rw [←eq, Nat.add_succ]
+  apply Nat.lt_succ_of_le
+  rw [Nat.two_mul, ←Nat.add_assoc]
+  apply sqrt_le_add
+
+def sq_add_le_sq_succ {n k: Nat} :
+  k < 4 * n + 4 ↔ n * n + k < (n + 2) * (n + 2) := by
+  apply Iff.intro
+  intro h
+  simp [Nat.mul_add, Nat.add_mul]
+  omega
+  intro h
+  simp [Nat.mul_add, Nat.add_mul] at h
+  rw [Nat.add_assoc] at h
+  replace h := Nat.lt_of_add_lt_add_left h
+  omega
+
 def pair_inj_helper {a b c d: Nat} : a + b < c + d -> (a + b).triangle + a < (c + d).triangle + c := by
   intro h
   cases c with
@@ -115,47 +156,6 @@ def pair_inj : Function.Injective₂ pair := by
       contradiction
     apply pair_inj_helper
     assumption
-
-def inv_triangle_helper : 8 * (triangle n) + 1 = (2 * n + 1) * (2 * n + 1) := by
-  induction n with
-  | zero => rfl
-  | succ n ih =>
-    rw [triangle_succ, Nat.add_comm n.triangle, Nat.mul_add,
-      Nat.add_assoc, ih]
-    simp [Nat.add_mul, Nat.mul_add]
-    omega
-
-def triangle_left_inv: Function.IsLeftInverse inv_triangle triangle := by
-  intro n
-  unfold inv_triangle
-  rw [inv_triangle_helper, sqrt_sq, Nat.add_sub_cancel, Nat.mul_div_cancel_left]
-  decide
-
-def sqrt_sq_add (n: Nat) : ∃m, n = n.sqrt * n.sqrt + m ∧ m ≤ 2 * n.sqrt := by
-  have := sqrt_sq_le_self n
-  rw [Nat.le_iff_exists_sum] at this
-  obtain ⟨m, eq⟩ := this
-  exists m
-  apply And.intro eq
-  apply Nat.le_of_lt_succ
-  show m < 2 * _ + 1
-  apply Nat.lt_of_add_lt_add_left
-  rw [←eq, Nat.add_succ]
-  apply Nat.lt_succ_of_le
-  rw [Nat.two_mul, ←Nat.add_assoc]
-  apply sqrt_le_add
-
-def sq_add_le_sq_succ {n k: Nat} :
-  k < 4 * n + 4 ↔ n * n + k < (n + 2) * (n + 2) := by
-  apply Iff.intro
-  intro h
-  simp [Nat.mul_add, Nat.add_mul]
-  omega
-  intro h
-  simp [Nat.mul_add, Nat.add_mul] at h
-  rw [Nat.add_assoc] at h
-  replace h := Nat.lt_of_add_lt_add_left h
-  omega
 
 -- def inv_triangle_add (h: k ≤ n) : inv_triangle (triangle n + k) = n := by
 --   unfold inv_triangle
