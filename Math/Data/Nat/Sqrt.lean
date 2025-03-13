@@ -310,4 +310,14 @@ def sqrt_pos (a: Nat) : 0 < a -> 0 < a.sqrt := by
   rw [lt_sqrt_iff]
   exact h
 
+def sq_sqrt (n: Nat) : n.sqrt * n.sqrt ≤ n := ((sqrt_eq_iff n _).mp rfl).left
+
+def sqrt_monotone : ∀{n m}, n ≤ m -> sqrt n ≤ sqrt m := by
+  intro n m
+  intro h
+  rw [le_sqrt_iff]
+  apply Nat.le_trans
+  apply sq_sqrt
+  assumption
+
 end Nat

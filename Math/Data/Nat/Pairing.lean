@@ -74,7 +74,7 @@ def triangle_monotone : ∀{n m: Nat}, n ≤ m ↔ triangle n ≤ triangle m := 
   intro n m
   rw [←Nat.not_lt, ←Nat.not_lt, triangle_increasing]
 
-def inv_triangle_helper : 8 * (triangle n) + 1 = (2 * n + 1) * (2 * n + 1) := by
+def inv_triangle_helper : 8 * triangle n + 1 = (2 * n + 1) * (2 * n + 1) := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -156,6 +156,115 @@ def pair_inj : Function.Injective₂ pair := by
       contradiction
     apply pair_inj_helper
     assumption
+
+def inv_triangle_monotone : ∀{n m}, n ≤ m -> inv_triangle n ≤ inv_triangle m := by
+  intro n m h
+  unfold inv_triangle
+  apply Nat.div_le_div_const
+  apply Nat.sub_le_sub_right
+  apply sqrt_monotone
+  apply Nat.add_le_add_right
+  apply Nat.mul_le_mul_left
+  assumption
+
+def inv_triangle_le_self (n: Nat): n.inv_triangle ≤ n := by
+  induction n with
+  | zero => with_unfolding_all apply Nat.zero_le
+  | succ n ih =>
+    sorry
+
+#eval ∀n < 1000, ∀i < n.inv_triangle,
+  n.inv_triangle ≤ (n - (i + 1)).inv_triangle.succ
+
+def le_inv_triangle (n: Nat): ∀i ≤ n.inv_triangle, i.triangle ≤ n := by
+  intro i h
+  induction i generalizing n with
+  | zero => apply Nat.zero_le
+  | succ i ih =>
+    simp
+    rw [←Nat.le_sub_iff_add_le]
+    apply ih
+    · rw [Nat.succ_le] at h
+      apply Nat.le_of_lt_succ
+      apply Nat.lt_of_lt_of_le
+      assumption
+      sorry
+    · apply Nat.le_trans
+      assumption
+
+      sorry
+
+def inv_triangle_le (n: Nat): n.inv_triangle.triangle ≤ n := by
+  sorry
+
+def eq_inv_triangle_iff (n x: Nat) : inv_triangle n = x ↔ triangle x ≤ n ∧ ∀i, triangle i ≤ n -> i ≤ x := by
+  apply Iff.intro
+  · rintro rfl
+    apply And.intro
+    · unfold inv_triangle triangle
+      sorry
+    · intro i tri_le
+      induction i using Nat.strongRecOn generalizing n with
+      | _ i ih =>
+        have := ih (i-1) sorry (n - i) sorry
+
+        -- apply Nat.succ_le_of_lt
+        -- apply Nat.lt_of_le_of_lt
+        -- assumption
+
+
+        sorry
+  · sorry
+
+def inv_triangle_add (h: k ≤ n) : inv_triangle (triangle n + k) = n := by
+  unfold inv_triangle
+  rw [Nat.mul_add, Nat.add_right_comm, inv_triangle_helper]
+  rw [←(sqrt_eq_iff _ (2 * n + 1)).mpr]
+  rw [Nat.add_sub_cancel, Nat.mul_div_cancel_left]
+  decide
+  apply And.intro
+  apply Nat.le_add_right
+  show _ < (2 * n + 2) * (2 * n + 2)
+  simp only [Nat.mul_add, Nat.add_mul, Nat.one_mul, Nat.mul_one]
+  ac_nf0
+  simp
+  ac_nf
+  rw [←Nat.add_assoc (n * 2), ←Nat.mul_two, Nat.mul_assoc]
+  simp
+  repeat rw [←Nat.add_assoc]
+  apply Nat.add_lt_add_right
+  apply Nat.add_lt_add_right
+  rw [Nat.succ_add, Nat.succ_add]
+  apply Nat.succ_lt_succ
+  rw [Nat.zero_add]
+
+
+
+  -- rw [(sqrt_add_eq _).mp, Nat.add_sub_cancel, Nat.mul_div_cancel_left]
+
+
+  -- unfold inv_triangle
+  -- -- rw [inv_triangle_helper]
+  -- simp [Nat.mul_succ, Nat.mul_add]
+  -- rw [Nat.add_right_comm, inv_triangle_helper]
+  -- rw [(sqrt_add_eq _).mp, Nat.add_sub_cancel, Nat.mul_div_cancel_left]
+  -- decide
+  -- rw [Nat.mul_succ, ←Nat.mul_assoc]
+  -- show 8 * k ≤ 4 * n + 2
+
+  sorry
+
+def pair_unpair :  unpair (pair a b) = (a, b) := by
+  unfold unpair
+  dsimp
+  suffices a.pair b - (a.pair b).inv_triangle.triangle = a by
+    congr
+    rw [this]
+    unfold pair
+    have := triangle_add_le_triangle_succ (a := a + b) (b := a) (Nat.le_add_right _ _)
+    sorry
+
+  sorry
 
 -- def inv_triangle_add (h: k ≤ n) : inv_triangle (triangle n + k) = n := by
 --   unfold inv_triangle
