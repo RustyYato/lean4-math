@@ -1,4 +1,5 @@
 import Math.Data.Nat.Sqrt
+import Math.Logic.Equiv.Defs
 
 namespace Nat
 
@@ -54,3 +55,36 @@ theorem unpair_zero : unpair 0 = (0, 0) := by
   simp
 
 end Nat
+
+def Equiv.nat_equiv_nat_sum_nat : Nat ≃ Nat ⊕ Nat where
+  toFun x := if x % 2 = 0 then .inl (x / 2) else .inr (x / 2)
+  invFun
+  | .inl x => 2 * x
+  | .inr x => 2 * x + 1
+  leftInv x := by
+    simp
+    rcases Nat.mod_two_eq_zero_or_one x with h | h
+    rw [if_pos h]
+    dsimp
+    rw [Nat.mul_div_cancel']
+    exact Nat.dvd_of_mod_eq_zero h
+    rw [if_neg]
+    simp
+    rw [←h]
+    rw [Nat.div_add_mod]
+    intro g
+    rw [g] at h
+    contradiction
+  rightInv x := by
+    cases x
+    simp
+    simp
+    rw [Nat.mul_add_div]
+    simp
+    simp
+
+def Equiv.nat_equiv_nat_prod_nat : Nat ≃ Nat × Nat where
+  toFun := Nat.unpair
+  invFun x := Nat.pair x.1 x.2
+  leftInv x := by simp
+  rightInv x := by simp
