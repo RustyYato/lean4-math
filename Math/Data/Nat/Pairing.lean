@@ -168,13 +168,26 @@ def inv_triangle_monotone : ∀{n m}, n ≤ m -> inv_triangle n ≤ inv_triangle
   assumption
 
 def inv_triangle_le_self (n: Nat): n.inv_triangle ≤ n := by
-  induction n with
-  | zero => with_unfolding_all apply Nat.zero_le
-  | succ n ih =>
-    sorry
+  unfold inv_triangle
+  rw [Nat.div_le_iff_le_mul]
+  simp
+  rw [Nat.sub_le_iff_le_add, ←Nat.lt_succ, sqrt_lt_iff]
+  simp [Nat.mul_add, Nat.add_mul, Nat.one_mul, Nat.mul_one]
+  ac_nf; simp
+  ac_nf
+  repeat rw [←Nat.add_assoc]
+  simp
+  repeat rw [Nat.add_assoc 8]
+  repeat rw [←Nat.mul_add]
+  simp
+  rw [Nat.mul_add]
+  omega
+  omega
 
-#eval ∀n < 1000, ∀i < n.inv_triangle,
-  n.inv_triangle ≤ (n - (i + 1)).inv_triangle.succ
+-- #eval ∀n < 100000, n < n.inv_triangle ^ 2 + 24
+
+#eval ∀n < 1000,
+  n * 8 < 24 + ((n - n.inv_triangle).inv_triangle * 20 + (n - n.inv_triangle).inv_triangle ^ 2 * 4)
 
 def le_inv_triangle (n: Nat): ∀i ≤ n.inv_triangle, i.triangle ≤ n := by
   intro i h
@@ -188,11 +201,44 @@ def le_inv_triangle (n: Nat): ∀i ≤ n.inv_triangle, i.triangle ≤ n := by
       apply Nat.le_of_lt_succ
       apply Nat.lt_of_lt_of_le
       assumption
-      sorry
+      suffices n.inv_triangle ≤ (n - n.inv_triangle).inv_triangle.succ by
+        apply Nat.le_trans this
+        apply Nat.succ_le_succ
+        apply inv_triangle_monotone
+        apply (Nat.sub_le_sub_iff_left _).mpr
+        apply Nat.succ_le_of_lt
+        assumption
+        apply Nat.succ_le_of_lt
+        apply Nat.lt_of_lt_of_le
+        assumption
+        apply Nat.inv_triangle_le_self
+      clear h ih i
+      unfold inv_triangle
+      rw [Nat.div_le_iff_le_mul,
+        Nat.sub_le_iff_le_add,
+        ←Nat.lt_succ, Nat.sqrt_lt_iff]
+      conv => {
+        rhs; simp [Nat.mul_add, Nat.add_mul, Nat.succ_eq_add_one]
+      }
+      apply Nat.succ_lt_succ
+      rw [←inv_triangle, ←inv_triangle]
+      generalize hm:(n - n.inv_triangle).inv_triangle=m
+      ac_nf; simp
+      rw [←Nat.mul_two, Nat.add_left_comm (m * 2), Nat.mul_assoc, ←Nat.mul_add]
+      simp; ac_nf
+      rw [←Nat.add_assoc, ←Nat.add_assoc, ←Nat.add_assoc (m * 2), ←Nat.mul_add]
+      simp
+      rw [←Nat.mul_assoc, ←Nat.pow_two]
+      subst m
+
+
+
+
+
+      repeat sorry
     · apply Nat.le_trans
       assumption
-
-      sorry
+      apply Nat.inv_triangle_le_self
 
 def inv_triangle_le (n: Nat): n.inv_triangle.triangle ≤ n := by
   sorry
