@@ -9,7 +9,17 @@ def inv_triangle (a: Nat) : Nat :=
 /-- the nth triangle number --/
 def triangle (n: Nat) := n * (n + 1) / 2
 
+def pair (a b: Nat) := triangle (a + b) + a
+
+def unpair (x: Nat): Nat × Nat :=
+  let ab := inv_triangle x
+  let a := x - triangle ab
+  let b := ab - a
+  ⟨a, b⟩
+
+@[simp]
 def triangle_zero : triangle 0 = 0 := rfl
+@[simp]
 def triangle_succ (n: Nat) : triangle (n + 1) = triangle n + (n + 1) := by
   unfold triangle
   apply Nat.mul_left_cancel (n := 2) (by decide)
@@ -17,6 +27,94 @@ def triangle_succ (n: Nat) : triangle (n + 1) = triangle n + (n + 1) := by
   any_goals apply two_dvd_mul_succ
   simp [Nat.mul_add, Nat.add_mul]
   omega
+
+def triangle_add_le_triangle_succ {a b: Nat} (h: b ≤ a) : triangle a + b ≤ triangle a.succ := by
+  unfold triangle
+  apply Nat.le_trans
+  apply Nat.add_le_add_left
+  assumption
+  rw [Nat.add_comm, ←Nat.mul_add_div, Nat.mul_succ, Nat.two_mul]
+  apply Nat.div_le_div_const
+  simp [Nat.mul_succ, Nat.succ_mul]
+  omega
+  decide
+
+def triangle_increasing : ∀{n m: Nat}, n < m ↔ triangle n < triangle m := by
+  intro n m
+  induction n generalizing m with
+  | zero =>
+    cases m with
+    | zero => simp
+    | succ m =>
+      simp
+      apply Nat.zero_lt_succ
+  | succ n ih =>
+    cases m with
+    | zero => simp
+    | succ m =>
+      simp
+      apply Iff.intro
+      intro h
+      apply Nat.add_lt_add
+      apply ih.mp; assumption
+      apply Nat.add_lt_add_right
+      assumption
+      intro h
+      rcases Nat.lt_trichotomy n m with h | h | h
+      assumption
+      subst h
+      simp at h
+      rename_i g
+      have := Nat.add_lt_add g h
+      iterate 2 rw [Nat.add_assoc, Nat.succ_add] at this
+      rw [Nat.add_comm n] at this
+      exact ih.mpr (Nat.lt_of_add_lt_add_right this)
+
+def triangle_monotone : ∀{n m: Nat}, n ≤ m ↔ triangle n ≤ triangle m := by
+  intro n m
+  rw [←Nat.not_lt, ←Nat.not_lt, triangle_increasing]
+
+def pair_inj_helper {a b c d: Nat} : a + b < c + d -> (a + b).triangle + a < (c + d).triangle + c := by
+  intro h
+  cases c with
+  | succ c =>
+    apply Nat.lt_of_le_of_lt
+    apply triangle_add_le_triangle_succ
+    apply Nat.le_add_right
+    apply Nat.lt_of_le_of_lt
+    exact triangle_monotone.mp (Nat.succ_le_of_lt h)
+    omega
+  | zero =>
+    simp only [Nat.zero_add, Nat.add_zero] at *
+    rcases Nat.lt_or_eq_of_le (Nat.succ_le_of_lt h) with h | rfl
+    · apply Nat.lt_of_le_of_lt
+      apply triangle_add_le_triangle_succ
+      apply Nat.le_add_right
+      apply triangle_increasing.mp
+      assumption
+    · simp
+      omega
+
+def pair_inj : Function.Injective₂ pair := by
+  intro a b c d h
+  unfold pair at h
+  rcases Nat.lt_trichotomy (a + b) (c + d) with g | g | g
+  · suffices (a + b).triangle + a < (c + d).triangle + c by
+      rw [h] at this
+      have := Nat.lt_irrefl _ this
+      contradiction
+    apply pair_inj_helper
+    assumption
+  · rw [g] at h
+    cases Nat.add_left_cancel h
+    cases Nat.add_left_cancel g
+    trivial
+  · suffices (c + d).triangle + c < (a + b).triangle + a by
+      rw [h] at this
+      have := Nat.lt_irrefl _ this
+      contradiction
+    apply pair_inj_helper
+    assumption
 
 def inv_triangle_helper : 8 * (triangle n) + 1 = (2 * n + 1) * (2 * n + 1) := by
   induction n with
@@ -116,15 +214,6 @@ def triangle_strict_monotone (a b: Nat) : a < b -> triangle a < triangle b := by
       assumption
 
 def triangle_inj : Function.Injective triangle := triangle_left_inv.Injective
-
-def pair (a b: Nat) :=
-  triangle (a + b) + a
-
-def unpair (x: Nat): Nat × Nat :=
-  let ab := inv_triangle x
-  let a := x - triangle ab
-  let b := ab - a
-  ⟨a, b⟩
 
 def unpair_pair (x: Nat) : pair (unpair x).1 (unpair x).2 = x := sorry
 
