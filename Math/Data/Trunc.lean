@@ -63,4 +63,6 @@ def out_spec (x: Trunc x) : ⟦x.out⟧ = x := Subsingleton.allEq _ _
 @[simp]
 def mk_lift : lift f resp (mk x) = f x := rfl
 
+instance : DecidableEq (Trunc α) := fun  _ _  =>  .isTrue (Subsingleton.allEq _ _)
+
 end Trunc
