@@ -272,3 +272,16 @@ def Option.card'_eq [IsFinite α] :
   IsFinite.card (Option α) = IsFinite.card α + 1 := by
   have := Fintype.ofIsFinite α
   rw [IsFinite.card_eq_card, IsFinite.card_eq_card, Fintype.card_option]
+
+instance {r: α -> α -> Prop} [IsFinite α] : IsFinite (Quot r) := by
+  apply IsFinite.ofEmbed α
+  refine {
+    toFun x := Classical.choose x.exists_rep
+    inj' := ?_
+  }
+  intro x y eq
+  dsimp at eq
+  rw [←Classical.choose_spec x.exists_rep, ←Classical.choose_spec y.exists_rep, eq]
+
+instance {s: Setoid α} [IsFinite α] : IsFinite (Quotient s) :=
+  inferInstanceAs (IsFinite (Quot _))

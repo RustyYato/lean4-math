@@ -310,4 +310,20 @@ def card_unit : card Unit = 1 := rfl
 
 def card_empty [IsEmpty α] : card α = 0 := rfl
 
+def ofSurjective (f: α -> β) (h: Function.Surjective f) [Fintype α] [DecidableEq β] : Fintype β where
+  all := (Finset.univ α).map f
+  complete := by
+    intro x
+    rw [Finset.mem_map]
+    obtain ⟨a, rfl⟩ := h x
+    exists a
+    apply And.intro
+    apply Finset.mem_univ
+    rfl
+
+instance [s: Setoid α] [Fintype α] [@DecidableRel α α (· ≈ ·)]  : Fintype (Quotient s) :=
+  ofSurjective (Quotient.mk _) (fun x => by
+    obtain ⟨x, rfl⟩ := Quotient.exists_rep x
+    exists x)
+
 end Fintype
