@@ -147,6 +147,18 @@ def cantor_diag : Encodable (Nat -> Bool) -> False := by
 
 end Encodable
 
+def Quot.rep {r: α -> α -> Prop} [Encodable α] [DecidableEq (Quot r)] (a: Quot r) : α :=
+  Encodable.choose a.exists_rep
+
+def Quotient.rep [s: Setoid α] [Encodable α] [@DecidableRel α α (· ≈ ·)] (a: Quotient s) : α :=
+  Encodable.choose a.exists_rep
+
+def Quot.rep_spec {r: α -> α -> Prop} [Encodable α] [DecidableEq (Quot r)] (a: Quot r) : Quot.mk _ a.rep = a :=
+  Encodable.choose_spec a.exists_rep
+
+def Quotient.rep_spec [s: Setoid α] [Encodable α] [@DecidableRel α α (· ≈ ·)] (a: Quotient s) : Quotient.mk _ a.rep = a :=
+  Encodable.choose_spec a.exists_rep
+
 instance : Encodable Bool where
   encode
   | false => 0
