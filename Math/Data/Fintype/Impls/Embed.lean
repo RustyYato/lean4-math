@@ -68,16 +68,6 @@ private def allOn (as: List α) (bs: List β) (hbs: bs.Nodup) : List (as ↪ bs)
         apply Nodup.eraseIdx
         assumption)
 
-private def nodup_sublists {as: List α} : as.Nodup -> (sublists as).Nodup := by
-  intro h
-  apply nodup_iff_getElem_inj.mpr
-  intro i j eq
-  simp [sublists, List.finRange] at eq
-  erw [List.getElem_map, List.getElem_map] at eq
-  simp at eq
-  apply Fin.val_inj.mp
-  exact nodup_getElem_inj h eq.left
-
 private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup} : (allOn as bs hbs).Nodup := by
   induction as generalizing bs with
   | nil => apply List.Nodup.singleton

@@ -835,3 +835,13 @@ def List.eq_of_sublist_of_length_eq {as bs: List α} (h: as <+ bs) (g: bs.length
 
 def List.sublists (as: List α) : List (α × List α) :=
   (List.finRange as.length).map (fun x => (as[x], List.eraseIdx as x.val))
+
+def List.nodup_sublists {as: List α} : as.Nodup -> (sublists as).Nodup := by
+  intro h
+  apply nodup_iff_getElem_inj.mpr
+  intro i j eq
+  simp [sublists, List.finRange] at eq
+  erw [List.getElem_map, List.getElem_map] at eq
+  simp at eq
+  apply Fin.val_inj.mp
+  exact nodup_getElem_inj h eq.left

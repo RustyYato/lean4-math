@@ -314,6 +314,22 @@ def congrEmbed {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β�
   rw [←coe_symm h x, ←coe_symm h y] at eq
   exact h.inj (i eq)
 
+def congrEquiv {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) ≃ (α₁ ≃ β₁) where
+  toFun f := h.symm.trans (f.trans g)
+  invFun f := h.trans (f.trans g.symm)
+  leftInv := by
+    intro f
+    dsimp only
+    rw [trans_assoc, trans_assoc, trans_symm,
+      ←trans_assoc, trans_symm]
+    rfl
+  rightInv := by
+    intro f
+    dsimp only
+    rw [trans_assoc, trans_assoc, symm_trans,
+      ←trans_assoc, symm_trans]
+    rfl
+
 def eqv_equiv_subtype (α β: Type*) : (α ≃ β) ≃ { fg: (α -> β) × (β -> α) // Function.IsRightInverse fg.1 fg.2 ∧ Function.IsLeftInverse fg.1 fg.2 } where
   toFun x := ⟨⟨x.1, x.2⟩, x.3, x.4⟩
   invFun x := ⟨x.1.1, x.1.2, x.2.1, x.2.2⟩
@@ -564,3 +580,16 @@ def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
   apply h.symm.toEmbedding
 
 def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj
+
+instance [Subsingleton α] : Subsingleton (α ≃ β) where
+  allEq := by
+    intro a b
+    ext x
+    apply a.symm.inj
+    apply Subsingleton.allEq
+
+instance [Subsingleton β] : Subsingleton (α ≃ β) where
+  allEq := by
+    intro a b
+    ext x
+    apply Subsingleton.allEq
