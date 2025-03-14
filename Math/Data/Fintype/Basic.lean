@@ -7,6 +7,7 @@ import Math.Data.Fintype.Impls.Pi
 import Math.Data.Fintype.Impls.Subtype
 import Math.Data.Fintype.Impls.Finset
 import Math.Data.Fintype.Impls.Embed
+import Math.Data.Fintype.Impls.Equiv
 
 namespace Finset
 

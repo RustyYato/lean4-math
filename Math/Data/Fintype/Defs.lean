@@ -308,6 +308,6 @@ instance [IsEmpty α] : Fintype α :=
 
 def card_unit : card Unit = 1 := rfl
 
-def card_empty : card Empty = 0 := rfl
+def card_empty [IsEmpty α] : card α = 0 := rfl
 
 end Fintype

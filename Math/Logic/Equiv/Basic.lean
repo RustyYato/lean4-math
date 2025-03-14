@@ -432,6 +432,13 @@ def swap_symm [DecidableEq α] (a b: α) :
   simp [DFunLike.coe, Equiv.refl]
   rfl
 
+def apply_set {x a: α} {b: β} [∀x, Decidable (x = a)] [∀x, Decidable (x = b)]  (h: α ≃ β) :
+  h.set a b x = if x = a then b else if h x = b then  h a else h x := by rfl
+def apply_set_symm {a: α} {x b: β} [∀x, Decidable (x = a)] [∀x, Decidable (x = b)]  (h: α ≃ β) :
+  (h.set a b).symm x = if x = b then a else if h.symm x = a then  h.symm b else h.symm x := by rfl
+def set_symm {a: α} {b: β} [∀x, Decidable (x = a)] [∀x, Decidable (x = b)]  (h: α ≃ β) :
+  (h.set a b).symm = h.symm.set b a := by rfl
+
 def set_spec (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)] :
   h.set a b a = b := by
   show (h.set a b).toFun a = b

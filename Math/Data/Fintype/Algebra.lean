@@ -80,10 +80,15 @@ def sum_option [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAdd
   rw [←Finset.univ]
   simp [Multiset.map_append, Multiset.sum_append]
   rfl
+def sum_succ [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: Fin (n + 1) -> α) : ∑i, f i = f (Fin.last _) + ∑i: Fin n, f i.castSucc := by
+  rw [sum_reindex (h := (Equiv.fin_equiv_option n).symm), sum_option]
+  rfl
 
 def prod_empty [IsEmpty ι'] [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι' -> α) : ∏i, f i = 1 := rfl
 def prod_option [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: Option ι -> α) : ∏i, f i = f .none * ∏i, f (.some i) :=
   sum_option (α := AddOfMul α) f
+def prod_succ [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: Fin (n + 1) -> α) : ∏i, f i = f (Fin.last _) * ∏i: Fin n, f i.castSucc :=
+  sum_succ (α := AddOfMul α) f
 
 def sum_const [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (x: α) : ∑_: ι, x = Fintype.card ι • x := by
   unfold sum
