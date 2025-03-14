@@ -2,6 +2,8 @@ import Math.Logic.Basic
 import Math.Logic.IsEmpty
 import Math.Function.Basic
 
+open List
+
 inductive List.MinCountBy (P: α -> Prop) : List α -> Nat -> Prop where
 | nil : MinCountBy P [] 0
 | cons a as n : MinCountBy P as n -> MinCountBy P (a::as) n
@@ -815,3 +817,21 @@ def List.getElem_idxOf [BEq α] [LawfulBEq α] (as: List α) (a: α) (ha: a ∈ 
     rw [LawfulBEq.rfl] at h
     contradiction
     assumption
+
+def List.eq_of_sublist_of_length_eq {as bs: List α} (h: as <+ bs) (g: bs.length ≤ as.length) : as = bs := by
+  induction h with
+  | slnil => rfl
+  | cons a h ih =>
+    clear as bs; rename_i as bs
+    cases ih (Nat.le_trans (Nat.le_succ _) g)
+    rw [List.length_cons, ←Nat.not_lt] at g
+    have := g (Nat.lt_succ_self _)
+    contradiction
+  | cons₂ a h ih =>
+    clear as bs; rename_i as bs
+    rw [ih]
+    apply Nat.le_of_succ_le_succ
+    assumption
+
+def List.sublists (as: List α) : List (α × List α) :=
+  (List.finRange as.length).map (fun x => (as[x], List.eraseIdx as x.val))

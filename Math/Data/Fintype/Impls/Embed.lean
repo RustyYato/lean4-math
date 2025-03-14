@@ -3,31 +3,9 @@ import Math.Logic.Equiv.Basic
 
 open List
 
-namespace List
-
-def eq_of_sublist_of_length_eq {as bs: List α} (h: as <+ bs) (g: bs.length ≤ as.length) : as = bs := by
-  induction h with
-  | slnil => rfl
-  | cons a h ih =>
-    clear as bs; rename_i as bs
-    cases ih (Nat.le_trans (Nat.le_succ _) g)
-    rw [List.length_cons, ←Nat.not_lt] at g
-    have := g (Nat.lt_succ_self _)
-    contradiction
-  | cons₂ a h ih =>
-    clear as bs; rename_i as bs
-    rw [ih]
-    apply Nat.le_of_succ_le_succ
-    assumption
-
-end List
-
 namespace Embedding
 
 variable [_root_.DecidableEq α]
-
-private def sublists (as: List α) : List (α × List α) :=
-  (List.finRange as.length).map (fun x => (as[x], List.eraseIdx as x.val))
 
 private def allOn (as: List α) (bs: List β) (hbs: bs.Nodup) : List (as ↪ bs) :=
   match as with
@@ -54,7 +32,7 @@ private def allOn (as: List α) (bs: List β) (hbs: bs.Nodup) : List (as ↪ bs)
       · simp [sublists, List.mem_map, List.finRange,] at h
         obtain ⟨i, rfl, rfl⟩ := h
         split
-        exact getElem_mem (Embedding.sublists.proof_1 bs i)
+        apply getElem_mem
         apply List.mem_of_mem_eraseIdx
         apply (f ⟨x.val, _⟩).property
       · simp [sublists, List.mem_map, List.finRange,] at h
@@ -94,7 +72,7 @@ private def nodup_sublists {as: List α} : as.Nodup -> (sublists as).Nodup := by
   intro h
   apply nodup_iff_getElem_inj.mpr
   intro i j eq
-  simp [Embedding.sublists, List.finRange] at eq
+  simp [sublists, List.finRange] at eq
   erw [List.getElem_map, List.getElem_map] at eq
   simp at eq
   apply Fin.val_inj.mp
@@ -171,7 +149,7 @@ private def mem_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup
     let b := f ⟨a, List.Mem.head _⟩
     refine ⟨?_, _, ?_, f', ?_, ?_⟩
     · exact b.val
-    · simp [Embedding.sublists, List.finRange]
+    · simp [sublists, List.finRange]
       refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
       exact bs.idxOf b.val
       refine idxOf_lt_length ?_
