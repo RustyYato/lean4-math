@@ -158,6 +158,23 @@ def of_mul_left_nonzero (a b k: α) (hk: k ≠ 0) : k * a = k * b -> a = b :=by
   rw [←one_mul a, ←one_mul b, ←inv?_mul_cancel k, mul_assoc, mul_assoc, h]
   assumption
 
+@[simp]
 def inv?_one : (1: α)⁻¹? = 1 := by
   refine Eq.symm (inv?_eq_of_mul_right 1 1 ?_)
   rw [mul_one]
+
+def div?_ne_zero (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : a /? b ≠ 0 := by
+  rw [div?_eq_mul_inv?]
+  invert_tactic
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply div?_ne_zero <;> invert_tactic)
+
+def div?_div? (a b: α) (hb: b ≠ 0) (hc: c ≠ 0) : a /? (b /? c) =  (a * c) /? b := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv? (a * c)]
+  conv => { lhs; rhs; lhs; rw [div?_eq_mul_inv?] }
+  rw [inv?_mul_rev, inv?_inv?, mul_assoc]
+
+@[simp]
+def div?_one (a: α) : a /? 1 =  a := by
+  rw [div?_eq_mul_inv?, inv?_one, mul_one]

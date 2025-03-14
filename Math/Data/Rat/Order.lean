@@ -4,14 +4,6 @@ import Math.Algebra.GroupWithZero.Basic
 import Math.Ops.CheckedOrder
 import Math.Algebra.Field.Basic
 
-def Int.neg_le_neg_iff {a b: Int} : -a ≤ -b ↔ b ≤ a := by
-  apply Iff.intro
-  intro h
-  have := Int.neg_le_neg h
-  simp at this
-  assumption
-  apply Int.neg_le_neg
-
 def Int.neg_lt_neg_iff {a b: Int} : -a < -b ↔ b < a := by
   apply lt_iff_of_le_iff
   apply Int.neg_le_neg_iff
@@ -32,9 +24,9 @@ def isNonneg : ℚ -> Prop := by
   intro a b eq ha
   replace eq : _ = _ := eq
   unfold Fract.isNonneg at *
-  refine Int.sign_nonneg.mp ?_
+  refine Int.sign_nonneg_iff.mp ?_
   rw [show b.num.sign = a.num.sign from ?_]
-  refine Int.sign_nonneg.mpr ?_
+  refine Int.sign_nonneg_iff.mpr ?_
   assumption
   have : (b.num * a.den).sign = (a.num * b.den).sign := by rw [eq]
   rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero a.den_nz,
