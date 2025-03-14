@@ -1,10 +1,8 @@
 import Math.Data.Fintype.Algebra
 import Math.Data.Fintype.Cases
+import Math.Data.Nat.Factorial
 
 namespace Fintype
-
-def fact (n: ℕ) := ∏x: Fin n, x.val + 1
-def npr (n r: ℕ) := fact n / fact (n - r)
 
 def option_sigma_equiv_sum_sigma {β: Option α -> Type*} : (Σx: Option α, β x) ≃ β .none ⊕ Σx: α, β x where
   toFun
@@ -137,7 +135,6 @@ def option_perm_equiv_prod_perm [DecidableEq α] : (Option α ≃ Option α) ≃
     intro; contradiction
 
 def card_perm {α: Type*} [ha: Fintype α] [dec: DecidableEq α] : card (α ≃ α) = fact (card α) := by
-  unfold fact
   revert dec
   induction ha using typeInduction with
   | empty =>
@@ -146,7 +143,7 @@ def card_perm {α: Type*} [ha: Fintype α] [dec: DecidableEq α] : card (α ≃ 
   | option α _ ih =>
     intro dec
     have dec : DecidableEq α := Embedding.optionSome.DecidableEq
-    rw [card_option, prod_succ]
+    rw [card_option]
     simp; rw [←ih]
     rw [card_eq_of_equiv option_perm_equiv_prod_perm,
       card_prod, card_option]
@@ -155,9 +152,7 @@ def card_perm {α: Type*} [ha: Fintype α] [dec: DecidableEq α] : card (α ≃ 
     have := e.toEmbedding.DecidableEq
     let f := Fintype.ofEquiv e.symm
     rw [card_eq_of_equiv (Equiv.congrEquiv e e).symm, ih,
-      prod_eq_of_equiv (h := Equiv.fin (card_eq_of_equiv e))]
-    intro i
-    rfl
+      card_eq_of_equiv e]
 
 def card_equiv {α: Type*} {β: Type*} [DecidableEq α] [DecidableEq β] [ha: Fintype α] [hb: Fintype β] :
   card (α ≃ β) = if card α = card β then fact (card α) else 0 := by
@@ -258,32 +253,6 @@ def option_emb_equiv_prod_emb [DecidableEq α] [DecidableEq β] : (Option α ↪
     simp at h
     apply Option.some.inj
     rw [Option.some_get]; symm; assumption
-
-@[simp] def fact_zero : fact 0 = 1 := rfl
-@[simp] def fact_succ : fact (n + 1) = (n + 1) * fact n := by
-  rw [fact, prod_succ]
-  rfl
-
-def fact_pos (n: ℕ) : 0 < fact n := by
-  induction n with
-  | zero => simp
-  | succ n ih => simp [ih]
-
-def npr_succ_succ (n m: Nat) : (n + 1) * npr n m = npr (n + 1) (m + 1) := by
-  unfold npr
-  simp
-  rw [Nat.mul_div_assoc]
-  induction m with
-  | zero => apply Nat.dvd_refl
-  | succ m ih =>
-    apply Nat.dvd_trans _ ih
-    rw [Nat.sub_succ]
-    clear ih
-    generalize n - m=k; clear n m
-    cases k
-    apply Nat.dvd_refl
-    simp
-    apply Nat.dvd_mul_left
 
 def card_embed {α: Type*} {β: Type*} [DecidableEq α] [ha: Fintype α] [hb: Fintype β] : card (α ↪ β) = if card α ≤ card β then npr (card β) (card α) else 0 := by
   split <;> rename_i h
