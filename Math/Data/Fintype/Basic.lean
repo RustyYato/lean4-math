@@ -6,6 +6,7 @@ import Math.Logic.IsEmpty
 import Math.Data.Fintype.Impls.Pi
 import Math.Data.Fintype.Impls.Subtype
 import Math.Data.Fintype.Impls.Finset
+import Math.Data.Fintype.Impls.Embed
 
 namespace Finset
 

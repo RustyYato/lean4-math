@@ -520,6 +520,9 @@ def List.Pairwise.head :
 abbrev List.Elem (as: List α) := { x // x ∈ as }
 instance : CoeSort (List α) (Sort _) := ⟨List.Elem⟩
 
+instance : IsEmpty (@List.Elem α []) where
+  elim | ⟨_, hx⟩ => nomatch hx
+
 def List.nodup_pmap (as: List α) {P: α -> Prop} {f: ∀x, P x -> β} {ofmem} (inj: ∀x y h₀ h₁, HEq (f x h₀) (f y h₁) -> x = y) : as.Nodup ↔ (as.pmap f ofmem).Nodup := by
   induction as with
   | nil => apply Iff.intro <;> (intro; apply List.Pairwise.nil)
@@ -795,3 +798,20 @@ def List.nodup_ofFn (f: Fin n -> α) : Function.Injective f ↔ (List.ofFn f).No
   apply Fin.isLt
   rw [List.length_ofFn]
   apply Fin.isLt
+
+def List.getElem_idxOf [BEq α] [LawfulBEq α] (as: List α) (a: α) (ha: a ∈ as) : as[as.idxOf a]'(List.idxOf_lt_length ha) = a := by
+  apply Option.some.inj
+  rw [←List.getElem?_eq_getElem]
+  induction as with
+  | nil => contradiction
+  | cons a₀ as ih =>
+    simp [idxOf_cons, cond]
+    split <;> rename_i h
+    cases LawfulBEq.eq_of_beq h
+    rfl
+    rw [List.getElem?_cons_succ]
+    apply ih
+    cases ha
+    rw [LawfulBEq.rfl] at h
+    contradiction
+    assumption

@@ -315,4 +315,19 @@ instance [IsFinite α] (s: Set α) : Set.IsFinite s := by
   apply IsFinite.ofEmbed α
   exact Embedding.subtypeVal
 
+instance [IsFinite α] (f: α -> β) : Set.IsFinite (Set.range f) := by
+  apply IsFinite.ofEmbed α
+  refine ⟨?_, ?_⟩
+  · intro ⟨x, h⟩
+    exact Classical.choose h
+  · intro ⟨x, hx⟩ ⟨y, hy⟩ h
+    dsimp at h
+    let ax := Classical.choose hx
+    let ay := Classical.choose hy
+    replace h : ax = ay := h
+    have gx : x = f ax := Classical.choose_spec hx
+    have gy : y = f ay := Classical.choose_spec hy
+    congr
+    rw [gx, gy, h]
+
 end Set
