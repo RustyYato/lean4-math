@@ -1,13 +1,13 @@
 import Math.Data.FinSupp.Algebra
 import Math.Algebra.Hom
 
-variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
-   [DecidableEq M]
-
 def LinearCombination (R M: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] [DecidableEq M]
   := Finsupp M R (Finset M)
 
 namespace LinearCombination
+
+variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+   [DecidableEq M]
 
 instance : Zero (LinearCombination R M) :=
   inferInstanceAs (Zero (Finsupp _ _ _))
@@ -95,5 +95,21 @@ def induction
     apply Finsupp.induction zero
     intros ; apply single
     assumption
+
+end LinearCombination
+
+namespace LinearCombination
+
+variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+   [DecidableEq M]
+
+instance : Neg (LinearCombination R M) :=
+  inferInstanceAs (Neg (Finsupp _ _ _))
+instance : Sub (LinearCombination R M) :=
+  inferInstanceAs (Sub (Finsupp _ _ _))
+instance : SMul ℤ (LinearCombination R M) :=
+  inferInstanceAs (SMul ℤ (Finsupp _ _ _))
+instance : IsAddGroup (LinearCombination R M) :=
+  inferInstanceAs (IsAddGroup (Finsupp _ _ _))
 
 end LinearCombination
