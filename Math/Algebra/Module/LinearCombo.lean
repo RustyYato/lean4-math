@@ -25,49 +25,51 @@ instance : IsAddCommMagma (LinearCombination R M) :=
 instance : IsModule R (LinearCombination R M) :=
   inferInstanceAs (IsModule R (Finsupp _ _ _))
 
-def val (f: LinearCombination R M) := f.sum (fun v r => r • v) (fun v h => by simp [h])
+def valHom : LinearCombination R M →ₗ[R] M where
+
+  toFun f := f.sum (fun v r => r • v) (fun v h => by simp [h])
+  resp_add := by
+    intro a b
+    dsimp
+    rw [Finsupp.add_sum]
+    intro v a b
+    rw [add_smul]
+  resp_smul := by
+    intro r a
+    dsimp
+    let g : M →+ M := {
+      toFun x := r • x
+      resp_zero := by simp
+      resp_add {x y} := smul_add _ _ _
+    }
+    show _ = g (a.sum _ _)
+    rw [Finsupp.resp_sum]
+    apply Finsupp.sum_eq_pairwise
+    intro i
+    show _ =  r • _
+    rw [←mul_smul]
+    rfl
+
+@[coe]
+abbrev val (f: LinearCombination R M) := valHom f
 
 @[simp]
 def zero_val : (0 : LinearCombination R M).val = 0 := rfl
 
 @[simp]
-def add_val (a b: LinearCombination R M) : (a + b).val = a.val + b.val := by
-  unfold val
-  rw [Finsupp.add_sum]
-  intro v a b
-  rw [add_smul]
+def add_val (a b: LinearCombination R M) : (a + b).val = a.val + b.val := resp_add _
 
 @[simp]
-def smul_val (r: R) (a: LinearCombination R M) : (r • a).val = r • a.val := by
-  unfold val
-  let g : M →+ M := {
-    toFun x := r • x
-    resp_zero := by simp
-    resp_add {x y} := smul_add _ _ _
-  }
-  show _ = g (a.sum _ _)
-  rw [Finsupp.resp_sum]
-  apply Finsupp.sum_eq_pairwise
-  intro i
-  show _ =  r • _
-  rw [←mul_smul]
-  rfl
-
-def valHom : LinearCombination R M →ₗ[R] M where
-  toFun := val
-  resp_add := add_val _ _
-  resp_smul := smul_val _ _
+def smul_val (r: R) (a: LinearCombination R M) : (r • a).val = r • a.val := resp_smul _
 
 def single (r: R) (m: M) : LinearCombination R M := Finsupp.single m r
 
 @[simp]
-def single_val (r: R) (m: M) : (single r m).val = r • m := by
-  unfold val single
-  rw [Finsupp.single_sum]
+def single_valHom (r: R) (m: M) : valHom (single r m) = r • m := by
+  simp [valHom, single, DFunLike.coe, Finsupp.single_sum]
 
 @[simp]
-def single_valHom (r: R) (m: M) : valHom (single r m) = r • m :=
-  single_val _ _
+def single_val (r: R) (m: M) : (single r m).val = r • m := single_valHom _ _
 
 instance : CoeTC (LinearCombination R M) M := ⟨valHom⟩
 instance : FunLike (LinearCombination R M) M R := inferInstanceAs (FunLike (Finsupp M R _) M R)

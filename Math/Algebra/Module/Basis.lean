@@ -6,7 +6,7 @@ variable (R M: Type*) [FieldOps R] [IsField R] [AddGroupOps M] [IsAddGroup M] [I
 
 def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
   classical
-  have ⟨S, linear_indep, spec⟩  := Zorn.subset (Set.mk (Submodule.IsLinindep R (M := M))) ?_
+  have ⟨S, linear_indep, spec⟩ := Zorn.subset (Set.mk (Submodule.IsLinindep R (M := M))) ?_
   · refine ⟨S, linear_indep, ?_⟩
     apply Classical.byContradiction
     intro h
