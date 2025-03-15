@@ -4,41 +4,16 @@ import Math.Order.Zorn
 
 variable (R M: Type*) [FieldOps R] [IsField R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
 
-structure PreBasis where
-  set: Set M
-  linear_indep: Submodule.IsLinindep R set
-
-namespace PreBasis
-
-instance : LE (PreBasis R M) where
-  le a b := a.set ≤ b.set
-instance : LT (PreBasis R M) where
-  lt a b := a.set < b.set
-
-def orderEmbed : PreBasis R M ↪o Set M where
-  toFun := set
-  inj' := by intro a b eq; cases a; congr
-  resp_rel := Iff.rfl
-
-instance : IsLawfulLT (PreBasis R M) where
-  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := Set M)
-
-instance : IsPartialOrder (PreBasis R M) :=
-  (orderEmbed R M).inducedIsPartialOrder'
-
 def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
   classical
-  have ⟨s, spec⟩ := Zorn.partialorder (α := PreBasis R M) ?_
-  · refine ⟨s.set, s.linear_indep, ?_⟩
+  have ⟨S, linear_indep, spec⟩  := Zorn.subset (Set.mk (Submodule.IsLinindep R (M := M))) ?_
+  · refine ⟨S, linear_indep, ?_⟩
     apply Classical.byContradiction
     intro h
     simp at h
     obtain ⟨m, m_not_in_span⟩ := h
-    have := spec {
-      set := insert m s.set
-      linear_indep := ?_
-    } ?_
-    · have : m ∈ s.set := by
+    have := spec (insert m S) ?_ ?_
+    · have : m ∈ S := by
         rw [←this]
         simp
       have := Submodule.mem_span_of R _ _ this
@@ -50,7 +25,7 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
         LinearCombination.single_valHom] at eq
       by_cases hc:C m = 0
       simp [hc, resp_sub] at eq
-      apply s.linear_indep C _ eq
+      apply linear_indep C _ eq
       intro x hx
       cases sub x hx
       subst x
@@ -83,7 +58,7 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
         simp [neg_sub, mul_sub, inv?_mul_cancel, LinearCombination.apply_single] at h
       · assumption
     · apply Set.sub_insert
-  · intro S Schain
-    sorry
-
-end PreBasis
+  · intro S Ssub Schain
+    refine ⟨⋃S, ?_, ?_⟩
+    · sorry
+    · sorry
