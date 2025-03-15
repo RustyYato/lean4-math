@@ -610,6 +610,16 @@ def nonempty_of_not_empty (a: Set α) (h: a ≠ ∅) : a.Nonempty := by
   rw [not_nonempty _ g] at h
   contradiction
 
+def empty_or_nonempty (a: Set α) : a = ∅ ∨ a.Nonempty := by
+  apply Classical.or_iff_not_imp_left.mpr
+  apply nonempty_of_not_empty
+
+def of_sub_empty (s: Set α) : s ⊆ ∅ -> s = ∅ := by
+  intro hx
+  apply sub_antisymm
+  assumption
+  intro _ _; contradiction
+
 @[simp]
 def empty_attach : (∅: Set α).attach = ∅ := by
   apply ext_empty
