@@ -6,7 +6,7 @@ variable (R M: Type*) [FieldOps R] [IsField R] [AddGroupOps M] [IsAddGroup M] [I
 
 structure PreBasis where
   set: Set M
-  linear_indep: linindep R set
+  linear_indep: Submodule.IsLinindep R set
 
 namespace PreBasis
 

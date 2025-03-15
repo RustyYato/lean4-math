@@ -181,8 +181,12 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
     assumption
 
 -- a set is linearly independent if every non-trivial linear combination is non-zero
-def linindep (U: Set M) := ∀f: LinearCombination R M,
+def IsLinindep (U: Set M) := ∀f: LinearCombination R M,
   Set.support f ⊆ U -> f.val = 0 -> f = 0
+
+structure IsBasis (U: Set M) : Prop where
+  indep: IsLinindep R U
+  complete: ∀m, m ∈ span R U
 
 end Defs
 
