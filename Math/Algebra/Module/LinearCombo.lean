@@ -85,6 +85,10 @@ def mem_support_single {r: R} {m x: M} : x ∈ Set.support (single r m) -> r ≠
   trivial
   contradiction
 
+@[ext]
+def ext (a b: LinearCombination R M) : (∀m, a m = b m) -> a = b :=
+  Finsupp.ext _ _
+
 @[induction_eliminator]
 def induction
   {motive: LinearCombination R M -> Prop}
@@ -94,6 +98,7 @@ def induction
     motive a ->
     motive b ->
     Set.support (a + b) = Set.support a ∪ Set.support b ->
+    (a + b = 0 -> a = 0 ∧ b = 0) ->
     motive (a + b)):
     ∀l, motive l := by
     apply Finsupp.induction zero
@@ -110,11 +115,29 @@ def induction
     intro ⟨h, g⟩
     show a m + b m = 0
     simp [h, g]
+    intro g
+    apply And.intro
+    ext m
+    exact (h m (by
+      show (a + b) m = 0
+      rw [g]; rfl)).left
+    ext m
+    exact (h m (by
+      show (a + b) m = 0
+      rw [g]; rfl)).right
 
-@[ext]
-def ext (a b: LinearCombination R M) : (∀m, a m = b m) -> a = b :=
-  Finsupp.ext _ _
-
+def support_single (r: R) (m: M) : Set.support (single r m) = ∅ ∨ Set.support (single r m) = {m} := by
+  by_cases h:r = 0
+  subst r
+  left;
+  apply Set.ext_empty
+  intro x hx
+  rw [Set.mem_support, apply_single] at hx
+  split at hx <;> contradiction
+  right
+  ext
+  simp [Set.mem_support, apply_single]
+  intro; assumption
 
 end LinearCombination
 

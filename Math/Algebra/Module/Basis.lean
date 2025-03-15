@@ -58,7 +58,89 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
         simp [neg_sub, mul_sub, inv?_mul_cancel, LinearCombination.apply_single] at h
       · assumption
     · apply Set.sub_insert
-  · intro S Ssub Schain
+  · intro S mem_S_linear_indep Schain
     refine ⟨⋃S, ?_, ?_⟩
-    · sorry
-    · sorry
+    · by_cases hS:S.Nonempty
+      · obtain ⟨s, hS⟩ := hS
+        intro C suppC eq_zero
+        suffices ∃s ∈ S, Set.support C ⊆ s ∧ Submodule.IsLinindep R s by
+          obtain ⟨s, _, supp_s, linindep⟩ := this
+          exact linindep C supp_s eq_zero
+        clear eq_zero
+        induction C with
+        | zero =>
+          exists s
+          apply And.intro
+          assumption
+          apply And.intro
+          intro x h; contradiction
+          apply mem_S_linear_indep
+          assumption
+        | add a b ha hb h g =>
+          rw [h] at suppC
+          clear g
+          replace ⟨sa, sa_mem, supp_sa, ha⟩ := ha (Set.sub_trans (Set.sub_union_left _ _) suppC)
+          replace ⟨sb, sb_mem, supp_sb, hb⟩ := hb (Set.sub_trans (Set.sub_union_right _ _) suppC)
+          exists sa ∪ sb
+          have : sa ∪ sb = if sa ⊆ sb then sb else sa := ?_
+          apply And.intro
+          rw [this]
+          split <;> assumption
+          rw [h]
+          apply And.intro
+          intro m hm
+          rcases hm with hm | hm
+          left; apply supp_sa; assumption
+          right; apply supp_sb; assumption
+          rw [show sa ∪ sb = if sa ⊆ sb then sb else sa from ?_]
+          split <;> assumption
+          assumption
+          have : sa ⊆ sb ∨ _ ∨ sb ⊆ sa := Schain.tri ⟨sa, sa_mem⟩ ⟨sb, sb_mem⟩
+          rcases this with h | h | h
+          rw [Set.union_of_sub_left h]
+          rw [if_pos h]
+          cases h
+          rw [Set.union_self]
+          split <;> rfl
+          rw [Set.union_of_sub_right h]
+          split
+          apply Set.sub_antisymm
+          assumption
+          assumption
+          rfl
+        | single r m =>
+          rcases LinearCombination.support_single r m with h | h
+          rw [h] at *
+          exists s
+          apply And.intro
+          assumption
+          apply And.intro
+          apply Set.empty_sub
+          apply mem_S_linear_indep
+          assumption
+          rw [h] at suppC; rw [h]
+          clear h
+          have ⟨s', s'_mem, h⟩ := suppC m (by simp)
+          exists s'
+          apply And.intro
+          assumption
+          apply And.intro
+          rintro _ rfl
+          assumption
+          apply mem_S_linear_indep
+          assumption
+      · intro C suppC eq_zero
+        cases Set.not_nonempty _ hS
+        suffices Set.support C = ∅ by
+          ext m
+          apply Classical.byContradiction
+          intro h
+          replace h : m ∈ Set.support C := h
+          rw [this] at h
+          contradiction
+        apply Set.ext_empty
+        intro m h
+        have := suppC m h
+        rw [Set.sUnion_empty] at this
+        contradiction
+    · intro; apply Set.sub_sUnion
