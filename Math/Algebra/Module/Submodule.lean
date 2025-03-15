@@ -82,10 +82,6 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
     | single r m =>
       show LinearCombination.val (LinearCombination.single _ _) ∈ _
       rw [LinearCombination.single_val]
-      by_cases hb:r = 0
-      subst hb
-      rw [zero_smul]
-      apply mem_zero
       apply mem_smul
       apply Generate.of
       apply h m

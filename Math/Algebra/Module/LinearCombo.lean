@@ -95,7 +95,7 @@ def ext (a b: LinearCombination R M) : (∀m, a m = b m) -> a = b :=
 def induction
   {motive: LinearCombination R M -> Prop}
   (zero: motive 0)
-  (single: ∀r m, motive (single r m))
+  (single: ∀r m, r ≠ 0 -> motive (single r m))
   (add: ∀a b,
     motive a ->
     motive b ->
@@ -104,7 +104,14 @@ def induction
     motive (a + b)):
     ∀l, motive l := by
     apply Finsupp.induction zero
-    intros ; apply single
+    intros m r
+    by_cases hr:r = 0
+    show motive (LinearCombination.single _ _)
+    rw [hr, show LinearCombination.single (0: R) m = 0 from ?_]
+    apply zero
+    ext; rw [apply_single]; split <;> rfl
+    apply single
+    assumption
     intro a b ha hb h
     apply add
     assumption

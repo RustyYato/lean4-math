@@ -73,7 +73,7 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
           assumption
           assumption
           rfl
-        | single r m =>
+        | single r m hr =>
           rcases LinearCombination.support_single r m with h | h
           rw [h] at *
           exists s
