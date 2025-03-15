@@ -68,20 +68,17 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
     | zero =>
       apply mem_zero
     | add f₀ f₁ h₀ h₁ g =>
+      rw [g] at h
       rw [resp_add]
       apply mem_add
       · apply h₀
         intro x hx
         apply h
-        intro hx'
-        have := (g _ hx').left
-        contradiction
+        left; assumption
       · apply h₁
         intro x hx
         apply h
-        intro hx'
-        have := (g _ hx').right
-        contradiction
+        right; assumption
     | single r m =>
       show LinearCombination.val (LinearCombination.single _ _) ∈ _
       rw [LinearCombination.single_val]
@@ -102,7 +99,7 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
 
 -- a set is linearly independent if every non-trivial linear combination is non-zero
 def IsLinindep (U: Set M) := ∀f: LinearCombination R M,
-  Set.support f ⊆ U -> f.val = 0 -> f = 0
+  Set.support f ⊆ U -> (f: M) = 0 -> f = 0
 
 structure IsBasis (U: Set M) : Prop where
   indep: IsLinindep R U

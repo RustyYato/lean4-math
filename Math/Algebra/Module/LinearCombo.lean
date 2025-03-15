@@ -72,6 +72,10 @@ def single_valHom (r: R) (m: M) : valHom (single r m) = r • m :=
 instance : CoeTC (LinearCombination R M) M := ⟨valHom⟩
 instance : FunLike (LinearCombination R M) M R := inferInstanceAs (FunLike (Finsupp M R _) M R)
 
+@[simp] def apply_add (a b: LinearCombination R M) (m: M) : (a + b) m = a m + b m := rfl
+@[simp] def apply_nsmul (a: LinearCombination R M) (n: ℕ) (m: M) : (n • a) m = n • a m := rfl
+@[simp] def apply_smul (a: LinearCombination R M) (n: R) (m: M) : (n • a) m = n • a m := rfl
+
 def apply_single {m: M} {r: R} (x: M) : single r m x = if x = m then r else 0 := rfl
 
 def mem_support_single {r: R} {m x: M} : x ∈ Set.support (single r m) -> r ≠ 0 ∧ x = m := by
@@ -89,12 +93,28 @@ def induction
   (add: ∀a b,
     motive a ->
     motive b ->
-    (∀x, a x + b x = 0 -> a x = 0 ∧ b x = 0) ->
+    Set.support (a + b) = Set.support a ∪ Set.support b ->
     motive (a + b)):
     ∀l, motive l := by
     apply Finsupp.induction zero
     intros ; apply single
+    intro a b ha hb h
+    apply add
     assumption
+    assumption
+    ext m
+    simp [Set.mem_support, Set.mem_union]
+    rw [Classical.not_iff_not, not_or, Classical.not_not, Classical.not_not, Classical.not_not]
+    apply Iff.intro
+    apply h
+    intro ⟨h, g⟩
+    show a m + b m = 0
+    simp [h, g]
+
+@[ext]
+def ext (a b: LinearCombination R M) : (∀m, a m = b m) -> a = b :=
+  Finsupp.ext _ _
+
 
 end LinearCombination
 
@@ -111,5 +131,9 @@ instance : SMul ℤ (LinearCombination R M) :=
   inferInstanceAs (SMul ℤ (Finsupp _ _ _))
 instance : IsAddGroup (LinearCombination R M) :=
   inferInstanceAs (IsAddGroup (Finsupp _ _ _))
+
+@[simp] def apply_sub (a b: LinearCombination R M) (m: M) : (a - b) m = a m - b m := rfl
+@[simp] def apply_neg (a: LinearCombination R M) (m: M) : (-a) m = -a m := rfl
+@[simp] def apply_zsmul (a: LinearCombination R M) (n: ℤ) (m: M) : (n • a) m = n • a m := rfl
 
 end LinearCombination
