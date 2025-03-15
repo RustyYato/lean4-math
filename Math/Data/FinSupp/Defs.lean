@@ -309,6 +309,9 @@ def erase [DecidableEq α] [Zero β] (a: α) (f: Finsupp α β S) : Finsupp α �
         symm; assumption
     }
 
+def apply_erase [Zero β] [DecidableEq α] (f: Finsupp α β S) (a x: α) :
+  f.erase a x = if x = a then 0 else f x := rfl
+
 def singleHom [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (a: α) : β →+ Finsupp α β S where
   toFun := single a
   resp_zero := by ext; simp [apply_single]
@@ -440,5 +443,61 @@ def support_zero [Zero β] [∀b: β, Decidable (b = 0)] : support (S := S) (β 
   ext
   simp [mem_support]
   apply Finset.not_mem_empty
+
+def support_erase [Zero β] [DecidableEq α] [DecidableEq β] (f: Finsupp α β S) : (f.erase x).support = f.support.erase x := by
+  ext a
+  simp [mem_support, Finset.mem_erase, apply_erase]
+  rw [And.comm]
+
+def induction [Zero β] [Add β] [IsAddZeroClass β] [DecidableEq α]
+  {motive: Finsupp α β S -> Prop}
+  (zero: motive 0)
+  (single: ∀a b, motive (single a b))
+  (add: ∀a b,
+    motive a ->
+    motive b ->
+    (∀x, a x + b x = 0 -> a x = 0 ∧ b x = 0) ->
+    motive (a + b)):
+  ∀f, motive f := by
+  intro f
+  classical
+  cases h:f.support with
+  | mk supp suppnodup =>
+  replace h : f.support.val = supp := by rw [h]
+  clear suppnodup
+  induction supp generalizing f with
+  | nil =>
+    rw [show f = 0 from ?_]
+    assumption
+    ext x
+    apply Classical.byContradiction
+    intro g
+    have : x ∈ f.support.val := mem_support.mpr g
+    rw [h] at this
+    contradiction
+  | cons a as ih =>
+    obtain ⟨supp'⟩ := f.spec
+    rw [show f = Finsupp.single a (f a) + f.erase a from ?_]
+    apply add
+    apply single
+    apply ih
+    · simp [support_erase f, Finset.erase, h]
+      rw [Multiset.erase_cons_head]
+    · intro x h
+      simp [apply_erase, apply_single] at h
+      simp only [apply_erase, apply_single]
+      split at h
+      subst x; simp at h
+      rw [if_pos rfl, if_pos rfl]
+      trivial
+      rename_i g
+      rw [if_neg g, if_neg g]
+      simp at h
+      trivial
+    · ext x
+      simp [apply_erase, apply_single]
+      split
+      subst a; rw [add_zero]
+      simp
 
 end Finsupp

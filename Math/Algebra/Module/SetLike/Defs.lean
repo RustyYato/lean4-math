@@ -44,4 +44,7 @@ def of_mem_generate [SetLike S M] [IsSubmodule S R] (U: Set M) (s: S) :
   | add => apply mem_add <;> assumption
   | smul => apply mem_smul <;> assumption
 
+@[ext]
+def ext (a b: Submodule R M) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
 end Submodule
