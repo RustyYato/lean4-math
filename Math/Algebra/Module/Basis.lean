@@ -52,9 +52,7 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
       simp [hc, resp_sub] at eq
       apply s.linear_indep C _ eq
       intro x hx
-      have := sub x hx
-      simp at this
-      cases this
+      cases sub x hx
       subst x
       contradiction
       assumption
@@ -66,15 +64,13 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
       refine ⟨_, ?_, eq⟩
       have : Set.support (((C m)⁻¹? • -(C - LinearCombination.single (C m) m)): LinearCombination R M) ⊆ Set.support C := by
         intro v h
-        simp [Set.mem_support, neg_sub, mul_sub] at *
+        simp [Set.mem_support, neg_sub, mul_sub] at h
         intro g
-        replace h : (C m)⁻¹? • (LinearCombination.single _ _ _) - (C m)⁻¹? • C v ≠ 0 := h
-        rw [g, smul_zero, sub_zero, LinearCombination.apply_single] at h
+        rw [g, mul_zero, sub_zero, LinearCombination.apply_single] at h
         split at h
-        rw [smul_eq_mul, inv?_mul_cancel] at h
-        subst v; contradiction
-        rw [smul_zero] at h
+        subst v
         contradiction
+        simp at h
       intro v h
       have h' := this v h
       have := sub _ h'
