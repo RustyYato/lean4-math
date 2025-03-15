@@ -58,15 +58,17 @@ def single_val (r: R) (m: M) : (single r m).val = r • m := by
   unfold val single
   rw [Finsupp.single_sum]
 
-def support [∀r: R, Decidable (r = 0)] (f: LinearCombination R M) : Finset M := Finsupp.support f
-
 instance : CoeTC (LinearCombination R M) M := ⟨LinearCombination.val⟩
 instance : FunLike (LinearCombination R M) M R := inferInstanceAs (FunLike (Finsupp M R _) M R)
 
-def mem_support [∀r: R, Decidable (r = 0)] {f: LinearCombination R M} :
-  ∀{x: M}, x ∈ f.support ↔ f x ≠ 0 := Finsupp.mem_support
-
 def apply_single {m: M} {r: R} (x: M) : single r m x = if x = m then r else 0 := rfl
+
+def mem_support_single {r: R} {m x: M} : x ∈ Set.support (single r m) -> r ≠ 0 ∧ x = m := by
+  rintro h
+  rw [Set.mem_support, apply_single] at h
+  split at h
+  trivial
+  contradiction
 
 @[induction_eliminator]
 def induction
@@ -92,26 +94,26 @@ variable {M: Type*} (R: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [
 -- the span of a set is the set of all vectors that are made from
 -- linear combinations of members of the set
 def span (U: Set M) : Submodule R M where
-  carrier := Set.mk fun v => ∃f: LinearCombination R M, (∀x, x ∈ f.support -> x ∈ U) ∧ v = f
+  carrier := Set.mk fun v => ∃f: LinearCombination R M, Set.support f ⊆ U ∧ v = f
   mem_zero' := ⟨0, by
     intro v h
-    rw [LinearCombination.mem_support] at h
+    rw [Set.mem_support] at h
     contradiction , rfl⟩
   mem_add' := by
     rintro a b ⟨fa, ha, rfl⟩ ⟨fb, hb, rfl⟩
     exists fa + fb
     apply And.intro
     · intro v h
-      rw [LinearCombination.mem_support] at h
+      rw [Set.mem_support] at h
       replace h : fa v + fb v ≠ 0 := h
       by_cases g:fa v = 0
       rw [g] at h
       simp at h
       apply hb v
-      rw [LinearCombination.mem_support]
+      rw [Set.mem_support]
       assumption
       apply ha v
-      rw [LinearCombination.mem_support]
+      rw [Set.mem_support]
       assumption
     · simp
   mem_smul' := by
@@ -119,13 +121,13 @@ def span (U: Set M) : Submodule R M where
     exists r • f
     apply And.intro
     · intro v h
-      rw [LinearCombination.mem_support] at h
+      rw [Set.mem_support] at h
       replace h : r • f v ≠ 0 := h
       by_cases g:f v = 0
       rw [g] at h
       simp at h
       apply hf
-      rw [LinearCombination.mem_support]
+      rw [Set.mem_support]
       assumption
     · simp
 
@@ -134,7 +136,7 @@ def mem_span_of (U: Set M) : ∀x ∈ U, x ∈ span R U := by
   exists LinearCombination.single 1 x
   apply And.intro
   intro y hy
-  cases List.mem_singleton.mp (Finsupp.support_single _ hy)
+  cases (LinearCombination.mem_support_single hy).right
   assumption
   simp
 
@@ -151,16 +153,14 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
       · apply h₀
         intro x hx
         apply h
-        rw [LinearCombination.mem_support] at *
-        intro eq
-        have := (g _ eq).left
+        intro hx'
+        have := (g _ hx').left
         contradiction
       · apply h₁
         intro x hx
         apply h
-        rw [LinearCombination.mem_support] at *
-        intro eq
-        have := (g _ eq).right
+        intro hx'
+        have := (g _ hx').right
         contradiction
     | single r m =>
       show LinearCombination.val (LinearCombination.single _ _) ∈ _
@@ -172,7 +172,7 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
       apply mem_smul
       apply Generate.of
       apply h m
-      rw [LinearCombination.mem_support, LinearCombination.apply_single, if_pos rfl]
+      rw [Set.mem_support, LinearCombination.apply_single, if_pos rfl]
       assumption
   · intro h
     apply of_mem_generate _ _ _ _ h
