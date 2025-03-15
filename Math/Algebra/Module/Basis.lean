@@ -144,3 +144,13 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
         rw [Set.sUnion_empty] at this
         contradiction
     · intro; apply Set.sub_sUnion
+
+noncomputable def basis : Set M := Classical.choose (existsBasis R M)
+def basis_is_basis : Submodule.IsBasis R (basis R M) := Classical.choose_spec (existsBasis R M)
+def basis_is_linear_indep : Submodule.IsLinindep R (basis R M) := (basis_is_basis R M).indep
+def basis_is_spanning_set : ∀m, m ∈ Submodule.span R (basis R M) := (basis_is_basis R M).complete
+def basis_span_eq_univ : Submodule.span R (basis R M) = ⊤ := by
+  ext
+  apply Iff.intro <;> intro
+  trivial
+  apply basis_is_spanning_set
