@@ -4,6 +4,7 @@ import Math.Order.Lattice.Basic
 import Math.Data.Finset.Lattice
 import Math.Algebra.Group.Hom
 import Math.Logic.Basic
+import Math.Algebra.Module.Defs
 
 class FiniteSupportSet (S: Type*) (α: outParam Type*) extends FinsetLike S α, Sup S, Inf S, LE S, LT S, IsLattice S, Inhabited S, IsLawfulEmptyFinsetLike S where
   coe_resp_le: ∀{a b: S}, a ≤ b ↔ (a: Finset α) ≤ (b: Finset α)
@@ -274,6 +275,26 @@ instance [AddGroupOps β] [IsAddGroup β] : IsAddGroup (Finsupp α β S) where
 
 instance [Zero β] [Add β] [IsAddZeroClass β] [IsAddCommMagma β] : IsAddCommMagma (Finsupp α β S) where
   add_comm a b := by ext; apply add_comm
+
+instance [SemiringOps β] [IsSemiring β] : IsModule β (Finsupp α β S) where
+  one_smul f := by
+    ext x
+    apply one_mul
+  mul_smul a b f := by
+    ext
+    apply mul_assoc
+  smul_add r a b := by
+    ext
+    apply mul_add
+  zero_smul f := by
+    ext
+    apply zero_mul
+  smul_zero b := by
+    ext
+    apply mul_zero
+  add_smul r s b := by
+    ext
+    apply add_mul
 
 def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: Finsupp α β S) : Finsupp α β S where
   toFun x := if x = a then b else f x
