@@ -559,6 +559,18 @@ instance : IsLinearOrder Nat where
   le_trans := Nat.le_trans
 instance : IsDecidableLinearOrder Nat where
 
+instance : IsLinearOrder (Fin n) where
+  lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
+  le_antisymm := by
+    intro a b ab ba
+    apply Fin.val_inj.mp
+    apply le_antisymm <;> assumption
+  lt_or_le _ _ := Nat.lt_or_ge _ _
+  le_trans := Nat.le_trans
+instance : Min (Fin n) := minOfLe
+instance : Max (Fin n) := maxOfLe
+instance : IsDecidableLinearOrder (Fin n) where
+
 instance : Bot Bool where
   bot := false
 instance : IsLawfulBot Bool where
