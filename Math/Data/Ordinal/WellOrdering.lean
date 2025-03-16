@@ -1,395 +1,347 @@
 import Math.Order.Zorn
+import Math.AxiomBlame
 
 namespace WellOrdering
 
-open Classical
+variable {α: Type*}
 
--- the type of partially defined well orderings over α
-private
-structure SubWellOrder (α: Type*) where
-  intro ::
-  -- the domain that this well ordering is defined over
-  domain: Set α
-  -- the underlying well ordering
-  rel: α -> α -> Prop
-  -- proof that the relation is a well ordering over the domain
-  wo: Relation.IsWellOrder (domain.Induced rel)
+def init_seg_rel (α: Type*) := α -> α -> Prop
 
--- a sub-well-order A ≤ B when A is the initial segment of B
--- which is stated like so instead of using `InitialSegment`
--- to make it easy to show that the relation doesn't change
--- over the domain.
-private
-structure SubWellOrder.LE (a b : SubWellOrder α) : Prop where
-  sub: a.domain ⊆ b.domain
-  resp_rel: ∀x y: a.domain, a.rel x y ↔ b.rel x y
-  init: ∀x: a.domain, ∀y: (b.domain \ a.domain: Set _), b.rel x y
+namespace init_seg_rel
 
-private
-instance : LE (SubWellOrder α) where
-  le := SubWellOrder.LE
+def defines (r: init_seg_rel α) (x: α) := (∃x', r x' x ∨ r x x')
+@[ext]
+def ext (a b: init_seg_rel α) : (∀x y, a x y ↔ b x y) -> a = b := by
+  simp [init_seg_rel] at *
+  intro h
+  ext
+  apply h
 
-private
-instance : LT (SubWellOrder α) where
+def insert (R: init_seg_rel α) (a: α) : init_seg_rel α := fun x y => R.defines x ∧ y = a ∨ R x y
+
+instance : LE (init_seg_rel α) where
+  le a b := (∀{x y}, a x y -> b x y) ∧ ∀{x y}, a.defines y -> b x y -> a x y
+
+instance : LT (init_seg_rel α) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
--- we can prove that the given ordering forms a PreOrder over the sub-well-orderings
--- this isn't a PartialOrder, since the behavior of `rel` isn't specified outside
--- the `domain`, so we can't prove `le_antisymm`
-private
-instance : IsPreOrder (SubWellOrder α) where
+def defines_of_le {r s: init_seg_rel α} : r ≤ s -> ∀{x}, r.defines x -> s.defines x := by
+  intro le x ⟨x', h⟩
+  exists x'
+  rcases h with h | h
+  left; apply le.left; assumption
+  right; apply le.left; assumption
+
+instance : IsPartialOrder (init_seg_rel α) where
   lt_iff_le_and_not_le := Iff.rfl
-  le_refl a := ⟨Set.sub_refl _, fun _ _ => Iff.rfl, fun x y => by
-    rw [Set.sdiff_self] at y
-    have := y.property
-    contradiction⟩
+  le_refl a := ⟨id, fun _ => id⟩
+  le_antisymm := by
+    intro a b ab ba
+    ext x y
+    apply Iff.intro
+    apply ab.left
+    apply ba.left
   le_trans := by
-    intro a b c ab bc
-    refine ⟨Set.sub_trans ab.sub bc.sub, ?_, ?_⟩
-    intro x y
-    apply Iff.trans (ab.resp_rel _ _)
-    apply bc.resp_rel ⟨_, _⟩ ⟨_, _⟩
-    apply ab.sub
-    exact x.property
-    apply ab.sub
-    exact y.property
-    intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
-    dsimp
-    by_cases hby:y ∈ b.domain
-    apply (bc.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp (ab.init ⟨x, hx⟩ ⟨y, hby, hy'⟩)
-    apply ab.sub; assumption
+    intro a b c hab hbc
+    apply And.intro
+    intro x y h
+    apply hbc.left
+    apply hab.left
     assumption
-    apply bc.init ⟨x, ab.sub _ hx⟩ ⟨y, hy, ?_⟩
-    assumption
+    intro x y h r
+    have g : b.defines y := defines_of_le hab h
+    exact hab.right h (hbc.right g r)
 
--- insert a new element into the ordering, by making it the top element
-private def RelWithTop (r: α -> α -> Prop) (top: α) (a b: α): Prop :=
-  if a = top then False
-  else if b = top then True
-  else r a b
+instance : SupSet (init_seg_rel α) where
+  sSup S x y := ∃r ∈ S, r x y
 
-private
-def SubWellOrder.insert_wo (top: α) (s: Set α) (h: top ∉ s) {r: α -> α -> Prop} [Relation.IsWellOrder (s.Induced r)] :
-  Relation.IsWellOrder ((insert top s).Induced (RelWithTop r top)) where
+end init_seg_rel
+
+class IsLocallyWellOrdered (R: init_seg_rel α): Prop extends Relation.IsWellFounded R, Relation.IsTrans R where
+  rel_defined_is_chain: (Set.mk R.defines).IsChain R
+
+def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R.defines A) : IsLocallyWellOrdered (R.insert A) where
+  trans := by
+    intro a b c hab hbc
+    rcases hab with ⟨h, rfl⟩ | h
+    <;> rcases hbc with ⟨g, rfl⟩ | g
+    right
+    contradiction
+    exfalso; apply ha
+    exists c; right; assumption
+    left; apply And.intro _ rfl
+    exists b; right; assumption
+    right; exact trans h g
+  rel_defined_is_chain := {
+    tri := by
+      have : ∀a b: α, R.defines a -> R.defines b ->
+        R.insert A a b ∨ a = b ∨ R.insert A b a := by
+        intro a b ha hb
+        rcases IsLocallyWellOrdered.rel_defined_is_chain.tri ⟨_, ha⟩ ⟨_, hb⟩ with h | h | h
+        left; right; assumption
+        right; left; cases h; rfl
+        right; right; right; assumption
+      intro ⟨a, ha⟩ ⟨b, hb⟩
+      obtain ⟨a', ha⟩ := ha
+      obtain ⟨b', hb⟩ := hb
+      simp [Set.Induced]
+      rcases ha with (⟨ha, rfl⟩ | ha) | (⟨ha, rfl⟩ | ha)
+      <;> rcases hb with (⟨hb, rfl⟩ | hb) | (⟨hb, rfl⟩ | hb)
+      any_goals
+        right; left; rfl
+      any_goals
+        left; left
+        apply And.intro _ rfl
+      any_goals
+        right; right; left
+        apply And.intro _ rfl
+      any_goals apply this
+      any_goals assumption
+      any_goals exists b'; left; assumption
+      any_goals exists b'; right; assumption
+      any_goals exists a'; left; assumption
+      any_goals exists a'; right; assumption
+  }
   wf := by
-    apply WellFounded.intro
-    intro ⟨a, mema⟩
-    replace mema := Set.mem_insert.mp mema
-    have : ∀x: s, Acc (Set.Induced (RelWithTop r top) (insert top s)) ⟨x, Set.mem_insert.mpr (.inr x.property)⟩ := by
-      intro x
-      induction x using Relation.wfInduction (Set.Induced r s) with
+    have : ∀x: α, R.defines x -> Acc (R.insert A) x := by
+      intro x h
+      induction x using Relation.wfInduction R with
       | h x ih =>
-      obtain ⟨x, mem⟩ := x
       apply Acc.intro
-      intro y g
-      unfold Set.Induced RelWithTop at g
-      split at g
+      intro y r
+      rcases r with ⟨_, rfl⟩ | r
       contradiction
-      split at g
-      dsimp at *; subst x
-      contradiction
-      apply ih ⟨y.val, _⟩
+      apply ih
       assumption
-      have hy := y.property
-      rw [Set.mem_insert] at hy
-      apply hy.resolve_left _
-      intro eq
-      contradiction
-    rcases mema with eq | mema
-    · subst a
-      apply Acc.intro
-      intro ⟨b, memb⟩ g
-      unfold Set.Induced RelWithTop at g
-      dsimp at g
-      split at g
-      contradiction
-      rename_i bne
-      rw [Set.mem_insert] at memb
-      replace memb := memb.resolve_left bne
-      apply this ⟨_, _⟩
-      assumption
-    · apply this ⟨_, _⟩
-      assumption
-  trans := by
-    unfold Set.Induced RelWithTop
-    intro a b c ab bc
-    by_cases ha:a.val=top
-    rw [if_pos ha] at *
-    contradiction
-    rw [if_neg ha] at *
-    by_cases hb:b.val=top
-    rw [if_pos hb] at *
-    contradiction
-    rw [if_neg hb] at *
-    by_cases hc:c.val=top
-    rw [if_pos hc] at *
-    trivial
-    rw [if_neg hc] at *
-    let a': s := ⟨a.val, ?_⟩
-    let b': s := ⟨b.val, ?_⟩
-    let c': s := ⟨c.val, ?_⟩
-    show Set.Induced r s a' c'
-    apply Relation.trans' (r := Set.Induced r s)
-    show Set.Induced r s a' b'
-    exact ab
-    exact bc
-    apply (Set.mem_insert.mp c.property).resolve_left
-    assumption
-    apply (Set.mem_insert.mp b.property).resolve_left
-    assumption
-    apply (Set.mem_insert.mp a.property).resolve_left
-    assumption
-  tri := by
-    intro ⟨a, ha⟩ ⟨b, hb⟩
-    rw [Set.mem_insert] at ha hb
-    unfold Set.Induced RelWithTop
-    dsimp
-    rcases ha <;> rcases hb
-    subst a; subst b
-    right; left; congr
-    subst a
-    right; right
-    rw [if_neg, if_pos rfl]
-    trivial
-    intro h; subst b
-    contradiction
-    subst b
-    left
-    rw [if_neg, if_pos rfl]
-    trivial
-    intro h; subst a
-    contradiction
-    rename_i ha hb
-    have nha: a ≠ top := by intro; subst a; contradiction
-    have nhb: b ≠ top := by intro; subst b; contradiction
-    rcases Relation.trichotomous (Set.Induced r s) ⟨a, ha⟩ ⟨b, hb⟩ with ab | eq | ba
-    left; rwa [if_neg nha, if_neg nhb]
-    cases eq; right; left; congr
-    right; right; rwa [if_neg nha, if_neg nhb]
-
--- take the supremum of the orderings by picking any relation in the set
--- this only works for chains `S`, but that's all we care about.
--- For chains, it doesn't matter which ordering is picked, since
--- they are all guaranteed to give the same results
-private
-def SubWellOrder.sunion_rel (S: Set (SubWellOrder α)) (a b: α) : Prop :=
-  ∃s ∈ S, a ∈ s.domain ∧ b ∈ s.domain ∧ s.rel a b
-
-private
-def SubWellOrder.total (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·)) : ∀a b: S, a.val ≤ b.val ∨ b.val ≤ a.val := by
-  intro a b
-  rcases h.tri a b with le | eq | ge
-  left; assumption
-  left; rw [eq]
-  right; assumption
-
-private
-def SubWellOrder.sUnion_wo (S: Set (SubWellOrder α)) (h: S.IsChain (· ≤ ·)) :
-  Relation.IsWellOrder ((⋃S.image domain).Induced (SubWellOrder.sunion_rel S)) where
-  wf := by
+      exists x; right; assumption
     apply WellFounded.intro
-    intro ⟨x, _, ⟨s, mem_in_S, eq⟩, hx⟩
-    subst eq
-    have := s.wo
-    have := Relation.wfInduction (C := fun x => Acc (Set.Induced (sunion_rel S) (⋃S.image domain)) ⟨x.val, Set.mem_sUnion.mpr ⟨_, Set.mem_image.mpr ⟨_, mem_in_S, rfl⟩, x.property⟩⟩) (Set.Induced s.rel s.domain)
-    apply this ⟨_, _⟩ _; clear this
-    assumption
-    clear hx x this
-    intro ⟨x, hx⟩ ih
+    intro x
     apply Acc.intro
-    intro ⟨y, hy⟩ ⟨s', s'_in_S, y_in_s', x_in_s', hxy⟩
-    dsimp at *
-    rcases total S h ⟨_, mem_in_S⟩ ⟨_, s'_in_S⟩ with ss' | s's
-    · by_cases hy':y ∈ s.domain
-      apply ih ⟨_, _⟩
-      unfold Set.Induced; dsimp;
-      apply (ss'.resp_rel ⟨_, _⟩ ⟨_, _⟩).mpr
-      repeat assumption
-      have := ss'.init ⟨_, hx⟩ ⟨_, y_in_s', hy'⟩
-      dsimp at this
-      have _ := s'.wo
-      have := Relation.asymm (rel := Set.Induced s'.rel s'.domain) (a := ⟨_, x_in_s'⟩) (b := ⟨_, y_in_s'⟩) this hxy
-      contradiction
-    · have := s's.sub _ y_in_s'
-      apply ih ⟨_, _⟩
-      unfold Set.Induced; dsimp;
-      apply (s's.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
-      repeat assumption
+    intro y r
+    rcases r with ⟨r, rfl⟩ | r
+    apply this
+    assumption
+    apply this
+    exists x; right; assumption
+
+def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrdered R) (chain: S.IsChain (· ≤ ·)) : IsLocallyWellOrdered (sSup S) where
+  rel_defined_is_chain := {
+    tri := by
+      have memtri : ∀s ∈ S, ∀a b: α, s.defines a -> s.defines b -> sSup S a b ∨ a = b ∨ sSup S b a := by
+        intro s hs a b ⟨a', ha⟩ ⟨b', hb⟩
+        have := h s hs
+        have adef : s.defines a := by exists a'
+        have bdef : s.defines b := by exists b'
+        rcases (IsLocallyWellOrdered.rel_defined_is_chain (R := s)).tri
+          ⟨a, adef⟩ ⟨b, bdef⟩ with h | h | h
+        left; exists s
+        right; left; cases h; rfl
+        right; right; exists s
+      have defofle : ∀r ∈ S, ∀s ∈ S, r ≤ s -> Set.mk r.defines ≤ Set.mk s.defines := by
+        intro r hr s hs le a ⟨a', ha⟩
+        exists a'
+        rcases ha with ha | ha
+        left; apply le.left; assumption
+        right; apply le.left; assumption
+      intro ⟨a, ⟨a', ha⟩⟩ ⟨b, ⟨b', hb⟩⟩
+      have : Relation.IsTotal (Set.Induced (· ≤ ·) S) := inferInstance
+      simp [Set.Induced]
+      rcases ha with ⟨r, hr, ha⟩ | ⟨r, hr, ha⟩ <;>
+      rcases hb with ⟨s, hs, hb⟩ | ⟨s, hs, hb⟩ <;>
+      rcases this.total ⟨r, hr⟩ ⟨s, hs⟩ with h | h
+      all_goals simp [Set.Induced] at h
+      any_goals
+        rename r ≤ s => h
+        apply memtri _ hs
+      any_goals
+        rename s ≤ r => h
+        apply memtri _ hr
+      any_goals exists a'; left; assumption
+      any_goals exists a'; right; assumption
+      any_goals exists b'; left; assumption
+      any_goals exists b'; right; assumption
+      any_goals apply defofle _ _ _ _ h
+      any_goals assumption
+      any_goals exists a'; left; assumption
+      any_goals exists a'; right; assumption
+      any_goals exists b'; left; assumption
+      any_goals exists b'; right; assumption
+  }
   trans := by
-    intro a b c ⟨s₀, s₀_in_S, as₀, bs₀, ab⟩ ⟨s₁, s₁_in_S, bs₁, cs₁, bc⟩
-    rcases total S h ⟨_, s₀_in_S⟩ ⟨_, s₁_in_S⟩ with le | ge
-    · dsimp at le
-      refine ⟨_, s₁_in_S, ?_, ?_,? _⟩
-      apply le.sub; assumption
-      assumption
-      apply s₁.wo.trans (a := ⟨_, _⟩) (b := ⟨_, _⟩) (c := ⟨_, _⟩) _ bc
-      apply le.sub; assumption
-      assumption
-      assumption
-      apply (le.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
-      assumption
-      assumption
-      assumption
-    · dsimp at ge
-      refine ⟨_, s₀_in_S, ?_, ?_,? _⟩
-      assumption
-      apply ge.sub; assumption
-      apply s₀.wo.trans (a := ⟨_, _⟩) (b := ⟨_, _⟩) (c := ⟨_, _⟩) ab _
-      assumption
-      apply ge.sub; assumption
-      apply ge.sub; assumption
-      apply (ge.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
-      assumption
-      assumption
-      assumption
-  tri := by
-    intro ⟨a, _, ⟨s₀, s₀_in_S, eqa⟩, ha⟩ ⟨b, _, ⟨s₁, s₁_in_S, eqb⟩, hb⟩
-    subst eqa; subst eqb
-    unfold Set.Induced sunion_rel
-    dsimp
-    rcases total S h ⟨_, s₀_in_S⟩ ⟨_, s₁_in_S⟩ with le | ge
-    · dsimp at le
-      rcases s₁.wo.tri ⟨a, le.sub _ ha⟩ ⟨b, hb⟩ with lt | eq | gt
-      left
-      refine ⟨_, s₁_in_S, ?_, ?_,? _⟩
-      apply le.sub; assumption
-      assumption
-      assumption
-      cases eq
-      right; left; rfl
-      right; right;
-      refine ⟨_, s₁_in_S, ?_, ?_,? _⟩
-      assumption
-      apply le.sub; assumption
-      assumption
-    · dsimp at ge
-      rcases s₀.wo.tri ⟨a, ha⟩ ⟨b, ge.sub _ hb⟩ with lt | eq | gt
-      left
-      refine ⟨_, s₀_in_S, ?_, ?_,? _⟩
-      assumption
-      apply ge.sub; assumption
-      assumption
-      cases eq
-      right; left; rfl
-      right; right;
-      refine ⟨_, s₀_in_S, ?_, ?_,? _⟩
-      apply ge.sub; assumption
-      assumption
-      assumption
+    have : Relation.IsTotal (Set.Induced (· ≤ ·) S) := inferInstance
+    intro a b c ⟨r, hr, rab⟩ ⟨s, hs, sbc⟩
+    have _ := h s hs
+    have _ := h r hr
+    rcases this.total ⟨r, hr⟩ ⟨s, hs⟩ with h | h
+    exists s
+    apply And.intro hs
+    exact Relation.trans' (h.left rab) sbc
+    exists r
+    apply And.intro hr
+    exact Relation.trans' rab (h.left sbc)
+  wf := by
+    have total := (inferInstanceAs (Relation.IsTotal (S.Induced (· ≤ ·)))).total
+    apply WellFounded.intro
+    intro a
+    by_cases h:(sSup S).defines a
+    · rcases h with ⟨a', h⟩
+      rename_i h
+      rcases h with ⟨s, hs, ha⟩ | ⟨s, hs, ha⟩
+      · have := h s hs
+        replace ha : s.defines a := ⟨a', .inl ha⟩
+        clear a'
+        induction a using Relation.wfInduction s with
+        | h a ih =>
+        apply Acc.intro
+        intro x ⟨r, hr, hx⟩
+        apply ih
+        rcases total ⟨_, hr⟩ ⟨_, hs⟩  with h | h
+        apply h.left
+        assumption
+        exact h.right ha hx
+        rcases total ⟨_, hr⟩ ⟨_, hs⟩  with h | h
+        apply init_seg_rel.defines_of_le
+        assumption
+        exists a; right; assumption
+        exists a
+        right; exact h.right ha hx
+      · have := h s hs
+        replace ha : s.defines a := ⟨a', .inr ha⟩
+        clear a'
+        induction a using Relation.wfInduction s with
+        | h a ih =>
+        apply Acc.intro
+        intro x ⟨r, hr, hx⟩
+        apply ih
+        rcases total ⟨_, hr⟩ ⟨_, hs⟩  with h | h
+        apply h.left
+        assumption
+        exact h.right ha hx
+        rcases total ⟨_, hr⟩ ⟨_, hs⟩  with h | h
+        apply init_seg_rel.defines_of_le
+        assumption
+        exists a; right; assumption
+        exists a
+        right; exact h.right ha hx
+    · apply Acc.intro
+      intro y g
+      exfalso; apply h
+      exists y
+      left; assumption
 
 def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
-  -- use Zorn's lemma to show that there exists a maximal well ordering
-  have ⟨⟨s, r, h⟩, spec⟩ := Zorn.preorder (α := SubWellOrder α) ?_
-  -- this maximal well ordering must cover the entire domain
-  -- since if it doesn't, then we can construct a larger well ordering
-  -- by simply adding any element that wasn't covered before
-  suffices s = ⊤ by
-    subst s
-    exists r
-    suffices r ↪r Set.Induced r ⊤ from this.wo
-    refine ⟨⟨?_, ?_⟩, ?_⟩
-    intro x
-    exact ⟨x, True.intro⟩
-    intro x y eq
-    cases eq
-    rfl
-    rfl
-  · apply Set.ext_univ
-    intro top
+  rcases subsingleton_or_nontrivial α with h | h
+  · exists (fun _ _ => False)
+    exact {
+      trans := by
+        intro a b c h
+        contradiction
+      wf := by
+        apply WellFounded.intro
+        intro a
+        apply Acc.intro
+        intro _ _; contradiction
+      tri := by
+        intro a b
+        right; left
+        apply Subsingleton.allEq
+    }
+  have ⟨R, hR, spec⟩ := Zorn.partialorder_in (α := init_seg_rel α) (Set.mk IsLocallyWellOrdered) ?_
+  have : IsLocallyWellOrdered R := hR
+  have defined_nonempty : (Set.mk R.defines).Nonempty := by
     apply Classical.byContradiction
-    intro mem
-    let swo : SubWellOrder α := ⟨insert top s, RelWithTop r top, SubWellOrder.insert_wo _ _ mem⟩
-    have := spec swo ⟨Set.sub_insert, fun x y => ?_, ?_⟩
-    have := Set.sub_antisymm this.sub Set.sub_insert
-    have : top ∈ s := by
-      dsimp at this
-      rw [←this, Set.mem_insert]
-      left; rfl
+    intro g
+    replace g := Set.not_nonempty _ g
+    have ⟨a, b, ne⟩ := h
+    have := spec (fun x y => a = x ∧ b = y) {
+      trans := by
+        intro x y z ⟨rfl, rfl⟩ ⟨rfl, rfl⟩
+        trivial
+      wf := by
+        apply WellFounded.intro
+        intro x
+        apply Acc.intro
+        rintro _ ⟨rfl, rfl⟩
+        apply Acc.intro
+        rintro _ ⟨rfl, rfl⟩
+        contradiction
+      rel_defined_is_chain := {
+        tri := by
+          intro ⟨x, hx⟩ ⟨y, hy⟩
+          simp [Set.Induced]
+          rcases hx with ⟨x', ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩
+          <;> rcases hy with ⟨y', ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩
+          right; left; rfl
+          right; right; trivial
+          left; trivial
+          right; left; rfl
+      }
+    }
+    replace this := this ⟨
+      fun r => by
+      rename_i x y
+      have : x ∈ Set.mk R.defines := ⟨y, .inr r⟩
+      rw [g] at this
+      contradiction, by
+      intro x y ydef ⟨rfl, rfl⟩
+      replace ydef : b ∈ Set.mk R.defines := ydef
+      rw [g] at ydef; contradiction
+    ⟩
+    have nrab : ¬R a b := by
+      intro r
+      have : a ∈ Set.mk R.defines := ⟨b, .inr r⟩
+      rw [g] at this
+      contradiction
+    rw [←this] at nrab
+    apply nrab
+    trivial
+  suffices Set.mk R.defines = ⊤ by
+    refine ⟨R, { trans := hR.trans, wf := hR.wf, tri := ?_ }⟩
+    intro a b
+    have chain := hR.rel_defined_is_chain
+    rw [this] at chain
+    rcases chain.tri ⟨a, True.intro⟩ ⟨b, True.intro⟩ with h | h | h
+    left; exact h
+    cases h; right; left; rfl
+    right; right; exact h
+  · apply Set.ext_univ
+    intro a
+    apply Classical.byContradiction
+    intro ha
+    -- since a isn't in defined in R, we can just insert it as the greatest element
+    -- which is still a locally well ordered relation
+    have := spec (R.insert a) (rel_insert_locally_wo ha)
+    have R_eq_R' := this ⟨fun x => .inr x, by
+      intro x y hy r
+      rcases r with ⟨r, rfl⟩ | r
+      contradiction
+      assumption⟩
+    have : (R.insert a).defines a := by
+      obtain ⟨x, hx⟩ := defined_nonempty
+      exists x
+      left; left; apply And.intro _ rfl
+      assumption
+    rw [R_eq_R'] at this
     contradiction
-    show _ ↔ RelWithTop _ _ _ _
-    unfold RelWithTop
-    apply Iff.intro
-    · intro hxy
-      rw [if_neg, if_neg]
+  · intro S mem_S_wo Schain
+    refine ⟨sSup S, ?_, ?_⟩
+    · apply ssup_locally_wo
       assumption
-      intro
-      subst top
-      have := y.property
-      contradiction
-      intro
-      subst top
-      have := x.property
-      contradiction
-    · intro hxy
-      rw [if_neg, if_neg] at hxy
       assumption
-      intro h; subst top
-      have := y.property
-      contradiction
-      intro h; subst top
-      have := x.property
-      contradiction
-    · intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
-      dsimp
-      replace hy: y ∈ insert _ _ := hy
-      rw [Set.mem_insert] at hy
-      cases hy
-      subst y
-      show RelWithTop _ _ _ _
-      unfold RelWithTop
-      rw [if_neg, if_pos rfl]
-      trivial
-      intro h
-      subst x
-      contradiction
-      contradiction
-  -- every chain has a maximal element since we can take the supremum sub-well-ordering
-  -- of any set of sub-well orderings, which we have shown to be a sub-well-ordering
-  · intro S c
-    refine ⟨⟨?_, ?_, ?_⟩, ?_⟩
-    exact ⋃S.image domain
-    exact SubWellOrder.sunion_rel S
-    exact SubWellOrder.sUnion_wo S c
-    intro s mem
-    refine ⟨?_, ?_, ?_⟩
-    · apply Set.sub_sUnion
-      apply Set.mem_image'
+    · intro R hR
+      apply And.intro
+      intro x y r
+      exists R
+      intro x y df ⟨R', hR', r⟩
+      have := inferInstanceAs (Relation.IsTotal (S.Induced (· ≤ ·)))
+      rcases this.total ⟨R, hR⟩ ⟨R', hR'⟩ with h | h
+      exact h.right df r
+      apply h.left
       assumption
-    · intro x y
-      apply Iff.intro
-      · intro r
-        dsimp
-        exists s
-        refine ⟨?_, ?_, ?_, ?_⟩
-        assumption
-        exact x.property
-        exact y.property
-        assumption
-      · intro ⟨s', s'_in_S, hx, hy, hxy⟩
-        rcases c.tri ⟨_, mem⟩ ⟨_, s'_in_S⟩ with rxy | eq | ryx
-        · apply (rxy.resp_rel _ _).mpr
-          assumption
-        · cases eq
-          assumption
-        · apply (ryx.resp_rel ⟨_, _⟩ ⟨_, _⟩).mp
-          repeat assumption
-    · intro ⟨x, hx⟩ ⟨y, hy, hy'⟩
-      dsimp at hy
-      dsimp [SubWellOrder.sunion_rel]
-      obtain ⟨_, ⟨s', s'_in_S, eq⟩, hy⟩ := hy
-      subst eq
-      rcases total S c ⟨s', s'_in_S⟩ ⟨s, mem⟩ with le | ge
-      have := le.sub _ hy
-      contradiction
-      dsimp at ge
-      refine ⟨_, s'_in_S, ?_, ?_, ?_⟩
-      · apply ge.sub
-        assumption
-      · assumption
-      · apply ge.init ⟨_, _⟩ ⟨_, _, _⟩
-        repeat assumption
 
-def order (α: Type*): α -> α -> Prop := choose (SubWellOrder.exists_wo α)
+open Classical
+
+def order (α: Type*): init_seg_rel α := choose (SubWellOrder.exists_wo α)
 instance : Relation.IsWellOrder (order α) := choose_spec (SubWellOrder.exists_wo α)
 
 end WellOrdering
