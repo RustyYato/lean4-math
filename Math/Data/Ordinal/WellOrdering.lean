@@ -5,11 +5,18 @@ namespace WellOrdering
 
 variable {α: Type*}
 
+-- an initial seg rel is a relation which is ordered by normal relation implication
+-- and is also required to be an initial segment of the larger relation
+-- this second condition is needed to ensure that the chains of relations all
+-- extensions of a single ordering, and don't allow inserting new elements into the
+-- ordering before any already related element
 def init_seg_rel (α: Type*) := α -> α -> Prop
 
 namespace init_seg_rel
 
+-- does the relation define *some* relation for this object
 def defines (r: init_seg_rel α) (x: α) := (∃x', r x' x ∨ r x x')
+
 @[ext]
 def ext (a b: init_seg_rel α) : (∀x y, a x y ↔ b x y) -> a = b := by
   simp [init_seg_rel] at *
@@ -17,7 +24,14 @@ def ext (a b: init_seg_rel α) : (∀x y, a x y ↔ b x y) -> a = b := by
   ext
   apply h
 
+-- insert a new element into the top of the relation
 def insert (R: init_seg_rel α) (a: α) : init_seg_rel α := fun x y => R.defines x ∧ y = a ∨ R x y
+
+-- merge all relations in the set, if any relation relates two items, then they are related
+-- in a chain, this the maximum element of the chain, since all smaller elements are
+-- initial segments of the maximum element
+instance : SupSet (init_seg_rel α) where
+  sSup S x y := ∃r ∈ S, r x y
 
 instance : LE (init_seg_rel α) where
   le a b := (∀{x y}, a x y -> b x y) ∧ ∀{x y}, a.defines y -> b x y -> a x y
@@ -52,11 +66,14 @@ instance : IsPartialOrder (init_seg_rel α) where
     have g : b.defines y := defines_of_le hab h
     exact hab.right h (hbc.right g r)
 
-instance : SupSet (init_seg_rel α) where
-  sSup S x y := ∃r ∈ S, r x y
-
 end init_seg_rel
 
+-- a locally well ordered relation is a well founded transitive relation
+-- where the set of all defined objects is a chain
+-- this is useful since the maximal elements of a locally well ordered relation
+-- are precisely the well ordered relations (this is proven in `exists_wo`)
+-- we only need to weaken the total ordering condition, since that is a global condition
+-- but transitivity and well foundedness are both local conditions
 class IsLocallyWellOrdered (R: init_seg_rel α): Prop extends Relation.IsWellFounded R, Relation.IsTrans R where
   rel_defined_is_chain: (Set.mk R.defines).IsChain R
 
@@ -229,7 +246,10 @@ def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrde
       exists y
       left; assumption
 
-def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
+-- we use Zorn's lemma to build up an well ordering by showing that any maximal local well ordering
+-- must define the entire set, and that the upper bound of any chain of local well orderings
+-- is the maximum element of the chain (as defined by `SupSet`)
+def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
   rcases subsingleton_or_nontrivial α with h | h
   · exists (fun _ _ => False)
     exact {
@@ -341,7 +361,7 @@ def SubWellOrder.exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWell
 
 open Classical
 
-def order (α: Type*): init_seg_rel α := choose (SubWellOrder.exists_wo α)
-instance : Relation.IsWellOrder (order α) := choose_spec (SubWellOrder.exists_wo α)
+def order (α: Type*): init_seg_rel α := choose (exists_wo α)
+instance : Relation.IsWellOrder (order α) := choose_spec (exists_wo α)
 
 end WellOrdering
