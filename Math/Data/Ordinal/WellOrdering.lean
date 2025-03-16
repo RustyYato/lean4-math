@@ -1,5 +1,4 @@
 import Math.Order.Zorn
-import Math.AxiomBlame
 
 namespace WellOrdering
 
@@ -154,12 +153,6 @@ def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrde
         left; exists s
         right; left; cases h; rfl
         right; right; exists s
-      have defofle : ∀r ∈ S, ∀s ∈ S, r ≤ s -> Set.mk r.defines ≤ Set.mk s.defines := by
-        intro r hr s hs le a ⟨a', ha⟩
-        exists a'
-        rcases ha with ha | ha
-        left; apply le.left; assumption
-        right; apply le.left; assumption
       intro ⟨a, ⟨a', ha⟩⟩ ⟨b, ⟨b', hb⟩⟩
       have : Relation.IsTotal (Set.Induced (· ≤ ·) S) := inferInstance
       simp [Set.Induced]
@@ -177,8 +170,7 @@ def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrde
       any_goals exists a'; right; assumption
       any_goals exists b'; left; assumption
       any_goals exists b'; right; assumption
-      any_goals apply defofle _ _ _ _ h
-      any_goals assumption
+      any_goals apply init_seg_rel.defines_of_le h
       any_goals exists a'; left; assumption
       any_goals exists a'; right; assumption
       any_goals exists b'; left; assumption

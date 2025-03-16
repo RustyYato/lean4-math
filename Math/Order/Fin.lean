@@ -30,7 +30,7 @@ instance : IsLinearOrder (Fin n) where
     rcases Fin.le_total a b with ab | ba
     rcases Fin.lt_or_eq_of_le ab with ab | eq
     left; apply Fin.lt_def.mpr; assumption
-    right; rw [eq]; apply Fin.le_refl
+    right; rw [eq]
     right; assumption
   le_trans := Fin.le_trans
 

@@ -26,7 +26,6 @@ instance : IsModule R (LinearCombination R M) :=
   inferInstanceAs (IsModule R (Finsupp _ _ _))
 
 def valHom : LinearCombination R M →ₗ[R] M where
-
   toFun f := f.sum (fun v r => r • v) (fun v h => by simp [h])
   resp_add := by
     intro a b

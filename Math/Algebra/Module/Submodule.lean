@@ -1,15 +1,17 @@
 import Math.Algebra.Module.SetLike.Lattice
 import Math.Algebra.Field.Defs
 import Math.Algebra.Group.Action.Basic
-import Math.Algebra.Module.LinearCombo
+import Math.Algebra.Module.LinearCombo.Defs
+import Math.Logic.Fact
 
 namespace Submodule
 
 section Defs
 
-open Classical
+-- open Classical
 
 variable {M: Type*} (R: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
 
 -- the span of a set is the set of all vectors that are made from
 -- linear combinations of members of the set
@@ -97,15 +99,49 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
 def IsLinindep (U: Set M) := ∀f: LinearCombination R M,
   Set.support f ⊆ U -> (f: M) = 0 -> f = 0
 
-structure IsBasis (U: Set M) : Prop where
-  indep: IsLinindep R U
-  complete: ∀m, m ∈ span R U
-
 end Defs
 
 section
 
+variable (R M: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
+
+class IsBasis (S: Type*) [SetLike S M] : Prop where
+  indep (U: S): IsLinindep R (U: Set M)
+  complete (U: S): ∀m, m ∈ span R (U: Set M)
+
+instance [SetLike S M] [b: IsBasis R M S] (U: S) : Fact (IsLinindep R (U: Set M)) where
+  proof := b.indep _
+
+structure Basis where
+  carrier: Set M
+  indep: IsLinindep R (U: Set M)
+  complete: ∀m, m ∈ span R (U: Set M)
+
+instance : SetLike (Basis R M) M where
+  coe b := b.carrier
+  coe_inj := by intro a b eq; cases a; congr
+
+instance : IsBasis R M (Basis R M) where
+  indep b := b.indep
+  complete b := b.complete
+
+end
+
+section
+
+variable {M: Type*} (R: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
+
+def is_linear_indep (U: Set M) [Fact (IsLinindep R U)] : IsLinindep R U := of_fact _
+def is_complete [SetLike S M] [b: IsBasis R M S] (U: S) : ∀m, m ∈ span R (U: Set M) := b.complete _
+
+end
+
+section
+
 variable {R M: Type*} [FieldOps R] [IsField R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
 
 def insertLinindep (S: Set M) (hS: Submodule.IsLinindep R S) (m: M) (hm: m ∉ Submodule.span R S) : Submodule.IsLinindep R (insert m S) := by
   classical
