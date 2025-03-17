@@ -1,7 +1,7 @@
 import Math.Algebra.Module.SetLike.Lattice
 import Math.Algebra.Field.Defs
 import Math.Algebra.Group.Action.Basic
-import Math.Algebra.Module.LinearCombo.Defs
+import Math.Algebra.Module.LinearCombo.LinearSpan
 import Math.Logic.Fact
 
 namespace Submodule
@@ -115,8 +115,8 @@ instance [SetLike S M] [b: IsBasis R M S] (U: S) : Fact (IsLinindep R (U: Set M)
 
 structure Basis where
   carrier: Set M
-  indep: IsLinindep R (U: Set M)
-  complete: ∀m, m ∈ span R (U: Set M)
+  indep: IsLinindep R (carrier: Set M)
+  complete: ∀m, m ∈ span R (carrier: Set M)
 
 instance : SetLike (Basis R M) M where
   coe b := b.carrier
@@ -188,3 +188,24 @@ def insertLinindep (S: Set M) (hS: Submodule.IsLinindep R S) (m: M) (hm: m ∉ S
 end
 
 end Submodule
+
+namespace LinearSpan
+
+variable {R M: Type*} {s: S} [SetLike S M] [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+   [DecidableEq M]
+
+def valEmb [Fact (Submodule.IsLinindep R (s: Set M))] : LinearSpan R M s ↪ₗ[R] M := {
+  LinearSpan.valHom with
+  inj' := by
+    intro x y eq
+    replace eq : valHom x = valHom y := eq
+    have linindep := of_fact (Submodule.IsLinindep R (s: Set M))
+    have : valHom (x - y) = 0 → toLinearCombo (x - y) = 0 := Submodule.is_linear_indep R _ (x - y).toCombo (x - y).subS
+    rw [resp_sub, resp_sub, eq, sub_self] at this
+    replace this := this rfl
+    apply eq_of_sub_eq_zero
+    apply toLinearCombo.inj
+    assumption
+}
+
+end LinearSpan

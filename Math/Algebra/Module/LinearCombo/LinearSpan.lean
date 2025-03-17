@@ -1,11 +1,12 @@
-import Math.Algebra.Module.Submodule
+import Math.Algebra.Module.LinearCombo.Defs
+import Math.Data.Set.Like
 
 structure LinearSpan (R M: Type*) (s: S) [SetLike S M] [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] [DecidableEq M] where
   ofCombo ::
   toCombo : LinearCombination R M
   subS: Set.support toCombo ⊆ s
 
-namespace LinindepLinearCombination
+namespace LinearSpan
 
 section
 
@@ -162,6 +163,13 @@ def induction {motive: LinearSpan R M s -> Prop}
     rw [h]; rfl
     assumption
 
+instance : CoeTC (LinearSpan R M s) M := ⟨valHom⟩
+
+@[simp]
+def single_valHom (r: R) (m: M) (hm: m ∈ s) : valHom (single r m hm) = r • m := LinearCombination.single_valHom _ _
+
+
+
 end
 
 section
@@ -211,20 +219,6 @@ instance : IsAddGroup (LinearSpan R M s) where
 @[simp] def apply_neg (a: LinearSpan R M s) (m: M) : (-a) m = -a m := rfl
 @[simp] def apply_zsmul (a: LinearSpan R M s) (n: ℤ) (m: M) : (n • a) m = n • a m := rfl
 
-def valEmb [Fact (Submodule.IsLinindep R (s: Set M))] : LinearSpan R M s ↪ₗ[R] M := {
-  valHom with
-  inj' := by
-    intro x y eq
-    replace eq : valHom x = valHom y := eq
-    have linindep := of_fact (Submodule.IsLinindep R (s: Set M))
-    have : valHom (x - y) = 0 → toLinearCombo (x - y) = 0 := Submodule.is_linear_indep R _ (x - y).toCombo (x - y).subS
-    rw [resp_sub, resp_sub, eq, sub_self] at this
-    replace this := this rfl
-    apply eq_of_sub_eq_zero
-    apply toLinearCombo.inj
-    assumption
-}
-
 end
 
-end LinindepLinearCombination
+end LinearSpan
