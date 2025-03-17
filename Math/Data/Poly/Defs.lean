@@ -278,4 +278,11 @@ def coeff_mul_Xpow [SemiringOps P] [IsSemiring P] [IsCommMagma P] (a: P[X]) (hi:
   assumption
   rfl
 
+@[ext]
+def ext [Zero P] (a b: P[X]) : (∀x, a.toFinsupp x = b.toFinsupp x) -> a = b := AddMonoidAlgebra.ext _ _
+
+def smul_eq_const_mul [SemiringOps P] [IsSemiring P] [IsCommMagma P] (x: P) (a: P[X]) : x • a = C x * a := by
+  rw [smul_def]
+  rfl
+
 end Poly

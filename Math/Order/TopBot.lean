@@ -301,12 +301,11 @@ instance [LT α] [dec: ∀a b: α, Decidable (a < b)] : ∀a b: WithBot α,  Dec
 | .none, .of _ => .isTrue (WithBot.LT.bot _)
 | _, .none => .isFalse nofun
 
-instance [wf: WellFoundedRelation α] : WellFoundedRelation (WithBot α) where
-  rel := @WithBot.LT α ⟨wf.rel⟩
+instance instWfLT [LT α] [wf: @Relation.IsWellFounded α (· < ·)] : @Relation.IsWellFounded (WithBot α) (· < ·) where
   wf := by
     apply WellFounded.intro
     intro x
-    cases wf with | mk rel wf =>
+    cases wf with | mk wf =>
     cases x
     apply Acc.intro
     intro y h; contradiction
@@ -320,6 +319,13 @@ instance [wf: WellFoundedRelation α] : WellFoundedRelation (WithBot α) where
     intro y h; contradiction
     apply ih
     assumption
+
+instance [wf: WellFoundedRelation α] : WellFoundedRelation (WithBot α) where
+  rel := @WithBot.LT α ⟨wf.rel⟩
+  wf := by
+    have : Relation.IsWellFounded wf.rel := ⟨wf.wf⟩
+    have : Relation.IsWellFounded (@WithBot.LT α ⟨wf.rel⟩) := @instWfLT (α := α) ⟨wf.rel⟩ inferInstance
+    apply this.wf
 
 instance [DecidableEq α] : DecidableEq (WithBot α) := inferInstanceAs (DecidableEq (Option α))
 instance [DecidableEq α] : DecidableEq (WithTop α) := inferInstanceAs (DecidableEq (Option α))
