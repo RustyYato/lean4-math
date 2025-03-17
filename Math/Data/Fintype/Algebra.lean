@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Basic
+import Math.Data.Fintype.Cases
 import Math.Data.Multiset.Algebra
 import Init.Notation
 
@@ -83,6 +83,22 @@ def sum_option [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAdd
 def sum_succ [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: Fin (n + 1) -> α) : ∑i, f i = f (Fin.last _) + ∑i: Fin n, f i.castSucc := by
   rw [sum_reindex (h := (Equiv.fin_equiv_option n).symm), sum_option]
   rfl
+def sum_sumty [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι₀ ⊕ ι₁ -> α) : ∑i, f i = (∑i, f (.inl i)) + ∑i, f (.inr i) := by
+  rename Fintype ι₀ => ft₀
+  induction ft₀ using Fintype.typeInduction with
+  | empty => rw [sum_empty, zero_add, sum_reindex (h := Equiv.empty_sum_eqv.symm)]; rfl
+  | option ι₀ ft₀ ih =>
+    rw [sum_reindex (h := Equiv.option_sum_eqv.symm),
+      sum_option, sum_option, ih]; clear ih
+    rw [add_assoc]
+    rfl
+  | eqv α β eqv _ ih =>
+    let ft := Fintype.ofEquiv' eqv
+    rw [sum_reindex (h := Equiv.congrSum eqv .rfl), ih,
+      sum_reindex (h := eqv)]
+    rfl
+def prod_sumty  [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: ι₀ ⊕ ι₁ -> α) : ∏i, f i = (∏i, f (.inl i)) * ∏i, f (.inr i) :=
+  sum_sumty (α := AddOfMul α) _
 
 def prod_empty [IsEmpty ι'] [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι' -> α) : ∏i, f i = 1 := rfl
 def prod_option [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: Option ι -> α) : ∏i, f i = f .none * ∏i, f (.some i) :=
@@ -100,6 +116,47 @@ def sum_const [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (x: α) : �
 def prod_const [MonoidOps α] [IsMonoid α] [IsCommMagma α] (x: α) : ∏_: ι, x = x ^ Fintype.card ι :=
   sum_const (α := AddOfMul α) _
 
--- def sum_sum [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι₀ -> ι₁ -> α) :
---   ∑i j, f i j = ∑i: ι₀ × ι₁, f i.1 i.2 := by
---   sorry
+def sum_sum [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι₀ -> ι₁ -> α) :
+  ∑i j, f i j = ∑i: ι₀ × ι₁, f i.1 i.2 := by
+  rename_i ft₀ ft₁ _ _ _
+  induction ft₀ using Fintype.typeInduction with
+  | empty => rw [sum_empty, sum_empty]
+  | option ι₀ ft₀ ih =>
+    rw [sum_option, ih]; clear ih
+    rw [sum_reindex (h := Equiv.option_prod_equiv_sum_prod.symm),
+      sum_sumty]
+    congr
+  | eqv α β eqv _ ih =>
+    let ft := Fintype.ofEquiv' eqv
+    rw [sum_reindex (h := eqv), ih]
+    rw [sum_reindex (h := Equiv.congrProd eqv .rfl)]
+    rfl
+
+def prod_prod [MonoidOps α] [IsMonoid α] [IsCommMagma α] (f: ι₀ -> ι₁ -> α) :
+  ∏i j, f i j = ∏i: ι₀ × ι₁, f i.1 i.2 :=
+  sum_sum (α := AddOfMul α) f
+
+def sum_select [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [∀i: ι, Decidable (i = i₀)] (f: ι -> α) :
+  (∑i, if i = i₀ then f i else 0) = f i₀ := by
+  rw [sum_reindex (h := (Equiv.remove i₀).symm), sum_option,
+    sum_eq_zero, add_zero]
+  rw [if_pos]
+  rfl
+  rfl
+  intro ⟨i, hi⟩
+  simp; intro g
+  contradiction
+
+def sum_select_unique [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι -> α) (i₀: ι) [∀i: ι, Decidable (i = i₀)] (fi: ι -> Prop) [DecidablePred fi]
+  (fi_spec: ∀i, fi i ↔ i = i₀) :
+  (∑i, if fi i then f i else 0) = f i₀ := by
+  rw [sum_reindex (h := (Equiv.remove i₀).symm), sum_option,
+    sum_eq_zero, add_zero]
+  rw [if_pos]
+  rfl
+  show fi i₀
+  exact (fi_spec _).mpr rfl
+  intro ⟨i, hi⟩
+  simp; intro g
+  rw [fi_spec] at g
+  contradiction

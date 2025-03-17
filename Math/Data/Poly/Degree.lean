@@ -1,5 +1,8 @@
 import Math.Data.Poly.Defs
 import Math.Data.Nat.Basic
+import Math.Algebra.GroupWithZero.Defs
+import Math.Order.TopBot.Linear
+import Math.Data.FinSupp.Fintype
 
 namespace Poly
 
@@ -246,6 +249,20 @@ def degree_lt (p: P[X]) (deg: Nat) : (∀x: ℕ, deg ≤ x -> p.toFinsupp x = 0)
   rw [g]
   apply WithBot.LT.bot
 
+def le_degree (p: P[X]) (i: Nat) : p.toFinsupp i ≠ 0 -> i ≤ p.degree := by
+  intro h
+  apply le_of_not_lt
+  intro g
+  have := of_degree_lt _ _ g
+  contradiction
+
+def of_mem_support (p: P[X]) : ∀x, x ∈ p.toFinsupp.support -> x ≤ p.degree := by
+  intro i
+  rw [Finsupp.mem_support]
+  intro h
+  apply le_degree
+  assumption
+
 instance [Repr P] : Repr P[X] where
   reprPrec p _ :=
     Nat.fold (p.degreeNat + 1) (fun i _ ih =>
@@ -257,5 +274,134 @@ instance [Repr P] : Repr P[X] where
         ih ++ (if ih.isEmpty  then "" else " + ") ++ reprStr (p.toFinsupp i) ++ " X^" ++ reprStr i) ""
 
 end
+
+def degree_add : WithBot Nat -> WithBot Nat -> WithBot Nat
+| .of a, .of b => .of (a + b)
+| _, _ => ⊥
+
+def mul_degree [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [∀x: P, Decidable (x = 0)] (a b: P[X]) : (a * b).degree = degree_add a.degree b.degree := by
+  apply le_antisymm
+  · apply degree_is_minimal
+    intro i h
+    rw [AddMonoidAlgebra.mul_def, AddMonoidAlgebra.mul']
+    rw [AddMonoidAlgebra.sum_toFinsupp', Finsupp.sum_eq_zero]
+    intro j
+    rw [AddMonoidAlgebra.sum_toFinsupp', Finsupp.sum_eq_zero]
+    intro k
+    simp [Finsupp.apply_single]
+    rintro rfl
+    cases ha:a.degree  with
+    | bot =>
+      rw [a.of_degree_lt, zero_mul]
+      rw [ha]
+      apply WithBot.LT.bot
+    | of adeg =>
+    cases hb:b.degree  with
+    | bot =>
+      rw [b.of_degree_lt, mul_zero]
+      rw [hb]
+      apply WithBot.LT.bot
+    | of bdeg =>
+      rw [ha, hb] at h
+      rcases Nat.lt_or_ge adeg j with g | g
+      rw [a.of_degree_lt, zero_mul]; rw [ha]
+      apply WithBot.LT.of; assumption
+      rw [b.of_degree_lt, mul_zero]
+      cases h; rename_i h
+      rw [hb]
+      apply WithBot.LT.of
+      omega
+  · cases h:degree_add a.degree b.degree
+    apply bot_le
+    apply le_degree
+    cases ha:a.degree  with
+    | bot => rw [ha] at h; contradiction
+    | of adeg =>
+    cases hb:b.degree  with
+    | bot => rw [ha, hb] at h; contradiction
+    | of bdeg =>
+      rw [ha, hb] at h
+      cases h
+      rw [AddMonoidAlgebra.mul_def, AddMonoidAlgebra.mul']
+      rw [
+        AddMonoidAlgebra.sum_toFinsupp',
+        Finsupp.sum_eq_fintypesum]
+      conv => {
+        lhs; arg 1; intro i
+        rw [AddMonoidAlgebra.sum_toFinsupp', Finsupp.sum_eq_fintypesum]
+        arg 1; intro j
+        erw [AddMonoidAlgebra.apply_single]
+      }
+      have adegnat : a.degreeNat = adeg := by
+          have h := ha
+          rw [a.degree_eq_degreeNat] at h
+          rw [←Option.some.inj h]
+          rw [ha]
+          apply WithBot.LT.bot
+      have bdegnat : b.degreeNat = bdeg := by
+          have h := hb
+          rw [b.degree_eq_degreeNat] at h
+          rw [←Option.some.inj h]
+          rw [hb]
+          apply WithBot.LT.bot
+      classical
+      rw [sum_sum, sum_select_unique (fi := fun i: a.toFinsupp.support × b.toFinsupp.support => adeg + bdeg = i.fst.val + i.snd.val)
+        (i₀ := (⟨a.degreeNat, (by
+          rw [Finsupp.mem_support]
+          apply a.coeff_degreeNat_ne_zero
+          rw [ha]; apply WithBot.LT.bot)⟩ , ⟨b.degreeNat, (by
+          rw [Finsupp.mem_support]
+          apply b.coeff_degreeNat_ne_zero
+          rw [hb]; apply WithBot.LT.bot)⟩))]
+      simp
+      intro h
+      rcases of_mul_eq_zero h with h | h
+      refine a.coeff_degreeNat_ne_zero ?_ h
+      rw [ha]; apply WithBot.LT.bot
+      refine b.coeff_degreeNat_ne_zero ?_ h
+      rw [hb]; apply WithBot.LT.bot
+      intro ⟨⟨adeg', adeg'spec⟩, ⟨bdeg', bdeg'spec⟩⟩
+      simp
+      replace adeg'spec := of_mem_support _ _ adeg'spec
+      replace bdeg'spec := of_mem_support _ _ bdeg'spec
+      subst adeg bdeg
+      rw [ha] at adeg'spec
+      rw [hb] at bdeg'spec
+      cases adeg'spec
+      cases bdeg'spec
+      rename_i adeg'spec bdeg'spec
+      apply Iff.intro
+      intro h
+      apply And.intro
+      congr
+      omega
+      congr
+      omega
+      intro ⟨h₀, h₁⟩
+      cases h₀; cases h₁
+      rfl
+
+def add_degree [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (a b: P[X]) : (a + b).degree ≤ max a.degree b.degree := by
+  apply degree_is_minimal
+  intro i hi
+  show a.toFinsupp i + b.toFinsupp i = 0
+  rw [a.of_degree_lt, b.of_degree_lt, add_zero]
+  apply lt_of_le_of_lt _ hi
+  apply le_max_right
+  apply lt_of_le_of_lt _ hi
+  apply le_max_left
+
+def neg_degree [RingOps P] [IsRing P] [∀x: P, Decidable (x = 0)] (a: P[X]) : (-a).degree = a.degree := by
+  apply le_antisymm
+  apply degree_is_minimal
+  intro i h
+  show -a.toFinsupp i = 0
+  rw [a.of_degree_lt, neg_zero]
+  assumption
+  apply degree_is_minimal
+  intro i h
+  rw [←neg_neg (a.toFinsupp i)]
+  show - (-a).toFinsupp i = 0
+  rw [(-a).of_degree_lt _ h, neg_zero]
 
 end Poly

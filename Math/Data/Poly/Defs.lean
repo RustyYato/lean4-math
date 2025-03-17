@@ -271,12 +271,6 @@ def coeff_mul_Xpow [SemiringOps P] [IsSemiring P] [IsCommMagma P] (a: P[X]) (hi:
   }
   erw [Finsupp.sum_select (g := ZeroHom.mk id rfl)]
   rfl
-  intro i h
-  simp
-  rw [Finsupp.apply_single]
-  split
-  assumption
-  rfl
 
 @[ext]
 def ext [Zero P] (a b: P[X]) : (∀x, a.toFinsupp x = b.toFinsupp x) -> a = b := AddMonoidAlgebra.ext _ _

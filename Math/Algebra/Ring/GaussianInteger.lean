@@ -6,7 +6,7 @@ import Math.Algebra.Ring.Theory.RMod.Basic
 
 open Poly
 
-def GaussianInteger : Type := RMod (α := ℤ[X]) (X ^ 2 + 1)
+def GaussianInteger : Type :=
 
 namespace GaussianInteger
 

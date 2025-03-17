@@ -551,6 +551,144 @@ def subtype_quot_equiv_quot_subtype (p₁ : α → Prop) {s₁ : Setoid α} {s�
       cases x using Quotient.ind
       rfl
 
+def option_sigma_equiv_sum_sigma {β: Option α -> Type*} : (Σx: Option α, β x) ≃ β .none ⊕ Σx: α, β x where
+  toFun
+  | ⟨.none, b⟩ => .inl b
+  | ⟨.some a, b⟩ => .inr ⟨a, b⟩
+  invFun
+  | .inl b => ⟨.none, b⟩
+  | .inr ⟨a, b⟩ => ⟨.some a, b⟩
+  leftInv x := by
+    rcases x with ⟨a, b⟩
+    cases a <;> rfl
+  rightInv x := by cases x <;> rfl
+
+def option_pi_equiv_prod_pi {β: Option α -> Type*} : (∀x: Option α, β x) ≃ β .none × ∀x: α, β x where
+  toFun f := ⟨f _, fun _ => f _⟩
+  invFun f x := match x with
+     | .none => f.1
+     | .some x => f.2 x
+  leftInv f := by
+    dsimp
+    ext x
+    cases x <;> rfl
+  rightInv x := by cases x <;> rfl
+
+def option_prod_equiv_sum_prod {β: Type*} : ((Option α) × β) ≃ β ⊕ α × β :=
+  Equiv.trans (prod_equiv_sigma _ _) (Equiv.trans Equiv.option_sigma_equiv_sum_sigma (congrSum .rfl (prod_equiv_sigma _ _).symm))
+
+def option_perm_equiv_prod_perm [DecidableEq α] : (Option α ≃ Option α) ≃ Option α × (α ≃ α) where
+  toFun f := (f .none, Equiv.of_equiv_option_option f)
+  invFun | ⟨x, f⟩ => (Equiv.congrOption f).set .none x
+  leftInv := by
+    intro f
+    simp
+    ext a b
+    cases a
+    rw [Equiv.set_spec]
+    rename_i a
+    simp [Equiv.apply_set, Equiv.of_equiv_option_option, Equiv.congrOption]
+    apply Iff.intro
+    intro ⟨⟨h₀, h₁⟩, h₂⟩
+    rw [if_neg h₀] at h₂
+    assumption
+    intro h
+    iterate 2 apply And.intro
+    intro g; rw [g] at h
+    contradiction
+    intro g
+    have := f.inj g
+    contradiction
+    rw [if_neg]
+    assumption
+    intro g; rw [g] at h
+    contradiction
+  rightInv := by
+    intro (a, f)
+    simp [Equiv.apply_set]
+    ext x
+    simp [f.apply_set, Equiv.of_equiv_option_option]
+    apply Option.some.inj
+    rw [Option.some_get]
+    rw [Equiv.apply_set, if_neg]
+    split <;> rename_i h
+    rw [Equiv.set_spec]
+    rw [Equiv.apply_set, if_neg] at h
+    split at h
+    rename_i g
+    rw [←g]; rfl
+    contradiction
+    intro; contradiction
+    rw [Equiv.apply_set, if_neg]
+    split
+    · rename_i g
+      rw [Equiv.apply_set, if_neg, if_pos g] at h
+      contradiction
+      intro; contradiction
+    rfl
+    intro; contradiction
+    intro; contradiction
+
+def empty_emb_equiv_unit [_root_.IsEmpty α] : (α ↪ β) ≃ Unit where
+  toFun _ := ()
+  invFun _ := Embedding.empty
+  rightInv _ := _root_.rfl
+  leftInv _ := by
+    ext x
+    exact elim_empty x
+
+def empty_sum_eqv [_root_.IsEmpty α] : α ⊕ β ≃ β where
+  toFun
+  | .inl x => elim_empty x
+  | .inr x => x
+  invFun x := .inr x
+  leftInv x := by
+    cases x <;> rename_i x
+    exact elim_empty x
+    rfl
+  rightInv x := _root_.rfl
+
+def sum_empty_eqv [_root_.IsEmpty β] : α ⊕ β ≃ α :=
+  (commSum _ _).trans empty_sum_eqv
+
+def sum_assoc (α β γ: Type*) : α ⊕ β ⊕ γ ≃ (α ⊕ β) ⊕ γ where
+  toFun
+  | .inl x => .inl (.inl x)
+  | .inr (.inl x) => .inl (.inr x)
+  | .inr (.inr x) => .inr x
+  invFun
+  | .inl (.inl x) => .inl x
+  | .inl (.inr x) => .inr (.inl x)
+  | .inr x => .inr (.inr x)
+  leftInv x := by rcases x with x | x | x <;> rfl
+  rightInv x := by rcases x with (x | x) | x <;> rfl
+
+def option_sum_eqv : Option α ⊕ β ≃ Option (α ⊕ β) := by
+  apply Equiv.trans
+  exact congrSum (option_equiv_unit_sum _) .rfl
+  apply flip Equiv.trans
+  exact (option_equiv_unit_sum _).symm
+  symm; apply sum_assoc
+
+def remove {α: Type*} (a: α) [∀x: α, Decidable (x = a)] : α ≃ Option { x: α // x ≠ a } where
+  toFun x :=
+    if h:x = a then
+      .none
+    else
+      .some ⟨_ ,h⟩
+  invFun
+  | .none => a
+  | .some x => x.val
+  leftInv x := by
+    simp
+    by_cases h:x = a
+    rw [dif_pos h]; exact h.symm
+    rw [dif_neg h]
+  rightInv x := by
+    match x with
+    | .none => simp
+    | .some ⟨x, hx⟩ => simp [hx]
+
 end Equiv
 
 def Fin.embedNat : Fin n ↪ Nat :=
@@ -600,3 +738,71 @@ instance [Subsingleton β] : Subsingleton (α ≃ β) where
     intro a b
     ext x
     apply Subsingleton.allEq
+
+def Embedding.option_emb_equiv_prod_emb [_root_.DecidableEq α] [_root_.DecidableEq β] : (Option α ↪ Option β) ≃ Option β × (α ↪ β) where
+  toFun f := (f .none, Embedding.of_option_embed_option f)
+  invFun | ⟨x, f⟩ => {
+    toFun
+    | .some a =>
+      if f a = x then
+        .none
+      else
+        f a
+    | .none => x
+    inj' := by
+      intro a b eq
+      cases a <;> cases b <;> dsimp at eq
+      rfl
+      iterate 2
+        split at eq
+        subst x
+        contradiction
+        subst x
+        contradiction
+      split at eq
+      subst x
+      split at eq
+      rename_i h
+      congr; symm
+      exact f.inj (Option.some.inj h)
+      contradiction
+      split at eq
+      subst x
+      contradiction
+      congr
+      rename_i h
+      exact f.inj (Option.some.inj eq)
+  }
+  leftInv := by
+    intro f
+    simp
+    ext a b
+    cases a <;> simp [Embedding.of_option_embed_option]
+    rename_i a
+    split <;> rename_i b' h
+    apply Iff.intro
+    rintro ⟨h, rfl⟩
+    assumption
+    intro g
+    apply And.intro
+    intro g'
+    have := f.inj (h.trans g')
+    contradiction
+    rw [h] at g
+    exact Option.some.inj g
+    simp
+    rw [h]; exact nofun
+  rightInv := by
+    intro (b, f)
+    unfold Embedding.of_option_embed_option
+    ext a
+    simp
+    dsimp
+    rw [Embedding.mk_apply _ _ a]
+    simp
+    split <;> rename_i h
+    simp [Embedding.mk_apply] at h
+    exact h.right.symm
+    simp at h
+    apply Option.some.inj
+    rw [Option.some_get]; symm; assumption

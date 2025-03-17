@@ -9,6 +9,11 @@ abbrev WithTop.of : α -> WithTop α := Option.some
 @[coe]
 abbrev WithBot.of : α -> WithBot α := Option.some
 
+def WithTop.of_inj : ∀{x y: α}, WithTop.of x = .of y ↔ x = y :=
+  Function.Injective.eq_iff (fun _ _ => Option.some.inj)
+def WithBot.of_inj : ∀{x y: α}, WithBot.of x = .of y ↔ x = y :=
+  Function.Injective.eq_iff (fun _ _ => Option.some.inj)
+
 instance : Coe α (WithTop α) := ⟨.of⟩
 instance : Coe α (WithBot α) := ⟨.of⟩
 
@@ -351,3 +356,34 @@ instance [LE α] [@Relation.IsTotal α (· ≤ ·)] : @Relation.IsTotal (WithBot
     rcases Relation.total (· ≤ ·) a b with h | h
     left; apply WithBot.LE.of; assumption
     right; apply WithBot.LE.of; assumption
+
+instance [Min α] : Min (WithBot α) where
+  min
+  | ⊥, _ | _, ⊥ => ⊥
+  | .of x, .of y => .of (min x y)
+instance [Max α] : Max (WithBot α) where
+  max
+  | ⊥, x | x, ⊥ => x
+  | .of x, .of y => .of (max x y)
+
+instance [Min α] : Min (WithTop α) where
+  min
+  | ⊤, x | x, ⊤ => x
+  | .of x, .of y => .of (min x y)
+instance [Max α] : Max (WithTop α) where
+  max
+  | ⊤, _ | _, ⊤ => ⊤
+  | .of x, .of y => .of (max x y)
+
+@[simp, norm_cast]
+def WithTop.of_le [_root_.LE α] : ∀{x y: α}, WithTop.of x ≤ .of y ↔ x ≤ y := by
+  intro a b
+  apply Iff.intro
+  rintro ⟨h⟩; assumption
+  exact WithTop.LE.of
+@[simp, norm_cast]
+def WithBot.of_le [_root_.LE α] : ∀{x y: α}, WithBot.of x ≤ .of y ↔ x ≤ y := by
+  intro a b
+  apply Iff.intro
+  rintro ⟨h⟩; assumption
+  exact WithBot.LE.of

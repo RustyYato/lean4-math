@@ -1,4 +1,5 @@
 import Math.Data.Poly.Degree
+import Math.Data.FinSupp.Fintype
 import Math.Algebra.Dvd
 import Math.Order.TopBot.Linear
 
@@ -17,7 +18,7 @@ end Poly
 
 namespace Poly
 
-variable [RingOps P] [IsRing P] [IsCommMagma P] [DecidableEq P] [IsNontrivial P] [IsCommMagma P]
+variable [RingOps P] [IsRing P] [IsCommMagma P] [DecidableEq P] [IsNontrivial P]
 
 private def bdeg_nontrivial (b: P[X]) (h: IsInvertible (b.toFinsupp b.degreeNat)) : ⊥ < b.degree := by
   unfold degreeNat at h
@@ -160,19 +161,33 @@ variable (a b: P[X]) (inv: IsInvertible (b.toFinsupp b.degreeNat))
 
 instance : @Relation.IsWellFounded (WithBot Nat) (· < ·) := inferInstance
 
-def div_mul_add_mod : div a b * b + mod a b = a := by
+def divmod_induction {motive: P[X] -> Prop}
+  (deg_lt: ∀a: P[X], a.degree < b.degree -> motive a)
+  (le_deg: ∀a: P[X], b.degree ≤ a.degree -> motive (divmod_sub_coeff a b inferInstance) -> motive a):
+  ∀a, motive a := by
+  intro a
   induction h:a.degree using Relation.wfInduction (α := WithBot Nat) (· < ·) generalizing a b with
   | h deg ih =>
-    rcases lt_or_le a.degree b.degree with h | h
-    rw [div_of_lt, mod_of_lt]; simp
-    assumption
-    assumption
+  rcases lt_or_le a.degree b.degree with h | h
+  apply deg_lt
+  assumption
+  apply le_deg
+  assumption
+  subst deg
+  apply ih (divmod_sub_coeff a b inferInstance).degree
+  apply divmod_rec_lemma
+  assumption
+  assumption
+  assumption
+  rfl
+
+def div_mul_add_mod : div a b * b + mod a b = a := by
+  induction a using divmod_induction b inferInstance with
+  | deg_lt a h => rw [div_of_lt, mod_of_lt]; simp; repeat assumption
+  | le_deg a h ih =>
     rw [div_of_le, mod_of_le]
     simp
-    subst deg
-    replace ih := @ih _ (divmod_rec_lemma a b inferInstance h) (divmod_sub_coeff a b inferInstance) b inferInstance rfl
     rw [add_mul, add_comm_right, ih]
-    clear ih
     unfold divmod_sub_coeff
     simp
     rw [mul_comm_right, ←smul_eq_const_mul, sub_add_cancel]
@@ -180,16 +195,27 @@ def div_mul_add_mod : div a b * b + mod a b = a := by
     assumption
 
 def mod_degree_lt : (mod a b).degree < b.degree := by
-  induction h:a.degree using Relation.wfInduction (α := WithBot Nat) (· < ·) generalizing a b with
-  | h deg ih =>
-  rcases lt_or_le a.degree b.degree with h | h
-  rw [mod_of_lt _ _ h]
-  assumption
-  rw [mod_of_le _ _ h]
-  subst deg
-  apply ih (divmod_sub_coeff a b inferInstance).degree
-  apply divmod_rec_lemma
-  assumption
-  rfl
+  induction a using divmod_induction b inferInstance with
+  | deg_lt a h =>
+    rw [mod_of_lt _ _ h]
+    assumption
+  | le_deg a h ih =>
+    rw [mod_of_le _ _ h]
+    apply ih
+
+def eq_zero_of_dvd_of_degree_lt [NoZeroDivisors P] (a b: P[X]) (h: a ∣ b) (g: b.degree < a.degree) : b = 0 := by
+  obtain ⟨k, rfl⟩ := h
+  cases ha:a.degree with
+  | bot => simp [degree_eq_bot_iff_eq_zero.mp ha]
+  | of deg =>
+  cases hk:k.degree with
+  | bot => simp [degree_eq_bot_iff_eq_zero.mp hk]
+  | of kdeg =>
+    rw [ha] at g
+    rw [Poly.mul_degree] at g
+    rw [ha, hk] at g
+    cases g; rename_i g
+    have := Nat.not_le_of_lt g (Nat.le_add_right _ _)
+    contradiction
 
 end Poly
