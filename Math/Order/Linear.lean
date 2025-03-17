@@ -201,6 +201,8 @@ instance instLOofPOofLEtri [IsPartialOrder α] [Relation.IsTrichotomous (· ≤ 
     right; rw [eq]
     right; assumption
 
+instance instLOofPOofLEtot [IsPartialOrder α] [Relation.IsTotal (· ≤ (·: α))] : IsLinearOrder α := inferInstance
+
 variable [IsLinearMinMaxOrder α]
 
 def min_iff_le_left: a ≤ b ↔ min a b = a := IsLinearMinMaxOrder.min_iff_le_left

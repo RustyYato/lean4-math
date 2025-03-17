@@ -179,6 +179,21 @@ def sum_toFinsupp
   rw [Finsupp.resp_sum]
   rfl
 
+def sum_toFinsupp'
+  [FiniteSupportSet S ι]
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀ h₁} :
+  (f.sum g₀ h₀).toFinsupp i₀ = f.sum (fun i a => (g₀ i a).toFinsupp i₀) h₁ := by
+  let f' : (AddMonoidAlgebra ι γ S) →+ γ := {
+    toFun x := x.toFinsupp i₀
+    resp_zero := rfl
+    resp_add := rfl
+  }
+  show f' (f.sum g₀ h₀) = _
+  rw [Finsupp.resp_sum]
+  congr
+
 @[simp]
 def single_toFinsupp
   [FiniteSupportSet S ι] [Zero α] [DecidableEq ι] :

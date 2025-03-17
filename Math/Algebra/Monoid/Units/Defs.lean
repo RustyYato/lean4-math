@@ -7,6 +7,11 @@ structure Units (α: Type*) [One α] [Mul α] where
   val_mul_inv: val * inv = 1
   inv_mul_val: inv * val = 1
 
+instance [One α] [Mul α] (u: Units α) : IsInvertible u.val where
+  invOf := u.inv
+  mul_invOf := u.val_mul_inv
+  invOf_mul := u.inv_mul_val
+
 instance [MonoidOps α] [IsMonoid α] : One (Units α) where
   one := {
     val := 1

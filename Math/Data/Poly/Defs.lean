@@ -246,4 +246,36 @@ instance [SemiringOps P] [IsSemiring P] [IsCommMagma P] : IsAlgebra P P[X] where
     rw [mul_comm]
   smul_def := smul_eq_C_mul
 
+def Xpow_eq_monomial [SemiringOps P] [IsSemiring P] : (X: P[X]) ^ n = monomial n := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [npow_succ, ih]
+    apply AddMonoidAlgebra.ext
+    intro i
+    simp [X, monomial]
+    rw [AddMonoidAlgebra.single_mul]
+    simp [AddMonoidAlgebra.apply_single]
+
+def coeff_mul_Xpow [SemiringOps P] [IsSemiring P] [IsCommMagma P] (a: P[X]) (hi: n ≤ i) : (a * X^n).toFinsupp i = a.toFinsupp (i - n) := by
+  rw [Xpow_eq_monomial, mul_comm]
+  rw [monomial]
+  simp [HMul.hMul, Mul.mul]
+  simp [AddMonoidAlgebra.mul']
+  rw [Finsupp.single_sum,
+    AddMonoidAlgebra.sum_toFinsupp']
+  conv => {
+    arg 1; arg 2; intro i₀ a
+    simp [one_mul, AddMonoidAlgebra.single, Finsupp.apply_single]
+    arg 1; rw [Nat.add_comm, ←Nat.sub_eq_iff_eq_add hi, Eq.comm]
+  }
+  erw [Finsupp.sum_select (g := ZeroHom.mk id rfl)]
+  rfl
+  intro i h
+  simp
+  rw [Finsupp.apply_single]
+  split
+  assumption
+  rfl
+
 end Poly

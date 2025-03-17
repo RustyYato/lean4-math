@@ -1,4 +1,5 @@
 import Math.Data.Poly.Defs
+import Math.Data.Nat.Basic
 
 namespace Poly
 
@@ -92,7 +93,7 @@ def degreeNat (p: P[X]) : Nat :=
   | .of x => x
   | .none => 0
 
-def degree_lt (p: P[X]) : ∀x: ℕ, p.degree < x -> p.toFinsupp x = 0 := by
+def of_degree_lt (p: P[X]) : ∀x: ℕ, p.degree < x -> p.toFinsupp x = 0 := by
   intro x hx
   cases p with | ofFinsupp p =>
   cases p with | mk p spec =>
@@ -171,11 +172,89 @@ def degree_eq_bot_iff_eq_zero {p: P[X]} : p.degree = ⊥ ↔ p = 0 := by
   intro h
   apply AddMonoidAlgebra.toFinsupp_inj
   ext x
-  rw [degree_lt]; rfl
+  rw [of_degree_lt]; rfl
   rw [h]
   apply lt_of_le_of_ne
   apply bot_le
   apply Option.noConfusion
+
+def degree_eq_degreeNat (p: P[X]) (h: ⊥ < p.degree) : p.degree = p.degreeNat := by
+  unfold degreeNat
+  split
+  assumption
+  rename_i g; rw [g] at h
+  contradiction
+
+def coeff_degreeNat_ne_zero (p: P[X]) (h: ⊥ < p.degree) : p.toFinsupp p.degreeNat ≠ 0 := by
+  intro g
+  cases hd:p.degree with
+  | bot => rw [hd] at  h; contradiction
+  | of d =>
+    have hd' := hd
+    rw [degree_eq_degreeNat _ h] at hd'
+    replace hd' := Option.some.inj hd'
+    rw [hd'] at g
+    clear hd'
+    clear h
+    cases d
+    · suffices p = 0 by
+        subst p
+        contradiction
+      apply AddMonoidAlgebra.ext
+      intro i
+      cases i
+      assumption
+      show p.toFinsupp _ = _
+      rw [p.of_degree_lt]; rfl
+      rw [hd]; apply WithBot.LT.of
+      apply Nat.zero_lt_succ
+    · rename_i d
+      suffices p.degree = d by
+        rw [this] at hd
+        nomatch hd
+      apply flip le_antisymm
+      rw [hd]; apply WithBot.LE.of
+      apply Nat.le_succ
+      apply degree_is_minimal
+      intro x h
+      cases h; rename_i h
+      cases Nat.lt_or_eq_of_le (Nat.succ_le_of_lt h) <;> rename_i h
+      · rw [of_degree_lt]
+        rw [hd]
+        apply WithBot.LT.of
+        assumption
+      · subst x
+        assumption
+
+def degree_lt (p: P[X]) (deg: Nat) : (∀x: ℕ, deg ≤ x -> p.toFinsupp x = 0) -> p.degree < deg := by
+  intro h
+  apply lt_of_le_of_ne
+  apply degree_is_minimal
+  intro x g
+  apply h
+  cases g; apply le_of_lt; assumption
+  intro g
+  have degnat : p.degreeNat = deg := by
+    unfold degreeNat
+    split
+    rw [g] at *
+    rename_i h; cases h; rfl
+    rw [g] at *; contradiction
+  have := p.coeff_degreeNat_ne_zero ?_
+  rw [degnat]  at this
+  exact this (h deg (Nat.le_refl _))
+  rw [g]
+  apply WithBot.LT.bot
+
+instance [Repr P] : Repr P[X] where
+  reprPrec p _ :=
+    Nat.fold (p.degreeNat + 1) (fun i _ ih =>
+      if p.toFinsupp i = 0 then
+        ih
+      else if i = 0 then
+        reprStr (p.toFinsupp i)
+      else
+        ih ++ (if ih.isEmpty  then "" else " + ") ++ reprStr (p.toFinsupp i) ++ " X^" ++ reprStr i) ""
 
 end
 

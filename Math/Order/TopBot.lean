@@ -320,3 +320,28 @@ instance [wf: WellFoundedRelation α] : WellFoundedRelation (WithBot α) where
     intro y h; contradiction
     apply ih
     assumption
+
+instance [DecidableEq α] : DecidableEq (WithBot α) := inferInstanceAs (DecidableEq (Option α))
+instance [DecidableEq α] : DecidableEq (WithTop α) := inferInstanceAs (DecidableEq (Option α))
+
+instance [LE α] [@Relation.IsTotal α (· ≤ ·)] : @Relation.IsTotal (WithTop α) (· ≤ ·) where
+  total := by
+    intro a b
+    cases a <;> cases b
+    any_goals right; apply WithTop.LE.top
+    left; apply WithTop.LE.top
+    rename_i a b
+    rcases Relation.total (· ≤ ·) a b with h | h
+    left; apply WithTop.LE.of; assumption
+    right; apply WithTop.LE.of; assumption
+
+instance [LE α] [@Relation.IsTotal α (· ≤ ·)] : @Relation.IsTotal (WithBot α) (· ≤ ·) where
+  total := by
+    intro a b
+    cases a <;> cases b
+    any_goals left; apply WithBot.LE.bot
+    right; apply WithBot.LE.bot
+    rename_i a b
+    rcases Relation.total (· ≤ ·) a b with h | h
+    left; apply WithBot.LE.of; assumption
+    right; apply WithBot.LE.of; assumption

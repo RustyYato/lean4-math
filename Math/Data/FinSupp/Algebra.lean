@@ -245,6 +245,59 @@ def sum_apply_single
     contradiction
     assumption
 
+def sum_select
+  [DecidableEq ι] [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  [FunLike F α γ] [IsZeroHom F α γ]
+  (f: Finsupp ι α S) (g: F):
+  f.sum (fun i a => if i = j then g a else 0) (by
+    intro i eq
+    dsimp; rw [eq, resp_zero]
+    split <;> rfl) = g (f j) := by
+  cases f with | mk f spec =>
+  induction spec with | mk spec =>
+  obtain ⟨supp, spec⟩ := spec
+  show _ = g (f j)
+  show Multiset.sum _ = _
+  simp
+  show (Multiset.map (fun i => if i = j then g (f i) else 0) (supp: Finset ι).val).sum = _
+  replace spec : ∀x: ι, f x ≠ 0 -> x ∈ (supp: Finset _) := spec
+  revert spec
+  generalize (supp: Finset ι) = supp'
+  clear supp
+  cases supp' with | mk supp nodup =>
+  simp
+  intro h
+  replace h := h j
+  induction supp with
+  | nil =>
+    show 0 = _
+    suffices f j = 0 by
+      rw [this, resp_zero]
+    apply Classical.byContradiction
+    intro h'
+    have := h h'
+    contradiction
+  | cons i supp ih =>
+    replace ih := ih nodup.tail
+    simp
+    split
+    subst i
+    rw [Multiset.sum_eq_zero, add_zero]
+    · intro x hx
+      rw [Multiset.mem_map] at hx
+      obtain ⟨i', hi', eq⟩ := hx
+      split at eq
+      subst i'
+      have := nodup.head
+      contradiction
+      symm; assumption
+    rw [zero_add]
+    apply ih
+    intro hj
+    cases h hj using Multiset.cases_mem_cons
+    · contradiction
+    · assumption
+
 private def sum' [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) :=
   (f.support.val.map (fun i => g i (f i))).sum
 

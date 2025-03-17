@@ -12,6 +12,10 @@ abbrev FunLike (F: Sort*) (α β: outParam <| Sort*) := DFunLike F α (fun _ => 
 instance [DFunLike F α β] : CoeFun F (fun _ => ∀x, β x) where
   coe := DFunLike.coe
 
+instance {β: α -> Sort*} : DFunLike (∀x, β x) α β where
+  coe := id
+  coe_inj _ _ := id
+
 run_cmd Lean.Elab.Command.liftTermElabM do
   Lean.Meta.registerCoercion ``DFunLike.coe
     (some { numArgs := 5, coercee := 4, type := .coeFun })

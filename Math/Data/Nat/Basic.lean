@@ -99,4 +99,10 @@ def square_sub (a b: Nat) (h: b ≤ a) : (a - b) * (a - b) = a * a + b * b - 2 *
   simp [Nat.add_mul, Nat.mul_add]
   ac_rfl
 
+def of_le_pred_self (n: Nat) (h: n ≤ n.pred) : n = 0 := by
+  cases n
+  rfl
+  have := Nat.not_lt_of_le h (Nat.lt_succ_self _)
+  contradiction
+
 end Nat
