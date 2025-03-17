@@ -13,8 +13,14 @@ instance : Dvd P[X] where
 
 instance : IsLawfulDvd P[X] where
 
-def divmod (a b: ℤ[X]) (h: IsInvertible (b.toFinsupp b.degreeNat)) : ℤ[X] × ℤ[X] :=
-  if a.degree >= b.degree && a.degree > ⊥ then
+end Poly
+
+namespace Poly
+
+variable [RingOps P] [IsRing P] [IsCommMagma P] [DecidableEq P] [IsNontrivial P] [IsCommMagma P]
+
+def divmod [IsNontrivial P] [IsCommMagma P] (a b: P[X]) (h: IsInvertible (b.toFinsupp b.degreeNat)) : P[X] × P[X] :=
+  if a.degree >= b.degree then
     let x := (a.toFinsupp a.degreeNat) * ⅟(b.toFinsupp b.degreeNat)
     let z := a - x • b * X^(a.degreeNat - b.degreeNat)
     let (d, m) := divmod z b h
@@ -28,10 +34,26 @@ decreasing_by
   show _ < a.degree
   let a' := a - (a.toFinsupp a.degreeNat * ⅟(b.toFinsupp b.degreeNat)) • b * X ^ (a.degreeNat - b.degreeNat)
   show a'.degree < _
+  have bdeg_nontrivial : ⊥ < b.degree := by
+    unfold degreeNat at h
+    split at h
+    rename_i h'
+    rw [h']
+    apply WithBot.LT.bot
+    rename_i h'
+    cases degree_eq_bot_iff_eq_zero.mp h'
+    have : ∀x, AddMonoidAlgebra.toFinsupp (0: P[X]) x = 0 := fun _ => rfl
+    rw [this] at h
+    have := h.invOf_mul
+    rw [mul_zero] at this
+    have := zero_ne_one _ this
+    contradiction
+  have adeg_nontrivial : ⊥ < a.degree := by
+    apply lt_of_lt_of_le bdeg_nontrivial
+    assumption
   cases hd:a.degree with
   | bot =>
-    rw [hd] at h₀
-    have := h₀.right
+    rw [hd] at adeg_nontrivial
     contradiction
   | of deg =>
     have bdeg_eq_degNat : b.degree = b.degreeNat := by
@@ -40,7 +62,7 @@ decreasing_by
       rename_i g
       replace g : b.degree = ⊥ := g
       cases degree_eq_bot_iff_eq_zero.mp g
-      have : ∀x, AddMonoidAlgebra.toFinsupp (0: ℤ[X]) x = 0 := fun _ => rfl
+      have : ∀x, AddMonoidAlgebra.toFinsupp (0: P[X]) x = 0 := fun _ => rfl
       rw [this] at h
       have := h.invOf_mul
       rw [mul_zero] at this
@@ -48,12 +70,11 @@ decreasing_by
     have adegnat : a.degreeNat = deg := by
       rw [degree_eq_degreeNat] at hd
       cases hd; rfl
-      exact h₀.right
+      exact adeg_nontrivial
     apply degree_lt
     intro i hi
-    have h₁ := h₀.left
-    rw [bdeg_eq_degNat, a.degree_eq_degreeNat h₀.right] at h₁
-    cases h₁; rename_i h₁
+    rw [bdeg_eq_degNat, a.degree_eq_degreeNat adeg_nontrivial] at h₀
+    cases h₀; rename_i h₁
     rcases lt_or_eq_of_le hi with hi | rfl
     · unfold a'
       rw [sub_eq_add_neg]
@@ -71,8 +92,6 @@ decreasing_by
       apply le_of_lt
       rw [adegnat]
       assumption
-      rw [a.degree_eq_degreeNat h₀.right, bdeg_eq_degNat] at h₀
-      cases h₀.left
       assumption
       omega
     · unfold a'
@@ -86,5 +105,20 @@ decreasing_by
       rw [adegnat]
       · assumption
       · omega
+
+def divmod_of_lt (a b: P[X]) {inv: IsInvertible (b.toFinsupp b.degreeNat)} (h: a.degree < b.degree) : a.divmod b inv = (0, a) := by
+  unfold divmod
+  rw [if_neg]
+  apply not_le_of_lt
+  assumption
+def divmod_of_le (a b: P[X]) {inv: IsInvertible (b.toFinsupp b.degreeNat)} (h: b.degree ≤ a.degree) :
+  a.divmod b inv =
+    let x := (a.toFinsupp a.degreeNat) * ⅟(b.toFinsupp b.degreeNat)
+    let z := a - x • b * X^(a.degreeNat - b.degreeNat)
+    let (d, m) := divmod z b inv
+    (d + C x * X ^ (a.degreeNat - b.degreeNat), m) := by
+    rw [divmod]
+    rw [if_pos h]
+
 
 end Poly
