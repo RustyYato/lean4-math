@@ -34,6 +34,10 @@ def i_sq : i ^ 2 = -1 := by
   refine neg_eq_of_add_right ?_
   apply RMod.map_eq_zero
 
+def i_mul_i : i * i = -1 := by
+  refine neg_eq_of_add_right ?_
+  apply RMod.map_eq_zero
+
 def i_unit : Units ℤ[i] where
   val := i
   inv := -i
@@ -171,5 +175,19 @@ def induction {motive: ℤ[i] -> Prop} : (mk: ∀real img: ℤ, motive (real + i
   intro h x
   rw [x.basis]
   apply h
+
+@[ext]
+def ext (a b: ℤ[i]) : real a = real b -> img a = img b -> a = b := by
+  intro hr hi
+  rw [a.basis, b.basis, hr, hi]
+
+def basis_mul (a b c d: ℤ) : (a + b * i) * (c + d * i) = (a * c - b * d: ℤ) + (a * d + b * c: ℤ) * i := by
+  rw [mul_add, add_mul, add_mul]
+  ac_nf
+  rw [←mul_assoc, i_mul_i, ←neg_mul_left, one_mul]
+  rw [add_comm, add_assoc, add_assoc, ←sub_eq_add_neg, ←add_assoc, ←mul_add,
+    mul_comm, add_comm]
+  simp [intCast_mul, intCast_add, intCast_sub]
+  ac_rfl
 
 end GaussianInteger
