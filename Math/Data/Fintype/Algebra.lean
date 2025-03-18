@@ -147,7 +147,7 @@ def sum_select [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [∀i: ι,
   simp; intro g
   contradiction
 
-def sum_select_unique [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι -> α) (i₀: ι) [∀i: ι, Decidable (i = i₀)] (fi: ι -> Prop) [DecidablePred fi]
+def sum_select_unique [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι -> α) (i₀: ι) [∀i: ι, Decidable (i = i₀)] (fi: ι -> Prop) [decfi: DecidablePred fi]
   (fi_spec: ∀i, fi i ↔ i = i₀) :
   (∑i, if fi i then f i else 0) = f i₀ := by
   rw [sum_reindex (h := (Equiv.remove i₀).symm), sum_option,

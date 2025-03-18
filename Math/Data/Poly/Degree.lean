@@ -187,6 +187,14 @@ def degree_eq_degreeNat (p: P[X]) (h: ⊥ < p.degree) : p.degree = p.degreeNat :
   rename_i g; rw [g] at h
   contradiction
 
+def degree_eq_degreeNat' (p: P[X]) : p.degree = ⊥ ∨ p.degree = p.degreeNat := by
+  cases hp:p.degree
+  left; rfl
+  right;
+  rw [←hp, degree_eq_degreeNat]
+  rw [hp]
+  apply WithBot.LT.bot
+
 def coeff_degreeNat_ne_zero (p: P[X]) (h: ⊥ < p.degree) : p.toFinsupp p.degreeNat ≠ 0 := by
   intro g
   cases hd:p.degree with
@@ -492,6 +500,147 @@ def lead_eq_zero [Zero P] [∀x: P, Decidable (x = 0)] (p: P[X]) (h: p.degree = 
 def lead_nonzero [Zero P] [∀x: P, Decidable (x = 0)] (p: P[X]) (h: ⊥ < p.degree) : p.lead ≠ 0 := by
   apply coeff_degreeNat_ne_zero
   assumption
+
+def nontrivial_of_bot_lt_degree [Zero P] [∀x: P, Decidable (x = 0)] (p: P[X]) (h: ⊥ < p.degree) : IsNontrivial P where
+  exists_ne := by
+    exists p.lead
+    exists 0
+    exact p.lead_nonzero h
+
 def lead_zero [Zero P] [∀x: P, Decidable (x = 0)] : lead (0: P[X]) = 0 := rfl
+def lead_C [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P) : lead (C x: P[X]) = x := by
+  unfold lead
+  unfold degreeNat
+  rw [const_degree_eq]
+  by_cases h:x=0
+  subst h; rw [resp_zero, if_pos rfl]
+  rfl
+  rw [if_neg h]
+  rfl
+def lead_Xpow [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (n: Nat) : lead (X^n: P[X]) = 1 := by
+  unfold lead
+  unfold degreeNat
+  split
+  rename_i i eq
+  · have := nontrivial_of_bot_lt_degree (P := P) (X ^ n) ?_
+    rw [Xpow_degree] at eq
+    cases eq
+    rw [←one_mul (X ^ n), coeff_mul_Xpow, Nat.sub_self]
+    rfl
+    rfl
+    rw [eq]
+    apply WithBot.LT.bot
+  · rename_i h
+    have := degree_eq_bot_iff_eq_zero.mp h
+    rw [Xpow_eq_monomial] at this
+    have := subsingleton_of_monomial_eq_zero this
+    apply Subsingleton.allEq
+
+def degreeNat_eq_of_degree_eq [Zero P] [∀x: P, Decidable (x = 0)] (a b: P[X]) : a.degree = b.degree -> a.degreeNat = b.degreeNat := by
+  intro h
+  unfold degreeNat
+  rw [h]
+
+def degree_le_degreeNat [Zero P] [∀x: P, Decidable (x = 0)] (a: P[X]) : a.degree ≤ a.degreeNat := by
+  unfold degreeNat
+  split <;> rename_i h
+  rw [h]
+  rw [h]; apply WithBot.LE.bot
+
+def lead_add_of_degree_lt [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (a b: P[X]) (h: b.degree < a.degree) : (a + b).lead = a.lead := by
+  show a.toFinsupp _ + b.toFinsupp _ = a.toFinsupp _
+  suffices (a + b).degree = a.degree by
+    rw [b.of_degree_lt, add_zero]
+    congr 1
+    apply degreeNat_eq_of_degree_eq
+    assumption
+    apply lt_of_lt_of_le _ (degree_le_degreeNat _)
+    rw [this]; assumption
+  rw [add_degree_of_ne_degree a b, max_iff_le_right.mp]
+  apply le_of_lt; assumption
+  symm; apply ne_of_lt; assumption
+
+def lead_mul [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [∀x: P, Decidable (x = 0)] (a b: P[X]) : (a * b).lead = a.lead * b.lead := by
+  unfold lead
+  cases ha:a.degree
+  rw [degree_eq_bot_iff_eq_zero.mp ha]
+  erw [zero_mul, zero_mul]
+  rfl
+  cases hb:b.degree
+  rw [degree_eq_bot_iff_eq_zero.mp hb]
+  erw [mul_zero, mul_zero]
+  rfl
+  unfold degreeNat
+  rw [mul_degree a b, ha, hb, AddMonoidAlgebra.mul_def, AddMonoidAlgebra.mul']
+  simp [degree_add]
+  simp [AddMonoidAlgebra.sum_toFinsupp']
+  simp [Finsupp.sum_eq_fintypesum]
+  rw [sum_sum]
+  simp [Finsupp.apply_single]
+  rename_i adeg bdeg
+  have adegnat : a.degreeNat = adeg := by
+    apply WithBot.of_inj.mp
+    rw [←ha, a.degree_eq_degreeNat]
+    rw [ha]; apply WithBot.LT.bot
+  have bdegnat : b.degreeNat = bdeg := by
+    apply WithBot.of_inj.mp
+    rw [←hb, b.degree_eq_degreeNat]
+    rw [hb]; apply WithBot.LT.bot
+  classical
+  rw [sum_select_unique
+    (ι := a.toFinsupp.support × b.toFinsupp.support)
+    (fi := fun i => adeg + bdeg = i.fst.val + i.snd.val)
+    (i₀ := (⟨adeg, ?_⟩ , ⟨bdeg, ?_⟩))]
+  intro ⟨⟨ia, iha⟩, ⟨ib, ihb⟩⟩
+  simp
+  apply flip Iff.intro
+  rintro ⟨h, g⟩;cases h; cases g; rfl
+  intro eq
+
+  suffices adeg = ia by
+    subst ia
+    apply And.intro rfl
+    congr
+    omega
+    rw [Finsupp.mem_support]
+    rw [←bdegnat]
+    refine coeff_degreeNat_ne_zero b ?_
+    rw [hb]
+    apply WithBot.LT.bot
+  · rw [Finsupp.mem_support] at iha ihb
+    apply Relation.eq_of_not_lt_or_gt (· < ·)
+    · intro h
+      subst adegnat bdegnat
+      apply iha
+      rw [a.of_degree_lt]
+      rw [ha]; apply WithBot.LT.of
+      assumption
+    · intro h
+      have : bdeg < ib := by omega
+      subst adegnat bdegnat
+      apply ihb
+      rw [b.of_degree_lt]
+      rw [hb]; apply WithBot.LT.of
+      assumption
+  · refine Finsupp.mem_support.mpr ?_
+    rw [←adegnat]
+    refine coeff_degreeNat_ne_zero a ?_
+    rw [ha]
+    apply WithBot.LT.bot
+
+structure leadHomType (P: Type*) where
+
+def leadHom : leadHomType P := leadHomType.mk
+
+instance [Zero P] [∀x: P, Decidable (x = 0)] : FunLike (leadHomType P) P[X] P where
+  coe _ := lead
+  coe_inj := by intro ⟨⟩ ⟨⟩ _; rfl
+
+instance [Zero P] [∀x: P, Decidable (x = 0)] : IsZeroHom (leadHomType P) P[X] P where
+  resp_zero _ := rfl
+instance [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] : IsOneHom (leadHomType P) P[X] P where
+  resp_one _ := lead_C _
+instance [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [∀x: P, Decidable (x = 0)] : IsMulHom (leadHomType P) P[X] P where
+  resp_mul _ := lead_mul _ _
 
 end Poly

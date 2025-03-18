@@ -337,4 +337,13 @@ def of_mul_Xpow_eq_zero [RingOps P] [IsRing P] (a: P[X]) (n: Nat) : a * X ^ n = 
   rw [←zero_mul (X ^ n)] at h
   exact mul_Xpow_inj _ h
 
+def subsingleton_of_monomial_eq_zero [Zero P] [One P] [Mul P] [IsMulZeroClass P] [IsMulOneClass P] (h: (monomial n: P[X]) = 0) : Subsingleton P := by
+  apply subsingleton_of_trivial
+  symm;
+  suffices (monomial n).toFinsupp n = (1: P) by
+    rw [←this, h]
+    rfl
+  unfold monomial
+  erw [AddMonoidAlgebra.apply_single, if_pos rfl]
+
 end Poly

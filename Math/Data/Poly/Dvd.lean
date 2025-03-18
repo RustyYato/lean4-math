@@ -36,7 +36,7 @@ def deg_nontrivial_of_invertible (b: P[X]) (h: IsInvertible b.lead) : ⊥ < b.de
   contradiction
 
 def divmod_sub_coeff (a b : P[X]) (h: IsInvertible (b.lead)) : P[X] :=
-  let x := (a.toFinsupp a.degreeNat) * ⅟(b.lead)
+  let x := a.lead * ⅟(b.lead)
   a - x • b * X^(a.degreeNat - b.degreeNat)
 
 def divmod_rec_lemma [IsNontrivial P] [IsCommMagma P] (a b: P[X]) (h: IsInvertible (b.lead)) (h₀: b.degree ≤ a.degree): (divmod_sub_coeff a b h).degree < a.degree := by
@@ -190,7 +190,7 @@ def div_mul_add_mod : div a b * b + mod a b = a := by
     rw [add_mul, add_comm_right, ih]
     unfold divmod_sub_coeff
     simp
-    rw [mul_comm_right, ←smul_eq_const_mul, sub_add_cancel]
+    erw [mul_comm_right, ←smul_eq_const_mul, sub_add_cancel]
     assumption
     assumption
 
@@ -342,17 +342,74 @@ def mul_mod_left (a: P[X]) : (p * a).mod p = 0 := by
   rw [sub_zero]
   apply dvd_mul_left
 
-def divmod_sub_coeff' (a q r: P[X]) (hr: r.degree < p.degree) :
-  (q * p + r).divmod_sub_coeff p inv = sorry /-q.divmod_sub_coeff p inv + r-/ := by
+def divmod_sub_coeff₁ (q r: P[X]) : (q * p + r).divmod_sub_coeff p inv = (q - ((q * p + r).lead * ⅟p.lead) • X ^ ((q * p + r).degreeNat - p.degreeNat)) * p + r := by
   unfold divmod_sub_coeff
   simp
   conv => {
     lhs
     rw (occs := [1]) [add_comm]
     rw [add_sub_assoc, smul_def, mul_comm_right, ←smul_def, ←sub_mul, add_comm]
-
   }
-  sorry
+
+def divmod_sub_coeff₂ (q r: P[X]) (h: r.degree < (q * p).degree) :
+  (q * p + r).divmod_sub_coeff p inv = (q - q.lead • X ^ ((q * p + r).degreeNat - p.degreeNat)) * p + r := by
+  rw [divmod_sub_coeff₁]
+  conv => {
+    lhs
+    rw [lead_add_of_degree_lt _ _ h, lead_mul, mul_assoc, IsInvertible.mul_invOf, mul_one]
+  }
+
+def divmod_sub_coeff₃ (q r: P[X]) (h: r.degree < (q * p).degree) :
+  (q * p + r).divmod_sub_coeff p inv = (q - q.lead • X ^ q.degreeNat) * p + r := by
+  rw [divmod_sub_coeff₂]
+  congr
+  rw [show (q * p + r).degreeNat = (q * p).degreeNat from ?_]
+  unfold degreeNat
+  rw [mul_degree, q.degree_eq_degreeNat, p.degree_eq_degreeNat]
+  simp [degree_add]
+  exact deg_nontrivial_of_invertible p inv
+  cases hq:q.degree
+  rw [degree_eq_bot_iff_eq_zero.mp hq] at h
+  simp at h
+  have := not_le_of_lt h (bot_le _)
+  contradiction
+  apply WithBot.LT.bot
+  apply degreeNat_eq_of_degree_eq
+  rw [add_degree_of_ne_degree]
+  rw [max_iff_le_right.mp]
+  apply le_of_lt; assumption
+  symm; apply ne_of_lt; assumption
+  assumption
+
+def div_mod_unique_helper₀ (q r: P[X]) (h: r.degree < (q * p).degree) :  (q * p + r).lead * ⅟p.lead = q.lead := by
+  rw [lead_add_of_degree_lt _ _ h, lead_mul, mul_assoc, IsInvertible.mul_invOf, mul_one]
+
+def div_mod_unique_helper₁ (q r: P[X]) (h: r.degree < (q * p).degree) : (q * p + r).degree = (q * p).degree := by
+  rw [add_degree_of_ne_degree]
+  rw [max_iff_le_right.mp]
+  apply le_of_lt; assumption
+  symm; apply ne_of_lt; assumption
+
+def div_mod_unique_helper₂ (q r: P[X]) (h: r.degree < (q * p).degree) : (q * p + r).degreeNat - p.degreeNat = q.degreeNat := by
+  rw [show (q * p + r).degreeNat = (q * p).degreeNat from ?_]
+  unfold degreeNat
+  rw [mul_degree, q.degree_eq_degreeNat, p.degree_eq_degreeNat]
+  simp [degree_add]
+  cases hq:q.degree
+  rw [degree_eq_bot_iff_eq_zero.mp hq] at h
+  simp at h
+  have := not_le_of_lt h (bot_le _)
+  contradiction
+  exact deg_nontrivial_of_invertible p inv
+  cases hq:q.degree
+  rw [degree_eq_bot_iff_eq_zero.mp hq] at h
+  simp at h
+  have := not_le_of_lt h (bot_le _)
+  contradiction
+  apply WithBot.LT.bot
+  apply degreeNat_eq_of_degree_eq
+  apply div_mod_unique_helper₁
+  assumption
 
 def div_mod_unique (a q r: P[X]) (hr: r.degree < p.degree) : a = q * p + r -> q = a.div p ∧ r = a.mod p := by
   classical
@@ -387,150 +444,34 @@ def div_mod_unique (a q r: P[X]) (hr: r.degree < p.degree) : a = q * p + r -> q 
     rw [div_of_le _ _ ha, mod_of_le _ _ ha]
     simp
     subst a
-
-
-    sorry
-
-def mul_div_cancel_right (a: P[X]) : (a * p).div p = a := by
-  sorry
-
-def mul_add_div (a b: P[X]) (hb: b.degree < p.degree) : (a * p + b).div p = a := by
-  have := div_mul_add_mod (a * p + b) p inv
-  rw [mul_add_mod a b hb (p := p) (inv := inv)] at this
-  replace := add_right_cancel this
-  have h := mul_div_cancel_right a (p := p) (inv := inv)
-  rw [←this] at h
-  rw [mul_div_cancel_right] at h
-  assumption
-
--- def divmod_sub_coeff_of_lt_of_le (a b: P[X]) (ha: a.degree < p.degree) (hb: p.degree ≤ b.degree) : (a + b).divmod_sub_coeff p inv = a + b.divmod_sub_coeff p inv := by
---   unfold divmod_sub_coeff
---   simp
---   rw [add_sub_assoc]
---   congr 3
---   · show ((a.toFinsupp (a + b).degreeNat + b.toFinsupp (a + b).degreeNat) * ⅟(p.toFinsupp p.degreeNat)) • p =
---         (b.lead * ⅟(p.toFinsupp p.degreeNat)) • p
---     rw [of_degree_lt, zero_add]
---     congr 3
---     apply WithBot.of_inj.mp
---     rw [←degree_eq_degreeNat, ←degree_eq_degreeNat]
---     apply le_antisymm
---     apply degree_is_minimal
---     intro i h
---     show a.toFinsupp i + b.toFinsupp i = 0
---     rw [of_degree_lt, of_degree_lt, add_zero]
---     assumption
---     apply lt_trans ha
---     apply lt_of_le_of_lt hb
---     assumption
---     have := add_degree a b
---     apply degree_is_minimal
---     intro i h
---     rw [of_degree_lt]
-
-
---     repeat sorry
---   · sorry
-
--- def const_mul_add_div (a: P) (b: P[X]) : (C a * p + b).div p = C a + b.div p := by
-
---   sorry
-
--- def add_div (a b: P[X]) : (a + b).div p = a.div p + b.div p := by
---   induction a using divmod_induction p inv generalizing b with
---   | deg_lt a ha =>
---     rw [div_of_lt _ _ ha, zero_add]
---     induction b using divmod_induction p inv with
---     | deg_lt b hb =>
---       rw [div_of_lt _ _ hb, div_of_lt]
---       apply lt_of_le_of_lt
---       apply Poly.add_degree
---       apply max_lt_iff.mpr
---       apply And.intro
---       assumption
---       assumption
---     | le_deg b hb ih =>
---       rw [div_of_le]
---       simp
-
---       sorry
---   | le_deg => sorry
-
--- def add_mod (a b: P[X]) : (a + b).mod p = a.mod p + b.mod p := by
---   have ha := div_mul_add_mod a p inv
---   have hb := div_mul_add_mod b p inv
---   have h := div_mul_add_mod (a + b) p inv
---   conv at h => { rhs; rw [←ha, ←hb] }
---   sorry
-
--- def mul_add_div (a b: P[X]) : (a * p + b).div p = a + b.div p := by
---   have := div_mul_add_mod (a * p + b) p inv
-
---   sorry
-
--- --   induction b using Poly.divmod_induction p inv generalizing a with
--- --   | deg_lt b hb =>
--- --     rw [div_of_lt _ _ hb, add_zero]
--- --     induction a using Poly.divmod_induction p inv with
--- --     | deg_lt a ha =>
--- --       by_cases h:a=0
--- --       subst a; simp; rw [div_of_lt _ _ hb]
--- --       rw [div_of_le]
--- --       simp
-
--- --       sorry
--- --     | le_deg a ha ih => sorry
--- --   | le_deg b h ih =>
--- --     rw [mod_of_le _ _ h, mod_of_le]
--- --     rw [divmod_sub_coeff]
--- --     rw [smul_def, mul_comm_right, ←smul_def, add_comm,
--- --       add_sub_assoc, ←sub_mul, add_comm]
-
--- --     sorry
-
--- -- def mul_add_mod (a b: P[X]) : (a * p + b).mod p = b.mod p := by
--- --   have := div_mul_add_mod (a * p + b) p inv
--- --   induction b using Poly.divmod_induction p inv generalizing a with
--- --   | deg_lt b h =>
--- --     rw [mod_of_lt _ _ h]
--- --     sorry
--- --   | le_deg b h ih =>
--- --     rw [mod_of_le _ _ h, mod_of_le]
--- --     rw [divmod_sub_coeff]
--- --     rw [smul_def, mul_comm_right, ←smul_def, add_comm,
--- --       add_sub_assoc, ←sub_mul, add_comm]
-
--- --     sorry
-
--- -- def add_mod (a b: P[X]) : (a + b).mod p = a.mod p + b.mod p := by
--- --   induction a using Poly.divmod_induction p inv with
--- --   | deg_lt a ha =>
--- --     rw [mod_of_lt _ _ ha]
--- --     induction b using Poly.divmod_induction p inv with
--- --     | deg_lt b hb =>
--- --       rw [mod_of_lt, mod_of_lt _ _ hb]
--- --       apply lt_of_le_of_lt
--- --       apply Poly.add_degree
--- --       apply max_lt_iff.mpr
--- --       apply And.intro
--- --       assumption
--- --       assumption
--- --     | le_deg b hb ih =>
--- --       rw [mod_of_le _ _ hb, ←ih]
--- --       clear ih
--- --       unfold divmod_sub_coeff
--- --       simp
--- --       rw [←add_sub_assoc, smul_def, mul_comm_right, ←smul_def]
--- --       sorry
--- --   | le_deg a ha ih =>
--- --     rw [mod_of_le _ _ ha, ←ih]
--- --     clear ih
--- --     sorry
-
--- def div_mul_add_mod_inj (a b c d p: P[X]) (hb: b.degree < p.degree) (hd: d.degree < p.degree) :
---   a * p + b = c * p + d -> a = c ∧ b = d := by
---   intro h
-
---   sorry
+    rw [←lead]
+    suffices r.degree < (q * p).degree by
+      have ⟨qeq, req⟩ := ih (q - q.lead • X ^ q.degreeNat) r hr ?_
+      clear ih
+      apply And.intro
+      · rw [←qeq]; clear qeq req
+        rw [←smul_eq_C_mul, div_mod_unique_helper₀, div_mod_unique_helper₂]
+        rw [sub_add_cancel]
+        iterate 3 assumption
+      · assumption
+      · rw [divmod_sub_coeff₃]
+        assumption
+    rw [mul_degree]
+    have hq := q.degree_eq_degreeNat ?_
+    rw [hq, hp]
+    rcases r.degree_eq_degreeNat' with hr' | hr'
+    rw [hr']
+    apply WithBot.LT.bot
+    rw [hr']
+    apply WithBot.LT.of
+    rw [hr', hp] at hr
+    cases hr; omega
+    rcases q.degree_eq_degreeNat' with hq' | hq'
+    rw [degree_eq_bot_iff_eq_zero.mp hq'] at ha
+    rw [zero_mul, zero_add] at ha
+    have := not_lt_of_le ha
+    contradiction
+    rw [hq']
+    apply WithBot.LT.bot
 
 end Poly
