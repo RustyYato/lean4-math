@@ -474,4 +474,61 @@ def div_mod_unique (a q r: P[X]) (hr: r.degree < p.degree) : a = q * p + r -> q 
     rw [hq']
     apply WithBot.LT.bot
 
+def mul_div_cancel_left (a: P[X]) : (p * a).div p = a := by
+  refine (div_mod_unique (p * a) a 0 ?_ ?_ (inv := inv)).left.symm
+  exact deg_nontrivial_of_invertible p inv
+  rw [add_zero, mul_comm]
+
+def mul_div_cancel_right (a: P[X]) : (a * p).div p = a := by
+  refine (div_mod_unique (a * p) a 0 ?_ ?_ (inv := inv)).left.symm
+  exact deg_nontrivial_of_invertible p inv
+  rw [add_zero]
+
+def mul_add_div (a b: P[X]) (hb: b.degree < p.degree) : (a * p + b).div p = a := by
+  have := div_mul_add_mod (a * p + b) p inv
+  rw [mul_add_mod a b hb (p := p) (inv := inv)] at this
+  replace := add_right_cancel this
+  have h := mul_div_cancel_right a (p := p) (inv := inv)
+  rw [←this] at h
+  rw [mul_div_cancel_right] at h
+  assumption
+
+def dvd_sub_mod (a: P[X]) : p ∣ a - a.mod p := by
+  rw (occs := [1]) [←div_mul_add_mod a p inv, add_sub_cancel']
+  apply dvd_mul_right
+
+def add_mod (a b: P[X]) : (a + b).mod p = a.mod p + b.mod p := by
+  rw [←mod_of_lt (a.mod p + b.mod p)]
+  apply (mod_eq_iff_sub_dvd _ _).mp
+  rw [sub_add, add_sub_assoc, add_comm, add_sub_assoc]
+  apply dvd_add
+  apply dvd_sub_mod
+  apply dvd_sub_mod
+  apply lt_of_le_of_lt
+  apply add_degree
+  refine max_lt_iff.mpr ?_
+  apply And.intro
+  exact mod_degree_lt a p inv
+  exact mod_degree_lt b p inv
+
+def add_div (a b: P[X]) : (a + b).div p = a.div p + b.div p := by
+  refine (div_mod_unique  _ _ ?_ ?_ ?_ (inv := inv)).left.symm
+  exact (a + b).mod p
+  exact mod_degree_lt (a + b) p inv
+  rw [add_mul, add_mod]
+  rw [add_comm_right, ←add_assoc, add_assoc (_ + _), add_comm (b.mod p), div_mul_add_mod, div_mul_add_mod]
+
+def div_mul_add_mod_inj (a b c d: P[X]) (hb: b.degree < p.degree) (hd: d.degree < p.degree) : a * p + b = c * p + d -> a = c ∧ b = d := by
+  intro h
+  have h₀ := mul_add_div a b (inv := inv) hb
+  have h₁ := mul_add_div c d (inv := inv) hd
+  rw [h, h₁] at h₀
+  cases h₀
+  apply And.intro rfl
+  have h₀ := mul_add_mod a b (inv := inv) hb
+  have h₁ := mul_add_mod a d (inv := inv) hd
+  rw [h, h₁] at h₀
+  cases h₀
+  rfl
+
 end Poly
