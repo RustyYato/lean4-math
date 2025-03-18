@@ -33,7 +33,7 @@ def modPoly_degree_lt {p: P[X]} (h: IsInvertible (p.toFinsupp p.degreeNat)) (x: 
   induction x with | mk x =>
   apply Poly.mod_degree_lt
 
-def mk_modPoly {p: P[X]} (h: IsInvertible (p.toFinsupp p.degreeNat)) (x: RMod p) : RMod.mk (x.modPoly h) = x := by
+def algebraMap_modPoly {p: P[X]} (h: IsInvertible (p.toFinsupp p.degreeNat)) (x: RMod p) : algebraMap (x.modPoly h) = x := by
   induction x with | mk x =>
   apply Quotient.sound
   show p ∣ Poly.mod x p - x
@@ -41,5 +41,26 @@ def mk_modPoly {p: P[X]} (h: IsInvertible (p.toFinsupp p.degreeNat)) (x: RMod p)
   rw [sub_eq_add_neg, neg_add_rev, ←add_assoc, add_neg_cancel, zero_add]
   apply dvd_neg.mp
   apply dvd_mul_right
+
+def modPoly_zero {p: P[X]} (h: IsInvertible (p.toFinsupp p.degreeNat)) : (0: RMod p).modPoly h = 0 := by
+  show Poly.mod 0 p = 0
+  rw [Poly.mod_of_lt]
+  apply Poly.deg_nontrivial_of_invertible
+  assumption
+
+def modPoly_const {p: P[X]} (h: IsInvertible (p.toFinsupp p.degreeNat)) {x: P} (g: .of 0 < p.degree) : modPoly h (algebraMap (A := RMod p) (C x)) = C x := by
+  show Poly.mod (C x) p = C x
+  rw [Poly.mod_of_lt]
+  apply lt_of_le_of_lt _ g
+  apply degree_is_minimal
+  intro i hi
+  match i with
+  | n + 1 =>
+  rfl
+
+def div_mul_add_mod_inj (a b c d p: P[X]) (hb: b.degree < p.degree) (hd: d.degree < p.degree) :
+  a * p + b = c * p + d -> a = c ∧ b = d := by
+  intro h
+  sorry
 
 end RMod

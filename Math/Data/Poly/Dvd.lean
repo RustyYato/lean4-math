@@ -20,7 +20,7 @@ namespace Poly
 
 variable [RingOps P] [IsRing P] [IsCommMagma P] [DecidableEq P] [IsNontrivial P]
 
-private def bdeg_nontrivial (b: P[X]) (h: IsInvertible (b.toFinsupp b.degreeNat)) : ⊥ < b.degree := by
+def deg_nontrivial_of_invertible (b: P[X]) (h: IsInvertible (b.toFinsupp b.degreeNat)) : ⊥ < b.degree := by
   unfold degreeNat at h
   split at h
   rename_i h'
@@ -42,7 +42,7 @@ def divmod_sub_coeff (a b : P[X]) (h: IsInvertible (b.toFinsupp b.degreeNat)) : 
 def divmod_rec_lemma [IsNontrivial P] [IsCommMagma P] (a b: P[X]) (h: IsInvertible (b.toFinsupp b.degreeNat)) (h₀: b.degree ≤ a.degree): (divmod_sub_coeff a b h).degree < a.degree := by
   let a' := a - (a.toFinsupp a.degreeNat * ⅟(b.toFinsupp b.degreeNat)) • b * X ^ (a.degreeNat - b.degreeNat)
   show a'.degree < _
-  have bdeg_nontrivial : ⊥ < b.degree := bdeg_nontrivial b h
+  have bdeg_nontrivial : ⊥ < b.degree := deg_nontrivial_of_invertible b h
   have adeg_nontrivial : ⊥ < a.degree := by
     apply lt_of_lt_of_le bdeg_nontrivial
     assumption
@@ -217,5 +217,84 @@ def eq_zero_of_dvd_of_degree_lt [NoZeroDivisors P] (a b: P[X]) (h: a ∣ b) (g: 
     cases g; rename_i g
     have := Nat.not_le_of_lt g (Nat.le_add_right _ _)
     contradiction
+
+variable {p: P[X]} (inv: IsInvertible (p.toFinsupp p.degreeNat))
+
+-- def mod_mod (a: P[X]) : (a.mod p).mod p = a := by
+--   induction a using Poly.divmod_induction p inv with
+--   | deg_lt a ha =>
+--     rw [mod_of_lt, mod_of_lt]
+--     assumption
+--     rw [mod_of_lt]; assumption
+--     assumption
+--   | le_deg a ha ih =>
+--     sorry
+
+-- def mul_add_div (a b: P[X]) : (a * p + b).div p = a + b.div p := by
+
+--   induction b using Poly.divmod_induction p inv generalizing a with
+--   | deg_lt b hb =>
+--     rw [div_of_lt _ _ hb, add_zero]
+--     induction a using Poly.divmod_induction p inv with
+--     | deg_lt a ha =>
+--       by_cases h:a=0
+--       subst a; simp; rw [div_of_lt _ _ hb]
+--       rw [div_of_le]
+--       simp
+
+--       sorry
+--     | le_deg a ha ih => sorry
+--   | le_deg b h ih =>
+--     rw [mod_of_le _ _ h, mod_of_le]
+--     rw [divmod_sub_coeff]
+--     rw [smul_def, mul_comm_right, ←smul_def, add_comm,
+--       add_sub_assoc, ←sub_mul, add_comm]
+
+--     sorry
+
+-- def mul_add_mod (a b: P[X]) : (a * p + b).mod p = b.mod p := by
+--   have := div_mul_add_mod (a * p + b) p inv
+--   induction b using Poly.divmod_induction p inv generalizing a with
+--   | deg_lt b h =>
+--     rw [mod_of_lt _ _ h]
+--     sorry
+--   | le_deg b h ih =>
+--     rw [mod_of_le _ _ h, mod_of_le]
+--     rw [divmod_sub_coeff]
+--     rw [smul_def, mul_comm_right, ←smul_def, add_comm,
+--       add_sub_assoc, ←sub_mul, add_comm]
+
+--     sorry
+
+-- def add_mod (a b: P[X]) : (a + b).mod p = a.mod p + b.mod p := by
+--   induction a using Poly.divmod_induction p inv with
+--   | deg_lt a ha =>
+--     rw [mod_of_lt _ _ ha]
+--     induction b using Poly.divmod_induction p inv with
+--     | deg_lt b hb =>
+--       rw [mod_of_lt, mod_of_lt _ _ hb]
+--       apply lt_of_le_of_lt
+--       apply Poly.add_degree
+--       apply max_lt_iff.mpr
+--       apply And.intro
+--       assumption
+--       assumption
+--     | le_deg b hb ih =>
+--       rw [mod_of_le _ _ hb, ←ih]
+--       clear ih
+--       unfold divmod_sub_coeff
+--       simp
+--       rw [←add_sub_assoc, smul_def, mul_comm_right, ←smul_def]
+--       sorry
+--   | le_deg a ha ih =>
+--     rw [mod_of_le _ _ ha, ←ih]
+--     clear ih
+--     sorry
+
+def div_mul_add_mod_inj (a b c d p: P[X]) (hb: b.degree < p.degree) (hd: d.degree < p.degree) :
+  a * p + b = c * p + d -> a = c ∧ b = d := by
+  intro h
+
+  sorry
 
 end Poly

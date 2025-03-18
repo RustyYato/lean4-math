@@ -25,15 +25,8 @@ def map_eq_zero : (algebraMap A: RMod A) = 0 := by
   show _ ∣ _
   rw [sub_zero]
 
-def mk {a: α} : α →+* RMod a where
-  toFun := Quotient.mk _
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := rfl
-
 @[induction_eliminator]
-def induction {a: α} {motive : RMod a -> Prop} (mk: ∀x, motive (mk x)) : ∀q, motive q := by
+def induction {a: α} {motive : RMod a -> Prop} (mk: ∀x: α, motive (algebraMap x)) : ∀q, motive q := by
   intro r
   induction r using Quotient.ind
   apply mk

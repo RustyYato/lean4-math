@@ -404,4 +404,14 @@ def neg_degree [RingOps P] [IsRing P] [∀x: P, Decidable (x = 0)] (a: P[X]) : (
   show - (-a).toFinsupp i = 0
   rw [(-a).of_degree_lt _ h, neg_zero]
 
+def const_degree_ne_zero [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P) (h: x ≠ 0) : (C x).degree = .of 0 := by
+  apply le_antisymm
+  · apply degree_is_minimal
+    intro i h
+    match i with
+    | i + 1 =>
+    rfl
+  · apply le_degree
+    assumption
+
 end Poly

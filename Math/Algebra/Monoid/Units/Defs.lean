@@ -38,6 +38,9 @@ instance [One α] [Mul α] : Inv (Units α) where
     inv_mul_val := a.val_mul_inv
   }
 
+instance [MonoidOps α] [IsMonoid α] : IsInvertible (1: α) :=
+  inferInstanceAs (IsInvertible (1: Units α).val)
+
 instance [MonoidOps α] [IsMonoid α] : Pow (Units α) ℕ where
   pow a n := {
     val := a.val ^ n
