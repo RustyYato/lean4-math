@@ -531,4 +531,12 @@ def div_mul_add_mod_inj (a b c d: P[X]) (hb: b.degree < p.degree) (hd: d.degree 
   cases h₀
   rfl
 
+def mul_mod (a b: P[X]) : (a * b).mod p = (a.mod p * b.mod p).mod p := by
+  apply (mod_eq_iff_sub_dvd _ _).mp
+  rw (occs := [1]) [←a.div_mul_add_mod _ inv, ←b.div_mul_add_mod _ inv]
+  simp [add_mul, mul_add]
+  rw [←add_assoc, add_sub_cancel', ←mul_assoc, ←mul_assoc,
+    ←add_mul, mul_comm_right _ p (b.mod p), ←add_mul]
+  apply dvd_mul_right
+
 end Poly
