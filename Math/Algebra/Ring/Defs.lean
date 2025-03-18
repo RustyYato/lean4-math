@@ -59,25 +59,6 @@ def mul_intCast_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : x * r = r �
 def intCast_mul [RingOps α] [IsRing α] (a b: ℤ) : a * b = ((a * b: Int): α) := by
   rw [intCast_mul_eq_zsmul, intCast_eq_zsmul_one, ←mul_zsmul, intCast_eq_zsmul_one]
 
-def add_sub_assoc [AddGroupOps α] [IsAddGroup α] (a b c: α) : a + b - c = a + (b - c) := by
-  rw [sub_eq_add_neg, sub_eq_add_neg, add_assoc]
-
-def sub_add_assoc [AddGroupOps α] [IsAddGroup α] (a b c: α) : a - b + c = a + (-b + c) := by
-  rw [sub_eq_add_neg, add_assoc]
-
-def add_eq_iff_eq_sub [AddGroupOps α] [IsAddGroup α]
-  (a b c: α) : a + b = c ↔ a = c - b := by
-  apply Iff.intro
-  intro h
-  rw [←h, add_sub_assoc, sub_self, add_zero]
-  intro h
-  rw [h, sub_add_assoc, neg_add_cancel, add_zero]
-
-def zero_sub [AddGroupOps α] [IsAddGroup α]
-  (a: α) : 0 - a = -a := by
-  refine neg_eq_of_add_right ?_
-  rw [sub_add_assoc, neg_add_cancel, add_zero]
-
 class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] : Prop extends IsNonAssocSemiring α, IsAddGroupWithOne α
 
 instance

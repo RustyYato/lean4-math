@@ -431,6 +431,28 @@ def neg_degree [RingOps P] [IsRing P] [∀x: P, Decidable (x = 0)] (a: P[X]) : (
   show - (-a).toFinsupp i = 0
   rw [(-a).of_degree_lt _ h, neg_zero]
 
+def sub_degree [RingOps P] [IsRing P] [∀x: P, Decidable (x = 0)] (a b: P[X]) : (a - b).degree ≤ max a.degree b.degree := by
+  rw [sub_eq_add_neg]
+  apply le_trans
+  apply add_degree
+  rw [neg_degree]
+
+def Xpow_degree [SemiringOps P] [IsSemiring P] [IsNontrivial P] [∀x: P, Decidable (x = 0)] (n: Nat) : (X ^ n: P[X]).degree = n := by
+  apply le_antisymm
+  apply degree_is_minimal
+  intro i hi
+  cases hi; rename_i hi
+  obtain ⟨k, rfl⟩  := (Nat.le_iff_exists_sum _ _).mp (Nat.succ_le_of_lt hi)
+  rw [←one_mul (X ^ n), coeff_mul_Xpow, Nat.succ_add, Nat.succ_sub]
+  rfl
+  apply Nat.le_add_right
+  apply le_of_lt; assumption
+  apply le_degree
+  intro h
+  rw [←one_mul (X^n), coeff_mul_Xpow, Nat.sub_self] at h
+  exact zero_ne_one P h.symm
+  rfl
+
 def const_degree_ne_zero [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P) (h: x ≠ 0) : (C x).degree = .of 0 := by
   apply le_antisymm
   · apply degree_is_minimal
@@ -440,6 +462,13 @@ def const_degree_ne_zero [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x =
     rfl
   · apply le_degree
     assumption
+
+def const_degree_eq [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P) : (C x).degree = if x = 0 then ⊥ else .of 0 := by
+  split
+  subst x
+  rw [resp_zero]; rfl
+  rw [const_degree_ne_zero]
+  assumption
 
 instance [RingOps P] [IsRing P] [NoZeroDivisors P] : NoZeroDivisors P[X] where
   of_mul_eq_zero := by
@@ -454,5 +483,15 @@ instance [RingOps P] [IsRing P] [NoZeroDivisors P] : NoZeroDivisors P[X] where
     contradiction
     rw [mul_degree, ha, hb]
     apply WithBot.LT.bot
+
+def lead [Zero P] [∀x: P, Decidable (x = 0)] (p: P[X]) : P := p.toFinsupp p.degreeNat
+
+def lead_eq_zero [Zero P] [∀x: P, Decidable (x = 0)] (p: P[X]) (h: p.degree = ⊥) : p.lead = 0 := by
+  rw [degree_eq_bot_iff_eq_zero.mp h]
+  rfl
+def lead_nonzero [Zero P] [∀x: P, Decidable (x = 0)] (p: P[X]) (h: ⊥ < p.degree) : p.lead ≠ 0 := by
+  apply coeff_degreeNat_ne_zero
+  assumption
+def lead_zero [Zero P] [∀x: P, Decidable (x = 0)] : lead (0: P[X]) = 0 := rfl
 
 end Poly

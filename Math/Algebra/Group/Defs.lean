@@ -315,11 +315,33 @@ def neg_sub [IsAddGroup α] (a b: α) : -(a - b) = b - a := by
 def sub_sub [IsAddGroup α] (a b c: α) : a - (b - c) = a + c - b := by
   rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, neg_add_rev, neg_neg, add_assoc]
 
+def add_sub_assoc [AddGroupOps α] [IsAddGroup α] (a b c: α) : a + b - c = a + (b - c) := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, add_assoc]
+
+def sub_add_assoc [AddGroupOps α] [IsAddGroup α] (a b c: α) : a - b + c = a + (-b + c) := by
+  rw [sub_eq_add_neg, add_assoc]
+
+def add_eq_iff_eq_sub [AddGroupOps α] [IsAddGroup α]
+  (a b c: α) : a + b = c ↔ a = c - b := by
+  apply Iff.intro
+  intro h
+  rw [←h, add_sub_assoc, sub_self, add_zero]
+  intro h
+  rw [h, sub_add_assoc, neg_add_cancel, add_zero]
+
+def zero_sub [AddGroupOps α] [IsAddGroup α]
+  (a: α) : 0 - a = -a := by
+  refine neg_eq_of_add_right ?_
+  rw [sub_add_assoc, neg_add_cancel, add_zero]
+
 def sub_add_cancel [IsAddGroup α] (a b: α) : a - b + b = a := by
   rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero]
 
 def add_sub_cancel [IsAddGroup α] [IsAddCommMagma α] (a b: α) : a + (b - a) = b := by
   rw [sub_eq_add_neg, add_left_comm, add_neg_cancel, add_zero]
+
+def add_sub_cancel' [IsAddGroup α] [IsAddCommMagma α] (a b: α) : a + b - b = a := by
+  rw [add_sub_assoc ,sub_self, add_zero]
 
 def sub_add (k a b: α) : k - (a + b) = k - b - a := by
   rw [sub_eq_add_neg, neg_add_rev, ←add_assoc, sub_eq_add_neg, sub_eq_add_neg]
