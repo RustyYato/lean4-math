@@ -1,4 +1,6 @@
 import Math.Algebra.Monoid.MonoidAlgebra
+import Math.Algebra.GroupWithZero.Defs
+import Math.Data.FinSupp.Fintype
 
 def Poly (P: Type*) [Zero P] := AddMonoidAlgebra ℕ P ℕ
 
@@ -90,6 +92,11 @@ def X_mul_eq_mul_X [SemiringOps P] [IsSemiring P] (p: P[X]) : X * p = p * X := b
   congr; ext; congr 2
   rw [add_comm]
   simp
+
+def Xpow_mul_eq_mul_Xpow [SemiringOps P] [IsSemiring P] (p: P[X]) (n: Nat) : X ^ n * p = p * X ^ n := by
+  induction n with
+  | zero => simp
+  | succ n ih => rw [npow_succ, mul_assoc, X_mul_eq_mul_X, ←mul_assoc, ih, mul_assoc]
 
 def erase [Zero P] (p: P[X]) (n: ℕ) : P[X] := AddMonoidAlgebra.erase p n
 
@@ -257,8 +264,10 @@ def Xpow_eq_monomial [SemiringOps P] [IsSemiring P] : (X: P[X]) ^ n = monomial n
     rw [AddMonoidAlgebra.single_mul]
     simp [AddMonoidAlgebra.apply_single]
 
-def coeff_mul_Xpow [SemiringOps P] [IsSemiring P] [IsCommMagma P] (a: P[X]) (hi: n ≤ i) : (a * X^n).toFinsupp i = a.toFinsupp (i - n) := by
-  rw [Xpow_eq_monomial, mul_comm]
+def coeff_mul_Xpow [SemiringOps P] [IsSemiring P] (a: P[X]) (hi: n ≤ i) : (a * X^n).toFinsupp i = a.toFinsupp (i - n) := by
+  rw [
+    ←Xpow_mul_eq_mul_Xpow,
+    Xpow_eq_monomial]
   rw [monomial]
   simp [HMul.hMul, Mul.mul]
   simp [AddMonoidAlgebra.mul']
@@ -272,11 +281,60 @@ def coeff_mul_Xpow [SemiringOps P] [IsSemiring P] [IsCommMagma P] (a: P[X]) (hi:
   erw [Finsupp.sum_select (g := ZeroHom.mk id rfl)]
   rfl
 
+def coeff_mul_X_zero [SemiringOps P] [IsSemiring P] (a: P[X]) : (a * X).toFinsupp 0 = 0 := by
+  rw [←X_mul_eq_mul_X, AddMonoidAlgebra.mul_def, AddMonoidAlgebra.mul']
+  erw [Finsupp.single_sum, AddMonoidAlgebra.sum_toFinsupp', Finsupp.sum_eq_zero]
+  intro i
+  simp [Finsupp.apply_single]
+  intro; rw [add_comm] at *; contradiction
+
+@[simp]
+def coeff_mul_X_succ [SemiringOps P] [IsSemiring P] (a: P[X]) : (a * X).toFinsupp (i + 1) = a.toFinsupp i := by
+  rw [←npow_one X, coeff_mul_Xpow]
+  rfl
+  apply Nat.le_add_left
+
+@[simp]
+def coeff_C_succ [SemiringOps P] [IsSemiring P] (a: P) : (C a).toFinsupp (i + 1) = 0 := rfl
+
 @[ext]
 def ext [Zero P] (a b: P[X]) : (∀x, a.toFinsupp x = b.toFinsupp x) -> a = b := AddMonoidAlgebra.ext _ _
 
 def smul_eq_const_mul [SemiringOps P] [IsSemiring P] [IsCommMagma P] (x: P) (a: P[X]) : x • a = C x * a := by
   rw [smul_def]
   rfl
+
+def mul_X_add_C_inj [RingOps P] [IsRing P] : Function.Injective₂ (fun (a: P[X]) (b: P) => a * X + C b) := by
+  intro a b c d eq
+  dsimp at eq
+  have coeff_eq : ∀i, (a * X + C b).toFinsupp i = (c * X + C d).toFinsupp i := fun i => by rw [eq]
+  replace coeff_eq : ∀i, (a * X).toFinsupp i + (C b).toFinsupp i = (c * X).toFinsupp i + (C d).toFinsupp i := coeff_eq
+  have := coeff_eq 0
+  simp [coeff_mul_X_zero] at this
+  cases this
+  apply And.intro _ rfl
+  ext i
+  have := coeff_eq (i + 1)
+  simp at this
+  assumption
+
+def mul_X_inj [RingOps P] [IsRing P] : Function.Injective (fun (a: P[X]) => a * X) := by
+  intro a b eq
+  dsimp at eq
+  have : a * X + C 0 = b * X + C 0 := by rw [eq]
+  exact (mul_X_add_C_inj this).left
+
+def mul_Xpow_inj [RingOps P] [IsRing P] (n: ℕ ) : Function.Injective (fun (a: P[X]) => a * X ^ n) := by
+  intro a b h
+  induction n with
+  | zero => simpa using h
+  | succ n ih =>
+    simp [npow_succ, ←mul_assoc] at h
+    exact ih (mul_X_inj h)
+
+def of_mul_Xpow_eq_zero [RingOps P] [IsRing P] (a: P[X]) (n: Nat) : a * X ^ n = 0 -> a = 0 := by
+  intro h
+  rw [←zero_mul (X ^ n)] at h
+  exact mul_Xpow_inj _ h
 
 end Poly

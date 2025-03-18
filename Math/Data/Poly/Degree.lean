@@ -1,6 +1,5 @@
 import Math.Data.Poly.Defs
 import Math.Data.Nat.Basic
-import Math.Algebra.GroupWithZero.Defs
 import Math.Order.TopBot.Linear
 import Math.Data.FinSupp.Fintype
 
@@ -391,6 +390,34 @@ def add_degree [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (a b:
   apply lt_of_le_of_lt _ hi
   apply le_max_left
 
+def add_degree_of_ne_degree [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (a b: P[X]) (h: a.degree ≠ b.degree) : (a + b).degree = max a.degree b.degree := by
+  revert a b
+  suffices ∀a b: P[X], a.degree < b.degree -> (a + b).degree = max a.degree b.degree by
+    intro a b h
+    rcases lt_trichotomy a.degree b.degree with g | g | g
+    apply this
+    assumption
+    contradiction
+    rw [add_comm, max_comm]
+    apply this
+    assumption
+  intro a b h
+  apply le_antisymm
+  apply add_degree
+  rw [max_iff_le_left.mp (le_of_lt h)]
+  cases hb:b.degree
+  apply bot_le
+  apply le_degree
+  have := hb
+  rw [degree_eq_degreeNat] at this
+  cases this
+  show a.toFinsupp b.degreeNat + b.toFinsupp b.degreeNat ≠ 0
+  rw [of_degree_lt, zero_add]
+  refine coeff_degreeNat_ne_zero b ?_
+  rw [hb]; apply WithBot.LT.bot
+  rw [←hb]; assumption
+  rw [hb]; apply WithBot.LT.bot
+
 def neg_degree [RingOps P] [IsRing P] [∀x: P, Decidable (x = 0)] (a: P[X]) : (-a).degree = a.degree := by
   apply le_antisymm
   apply degree_is_minimal
@@ -413,5 +440,19 @@ def const_degree_ne_zero [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x =
     rfl
   · apply le_degree
     assumption
+
+instance [RingOps P] [IsRing P] [NoZeroDivisors P] : NoZeroDivisors P[X] where
+  of_mul_eq_zero := by
+    classical
+    intro a b eq
+    cases ha:a.degree
+    left; rw [degree_eq_bot_iff_eq_zero.mp ha]
+    cases hb:b.degree
+    right; rw [degree_eq_bot_iff_eq_zero.mp hb]
+    have := (a * b).coeff_degreeNat_ne_zero ?_
+    rw [eq] at this
+    contradiction
+    rw [mul_degree, ha, hb]
+    apply WithBot.LT.bot
 
 end Poly
