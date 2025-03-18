@@ -1,6 +1,7 @@
 import Math.Data.Poly.Dvd
-import Math.Data.Poly.Eval
+import Math.Data.Poly.Basic
 import Math.Algebra.Ring.Theory.RMod.Poly
+import Math.Algebra.AddGroupWithOne.Hom
 
 open Poly
 
@@ -24,8 +25,7 @@ def induction' {motive : GaussianInteger -> Prop} (mk: ∀x: ℤ[X], motive (alg
 
 abbrev char : ℤ[X] := (X^2 + 1)
 
-instance : IsInvertible (char.toFinsupp char.degreeNat) :=
-  inferInstanceAs (IsInvertible 1)
+instance : IsInvertible char.lead := inferInstanceAs (IsInvertible 1)
 
 -- the imaginary unit
 def i: ℤ[i] := algebraMap (X: ℤ[X])
@@ -82,7 +82,8 @@ instance : IsAddHom Real GaussianInteger ℤ where
     show (Poly.mod (x + y) _ (inv := _)).toFinsupp 0 =
       (Poly.mod x _ (inv := _)).toFinsupp 0 +
       (Poly.mod y _ (inv := _)).toFinsupp 0
-    sorry
+    rw [Poly.add_mod]
+    rfl
 
 instance : IsZeroHom Img GaussianInteger ℤ where
   resp_zero _ := by
@@ -92,11 +93,83 @@ instance : IsZeroHom Img GaussianInteger ℤ where
 instance : IsAddHom Img GaussianInteger ℤ where
   resp_add _ := by
     intro x y
-    simp [RMod.modPoly_zero, img_]
+    induction x using induction' with | mk x =>
+    induction y using induction' with | mk y =>
+    show (Poly.mod (x + y) _ (inv := _)).toFinsupp 1 =
+      (Poly.mod x _ (inv := _)).toFinsupp 1 +
+      (Poly.mod y _ (inv := _)).toFinsupp 1
+    rw [Poly.add_mod]
     rfl
 
-def basis (x: ℤ[i]) : ∃(a b: ℤ), x = a + b * i := by
+def char_degree_eq : char.degree = .of 2 := rfl
 
-  sorry
+def basis (x: ℤ[i]) : x = real x + img x * i := by
+  induction x using induction' with | mk x =>
+  apply Quotient.sound
+  show char ∣ _
+  unfold char
+  let r := (Poly.mod x char).toFinsupp 0
+  let i := (Poly.mod x char).toFinsupp 1
+  show _ ∣ x - ((r: ℤ[X]) + (i: ℤ[X]) * X)
+  apply (Poly.mod_eq_iff_sub_dvd _ _ (inv := inferInstance)).mpr
+  rw (occs := [2]) [mod_of_lt]
+  · ext n
+    show _ = (r: ℤ[X]).toFinsupp n + ((i: ℤ[X]) * X).toFinsupp n
+    match n with
+    | 0 =>
+      rw [coeff_mul_X_zero, add_zero]
+      rfl
+    | 1 =>
+      erw [coeff_mul_X_succ]
+      symm; apply zero_add
+    | n + 2 =>
+      erw [zero_add]
+      show (x.mod char).toFinsupp _ = 0
+      rw [Poly.of_degree_lt]
+      apply lt_of_lt_of_le
+      apply Poly.mod_degree_lt
+      rw [char_degree_eq]
+      apply WithBot.LE.of
+      exact Nat.le_add_left 2 n
+  · show _ < (X ^ 2 + C 1).degree
+    refine if h:r = 0 ∧ i = 0  then ?_ else ?_
+    obtain ⟨hr, hi⟩ := h
+    rw [hr, hi]
+    rw [intCast_zero]
+    simp
+    apply WithBot.LT.bot
+    rw [Poly.add_degree_of_ne_degree, Poly.add_degree_of_ne_degree, Poly.Xpow_degree, Poly.const_degree_ne_zero]
+    rw (occs := [2]) [max_iff_le_right.mp]
+    rw [Poly.mul_degree, ←npow_one X, Poly.Xpow_degree]
+    rw [max_lt_iff]
+    apply And.intro
+    rw [←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
+    split
+    apply WithBot.LT.bot
+    any_goals decide
+    rw [←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
+    split
+    apply WithBot.LT.bot
+    apply WithBot.LT.of
+    decide
+    rw [←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
+    split
+    rw [Poly.mul_degree, ←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_ne_zero,
+      ←npow_one X, Poly.Xpow_degree]
+    decide
+    intro g
+    rename_i h'
+    apply h; apply And.intro
+    exact h'
+    exact g
+    rw [mul_degree, ←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq, ←npow_one X, Poly.Xpow_degree]
+    split
+    decide
+    decide
+
+def induction {motive: ℤ[i] -> Prop} : (mk: ∀real img: ℤ, motive (real + img * i)) -> ∀x, motive x := by
+  intro h x
+  rw [x.basis]
+  apply h
 
 end GaussianInteger
