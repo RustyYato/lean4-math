@@ -77,12 +77,6 @@ instance : Mul (Ideal α) where
       apply mul_assoc
   }
 
-instance : Zero (Ideal α) where
-  zero := .zero α
-
-instance : One (Ideal α) where
-  one := .univ α
-
 instance : SMul ℕ (Ideal α) := instNSMulrec
 instance : Pow (Ideal α) ℕ := instNPowrec
 

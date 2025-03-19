@@ -294,6 +294,22 @@ def kernel_mkQuot (i: Ideal R) : Ideal.kernel i.mkQuot = i := by
   show _ - _ ∈ i
   rw [sub_zero]; assumption
 
+def mkQuot_eq_zero_iff (i: Ideal R) (a: R) : i.mkQuot a = 0 ↔ a ∈ i := by
+  apply Iff.intro
+  intro h
+  rw [←sub_zero a]
+  exact Quotient.exact h
+  intro h
+  rw [←sub_zero a] at h
+  apply Quotient.sound
+  assumption
+
+@[induction_eliminator]
+def toRing_induction {i: Ideal R} {motive: i.toRing -> Prop} : (mk: ∀a, motive (i.mkQuot a)) -> ∀q, motive q := by
+  intro h q
+  obtain ⟨a, rfl⟩ := i.mkQuot_surj q
+  apply h
+
 def eqv_quot_empty : R ≃+* (Ideal.zero R).toRing where
   toFun := mkQuot _
   invFun := by

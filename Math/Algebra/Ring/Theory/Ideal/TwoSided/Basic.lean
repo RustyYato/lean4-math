@@ -7,22 +7,41 @@ namespace Ideal
 
 variable [RingOps α] [RingOps β] [IsRing α] [IsRing β]
 
--- the kernel of a ring homomorphism is always an ideal
-def kernel (f: α →+* β) : Ideal α where
-  carrier := Set.preimage {0} f
-  mem_zero' := resp_zero _
+-- the preimage of a ring homomorphism is always an ideal
+def preimage (f: α →+* β) (i: Ideal β) : Ideal α where
+  carrier := Set.preimage i.carrier f
+  mem_zero' := by
+    show f 0 ∈ i
+    erw [resp_zero]
+    apply mem_zero
   mem_neg' := by
     intro a ha
-    rw [Set.mem_preimage, resp_neg, ha, neg_zero]; rfl
+    show f _ ∈ i
+    rw [resp_neg]
+    apply mem_neg
+    assumption
   mem_add' := by
     intro a b ha hb
-    rw [Set.mem_preimage, resp_add, ha, hb, add_zero]; rfl
+    show f (a + b) ∈ i
+    rw [resp_add]
+    apply mem_add
+    assumption
+    assumption
   mem_mul_left' := by
     intro a b hb
-    rw [Set.mem_preimage, resp_mul, hb, mul_zero]; rfl
+    show f _ ∈ i
+    rw [resp_mul]
+    apply mem_mul_left
+    assumption
   mem_mul_right' := by
     intro a b hb
-    rw [Set.mem_preimage, resp_mul, hb, zero_mul]; rfl
+    show f _ ∈ i
+    rw [resp_mul]
+    apply mem_mul_right
+    assumption
+
+-- the kernel is the preimage of the 0 ideal
+def kernel (f: α →+* β) : Ideal α := preimage f 0
 
 -- if an ideal contains any units, then it must be the universal ideal
 def eq_univ_of_mem_unit (i: Ideal α) (u: Units α) : u.val ∈ i.carrier -> i = .univ α := by

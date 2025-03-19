@@ -125,6 +125,11 @@ def univ (α: Type*) [Add α] [Mul α] [Neg α] [Zero α] : Ideal α where
   mem_mul_left' _ _ _ := True.intro
   mem_mul_right' _ _ _ := True.intro
 
+instance [AddGroupOps α] [Mul α] [IsAddGroup α] [IsMulZeroClass α] : Zero (Ideal α) := ⟨Ideal.zero α⟩
+
+instance [Add α] [Mul α] [Neg α] [Zero α] : One (Ideal α) where
+  one := .univ α
+
 end Ideal
 
 variable {α: Type*} [Add α] [Mul α] [Neg α] [Zero α]
