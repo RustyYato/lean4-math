@@ -63,17 +63,17 @@ instance : FunLike Img GaussianInteger ℤ where
   coe _ := img_
   coe_inj _ _ _ := rfl
 
-@[simp] def apply_real (r: Real) (x: GaussianInteger) : r x = real_ x := rfl
-@[simp] def apply_img (i: Img) (x: GaussianInteger) : i x = img_ x := rfl
+def apply_real (r: Real) (x: GaussianInteger) : r x = real_ x := rfl
+def apply_img (i: Img) (x: GaussianInteger) : i x = img_ x := rfl
 
 instance : IsZeroHom Real GaussianInteger ℤ where
   resp_zero _ := by
-    simp [RMod.modPoly_zero, real_]
+    simp [RMod.modPoly_zero, apply_real, real_]
     rfl
 
 instance : IsOneHom Real GaussianInteger ℤ where
   resp_one _ := by
-    simp
+    simp [apply_real]
     erw [real_, RMod.modPoly_const]
     rfl
     decide
@@ -91,7 +91,7 @@ instance : IsAddHom Real GaussianInteger ℤ where
 
 instance : IsZeroHom Img GaussianInteger ℤ where
   resp_zero _ := by
-    simp [RMod.modPoly_zero, img_]
+    simp [RMod.modPoly_zero, apply_img, img_]
     rfl
 
 instance : IsAddHom Img GaussianInteger ℤ where
@@ -174,6 +174,7 @@ def basis (x: ℤ[i]) : x = real x + img x * i := by
     apply WithBot.LE.of
     exact Nat.le_add_left 2 n
 
+@[induction_eliminator]
 def induction {motive: ℤ[i] -> Prop} : (mk: ∀real img: ℤ, motive (real + img * i)) -> ∀x, motive x := by
   intro h x
   rw [x.basis]
@@ -184,6 +185,7 @@ def ext (a b: ℤ[i]) : real a = real b -> img a = img b -> a = b := by
   intro hr hi
   rw [a.basis, b.basis, hr, hi]
 
+@[simp]
 def basis_mul (a b c d: ℤ) : (a + b * i) * (c + d * i) = (a * c - b * d: ℤ) + (a * d + b * c: ℤ) * i := by
   rw [mul_add, add_mul, add_mul]
   ac_nf
@@ -205,6 +207,7 @@ instance : HasChar ℤ[i] 0 := HasChar.of_ring_emb {
     assumption
 }
 
+@[simp]
 def basis_real (a b: ℤ) : real (a + b * i) = a := by
   show (Poly.mod _ _).toFinsupp 0 = _
   rw [basis_mod]
@@ -213,6 +216,7 @@ def basis_real (a b: ℤ) : real (a + b * i) = a := by
   congr
   rw [coeff_mul_X_zero]
 
+@[simp]
 def basis_img (a b: ℤ) : img (a + b * i) = b := by
   show (Poly.mod _ _).toFinsupp 1 = _
   rw [basis_mod]
@@ -221,6 +225,55 @@ def basis_img (a b: ℤ) : img (a + b * i) = b := by
   congr
   rw [coeff_mul_X_succ]
   rfl
+
+instance : Repr ℤ[i] where
+  reprPrec x _ :=
+    if img x = 0 then
+      reprStr (real x)
+    else if real x = 0 then
+      if img x = 1 then
+        "i"
+      else
+        reprStr (img x) ++ " i"
+    else
+      reprStr (real x) ++ " + " ++ (if img x = 1 then "" else reprStr (img x)) ++ " i"
+
+instance : DecidableEq ℤ[i] :=
+  fun a b =>
+  decidable_of_decidable_of_iff (p := real a = real b ∧ img a = img b) <| by
+    induction a; induction b
+    simp
+    rename_i a b c d
+    apply Iff.intro
+    intro ⟨rfl, rfl⟩
+    rfl
+    intro h
+    have : real (c + d * i) = c := by simp
+    rw [←h] at this
+    simp at this
+    have : img (c + d * i) = d := by simp
+    rw [←h] at this
+    simp at this
+    trivial
+
+instance : NoZeroDivisors ℤ[i] where
+  of_mul_eq_zero := by
+    intro a c h
+    induction a with | mk a b =>
+    induction c with | mk c d =>
+    simp at h
+    have h0 : a * c - b * d = 0 := by
+      suffices real ((a * c - b * d: ℤ) + (a * d + b * c: ℤ) * i) = 0 by simpa using this
+      rw [h, resp_zero]
+    have h1 : a * d + b * c = 0 := by
+      suffices img ((a * c - b * d: ℤ) + (a * d + b * c: ℤ) * i) = 0 by simpa using this
+      rw [h, resp_zero]
+    clear h
+    replace h0 := eq_of_sub_eq_zero h0
+
+    sorry
+
+
 
 end GaussianInteger
 --
