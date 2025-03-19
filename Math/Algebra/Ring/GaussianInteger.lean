@@ -50,40 +50,17 @@ def i_unit : Units ℤ[i] where
 def i_isunit : IsUnit i where
   eq_unit := ⟨i_unit, rfl⟩
 
-def real_ (x: GaussianInteger) : ℤ := (RMod.modPoly inferInstance x).toFinsupp 0
-def img_ (x: GaussianInteger) : ℤ := (RMod.modPoly inferInstance x).toFinsupp 1
-
-structure Real where
-structure Img where
-
-def real : Real := Real.mk
-def img : Img := Img.mk
-
-instance : FunLike Real GaussianInteger ℤ where
-  coe _ := real_
-  coe_inj _ _ _ := rfl
-instance : FunLike Img GaussianInteger ℤ where
-  coe _ := img_
-  coe_inj _ _ _ := rfl
-
-def apply_real (r: Real) (x: GaussianInteger) : r x = real_ x := rfl
-def apply_img (i: Img) (x: GaussianInteger) : i x = img_ x := rfl
-
-instance : IsZeroHom Real GaussianInteger ℤ where
-  resp_zero _ := by
-    simp [RMod.modPoly_zero, apply_real, real_]
+def real : ℤ[i] →+₁ ℤ where
+  toFun x := (RMod.modPoly inferInstance x).toFinsupp 0
+  resp_zero := by
+    simp [RMod.modPoly_zero]
     rfl
-
-instance : IsOneHom Real GaussianInteger ℤ where
-  resp_one _ := by
-    simp [apply_real]
-    erw [real_, RMod.modPoly_const]
+  resp_one := by
+    simp
+    erw [RMod.modPoly_const]
     rfl
-    decide
-
-instance : IsAddHom Real GaussianInteger ℤ where
-  resp_add r := by
-    intro x y
+    trivial
+  resp_add {x y} := by
     induction x using induction' with | mk x =>
     induction y using induction' with | mk y =>
     show (Poly.mod (x + y) _ (inv := _)).toFinsupp 0 =
@@ -92,14 +69,12 @@ instance : IsAddHom Real GaussianInteger ℤ where
     rw [Poly.add_mod]
     rfl
 
-instance : IsZeroHom Img GaussianInteger ℤ where
-  resp_zero _ := by
-    simp [RMod.modPoly_zero, apply_img, img_]
+def img : ℤ[i] →+ ℤ where
+  toFun x := (RMod.modPoly inferInstance x).toFinsupp 1
+  resp_zero := by
+    simp [RMod.modPoly_zero]
     rfl
-
-instance : IsAddHom Img GaussianInteger ℤ where
-  resp_add _ := by
-    intro x y
+  resp_add {x y} := by
     induction x using induction' with | mk x =>
     induction y using induction' with | mk y =>
     show (Poly.mod (x + y) _ (inv := _)).toFinsupp 1 =
