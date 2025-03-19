@@ -190,4 +190,16 @@ def basis_mul (a b c d: ℤ) : (a + b * i) * (c + d * i) = (a * c - b * d: ℤ) 
   simp [intCast_mul, intCast_add, intCast_sub]
   ac_rfl
 
+instance : HasChar ℤ[i] 0 := HasChar.of_ring_emb {
+  algebraMap (R := ℤ) (A := ℤ[i]) with
+  inj' := by
+    intro a b eq
+    replace eq : (a: ℤ[i]) = b := eq
+    have : real b = b := by
+      rw [resp_intCast]
+      rfl
+    rw [←eq, resp_intCast] at this
+    assumption
+}
+
 end GaussianInteger
