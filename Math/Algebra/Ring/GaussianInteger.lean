@@ -3,6 +3,7 @@ import Math.Data.Poly.Prime
 import Math.Data.Poly.Basic
 import Math.Algebra.Ring.Theory.RMod.Poly
 import Math.Algebra.AddGroupWithOne.Hom
+import Math.Data.Int.Basic
 
 open Poly
 
@@ -234,71 +235,100 @@ instance : DecidableEq ℤ[i] :=
     simp at this
     trivial
 
-def is_prime_ideal : (Ideal.of_dvd char).IsPrime := by
-  apply Poly.is_prime_ideal
-  intro a b anez bnez ha hb aleb h
-  rw [char_degree] at ha hb
-  unfold char at *
-  match hadeg:a.degree, hbdeg:b.degree with
-  | .of (adeg + 2), _ =>
-    rw [hadeg] at ha
-    cases ha
-    contradiction
-  | _, .of (bdeg + 2) =>
-    rw [hbdeg] at hb
-    cases hb
-    contradiction
-  | ⊥, _ => contradiction
-  | _, ⊥ => contradiction
-  | .of 1, .of 0 =>
-    rw [hadeg, hbdeg] at aleb
-    contradiction
-  | .of 0, .of 0 =>
-    clear anez bnez
-    obtain ⟨a, rfl, anez⟩ := a.eq_C_of_deg_eq_0 hadeg
-    obtain ⟨b, rfl, bnez⟩ := b.eq_C_of_deg_eq_0 hbdeg
-    rw [←resp_mul] at h
-    rw [mod_eq_zero_iff_dvd (inv := inferInstance), mod_of_lt] at h
-    rw [←resp_zero C] at h
-    cases of_mul_eq_zero (C.inj h) <;> contradiction
-    rw [char_degree]
-    rw [const_degree_eq]; split
-    apply WithBot.LT.bot
-    simp
-  | .of 0, .of 1 =>
-    clear anez bnez
-    obtain ⟨a, rfl, anez⟩ := a.eq_C_of_deg_eq_0 hadeg
-    obtain ⟨b₀, b₁, rfl, bnez⟩ := b.eq_linear_of_deg_eq_1 hbdeg
-    rw [mod_eq_zero_iff_dvd (inv := inferInstance), mod_of_lt] at h
-    replace h := of_mul_eq_zero h
-    rcases h with h | h
-    rw [←resp_zero C, C.inj.eq_iff] at h
-    contradiction
-    rw [show 0 = 0 * (X: ℤ[X]) + C 0 by simp [resp_zero], add_comm] at h
-    replace ⟨h, _⟩ := mul_X_add_C_inj h
-    rw [←resp_zero C] at h
-    have := C.inj h
-    contradiction
-    rw [mul_add, ←resp_mul, ←mul_assoc, ←resp_mul]
-    apply lt_of_le_of_lt
-    apply add_degree
-    rw [char_degree, const_degree_eq]
-    split
-    rw [max_iff_le_left.mp]
-    rw [mul_degree, const_degree_eq, X_degree]
-    split
-    apply WithBot.LT.bot
-    decide
-    apply bot_le
-    simp
-    rw [const_degree_eq]
-    split
-    decide
-    decide
-  | .of 1, .of 1 =>
-    sorry
+@[simp]
+def real_zero : real 0 = 0 := by
+  rw [show (0 = (0: ℤ) + (0: ℤ) * i) by simp [intCast_zero], basis_real]
 
-instance : NoZeroDivisors ℤ[i] := (Ideal.prime_iff_no_zero_divisors _).mp is_prime_ideal
+@[simp]
+def img_zero : img 0 = 0 := by
+  rw [show (0 = (0: ℤ) + (0: ℤ) * i) by simp [intCast_zero], basis_img]
+
+@[simp]
+def real_one : real 1 = 1 := by
+  rw [show (1 = (1: ℤ) + (0: ℤ) * i) by simp [intCast_one, intCast_zero], basis_real]
+
+@[simp]
+def img_one : img 1 = 0 := by
+  rw [show (1 = (1: ℤ) + (0: ℤ) * i) by simp [intCast_one, intCast_zero], basis_img]
+
+def conj (a: ℤ[i]) : ℤ := real a - img a
+def norm_sq : ℤ[i] →*₀ ℤ where
+  toFun a := real a * real a + img a * img a
+  resp_zero := by simp
+  resp_one := by simp
+  resp_mul := by
+    intro x y
+    induction x with | mk a b =>
+    induction y with | mk c d =>
+    simp only [mul_sub, sub_mul, mul_add, add_mul]
+    ac_nf
+    simp [←mul_assoc, i_mul_i, ←neg_mul_left, one_mul]
+    simp [mul_assoc i]
+    norm_cast
+    ac_nf
+    rw [←mul_add i, mul_comm i]
+    simp only [←add_assoc]
+    norm_cast
+    simp
+    rw [add_comm _ (a * c)]
+    simp only [mul_add, add_mul]
+    simp only [←neg_mul_left, ←neg_mul_right]
+    rw [neg_neg]
+    ac_nf
+    generalize a * (b * (c * d)) = x
+    generalize a * (a * (c * c)) = ac
+    generalize b * (b * (c * c)) = bc
+    ac_nf
+    iterate 2 rw [add_left_comm _ (-x)]
+    rw [←add_assoc x (-x), add_neg_cancel, zero_add]
+    iterate 2 rw [add_left_comm _ (-x)]
+    rw [←add_assoc x (-x), add_neg_cancel, zero_add]
+
+@[simp]
+def apply_norm_sq : norm_sq a = real a * real a + img a * img a := rfl
+
+def norm_sq_eq_zero : norm_sq a = 0 ↔ a = 0 := by
+  apply flip Iff.intro
+  rintro rfl; rw [resp_zero]
+  intro h
+  induction a with | mk a b =>
+  replace h : a * a + b * b = 0 := by simpa using h
+  ext <;> simp
+  apply Int.eq_zero_of_sq_eq_zero
+  apply le_antisymm
+  rw [neg_eq_of_add_right h]
+  refine Int.neg_le_zero_iff.mpr ?_
+  exact Int.sq_nonneg b
+  exact Int.sq_nonneg a
+  apply Int.eq_zero_of_sq_eq_zero
+  apply le_antisymm
+  rw [←neg_eq_of_add_left h]
+  refine Int.neg_le_zero_iff.mpr ?_
+  exact Int.sq_nonneg a
+  exact Int.sq_nonneg b
+
+def of_basis_eq_zero {a b: ℤ} : a + b * i = 0 -> a = 0 ∧ b = 0 := by
+  intro h
+  have ha : real (a + b * i) = a := by simp
+  rw [h] at ha
+  have hb : img (a + b * i) = b := by simp
+  rw [h] at hb
+  simp at ha hb
+  rw [←ha, ←hb]
+  trivial
+
+instance : NoZeroDivisors ℤ[i] where
+  of_mul_eq_zero {x y} := by
+    intro h
+    have : norm_sq (x * y) = 0 := by rw [h, resp_zero]
+    rw [resp_mul] at this
+    rcases of_mul_eq_zero this with g | g
+    left; rwa [norm_sq_eq_zero] at g
+    right; rwa [norm_sq_eq_zero] at g
+
+def is_prime_ideal : (Ideal.of_dvd char).IsPrime := by
+  refine (Ideal.prime_iff_no_zero_divisors (Ideal.of_dvd char)).mpr ?_
+  exact inferInstanceAs (NoZeroDivisors ℤ[i])
 
 end GaussianInteger
 --

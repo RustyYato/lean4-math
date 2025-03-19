@@ -82,4 +82,20 @@ def pow_ofNat (a n: Nat) : (a ^ n: Nat) = (a: Int) ^ n := by
   | succ n ih =>
     rw [Int.pow_succ, Nat.pow_succ, Int.ofNat_mul, ih]
 
+def sq_nonneg (a: Int) : 0 ≤ a * a := by
+  rcases Int.le_total a 0 with h | h
+  exact Int.mul_nonneg_of_nonpos_of_nonpos h h
+  exact Int.mul_nonneg h h
+
+def eq_zero_of_sq_eq_zero (a: Int) : a * a = 0 -> a = 0 := by
+  intro h
+  rcases Int.lt_trichotomy a 0 with g | rfl | g
+  have := Int.mul_pos_of_neg_of_neg g g
+  rw [h] at this
+  contradiction
+  rfl
+  have := Int.mul_pos g g
+  rw [h] at this
+  contradiction
+
 end Int
