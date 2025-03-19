@@ -281,6 +281,7 @@ def coeff_mul_Xpow [SemiringOps P] [IsSemiring P] (a: P[X]) (hi: n ≤ i) : (a *
   erw [Finsupp.sum_select (g := ZeroHom.mk id rfl)]
   rfl
 
+@[simp]
 def coeff_mul_X_zero [SemiringOps P] [IsSemiring P] (a: P[X]) : (a * X).toFinsupp 0 = 0 := by
   rw [←X_mul_eq_mul_X, AddMonoidAlgebra.mul_def, AddMonoidAlgebra.mul']
   erw [Finsupp.single_sum, AddMonoidAlgebra.sum_toFinsupp', Finsupp.sum_eq_zero]
@@ -295,7 +296,13 @@ def coeff_mul_X_succ [SemiringOps P] [IsSemiring P] (a: P[X]) : (a * X).toFinsup
   apply Nat.le_add_left
 
 @[simp]
+def coeff_C_zero [SemiringOps P] [IsSemiring P] (a: P) : (C a).toFinsupp 0 = a := rfl
+
+@[simp]
 def coeff_C_succ [SemiringOps P] [IsSemiring P] (a: P) : (C a).toFinsupp (i + 1) = 0 := rfl
+
+@[simp]
+def coeff_add [SemiringOps P] [IsSemiring P] (a b: P[X]) : (a + b).toFinsupp i = a.toFinsupp i + b.toFinsupp i := rfl
 
 @[ext]
 def ext [Zero P] (a b: P[X]) : (∀x, a.toFinsupp x = b.toFinsupp x) -> a = b := AddMonoidAlgebra.ext _ _

@@ -286,6 +286,15 @@ def degree_add : WithBot Nat -> WithBot Nat -> WithBot Nat
 | .of a, .of b => .of (a + b)
 | _, _ => ⊥
 
+def degree_add_bot_left : degree_add ⊥ a = ⊥ := by rfl
+def degree_add_bot_right : degree_add a ⊥ = ⊥ := by cases a <;> rfl
+def degree_add_comm : degree_add a b = degree_add b a := by
+cases a <;> cases b
+any_goals rfl
+unfold degree_add
+simp; rw [Nat.add_comm]
+
+@[simp]
 def mul_degree [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [∀x: P, Decidable (x = 0)] (a b: P[X]) : (a * b).degree = degree_add a.degree b.degree := by
   apply le_antisymm
   · apply degree_is_minimal
@@ -426,6 +435,7 @@ def add_degree_of_ne_degree [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (
   rw [←hb]; assumption
   rw [hb]; apply WithBot.LT.bot
 
+@[simp]
 def neg_degree [RingOps P] [IsRing P] [∀x: P, Decidable (x = 0)] (a: P[X]) : (-a).degree = a.degree := by
   apply le_antisymm
   apply degree_is_minimal
@@ -445,6 +455,7 @@ def sub_degree [RingOps P] [IsRing P] [∀x: P, Decidable (x = 0)] (a b: P[X]) :
   apply add_degree
   rw [neg_degree]
 
+@[simp]
 def Xpow_degree [SemiringOps P] [IsSemiring P] [IsNontrivial P] [∀x: P, Decidable (x = 0)] (n: Nat) : (X ^ n: P[X]).degree = n := by
   apply le_antisymm
   apply degree_is_minimal
@@ -460,6 +471,10 @@ def Xpow_degree [SemiringOps P] [IsSemiring P] [IsNontrivial P] [∀x: P, Decida
   rw [←one_mul (X^n), coeff_mul_Xpow, Nat.sub_self] at h
   exact zero_ne_one P h.symm
   rfl
+
+@[simp]
+def X_degree [SemiringOps P] [IsSemiring P] [IsNontrivial P] [∀x: P, Decidable (x = 0)] : (X: P[X]).degree = .of 1 := by
+  rw [←npow_one X, Xpow_degree]
 
 def const_degree_ne_zero [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P) (h: x ≠ 0) : (C x).degree = .of 0 := by
   apply le_antisymm
@@ -642,5 +657,47 @@ instance [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] : IsOneHom 
   resp_one _ := lead_C _
 instance [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [∀x: P, Decidable (x = 0)] : IsMulHom (leadHomType P) P[X] P where
   resp_mul _ := lead_mul _ _
+
+def eq_C_of_deg_eq_0 [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P[X]) (hx: x.degree = .of 0) : ∃a: P, x = C a ∧ a ≠ 0 := by
+  exists x.toFinsupp 0
+  apply And.intro
+  · ext i
+    cases i
+    rfl
+    rename_i i
+    show x.toFinsupp (i + 1) = 0
+    rw [of_degree_lt]
+    rw [hx]
+    apply WithBot.LT.of
+    apply Nat.zero_lt_succ
+  · have := x.coeff_degreeNat_ne_zero
+    rw [hx] at this
+    replace this := this (WithBot.LT.bot _)
+    unfold degreeNat at this
+    rw [hx] at this
+    assumption
+
+def eq_linear_of_deg_eq_1 [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P[X]) (hx: x.degree = .of 1) : ∃a b: P, x = C a + C b * X ∧ b ≠ 0 := by
+  exists x.toFinsupp 0
+  exists x.toFinsupp 1
+  apply And.intro
+  · ext i
+    cases i
+    simp
+    simp
+    rename_i i
+    cases i
+    simp
+    simp
+    rw [add_assoc, of_degree_lt]
+    rw [hx]
+    apply WithBot.LT.of
+    simp
+  · have := x.coeff_degreeNat_ne_zero
+    rw [hx] at this
+    replace this := this (WithBot.LT.bot _)
+    unfold degreeNat at this
+    rw [hx] at this
+    assumption
 
 end Poly

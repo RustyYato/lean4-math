@@ -1,4 +1,5 @@
 import Math.Data.Poly.Dvd
+import Math.Data.Poly.Prime
 import Math.Data.Poly.Basic
 import Math.Algebra.Ring.Theory.RMod.Poly
 import Math.Algebra.AddGroupWithOne.Hom
@@ -24,8 +25,10 @@ def induction' {motive : GaussianInteger -> Prop} (mk: ∀x: ℤ[X], motive (alg
   apply mk
 
 abbrev char : ℤ[X] := (X^2 + 1)
+def char_degree : char.degree = .of 2 := rfl
 
 instance : IsInvertible char.lead := inferInstanceAs (IsInvertible 1)
+instance : IsInvertible (X^2+1: ℤ[X]).lead := inferInstanceAs (IsInvertible 1)
 
 -- the imaginary unit
 def i: ℤ[i] := algebraMap (X: ℤ[X])
@@ -256,24 +259,71 @@ instance : DecidableEq ℤ[i] :=
     simp at this
     trivial
 
-instance : NoZeroDivisors ℤ[i] where
-  of_mul_eq_zero := by
-    intro a c h
-    induction a with | mk a b =>
-    induction c with | mk c d =>
-    simp at h
-    have h0 : a * c - b * d = 0 := by
-      suffices real ((a * c - b * d: ℤ) + (a * d + b * c: ℤ) * i) = 0 by simpa using this
-      rw [h, resp_zero]
-    have h1 : a * d + b * c = 0 := by
-      suffices img ((a * c - b * d: ℤ) + (a * d + b * c: ℤ) * i) = 0 by simpa using this
-      rw [h, resp_zero]
-    clear h
-    replace h0 := eq_of_sub_eq_zero h0
-
+def is_prime_ideal : (Ideal.of_dvd char).IsPrime := by
+  apply Poly.is_prime_ideal
+  intro a b anez bnez ha hb aleb h
+  rw [char_degree] at ha hb
+  unfold char at *
+  match hadeg:a.degree, hbdeg:b.degree with
+  | .of (adeg + 2), _ =>
+    rw [hadeg] at ha
+    cases ha
+    contradiction
+  | _, .of (bdeg + 2) =>
+    rw [hbdeg] at hb
+    cases hb
+    contradiction
+  | ⊥, _ => contradiction
+  | _, ⊥ => contradiction
+  | .of 1, .of 0 =>
+    rw [hadeg, hbdeg] at aleb
+    contradiction
+  | .of 0, .of 0 =>
+    clear anez bnez
+    obtain ⟨a, rfl, anez⟩ := a.eq_C_of_deg_eq_0 hadeg
+    obtain ⟨b, rfl, bnez⟩ := b.eq_C_of_deg_eq_0 hbdeg
+    rw [←resp_mul] at h
+    rw [mod_eq_zero_iff_dvd (inv := inferInstance), mod_of_lt] at h
+    rw [←resp_zero C] at h
+    cases of_mul_eq_zero (C.inj h) <;> contradiction
+    rw [char_degree]
+    rw [const_degree_eq]; split
+    apply WithBot.LT.bot
+    simp
+  | .of 0, .of 1 =>
+    clear anez bnez
+    obtain ⟨a, rfl, anez⟩ := a.eq_C_of_deg_eq_0 hadeg
+    obtain ⟨b₀, b₁, rfl, bnez⟩ := b.eq_linear_of_deg_eq_1 hbdeg
+    rw [mod_eq_zero_iff_dvd (inv := inferInstance), mod_of_lt] at h
+    replace h := of_mul_eq_zero h
+    rcases h with h | h
+    rw [←resp_zero C, C.inj.eq_iff] at h
+    contradiction
+    rw [show 0 = 0 * (X: ℤ[X]) + C 0 by simp [resp_zero], add_comm] at h
+    replace ⟨h, _⟩ := mul_X_add_C_inj h
+    rw [←resp_zero C] at h
+    have := C.inj h
+    contradiction
+    rw [mul_add, ←resp_mul, ←mul_assoc, ←resp_mul]
+    apply lt_of_le_of_lt
+    apply add_degree
+    rw [char_degree, const_degree_eq]
+    split
+    rw [max_iff_le_left.mp]
+    rw [mul_degree, const_degree_eq, X_degree]
+    split
+    apply WithBot.LT.bot
+    decide
+    apply bot_le
+    simp
+    rw [const_degree_eq]
+    split
+    decide
+    decide
+  | .of 1, .of 1 =>
     sorry
 
-
+instance : NoZeroDivisors ℤ[i] := (Ideal.prime_iff_no_zero_divisors _).mp is_prime_ideal
 
 end GaussianInteger
 --

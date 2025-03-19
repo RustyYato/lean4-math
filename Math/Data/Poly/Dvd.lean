@@ -279,14 +279,21 @@ def divmod_sub_coeff_degree_le_self (a: P[X]) (h: p.degree ≤ a.degree) : (a.di
   assumption
   assumption
 
-def mod_degree_le_self (a: P[X]) : (a.mod p).degree ≤ a.degree := by
-  induction a using divmod_induction p inv with
+def mod_degree_le_self : (mod a b).degree ≤ a.degree := by
+  induction a using divmod_induction b inferInstance with
   | deg_lt a h => rw [mod_of_lt _ _ h]
   | le_deg a h ih =>
     rw [mod_of_le _ _ h]
-    apply le_trans ih
-    apply divmod_sub_coeff_degree_le_self
-    assumption
+    apply le_trans
+    apply ih
+    apply le_of_lt
+    exact divmod_rec_lemma a b inferInstance h
+
+def mod_degree_lt_self (h: b.degree ≤ a.degree) : (mod a b).degree < a.degree := by
+  rw [mod_of_le _ _ h]
+  apply lt_of_le_of_lt
+  apply mod_degree_le_self
+  exact divmod_rec_lemma a b inferInstance h
 
 def div_degree_le_self (a: P[X]) : (a.div p).degree ≤ a.degree := by
   induction a using divmod_induction p inv with
@@ -497,6 +504,17 @@ def dvd_sub_mod (a: P[X]) : p ∣ a - a.mod p := by
   rw (occs := [1]) [←div_mul_add_mod a p inv, add_sub_cancel']
   apply dvd_mul_right
 
+def dvd_mod (a: P[X]) : p ∣ a ↔ p ∣ a.mod p := by
+  rw (occs := [1]) [←a.div_mul_add_mod p (inv := inv)]
+  apply Iff.intro
+  intro h
+  have := dvd_add h (dvd_mul_right p (-a.div p))
+  rwa [←neg_mul_left, add_comm_right, add_neg_cancel, zero_add] at this
+  intro h
+  apply dvd_add
+  apply dvd_mul_right
+  assumption
+
 def add_mod (a b: P[X]) : (a + b).mod p = a.mod p + b.mod p := by
   rw [←mod_of_lt (a.mod p + b.mod p)]
   apply (mod_eq_iff_sub_dvd _ _).mp
@@ -538,5 +556,11 @@ def mul_mod (a b: P[X]) : (a * b).mod p = (a.mod p * b.mod p).mod p := by
   rw [←add_assoc, add_sub_cancel', ←mul_assoc, ←mul_assoc,
     ←add_mul, mul_comm_right _ p (b.mod p), ←add_mul]
   apply dvd_mul_right
+
+def mod_eq_zero_iff_dvd {a: P[X]} : p ∣ a ↔ a.mod p = 0 := by
+  have := mod_eq_iff_sub_dvd a 0 (inv := inv)
+  rwa [sub_zero, zero_mod] at this
+
+attribute [irreducible] Poly.div Poly.mod
 
 end Poly

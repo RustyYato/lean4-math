@@ -387,3 +387,15 @@ def WithBot.of_le [_root_.LE α] : ∀{x y: α}, WithBot.of x ≤ .of y ↔ x �
   apply Iff.intro
   rintro ⟨h⟩; assumption
   exact WithBot.LE.of
+@[simp, norm_cast]
+def WithTop.of_lt [_root_.LT α] : ∀{x y: α}, WithTop.of x < .of y ↔ x < y := by
+  intro a b
+  apply Iff.intro
+  rintro ⟨h⟩; assumption
+  exact WithTop.LT.of
+@[simp, norm_cast]
+def WithBot.of_lt [_root_.LT α] : ∀{x y: α}, WithBot.of x < .of y ↔ x < y := by
+  intro a b
+  apply Iff.intro
+  rintro ⟨h⟩; assumption
+  exact WithBot.LT.of
