@@ -6,6 +6,8 @@ section
 
 class AlgebraMap (R A: Type*) [SemiringOps R] [SemiringOps A] extends R →+* A where
 
+def AlgebraMap.ofHom {R A: Type*} [SemiringOps R] [SemiringOps A] (f: R →+* A) : AlgebraMap R A := { f with }
+
 def algebraMap {R A: Type*} [SemiringOps R] [SemiringOps A] [f: AlgebraMap R A]
   : R →+* A := f.toRingHom
 

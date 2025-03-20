@@ -700,4 +700,34 @@ def eq_linear_of_deg_eq_1 [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x 
     rw [hx] at this
     assumption
 
+def eq_linear_of_deg_le_1 [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P[X]) (hx: x.degree ≤ .of 1) : ∃a b: P, x = C a + C b * X := by
+  exists x.toFinsupp 0
+  exists x.toFinsupp 1
+  · ext i
+    cases i
+    simp
+    simp
+    rename_i i
+    cases i
+    simp
+    simp
+    rw [add_assoc, of_degree_lt]
+    apply lt_of_le_of_lt hx
+    simp
+
+def eq_linear_of_deg_lt_2 [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P[X]) (hx: x.degree < .of 2) : ∃a b: P, x = C a + C b * X := by
+  exists x.toFinsupp 0
+  exists x.toFinsupp 1
+  · ext i
+    cases i
+    simp
+    simp
+    rename_i i
+    cases i
+    simp
+    simp
+    rw [add_assoc, of_degree_lt]
+    apply lt_of_lt_of_le hx
+    simp
+
 end Poly

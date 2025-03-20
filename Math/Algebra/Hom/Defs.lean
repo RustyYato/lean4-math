@@ -827,6 +827,13 @@ def RingEquiv.symm (h: α ≃+* β) : β ≃+* α := {
   h.toAddGroupEquiv.symm,  h.toGroupEquiv.symm with
 }
 
+def AddGroupEmbedding.toHom (h: α ↪+ β) : α →+ β := h
+def AddGroupWithOneEmbedding.toHom (h: α ↪+₁ β) : α →+₁ β := h
+def GroupEmbedding.toHom (h: α ↪* β) : α →* β := h
+def GroupWithZeroEmbedding.toHom (h: α ↪*₀ β) : α →*₀ β := h
+def RingEmbedding.toHom (h: α ↪+* β) : α →+* β := h
+def RngEmbedding.toHom (h: α ↪+*₀ β) : α →+*₀ β := h
+
 def AddGroupEquiv.toEmbedding (h: α ≃+ β) : α ↪+ β := h
 def AddGroupWithOneEquiv.toEmbedding (h: α ≃+₁ β) : α ↪+₁ β := h
 def GroupEquiv.toEmbedding (h: α ≃* β) : α ↪* β := h

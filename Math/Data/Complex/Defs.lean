@@ -115,6 +115,13 @@ def inv_real (a: ℂ) (h: a ≠ 0) : (a⁻¹?).real = a.real /? a.mag_sq := rfl
 @[simp]
 def inv_img (a: ℂ) (h: a ≠ 0) : (a⁻¹?).img = -a.img /? a.mag_sq := rfl
 
+def i : ℂ := ⟨0, 1⟩
+
+@[simp]
+def real_i : real i = 0 := rfl
+@[simp]
+def img_i : img i = 1 := rfl
+
 instance : CheckedDiv? ℂ where
   checked_div a b h := a * b⁻¹?
 

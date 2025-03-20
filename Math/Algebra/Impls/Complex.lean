@@ -95,4 +95,25 @@ def ofRealHom : ℝ ↪+* ℂ where
 
 instance : HasChar ℂ 0 := HasChar.of_ring_emb ofRealHom
 
+instance : AlgebraMap ℝ ℂ where
+  toFun := (Complex.mk · 0)
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul {a b} := by
+    simp
+    ext <;> simp
+instance : SMul ℝ ℂ where
+  smul r x := algebraMap r * x
+instance : IsAlgebra ℝ ℂ where
+  commutes _ _ := by rw [mul_comm]
+  smul_def _ _ := rfl
+instance : Coe ℝ ℂ where
+  coe := algebraMap
+
+@[simp]
+def real_algebraMap (r: ℝ) : real (algebraMap r) = r := rfl
+@[simp]
+def img_algebraMap (r: ℝ) : img (algebraMap r) = 0 := rfl
+
 end Complex
