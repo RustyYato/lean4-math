@@ -540,6 +540,32 @@ def midpoint_le_max (a b: α) : midpoint a b ≤ max a b := by
   assumption
   apply two_pos
 
+def inv?_lt_inv? [IsCommMagma α] (a b: α) (ha: 0 < a) (hb: 0 < b) : a⁻¹? < b⁻¹? ↔ b < a := by
+  revert a b
+  suffices ∀(a b: α) (ha: 0 < a) (hb: 0 < b), a < b -> b⁻¹? < a⁻¹? by
+    intro a b ha hb
+    apply flip Iff.intro
+    apply this
+    assumption
+    assumption
+    intro h
+    have := this _ _ ?_ ?_ h
+    rw [inv?_inv?, inv?_inv?] at this
+    assumption
+    apply inv?_pos
+    assumption
+    apply inv?_pos
+    assumption
+  intro a b ha hb h
+  have := mul_lt_mul_of_pos_left _ _ h (a⁻¹? * b⁻¹?) ?_
+  rw [mul_assoc _ _ b, mul_comm (a⁻¹?), mul_assoc, inv?_mul_cancel,
+    inv?_mul_cancel, mul_one, mul_one] at this
+  assumption
+  rw (occs := [1]) [←zero_mul (b⁻¹?)]
+  apply mul_lt_mul_of_pos_right
+  apply inv?_pos; assumption
+  apply inv?_pos; assumption
+
 end
 
 end

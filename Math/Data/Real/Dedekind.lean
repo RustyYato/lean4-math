@@ -1,5 +1,6 @@
 import Math.Data.Real.CeilFloor
 import Math.Data.Set.Order.Bounds
+import Math.Algebra.Ring.Char
 
 noncomputable section
 
@@ -168,58 +169,149 @@ def seq₂_fst_antitone (c: DedekindCut) (a b: ℚ) (h: a ≤ b) : Antitone (fun
       apply Nat.le_of_succ_le_succ
       assumption
 
-def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) :
-  ∀ε: ℚ, 0 < ε -> ∃n: ℕ, (c.seq₂ a b n).snd - (c.seq₂ a b n).fst < ε := by
+def half_npow_pos (n: ℕ) : 0 < ((1: ℚ) /? 2) ^ n := by
+  rw [div?_npow, one_npow]
+  apply Rat.mul_pos
+  apply zero_lt_one
+  apply inv?_pos
+  induction n with
+  | zero => rw [npow_zero]; apply zero_lt_one
+  | succ n ih =>
+    rw [npow_succ]
+    apply lt_of_lt_of_le
+    assumption
+    rw [mul_two]; rw (occs := [1]) [←add_zero (2 ^ n)]
+    apply add_le_add_left
+    apply le_of_lt; assumption
+
+def seq₂_diff_bounds (c: DedekindCut) (a b: ℚ) (h: a ≤ b) (n: ℕ) : (c.seq₂ a b n).snd - (c.seq₂ a b n).fst ≤ (1 /? 2) ^ n * (b - a) := by
+  induction n generalizing a b with
+  | zero =>
+    rw [npow_zero]
+    unfold seq₂
+    simp
+  | succ n ih =>
+    unfold seq₂
+    simp
+    split <;> rename_i g
+    · apply le_trans
+      · apply ih
+        apply le_trans
+        apply midpoint_le_max
+        apply le_of_eq; exact max_iff_le_left.mp h
+      · rw [npow_succ, mul_assoc]
+        apply IsOrderedSemiring.mul_le_mul_of_nonneg_left
+        · unfold midpoint
+          rw (occs := [1]) [←mul_div?_cancel (a := b) (b := 2)]
+          rw [div?_eq_mul_inv?, ←mul_assoc, ←div?_eq_mul_inv?,
+            sub_div?_sub₀, sub_eq_add_neg, neg_add_rev, two_mul, add_assoc,
+            ←add_assoc _ (-b), add_neg_cancel, zero_add, ←sub_eq_add_neg]
+          rw [mul_comm, div?_eq_mul_inv?, div?_eq_mul_inv?, one_mul]
+        · apply le_of_lt; apply half_npow_pos
+    · apply le_trans
+      · apply ih
+        apply flip le_trans
+        apply min_le_midpoint
+        apply le_of_eq; symm; exact min_iff_le_left.mp h
+      · rw [npow_succ, mul_assoc]
+        apply IsOrderedSemiring.mul_le_mul_of_nonneg_left
+        · unfold midpoint
+          rw (occs := [2]) [←mul_div?_cancel (a := a) (b := 2)]
+          rw [div?_eq_mul_inv? a, ←mul_assoc, ←div?_eq_mul_inv?,
+            sub_div?_sub₀, sub_eq_add_neg, two_mul, neg_add_rev, add_comm a b, add_assoc,
+            ←add_assoc _ (-a), add_neg_cancel, zero_add, ←sub_eq_add_neg]
+          rw [mul_comm, div?_eq_mul_inv?, div?_eq_mul_inv?, one_mul]
+        · apply le_of_lt; apply half_npow_pos
+
+def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : ∀ε: ℚ, 0 < ε -> ∃n: ℕ, (c.seq₂ a b n).snd - (c.seq₂ a b n).fst < ε := by
   intro ε εpos
-  -- (b - a) /? ε < 2 ^ n
+  let x := (b - a) /? ε
+  let n := x.ceil
+  exists ‖n‖
+  have altb : a < b := lower_lt_upper c a b ha hb
+  apply lt_of_le_of_lt
+  exact seq₂_diff_bounds c a b (le_of_lt altb) ‖n‖
+  clear ha hb c
+  have ⟨ceil_pred_lt_x, x_le_ceil⟩ := (Rat.ceil_spec x x.ceil).mp rfl
+  replace x_le_ceil : x ≤ n := x_le_ceil
+  have := IsOrderedSemiring.mul_le_mul_of_nonneg_right _ _ x_le_ceil _ (le_of_lt εpos)
+  unfold x at this
+  rw [div?_mul_cancel] at this
+  refine if hn:n = 0 then ?_ else ?_
+  erw [hn, npow_zero, one_mul]
+  erw [hn, zero_mul] at this
+  apply lt_of_le_of_lt
+  assumption
+  assumption
+  replace hn' : (‖n‖: ℚ) ≠ 0 := by
+    intro g;
+    rw [←natCast_zero] at g
+    have := HasChar.natCast_inj g
+    have := Int.natAbs_eq_zero.mp this
+    contradiction
+  replace := IsOrderedSemiring.mul_le_mul_of_nonneg_right _ _ this (1 /? ‖n‖) ?_
+  rw [div?_eq_mul_inv?, one_mul, ←div?_eq_mul_inv?,
+    mul_comm _ ε, mul_assoc] at this
+  rw (occs := [2]) [←Int.sign_mul_natAbs n] at this
+  erw [←intCast_mul, mul_assoc, intCast_ofNat, mul_inv?_cancel, mul_one] at this
+  rcases Int.sign_trichotomy n with nsign | nsign | nsign
+  · rw [nsign, intCast_one, mul_one] at this
+    apply flip lt_of_lt_of_le
+    assumption
+    clear this x_le_ceil ceil_pred_lt_x
+    rw [div?_npow, one_npow, div?_eq_mul_inv?, one_mul, mul_comm, div?_eq_mul_inv?]
+    apply _root_.mul_lt_mul_of_pos_left
+    · rw [inv?_lt_inv?]
+      show _ < ((2: ℕ): ℚ) ^ _
+      rw [←natCast_npow, Rat.natCast_lt_natCast]
+      exact Nat.lt_two_pow_self
+      show _ < ((2: ℕ): ℚ) ^ _
+      rw [←natCast_npow, ←natCast_zero, Rat.natCast_lt_natCast]
+      exact Nat.two_pow_pos ‖n‖
+      apply lt_of_le_of_ne
+      exact max_iff_le_left.mpr rfl
+      symm; assumption
+    refine Rat.add_lt_iff_lt_sub.mp ?_
+    rwa [zero_add]
+  · rw [Int.sign_eq_zero_iff_zero] at nsign
+    contradiction
+  · rw [nsign] at this
+    rw [Int.sign_eq_neg_one_iff_neg] at nsign
+    rw [←intCast_neg, intCast_one, ←neg_mul_right, mul_one] at this
+    replace this : (b - a) /? ‖n‖ < 0 := by
+      apply lt_of_le_of_lt this
+      refine Rat.neg_lt_neg_iff.mpr ?_
+      rwa [neg_neg]
+    replace this := _root_.mul_lt_mul_of_pos_right _ _ this ‖n‖ ?_
+    rw [div?_mul_cancel, zero_mul, ←Rat.lt_add_iff_sub_lt, zero_add] at this
+    have := lt_asymm this altb
+    contradiction
+    apply lt_of_le_of_ne
+    exact max_iff_le_left.mpr rfl
+    symm; assumption
+  · apply le_of_lt
+    rw [div?_eq_mul_inv?, one_mul]
+    apply inv?_pos
+    apply lt_of_le_of_ne
+    exact max_iff_le_left.mpr rfl
+    symm; assumption
+
+def toReal' (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : ℝ := Real.mk ({
+  seq n := (c.seq₂ a b n).fst
+  is_cacuhy := by
+    intro ε εpos
+    have ⟨δ, hδ⟩ := c.seq₂_fst_lim a b ha hb ε εpos
+    exists δ
+    intro n m hn hm
+    simp
+    apply lt_of_le_of_lt _ hδ
+    sorry
+})
+
+def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : c.lower = Set.mk fun x: ℚ => x < c.toReal' a b ha hb := by
+  ext x
+  simp
   sorry
-
-def seq₂_fst_nomax (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) :
-  ∀x ∈ c.lower, ∃n, x < (c.seq₂ a b n).fst := by
-  intro q hq
-  apply Classical.byContradiction
-  intro hn
-  rw [not_exists] at hn
-  conv at hn => { intro; rw [not_lt] }
-  replace hn := fun n => hn n
-
-
-  -- intro x hx
-  -- have a_lt_b : a < b := c.lower_lt_upper a b ha hb
-  -- have fst_mem_lower := c.seq₂_fst_mem_lower a b ha
-  -- have snd_mem_upper := c.seq₂_snd_mem_upper a b hb
-
-  -- apply Classical.byContradiction
-  -- intro hn
-  -- rw [not_exists] at hn
-  -- conv at hn => { intro; rw [not_lt] }
-  -- replace hn := fun n => hn n
-
-
-
-  sorry
-
-def existsRealEqual (c: DedekindCut) : ∃r: ℝ, c.lower = Set.mk (fun x: ℚ => x < r) := by
-  obtain ⟨l, hl⟩ := c.lower_nonempty
-  obtain ⟨u, hu⟩ := c.upper_nonempty
-  have is_cauchy : is_cauchy_equiv (c.seq l u) (c.seq l u) := ?_
-  exists ⟦{
-    seq := c.seq l u
-    is_cacuhy := is_cauchy
-  }⟧
-  · ext x
-    show x ∈ c.lower ↔ ∃B: ℚ, 0 < B ∧ CauchySeq.Eventually fun n => B ≤ c.seq l u n - x
-    apply Iff.intro
-    intro h
-
-
-
-
-    repeat sorry
-  · sorry
-
-def toReal (c: DedekindCut) : ℝ := Classical.choose c.existsRealEqual
-def toReal_spec (c: DedekindCut) : c.lower = Set.mk fun x: ℚ => x < c.toReal := Classical.choose_spec c.existsRealEqual
 
 end DedekindCut
 

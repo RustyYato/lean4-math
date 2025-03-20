@@ -184,3 +184,15 @@ def zero_zpow? (n: ℤ) (hn: 0 ≤ n) : (0: α) ^? n = if n = 0 then 1 else 0 :=
     intro h
     have := Int.ofNat.inj h
     contradiction
+
+def inv?_npow (a: α) (h: a ≠ 0) (n: ℕ) : (a⁻¹?) ^ n = (a ^ n)⁻¹? := by
+  apply mul_left_cancel' (k := a^n) (a := _)
+  invert_tactic
+  rw [mul_inv?_cancel]
+  induction n with
+  | zero => rw [npow_zero, npow_zero, mul_one]
+  | succ n ih =>
+    rw [npow_succ, npow_succ', mul_assoc, ←mul_assoc a, mul_inv?_cancel, one_mul, ih]
+
+def div?_npow [IsCommMagma α] (a b: α) (h: b ≠ 0) (n: ℕ) : (a /? b) ^ n = (a ^ n) /? (b ^ n) := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, mul_npow, inv?_npow]

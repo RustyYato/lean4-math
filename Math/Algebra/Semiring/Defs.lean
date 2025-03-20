@@ -55,6 +55,11 @@ def mul_natCast_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : x *
 def natCast_mul [SemiringOps α] [IsSemiring α] (a b: ℕ) : ((a * b: Nat): α) = a * b := by
   rw [natCast_mul_eq_nsmul, natCast_eq_nsmul_one, mul_nsmul, natCast_eq_nsmul_one]
 
+def natCast_npow [SemiringOps α] [IsSemiring α] (a n: ℕ) : ((a ^ n: Nat): α) = a ^ n := by
+  induction n with
+  | zero => rw [Nat.pow_zero, natCast_one, npow_zero]
+  | succ n ih => rw [Nat.pow_succ, natCast_mul, npow_succ, ih]
+
 def add_one_mul [Mul α] [Add α] [One α] [IsMulOneClass α] [IsRightDistrib α] (a b: α) : (a + 1) * b = a * b + b := by rw [add_mul, one_mul]
 def mul_add_one [Mul α] [Add α] [One α] [IsMulOneClass α] [IsLeftDistrib α] (a b: α) : a * (b + 1) = a * b + a := by rw [mul_add, mul_one]
 def one_add_mul [Mul α] [Add α] [One α] [IsMulOneClass α] [IsRightDistrib α] (a b: α) : (1 + a) * b = b + a * b := by rw [add_mul, one_mul]

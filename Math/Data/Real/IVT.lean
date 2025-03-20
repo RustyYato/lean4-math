@@ -1,4 +1,5 @@
 import Math.Data.Real.MetricSpace
+import Math.Data.Real.Dedekind
 
 namespace Real
 
@@ -24,7 +25,18 @@ instance isInterval.range (I: Set ℝ) [IsInterval I] (f: I -> ℝ) [Topology.Is
       assumption
     have y₀_in_S : y₀ ∈ S := ⟨hy₀, y₀_le_l⟩
     have y₁_in_Y : y₁ ∈ T := ⟨hy₁, l_le_y₁⟩
-    have := iInf (fun x: T => dist x.val l)
+
+    let d : DedekindCut := {
+      lower := S.preimage Rat.cast
+      lower_nonempty := sorry
+      not_univ := sorry
+      lower_no_max := sorry
+      lower_closed_down := sorry
+    }
+    refine ⟨⟨d.toReal, ?_⟩, ?_⟩
+
+
+    -- have := iInf (fun x: T => dist x.val l)
     sorry
 
 def intermediate_value_theorem (I: Set ℝ) [IsInterval I] (f: I -> ℝ) [Topology.IsContinuous f] :

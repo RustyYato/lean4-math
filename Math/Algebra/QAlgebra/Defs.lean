@@ -5,10 +5,12 @@ import Math.Data.Rat.Basic
 class RatCast (α: Type*) where
   ratCast: ℚ -> α
 
-instance [RatCast α] : Coe ℚ α where
-  coe := RatCast.ratCast
+def Rat.cast [RatCast α] (a: ℚ) : α := RatCast.ratCast a
 
-attribute [coe] RatCast.ratCast
+instance [RatCast α] : Coe ℚ α where
+  coe := Rat.cast
+
+attribute [coe] Rat.cast
 
 def ratCastRec [FieldOps α] [IsField α] (q: ℚ) [HasChar α 0] : α :=
   q.lift (fun q => (q.num: α) /? (q.den: α) ~(by
