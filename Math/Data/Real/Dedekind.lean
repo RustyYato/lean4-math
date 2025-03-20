@@ -124,7 +124,7 @@ def seq₂_fst_monotone (c: DedekindCut) (a b: ℚ) (h: a ≤ b) : Monotone (fun
       apply Nat.le_of_succ_le_succ
       assumption
 
-def seq₂_fst_antitone (c: DedekindCut) (a b: ℚ) (h: a ≤ b) : Antitone (fun n => (c.seq₂ a b n).snd) := by
+def seq₂_snd_antitone (c: DedekindCut) (a b: ℚ) (h: a ≤ b) : Antitone (fun n => (c.seq₂ a b n).snd) := by
   intro n m g
   dsimp
   show (c.seq₂ a b m).snd ≤ (c.seq₂ a b n).snd
@@ -299,19 +299,49 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
 def toReal' (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : ℝ := Real.mk ({
   seq n := (c.seq₂ a b n).fst
   is_cacuhy := by
+    show Rat.is_cauchy _
     intro ε εpos
     have ⟨δ, hδ⟩ := c.seq₂_fst_lim a b ha hb ε εpos
+    apply CauchySeq.Eventually₂.wlog₀
     exists δ
-    intro n m hn hm
+    intro n m hn hm n_lt_m
     simp
     apply lt_of_le_of_lt _ hδ
-    sorry
+    clear hδ εpos ε
+    have : a < b := by exact lower_lt_upper c a b ha hb
+    have : 0 < b - a := by
+      refine Rat.add_lt_iff_lt_sub.mp ?_
+      rwa [zero_add]
+    rw [_root_.abs_sub_comm, Rat.abs_of_nonneg _ (by
+        refine Rat.add_le_iff_le_sub.mp ?_
+        rw [zero_add]
+        apply seq₂_fst_monotone
+        apply le_of_lt; assumption
+        assumption)]
+    rw [←Rat.le_add_iff_sub_le, add_comm, ←add_sub_assoc, ←Rat.add_le_iff_le_sub,
+      add_comm]
+    apply _root_.add_le_add
+    apply seq₂_fst_monotone
+    apply le_of_lt; assumption
+    assumption
+    apply flip le_trans
+    apply seq₂_snd_antitone
+    apply le_of_lt; assumption
+    exact hm
+    simp [Opposite.mk, Opposite.get]
+    apply le_of_lt
+    apply lower_lt_upper c
+    exact seq₂_fst_mem_lower c a b ha m
+    exact seq₂_snd_mem_upper c a b hb m
 })
 
 def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : c.lower = Set.mk fun x: ℚ => x < c.toReal' a b ha hb := by
   ext x
   simp
   sorry
+
+def toReal (c: DedekindCut) : ℝ := c.toReal' (Classical.choose c.lower_nonempty) (Classical.choose c.upper_nonempty) (Classical.choose_spec c.lower_nonempty) (Classical.choose_spec c.upper_nonempty)
+def toReal_spec (c: DedekindCut) : c.lower = Set.mk fun x: ℚ => x < c.toReal := by apply toReal'_spec
 
 end DedekindCut
 

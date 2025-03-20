@@ -4,6 +4,35 @@ import Math.Function.Basic
 def CauchySeq.Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
 def CauchySeq.Eventually₂ (P: Nat -> Nat -> Prop) : Prop := ∃k, ∀n m, k ≤ n -> k ≤ m -> P n m
 
+def CauchySeq.Eventually₂.wlog₀ (P: Nat -> Nat -> Prop) [Relation.IsSymmetric P] :
+  (∃k, ∀n m, k ≤ n -> k ≤ m -> n ≤ m -> P n m) -> Eventually₂ P := by
+  intro ⟨k, h⟩
+  exists k
+  intro n m hk hm
+  rcases Nat.le_total n m with g | g
+  apply h
+  assumption
+  assumption
+  assumption
+  apply Relation.symm
+  apply h
+  assumption
+  assumption
+  assumption
+
+def CauchySeq.Eventually₂.wlog₁ (P: Nat -> Nat -> Prop) [Relation.IsSymmetric P] [Relation.IsRefl P] :
+  (∃k, ∀n m, k ≤ n -> k ≤ m -> n < m -> P n m) -> Eventually₂ P := by
+  intro ⟨k, h⟩
+  apply wlog₀
+  exists k
+  intro n m hn hm g
+  cases Nat.lt_or_eq_of_le g
+  apply h
+  assumption
+  assumption
+  assumption
+  subst n; rfl
+
 def CauchySeq.Eventually.to₂_left : Eventually a -> Eventually₂ fun i _ => a i := by
   intro ⟨i,hi⟩
   exists i
@@ -49,8 +78,24 @@ def CauchySeq.Eventually₂.lower_bound (n: Nat) : Eventually₂ fun i j => n �
   intro i j ni nj
   trivial
 
+abbrev Rat.is_cauchy_rel (a: Nat -> ℚ) (ε: ℚ) (hε: 0 < ε) (n m: ℕ) : Prop := ‖a n - a m‖ < ε
+
+instance : Relation.IsSymmetric (Rat.is_cauchy_rel a ε hε) where
+  symm := by
+    intro n m e
+    unfold Rat.is_cauchy_rel at *
+    rwa [abs_sub_comm]
+
+instance : Relation.IsRefl (Rat.is_cauchy_rel a ε hε) where
+  refl _ := by
+    unfold Rat.is_cauchy_rel
+    rw [sub_self]
+    assumption
+
 def is_cauchy_equiv (a b: Nat -> ℚ) : Prop :=
   ∀ε: ℚ, 0 < ε -> CauchySeq.Eventually₂ fun n m => ‖a n - b m‖ < ε
+def Rat.is_cauchy (a: Nat -> ℚ) : Prop :=
+  ∀(ε: ℚ) (hε: 0 < ε), CauchySeq.Eventually₂ (is_cauchy_rel a ε hε)
 
 structure CauchySeq where
   seq: Nat -> ℚ
