@@ -4,10 +4,6 @@ import Math.Algebra.GroupWithZero.Basic
 import Math.Ops.CheckedOrder
 import Math.Algebra.Field.Basic
 
-def Int.neg_lt_neg_iff {a b: Int} : -a < -b ↔ b < a := by
-  apply lt_iff_of_le_iff
-  apply Int.neg_le_neg_iff
-
 namespace Rat
 
 def Fract.isNonneg (f: Fract) : Prop := 0 ≤ f.num
@@ -75,11 +71,9 @@ def isNonneg.mul {a b: ℚ} (ha: a.isNonneg) (hb: b.isNonneg) : (a * b).isNonneg
 def isNonneg.neg {a: ℚ} : ¬a.isPos ↔ (-a).isNonneg := by
   cases a
   simp [Fract.isNonneg, Fract.isPos, ←lt_iff_not_le]
-  omega
 def isPos.neg {a: ℚ} : ¬a.isNonneg ↔ (-a).isPos := by
   cases a
   simp [Fract.isNonneg, Fract.isPos, ←lt_iff_not_le]
-  omega
 def isPos.mul {a b: ℚ} (ha: a.isPos) : b.isPos ↔ (a * b).isPos := by
   cases a, b with | mk a b =>
   simp [Fract.isPos, ← Int.sign_eq_one_iff_pos] at *
@@ -90,11 +84,14 @@ def isNonneg.antisymm {a: ℚ} : a.isNonneg -> (-a).isNonneg -> a = 0 := by
   cases a with | mk a =>
   simp [Fract.isNonneg] at ha hb
   have := Int.neg_le_neg hb
-  rw [Int.neg_neg] at this
-  have := le_antisymm this ha
+  have := le_antisymm this ?_
   apply sound
   show _ = _
   simp [this]
+  apply le_antisymm
+  assumption
+  assumption
+  omega
 
 instance : LE ℚ where
   le a b := (b - a).isNonneg

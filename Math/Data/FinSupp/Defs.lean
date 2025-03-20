@@ -456,7 +456,7 @@ def support_add [Zero β] [Add β] [IsAddZeroClass β] [∀b: β, Decidable (b =
   (f + g).support ⊆ f.support ∪ g.support := by
   intro i
   simp [mem_support, Finset.mem_union]
-  rw [←Classical.not_and_iff_or_not_not, Classical.contrapositive]
+  rw [←Classical.not_and_iff_not_or_not, Classical.contrapositive]
   intro ⟨ha, hb⟩
   rw [ha, hb, add_zero]
 
