@@ -181,6 +181,8 @@ section
 
 variable [AddGroupOps α] [IsAddGroup α] [IsOrderedAddCommMonoid α]
 
+local instance : IsLawfulLT α := (inferInstanceAs (IsOrderedAddCommMonoid α)).toIsLawfulLT
+
 def neg_le_neg_iff (a b: α) : -a ≤ -b ↔ b ≤ a := by
   revert a b
   suffices ∀a b: α, a ≤ b -> -b ≤ -a by
@@ -196,6 +198,43 @@ def neg_le_neg_iff (a b: α) : -a ≤ -b ↔ b ≤ a := by
   have := add_le_add_right _ _ this (-b)
   rw [zero_add, add_assoc, add_neg_cancel, add_zero] at this
   assumption
+
+def add_le_add_iff_left {a b k: α} : a ≤ b ↔ k + a ≤ k + b := by
+  apply Iff.intro
+  intro
+  apply add_le_add_left
+  assumption
+  intro h
+  have := add_le_add_left _ _ h (-k)
+  rw [←add_assoc, ←add_assoc, neg_add_cancel, zero_add, zero_add] at this
+  assumption
+
+def add_le_add_iff_right {a b k: α} : a ≤ b ↔ a + k ≤ b + k := by
+  apply Iff.intro
+  intro
+  apply add_le_add_right
+  assumption
+  intro h
+  have := add_le_add_right _ _ h (-k)
+  rw [add_assoc, add_assoc, add_neg_cancel, add_zero, add_zero] at this
+  assumption
+
+def add_lt_add_iff_left {a b k: α} : a < b ↔ k + a < k + b := by
+  simp [lt_iff_le_and_not_le, ←add_le_add_iff_left]
+
+def add_lt_add_iff_right {a b k: α} : a < b ↔ a + k < b + k := by
+  simp [lt_iff_le_and_not_le, ←add_le_add_iff_right]
+
+def add_le_iff_le_sub {a b k: α} : a + k ≤ b ↔ a ≤ b - k := by
+  rw [add_le_add_iff_right (k := -k), add_assoc, add_neg_cancel, add_zero, sub_eq_add_neg]
+def le_add_iff_sub_le {a b k: α} : a ≤ b + k ↔ a - k ≤ b := by
+  rw [add_le_add_iff_right (k := -k), add_assoc, add_neg_cancel, add_zero, sub_eq_add_neg]
+
+def add_lt_iff_lt_sub {a b k: α} : a + k < b ↔ a < b - k := by
+  simp [lt_iff_le_and_not_le, add_le_iff_le_sub, le_add_iff_sub_le]
+
+def lt_add_iff_sub_lt {a b k: α} : a < b + k ↔ a - k < b := by
+  simp [lt_iff_le_and_not_le, add_le_iff_le_sub, le_add_iff_sub_le]
 
 end
 

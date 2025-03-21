@@ -59,6 +59,10 @@ def mul_intCast_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : x * r = r �
 def intCast_mul [RingOps α] [IsRing α] (a b: ℤ) : a * b = ((a * b: Int): α) := by
   rw [intCast_mul_eq_zsmul, intCast_eq_zsmul_one, ←mul_zsmul, intCast_eq_zsmul_one]
 
+@[simp]
+def neg_one_mul [RingOps α] [IsRing α] (a: α) : -1 * a = -a := by
+  rw [←intCast_one, intCast_neg, ←zsmul_eq_intCast_mul, neg_one_zsmul]
+
 class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] : Prop extends IsNonAssocSemiring α, IsAddGroupWithOne α
 
 instance

@@ -127,3 +127,8 @@ instance : IsOrderedAbsAddGroupWithOne ℝ where
   sub_eq_add_neg := sub_eq_add_neg
 
 instance : IsOrderedAbsRing ℝ := inferInstance
+
+instance : NeZero (2: ℝ) where
+  out := by
+    symm; apply ne_of_lt
+    exact two_pos

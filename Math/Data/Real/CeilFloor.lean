@@ -260,6 +260,14 @@ def exists_rat_between (a b: ℝ) (h: a < b) : ∃r: ℚ, a < r ∧ r < b := by
   exact_mod_cast npos
   exact zero_lt_iff_pos.mpr h
 
+def le_ext (a b: ℝ) : (∀q: ℚ, q < a -> q < b) -> a ≤ b := by
+  intro h
+  apply le_of_not_lt
+  intro g
+  have ⟨q, b_lt_q, q_lt_a⟩ := exists_rat_between b a g
+  have := lt_asymm (h q q_lt_a)
+  contradiction
+
 end Real
 
 end

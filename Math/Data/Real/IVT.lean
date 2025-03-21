@@ -25,19 +25,42 @@ instance isInterval.range (I: Set ℝ) [IsInterval I] (f: I -> ℝ) [Topology.Is
       assumption
     have y₀_in_S : y₀ ∈ S := ⟨hy₀, y₀_le_l⟩
     have y₁_in_Y : y₁ ∈ T := ⟨hy₁, l_le_y₁⟩
-
+    have d_closed_down : ∀ (x : ℝ), x ∈ S → ∀ (y : ℚ), y ≤ x → y ∈ S.preimage Rat.cast := sorry
     let d : DedekindCut := {
       lower := S.preimage Rat.cast
-      lower_nonempty := sorry
-      not_univ := sorry
-      lower_no_max := sorry
-      lower_closed_down := sorry
+      lower_nonempty := by
+        induction y₀ using Real.ind with | mk y₀ =>
+        have ⟨bound, spec⟩ := (-y₀).upper_bound
+        exists -bound
+        show ((-bound: ℚ): ℝ) ∈ S
+        apply d_closed_down
+        assumption
+        apply CauchySeq.le_pointwise
+        intro n
+        show -bound ≤ y₀.seq n
+        rw [Rat.neg_le_neg_iff, neg_neg]
+        apply le_of_lt; apply spec
+      lower_no_max := by
+        intro x hx
+        replace hx : (x: ℝ) ∈ S := hx
+        sorry
+      not_univ := by
+        sorry
+      lower_closed_down := by
+        intro x hx y hy
+        apply d_closed_down
+        assumption
+        apply Real.ofRat_le.mpr
+        assumption
     }
-    refine ⟨⟨d.toReal, ?_⟩, ?_⟩
+    suffices d.toReal ∈ T by
+      refine ⟨⟨d.toReal, ?_⟩, ?_⟩
+      · sorry
+      · apply le_antisymm
+        obtain ⟨_, _⟩ := this
+        assumption
 
-
-    -- have := iInf (fun x: T => dist x.val l)
-    sorry
+        sorry
 
 def intermediate_value_theorem (I: Set ℝ) [IsInterval I] (f: I -> ℝ) [Topology.IsContinuous f] :
   ∀{a b: ℝ} (ha: a ∈ I) (hb: b ∈ I),

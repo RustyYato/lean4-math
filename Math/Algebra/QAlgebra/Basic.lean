@@ -108,6 +108,12 @@ def ratCast_mul (a b: ℚ) : a * b = ((a * b: ℚ): α) := by
     inv?_mul_cancel, mul_one, inv?_mul_cancel, mul_one]
 
 @[norm_cast]
+def ratCast_neg (a: ℚ) : -a = ((-a: ℚ): α) := by
+  rw [←neg_one_mul a, ←neg_one_mul (a: α), ←ratCast_mul]
+  rw [←intCast_one (α := ℚ), intCast_neg, ratCast_intCast,
+    ←intCast_neg, intCast_one]
+
+@[norm_cast]
 def ratCast_inv? (a: ℚ) (h: a ≠ 0) : (a: α)⁻¹? = a⁻¹? := by
   apply inv?_eq_of_mul_left
   rw [ratCast_mul, mul_inv?_cancel, ratCast_one]
