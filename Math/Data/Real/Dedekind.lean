@@ -363,11 +363,11 @@ def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.up
     apply seq₂_fst_mem_lower
     assumption
     apply le_of_lt; assumption
-  · intro h
-    rcases Or.symm (lt_or_le a x) with hx | hx
-    · apply lt_of_le_of_lt (Real.ofRat_le.mpr hx)
+  · intro hx
+    rcases Or.symm (lt_or_le a x) with x_le_a | a_lt_x
+    · apply lt_of_le_of_lt (Real.ofRat_le.mpr x_le_a)
       unfold toReal'
-      clear hx h x
+      clear hx x_le_a x
       have ⟨m, hm⟩ := c.seq₂_fst_nomax a b ha hb 0
       let x := (c.seq₂ a b m).fst
       replace hm : a < x := hm
@@ -385,80 +385,36 @@ def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.up
       assumption
       assumption
       assumption
-    · have b_sub_x_pos : 0 < b - x := by
-        rw [←Rat.add_lt_iff_lt_sub, zero_add]
-        apply lower_lt_upper
-        assumption
-        assumption
-      let n := ‖((b - a) /? (b - x)).ceil‖
-      exists (c.seq₂ a b n).fst - x
-      have aleb : a ≤ b := by
+    · have ⟨y, hy, x_lt_y⟩ := c.lower_no_max x hx
+      apply lt_of_lt_of_le
+      apply Real.ofRat_lt.mpr
+      assumption
+      apply CauchySeq.le_eventually_pointwise
+      simp
+      show CauchySeq.Eventually fun n => y ≤ _
+      clear x_lt_y a_lt_x hx x
+      have ⟨x, hx, y_lt_x⟩ := c.lower_no_max y hy
+      have ⟨n, hn⟩ := c.seq₂_fst_lim a b ha hb (x - y) (by rwa [←Rat.add_lt_iff_lt_sub, zero_add])
+      have : a ≤ b := by
         apply le_of_lt
-        apply lower_lt_upper
-        assumption
-        assumption
-      apply flip And.intro
-      · exists n
-        intro m h
-        simp
-        rw [sub_eq_add_neg, sub_eq_add_neg]
-        apply add_le_add_right
-        apply seq₂_fst_monotone
-        assumption
-        assumption
-      · rw [←Rat.add_lt_iff_lt_sub, zero_add]
-        have := c.seq₂_diff_bounds a b (by assumption) n
-        replace this : (c.seq₂ a b n).snd - (c.seq₂ a b n).fst + (c.seq₂ a b n).fst
-          - (1 /? 2) ^ n * (b - a) =
-          (1 /? 2) ^ n * (b - a) + (c.seq₂ a b n).fst - (1 /? 2) ^ n * (b - a) := by rw [this]
-        rw [sub_add_cancel, add_comm, add_sub_cancel'] at this
-        rw [←this]; clear this
-        sorry
-        -- rw [←Rat.le_add_iff_sub_le, add_comm, Rat.le_add_iff_sub_le] at this
-        -- apply lt_of_lt_of_le _ this
-        -- clear this
-        -- sorry
-
-def a : ℚ := -10
-def b : ℚ := 11
-def x: ℚ := -1
-def n: ℕ := 5
--- def n: ℕ := ‖((b - a) /? (x - a)).ceil‖
-
-def r: ℚ := 0
-
-def seq' (a b: ℚ) : ℕ -> ℚ × ℚ
-| 0 => (a, b)
-| n + 1 =>
-  let k := midpoint a b
-  if k < r then
-    seq' k b n
-  else
-    seq' a k n
-
-def seq0 (a b: ℚ) : ℕ -> ℚ := (seq' a b · |>.fst)
-def seq1 (a b: ℚ) : ℕ -> ℚ := (seq' a b · |>.snd)
-
-instance : Repr ℚ where
-  reprPrec q _ :=
-    have q := q.toFract
-    -- reprStr q.num ++ " / " ++ reprStr q.den
-    reprStr (Float.ofInt q.num / Float.ofNat q.den)
-
-#eval a < r
-#eval r ≤ b
-#eval x < r
-
-#eval n
-#eval b - x
-#eval (1 /? 2) ^ n * (b - a)
-
-#eval seq0 a b n
-#eval seq1 a b n
-#eval seq1 a b n - seq0 a b n
-#eval (b - a) /? 2 ^ n
-#eval (seq1 a b n) - (1 /? 2) ^ n * (b - a)
-#eval x < (seq1 a b n) - (1 /? 2) ^ n * (b - a)
+        exact lower_lt_upper c a b ha hb
+      exists n
+      intro m hm
+      rw [←Rat.lt_add_iff_sub_lt, add_comm, ←add_sub_assoc, ←Rat.add_lt_iff_lt_sub, add_comm,
+        Rat.lt_add_iff_sub_lt, add_sub_assoc] at hn
+      apply flip le_trans
+      apply seq₂_fst_monotone
+      assumption
+      assumption
+      apply flip le_trans
+      apply le_of_lt; assumption
+      rw (occs := [1]) [←add_zero y]
+      apply add_le_add_left
+      rw [←Rat.add_le_iff_le_sub, zero_add]
+      apply le_of_lt
+      apply lower_lt_upper
+      assumption
+      exact seq₂_snd_mem_upper c a b hb n
 
 def toReal (c: DedekindCut) : ℝ := c.toReal' (Classical.choose c.lower_nonempty) (Classical.choose c.upper_nonempty) (Classical.choose_spec c.lower_nonempty) (Classical.choose_spec c.upper_nonempty)
 def toReal_spec (c: DedekindCut) : c.lower = Set.mk fun x: ℚ => x < c.toReal := by apply toReal'_spec
