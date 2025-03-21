@@ -90,6 +90,17 @@ def sqrt_sq (r: ℝ) (h: 0 ≤ r) : r.sqrt ^ 2 = r := by
   apply le_antisymm
   · have : ∀x, 0 ≤ x -> x < r.sqrt -> x ^ 2 < r := by
       intro x xnonneg hx
+      rw [←not_le] at *
+      intro g; apply hx; clear hx
+      apply csSup_le
+      exact sqrt_set_nonempty r h
+      intro a ha
+      rw [mem_sqrt_set] at ha
+      replace ha := le_trans ha g
+      rcases Or.symm (lt_or_le 0 a) with h | h
+      apply le_trans
+      assumption
+      assumption
       sorry
     sorry
   · apply le_of_not_lt
