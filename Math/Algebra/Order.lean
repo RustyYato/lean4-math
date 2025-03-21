@@ -240,7 +240,7 @@ end
 
 section
 
-variable [MonoidOps α] [MonoidOps β] [IsMonoid α] [IsOrderedCommMonoid β] [AbsoluteValue α β] [Zero β] [IsOrderedAbsMonoid α]
+variable [MonoidOps α] [MonoidOps β] [IsMonoid α] [IsOrderedCommMonoid β]
 
 def mul_lt_mul_left [IsLeftCancel β] (a b k: β) : a < b -> k * a < k * b := by
   intro h

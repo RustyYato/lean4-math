@@ -132,3 +132,14 @@ instance : NeZero (2: ℝ) where
   out := by
     symm; apply ne_of_lt
     exact two_pos
+
+def Real.abs_of_nonneg (a: ℝ) : 0 ≤ a ↔ ‖a‖ = a := by
+  apply flip Iff.intro
+  · intro h
+    rw [←h]
+    exact IsLawfulAbs.abs_nonneg a
+  · intro h
+    rw [abs_def]
+    split
+    rfl
+    contradiction
