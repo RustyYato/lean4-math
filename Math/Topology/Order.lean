@@ -22,7 +22,7 @@ instance : IsLawfulTop (Topology α) where
 
 def orderEmbedSet : OrderEmbedding (Topology α) (Opposite (Set (Set α))) where
   toFun t := t.OpenSets
-  inj := Topology.OpenSets.inj
+  inj' := Topology.OpenSets.inj
   resp_rel := Iff.rfl
 
 instance : IsLawfulLT (Topology α) where

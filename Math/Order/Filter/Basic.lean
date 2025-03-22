@@ -486,6 +486,14 @@ def not_neBot [Nonempty α] : ¬NeBot f ↔ f = ⊥ := by
   intro h g
   exact g.ne h
 
+def neBot_of_le [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] {f g : FilterBase α} [hf : NeBot f] (hg : f ≤ g) : NeBot g where
+  ne := by
+    rintro rfl
+    apply hf.ne
+    apply le_antisymm
+    assumption
+    apply bot_le
+
 def bot_mem_iff_bot (f: Filter α) : ⊥ ∈ f ↔ f = ⊥ := by
   apply Iff.intro
   intro h
@@ -505,6 +513,8 @@ namespace Filter
 
 section Basic
 
+open FilterBase
+
 def univ_mem (f: Filter α) : ⊤ ∈ f := FilterBase.top_mem f
 
 def map (f: α -> β) (F: Filter α) : Filter β where
@@ -522,6 +532,40 @@ def map (f: α -> β) (F: Filter α) : Filter β where
     apply hb
     assumption
   closed_inf := F.closed_inf
+
+@[simp]
+def map_eq_bot_iff : map m f = ⊥ ↔ f = ⊥ := by
+  apply flip Iff.intro
+  rintro rfl
+  rfl
+  intro h
+  rename_i α β
+  suffices ∅ ∈ f by
+    ext x
+    apply flip Iff.intro
+    intro g
+    apply f.closed_upward
+    assumption
+    apply bot_le
+    intro
+    trivial
+  have : ∅ ∈ map m f := by rw [h]; trivial
+  assumption
+
+def map_neBot_iff (f : α → β) {F : Filter α} : NeBot (map f F) ↔ NeBot F := by
+  apply Iff.intro
+  intro h
+  refine ⟨?_⟩
+  rintro rfl
+  apply h.ne
+  rfl
+  intro h
+  refine ⟨?_⟩
+  intro g
+  rw [map_eq_bot_iff] at g
+  exact h.ne g
+
+instance [NeBot F] : NeBot (map f F) := (map_neBot_iff _).mpr inferInstance
 
 end Basic
 

@@ -42,6 +42,16 @@ def dist_nonneg
   refine (le_iff_nsmul_le _ _ _ ?_).mpr this
   decide
 
+def dist_pos
+  [LT β] [LE β] [Zero β] [Add β] [SMul ℕ β]
+  [IsOrderedAddCommMonoid β]
+  [Dist α β] [IsMetricSpace α] (a b: α) (h: a ≠ b) : 0 < dist a b := by
+  apply lt_of_le_of_ne
+  apply dist_nonneg
+  intro g
+  have := of_dist_eq_zero _ _ g.symm
+  contradiction
+
 instance
   [Dist α γ] [Dist β γ]
   [LE γ] [LT γ] [Zero γ] [Add γ] [SMul ℕ γ]

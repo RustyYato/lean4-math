@@ -28,6 +28,9 @@ instance : NatCast ℂ where
 instance : IntCast ℂ where
   intCast n := (n: ℝ)
 
+instance : Nonempty ℂ := ⟨0⟩
+instance : Inhabited ℂ := ⟨0⟩
+
 @[simp]
 def ofNat_real (n: ℕ) : (OfNat.ofNat (α := ℂ) n).real = OfNat.ofNat n := rfl
 @[simp]

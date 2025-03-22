@@ -14,6 +14,8 @@ instance : IsPreOrder β :=
 
 def Ball (x: α) (δ: β): Set α := Set.mk fun y => dist x y < δ
 
+def mem_ball {c: α} {δ: β} : ∀{x}, x ∈ Ball c δ ↔ dist c x < δ := Iff.rfl
+
 def ball_sub (x: α) (δ₀ δ₁: β) (h: δ₀ ≤ δ₁) : Ball x δ₀ ⊆ Ball x δ₁ := by
   intro y mem
   apply lt_of_lt_of_le

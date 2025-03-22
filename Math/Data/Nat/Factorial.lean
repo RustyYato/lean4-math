@@ -4,6 +4,8 @@ def fact
 | n + 1 => (n + 1) * fact n
 def npr (n r: Nat) := fact n / fact (n - r)
 
+postfix:max "!" => fact
+
 @[simp] def fact_zero : fact 0 = 1 := rfl
 @[simp] def fact_succ : fact (n + 1) = (n + 1) * fact n := rfl
 

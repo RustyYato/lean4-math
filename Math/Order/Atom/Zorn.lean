@@ -34,7 +34,7 @@ def IsCoatomic.of_isChain_bounded {α : Type*}
     exists x
     apply And.intro
     apply And.intro
-    rfl
+    apply le_refl
     apply lt_of_le_of_ne
     apply le_top
     assumption

@@ -689,6 +689,12 @@ def remove {α: Type*} (a: α) [∀x: α, Decidable (x = a)] : α ≃ Option { x
     | .none => simp
     | .some ⟨x, hx⟩ => simp [hx]
 
+def fin_rev : Fin n ≃ Fin n where
+  toFun := Fin.rev
+  invFun := Fin.rev
+  leftInv x := by rw [Fin.rev_rev]
+  rightInv x := by rw [Fin.rev_rev]
+
 end Equiv
 
 def Fin.embedNat : Fin n ↪ Nat :=

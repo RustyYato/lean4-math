@@ -83,6 +83,15 @@ def sum_option [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAdd
 def sum_succ [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: Fin (n + 1) -> α) : ∑i, f i = f (Fin.last _) + ∑i: Fin n, f i.castSucc := by
   rw [sum_reindex (h := (Equiv.fin_equiv_option n).symm), sum_option]
   rfl
+def sum_succ' [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: Fin (n + 1) -> α) : ∑i, f i = f 0 + ∑i: Fin n, f i.succ := by
+  rw [sum_reindex (h := Equiv.fin_rev), sum_succ, sum_reindex (h := Equiv.fin_rev), ]
+  congr
+  show Fin.rev _ = _
+  rw [Fin.rev_last]
+  ext i
+  congr
+  show Fin.rev i.rev.castSucc = _
+  rw [Fin.rev_castSucc, Fin.rev_rev]
 def sum_sumty [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι₀ ⊕ ι₁ -> α) : ∑i, f i = (∑i, f (.inl i)) + ∑i, f (.inr i) := by
   rename Fintype ι₀ => ft₀
   induction ft₀ using Fintype.typeInduction with
@@ -105,6 +114,8 @@ def prod_option [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMag
   sum_option (α := AddOfMul α) f
 def prod_succ [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: Fin (n + 1) -> α) : ∏i, f i = f (Fin.last _) * ∏i: Fin n, f i.castSucc :=
   sum_succ (α := AddOfMul α) f
+def prod_succ' [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: Fin (n + 1) -> α) : ∏i, f i = f 0 * ∏i: Fin n, f i.succ :=
+  sum_succ' (α := AddOfMul α) f
 
 def sum_const [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (x: α) : ∑_: ι, x = Fintype.card ι • x := by
   unfold sum

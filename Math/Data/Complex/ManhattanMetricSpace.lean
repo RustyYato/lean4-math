@@ -1,9 +1,12 @@
 import Math.Algebra.Impls.Complex
 import Math.Data.Real.MetricSpace
+import Math.Topology.Separable.Defs
 
 namespace Complex
 
 namespace ManhattanMetric
+
+open Topology
 
 /- These instance is scoped because it isn't the standard topology on Complex numbers
   But defining the standard topology requires sqrt, which isn't defined yet, so
@@ -39,6 +42,19 @@ instance manhattanMetricSpace : IsMetricSpace ℂ where
     apply IsLawfulAbs.abs_nonneg
 
 scoped instance : Topology ℂ := Topology.ofIsPseudoMetricSpace
+
+instance : Topology.T0 ℂ where
+  proof := by
+    intro a b h
+    have : {a} ∈ 𝓝 a := by
+      rw [mem_nhds]
+      refine ⟨{a}, Set.sub_refl _, ?_, rfl⟩
+      rintro x rfl
+
+
+
+      sorry
+    sorry
 
 end ManhattanMetric
 

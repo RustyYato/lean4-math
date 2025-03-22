@@ -53,6 +53,19 @@ def IsOpen.sUnion {a: Set (Set α)} : (∀x ∈ a, IsOpen x) -> IsOpen (⋃a) :=
 def IsOpen.preimage (f: α -> β) [IsContinuous f] : ∀s: Set β, IsOpen s → IsOpen (s.preimage f) := IsContinuous.isOpen_preimage
 def IsOpen.preimage' {f: α -> β} (h: IsContinuous f) : ∀s: Set β, IsOpen s → IsOpen (s.preimage f) := IsContinuous.isOpen_preimage
 
+def IsOpen.Interior (s: Set α) : IsOpen (Interior s) := by
+  apply IsOpen.sUnion
+  intro x hx
+  rw [Set.mk_mem] at hx
+  exact hx.left
+
+def interior_sub (s: Set α) : Interior s ≤ s := by
+  intro x hx
+  erw [Set.mem_sUnion] at hx
+  obtain ⟨_, ⟨_, g⟩, _⟩ := hx
+  apply g
+  assumption
+
 def IsOpen.empty : IsOpen (∅: Set α) := by
   rw [←Set.sUnion_empty]
   apply sUnion; intros; contradiction
@@ -152,6 +165,8 @@ instance IsContinuous.comp (f: α -> β) (g: β -> γ) [IsContinuous f] [IsConti
 
 def IsContinuous.comp' {f: α -> β} {g: β -> γ} (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (g ∘ f) :=
   inferInstance
+
+def Pairwise (P: α -> α -> Prop) : Prop := ∀{a b}, a ≠ b -> P a b
 
 inductive Trivial.IsOpen: Set α -> Prop where
 | empty : Trivial.IsOpen ∅
