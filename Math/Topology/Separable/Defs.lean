@@ -87,17 +87,28 @@ instance [T2 X] : R1 X where
     left; rw [h]
     right; rwa [disjoint_nhds_nhds]
 
-instance T1Space.t0Space [T1 X] : T0 X where
+-- instance T1Space.t0Space [T1 X] : T0 X where
+--   proof := by
+--     intro a b h
+--     have := IsOpen.inter (T1.proof a) (T1.proof b)
+--     sorry
+
+-- instance [T2 X] : T1 X where
+--   proof := by
+--     intro a
+--     sorry
+
+instance [T2 X] : T0 X where
   proof := by
     intro a b h
-    have := IsOpen.inter (T1.proof a) (T1.proof b)
-
-    sorry
-
-instance [T2 X] : T1 X where
-  proof := by
-    intro a
-    sorry
+    have := @T2.proof _ _ _ a b
+    simp only at this
+    rw [←Classical.contrapositive, Classical.not_not] at this
+    apply this; clear this
+    intro g
+    rw [h] at g
+    rw [disjoint_nhds_nhds] at g
+    contradiction
 
 def Inseparable.of_nhds_neBot [R1 X] {x y : X} (h: NeBot (𝓝 x ⊓ 𝓝 y)) : Inseparable x y :=
   (r1Space_iff_inseparable_or_disjoint_nhds.mp inferInstance _ _).resolve_right fun h' => h.ne <| by

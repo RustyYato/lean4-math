@@ -117,7 +117,10 @@ def exp_zero : exp 0 = 1 := by
   intro i
   rw (occs := [1]) [Fin.val_succ, npow_succ, mul_zero, div?_eq_mul_inv?, zero_mul]
 
-#print axioms exp_zero
+def exp_add (a b: ℂ) : exp (a + b) = exp a * exp b := by
+  apply Topology.lim_eq'
+  intro S hS h s hs
+  sorry
 
 end Complex
 
