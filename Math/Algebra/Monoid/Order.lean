@@ -12,10 +12,10 @@ class IsOrderedAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] : Pro
 class IsOrderedCommMonoid (α: Type*) [MonoidOps α] [LT α] [LE α] : Prop extends IsCommMagma α, IsMonoid α, IsPartialOrder α  where
   protected mul_le_mul_left: ∀a b : α, a ≤ b → ∀ c, c * a ≤ c * b
 
-class IsOrderedCancelAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] extends IsOrderedAddCommMonoid α where
+class IsOrderedCancelAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] extends IsOrderedAddCommMonoid α, IsAddCancel α where
   protected le_of_add_le_add_left: ∀a b c: α, a + b ≤ a + c → b ≤ c
 
-class IsOrderedCancelCommMonoid (α: Type*) [MonoidOps α] [LT α] [LE α] extends IsOrderedCommMonoid α where
+class IsOrderedCancelCommMonoid (α: Type*) [MonoidOps α] [LT α] [LE α] extends IsOrderedCommMonoid α, IsMulCancel α where
   protected le_of_mul_le_mul_left: ∀a b c: α, a * b ≤ a * c → b ≤ c
 
 instance [MonoidOps α] [IsOrderedCommMonoid α] : IsOrderedAddCommMonoid (AddOfMul α) where
@@ -53,6 +53,19 @@ def nsmul_le_nsmul (a b: α) (n: ℕ) :
     apply add_le_add
     assumption
     assumption
+
+end
+
+section
+
+variable [AddMonoidOps α] [IsOrderedCancelAddCommMonoid α]
+
+def le_of_add_le_add_left: ∀a b c: α, a + b ≤ a + c → b ≤ c :=
+  IsOrderedCancelAddCommMonoid.le_of_add_le_add_left
+def le_of_add_le_add_right: ∀a b c: α, a + c ≤ b + c → a ≤ b := by
+  intro a b c
+  rw [add_comm _ c, add_comm _ c]
+  apply le_of_add_le_add_left
 
 end
 
