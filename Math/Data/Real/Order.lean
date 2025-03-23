@@ -578,6 +578,14 @@ def mul_pos {a b: ℝ} (ha: 0 < a) (hb: 0 < b) : 0 < a * b := by
   assumption
   assumption
 
+def add_nonneg {a b: ℝ} (ha: 0 ≤ a) (hb: 0 ≤ b) : 0 ≤ a + b := by
+  rw [←add_zero 0]
+  apply le_trans
+  apply le_iff_add_le_add_left.mp
+  assumption
+  apply le_iff_add_le_add_right.mp
+  assumption
+
 @[norm_cast]
 def ofRat_lt {a b: ℚ} : (a: ℝ) < b ↔ a < b := by
   apply Iff.intro

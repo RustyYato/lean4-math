@@ -12,7 +12,7 @@ instance [RatCast α] : Coe ℚ α where
 
 attribute [coe] Rat.cast
 
-def ratCastRec [FieldOps α] [IsField α] (q: ℚ) [HasChar α 0] : α :=
+def ratCastRec [FieldOps α] [IsField α] [HasChar α 0] (q: ℚ) : α :=
   q.lift (fun q => (q.num: α) /? (q.den: α) ~(by
     intro h
     rw [←natCast_zero] at h
@@ -66,7 +66,7 @@ instance : IsQAlgebra ℚ where
 variable [QAlgebraOps α] [IsQAlgebra α]
 
 def qsmul_eq_ratCast_mul: ∀(q: ℚ) (a: α), q • a = q * a := IsQAlgebra.qsmul_eq_ratCast_mul
-def ratCast_eq_ratCastRec: ∀q: ℚ, (q: α) = ratCastRec q := IsQAlgebra.ratCast_eq_ratCastRec
+def ratCast_eq_ratCastRec: ∀q: ℚ, (q: α) = @ratCastRec α _ _ IsQAlgebra.toHasChar q := IsQAlgebra.ratCast_eq_ratCastRec
 
 @[norm_cast]
 def ratCast_intCast (n: ℤ) : ((n: ℚ): α) = n := by

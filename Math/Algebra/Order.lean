@@ -48,6 +48,7 @@ def mul_le_mul [MonoidOps α] [IsOrderedCommMonoid α] : ∀a b c d: α, a ≤ c
 
 class IsOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends IsSemiring α, IsOrderedAddCommMonoid α where
   zero_le_one: 0 ≤ (1: α)
+  mul_nonneg: ∀a b: α, 0 ≤ a -> 0 ≤ b -> 0 ≤ a * b
   mul_le_mul_of_nonneg_left: ∀a b: α, a ≤ b -> ∀c, 0 ≤ c -> c * a ≤ c * b
   mul_le_mul_of_nonneg_right: ∀a b: α, a ≤ b -> ∀c, 0 ≤ c -> a * c ≤ b * c
 
@@ -56,10 +57,11 @@ export IsOrderedSemiring (zero_le_one mul_le_mul_of_nonneg_left mul_le_mul_of_no
 def zero_lt_one [SemiringOps α] [IsOrderedSemiring α] [IsNontrivial α] : (0: α) < 1 := lt_of_le_of_ne zero_le_one (zero_ne_one _)
 
 class IsOrderedRing (α: Type*) [RingOps α] [LT α] [LE α] extends IsRing α, IsOrderedSemiring α where
-  mul_nonneg: ∀a b: α, 0 ≤ a -> 0 ≤ b -> 0 ≤ a * b
 
-class IsStrictOrderedRing (α: Type*) [RingOps α] [LT α] [LE α] extends IsRing α, IsOrderedRing α, IsNontrivial α where
+class IsStrictOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends IsSemiring α, IsOrderedSemiring α, IsNontrivial α where
   mul_pos: ∀a b: α, 0 < a -> 0 < b -> 0 < a * b
+
+class IsStrictOrderedRing (α: Type*) [RingOps α] [LT α] [LE α] extends IsRing α, IsOrderedRing α, IsStrictOrderedSemiring α where
 
 class IsLawfulAbs (α: Type*) {β: outParam Type*}  [AbsoluteValue α β] [LT β] [LE β] [Zero β] extends IsLinearOrder β where
   abs_nonneg: ∀a: α, 0 ≤ ‖a‖
@@ -133,6 +135,16 @@ section
 
 variable [AddMonoidOps α] [AddMonoidOps β] [IsAddMonoid α] [IsOrderedAddCommMonoid β] [AbsoluteValue α β] [IsOrderedAbsAddMonoid α]
 
+def nsmul_le : ∀a b: β, ∀n: ℕ, a ≤ b -> n • a ≤ n • b := by
+  intro a b n h
+  induction n with
+  | zero => rw [zero_nsmul, zero_nsmul]
+  | succ n ih =>
+    rw [succ_nsmul, succ_nsmul]
+    apply add_le_add
+    assumption
+    assumption
+
 def add_lt_add_left [IsAddLeftCancel β] (a b k: β) : a < b -> k + a < k + b := by
   intro h
   apply lt_of_le_of_ne
@@ -174,6 +186,22 @@ def add_lt_add_of_le_of_lt [IsAddRightCancel β] (a b c d: β) : a ≤ c -> b < 
   assumption
   apply add_lt_add_left
   assumption
+
+def le_iff_nsmul_le [IsAddCancel β]: ∀a b: β, ∀n > 0, a ≤ b ↔ n • a ≤ n • b := by
+  intro a b n h
+  cases n with
+  | zero => contradiction
+  | succ n =>
+  clear h
+  rw [succ_nsmul, succ_nsmul]
+  apply Iff.intro
+  intro h
+  apply add_le_add
+  apply nsmul_le
+  assumption
+  assumption
+  intro h
+  sorry
 
 end
 

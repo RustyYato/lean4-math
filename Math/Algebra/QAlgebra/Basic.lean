@@ -23,6 +23,7 @@ instance : AlgebraMap ℚ α where
     apply inv?_eq_of_mul_left
     simp [natCast_one]
   resp_add := by
+    have := (inferInstanceAs (IsQAlgebra α)).toHasChar
     intro a b
     simp
     cases a, b with | mk a b =>
