@@ -1,6 +1,5 @@
 import Math.Algebra.Field.Defs
-import Math.Algebra.GroupWithZero.Basic
-import Math.Algebra.Semiring.Char
+import Math.Algebra.Semifield.Basic
 
 section
 
@@ -19,10 +18,6 @@ def neg_inv? (a: α) (h: a ≠ 0) : (-a)⁻¹? = -a⁻¹? := by
   symm
   refine inv?_eq_of_mul_right (-a) (-a⁻¹?) ?_
   rw [←neg_mul_right, ←neg_mul_left, neg_neg, inv?_mul_cancel]
-
-def add_div?_add₀ (a b c: α) (hc: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
-  simp [div?_eq_mul_inv?]
-  rw [add_mul]
 
 def sub_div?_sub₀ (a b c: α) (hc: c ≠ 0) : a /? c - b /? c = (a - b) /? c := by
   simp [div?_eq_mul_inv?]
@@ -46,10 +41,6 @@ def midpoint (a b: α) [NeZero (2: α)] : α := (a + b) /? 2
 def midpoint_comm (a b: α) [NeZero (2: α)] : midpoint a b = midpoint b a := by
   unfold midpoint
   rw [add_comm]
-
-def mul_div?_mul (a b c d: α) (hb: b ≠ 0) (hd: d ≠ 0) : (a /? b) * (c /? d) = (a * c) /? (b * d) := by
-  simp [div?_eq_mul_inv?]
-  rw [inv?_mul_rev]; ac_rfl
 
 end
 
