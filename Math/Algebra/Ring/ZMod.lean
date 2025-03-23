@@ -2,9 +2,8 @@ import Math.Algebra.Impls.Int
 import Math.Algebra.Impls.Fin
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Quotient
 import Math.Data.Quotient.Basic
-import Math.Order.Linear
 import Math.Order.Fin
-import Math.Order.OrderIso.Linear
+import Math.Order.OrderIso
 import Math.Algebra.AddGroupWithOne.Hom
 import Math.Algebra.Semiring.Char
 import Math.Algebra.Ring.Basic

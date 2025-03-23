@@ -1,5 +1,5 @@
 import Math.Data.Real.OrderedAlgebra
-import Math.Order.OrderIso.Linear
+import Math.Order.OrderIso
 
 def NNReal := { x: ℝ // 0 ≤ x }
 
@@ -184,9 +184,9 @@ instance : NeZero (2: ℝ) where
     replace spec := spec _ _ (le_refl _) (le_refl _)
     contradiction
 
-instance : IsStrictOrderedSemiring ℝ≥0 where
-  add_le_add_left := sorry
-  le_iff_nsmul_le := sorry
-  mul_nonneg := sorry
+-- instance : IsStrictOrderedSemiring ℝ≥0 where
+--   add_le_add_left := sorry
+--   le_iff_nsmul_le := sorry
+--   mul_nonneg := sorry
 
 end NNReal

@@ -121,11 +121,7 @@ instance : IsSemiring (Fin (n + 1)) where
     intro a b c
     show Fin.mk _ _ = Fin.mk _ _
     simp
-    rw [Nat.mul_assoc,
-      Nat.mul_mod]
-    congr
-    rw [Nat.mod_eq_of_lt]
-    exact a.isLt
+    rw [Nat.mul_assoc, Nat.mul_mod]
   zero_mul := by
     intro
     show Fin.mk _ _ = Fin.mk _ _
@@ -147,13 +143,13 @@ instance : IsSemiring (Fin (n + 1)) where
     cases n
     · match a with
       | 0 => rfl
-    rw [Nat.mod_eq_of_lt (a := 1), Nat.mul_one, Nat.mod_eq_of_lt a.isLt]
-    simp
+    rw [Nat.mod_eq_of_lt (a := _)]
+    apply a.isLt
   left_distrib := by
     intro _ _ _
     show Fin.mk _ _ = Fin.mk _ _
     simp
-    rw [Nat.mul_mod, Nat.mod_mod, ←Nat.mul_mod, Nat.mul_add]
+    rw [mul_add]
   right_distrib := by
     intro _ _ _
     show Fin.mk _ _ = Fin.mk _ _

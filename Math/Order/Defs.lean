@@ -606,7 +606,7 @@ def clamp_le_right (_h: a ≤ b) : clamp x a b ≤ b := by apply min_le_right
 
 end IsLinearMinMaxOrder
 
-section
+section IsDecidableLinearOrder
 
 variable [LT α] [LE α] [Min α] [Max α] [IsDecidableLinearOrder α] {a b c: α}
 
@@ -644,7 +644,9 @@ def clamp_def (h: a ≤ b) : clamp x a b = if x < a then a else if b < x then b 
 
 attribute [irreducible] clamp
 
-end
+end IsDecidableLinearOrder
+
+section Impls
 
 instance : IsDecidableLinearOrder Bool where
   decLE := by intros; exact inferInstance
@@ -711,3 +713,32 @@ def le_setoid (α: Type*) [LE α] [LT α] [IsPreOrder α] : Setoid α where
     symm h := ⟨h.2, h.1⟩
     trans h g := ⟨le_trans h.1 g.1, le_trans g.2 h.2⟩
   }
+
+end Impls
+
+section Pi
+
+variable {α: Type*} {β: α -> Type*} [∀x, LE (β x)] [∀x, LT (β x)]
+
+instance : LE (∀x, β x) where
+  le f g := ∀x, f x ≤ g x
+
+instance : LT (∀x, β x) where
+  lt f g := f ≤ g ∧ ¬g ≤ f
+
+instance : IsLawfulLT (∀x, β x) where
+  lt_iff_le_and_not_le := Iff.rfl
+
+instance [∀x, IsPreOrder (β x)] : IsPreOrder (∀x, β x) where
+  le_refl _ _ := le_refl _
+  le_trans h g _ := le_trans (h _) (g _)
+
+instance [∀x, IsPartialOrder (β x)] : IsPartialOrder (∀x, β x) where
+  le_antisymm := by
+    intro a b ha hb
+    ext x
+    apply le_antisymm
+    apply ha
+    apply hb
+
+end Pi
