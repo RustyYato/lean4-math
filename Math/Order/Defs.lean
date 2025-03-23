@@ -205,6 +205,31 @@ instance [IsPartialOrder α] : IsPartialOrder αᵒᵖ where
     intro a b ab ba
     apply le_antisymm (α := α) <;> assumption
 
+instance (priority := 500) instLOofPOofLTtri [Relation.IsTrichotomous (· < (·: α))] : IsLinearOrder α where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le
+  le_antisymm := le_antisymm
+  le_trans := le_trans
+  lt_or_le := by
+    intro a b
+    rcases Relation.trichotomous (· < ·) a b with lt | eq | gt
+    left; assumption
+    right; rw [eq]
+    right; apply le_of_lt; assumption
+
+instance (priority := 500) instLOofPOofLEtri [Relation.IsTrichotomous (· ≤ (·: α))] : IsLinearOrder α where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le
+  le_antisymm := le_antisymm
+  le_trans := le_trans
+  lt_or_le := by
+    intro a b
+    rcases Relation.trichotomous (· ≤ ·) a b with lt | eq | gt
+    cases lt_or_eq_of_le lt
+    left; assumption; rename_i h; right; rw[h]
+    right; rw [eq]
+    right; assumption
+
+instance (priority := 500) instLOofPOofLEtot [Relation.IsTotal (· ≤ (·: α))] : IsLinearOrder α := inferInstance
+
 end IsPartialOrder
 
 section IsLinearOrder
@@ -617,6 +642,8 @@ def clamp_def (h: a ≤ b) : clamp x a b = if x < a then a else if b < x then b 
   assumption
   assumption
 
+attribute [irreducible] clamp
+
 end
 
 instance : IsDecidableLinearOrder Bool where
@@ -631,6 +658,7 @@ instance : IsDecidableLinearOrder Bool where
   min_iff_le_right := by decide
   max_iff_le_left := by decide
   max_iff_le_right := by decide
+instance : IsPartialOrder Bool := inferInstance
 
 instance : IsLinearOrder Nat where
   lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
@@ -638,6 +666,7 @@ instance : IsLinearOrder Nat where
   lt_or_le := Nat.lt_or_ge
   le_trans := Nat.le_trans
 instance : IsDecidableLinearOrder Nat where
+instance : IsPartialOrder Nat := inferInstance
 
 instance : IsLinearOrder (Fin n) where
   lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
@@ -650,6 +679,7 @@ instance : IsLinearOrder (Fin n) where
 instance : Min (Fin n) := minOfLe
 instance : Max (Fin n) := maxOfLe
 instance : IsDecidableLinearOrder (Fin n) where
+instance : IsPartialOrder (Fin n) := inferInstance
 
 instance : Bot Bool where
   bot := false
@@ -672,3 +702,12 @@ instance : IsLinearOrder Int where
     right; apply Int.le_of_lt; assumption
     right; subst b; apply Int.le_refl
 instance : IsDecidableLinearOrder Int where
+instance : IsPartialOrder Int := inferInstance
+
+def le_setoid (α: Type*) [LE α] [LT α] [IsPreOrder α] : Setoid α where
+  r a b := a ≤ b ∧ b ≤ a
+  iseqv := {
+    refl _ := ⟨le_refl _, le_refl _⟩
+    symm h := ⟨h.2, h.1⟩
+    trans h g := ⟨le_trans h.1 g.1, le_trans g.2 h.2⟩
+  }

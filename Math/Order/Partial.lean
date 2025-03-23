@@ -1,41 +1,11 @@
 import Math.Order.Preorder
 
-class IsPartialOrder (α: Type*) [LT α] [LE α] : Prop extends IsPreOrder α where
-  le_antisymm: ∀{a b: α}, a ≤ b -> b ≤ a -> a = b
-
 -- do not use this in bounds directly, this is only meant to be used to create a PreOrder
 -- for example, via `GaloisConnection`
 class PartialOrder (α: Type*) extends LT α, LE α, IsPartialOrder α
 
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [IsPartialOrder α]
-
-def le_antisymm: a ≤ b -> b ≤ a -> a = b := IsPartialOrder.le_antisymm
-
-def lt_or_eq_of_le: a ≤ b -> a < b ∨ a = b := by
-  intro h
-  by_cases g:b ≤ a
-  right
-  apply le_antisymm
-  assumption
-  assumption
-  left
-  apply lt_iff_le_and_not_le.mpr
-  apply And.intro <;> assumption
-def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
-  intro h g
-  cases lt_or_eq_of_le h
-  assumption
-  contradiction
-def le_iff_lt_or_eq: a ≤ b ↔ a < b ∨ a = b := Iff.intro lt_or_eq_of_le le_of_lt_or_eq
-
-instance : @Relation.IsAntisymm α (· ≤ ·) where
-  antisymm := le_antisymm
-
-instance [IsPartialOrder α] : IsPartialOrder αᵒᵖ where
-  le_antisymm := by
-    intro a b ab ba
-    apply le_antisymm (α := α) <;> assumption
 
 namespace Pi
 
@@ -108,9 +78,3 @@ def ofMonoInj [IsPreOrder α] (m: Monotone f) (h: Function.Injective f) : Strict
   assumption
 
 end StrictMonotone
-
-instance : IsPartialOrder Nat where
-  lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
-  le_refl := Nat.le_refl
-  le_trans := Nat.le_trans
-  le_antisymm := Nat.le_antisymm

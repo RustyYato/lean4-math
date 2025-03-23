@@ -1,11 +1,5 @@
-import Math.Logic.Basic
-import Math.Order.Notation
-import Math.Relation.Basic
+import Math.Order.Defs
 import Math.Order.Monotone
-
-class IsPreOrder (α: Type*) [LT α] [LE α] : Prop extends IsLawfulLT α where
-  le_refl: ∀a: α, a ≤ a
-  le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c
 
 -- do not use this in bounds directly, this is only meant to be used to create a PreOrder
 -- for example, via `GaloisConnection`
@@ -13,54 +7,6 @@ class PreOrder (α: Type*) extends LT α, LE α, IsPreOrder α
 
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [IsPreOrder α]
-
-@[refl, simp]
-def le_refl: ∀a: α, a ≤ a := IsPreOrder.le_refl
-def le_trans: a ≤ b -> b ≤ c -> a ≤ c := IsPreOrder.le_trans
-
-def le_of_lt: a < b -> a ≤ b := fun h => (lt_iff_le_and_not_le.mp h).left
-def lt_of_le_of_not_le : a ≤ b -> ¬(b ≤ a) -> a < b := (lt_iff_le_and_not_le.mpr ⟨·, ·⟩)
-
-def le_of_eq: a = b -> a ≤ b := fun h => h ▸ le_refl _
-def not_le_of_lt (hab : a < b) : ¬ b ≤ a := (lt_iff_le_and_not_le.1 hab).2
-def not_lt_of_le (hab : a ≤ b) : ¬ b < a := imp_not_comm.1 not_le_of_lt hab
-def lt_irrefl: ¬a < a := fun h => (lt_iff_le_and_not_le.mp h).right (le_refl _)
-def ne_of_lt: a < b -> a ≠ b := fun h g => lt_irrefl (g ▸ h)
-def le_of_lt_or_eq: a < b ∨ a = b -> a ≤ b := by
-  intro h
-  cases h
-  apply le_of_lt; assumption
-  apply le_of_eq; assumption
-def lt_trans : a < b -> b < c -> a < c := by
-  intro ab bc
-  replace ⟨ab, nba⟩ := lt_iff_le_and_not_le.mp ab
-  replace ⟨bc, ncb⟩ := lt_iff_le_and_not_le.mp bc
-  apply lt_iff_le_and_not_le.mpr ⟨le_trans ab bc, _⟩
-  intro h
-  apply nba
-  apply le_trans
-  assumption
-  assumption
-def lt_of_lt_of_le : a < b -> b ≤ c -> a < c := by
-  intro ab bc
-  replace ⟨ab, nba⟩ := lt_iff_le_and_not_le.mp ab
-  apply lt_iff_le_and_not_le.mpr ⟨le_trans ab bc, _⟩
-  intro h
-  apply nba
-  apply le_trans
-  assumption
-  assumption
-def lt_of_le_of_lt : a ≤ b -> b < c -> a < c := by
-  intro ab bc
-  replace ⟨bc, ncb⟩ := lt_iff_le_and_not_le.mp bc
-  apply lt_iff_le_and_not_le.mpr ⟨le_trans ab bc, _⟩
-  intro h
-  apply ncb
-  apply le_trans
-  assumption
-  assumption
-
-def lt_asymm : a < b -> b < a -> False := (lt_irrefl <| lt_trans · ·)
 
 class DenselyOrdered (α : Type*) [LT α] : Prop where
   dense : ∀ a₁ a₂ : α, a₁ < a₂ → ∃ a, a₁ < a ∧ a < a₂
@@ -89,63 +35,36 @@ instance {P: α -> Prop} : LT (Subtype P) where
 instance {P: α -> Prop} : LE (Subtype P) where
   le a b := a.val ≤ b.val
 
-instance [DenselyOrdered α] : DenselyOrdered (Opposite α) where
+instance [DenselyOrdered α] : DenselyOrdered αᵒᵖ where
   dense := by
     intro a b a_lt_b
     have h := dense (α := α) _ _ a_lt_b
     obtain ⟨x, _, _⟩ := h
     exists x
 
-instance [NoBotOrder α] : NoTopOrder (Opposite α) where
+instance [NoBotOrder α] : NoTopOrder αᵒᵖ where
   exists_not_le := by
     intro x
     have ⟨b, _⟩ := exists_not_ge x.get
     exists b
 
-instance [NoTopOrder α] : NoBotOrder (Opposite α) where
+instance [NoTopOrder α] : NoBotOrder αᵒᵖ where
   exists_not_ge := by
     intro x
     have ⟨b, _⟩ := exists_not_le x.get
     exists b
 
-instance [NoMinOrder α] : NoMaxOrder (Opposite α) where
+instance [NoMinOrder α] : NoMaxOrder αᵒᵖ where
   exists_gt := by
     intro x
     have ⟨b, _⟩ := exists_lt x.get
     exists b
 
-instance [NoMaxOrder α] : NoMinOrder (Opposite α) where
+instance [NoMaxOrder α] : NoMinOrder αᵒᵖ where
   exists_lt := by
     intro x
     have ⟨b, _⟩  := exists_gt x.get
     exists b
-
-instance : @Relation.IsTrans α (· < ·) where
-  trans := lt_trans
-instance : @Relation.IsTrans α (· ≤ ·) where
-  trans := le_trans
-instance : @Relation.IsIrrefl α (· < ·) where
-  irrefl := lt_irrefl
-instance : @Relation.IsRefl α (· ≤ ·) where
-  refl := le_refl
-
- instance : @Trans α α α (· < ·) (· ≤ ·) (· < ·) where
-  trans := lt_of_lt_of_le
- instance : @Trans α α α (· < ·) (· = ·) (· < ·) where
-  trans := lt_of_lt_of_eq
-
- instance : @Trans α α α (· ≤ ·) (· < ·) (· < ·) where
-  trans := lt_of_le_of_lt
- instance : @Trans α α α (· = ·) (· < ·) (· < ·) where
-  trans := lt_of_eq_of_lt
-
-def le_setoid (α: Type*) [LE α] [LT α] [IsPreOrder α] : Setoid α where
-  r a b := a ≤ b ∧ b ≤ a
-  iseqv := {
-    refl _ := ⟨le_refl _, le_refl _⟩
-    symm h := ⟨h.2, h.1⟩
-    trans h g := ⟨le_trans h.1 g.1, le_trans g.2 h.2⟩
-  }
 
 namespace Pi
 
@@ -167,11 +86,6 @@ instance [∀x, LE (β x)] [∀x, LT (β x)] [∀x, IsPreOrder (β x)] : IsPreOr
     apply le_trans
     apply ab
     apply bc
-
-instance [IsPreOrder α] : IsPreOrder αᵒᵖ where
-  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := α)
-  le_refl := le_refl (α := α)
-  le_trans := flip (le_trans (α := α))
 
 end Pi
 
