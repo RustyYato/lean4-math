@@ -48,7 +48,6 @@ def expFilterNeBot (x: ℂ) : expFilter x ≠ ⊥ := by
 instance : FilterBase.NeBot (expFilter x) where
   ne := expFilterNeBot _
 
-
 def exp (x: ℂ) : ℂ := Topology.lim (α := ℂ) (expFilter x)
 
 instance : Topology.T2 ℂ where
@@ -117,9 +116,25 @@ def exp_zero : exp 0 = 1 := by
   intro i
   rw (occs := [1]) [Fin.val_succ, npow_succ, mul_zero, div?_eq_mul_inv?, zero_mul]
 
+instance : Topology.IsContinuous exp where
+  isOpen_preimage := by
+    intro S Sopen x hx
+    replace hx : exp x ∈ S := hx
+    have ⟨δ, δpos, ball⟩ := Sopen _ hx
+    refine ⟨δ, ?_, ?_⟩
+    sorry
+    intro y hy
+    show exp y ∈ S
+    apply ball (exp y)
+    rw [IsPseudoMetricSpace.mem_ball] at *
+    sorry
+
 def exp_add (a b: ℂ) : exp (a + b) = exp a * exp b := by
   apply Topology.lim_eq'
-  intro S hS h s hs
+  intro S hS hx s hs
+  replace hs : S ≤ s := hs
+  replace hx' := hs _ hx
+  have ⟨δ, δpos, ball_sub⟩ := hS _ hx
   sorry
 
 end Complex
