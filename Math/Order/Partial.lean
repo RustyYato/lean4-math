@@ -1,4 +1,5 @@
 import Math.Order.Preorder
+import Math.Order.Monotone.Basic
 
 -- do not use this in bounds directly, this is only meant to be used to create a PreOrder
 -- for example, via `GaloisConnection`

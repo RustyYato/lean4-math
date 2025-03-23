@@ -1,5 +1,5 @@
 import Math.Order.Defs
-import Math.Order.Monotone
+import Math.Order.Monotone.Defs
 
 -- do not use this in bounds directly, this is only meant to be used to create a PreOrder
 -- for example, via `GaloisConnection`
@@ -87,8 +87,6 @@ end Pi
 variable {β γ: Type*} {x y z: β} {f: α -> β} {g: β -> γ }
 variable [LT β] [LE β] [IsPreOrder β]
 variable [LT γ] [LE γ] [IsPreOrder γ]
-
-variable {s t: Set α}
 
 namespace Monotone
 

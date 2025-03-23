@@ -1,5 +1,5 @@
 import Math.Order.Covariant.Defs
-import Math.Order.Monotone
+import Math.Order.Monotone.Defs
 
 variable {μ: β -> α -> α} {r: α -> α -> Prop} [LE α]
 variable {f : α → γ} [LE γ]
