@@ -1,4 +1,5 @@
 import Math.Data.Real.OrderedAlgebra
+import Math.Order.OrderIso.Linear
 
 def NNReal := { x: ℝ // 0 ≤ x }
 
@@ -129,5 +130,51 @@ instance : IsSemifield ℝ≥0 where
   div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
+
+instance : LE ℝ≥0 where
+  le a b := a.val ≤ b.val
+
+instance : LT ℝ≥0 where
+  lt a b := a.val < b.val
+
+instance : Bot ℝ≥0 where
+  bot := 0
+
+instance : IsLawfulBot ℝ≥0 where
+  bot_le x := x.property
+
+def orderEmbedReal : ℝ≥0 ↪o ℝ where
+  toEmbedding := Embedding.subtypeVal
+  resp_rel := Iff.rfl
+
+instance : Min ℝ≥0 where
+  min a b := ⟨min a.val b.val, by
+    apply le_min_iff.mpr
+    apply And.intro
+    exact a.property
+    exact b.property⟩
+
+instance : Max ℝ≥0 where
+  max a b := ⟨max a.val b.val, by
+    apply le_max_iff.mpr
+    left; exact a.property⟩
+
+instance : IsLawfulLT ℝ≥0 where
+  lt_iff_le_and_not_le {a b} := by apply lt_iff_le_and_not_le (α := ℝ)
+
+instance : IsLinearOrder ℝ≥0 := orderEmbedReal.inducedIsLinearOrder
+instance : IsLinearMinMaxOrder ℝ≥0 where
+  min_iff_le_left {a b} := by
+    rw [←orderEmbedReal.inj.eq_iff]
+    apply min_iff_le_left (α := ℝ)
+  min_iff_le_right {a b} := by
+    rw [←orderEmbedReal.inj.eq_iff]
+    apply min_iff_le_right (α := ℝ)
+  max_iff_le_left {a b} := by
+    rw [←orderEmbedReal.inj.eq_iff]
+    apply max_iff_le_left (α := ℝ)
+  max_iff_le_right {a b} := by
+    rw [←orderEmbedReal.inj.eq_iff]
+    apply max_iff_le_right (α := ℝ)
 
 end NNReal
