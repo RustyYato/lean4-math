@@ -1,4 +1,3 @@
-import Math.Order.Preorder
 import Math.Data.Set.Order.Interval
 
 namespace Set

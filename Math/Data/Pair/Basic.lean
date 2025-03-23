@@ -1,4 +1,4 @@
-import Math.Order.Partial
+import Math.Order.Defs
 
 variable [LE α] [LE β] [LT α] [LT β]
 

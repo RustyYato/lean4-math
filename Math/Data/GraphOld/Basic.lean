@@ -1,5 +1,5 @@
 import Math.Tactics.PPWithUniv
-import Math.Order.Partial
+import Math.Order.Defs
 import Math.Relation.Basic
 
 @[pp_with_univ]

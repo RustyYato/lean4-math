@@ -1,4 +1,4 @@
-import Math.Order.Partial
+import Math.Order.Defs
 
 variable [LE α] [LT α] [Bot α] {a b: α} [IsLawfulBot α]
 

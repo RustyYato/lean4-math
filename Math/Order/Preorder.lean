@@ -30,11 +30,6 @@ def exists_lt [NoMinOrder α] (a : α) : ∃ b, b < a := NoMinOrder.exists_lt _
 def exists_not_ge [NoBotOrder α] (a : α) : ∃ b, ¬a ≤ b := NoBotOrder.exists_not_ge _
 def exists_not_le [NoTopOrder α] (a : α) : ∃ b, ¬b ≤ a := NoTopOrder.exists_not_le _
 
-instance {P: α -> Prop} : LT (Subtype P) where
-  lt a b := a.val < b.val
-instance {P: α -> Prop} : LE (Subtype P) where
-  le a b := a.val ≤ b.val
-
 instance [DenselyOrdered α] : DenselyOrdered αᵒᵖ where
   dense := by
     intro a b a_lt_b

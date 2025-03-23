@@ -1,5 +1,5 @@
 import Math.Algebra.AddMul.Order.Preorder
-import Math.Order.Partial
+import Math.Order.Defs
 
 instance [LT α] [LE α] [IsPartialOrder α] : IsPartialOrder (AddOfMul α) :=
   inferInstanceAs (IsPartialOrder α)

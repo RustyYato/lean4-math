@@ -1,6 +1,5 @@
 import Math.Algebra.AddMul
-import Math.Order.Preorder
-import Math.Order.OrderIso
+import Math.Order.Defs
 
 variable [LE α] [LT α]
 

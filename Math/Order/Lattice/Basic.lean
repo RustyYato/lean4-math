@@ -1,5 +1,4 @@
-import Math.Order.Partial
-import Math.Order.Notation
+import Math.Order.Defs
 import Math.Order.TopBot
 
 variable (α: Type*) [LE α] [LT α]

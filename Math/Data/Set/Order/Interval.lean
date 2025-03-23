@@ -1,7 +1,7 @@
 import Math.Data.Set.Like
-import Math.Order.Preorder
 import Math.Data.Set.Basic
 import Math.Order.Lattice.Basic
+import Math.Order.Preorder
 
 namespace Set
 

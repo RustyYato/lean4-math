@@ -1,4 +1,4 @@
-import Math.Order.Partial
+import Math.Order.Defs
 import Math.Logic.Nontrivial
 
 section IsAtom

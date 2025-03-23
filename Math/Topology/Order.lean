@@ -1,5 +1,4 @@
 import Math.Topology.Basic
-import Math.Order.Partial
 import Math.Data.Set.Lattice
 
 namespace Topology

@@ -1,5 +1,5 @@
 import Math.Ops.Checked
-import Math.Order.Preorder
+import Math.Order.Defs
 
 def ne_zero_of_zero_lt [Zero α] [LT α] [LE α] [IsPreOrder α] (b: α) (h: 0 < b) : b ≠ 0 := (ne_of_lt h).symm
 

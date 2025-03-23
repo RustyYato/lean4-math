@@ -1,7 +1,6 @@
 import Math.Data.Set.Finite
 import Math.Data.Set.Lattice
 import Math.Function.Basic
-import Math.Order.Partial
 import Math.Order.Lattice.Complete
 import Math.Order.GaloisConnection
 

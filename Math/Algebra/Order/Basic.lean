@@ -1,5 +1,5 @@
 import Math.Order.Covariant.Defs
-import Math.Order.Partial
+import Math.Order.Defs
 
 section Abbreviations
 
