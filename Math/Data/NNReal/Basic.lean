@@ -177,4 +177,11 @@ instance : IsLinearMinMaxOrder ℝ≥0 where
     rw [←orderEmbedReal.inj.eq_iff]
     apply max_iff_le_right (α := ℝ)
 
+instance : NeZero (2: ℝ) where
+  out := by
+    intro h
+    have ⟨k, spec⟩ := Quotient.exact h (1 /? 2) (by decide)
+    replace spec := spec _ _ (le_refl _) (le_refl _)
+    contradiction
+
 end NNReal
