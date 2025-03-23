@@ -742,3 +742,34 @@ instance [∀x, IsPartialOrder (β x)] : IsPartialOrder (∀x, β x) where
     apply hb
 
 end Pi
+
+namespace Subtype
+
+variable {P: α -> Prop} [LE α] [LT α]
+
+instance : LT (Subtype P) where
+  lt a b := a.val < b.val
+instance : LE (Subtype P) where
+  le a b := a.val ≤ b.val
+
+instance [IsLawfulLT α] : IsLawfulLT (Subtype P) where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := α)
+
+instance [IsPreOrder α] : IsPreOrder (Subtype P) where
+  le_refl _ := le_refl (α := α) _
+  le_trans := le_trans (α := α)
+
+instance [IsPartialOrder α] : IsPartialOrder (Subtype P) where
+  le_antisymm := by
+    intro a b ha hb
+    cases a; cases b; congr
+    apply le_antisymm
+    assumption
+    assumption
+
+local instance [IsLinearOrder α] : Relation.IsTotal ((· ≤ ·): Subtype P -> Subtype P -> Prop) where
+  total a b := by apply le_total (α := α)
+
+instance [IsLinearOrder α] : IsLinearOrder (Subtype P) := inferInstance
+
+end Subtype
