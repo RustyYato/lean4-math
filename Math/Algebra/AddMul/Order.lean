@@ -24,3 +24,13 @@ instance [IsLawfulLT α] : IsLawfulLT (MulOfAdd α) :=
 
 instance [IsPreOrder α] : IsPreOrder (MulOfAdd α) :=
   inferInstanceAs (IsPreOrder α)
+
+instance [LT α] [LE α] [IsPartialOrder α] : IsPartialOrder (AddOfMul α) :=
+  inferInstanceAs (IsPartialOrder α)
+instance [LT α] [LE α] [IsPartialOrder α] : IsPartialOrder (MulOfAdd α) :=
+  inferInstanceAs (IsPartialOrder α)
+
+instance [LT α] [LE α] [IsLinearOrder α] : IsLinearOrder (AddOfMul α) :=
+  inferInstanceAs (IsLinearOrder α)
+instance [LT α] [LE α] [IsLinearOrder α] : IsLinearOrder (MulOfAdd α) :=
+  inferInstanceAs (IsLinearOrder α)
