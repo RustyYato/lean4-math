@@ -699,7 +699,7 @@ def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by
       unfold Fract.isNonneg
       rw [Fract.sub_eq_add_neg]
       show 0 ≤ _ + _
-      simp
+      simp [←neg_mul_left]
       apply Int.le_sub_left_of_add_le
       simp; rw [Int.mul_comm]
       apply Int.mul_ediv_self_le
