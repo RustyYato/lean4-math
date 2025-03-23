@@ -131,11 +131,8 @@ instance : IsSemifield ℝ≥0 where
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
 
-instance : LE ℝ≥0 where
-  le a b := a.val ≤ b.val
-
-instance : LT ℝ≥0 where
-  lt a b := a.val < b.val
+instance : LE ℝ≥0 := inferInstanceAs (LE (Subtype _))
+instance : LT ℝ≥0 := inferInstanceAs (LT (Subtype _))
 
 instance : Bot ℝ≥0 where
   bot := 0
@@ -159,10 +156,7 @@ instance : Max ℝ≥0 where
     apply le_max_iff.mpr
     left; exact a.property⟩
 
-instance : IsLawfulLT ℝ≥0 where
-  lt_iff_le_and_not_le {a b} := by apply lt_iff_le_and_not_le (α := ℝ)
-
-instance : IsLinearOrder ℝ≥0 := orderEmbedReal.inducedIsLinearOrder
+instance : IsLinearOrder ℝ≥0 := inferInstanceAs (IsLinearOrder (Subtype _))
 instance : IsLinearMinMaxOrder ℝ≥0 where
   min_iff_le_left {a b} := by
     rw [←orderEmbedReal.inj.eq_iff]
