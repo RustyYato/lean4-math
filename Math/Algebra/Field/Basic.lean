@@ -1,5 +1,6 @@
 import Math.Algebra.Field.Defs
 import Math.Algebra.Semifield.Basic
+import Math.Algebra.Ring.Basic
 
 section
 
