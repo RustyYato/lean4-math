@@ -29,6 +29,13 @@ instance [MonoidOps α] [IsOrderedCancelCommMonoid α] : IsOrderedCancelAddCommM
 instance [AddMonoidOps α] [IsOrderedCancelAddCommMonoid α] : IsOrderedCancelCommMonoid (MulOfAdd α) where
   le_of_mul_le_mul_left := IsOrderedCancelAddCommMonoid.le_of_add_le_add_left (α := α)
 
+def zero_le_one [Zero α] [One α] [IsZeroLeOne α] : (0: α) ≤ 1 := IsZeroLeOne.zero_le_one
+
+def zero_lt_one [Zero α] [One α] [Mul α] [IsMulZeroClass α] [IsMulOneClass α] [IsZeroLeOne α] [IsNontrivial α] [IsPartialOrder α] : (0: α) < 1 := by
+  apply lt_of_le_of_ne
+  apply zero_le_one
+  apply zero_ne_one
+
 section IsOrderedAddCommMonoid
 
 variable [AddMonoidOps α] [IsOrderedAddCommMonoid α]

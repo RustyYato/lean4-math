@@ -27,11 +27,10 @@ variable
   [SemiringOps α] [SemiringOps β]
   [IsSemiring α] [IsOrderedSemiring β]
   [IsLawfulAbs α] [IsLeftCancel₀ β]
-  [IsNontrivial α]
 
 -- if we are in a non-trivial domain,
 -- then the absolute value of one = 1
-def abs_one : ‖(1: α)‖ = 1 := by
+def abs_one [IsNontrivial α] : ‖(1: α)‖ = 1 := by
   have : ‖(1: α)‖ * ‖(1: α)‖ = ‖(1: α)‖ := by rw [←abs_mul, mul_one]
   rw (occs := [3]) [←mul_one ‖(1: α)‖] at this
   rcases subsingleton_or_nontrivial β
@@ -40,21 +39,51 @@ def abs_one : ‖(1: α)‖ = 1 := by
   intro h
   exact zero_ne_one α (of_abs_eq_zero h).symm
 
+def abs_npow [IsNontrivial α] (a: α) (n: ℕ) : ‖a ^ n‖ = ‖a‖ ^ n := by
+  induction n with
+  | zero => rw [npow_zero, npow_zero, abs_one]
+  | succ n ih => rw [npow_succ, abs_mul, ih, npow_succ]
+
+def abs_npow_succ (a: α) (n: Nat) : ‖a ^ (n + 1)‖ = ‖a‖ ^ (n + 1) := by
+  induction n with
+  | zero => rw [npow_one, npow_one]
+  | succ n ih => rw [npow_succ, npow_succ, abs_mul, ←npow_succ, ih, npow_succ, npow_succ, npow_succ]
+
+def abs_unit [IsNontrivial α] (u: Units α) : Units β where
+  val := ‖u.val‖
+  inv := ‖u.inv‖
+  val_mul_inv := by rw [←abs_mul, u.val_mul_inv, abs_one]
+  inv_mul_val := by rw [←abs_mul, u.inv_mul_val, abs_one]
+
 end
 
 section
 
 variable
   [AbsoluteValue α β] [LE β] [LT β]
-  [FieldOps α] [FieldOps β]
-  [IsNonCommSemifield α] [IsNonCommSemifield β]
-  [IsOrderedSemiring β] [IsLawfulAbs α]
+  [RingOps α] [SemiringOps β]
+  [IsRing α] [IsOrderedSemiring β]
+  [IsLawfulAbs α]
 
-def abs_inv? (a: α) (h: a ≠ 0) : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
-  symm; apply inv?_eq_of_mul_left
-  rw [←abs_mul, mul_inv?_cancel, abs_one]
-
-def abs_div? (a b: α) (h: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
-  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, abs_mul, abs_inv?]
+def abs_neg (a: α) : ‖-a‖ = ‖a‖ := by
+  apply IsLawfulAbs.abs_eq_of_add_eq_zero
+  rw [neg_add_cancel]
 
 end
+
+section
+
+-- variable
+--   [AbsoluteValue α β] [LE β] [LT β]
+--   [FieldOps α] [FieldOps β]
+--   [IsNonCommSemifield α] [IsNonCommSemifield β]
+--   [IsOrderedSemiring β] [IsLawfulAbs α]
+
+-- def abs_inv? (a: α) (h: a ≠ 0) : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
+--   symm; apply inv?_eq_of_mul_left
+--   rw [←abs_mul, mul_inv?_cancel, abs_one]
+
+-- def abs_div? (a b: α) (h: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
+--   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, abs_mul, abs_inv?]
+
+-- end

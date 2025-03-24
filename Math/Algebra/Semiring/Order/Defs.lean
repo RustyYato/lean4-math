@@ -12,3 +12,14 @@ class IsOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends IsS
 instance [SemiringOps α] [LT α] [LE α]
   [hs: IsSemiring α] [ho: IsOrderedNonUnitalNonAssocSemiring α] [IsZeroLeOne α]
   : IsOrderedSemiring α := { hs, ho with }
+
+class IsStrictOrderedNonUnitalNonAssocSemiring (α: Type*)
+  [AddMonoidOps α] [Mul α] [LT α] [LE α] extends IsOrderedNonUnitalNonAssocSemiring α where
+  mul_pos: ∀a b: α, 0 < a -> 0 < b -> 0 < a * b
+
+class IsStrictOrderedSemiring (α: Type*) [SemiringOps α] [LT α] [LE α] extends
+  IsOrderedSemiring α, IsStrictOrderedNonUnitalNonAssocSemiring α where
+
+instance [SemiringOps α] [LT α] [LE α]
+  [hs: IsOrderedSemiring α] [ho: IsStrictOrderedNonUnitalNonAssocSemiring α]
+  : IsStrictOrderedSemiring α := { hs, ho with }

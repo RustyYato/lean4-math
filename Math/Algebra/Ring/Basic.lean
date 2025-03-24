@@ -54,3 +54,21 @@ instance [AddGroupOps α] [Mul α]
     apply eq_of_sub_eq_zero
     assumption
     contradiction
+
+def mul_self_eq_mul_self_iff [AddGroupOps R] [Mul R]
+  [IsNonUnitalNonAssocRing R] [NoZeroDivisors R] (h: a * b = b * a) :
+  a * a = b * b ↔ a = b ∨ a = -b := by
+  apply flip Iff.intro
+  intro g
+  rcases g with rfl | rfl
+  rfl
+  rw [←neg_mul_left, ←neg_mul_right, neg_neg]
+  intro g
+  replace g : (a + b) * (a - b) = 0 := by
+    rw [add_mul, mul_sub, mul_sub, ←add_sub_assoc _ (b * a),
+      sub_eq_add_neg (a * a), add_assoc, h, neg_add_cancel,
+      add_zero, g, sub_self]
+  rcases of_mul_eq_zero g with g | g
+  right; exact neg_eq_of_add_right g
+  left; apply eq_of_sub_eq_zero
+  assumption
