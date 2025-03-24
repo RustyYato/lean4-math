@@ -178,9 +178,32 @@ instance : NeZero (2: ℝ) where
     replace spec := spec _ _ (le_refl _) (le_refl _)
     contradiction
 
--- instance : IsStrictOrderedSemiring ℝ≥0 where
---   add_le_add_left := sorry
---   le_iff_nsmul_le := sorry
---   mul_nonneg := sorry
+instance : IsStrictOrderedSemiring ℝ≥0 where
+  zero_le_one := by apply bot_le
+  add_le_add_left := by
+    intro a b h c
+    apply add_le_add_left (α := ℝ)
+    assumption
+  mul_nonneg := by
+    intro a b
+    apply mul_nonneg (α := ℝ)
+  mul_pos := by
+    intro a b
+    apply mul_pos (α := ℝ)
+  mul_le_mul_of_nonneg_left := by
+    intro a b h c
+    apply mul_le_mul_of_nonneg_left (α := ℝ)
+    assumption
+  mul_le_mul_of_nonneg_right := by
+    intro a b h c
+    apply mul_le_mul_of_nonneg_right (α := ℝ)
+    assumption
+
+instance : IsOrderedCommMonoid ℝ≥0 where
+  mul_le_mul_left := by
+    intro a b h c
+    apply mul_le_mul_of_nonneg_left
+    assumption
+    apply bot_le
 
 end NNReal
