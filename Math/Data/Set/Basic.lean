@@ -30,7 +30,8 @@ export InfSet (sInf)
 
 namespace Set
 
-instance {α} : Membership α (Set α) := ⟨Set.Mem⟩
+instance {α} : Membership α (Set α) where
+  mem s x := s.Mem x
 instance {α} : HasSubset (Set α) where
   Subset a b := ∀x ∈ a, x ∈ b
 instance {α} : HasSSubset (Set α) where
