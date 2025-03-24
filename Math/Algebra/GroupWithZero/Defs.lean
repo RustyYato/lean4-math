@@ -196,3 +196,26 @@ def inv?_npow (a: α) (h: a ≠ 0) (n: ℕ) : (a⁻¹?) ^ n = (a ^ n)⁻¹? := b
 
 def div?_npow [IsCommMagma α] (a b: α) (h: b ≠ 0) (n: ℕ) : (a /? b) ^ n = (a ^ n) /? (b ^ n) := by
   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, mul_npow, inv?_npow]
+
+class IsLeftCancel₀ (α: Type*) [Mul α] [Zero α]: Prop where
+  mul_left_cancel₀ {a b k: α}: k ≠ 0 -> k * a = k * b -> a = b
+class IsRightCancel₀ (α: Type*) [Mul α] [Zero α]: Prop where
+  mul_right_cancel₀ {a b k: α}: k ≠ 0 -> a * k = b * k -> a = b
+class IsMulCancel₀ (α: Type*) [Mul α]  [Zero α]: Prop extends IsLeftCancel₀ α, IsRightCancel₀ α
+
+def mul_left_cancel₀ [Mul α] [Zero α] [IsLeftCancel₀ α] {a b k: α}: k ≠ 0 -> k * a = k * b -> a = b := IsLeftCancel₀.mul_left_cancel₀
+def mul_right_cancel₀ [Mul α] [Zero α] [IsRightCancel₀ α] {a b k: α}: k ≠ 0 -> a * k = b * k -> a = b := IsRightCancel₀.mul_right_cancel₀
+
+instance (priority := 50) IsCommMagma.toLeftCancel₀ [Mul α] [Zero α] [IsCommMagma α] [IsRightCancel₀ α] : IsLeftCancel₀ α where
+  mul_left_cancel₀ := by
+    intro _ _ k
+    rw [mul_comm k, mul_comm k]
+    apply mul_right_cancel₀
+
+instance (priority := 50) IsCommMagma.toRightCancel₀ [Mul α] [Zero α] [IsCommMagma α] [IsLeftCancel₀ α] : IsRightCancel₀ α where
+  mul_right_cancel₀ := by
+    intro _ _ k
+    rw [mul_comm _ k, mul_comm _ k]
+    apply mul_left_cancel₀
+
+instance [Mul α] [Zero α] [IsLeftCancel₀ α] [IsRightCancel₀ α] : IsMulCancel₀ α where

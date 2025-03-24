@@ -4,7 +4,7 @@ import Math.Order.Monotone.Defs
 
 variable [LT α] [LE α] [LT α] [LE α]
 
-class ZeroLeOne (α: Type*) [Zero α] [One α] [LE α] where
+class IsZeroLeOne (α: Type*) [Zero α] [One α] [LE α] where
   zero_le_one: 0 ≤ (1: α)
 
 class IsOrderedAddCommMonoid (α: Type*) [AddMonoidOps α] [LT α] [LE α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsPartialOrder α  where

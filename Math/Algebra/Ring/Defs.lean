@@ -65,6 +65,8 @@ def neg_one_mul [RingOps α] [IsRing α] (a: α) : -1 * a = -a := by
 
 class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] : Prop extends IsNonAssocSemiring α, IsAddGroupWithOne α
 
+class IsNonUnitalNonAssocRing (α: Type*) [AddGroupOps α] [Mul α] : Prop extends IsNonUnitalNonAssocSemiring α, IsAddGroup α
+
 instance
   [AddGroupWithOneOps α] [Mul α]
   [h: IsNonAssocSemiring α]
@@ -73,10 +75,23 @@ instance
     h, g with
   }
 
+instance
+  [AddGroupOps α] [Mul α]
+  [h: IsNonUnitalNonAssocSemiring α]
+  [g: IsAddGroup α]
+  : IsNonUnitalNonAssocRing α := {
+    h, g with
+  }
+
 instance [RingOps α] [IsRing α] : IsNonAssocRing α := inferInstance
+instance [RingOps α] [IsRing α] : IsNonUnitalNonAssocRing α := inferInstance
 
 instance (priority := 100) [RingOps α] [h: IsNonAssocRing α] [g: IsMonoid α] :
   IsRing α := inferInstance
+instance (priority := 100) [RingOps α] [h: IsNonUnitalNonAssocRing α]
+  [g: IsAddGroupWithOne α] [IsMulOneClass α] : IsNonAssocRing α := inferInstance
+instance (priority := 100) [RingOps α] [h: IsNonUnitalNonAssocRing α]
+  [g: IsAddGroupWithOne α] [IsMonoid α] : IsRing α := inferInstance
 
 instance : SMul ℕ ℤ where
   smul a b := a * b

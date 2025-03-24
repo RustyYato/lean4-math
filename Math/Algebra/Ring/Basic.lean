@@ -1,5 +1,6 @@
 import Math.Algebra.Basic
 import Math.Algebra.Semiring.Char
+import Math.Algebra.GroupWithZero.Defs
 
 instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] [IsAddCommMagma R] : IsModule Int R where
   one_smul := one_zsmul
@@ -33,3 +34,23 @@ def ofNatHom : ℕ ↪+* ℤ where
   inj' _ _ := Int.ofNat.inj
 
 instance : HasChar Int 0 := HasChar.of_ring_emb ofNatHom
+
+instance [AddGroupOps α] [Mul α]
+  [IsNonUnitalNonAssocRing α] [NoZeroDivisors α]
+  : IsMulCancel₀ α where
+  mul_left_cancel₀ := by
+    intro a b k hk h
+    have : k * a - k * b = 0 := by rw [h, sub_self]
+    rw [←mul_sub] at this
+    rcases of_mul_eq_zero this with g | g
+    contradiction
+    apply eq_of_sub_eq_zero
+    assumption
+  mul_right_cancel₀ := by
+    intro a b k hk h
+    have : a * k - b * k = 0 := by rw [h, sub_self]
+    rw [←sub_mul] at this
+    rcases of_mul_eq_zero this with g | g
+    apply eq_of_sub_eq_zero
+    assumption
+    contradiction

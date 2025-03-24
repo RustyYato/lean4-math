@@ -105,3 +105,23 @@ def npow_mul (n m: ℕ) (x: α) : x ^ (m * n) = (x ^ n) ^ m :=
 
 def npow_two (x: α) : x ^ 2 = x * x := by
   rw [npow_succ, npow_succ, npow_zero, one_mul]
+
+def eq_zero_iff_left (a: α) : a = 0 ↔ ∀b, a + b = b := by
+  apply Iff.intro
+  rintro rfl
+  intro x ; rw [zero_add]
+  intro h
+  have := h 0
+  rwa [add_zero] at this
+def eq_zero_iff_right (a: α) : a = 0 ↔ ∀b, b + a = b := by
+  apply Iff.intro
+  rintro rfl
+  intro x ; rw [add_zero]
+  intro h
+  have := h 0
+  rwa [zero_add] at this
+
+def eq_one_iff_left (a: α) : a = 1 ↔ ∀b, a * b = b :=
+  eq_zero_iff_left (α := AddOfMul α) _
+def eq_one_iff_right (a: α) : a = 1 ↔ ∀b, b * a = b :=
+  eq_zero_iff_right (α := AddOfMul α) _
