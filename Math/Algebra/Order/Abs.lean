@@ -1,6 +1,6 @@
 import Math.Algebra.Semiring.Order.Defs
+import Math.Algebra.GroupWithZero.Defs
 import Math.Ops.Abs
-import Math.Algebra.Impls.Bool
 
 class IsLawfulAbs (α: Type*) {β: outParam Type*}
   [AbsoluteValue α β] [LE β] [LT β]

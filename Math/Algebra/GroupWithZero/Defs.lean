@@ -219,3 +219,23 @@ instance (priority := 50) IsCommMagma.toRightCancel₀ [Mul α] [Zero α] [IsCom
     apply mul_left_cancel₀
 
 instance [Mul α] [Zero α] [IsLeftCancel₀ α] [IsRightCancel₀ α] : IsMulCancel₀ α where
+
+instance : IsMulCancel₀ Nat where
+  mul_left_cancel₀ := by
+    intro a b k hk h
+    apply Nat.mul_left_cancel _ h
+    exact Nat.zero_lt_of_ne_zero hk
+  mul_right_cancel₀ := by
+    intro a b k hk h
+    apply Nat.mul_right_cancel _ h
+    exact Nat.zero_lt_of_ne_zero hk
+
+instance : IsMulCancel₀ Int where
+  mul_left_cancel₀ := by
+    intro a b k hk h
+    have : (k * a) / k = (k * b) / k := by rw [h]
+    exact (Int.mul_eq_mul_left_iff hk).mp h
+  mul_right_cancel₀ := by
+    intro a b k hk h
+    have : (a * k) / k = (b * k) / k := by rw [h]
+    exact (Int.mul_eq_mul_right_iff hk).mp h
