@@ -1,6 +1,5 @@
 import Math.Algebra.Monoid.Units.Defs
-import Math.Algebra.Impls.Nat
-import Math.Algebra.Impls.Int
+import Math.Algebra.Ring.Defs
 
 class IsLawfulDvd (α: Type*) [Dvd α] [Mul α]: Prop where
   dvd_iff {a b: α} : (a ∣ b) ↔  ∃k, b = a * k := by intros; rfl

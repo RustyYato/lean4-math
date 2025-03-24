@@ -2,7 +2,6 @@ import Math.Algebra.Ring.Theory.Ideal.TwoSided.Basic
 import Init.Data.Fin.Basic
 import Math.Data.List.Algebra
 import Math.Algebra.AddGroupWithOne.SetLike.Basic
-import Math.Algebra.Impls.Int
 import Math.Algebra.Ring.Basic
 
 namespace Ideal

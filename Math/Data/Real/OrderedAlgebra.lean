@@ -1,8 +1,6 @@
-import Math.Algebra.Order
-import Math.Data.Rat.OrderedAlgebra
 import Math.Data.Real.Div
 
-instance Real.instOrderedRing : IsStrictOrderedRing ℝ where
+instance Real.instOrderedRing : IsStrictOrderedSemiring ℝ where
   zero_le_one := by
     left
     exists 1
@@ -15,12 +13,6 @@ instance Real.instOrderedRing : IsStrictOrderedRing ℝ where
   add_le_add_left := by
     intro a b ab k
     apply Real.le_iff_add_le_add_left.mp
-    assumption
-  le_iff_nsmul_le := by
-    intro a b n npos
-    apply Real.le_iff_mul_le_mul_of_pos_left
-    show (0: ℕ) < (n: ℝ)
-    rw [←Real.lt_iff_natCast_lt]
     assumption
   mul_le_mul_of_nonneg_left a b h k knonneg := by
     cases lt_or_eq_of_le knonneg
@@ -66,7 +58,15 @@ instance Real.instOrderedRing : IsStrictOrderedRing ℝ where
     apply le_of_lt; assumption
     assumption
 
-instance : IsOrderedAbsMonoid ℝ where
+def Real.abs_mul' (a b: ℝ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
+  cases a, b with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  show ‖a n * b n‖ = ‖a n‖ * ‖b n‖
+  rw [Rat.abs_mul]
+
+instance : IsLawfulAbs ℝ where
   abs_nonneg a := by
     rw [Real.abs_def]
     split
@@ -75,18 +75,8 @@ instance : IsOrderedAbsMonoid ℝ where
     apply le_of_lt
     rw [lt_iff_not_le]
     assumption
-  abs_one := rfl
-  mul_abs := by
-    intro a b
-    cases a, b with | mk a b =>
-    apply Quotient.sound
-    apply CauchySeq.pointwise
-    intro n
-    show ‖a n * b n‖ = ‖a n‖ * ‖b n‖
-    rw [Rat.abs_mul]
-
-instance : IsOrderedAbsAddGroupWithOne ℝ where
-  abs_zero {x} := by
+  abs_mul := by apply Real.abs_mul'
+  abs_zero_iff {x} := by
     rw [Real.abs_def]
     split
     rfl
@@ -98,35 +88,12 @@ instance : IsOrderedAbsAddGroupWithOne ℝ where
     apply CauchySeq.le_pointwise
     intro n
     apply Rat.abs_add_le_add_abs
-  nsmul_abs a n := by
-    cases a with | mk a =>
-    apply Quotient.sound
-    apply CauchySeq.pointwise
-    intro m
-    apply nsmul_abs
-  natcast_abs n := by
-    apply Quotient.sound
-    apply CauchySeq.pointwise
-    intro m
-    apply natcast_abs
-  intcast_abs n := by
-    apply Quotient.sound
-    apply CauchySeq.pointwise
-    intro m
-    apply intcast_abs
-  neg_abs a := by
-    cases a with | mk a =>
-    apply Quotient.sound
-    apply CauchySeq.pointwise
-    intro m
-    apply neg_abs
-
-  zsmul_ofNat := zsmul_ofNat
-  zsmul_negSucc := zsmul_negSucc
-  neg_add_cancel := neg_add_cancel
-  sub_eq_add_neg := sub_eq_add_neg
-
-instance : IsOrderedAbsRing ℝ := inferInstance
+  abs_eq_of_add_eq_zero := by
+    intro a b h
+    rw [neg_eq_of_add_right h,
+      ←neg_one_mul]
+    rw [Real.abs_mul']
+    apply one_mul
 
 instance : NeZero (2: ℝ) where
   out := by
@@ -137,7 +104,7 @@ def Real.abs_of_nonneg (a: ℝ) : 0 ≤ a ↔ ‖a‖ = a := by
   apply flip Iff.intro
   · intro h
     rw [←h]
-    exact IsLawfulAbs.abs_nonneg a
+    exact abs_nonneg a
   · intro h
     rw [abs_def]
     split

@@ -61,12 +61,12 @@ section
 
 variable
   [AbsoluteValue α β] [LE β] [LT β]
-  [RingOps α] [SemiringOps β]
-  [IsRing α] [IsOrderedSemiring β]
-  [IsLawfulAbs α]
+  [AddGroupOps α] [AddMonoidOps β]
+  [IsAddGroup α][IsOrderedAddCommMonoid β]
+  [IsLawfulNorm α]
 
 def abs_neg (a: α) : ‖-a‖ = ‖a‖ := by
-  apply IsLawfulAbs.abs_eq_of_add_eq_zero
+  apply IsLawfulNorm.abs_eq_of_add_eq_zero
   rw [neg_add_cancel]
 
 def abs_sub_comm (a b: α) : ‖a - b‖ = ‖b - a‖ := by

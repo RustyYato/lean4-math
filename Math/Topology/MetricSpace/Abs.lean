@@ -1,12 +1,14 @@
-import Math.Algebra.Order
 import Math.Topology.MetricSpace.Defs
+import Math.Algebra.Abs.Basic
 
 namespace Abs
 
-variable (α: Type*)
-  [AbsoluteValue α γ] [LT γ] [LE γ]
-  [AddMonoidOps γ] [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α]
-  [IsOrderedAddCommMonoid γ] [IsOrderedAbsAddGroup α] [IsLinearOrder γ]
+variable (α: Type*) {γ: Type*}
+  [LT γ] [LE γ]
+  [AddGroupOps α] [AddMonoidOps γ]
+  [IsAddGroup α] [IsAddCommMagma α]
+  [IsOrderedAddCommMonoid γ]
+  [AbsoluteValue α γ] [IsLawfulNorm α]
 
 scoped instance : Dist α γ where
   dist x y := ‖x - y‖
@@ -32,6 +34,6 @@ instance : IsMetricSpace α where
   of_dist_eq_zero := by
     intro x y eq
     dsimp [dist] at eq
-    exact eq_of_sub_eq_zero (abs_zero.mp eq)
+    exact eq_of_sub_eq_zero (of_abs_eq_zero eq)
 
 end Abs

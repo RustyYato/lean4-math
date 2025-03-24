@@ -93,7 +93,7 @@ def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
   simp at prf
   apply lt_of_le_of_lt _ prf
   clear prf
-  rw [←neg_abs]
+  rw [←abs_neg]
   apply le_of_eq
   congr
   split <;> split

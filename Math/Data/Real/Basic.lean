@@ -1,5 +1,6 @@
-import Math.Data.Rat.OrderedAlgebra
 import Math.Function.Basic
+import Math.Data.Rat.OrderedAlgebra
+import Math.Algebra.Abs.Basic
 
 def CauchySeq.Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
 def CauchySeq.Eventually₂ (P: Nat -> Nat -> Prop) : Prop := ∃k, ∀n m, k ≤ n -> k ≤ m -> P n m
@@ -78,7 +79,7 @@ def CauchySeq.Eventually₂.lower_bound (n: Nat) : Eventually₂ fun i j => n �
   intro i j ni nj
   trivial
 
-abbrev Rat.is_cauchy_rel (a: Nat -> ℚ) (ε: ℚ) (hε: 0 < ε) (n m: ℕ) : Prop := ‖a n - a m‖ < ε
+abbrev Rat.is_cauchy_rel (a: Nat -> ℚ) (ε: ℚ) (_hε: 0 < ε) (n m: ℕ) : Prop := ‖a n - a m‖ < ε
 
 instance : Relation.IsSymmetric (Rat.is_cauchy_rel a ε hε) where
   symm := by
@@ -784,7 +785,7 @@ def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
   apply lt_of_le_of_lt
   apply Rat.abs_add_le_add_abs
   rw [←sub_eq_add_neg, ←sub_eq_add_neg] at h
-  rw [neg_abs, ←add_half ε]
+  rw [abs_neg, ←add_half ε]
   apply Rat.add_lt_add
   exact h.left
   exact h.right

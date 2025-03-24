@@ -1,4 +1,3 @@
-import Math.Algebra.Impls.Int
 import Math.Algebra.Impls.Fin
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Quotient
 import Math.Data.Quotient.Basic

@@ -1,7 +1,7 @@
 import Math.Function.Basic
 import Math.Logic.Equiv.Basic
-import Math.Algebra.Order
-import Math.Algebra.Impls.Nat
+import Math.Algebra.Ring.Defs
+import Math.Algebra.Semiring.Order.Defs
 import Math.Data.Fin.Pairing
 
 def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) ≠ y.addNat n := by

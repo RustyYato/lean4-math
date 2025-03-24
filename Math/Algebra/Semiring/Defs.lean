@@ -125,3 +125,31 @@ instance : IsSemiring Nat where
 
 instance : IsCommMagma Nat where
   mul_comm := Nat.mul_comm
+
+instance : SMul ℕ ℤ where
+  smul a b := a * b
+
+instance instSemiringInt : IsSemiring Int where
+  add_comm := Int.add_comm
+  add_assoc := Int.add_assoc
+  zero_add := Int.zero_add
+  add_zero := Int.add_zero
+  natCast_zero := rfl
+  natCast_succ _ := rfl
+  ofNat_eq_natCast _ := rfl
+  mul_assoc := Int.mul_assoc
+  zero_mul := Int.zero_mul
+  mul_zero := Int.mul_zero
+  one_mul := Int.one_mul
+  mul_one := Int.mul_one
+  left_distrib := Int.mul_add
+  right_distrib := Int.add_mul
+  zero_nsmul := Int.zero_mul
+  succ_nsmul := by
+    intro n a
+    show (n + 1) * a = _
+    rw [Int.add_mul, Int.one_mul]
+    rfl
+
+instance : IsCommMagma Int where
+  mul_comm := Int.mul_comm

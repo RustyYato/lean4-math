@@ -1,18 +1,12 @@
 import Math.Data.Rat.Order
-import Math.Algebra.Order
 import Math.Algebra.Archimedean.Basic
+import Math.Algebra.Abs.Defs
 
-instance : IsStrictOrderedRing ℚ where
+instance : IsStrictOrderedSemiring ℚ where
   add_le_add_left := by
     intro a b h c
     apply Rat.add_le_add_left.mp
     assumption
-  le_iff_nsmul_le := by
-    intro a b n npos
-    refine Rat.le_iff_mul_left_pos ?_
-    rw [Rat.lt_def, sub_zero]
-    apply Int.ofNat_pos.mpr
-    exact npos
   zero_le_one := by decide
   mul_nonneg := by
     intro a b ha hb
@@ -33,23 +27,16 @@ instance : IsStrictOrderedRing ℚ where
   mul_pos := by
     exact fun a b a_1 a_2 => Rat.mul_pos a_1 a_2
 
-instance : IsOrderedAbsRing ℚ where
+instance : IsLawfulAbs ℚ where
   abs_nonneg := Rat.abs_nonneg
-  abs_zero := Rat.eq_zero_iff_abs_eq_zero.symm
+  abs_zero_iff := Rat.eq_zero_iff_abs_eq_zero.symm
   abs_add_le_add_abs := Rat.abs_add_le_add_abs
-  nsmul_abs _ _ := Rat.abs_mul _ _
-  abs_one := rfl
-  mul_abs := Rat.abs_mul
-  natcast_abs _ := rfl
-  intcast_abs _ := rfl
-  neg_abs a := by
-    rw [neg_eq_neg_one_zsmul, zsmul_eq_intCast_mul,
+  abs_mul := Rat.abs_mul
+  abs_eq_of_add_eq_zero := by
+    intro a b h
+    rw [neg_eq_of_add_right h, ←neg_one_mul,
       Rat.abs_mul]
     apply one_mul
-  sub_eq_add_neg := sub_eq_add_neg
-  zsmul_ofNat := zsmul_ofNat
-  zsmul_negSucc := zsmul_negSucc
-  neg_add_cancel := neg_add_cancel
 
 instance : Archimedean ℚ := by
   apply archimedean_iff_nat_lt.mpr

@@ -1,5 +1,6 @@
-import Math.Algebra.Order
 import Math.Algebra.Field.Basic
+import Math.Algebra.Field.Order.Basic
+import Math.Ops.CheckedOrder
 
 class Archimedean (α) [AddMonoidOps α] [LT α] [LE α] [IsOrderedAddCommMonoid α] : Prop where
   /-- For any two elements `x`, `y` such that `0 < y`, there exists a natural number `n`
@@ -8,7 +9,8 @@ class Archimedean (α) [AddMonoidOps α] [LT α] [LE α] [IsOrderedAddCommMonoid
 
 section Field
 
- variable [FieldOps α] [IsField α] [LT α] [LE α] [IsOrderedRing α]
+ variable [FieldOps α] [IsField α] [LT α] [LE α] [IsOrderedSemiring α]
+  [IsZeroLeOne α]
 
 def archimedean_iff_nat_lt : Archimedean α ↔ ∀ x : α, ∃ n : ℕ, x < n := by
   apply Iff.intro
