@@ -69,21 +69,24 @@ def abs_neg (a: α) : ‖-a‖ = ‖a‖ := by
   apply IsLawfulAbs.abs_eq_of_add_eq_zero
   rw [neg_add_cancel]
 
+def abs_sub_comm (a b: α) : ‖a - b‖ = ‖b - a‖ := by
+  rw [←abs_neg, neg_sub]
+
 end
 
 section
 
--- variable
---   [AbsoluteValue α β] [LE β] [LT β]
---   [FieldOps α] [FieldOps β]
---   [IsNonCommSemifield α] [IsNonCommSemifield β]
---   [IsOrderedSemiring β] [IsLawfulAbs α]
+variable
+  [AbsoluteValue α β] [LE β] [LT β]
+  [FieldOps α] [FieldOps β]
+  [IsNonCommSemifield α] [IsNonCommSemifield β]
+  [IsOrderedSemiring β] [IsLawfulAbs α]
 
--- def abs_inv? (a: α) (h: a ≠ 0) : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
---   symm; apply inv?_eq_of_mul_left
---   rw [←abs_mul, mul_inv?_cancel, abs_one]
+def abs_inv? (a: α) (h: a ≠ 0) : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
+  symm; apply inv?_eq_of_mul_left
+  rw [←abs_mul, mul_inv?_cancel, abs_one]
 
--- def abs_div? (a b: α) (h: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
---   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, abs_mul, abs_inv?]
+def abs_div? (a b: α) (h: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, abs_mul, abs_inv?]
 
--- end
+end

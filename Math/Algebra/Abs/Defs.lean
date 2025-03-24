@@ -14,7 +14,7 @@ class IsLawfulAbs (α: Type*) {β: outParam Type*}
   abs_add_le_add_abs (a b: α): ‖a + b‖ ≤ ‖a‖ + ‖b‖
   -- this is a way of hacking in ‖-a‖ = ‖a‖ without relying on negatives
   -- technically this is not an axiom for aboslute values
-  -- but it is too tedious to prove normally
+  -- but is satisfied by every absolute value I care about
   abs_eq_of_add_eq_zero (a b: α) : a + b = 0 -> ‖a‖ = ‖b‖
 
 section
