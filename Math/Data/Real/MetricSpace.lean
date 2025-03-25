@@ -517,6 +517,44 @@ def isClosed_le (f g: ℝ -> ℝ) [hf: IsContinuous f] [hg: IsContinuous g] :
   apply IsClosed.preimage
   apply isClosed_le_prod
 
+instance instContℝnpow (n: ℕ) : Topology.IsContinuous  (fun x: ℝ => x ^ n) := by
+  induction n with
+  | zero =>
+    simp
+    infer_instance
+  | succ n ih =>
+    simp [npow_succ]
+    show Topology.IsContinuous <| (fun x: ℝ × ℝ => x.1 * x.2) ∘ (fun x => (x ^ n, x))
+    apply Topology.IsContinuous.comp'
+    apply Topology.IsContinuous.prod_mk
+    assumption
+    infer_instance
+    infer_instance
+
+instance instContℝnsmul (n: ℕ) : Topology.IsContinuous  (fun x: ℝ => n • x) := by
+  induction n with
+  | zero =>
+    simp
+    infer_instance
+  | succ n ih =>
+    simp [succ_nsmul]
+    show Topology.IsContinuous <| (fun x: ℝ × ℝ => x.1 + x.2) ∘ (fun x => (n • x, x))
+    apply Topology.IsContinuous.comp'
+    apply Topology.IsContinuous.prod_mk
+    assumption
+    infer_instance
+    infer_instance
+
+instance instContℝzsmul (n: ℤ) : Topology.IsContinuous  (fun x: ℝ => n • x) := by
+  cases n with
+  | ofNat n =>
+    simp [zsmul_ofNat]
+    infer_instance
+  | negSucc n =>
+    simp [zsmul_negSucc]
+    show IsContinuous <| (fun x => -x) ∘ (fun x => (n + 1) • x)
+    infer_instance
+
 -- instance instContℝadd₂
 --   (f g: ℝ × ℝ -> ℝ) [Topology.IsContinuous f] [Topology.IsContinuous g]
 --  : Topology.IsContinuous (fun x: ℝ × ℝ => f x + g x) :=
