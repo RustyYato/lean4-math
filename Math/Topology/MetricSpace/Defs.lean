@@ -123,3 +123,15 @@ instance
     rw [h] at h₁
     have := lt_irrefl h₁
     contradiction
+
+variable
+  [Dist α γ] [Dist β γ]
+  [LE γ] [LT γ] [AddMonoidOps γ]
+  [IsOrderedAddCommMonoid γ]
+  [Sup γ] [IsSemiLatticeSup γ]
+  [IsAddCancel γ]
+  [IsMetricSpace α] [IsMetricSpace β]
+
+instance : IsMetricSpace (α × β) := Prod.metricSpaceSup
+
+#synth IsMetricSpace (α × β)
