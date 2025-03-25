@@ -168,12 +168,12 @@ def IsContinuous.comp' {f: α -> β} {g: β -> γ} (hf: IsContinuous f) (hg: IsC
 
 def Pairwise (P: α -> α -> Prop) : Prop := ∀{a b}, a ≠ b -> P a b
 
-inductive Trivial.IsOpen: Set α -> Prop where
-| empty : Trivial.IsOpen ∅
-| univ : Trivial.IsOpen ⊤
+inductive trivial_isopen: Set α -> Prop where
+| empty : trivial_isopen ∅
+| univ : trivial_isopen ⊤
 
 def trivial : Topology α where
-  IsOpen := Trivial.IsOpen
+  IsOpen := trivial_isopen
   univ_open := .univ
   inter_open := by
     intro a b ha hb
