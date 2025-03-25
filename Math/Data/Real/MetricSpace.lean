@@ -7,6 +7,7 @@ import Math.Data.Real.Lattice
 
 open Topology Classical
 -- open IsPseudoMetricSpace (mem_ball ball_sub)
+namespace Real
 
 instance : Dist ℝ ℝ := Abs.instDist _
 instance : IsMetricSpace ℝ := Abs.instIsMetricSpace _
@@ -119,9 +120,9 @@ instance : Topology.IsConnected ℝ where
       rw [add_comm, sub_add, sub_self, zero_sub, abs_neg, (Real.abs_of_nonneg _).mp]
       rw [div?_eq_mul_inv?]; rw (occs := [2]) [←mul_one δ]
       apply mul_lt_mul_of_pos_left
+      assumption
       apply Real.ofRat_lt.mpr
       decide
-      assumption
       apply le_of_lt
       apply half_pos
       assumption
@@ -133,9 +134,9 @@ instance : Topology.IsConnected ℝ where
       apply le_of_lt
       rw [div?_eq_mul_inv?]; rw (occs := [2]) [←mul_one δ]
       apply mul_lt_mul_of_pos_left
+      assumption
       apply Real.ofRat_lt.mpr
       decide
-      assumption
       rw [Real.le_sub_iff_add_le, zero_add]
       apply c'.property.right
     · have ⟨δ, δpos, ball⟩ := hB _ hc
@@ -189,6 +190,80 @@ instance : Topology.IsConnected ℝ where
 
       have := not_le_of_lt this
       contradiction
+
+def iio_open (a: ℝ) : IsOpen (Set.Iio a) := by
+  intro x hx
+  rw [Set.mem_Iio] at hx
+  exists a - x
+  apply And.intro
+  show _ < _
+  rwa [Real.lt_sub_iff_add_lt, zero_add]
+  intro y hy
+  rw [Set.mem_Iio]; rw [IsPseudoMetricSpace.mem_ball] at hy
+  replace hy : ‖_‖ < a - x := hy
+  rw [abs_def] at hy
+  split at hy
+  rw [←not_le]; intro a_le_y
+  rename_i h
+  rw [Real.le_sub_iff_add_le, zero_add] at h
+  exact lt_irrefl (lt_of_lt_of_le hx (le_trans a_le_y h))
+  rw [neg_sub] at hy
+  have := add_lt_add_right _ _ x hy
+  rwa [sub_add_cancel, sub_add_cancel] at this
+
+def ioi_open (a: ℝ) : IsOpen (Set.Ioi a) := by
+  intro x hx
+  rw [Set.mem_Ioi] at hx
+  exists x - a
+  apply And.intro
+  show _ < _
+  rwa [Real.lt_sub_iff_add_lt, zero_add]
+  intro y hy
+  rw [Set.mem_Ioi]; rw [IsPseudoMetricSpace.mem_ball] at hy
+  replace hy : ‖_‖ < x - a := hy
+  rw [abs_def] at hy
+  split at hy
+  have := add_lt_add_left _ _ (-x) hy
+  rwa [←add_sub_assoc, ←add_sub_assoc,
+    neg_add_cancel, zero_sub, zero_sub,
+    Real.neg_lt_neg_iff] at this
+  rw [neg_sub] at hy
+  rw [←not_le]; intro a_le_y
+  rename_i h; rw [not_le] at h
+  rw [Real.sub_lt_iff_lt_add, zero_add] at h
+  exact lt_irrefl (lt_trans hx (lt_of_lt_of_le h a_le_y))
+
+def ici_closed (a: ℝ) : IsClosed (Set.Ici a) := by
+  show IsOpen _
+  rw [show (Set.Ici a)ᶜ = Set.Iio a from ?_]
+  apply iio_open
+  ext x
+  simp [Set.mem_compl, not_le]
+
+def iic_closed (a: ℝ) : IsClosed (Set.Iic a) := by
+  show IsOpen _
+  rw [show (Set.Iic a)ᶜ = Set.Ioi a from ?_]
+  apply ioi_open
+  ext x
+  simp [Set.mem_compl, not_le]
+
+def ioo_open (a b: ℝ) : IsOpen (Set.Ioo a b) := by
+  apply IsOpen.inter
+  apply ioi_open
+  apply iio_open
+
+def icc_closed (a b: ℝ) : IsClosed (Set.Icc a b) := by
+  show IsOpen _
+  rw [show (Set.Icc a b)ᶜ = Set.Iio a ∪ Set.Ioi b from ?_]
+  apply IsOpen.union
+  apply iio_open
+  apply ioi_open
+  ext x
+  simp [Set.mem_compl, Set.mem_union, not_le, ←not_lt]
+  apply Classical.or_iff_not_imp_left.symm
+
+def isClosed_le (f g: ℝ -> ℝ) [IsContinuous f] [IsContinuous g] :
+  IsClosed (Set.mk fun x => f x ≤ g x) := sorry
 
 -- instance instContℝadd : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 + x.2) where
 --   isOpen_preimage S Sopen := by
@@ -452,3 +527,5 @@ instance : Topology.IsConnected ℝ where
 --   | negSucc n =>
 --     -- conv => { arg 1; intro x; rw [zpow?_negSucc] }
 --     sorry
+
+end Real

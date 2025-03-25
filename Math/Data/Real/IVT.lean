@@ -1,74 +1,21 @@
 import Math.Data.Real.MetricSpace
 import Math.Data.Real.Dedekind
 
+open Topology
+
 namespace Real
 
-instance isInterval.range (I: Set ℝ) [IsInterval I] (f: I -> ℝ) [Topology.IsContinuous f] :
-  IsInterval (Set.range f) where
-  isInterval := by
-    intro _ _ hy₀ hy₁ l y₀_le_l l_le_y₁
-    obtain ⟨⟨y₀, hy₀⟩ , rfl⟩ := hy₀
-    obtain ⟨⟨y₁, hy₁⟩ , rfl⟩ := hy₁
-    apply Set.mem_range.mpr
-    let S := Set.mk fun x => ∃h: x ∈ I, f ⟨x, h⟩ ≤ l
-    let T := Set.mk fun x => ∃h: x ∈ I, f ⟨x, h⟩ ≥ l
-    have I_eq_S_union_T : I = S ∪ T := by
-      ext i
-      apply Iff.intro
-      intro hi
-      rcases lt_or_le (f ⟨i, hi⟩) l with lt | le
-      left; exists hi; apply le_of_lt; assumption
-      right; exists hi
-      intro h
-      rcases h with ⟨h, g⟩ | ⟨h, g⟩
-      assumption
-      assumption
-    have y₀_in_S : y₀ ∈ S := ⟨hy₀, y₀_le_l⟩
-    have y₁_in_Y : y₁ ∈ T := ⟨hy₁, l_le_y₁⟩
-    have d_closed_down : ∀ (x : ℝ), x ∈ S → ∀ (y : ℚ), y ≤ x → y ∈ S.preimage Rat.cast := sorry
-    let d : DedekindCut := {
-      lower := S.preimage Rat.cast
-      lower_nonempty := by
-        induction y₀ using Real.ind with | mk y₀ =>
-        have ⟨bound, spec⟩ := (-y₀).upper_bound
-        exists -bound
-        show ((-bound: ℚ): ℝ) ∈ S
-        apply d_closed_down
-        assumption
-        apply CauchySeq.le_pointwise
-        intro n
-        show -bound ≤ y₀.seq n
-        rw [Rat.neg_le_neg_iff, neg_neg]
-        apply le_of_lt; apply spec
-      lower_no_max := by
-        intro x hx
-        replace hx : (x: ℝ) ∈ S := hx
-        sorry
-      not_univ := by
-        sorry
-      lower_closed_down := by
-        intro x hx y hy
-        apply d_closed_down
-        assumption
-        apply Real.ofRat_le.mpr
-        assumption
-    }
-    suffices d.toReal ∈ T by
-      refine ⟨⟨d.toReal, ?_⟩, ?_⟩
-      · sorry
-      · apply le_antisymm
-        obtain ⟨_, _⟩ := this
-        assumption
+def intermediate_value_univ₂ {a b : ℝ} {f g : ℝ → ℝ} (hf : IsContinuous f)
+  (hg : IsContinuous g) (ha : f a ≤ g a) (hb : g b ≤ f b) : ∃ x, f x = g x := by
+  obtain ⟨x, _, hfg, hgf⟩ : (⊤ ∩ Set.mk (fun x => f x ≤ g x ∧ g x ≤ f x)).Nonempty :=
+    IsPreconnectedOn.closed_iff.1 IsPreconnected.univ_preconnected _ _ (isClosed_le f g) (isClosed_le g f) (fun _ _ => le_total (α := ℝ) _ _) ⟨a, trivial, ha⟩ ⟨b, trivial, hb⟩
+  exact ⟨x, le_antisymm hfg hgf⟩
 
-        sorry
-
-def intermediate_value_theorem (I: Set ℝ) [IsInterval I] (f: I -> ℝ) [Topology.IsContinuous f] :
-  ∀{a b: ℝ} (ha: a ∈ I) (hb: b ∈ I),
-  ∀k, f ⟨a, ha⟩ ≤ k -> k ≤ f ⟨b, hb⟩ ->
-  k ∈ Set.range f := by
-  intro a b ha hb
-  apply Set.mem_interval (Set.range f)
-  apply Set.mem_range'
-  apply Set.mem_range'
+def intermediate_value (f: ℝ -> ℝ) (hf: IsContinuous f): Set.Icc (f a) (f b) ⊆ Set.range f := by
+  intro x hx
+  rw [Set.mem_Icc] at hx
+  obtain ⟨fa_le_x, x_le_fb⟩ := hx
+  have ⟨y, _⟩ := intermediate_value_univ₂ hf (IsContinuous.const x) fa_le_x x_le_fb
+  exists y; symm; assumption
 
 end Real

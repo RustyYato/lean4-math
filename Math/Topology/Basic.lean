@@ -52,6 +52,13 @@ abbrev IsContinuous' (Tα) (Tβ) (f: α -> β) := @IsContinuous α β Tα Tβ f
 def IsOpen.univ : IsOpen (Set.univ α) := Topology.univ_open
 def IsOpen.inter {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∩ b) := Topology.inter_open
 def IsOpen.sUnion {a: Set (Set α)} : (∀x ∈ a, IsOpen x) -> IsOpen (⋃a) := Topology.sUnion_open
+def IsOpen.union {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∪ b) := by
+  intro ha hb
+  rw [←Set.sUnion_pair]
+  apply IsOpen.sUnion
+  intro x hx
+  simp at hx
+  rcases hx with rfl | rfl <;> assumption
 def IsOpen.preimage (f: α -> β) [IsContinuous f] : ∀s: Set β, IsOpen s → IsOpen (s.preimage f) := IsContinuous.isOpen_preimage
 def IsOpen.preimage' {f: α -> β} (h: IsContinuous f) : ∀s: Set β, IsOpen s → IsOpen (s.preimage f) := IsContinuous.isOpen_preimage
 
@@ -80,6 +87,9 @@ def IsClosed.empty : IsClosed (∅: Set α) := by
   unfold IsClosed
   rw [Set.empty_compl]
   exact IsOpen.univ
+def IsClosed.preimage (f: α -> β) [IsContinuous f] : ∀s: Set β, IsClosed s → IsClosed (s.preimage f) := by
+  intro s hs
+  exact IsOpen.preimage f sᶜ hs
 
 def IsClopen.univ : IsClopen (Set.univ α) := ⟨IsOpen.univ, IsClosed.univ⟩
 def IsClopen.empty : IsClopen (∅: Set α) := ⟨IsOpen.empty, IsClosed.empty⟩
