@@ -1,10 +1,12 @@
 import Math.Topology.Basic
 import Math.Topology.MetricSpace.Defs
+import Math.Algebra.Ring.Defs
+import Math.Algebra.Semiring.Order.Defs
 
 variable
   [LT β] [LE β] [Zero β] [One β] [IsNontrivial β] [Add β] [SMul ℕ β] [Mul β] [Pow β ℕ] [NatCast β] [∀n, OfNat β (n + 2)]
   [IsOrderedSemiring β]
-  [Dist α β]
+
 
 namespace IsPseudoMetricSpace
 
@@ -12,11 +14,11 @@ instance : IsPreOrder β :=
   have := inferInstanceAs (IsPartialOrder β)
   this.toIsPreOrder
 
-def Ball (x: α) (δ: β): Set α := Set.mk fun y => dist x y < δ
+def Ball [Dist α β] (x: α) (δ: β): Set α := Set.mk fun y => dist x y < δ
 
-def mem_ball {c: α} {δ: β} : ∀{x}, x ∈ Ball c δ ↔ dist c x < δ := Iff.rfl
+def mem_ball {_: Dist α β} {c: α} {δ: β} : ∀{x}, x ∈ Ball c δ ↔ dist c x < δ := Iff.rfl
 
-def ball_sub (x: α) (δ₀ δ₁: β) (h: δ₀ ≤ δ₁) : Ball x δ₀ ⊆ Ball x δ₁ := by
+def ball_sub {_: Dist α β} (x: α) (δ₀ δ₁: β) (h: δ₀ ≤ δ₁) : Ball x δ₀ ⊆ Ball x δ₁ := by
   intro y mem
   apply lt_of_lt_of_le
   assumption
@@ -26,7 +28,7 @@ end IsPseudoMetricSpace
 
 namespace Topology
 
-def ofIsPseudoMetricSpace [IsPseudoMetricSpace α] : Topology α where
+def ofIsPseudoMetricSpace [Dist α β] [IsPseudoMetricSpace α] : Topology α where
   -- a set is open if, forall points in the set, there is a ball with positive radius
   -- that is contained in the set
   IsOpen s := ∀x ∈ s, ∃δ > 0, IsPseudoMetricSpace.Ball x δ ⊆ s
@@ -68,9 +70,10 @@ def ofIsPseudoMetricSpace [IsPseudoMetricSpace α] : Topology α where
     assumption
 
 def IsOpen.Ball
+  [Dist α β]
   [IsMetricSpace α]
   [Sub β] [SMul ℤ β] [Neg β] [IntCast β]
-  [IsOrderedRing β] :
+  [IsOrderedSemiring β] [IsRing β] :
   (ofIsPseudoMetricSpace: Topology α).IsOpen (IsPseudoMetricSpace.Ball x δ) := by
   intro y hy
   exists δ - dist x y
