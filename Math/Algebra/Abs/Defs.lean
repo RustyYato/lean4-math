@@ -1,7 +1,7 @@
 import Math.Algebra.Semiring.Order.Defs
 import Math.Ops.Abs
 
-class IsLawfulNorm (α: Type*) {β: outParam Type*}
+class IsLawfulNorm (α: Type*) {β: Type*}
   [AbsoluteValue α β] [LE β] [LT β]
   [AddMonoidOps α] [AddMonoidOps β]
   [IsAddMonoid α] [IsOrderedAddCommMonoid β]
@@ -14,7 +14,7 @@ class IsLawfulNorm (α: Type*) {β: outParam Type*}
   -- but is satisfied by every absolute value I care about
   abs_eq_of_add_eq_zero (a b: α) : a + b = 0 -> ‖a‖ = ‖b‖
 
-class IsLawfulAbs (α: Type*) {β: outParam Type*}
+class IsLawfulAbs (α: Type*) {β: Type*}
   [AbsoluteValue α β] [LE β] [LT β]
   [AddMonoidOps α] [Mul α]
   [AddMonoidOps β] [Mul β]

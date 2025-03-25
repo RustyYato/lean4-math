@@ -1,7 +1,7 @@
 import Math.Data.Finset.Basic
 import Math.Logic.IsEmpty
 
-class FinsetLike (S: Type*)(α: outParam Type*) where
+class FinsetLike (S: Type*) (α: outParam Type*) where
   coe : S -> Finset α
   coe_inj: Function.Injective coe
 

@@ -6,14 +6,14 @@ class Dist (α: Type*) (β: outParam Type*) where
 
 export Dist (dist)
 
-class IsPseudoMetricSpace (α: Type*) {β: outParam Type*}
+class IsPseudoMetricSpace (α: Type*) {β: Type*}
   [LT β] [LE β] [AddMonoidOps β] [IsOrderedAddCommMonoid β]
   [Dist α β] : Prop extends IsLinearOrder β where
   dist_self: ∀x: α, dist x x = 0
   dist_comm: ∀x y: α, dist x y = dist y x
   dist_triangle: ∀x y k: α, dist x y ≤ dist x k + dist k y
 
-class IsMetricSpace (α: Type α) {β: outParam Type*}
+class IsMetricSpace (α: Type α) {β: Type*}
   [LT β] [LE β] [Zero β] [Add β] [SMul ℕ β]
   [IsOrderedAddCommMonoid β]
   [Dist α β] : Prop extends IsPseudoMetricSpace α where
