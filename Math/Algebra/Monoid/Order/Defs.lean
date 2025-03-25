@@ -108,6 +108,16 @@ def add_lt_add_of_le_of_lt [IsAddRightCancel α] (a b c d: α) : a ≤ c -> b < 
   apply add_lt_add_left
   assumption
 
+def le_add_left (a b: α) (h: 0 ≤ b) : a ≤ b + a := by
+  rw (occs := [1]) [←zero_add a]
+  apply add_le_add_right
+  assumption
+
+def le_add_right (a b: α) (h: 0 ≤ b) : a ≤ a + b := by
+  rw (occs := [1]) [←add_zero a]
+  apply add_le_add_left
+  assumption
+
 end IsOrderedAddCommMonoid
 
 section IsOrderedCancelAddCommMonoid

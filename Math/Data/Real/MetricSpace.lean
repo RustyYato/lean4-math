@@ -3,7 +3,6 @@ import Math.Topology.MetricSpace.Basic
 import Math.Data.Real.Div
 import Math.Data.Real.OrderedAlgebra
 
-open IsMetricSpace.Prod.ManhattanDistance
 open IsPseudoMetricSpace (mem_ball ball_sub)
 
 instance : Dist ℝ ℝ := Abs.instDist _

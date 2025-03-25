@@ -3,12 +3,9 @@ import Math.Topology.MetricSpace.Defs
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Semiring.Order.Defs
 
-variable
-  [LT β] [LE β] [Zero β] [One β] [IsNontrivial β] [Add β] [SMul ℕ β] [Mul β] [Pow β ℕ] [NatCast β] [∀n, OfNat β (n + 2)]
-  [IsOrderedSemiring β]
-
-
 namespace IsPseudoMetricSpace
+
+variable [LT β] [LE β] [IsNontrivial β] [AddMonoidOps β] [IsOrderedAddCommMonoid β]
 
 instance : IsPreOrder β :=
   have := inferInstanceAs (IsPartialOrder β)
@@ -27,6 +24,8 @@ def ball_sub {_: Dist α β} (x: α) (δ₀ δ₁: β) (h: δ₀ ≤ δ₁) : Ba
 end IsPseudoMetricSpace
 
 namespace Topology
+
+variable [LT β] [LE β] [IsNontrivial β] [SemiringOps β] [IsOrderedSemiring β]
 
 def ofIsPseudoMetricSpace [Dist α β] [IsPseudoMetricSpace α] : Topology α where
   -- a set is open if, forall points in the set, there is a ball with positive radius

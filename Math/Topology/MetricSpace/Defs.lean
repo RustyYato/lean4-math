@@ -1,4 +1,5 @@
 import Math.Algebra.Monoid.Order.Defs
+import Math.Order.Lattice.Basic
 
 class Dist (α: Type*) (β: outParam Type*) where
   dist: α -> α -> β
@@ -63,57 +64,62 @@ def dist_pos {β α}
   have := of_dist_eq_zero _ _ g.symm
   contradiction
 
-namespace IsMetricSpace.Prod.ManhattanDistance
+instance
+  Prod.distSup [Dist α γ] [Dist β γ] [Sup γ] : Dist (α × β) γ where
+  dist x y := dist x.fst y.fst ⊔ dist x.snd y.snd
 
-scoped instance [Add γ] [Dist α γ] [Dist β γ] : Dist (α × β) γ where
-  dist x y := dist x.fst y.fst + dist x.snd y.snd
-
-scoped instance
+instance
+  Prod.psuedometricSpaceSup
   [Dist α γ] [Dist β γ]
-  [LE γ] [LT γ] [Zero γ] [Add γ] [SMul ℕ γ]
+  [LE γ] [LT γ] [AddMonoidOps γ]
   [IsOrderedAddCommMonoid γ]
+  [Sup γ] [IsSemiLatticeSup γ]
+  [IsAddCancel γ]
   [IsPseudoMetricSpace α] [IsPseudoMetricSpace β] : IsPseudoMetricSpace (α × β) where
   dist_self := by
     intro x
-    show _ + _ = _
-    rw [dist_self, dist_self, add_zero]
+    show _ ⊔ _ = _
+    rw [dist_self, dist_self, sup_self]
   dist_comm := by
     intro a b
-    show dist _ _ + dist _ _ = dist _ _ + dist _ _
+    show dist _ _ ⊔ dist _ _ = dist _ _ ⊔ dist _ _
     congr 1 <;> apply dist_comm
   dist_triangle := by
     intro a b k
-    show dist _ _ + dist _ _ ≤ (dist _ _ + dist _ _) + (dist _ _ + dist _ _)
-    rw [add_assoc, ←add_assoc (dist a.snd _),
-      add_comm (dist a.snd _), add_assoc, ←add_assoc]
+    show dist _ _ ⊔ dist _ _ ≤ (dist _ _ ⊔ dist _ _) + (dist _ _ ⊔ dist _ _)
+    rw [sup_le_iff]; apply And.intro
+    apply flip le_trans
     apply add_le_add
+    apply le_sup_left
+    apply le_sup_left
     apply dist_triangle
+    apply flip le_trans
+    apply add_le_add
+    apply le_sup_right
+    apply le_sup_right
     apply dist_triangle
 
-scoped instance
+instance
+  Prod.metricSpaceSup
   [Dist α γ] [Dist β γ]
-  [LE γ] [LT γ] [Zero γ] [Add γ] [SMul ℕ γ] [IsAddCancel γ]
+  [LE γ] [LT γ] [AddMonoidOps γ]
   [IsOrderedAddCommMonoid γ]
+  [Sup γ] [IsSemiLatticeSup γ]
+  [IsAddCancel γ]
   [IsMetricSpace α] [IsMetricSpace β] : IsMetricSpace (α × β) where
   of_dist_eq_zero a b h := by
-    replace h: _ + _ = (0: γ) := h
+    replace h: _ ⊔ _ = (0: γ) := h
     by_cases h₀:dist a.fst b.fst ≤ 0
     replace h₀ := of_dist_eq_zero _ _ <| le_antisymm h₀ (dist_nonneg _ _ )
-    rw [h₀, dist_self, zero_add] at h
+    rw [h₀, dist_self, sup_eq_right.mpr] at h
     ext
     assumption
     exact of_dist_eq_zero _ _ h
-    by_cases h₁:dist a.snd b.snd ≤ 0
-    replace h₁ := of_dist_eq_zero _ _ <| le_antisymm h₁ (dist_nonneg _ _ )
-    rw [h₁, dist_self, add_zero] at h
-    rw [h] at h₀; have := h₀ (le_refl _)
+    apply dist_nonneg
+    rw [not_le] at h₀
+    have h₁ : 0 < dist a.fst b.fst ⊔ dist a.snd b.snd := by
+      apply lt_sup_left
+      assumption
+    rw [h] at h₁
+    have := lt_irrefl h₁
     contradiction
-    replace h₀ := lt_of_le_of_not_le (dist_nonneg _ _) h₀
-    replace h₁ := lt_of_le_of_not_le (dist_nonneg _ _) h₁
-    have := add_lt_add _ _ _ _ h₀ h₁
-    rw [zero_add] at this
-    rw [h] at this
-    have := lt_irrefl this
-    contradiction
-
-end IsMetricSpace.Prod.ManhattanDistance

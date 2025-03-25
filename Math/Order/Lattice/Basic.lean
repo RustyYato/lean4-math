@@ -153,6 +153,11 @@ def sup_le_sup {a b c d: α₀} :
   apply le_trans _ (le_sup_right _ _)
   assumption
 
+def sup_self (a: α₀) : a ⊔ a = a := by
+  apply le_antisymm
+  rw [sup_le_iff]; trivial
+  apply le_sup_left
+
 variable [Top α₀] [Bot α₀] [IsLawfulBot α₀] [IsLawfulTop α₀]
 variable {a: α₀}
 
@@ -215,6 +220,9 @@ def inf_eq_left {a b: α₀} : a ⊓ b = a ↔ a ≤ b :=
 
 def inf_le_inf {a b c d: α₀} :
   a ≤ c -> b ≤ d -> a ⊓ b ≤ c ⊓ d := sup_le_sup (α₀ := α₀ᵒᵖ)
+
+def inf_self (a: α₀) : a ⊓ a = a :=
+  sup_self (α₀ := Opposite α₀) _
 
 variable [Top α₀] [Bot α₀] [IsLawfulBot α₀] [IsLawfulTop α₀]
 variable {a: α₀}
