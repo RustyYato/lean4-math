@@ -10,6 +10,8 @@ namespace Topology
 
 variable [Topology α] [Topology β] [Topology γ]
 
+scoped notation "IsOpen[" T "]" => IsOpen (α := T)
+
 def IsClosed (s: Set α) : Prop := IsOpen sᶜ
 def IsClopen (s: Set α) : Prop := IsOpen s ∧ IsClosed s
 def IsLocallyClosed (s : Set α) : Prop := ∃ (x y : Set α), IsOpen x ∧ IsClosed y ∧ s = x ∩ y

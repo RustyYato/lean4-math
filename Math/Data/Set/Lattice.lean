@@ -1,14 +1,8 @@
 import Math.Order.Lattice.Complete
-import Math.Data.Set.Basic
+import Math.Data.Set.Order.Basic
 
 def Set.Induced (r: α -> α -> Prop) (s: Set α) :=
   fun x y: s => r x y
-
-instance : IsPartialOrder (Set α) where
-  lt_iff_le_and_not_le := Iff.rfl
-  le_antisymm := Set.sub_antisymm
-  le_refl := Set.sub_refl
-  le_trans := Set.sub_trans
 
 instance : Sup (Set α) where
   sup a b := a ∪ b

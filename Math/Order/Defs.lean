@@ -714,6 +714,28 @@ def le_setoid (α: Type*) [LE α] [LT α] [IsPreOrder α] : Setoid α where
     trans h g := ⟨le_trans h.1 g.1, le_trans g.2 h.2⟩
   }
 
+namespace Classical
+
+variable [LE α] [LT α] [Min α] [Max α] [IsLinearMinMaxOrder α]
+
+noncomputable scoped instance (priority := 10) : IsDecidableLinearOrder α where
+  min_def := by
+    intro a b
+    split <;> rename_i h
+    rwa [min_iff_le_left.mp]
+    rw [not_le] at h
+    rw [min_iff_le_right.mp]
+    apply le_of_lt; assumption
+  max_def := by
+    intro a b
+    split <;> rename_i h
+    rwa [max_iff_le_left.mp]
+    rw [not_le] at h
+    rw [max_iff_le_right.mp]
+    apply le_of_lt; assumption
+
+end Classical
+
 end Impls
 
 section Pi

@@ -621,6 +621,12 @@ def of_sub_empty (s: Set α) : s ⊆ ∅ -> s = ∅ := by
   assumption
   intro _ _; contradiction
 
+def empty_not_nonempty : ¬(∅: Set α).Nonempty := by
+  intro ⟨_, _⟩; contradiction
+
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply empty_not_nonempty; assumption)
+
 @[simp]
 def empty_attach : (∅: Set α).attach = ∅ := by
   apply ext_empty
@@ -1058,6 +1064,14 @@ def sSup_eq_iSup [SupSet α] (s: Set α) : sSup s = iSup fun x: s => x.val := by
   exists ⟨_, h⟩
   intro ⟨y, eq⟩; subst eq
   exact y.property
+
+def compl_inter (s t: Set α) : (s ∩ t)ᶜ = sᶜ ∪ tᶜ := by
+  ext
+  simp [mem_inter, mem_compl, mem_union, ←Classical.not_and_iff_not_or_not]
+
+def compl_union (s t: Set α) : (s ∪ t)ᶜ = sᶜ ∩ tᶜ := by
+  ext
+  simp [mem_inter, mem_compl, mem_union]
 
 section min_elem
 
