@@ -167,3 +167,37 @@ instance : IsConditionallyCompleteLattice ℝ where
     exact ⟨⟨a, ha⟩, hbdd⟩
 
 end
+
+namespace Real
+
+def sup_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊔ b) * c = (a * c) ⊔ (b * c) := by
+  simp [Sup.sup]
+  rw [max_def, max_def]
+  split <;> rename_i h
+  rw [if_pos]
+  apply mul_le_mul_of_nonneg_right <;> assumption
+  rcases lt_or_eq_of_le hc with hc | hc
+  rw [if_neg]
+  intro g
+  have := mul_le_mul_of_nonneg_right (le_of_lt (inv?_pos _ hc)) g
+  rw [mul_assoc, mul_assoc, mul_inv?_cancel, mul_one, mul_one] at this
+  contradiction
+  rw [←hc]
+  simp
+
+def inf_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊓ b) * c = (a * c) ⊓ (b * c) := by
+  simp [Inf.inf]
+  rw [min_def, min_def]
+  split <;> rename_i h
+  rw [if_pos]
+  apply mul_le_mul_of_nonneg_right <;> assumption
+  rcases lt_or_eq_of_le hc with hc | hc
+  rw [if_neg]
+  intro g
+  have := mul_le_mul_of_nonneg_right (le_of_lt (inv?_pos _ hc)) g
+  rw [mul_assoc, mul_assoc, mul_inv?_cancel, mul_one, mul_one] at this
+  contradiction
+  rw [←hc]
+  simp
+
+end Real
