@@ -4,9 +4,10 @@ import Math.Data.Real.Div
 import Math.Data.Real.OrderedAlgebra
 import Math.Topology.Connected.Basic
 import Math.Data.Real.Lattice
+import Math.Topology.Constructions
 
 open Topology Classical
--- open IsPseudoMetricSpace (mem_ball ball_sub)
+open IsPseudoMetricSpace (Ball mem_ball ball_sub)
 namespace Real
 
 instance : Dist ℝ ℝ := Abs.instDist _
@@ -262,8 +263,179 @@ def icc_closed (a b: ℝ) : IsClosed (Set.Icc a b) := by
   simp [Set.mem_compl, Set.mem_union, not_le, ←not_lt]
   apply Classical.or_iff_not_imp_left.symm
 
+instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) Topology.ofIsPseudoMetricSpace inferInstance Prod.fst := by
+  apply IsContinuous'.mk
+  intro S hS (a, b) ha
+  replace ha : a ∈ S := ha
+  have ⟨δ, δpos, ball⟩ := hS _ ha
+  refine ⟨_, δpos, ?_⟩
+  intro (c, d) hx
+  show c ∈ S
+  apply ball
+  replace hx :  max _ _ < δ := hx
+  exact (max_lt_iff.mp hx).left
+
+instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) Topology.ofIsPseudoMetricSpace inferInstance Prod.snd := by
+  apply IsContinuous'.mk
+  intro S hS (a, b) hb
+  replace ha : b ∈ S := hb
+  have ⟨δ, δpos, ball⟩ := hS _ hb
+  refine ⟨_, δpos, ?_⟩
+  intro (c, d) hx
+  show d ∈ S
+  apply ball
+  replace hx :  max _ _ < δ := hx
+  exact (max_lt_iff.mp hx).right
+
+def topo_prodct_eq_metric : (Topology.topo_product: Topology (ℝ×ℝ)) = Topology.ofIsPseudoMetricSpace := by
+  let t': Topology (ℝ × ℝ) := Topology.ofIsPseudoMetricSpace
+  apply Topology.IsOpen.inj
+  ext S
+  simp
+  apply Iff.intro
+  · intro h
+    induction h with
+    | univ => apply @IsOpen.univ _ t'
+    | inter => apply @IsOpen.inter _ t' <;> assumption
+    | sUnion => apply @IsOpen.sUnion _ t' <;> assumption
+    | of  =>
+      rename_i x hx
+      simp at hx
+      rcases hx with ⟨t,ht,rfl⟩ | ⟨t,ht,rfl⟩
+      apply IsOpen.preimage
+      assumption
+      apply IsOpen.preimage
+      assumption
+  · intro hS
+    have : S = ⋃(Set.mk fun s: Set (ℝ × ℝ) => (∃x r, s = Ball x r) ∧ s ⊆ S) := by
+      ext x
+      simp [Set.mem_sUnion]
+      apply Iff.intro
+      intro hx
+      have ⟨δ, δpos, ball_sub⟩ := hS _ hx
+      exists Ball x δ
+      apply And.intro
+      apply And.intro
+      exists x.1
+      exists x.2
+      exists δ
+      assumption
+      rwa [mem_ball, dist_self]
+      intro ⟨_, ⟨⟨a, b, δ, rfl⟩, ball_sub_s⟩, hx⟩
+      apply ball_sub_s
+      assumption
+    rw [this]; clear this
+    apply Topology.topo_product.sUnion_open
+    rintro _ ⟨⟨x, δ, rfl⟩, hb⟩
+    rw [show Ball x δ =
+      (Set.mk fun y => dist x.fst y.fst < δ) ∩
+      (Set.mk fun y => dist x.snd y.snd < δ)
+      from ?_]
+    apply Generate.IsOpen.inter
+    · apply Generate.IsOpen.of
+      simp
+      left
+      refine ⟨Ball x.1 δ, ?_, ?_⟩
+      apply IsOpen.Ball
+      rfl
+
+    · apply Generate.IsOpen.of
+      simp
+      right
+      refine ⟨Ball x.2 δ, ?_, ?_⟩
+      apply IsOpen.Ball
+      rfl
+
+    ext y
+    simp [mem_ball, Set.mem_inter]
+    apply max_lt_iff
+
+def continuous₂_of_eps_del (f: ℝ×ℝ -> ℝ) (h: ∀(ε: ℝ), 0 < ε -> ∃δ: ℝ, 0 < δ ∧  ∀a b: ℝ×ℝ, dist a b < δ -> dist (f a) (f b) < ε) : IsContinuous f where
+  isOpen_preimage := by
+    rw [topo_prodct_eq_metric]
+    intro S hS x hx
+    have ⟨ε, εpos, ball_sub⟩ := hS _ hx
+    replace ⟨δ, δpos, h⟩ := h ε εpos
+    exists δ
+    apply And.intro; assumption
+    intro y hy
+    apply ball_sub
+    apply h
+    assumption
+
+instance instContℝneg : Topology.IsContinuous (fun x: ℝ => -x) where
+  isOpen_preimage := by
+    intro S hS x hx
+    replace hx : -x ∈ S := hx
+    have ⟨δ, δpos, h⟩ := hS _ hx
+    refine ⟨_, δpos, ?_⟩
+    intro a ha
+    rw [IsPseudoMetricSpace.mem_ball] at ha
+    rw [Set.mem_preimage]
+    replace ha: ‖_‖ < δ := ha
+    rw [←neg_sub_neg] at ha
+    replace ha: dist (-a) _ < δ := ha
+    rw [dist_comm] at ha
+    apply h
+    assumption
+
+instance instContℝadd : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 + x.2) := by
+  apply continuous₂_of_eps_del
+  intro ε εpos
+  exists ε /? 2
+  apply And.intro
+  apply half_pos; assumption
+  intro (a, b) (c, d) h
+  replace h : max _ _ < _ := h
+  simp at *
+  show ‖_‖ < _
+  rw [sub_add, add_sub_assoc, add_comm, add_sub_assoc, add_comm]
+  apply lt_of_le_of_lt
+  apply abs_add_le_add_abs
+  apply lt_of_le_of_lt
+  apply add_le_add
+  apply le_max_left
+  exact dist b d
+  apply le_max_right
+  exact dist a c
+  apply lt_of_lt_of_le
+  apply add_lt_add
+  assumption
+  assumption
+  rw [add_half]
+
+instance instContℝsub : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 - x.2) := by
+  show IsContinuous (fun x: ℝ × ℝ => x.1 - x.2)
+  simp [sub_eq_add_neg]
+  show IsContinuous ((fun x: ℝ × ℝ => x.1 + x.2) ∘ (fun x: ℝ × ℝ => (x.1, -x.2)))
+  apply Topology.IsContinuous.comp'
+  apply IsContinuous.prod_mk
+  infer_instance
+  show IsContinuous ((-·) ∘ (fun x: ℝ × ℝ => x.2))
+  apply Topology.IsContinuous.comp
+  infer_instance
+
+instance instContℝsub' : Topology.IsContinuous (fun x: ℝ × ℝ => x.2 - x.1) := by
+  show IsContinuous (fun x: ℝ × ℝ => x.2 - x.1)
+  conv => {
+      arg 1; intro x
+      rw [←neg_sub]
+  }
+  show IsContinuous ((fun x: ℝ => -x) ∘ (fun x: ℝ × ℝ => x.1 - x.2))
+  infer_instance
+
+def isClosed_le_prod : IsClosed (Set.mk fun p: ℝ × ℝ => p.1 ≤ p.2) := by
+  have :  (Set.mk fun p: ℝ × ℝ => p.fst ≤ p.snd) = Set.preimage (Set.Ici 0) (fun p : ℝ × ℝ => p.snd - p.fst) := by
+    ext
+    simp [Set.mem_preimage, Real.le_sub_iff_add_le]
+  rw [this]
+  apply IsClosed.preimage
+  apply ici_closed
+
 def isClosed_le (f g: ℝ -> ℝ) [IsContinuous f] [IsContinuous g] :
-  IsClosed (Set.mk fun x => f x ≤ g x) := sorry
+  IsClosed (Set.mk fun x => f x ≤ g x) := by
+
+  sorry
 
 -- instance instContℝadd : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 + x.2) where
 --   isOpen_preimage S Sopen := by

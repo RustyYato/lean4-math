@@ -64,10 +64,10 @@ def IsContinuous.uncurry_left {f : α → β → γ} (x : α) (h : IsContinuous 
 def IsContinuous.uncurry_right {f : α → β → γ} (x : β) (h : IsContinuous (Function.uncurry f)) :
     IsContinuous (f · x) := (IsContinuous.Prod.mk_left x).comp' h
 
-theorem continuous_curry {g : X × Y → Z} (x : X) (h : IsContinuous g) : IsContinuous (Function.curry g x) :=
+def continuous_curry {g : X × Y → Z} (x : X) (h : IsContinuous g) : IsContinuous (Function.curry g x) :=
   IsContinuous.uncurry_left x h
 
-theorem IsOpen.prod {s : Set X} {t : Set Y} (hs : IsOpen s) (ht : IsOpen t) : IsOpen (s.prod t) :=
+def IsOpen.prod {s : Set X} {t : Set Y} (hs : IsOpen s) (ht : IsOpen t) : IsOpen (s.prod t) :=
   (hs.preimage Prod.fst).inter (ht.preimage Prod.snd)
 
 -- instance : IsContinuous (fun (x: α) (y: β) => (x, y)) := by

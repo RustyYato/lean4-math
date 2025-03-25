@@ -49,6 +49,10 @@ class IsContinuous (f : α → β) : Prop where
 
 abbrev IsContinuous' (Tα) (Tβ) (f: α -> β) := @IsContinuous α β Tα Tβ f
 
+abbrev IsContinuous'.mk (Tα: Topology α) (Tβ: Topology β) (f: α -> β) :
+  (∀s: Set β, IsOpen s → IsOpen (s.preimage f)) ->
+  IsContinuous' Tα Tβ f := (⟨·⟩)
+
 def IsOpen.univ : IsOpen (Set.univ α) := Topology.univ_open
 def IsOpen.inter {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∩ b) := Topology.inter_open
 def IsOpen.sUnion {a: Set (Set α)} : (∀x ∈ a, IsOpen x) -> IsOpen (⋃a) := Topology.sUnion_open
