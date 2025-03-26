@@ -44,6 +44,12 @@ def copy (q: QuadraticMap R M N) (g: M -> N) (h: ∀x, q x = g x) : QuadraticMap
     simp [←h]
     exact q.exists_companion
 
+@[simp]
+def toFun_eq (q: QuadraticMap R M N) : q.toFun = q := rfl
+
+@[ext]
+def ext (a b: QuadraticMap R M N) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
+
 end QuadraticMap
 
 namespace QuadraticMap
@@ -121,7 +127,7 @@ end QuadraticFrom
 
 namespace QuadraticMap
 
-section Algebra
+section AddMonoid
 
 variable
   [SemiringOps R] [IsSemiring R] [IsCommMagma R]
@@ -130,20 +136,121 @@ variable
   [SMul R M] [SMul R N]
   [IsModule R M] [IsModule R N]
 
+instance : Zero (QuadraticMap R M N) where
+  zero := {
+    toFun := 0
+    toFun_smul _ _ := by simp
+    exists_companion' := by
+      exists 0
+      simp
+  }
+
 instance : Add (QuadraticMap R M N) where
   add a b := {
     toFun := a.toFun + b.toFun
     toFun_smul := by
       intro a m
       simp
-      rw [toFun_smul, toFun_smul, ←smul_add]
+      rw [smul_eq_smul_sq, smul_eq_smul_sq, ←smul_add]
     exists_companion' := by
       have ⟨Ba, ha⟩ := a.exists_companion
       have ⟨Bb, hb⟩ := b.exists_companion
       exists Ba + Bb
-      sorry
+      intro x y
+      simp
+      show a _ + b _ = a _ + b _ + (a _ + b _) + _
+      rw [ha, hb]; ac_rfl
   }
 
-end Algebra
+instance : SMul R (QuadraticMap R M N) where
+  smul r a := {
+    toFun := r • a.toFun
+    toFun_smul := by
+      intro a m
+      simp
+      rw [smul_eq_smul_sq, smul_comm]
+    exists_companion' := by
+      have ⟨Ba, ha⟩ := a.exists_companion
+      exists r • Ba
+      intro x y
+      simp
+      rw [ha]; clear ha
+      simp [smul_add]
+  }
+
+instance : SMul ℕ (QuadraticMap R M N) where
+  smul n a  := {
+    toFun := n • a.toFun
+    toFun_smul := by
+      intro a m
+      simp
+      rw [smul_eq_smul_sq, smul_comm]
+    exists_companion' := by
+      have ⟨Ba, ha⟩ := a.exists_companion
+      exists n • Ba
+      intro x y
+      simp
+      rw [ha]; clear ha
+      simp [nsmul_add]
+  }
+
+instance : IsAddMonoid (QuadraticMap R M N) where
+  add_assoc _ _ _ := by ext; apply add_assoc
+  zero_add _ := by ext; apply zero_add
+  add_zero _ := by ext; apply add_zero
+  zero_nsmul _ := by ext; apply zero_nsmul
+  succ_nsmul _ _ := by ext; apply succ_nsmul
+
+instance : IsDistribMulAction R (QuadraticMap R M N) where
+  one_smul _ := by ext; apply one_smul
+  mul_smul _ _ _ := by ext; apply mul_smul
+  smul_zero _ := by ext; apply smul_zero
+  smul_add _ _ _ := by ext; apply smul_add
+
+end AddMonoid
+
+section AddGroup
+
+variable
+  [SemiringOps R] [IsSemiring R] [IsCommMagma R]
+  [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M]
+  [AddGroupOps N] [IsAddGroup N] [IsAddCommMagma N]
+  [SMul R M] [SMul R N]
+  [IsModule R M] [IsModule R N]
+
+instance : Neg (QuadraticMap R M N) where
+  neg a := {
+    toFun := -a.toFun
+    toFun_smul _ _ := by simp [smul_eq_smul_sq, neg_smul']
+    exists_companion' := by
+      have ⟨B, h⟩ := a.exists_companion
+      exists -B
+      intro x y
+      simp [h, neg_add_rev]; clear h
+      ac_rfl
+  }
+
+instance : Sub (QuadraticMap R M N) where
+  sub a b := (a + -b).copy (fun x => a x - b x) <| by
+    intro x
+    simp
+    rw [sub_eq_add_neg]; rfl
+
+instance : SMul ℤ (QuadraticMap R M N) where
+  smul n a := (match n with
+    | .ofNat n => n • a
+    | .negSucc n => -((n + 1) • a)).copy (fun x => n • a x) <| by
+      intro a
+      cases n <;> simp
+      rw [zsmul_ofNat]; rfl
+      rw [zsmul_negSucc]; rfl
+
+instance : IsAddGroup (QuadraticMap R M N) where
+  sub_eq_add_neg _ _ := by ext; apply sub_eq_add_neg
+  neg_add_cancel _ := by ext; apply neg_add_cancel
+  zsmul_ofNat _ _ := by ext; apply zsmul_ofNat
+  zsmul_negSucc _ _ := by ext; apply zsmul_negSucc
+
+end AddGroup
 
 end QuadraticMap
