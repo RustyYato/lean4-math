@@ -66,8 +66,10 @@ instance : FunLike (A ↪ₐ[R] B) A B where
     congr
     apply DFunLike.coe_inj eq
 
-instance : IsEmbeddingLike (A ↪ₐ[R] B) A B where
-  coe_inj f := f.inj
+instance : EmbeddingLike (A ↪ₐ[R] B) A B where
+  coe h := h.toEmbedding
+  coe_inj := by intro a b h; cases a; congr
+
 
 instance : IsZeroHom (A ↪ₐ[R] B) A B where
   resp_zero f := f.resp_zero
