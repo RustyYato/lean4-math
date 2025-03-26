@@ -194,6 +194,9 @@ instance : SMul ℕ (QuadraticMap R M N) where
       simp [nsmul_add]
   }
 
+instance : IsAddCommMagma (QuadraticMap R M N) where
+  add_comm _ _ := by ext; apply add_comm
+
 instance : IsAddMonoid (QuadraticMap R M N) where
   add_assoc _ _ _ := by ext; apply add_assoc
   zero_add _ := by ext; apply zero_add

@@ -8,65 +8,56 @@ private def pi_add [Add R] : ∀{ι} (a b: ι -> R) (x: ι), (a + b) x = a x + b
 
 namespace QuadraticForm
 
--- a non-negative signature where the basis vectors from [p, p+n) all square to 1
-private def ofNonnegSignature' [SemiringOps R] [IsSemiring R] [IsCommMagma R] (z p n: ℕ) : QuadraticForm R (Fin (z + p + n) -> R) where
-  toFun v :=
-    ∑x: Fin p,
-      let x := (x.natAdd z).castAdd n
-      v x * v x
-  toFun_smul a v := by
-    dsimp
-    rw [smul_eq_mul, mul_sum]
-    congr; ext i
-    simp [SMul.smul]
+section
+
+variable [SemiringOps R] [IsSemiring R] [IsCommMagma R]
+
+def single (i: ι) : QuadraticForm R (ι -> R) where
+  toFun f := f i * f i
+  toFun_smul := by
+    intro a x
+    simp
     ac_rfl
   exists_companion' := by
+    simp
     refine ⟨?_, ?_⟩
-    apply BilinMap.mk (fun a b =>
-      ∑x: Fin p, 2 * a ((x.natAdd z).castAdd n) * b ((x.natAdd z).castAdd n))
-    · intro a b k
-      rw [sum_add_sum]
-      congr; ext i
-      rw [←add_mul, ←mul_add]
-      rfl
-    · intro k a b
-      rw [sum_add_sum]
-      congr; ext i
-      rw [←mul_add]
-      rfl
-    · intro r a k
-      simp [mul_sum]
-      congr; ext i
-      rw [←mul_assoc, mul_left_comm]
+    · apply BilinMap.mk
+      case f =>
+        intro f g
+        exact 2 * f i * g i
+      case resp_add_left =>
+        intro a b k
+        simp [mul_add, add_mul]
+      case resp_add_right =>
+        intro k a b
+        simp [mul_add, add_mul]
+      case resp_smul_left =>
+        intro r' a k
+        simp; ac_rfl
+      case resp_smul_right =>
+        intro r' a k
+        simp; ac_rfl
+    · intro x y
+      simp [mul_assoc, ←npow_two, square_add, two_mul]
+      simp [npow_two, mul_add, add_mul]
       ac_rfl
-    · intro r a k
-      simp [mul_sum]
-      congr; ext i
-      rw [mul_left_comm]
-    · intro a b
-      simp [DFunLike.coe, BilinMap.mk]
-      rw [sum_add_sum, sum_add_sum]
-      congr; ext i
-      simp [add_mul, mul_add, two_mul]
-      ac_nf
 
--- a non-negative signature where the basis vectors from p<= all square to 1
-def ofNonnegSignature [SemiringOps R] [IsSemiring R] [IsCommMagma R] (z p: ℕ) : QuadraticForm R (Fin (z + p) -> R)
- := ofNonnegSignature' z p 0
+-- a non-negative signature where the basis vectors {v | p <= v} all square to 1
+def ofNonnegSignature (z p: ℕ) : QuadraticForm R (Fin (z + p) -> R) :=
+  ∑i: Fin p, single (i.natAdd z)
 
--- a signature where the basis vectors from [p, p+n) all square to 1 and p+n <=  square to -1
-def ofSignature [RingOps R] [IsRing R] [IsCommMagma R] (z p n: ℕ) : QuadraticForm R (Fin (z + p + n) -> R) :=
-  have a: QuadraticForm R (Fin (z + p + n) → R) := QuadraticForm.ofNonnegSignature' (R := R) z p n
-  have b: QuadraticForm R (Fin (z + p + n) → R) := QuadraticForm.ofNonnegSignature' (R := R) (z + p) n 0
-  a - b
+end
 
-def ofSignature' [RingOps R] [IsRing R] [IsCommMagma R] (z p n: ℕ) (k: ℕ) (keq: k = z + p + n) : QuadraticForm R (Fin k -> R) where
-  toFun v := QuadraticForm.ofSignature z p n (fun x => v (x.cast keq.symm))
-  toFun_smul a v := by
-    dsimp
-    apply QuadraticMap.toFun_smul
-  exists_companion' := by
-    subst k
-    apply QuadraticMap.exists_companion
+section
+
+variable [RingOps R] [IsRing R] [IsCommMagma R]
+
+-- a signature where the basis vectors {v | p <= v < p + n} all square to 1
+-- and the basis vectors {v | p + n <= v} all square to -1
+def ofSignature (z p n: ℕ) : QuadraticForm R (Fin (z + p + n) -> R) :=
+  (∑i: Fin p, single ((i.natAdd z).castAdd n)) -
+  (∑i: Fin n, single (i.natAdd (z + p)))
+
+end
 
 end QuadraticForm
