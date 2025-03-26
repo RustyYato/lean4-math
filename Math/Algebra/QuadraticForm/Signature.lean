@@ -1,10 +1,5 @@
-import Math.Algebra.Impls.Pi
 import Math.Algebra.QuadraticForm.Basic
 import Math.Data.Fintype.Algebra
-
-@[local simp]
-private def pi_add [Add R] : ∀{ι} (a b: ι -> R) (x: ι), (a + b) x = a x + b x :=
-   fun _ _ _ => rfl
 
 namespace QuadraticForm
 
