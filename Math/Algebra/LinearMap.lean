@@ -221,8 +221,7 @@ instance instSMul [IsSMulComm R R B]: SMul R (A →ₗ[R] B) where
 @[simp] def apply_smul [IsSMulComm R R B]
   (f: A →ₗ[R] B) (r: R) (x: A) : (r • f) x = r • f x := rfl
 
-instance [IsAddCommMagma B] [IsSMulComm R R B]
-  : IsAddMonoid (A →ₗ[R] B) where
+instance [IsAddCommMagma B] [IsSMulComm R R B] : IsAddMonoid (A →ₗ[R] B) where
   add_assoc _ _ _ := by ext; apply add_assoc
   zero_add _ := by ext; apply zero_add
   add_zero _ := by ext; apply add_zero
@@ -232,8 +231,7 @@ instance [IsAddCommMagma B] [IsSMulComm R R B]
 instance [IsAddCommMagma B] : IsAddCommMagma (A →ₗ[R] B) where
   add_comm a b := by ext; apply add_comm
 
-instance [IsAddCommMagma B] [IsSMulComm R R B]
-  : IsDistribMulAction R (A →ₗ[R] B) where
+instance [IsAddCommMagma B] [IsSMulComm R R B] : IsDistribMulAction R (A →ₗ[R] B) where
   one_smul _ := by ext; apply one_smul
   mul_smul _ _ _ := by ext; apply mul_smul
   smul_zero _ := by ext; apply smul_zero
@@ -281,8 +279,7 @@ instance instNZMul [IsAddCommMagma B]: SMul ℤ (A →ₗ[R] B) where
 @[simp] def apply_zsmul [IsAddCommMagma B]
   (n: ℤ) (f: A →ₗ[R] B) (x: A) : (n • f) x = n • f x := rfl
 
-instance [IsAddCommMagma B] [IsSMulComm R R B]
-  : IsAddGroup (A →ₗ[R] B) where
+instance [IsAddCommMagma B] [IsSMulComm R R B] : IsAddGroup (A →ₗ[R] B) where
   sub_eq_add_neg _ _ := by ext; apply sub_eq_add_neg
   neg_add_cancel _ := by ext; apply neg_add_cancel
   zsmul_ofNat _ _ := by ext; apply zsmul_ofNat

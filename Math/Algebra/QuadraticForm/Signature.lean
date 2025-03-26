@@ -58,6 +58,17 @@ def ofSignature (z p n: ℕ) : QuadraticForm R (Fin (z + p + n) -> R) :=
   (∑i: Fin p, single ((i.natAdd z).castAdd n)) -
   (∑i: Fin n, single (i.natAdd (z + p)))
 
+-- a signature where the basis vectors {v | p <= v < p + n} all square to 1
+-- and the basis vectors {v | p + n <= v} all square to -1
+def ofSignature' (z p n k: ℕ) (h: k = z + p + n) : QuadraticForm R (Fin k -> R) where
+  toFun f := ofSignature z p n (f ∘ Fin.cast h.symm)
+  toFun_smul := by
+    subst h
+    apply (ofSignature z p n).toFun_smul
+  exists_companion' := by
+    subst h
+    apply (ofSignature z p n).exists_companion'
+
 end
 
 end QuadraticForm
