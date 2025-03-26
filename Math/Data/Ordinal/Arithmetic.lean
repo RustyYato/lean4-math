@@ -155,7 +155,7 @@ def succ_lt_limit_of_lt (a b: Ordinal) (alim: a.IsLimitOrdinal) : b < a -> b + 1
   assumption
   apply alim
 
-def limit_le (a b: Ordinal) (alim: a.IsLimitOrdinal) : a ≤ b ↔ ∀a' < a, a' ≤ b := by
+def limit_iff_le (a b: Ordinal) (alim: a.IsLimitOrdinal) : a ≤ b ↔ ∀a' < a, a' ≤ b := by
   apply Iff.intro
   · intro h
     intro k  k_lt_a
@@ -179,7 +179,7 @@ def limit_eq_sup (a: Ordinal) (lim: a.IsLimitOrdinal) : a = iSup fun x: a => x.v
     apply le_of_lt
     apply x.property
   apply le_antisymm
-  apply (limit_le _ _ lim).mpr
+  apply (limit_iff_le _ _ lim).mpr
   intro a' h
   apply le_sSup
   assumption

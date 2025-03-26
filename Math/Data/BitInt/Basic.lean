@@ -949,9 +949,6 @@ def Pre.nil_add_with_carry.spec (a b: Pre) : a ≈ b -> a.nil_add_with_carry x y
   apply succ_if.spec
   assumption
 
-#reduce decide (Pre.add_with_carry (Pre.cons false 1) (Pre.cons true <| Pre.neg 1) false ≈ 1)
-#reduce decide (Pre.add_with_carry (Pre.cons false 1) (Pre.neg 1) false ≈ 1)
-
 private
 def Pre.add_with_carry.zero_right (a: Pre) : a.add_with_carry 0 false ≈ a := by
   unfold add_with_carry
@@ -1144,8 +1141,6 @@ instance : Add BitInt where
 
 @[simp]
 def mk_add (a b: Pre) : (mk a) + (mk b) = mk (a.add b) := rfl
-
-#reduce decide ((Pre.add_with_carry (Pre.neg 2) 1 false) ≈ Pre.neg 1)
 
 def altbs_comm: BitInt.at_least_two_bits_set a b c = BitInt.at_least_two_bits_set b a c := by
   revert a b c; decide

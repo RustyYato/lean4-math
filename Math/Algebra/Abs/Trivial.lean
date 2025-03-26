@@ -1,4 +1,5 @@
 import Math.Algebra.Abs.Defs
+import Math.Algebra.GroupWithZero.Defs
 
 def MaxBool := Bool
 
@@ -102,5 +103,11 @@ scoped instance : IsLawfulAbs α where
     split
     apply bot_le
     apply le_refl
+  abs_eq_of_add_eq_zero a b h := by
+    simp [AbsoluteValue.abs]
+    split
+    subst a; rw [zero_add] at h; rw [if_pos h]
+    split; subst b; rw [add_zero] at h; contradiction
+    rfl
 
 end AbsoluteValue.Trivial

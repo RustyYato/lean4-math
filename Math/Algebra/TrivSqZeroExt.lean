@@ -154,7 +154,6 @@ def inl_mul_inl [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M]
   ext
   simp
   simp
-  rw [smul_zero, smul_zero, zero_add]
 
 @[simp]
 def inl_mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
@@ -163,7 +162,6 @@ def inl_mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   ext
   simp [mul_zero]
   simp
-  simp [smul_zero, add_zero]
 
 @[simp]
 def inr_mul_inl [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
@@ -172,7 +170,6 @@ def inr_mul_inl [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   ext
   simp [zero_mul]
   simp
-  simp [smul_zero, zero_add]
 
 @[simp]
 def inr_mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
@@ -188,14 +185,12 @@ def inr_mul [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   (x: TrivSqZeroExt R M) (r: R) : x * inl r = MulOpp.mk r • x := by
   ext <;> simp
   rfl
-  simp [smul_zero, zero_add]
 
 @[simp]
 def mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsAddCommMagma M] [IsModule R M] [h: IsModule Rᵐᵒᵖ M]
   (x: TrivSqZeroExt R M) (r: R) : inl r  * x = r • x := by
   ext <;> simp
-  simp [smul_zero, add_zero]
 
 instance instMulOneClass [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsDistribMulAction R M] [IsDistribMulAction Rᵐᵒᵖ M] : IsMulOneClass (TrivSqZeroExt R M) where
@@ -240,7 +235,8 @@ variable [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsDistribMulAction R M]
   [IsDistribMulAction Rᵐᵒᵖ M] [IsSMulComm R Rᵐᵒᵖ M]
 
-private noncomputable def npow' : ℕ -> TrivSqZeroExt R M -> TrivSqZeroExt R M :=
+private noncomputable def npow' [IsDistribMulAction R M]
+  : ℕ -> TrivSqZeroExt R M -> TrivSqZeroExt R M :=
   have : IsDistribMulAction Rᵐᵒᵖ M := inferInstance
   npowRec
 
@@ -279,7 +275,7 @@ private def snd_npow' (x: TrivSqZeroExt R M) (n: ℕ) : snd (npow' n x) = ((List
     congr 3
     rw [Nat.add_comm, Nat.sub_add_eq]
 
-private def npowFast' (n: Nat) (x: TrivSqZeroExt R M): TrivSqZeroExt R M :=
+private def npowFast' [IsDistribMulAction R M] (n: Nat) (x: TrivSqZeroExt R M): TrivSqZeroExt R M :=
   have : IsDistribMulAction Rᵐᵒᵖ M := inferInstance
   ⟨x.fst ^ n, ((List.range n).map fun i => MulOpp.mk (x.fst ^ i) • (x.fst ^ (n.pred - i) • x.snd)).sum⟩
 
@@ -290,6 +286,8 @@ private def npowFast' (n: Nat) (x: TrivSqZeroExt R M): TrivSqZeroExt R M :=
 -- impl using fst_npow and snd_npow while theorem proving
 @[csimp]
 def npow'_eq_npowFast' : @npow' = @npowFast' := by
+  repeat rename_i a; clear a
+  clear R M
   ext
   apply fst_npow'
   apply snd_npow'

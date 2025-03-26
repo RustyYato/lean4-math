@@ -1,4 +1,5 @@
 import Math.Algebra.Dvd
+import Math.Algebra.GroupWithZero.Defs
 
 class IsIntegralDomain (α: Type*) [RingOps α] extends IsRing α, NoZeroDivisors α, IsNontrivial α, IsCommMagma α where
   mk' ::
@@ -9,19 +10,16 @@ instance [RingOps α] [IsRing α] [NoZeroDivisors α] [IsNontrivial α] [IsCommM
 
 instance (priority := 10000) : IsIntegralDomain Int := inferInstance
 
-def mul_left_cancel₀ [RingOps α] [IsIntegralDomain α] {k a b: α} (hk: k ≠ 0) : k * a = k * b -> a = b := by
-  intro h
-  have : k * a - k * b = 0 := by rw [h, sub_self]
-  rw [←mul_sub] at this
-  cases of_mul_eq_zero this
-  contradiction
-  apply eq_of_sub_eq_zero
-  assumption
-
-def mul_right_cancel₀ [RingOps α] [IsIntegralDomain α] {k a b: α} (hk: k ≠ 0) : a * k = b * k -> a = b := by
-  rw [mul_comm _ k, mul_comm _ k]
-  apply mul_left_cancel₀
-  assumption
+instance [RingOps α] [IsIntegralDomain α] : IsLeftCancel₀ α where
+  mul_left_cancel₀ := by
+    intro a b k hk h
+    have : k * a - k * b = 0 := by rw [h, sub_self]
+    rw [←mul_sub] at this
+    cases of_mul_eq_zero this
+    contradiction
+    apply eq_of_sub_eq_zero
+    assumption
+instance [RingOps α] [IsIntegralDomain α] : IsMulCancel₀ α where
 
 section
 

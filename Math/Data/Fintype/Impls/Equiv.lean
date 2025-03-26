@@ -227,7 +227,7 @@ private def mem_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup
       exact b.property
       rw [getElem_idxOf]
       exact b.property
-      rw [erase_eq_eraseIdx_of_idxOf bs b.val i _root_.rfl]
+      rw [erase_eq_eraseIdx_of_idxOf _root_.rfl]
     · ext ⟨x, hx⟩
       simp
       simp [Equiv.allOn₁]

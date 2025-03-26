@@ -44,7 +44,7 @@ def bdd_above_iff (S: Set ℝ≥0) : S.BoundedAbove ↔ (S.image orderEmbedReal)
     apply flip Iff.intro
     · intro ⟨b, hb⟩
       refine ⟨⟨b, ?_⟩, ?_⟩
-      apply le_trans x.property
+      apply le_trans (α := ℝ) x.property
       apply hb
       apply Set.mem_image'
       assumption
@@ -77,22 +77,24 @@ noncomputable instance : SupSet ℝ≥0 where
   sSup S := ⟨sSup (S.image orderEmbedReal), by
     by_cases h:S.BoundedAbove ∧ S.Nonempty
     have ⟨x, hx⟩ := h.right
-    apply le_trans x.property
+    apply le_trans (α := ℝ) x.property
     apply le_csSup
     rw [←bdd_above_iff]
     exact h.left
     apply Set.mem_image'
     assumption
     simp [sSup]; rw [dif_neg]
+    rw [Real.mem_nonneg]
     rw [←nonempty_iff, ←bdd_above_iff]
     rwa [And.comm]⟩
 noncomputable instance : InfSet ℝ≥0 where
   sInf S := ⟨sInf (S.image NNReal.orderEmbedReal), by
     by_cases h:S.Nonempty
-    apply le_csInf
+    apply le_csInf (α := ℝ)
     rwa [←nonempty_iff]
     apply zero_mem_lowerbounds'
     simp [sInf]; rw [dif_neg]
+    rw [Real.mem_nonneg]
     rw [←nonempty_iff]
     intro ⟨_, _⟩
     contradiction⟩

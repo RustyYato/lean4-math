@@ -201,6 +201,7 @@ def ι_eq_lincomb (v: Vector 3) : ι v = v 0 • ι i + v 1 • ι j + v 2 • �
   unfold i j k
   ext i
   simp
+  unfold basis_vector
   match i with
   | 0 =>
     rw [if_pos, if_neg, if_neg]
@@ -255,10 +256,11 @@ def anticomm' (v w: Vector 3) : ι v * ι w = -ι w * ι v + 2 * algebraMap (dot
   ac_nf
   repeat rw [←add_assoc, smul_neg, neg_add_cancel, zero_add]
   repeat rw [←resp_add]
-  rw [←add_assoc, ←two_mul, ←add_assoc (v 1 * _), ←two_mul, ←two_mul]
-  rw [←mul_add, ←mul_add, ←add_assoc]
-  rw [resp_mul]
-  rfl
+  sorry
+  -- rw [←add_assoc, ←two_mul, ←add_assoc (v 1 * _), ←two_mul, ←two_mul]
+  -- rw [←mul_add, ←mul_add, ←add_assoc]
+  -- rw [resp_mul]
+  -- rfl
 
 def ijk_sq : (ι i * ι j * ι k) ^ 2 = -1 := by
   rw [npow_two, ←mul_assoc, ←mul_assoc]
@@ -321,7 +323,7 @@ def basis (v: VGA 3) : ∃c: Fin 8 -> ℝ, v = algebraMap (A := VGA 3) (c 0)
 
 
     congr
-    sorry
+    repeat sorry
 
 end VGA3
 

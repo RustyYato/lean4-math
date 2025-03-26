@@ -499,7 +499,7 @@ def lift_symm_apply (F : FreeAlgebra R X →ₐ[R] A) : (lift R).symm F = F ∘ 
 def hom_ext {f g : FreeAlgebra R X →ₐ[R] A}
     (w : (f : FreeAlgebra R X → A) ∘ ι R = (g : FreeAlgebra R X → A) ∘ ι R) : f = g := by
   rw [← lift_symm_apply, ← lift_symm_apply] at w
-  exact (lift R).invFun_inj w
+  exact (lift R).symm.inj w
 
 /-- The left-inverse of `algebraMap`. -/
 def algebraMapInv : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 0)

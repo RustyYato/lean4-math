@@ -299,8 +299,6 @@ instance [RingOps R] [IsRing R] : IsMonoid (GA R basis) where
       cases b <;> show node _ _ _ = node _ _ _ <;> congr 1 <;> simp [mul_eq]
       apply ih
       simp [ih, add_mul, mul_add]
-
-
-      sorry
+      repeat sorry
 
 end GA

@@ -60,7 +60,7 @@ instance : FinsetLike Nat Nat where
     replace eq := Quotient.exact (Subtype.mk.inj eq)
     rcases Nat.lt_trichotomy a b with lt | rfl | gt
     · have : a ∈ List.ofFn (n := b) Fin.val := by
-        refine (List.mem_ofFn Fin.val a).mpr ?_
+        refine List.mem_ofFn.mpr ?_
         exists ⟨a, lt⟩
       have := (List.Perm.mem_iff eq).mpr this
       simp at this
@@ -71,7 +71,7 @@ instance : FinsetLike Nat Nat where
       contradiction
     · rfl
     · have : b ∈ List.ofFn (n := a) Fin.val := by
-        refine (List.mem_ofFn Fin.val b).mpr ?_
+        refine List.mem_ofFn.mpr ?_
         exists ⟨b, gt⟩
       have := (List.Perm.mem_iff eq).mp this
       simp at this
@@ -87,7 +87,7 @@ instance : IsLawfulEmptyFinsetLike Nat where
     contradiction
 
 def Nat.mem_iff_lt (a b: Nat) : a ∈ b ↔ a < b := by
-  apply Iff.trans (List.mem_ofFn _ _)
+  apply Iff.trans List.mem_ofFn
   apply Iff.intro
   intro ⟨⟨i, _⟩, h⟩
   dsimp at h; subst h

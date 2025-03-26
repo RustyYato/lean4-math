@@ -295,8 +295,8 @@ def sqrt_le_add (n : Nat) : n ≤ sqrt n * sqrt n + sqrt n + sqrt n := by
   apply le_of_lt_succ
   apply lt_succ_sqrt
 
-@[simp] def sqrt_zero : sqrt 0 = 0 := by decide +kernel
-@[simp] def sqrt_one : sqrt 1 = 1 := by decide +kernel
+@[simp] def sqrt_zero : sqrt 0 = 0 := by simp [sqrt]
+@[simp] def sqrt_one : sqrt 1 = 1 := by simp [sqrt]
 
 def lt_sqrt_iff (a b: Nat) :
   b < sqrt a ↔ (b + 1) * (b + 1) ≤ a := by

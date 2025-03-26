@@ -65,8 +65,6 @@ def prod_succ' [One α] [Mul α] [IsSemigroup α] [IsMulOneClass α] (f: Fin (n 
   prod f = f 0 * prod (f ∘ Fin.succ) :=
   sum_succ' (α := AddOfMul α) _
 
-end Fin
-
 section Hom
 
 open Fin
@@ -88,8 +86,6 @@ def resp_prod [FunLike F α β] [One α] [One β] [Mul α] [Mul β] [IsOneHom F 
   resp_sum (α := AddOfMul α) (β := AddOfMul β) f h
 
 end Hom
-
-namespace Fin
 
 def sum_from_ext [Add α] (fs gs: α) (f g: Fin n -> α) :
   fs = gs ->

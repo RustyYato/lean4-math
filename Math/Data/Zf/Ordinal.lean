@@ -756,8 +756,8 @@ def oSup_const : oSup o (fun _ _ => x) = if o = 0 then 0 else x := by
   subst o
   apply embedZfSet.inj
   simp [Ordinal.sSup, embedZfSet, attach_image_empty]
-  rw [DFunLike.coe]; simp [Embedding.instFunLike]
-  rw [zero_set, attach_image_empty, sUnion_empty]
+  show ⋃ (∅: ZfSet).attach_image _ = _
+  rw [ZfSet.attach_image_empty, ZfSet.sUnion_empty]
   rename_i h
   replace h := zero_lt_of_ne_zero h
   apply le_antisymm

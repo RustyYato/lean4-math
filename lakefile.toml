@@ -4,6 +4,20 @@ defaultTargets = ["math"]
 
 [[lean_lib]]
 name = "Math"
+globs = [
+    "Math.Algebra.+",
+    "Math.CategoryTheory.+",
+    "Math.Data.+",
+    "Math.Function.+",
+    "Math.Logic.+",
+    "Math.Ops.+",
+    "Math.Order.+",
+    "Math.Relation.+",
+    "Math.Tactics.+",
+    "Math.Topology.+",
+    "Math.Type.+",
+    "Math.AxiomBlame",
+]
 
 [[lean_exe]]
 name = "math"

@@ -3,8 +3,9 @@ import Math.Algebra.Module.Submodule
 import Math.Order.Zorn
 
 variable (R M: Type*) [FieldOps R] [IsField R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
 
-def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
+def existsBasis : Nonempty (Submodule.Basis R M) := by
   classical
   have ⟨S, linear_indep, spec⟩ := Zorn.subset (Set.mk (Submodule.IsLinindep R (M := M))) ?_
   · refine ⟨S, linear_indep, ?_⟩
@@ -102,12 +103,4 @@ def existsBasis : ∃s: Set M, Submodule.IsBasis R s := by
         apply mem_S_linear_indep
         assumption
 
-noncomputable def basis : Set M := Classical.choose (existsBasis R M)
-def basis_is_basis : Submodule.IsBasis R (basis R M) := Classical.choose_spec (existsBasis R M)
-def basis_is_linear_indep : Submodule.IsLinindep R (basis R M) := (basis_is_basis R M).indep
-def basis_is_spanning_set : ∀m, m ∈ Submodule.span R (basis R M) := (basis_is_basis R M).complete
-def basis_span_eq_univ : Submodule.span R (basis R M) = ⊤ := by
-  ext
-  apply Iff.intro <;> intro
-  trivial
-  apply basis_is_spanning_set
+noncomputable def basis : Submodule.Basis R M := Classical.choice (existsBasis R M)
