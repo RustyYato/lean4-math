@@ -57,4 +57,31 @@ def sqrt_surj {x: ℝ} (hx: 0 ≤ x) : ∃y: ℝ, y.sqrt = x := by
   exists x ^ 2
   rwa [sqrt_of_sq_nonneg]
 
+def sqrt_monotone : Monotone sqrt := by
+  intro x y h
+  show NNReal.orderEmbedReal _ ≤ NNReal.orderEmbedReal _
+  apply (OrderEmbedding.resp_le _).mp
+  apply (OrderIso.resp_le _).mp
+  unfold NNReal.ofReal
+  show max x 0 ≤ max y 0
+  rw [le_max_iff, max_le_iff, max_le_iff]
+  simp
+  rcases le_total x 0
+  right; assumption
+  left
+  apply And.intro
+  assumption
+  apply le_trans _ h
+  assumption
+
+def sqrt_strictMonotoneOn : StrictMonotoneOn sqrt (Set.Ici 0) := by
+  intro x y hx hy h
+  rw [Set.mem_Ici] at hx hy
+  show NNReal.orderEmbedReal _ < NNReal.orderEmbedReal _
+  apply (OrderEmbedding.resp_lt _).mp
+  apply (OrderIso.resp_lt _).mp
+  unfold NNReal.ofReal
+  show max x 0 < max y 0
+  rwa [max_iff_le_right.mp hx, max_iff_le_right.mp hy]
+
 end Real
