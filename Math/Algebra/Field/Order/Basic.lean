@@ -4,7 +4,7 @@ import Math.Ops.CheckedOrder
 
 section
 
-variable [FieldOps α] [IsNonCommField α] [LE α] [LT α] [IsOrderedSemiring α]
+variable [SemifieldOps α] [IsNonCommSemifield α] [LE α] [LT α] [IsOrderedSemiring α]
 
 def mul_lt_mul_of_pos_left: ∀(a b : α), a < b → ∀ (c : α), 0 < c → c * a < c * b := by
   intro a b ab c cpos

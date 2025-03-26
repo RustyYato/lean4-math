@@ -44,6 +44,23 @@ def embedReal : ℝ≥0 ↪+* ℝ where
   resp_add := rfl
   resp_mul := rfl
 
+def ofReal (r: ℝ) : ℝ≥0 where
+  val := max r 0
+  property := by apply le_max_right (α := ℝ)
+
+def ofReal_embedReal (r: ℝ) (h: 0 ≤ r) : embedReal (ofReal r) = r := by
+  show max r 0 = r
+  rwa [max_iff_le_right.mp]
+
+def embedReal_ofReal (r: ℝ≥0) : ofReal (embedReal r) = r := by
+  unfold ofReal
+  congr
+  rw [max_iff_le_right.mp]
+  rfl
+  exact r.property
+
+def isNonneg (x: ℝ≥0) : 0 ≤ x.val := x.property
+
 instance : LE ℝ≥0 := inferInstanceAs (LE (Subtype _))
 instance : LT ℝ≥0 := inferInstanceAs (LT (Subtype _))
 

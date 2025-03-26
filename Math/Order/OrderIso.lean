@@ -44,6 +44,8 @@ def resp_lt {_: LE α} {_: LE β} {_: LT α} {_: LT β} [IsLawfulLT α] [IsLawfu
   intro a b
   rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, h.resp_le, h.resp_le]
 
+def inj (h: α ↪o β) : Function.Injective h := Embedding.inj h.toEmbedding
+
 def inducedIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder β]
   [IsLawfulLT α]
@@ -156,6 +158,8 @@ def symm_coe (h: α ≃o β) (x: β) : h (h.symm x) = x := h.rightInv _
 
 def resp_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: α}, a ≤ b ↔ h a ≤ h b := h.resp_rel
 def symm_resp_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: β}, a ≤ b ↔ h.symm a ≤ h.symm b := h.symm.resp_rel
+
+def inj (h: α ≃o β) : Function.Injective h := Equiv.inj h.toEquiv
 
 def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder α]

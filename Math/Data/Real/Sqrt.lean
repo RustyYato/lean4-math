@@ -1,169 +1,60 @@
-import Math.Data.Real.Lattice
-import Math.Order.GaloisConnection
+import Math.Data.NNReal.Pow
 
 namespace Real
 
-def sqrt_set (r: ℝ) : Set ℝ := Set.mk fun x => x ^ 2 ≤ r
-def mem_sqrt_set {r: ℝ} : ∀{x}, x ∈ r.sqrt_set ↔ x ^ 2 ≤ r := Iff.rfl
+noncomputable def sqrt (x: ℝ) : ℝ :=
+  NNReal.embedReal ((NNReal.npowOrderIso 2 (by decide)).symm (NNReal.ofReal x))
 
-noncomputable def sqrt (r: ℝ) : ℝ := sSup r.sqrt_set
-
-def neg_sq (r: ℝ) : (-r) ^ 2 = r ^ 2 := by
-  rw [←neg_one_mul, mul_npow, npow_two, neg_one_mul, neg_neg, one_mul]
-
-def abs_sq (r: ℝ) : ‖r‖ ^ 2 = r ^ 2 := by
-  rw [abs_def]
-  split
-  rfl
-  rw [neg_sq]
-
-def sq_nonneg (r: ℝ) : 0 ≤ r ^ 2 := by
-  rw [npow_two]
-  rcases le_total 0 r with h | h
-  apply mul_nonneg
-  assumption
-  assumption
-  rw [←neg_neg (r * r), neg_mul_left, neg_mul_right]
-  rw [←neg_le_neg_iff] at h
-  apply mul_nonneg
-  assumption
+def sqrt_sq (x: ℝ) (h: 0 ≤ x) : x.sqrt ^ 2 = x := by
+  unfold sqrt
+  let e := NNReal.npowOrderIso 2 (by decide)
+  have := e.coe_symm (NNReal.ofReal x)
+  rw [←resp_npow]
+  show NNReal.embedReal (e (e.symm _)) = x
+  rw [e.symm_coe, NNReal.ofReal_embedReal]
   assumption
 
-def sqrt_set_bdd (r: ℝ) : r.sqrt_set.BoundedAbove := by
-  exists max 1 r
-  intro a ha
-  rw [mem_sqrt_set] at ha
-  rcases lt_or_le 1 a with h | h
-  · rw [le_max_iff]; right
-    apply flip le_trans
-    assumption
-    rw (occs := [1]) [←mul_one a, npow_two]
-    apply mul_le_mul_of_nonneg_left
-    apply le_of_lt; apply flip lt_trans
-    assumption; exact zero_lt_one
-    apply le_of_lt ;assumption
-  · rw [le_max_iff]; left; assumption
+def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = ‖x‖ := by
+  unfold sqrt
+  conv in NNReal.ofReal _ => {
+    unfold NNReal.ofReal
+    arg 1
+    rw [max_iff_le_right.mp (by
+      rw [npow_two]
+      apply square_nonneg)]
+  }
+  let e := NNReal.npowOrderIso 2 (by decide)
+  rcases le_total 0 x with hx | hx
+  show NNReal.embedReal (e.symm (e ⟨x, hx⟩)) = ‖x‖
+  rw [e.coe_symm, (Real.abs_of_nonneg _).mp hx]; rfl
+  conv in x^2 => {
+    rw [show x^2 = (-x)^2 by
+      rw [npow_two, npow_two, ←neg_mul_right, ←neg_mul_left, neg_neg]]
+  }
+  rw [←Real.neg_le_neg_iff] at hx
+  show NNReal.embedReal (e.symm (e ⟨-x, hx⟩)) = ‖x‖
+  rw [e.coe_symm, ←abs_neg, (Real.abs_of_nonneg _).mp hx]; rfl
 
-def zero_mem_sqrt_set (r: ℝ) (h: 0 ≤ r) : 0 ∈ r.sqrt_set := by
-  rw [mem_sqrt_set]
+def sqrt_of_sq_nonneg (x: ℝ) (hx: 0 ≤ x) : (x ^ 2).sqrt = x := by
+  rw [sqrt_of_sq, (abs_of_nonneg _).mp hx]
+
+def sqrt_nonneg (x: ℝ) : 0 ≤ x.sqrt := by apply NNReal.isNonneg
+
+def sqrt_inj {x y: ℝ} (hx: 0 ≤ x) (hy: 0 ≤ y) : x.sqrt = y.sqrt ↔ x = y := by
+  unfold sqrt
+  rw [NNReal.embedReal.inj.eq_iff, (OrderIso.inj _).eq_iff]
+  unfold NNReal.ofReal
+  apply Iff.intro
+  intro h
+  have := Subtype.mk.inj h
+  rwa [max_iff_le_right.mp, max_iff_le_right.mp] at this
   assumption
-
-def sqrt_set_nonempty (r: ℝ) (h: 0 ≤ r) : r.sqrt_set.Nonempty := by exists 0
-
-def sq_sqrt (r: ℝ) : (r ^ 2).sqrt = ‖r‖ := by
-  have hbdd : ‖r‖ ∈ (r ^ 2).sqrt_set.upperBounds := by
-    intro a ha
-    rw [mem_sqrt_set] at ha
-    rcases Or.symm (lt_or_le ‖r‖ a) with h | h
-    assumption
-    suffices r ^ 2 < a ^ 2 by
-      have := not_le_of_lt this
-      contradiction
-    clear ha
-    rw [←abs_sq]
-    rw [npow_two, npow_two]
-    apply lt_of_le_of_lt
-    apply mul_le_mul_of_nonneg_left
-    exact IsLawfulAbs.abs_nonneg r
-    apply le_of_lt; assumption
-    apply mul_lt_mul_of_pos_right
-    apply flip lt_of_le_of_lt
-    assumption
-    exact IsLawfulAbs.abs_nonneg r
-    assumption
-  apply le_antisymm
-  · apply csSup_le
-    · refine sqrt_set_nonempty (r ^ 2) ?_
-      apply sq_nonneg
-    · assumption
-  · apply le_csSup
-    exists ‖r‖
-    rw [mem_sqrt_set, abs_sq]
-
-def sqrt_nonneg (r: ℝ) (h: 0 ≤ r) : 0 ≤ r.sqrt := by
-  apply le_csSup
-  apply sqrt_set_bdd
-  apply zero_mem_sqrt_set
   assumption
+  intro h
+  rw [h]
 
-def sqrt_sq (r: ℝ) (h: 0 ≤ r) : r.sqrt ^ 2 = r := by
-  apply le_antisymm
-  · have : ∀x, 0 ≤ x -> x < r.sqrt -> x ^ 2 < r := by
-      intro x xnonneg hx
-      rw [←not_le] at *
-      intro g; apply hx; clear hx
-      apply csSup_le
-      exact sqrt_set_nonempty r h
-      intro a ha
-      rw [mem_sqrt_set] at ha
-      replace ha := le_trans ha g
-      rcases Or.symm (lt_or_le 0 a) with h | h
-      apply le_trans
-      assumption
-      assumption
-      sorry
-    sorry
-  · apply le_of_not_lt
-    intro g
-    -- have : r.sqrt
-    sorry
-
+def sqrt_surj {x: ℝ} (hx: 0 ≤ x) : ∃y: ℝ, y.sqrt = x := by
+  exists x ^ 2
+  rwa [sqrt_of_sq_nonneg]
 
 end Real
-
--- noncomputable def Real.sqrt : ℝ -> ℝ :=
---   Function.invFun_on (Set.mk fun x => 0 ≤ x) (fun a => a * a)
-
--- def Real.sqrt_of_sq_of_nonneg (a: ℝ) (h: 0 ≤ a): Real.sqrt (a * a) = a := by
---   apply Function.invFun_eq'_on (f := fun a: ℝ => a * a) _ h
---   intro a b ha hb eq
---   rw [Set.mk_mem] at ha hb
---   dsimp at eq
---   rcases lt_trichotomy a b with h | h | h
---   have := Real.mul_lt_mul_of_nonneg ha ha h h
---   rw [eq] at this; have := lt_irrefl this; contradiction
---   assumption
---   have := Real.mul_lt_mul_of_nonneg hb hb h h
---   rw [eq] at this; have := lt_irrefl this; contradiction
-
--- def Real.sqrt_of_sq (a: ℝ): Real.sqrt (a * a) = ‖a‖ := by
---   rw [abs_def]
---   split
---   rw [sqrt_of_sq_of_nonneg]
---   assumption
---   rw [←neg_neg (a * a), neg_mul_left, neg_mul_right, sqrt_of_sq_of_nonneg]
---   rw [←neg_le_neg_iff, neg_neg]
---   apply le_of_lt
---   apply lt_of_not_le
---   assumption
-
--- def Real.sq_sqrt (a: ℝ) (h: 0 ≤ a): Real.sqrt a * Real.sqrt a = a := by
---   apply Function.invFun_eq_on (f := fun a: ℝ => a * a)
---   exists a.sqrt
---   apply And.intro sorry
---   sorry
-
--- def Real.sqrt_surj (b: ℝ) (hb: 0 ≤ b) : ∃a, 0 ≤ a ∧ Real.sqrt a = b := by
---   exists b * b
---   apply And.intro
---   apply mul_nonneg <;> assumption
---   rw [sqrt_of_sq_of_nonneg _ hb]
-
--- def Real.sqrt_nonneg (a: ℝ) (ha: 0 ≤ a) : 0 ≤ a.sqrt := by
---   sorry
-
--- noncomputable def Real.sqrt_order_hom : { x: ℝ // 0 ≤ x } →o ℝ where
---   toFun x := Real.sqrt x
---   resp_rel := by
---     intro ⟨a, ha⟩ ⟨b, hb⟩ ab
---     dsimp
---     sorry
-
--- def Real.sq_surj (b: ℝ) (hb: 0 ≤ b) : ∃a, 0 ≤ a ∧ a * a = b := by
---   sorry
-
--- def Real.sqrt_inj (a b: ℝ) (ha: 0 ≤ a) (hb: 0 ≤ b) : Real.sqrt a = Real.sqrt b -> a = b := by
---   intro h
---   have : a.sqrt * a.sqrt = b.sqrt * b.sqrt := by rw [h]
---   rw [Real.sq_sqrt _ ha, Real.sq_sqrt _ hb] at this
---   assumption
