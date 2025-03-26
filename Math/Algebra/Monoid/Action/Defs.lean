@@ -60,3 +60,20 @@ instance [SMul Mᵐᵒᵖ α] [SMul M α] [IsCentralScalar M α] [IsSMulComm M M
 instance [MonoidOps R] [IsMonoid R] : IsMulAction R R where
   one_smul _ := one_mul _
   mul_smul _ _ _ := mul_assoc _ _ _
+
+instance [AddMonoidOps A] [IsAddMonoid A]
+  [SMul R A] [MonoidOps R] [IsMonoid R]
+  [IsDistribMulAction R A]
+  : IsSMulComm ℕ R A where
+  smul_comm := by
+    intro n r a
+    induction n with
+    | zero => rw [zero_nsmul, zero_nsmul, smul_zero]
+    | succ n ih => rw [succ_nsmul, succ_nsmul, smul_add, ih]
+
+-- low priority so we try to find a more direct instance when possible
+instance (priority := 100) [SMul R A] [SMul S A] [IsSMulComm R S A]
+  : IsSMulComm S R A where
+  smul_comm := by
+    intro r s a; symm
+    apply smul_comm

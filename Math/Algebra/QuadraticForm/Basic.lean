@@ -109,3 +109,36 @@ def polar (Q: QuadraticForm R M) : BilinMap R M R :=
   QuadraticMap.polar Q
 
 end QuadraticFrom
+
+namespace QuadraticMap
+
+section Algebra
+
+variable
+  [SemiringOps R] [IsSemiring R] [IsCommMagma R]
+  [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M]
+  [AddMonoidOps N] [IsAddMonoid N] [IsAddCommMagma N]
+  [SMul R M] [SMul R N]
+  [IsModule R M] [IsModule R N]
+
+#synth Add (M →ₗ[R] N)
+#synth SMul R (M →ₗ[R] N)
+#synth Add (M →ₗ[R] M →ₗ[R] N)
+
+instance : Add (QuadraticMap R M N) where
+  add a b := {
+    toFun := a.toFun + b.toFun
+    toFun_smul := by
+      intro a m
+      simp
+      rw [toFun_smul, toFun_smul, ←smul_add]
+    exists_companion' := by
+      have ⟨Ba, ha⟩ := a.exists_companion
+      have ⟨Bb, hb⟩ := b.exists_companion
+      exists Ba + Bb
+      sorry
+  }
+
+end Algebra
+
+end QuadraticMap

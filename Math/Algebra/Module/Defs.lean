@@ -14,7 +14,7 @@ def neg_smul [SMul R M] [RingOps R] [AddGroupOps M] [IsRing R] [IsAddGroup M] [I
   refine neg_eq_of_add_right ?_
   rw [←add_smul, neg_add_cancel, zero_smul]
 
-def neg_smul' [SMul R M] [RingOps R] [AddGroupOps M] [IsRing R] [IsAddGroup M] [IsAddCommMagma M] [IsDistribMulAction R M]
+def neg_smul' [SMul R M] [MonoidOps R] [AddGroupOps M] [IsMonoid R] [IsAddGroup M] [IsAddCommMagma M] [IsDistribMulAction R M]
   (r: R) (x: M) : r • (-x) = -(r • x) := by
   refine neg_eq_of_add_right ?_
   rw [←smul_add, neg_add_cancel, smul_zero]
