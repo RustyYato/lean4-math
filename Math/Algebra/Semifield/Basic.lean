@@ -19,6 +19,12 @@ def add_div?_add₀ (a b c: α) (hc: c ≠ 0) : a /? c + b /? c = (a + b) /? c :
   simp [div?_eq_mul_inv?]
   rw [add_mul]
 
+def midpoint (a b: α) [NeZero (2: α)] : α := (a + b) /? 2
+
+def midpoint_comm (a b: α) [NeZero (2: α)] : midpoint a b = midpoint b a := by
+  unfold midpoint
+  rw [add_comm]
+
 end
 
 section

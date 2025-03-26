@@ -55,6 +55,16 @@ def mul_intCast_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : x * r = r �
   | ofNat r => erw [intCast_ofNat, zsmul_ofNat, mul_natCast_eq_nsmul]
   | negSucc r => rw [intCast_negSucc, zsmul_negSucc, ←neg_mul_right, mul_natCast_eq_nsmul]
 
+def square_neg [RingOps α] [IsRing α] (x: α) : (-x) ^ 2 = x ^ 2 := by
+  rw [npow_two, npow_two, ←neg_mul_right, ←neg_mul_left, neg_neg]
+
+def square_sub  [RingOps α] [IsRing α] [IsCommMagma α] (a b: α) : (a - b) ^ 2 = a ^ 2 - 2 * a * b + b ^ 2 := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, square_add]
+  congr 1
+  congr 1
+  rw [neg_mul_right]
+  rw [square_neg]
+
 @[norm_cast]
 def intCast_mul [RingOps α] [IsRing α] (a b: ℤ) : a * b = ((a * b: Int): α) := by
   rw [intCast_mul_eq_zsmul, intCast_eq_zsmul_one, ←mul_zsmul, intCast_eq_zsmul_one]

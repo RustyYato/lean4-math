@@ -37,12 +37,6 @@ def inv_sub_inv (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : a⁻¹? - b⁻¹? = (b -
   rw [mul_sub, mul_assoc, ←div?_eq_mul_inv?, mul_div?_cancel, mul_assoc, mul_inv?_cancel, mul_one]
   rw [mul_comm, mul_assoc, inv?_mul_cancel, mul_one]
 
-def midpoint (a b: α) [NeZero (2: α)] : α := (a + b) /? 2
-
-def midpoint_comm (a b: α) [NeZero (2: α)] : midpoint a b = midpoint b a := by
-  unfold midpoint
-  rw [add_comm]
-
 end
 
 -- we don't use Semiring here to prevent invert_tactic cycles

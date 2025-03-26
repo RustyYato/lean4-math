@@ -55,6 +55,7 @@ class GroupWithZeroOps (α: Type*) extends
   CheckedDiv? α where
 
 instance
+  (priority := 100)
   [MonoidOps α]
   [Zero α] [CheckedIntPow? α]
   [CheckedInv? α] [CheckedDiv? α] :
@@ -205,6 +206,16 @@ class IsMulCancel₀ (α: Type*) [Mul α]  [Zero α]: Prop extends IsLeftCancel�
 
 def mul_left_cancel₀ [Mul α] [Zero α] [IsLeftCancel₀ α] {a b k: α}: k ≠ 0 -> k * a = k * b -> a = b := IsLeftCancel₀.mul_left_cancel₀
 def mul_right_cancel₀ [Mul α] [Zero α] [IsRightCancel₀ α] {a b k: α}: k ≠ 0 -> a * k = b * k -> a = b := IsRightCancel₀.mul_right_cancel₀
+
+instance : CheckedDiv? αᵐᵒᵖ where
+  checked_div a b h := a * b⁻¹?
+
+instance : IsGroupWithZero αᵐᵒᵖ where
+  exists_ne := IsNontrivial.exists_ne (α := α)
+  mul_inv?_cancel := inv?_mul_cancel (α := α)
+  div?_eq_mul_inv? _ _ _ := rfl
+  zpow?_ofNat := zpow?_ofNat (α := α)
+  zpow?_negSucc := zpow?_negSucc (α := α)
 
 instance (priority := 50) IsCommMagma.toLeftCancel₀ [Mul α] [Zero α] [IsCommMagma α] [IsRightCancel₀ α] : IsLeftCancel₀ α where
   mul_left_cancel₀ := by

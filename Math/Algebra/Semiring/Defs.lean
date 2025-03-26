@@ -77,6 +77,11 @@ def nsmul_eq_natCast_mul [SemiringOps α] [IsSemiring α] (n: ℕ) (x: α) : n �
   | zero => rw [zero_nsmul, natCast_zero, zero_mul]
   | succ n ih => rw [succ_nsmul, ih, natCast_succ, add_mul, one_mul]
 
+def square_add  [SemiringOps α] [IsSemiring α] [IsCommMagma α] (a b: α) : (a + b) ^ 2 = a ^ 2 + 2 * a * b + b ^ 2 := by
+  rw [mul_assoc]
+  simp [two_mul, npow_two, mul_add, add_mul, add_comm b a]
+  ac_rfl
+
 class IsNonUnitalNonAssocSemiring (α: Type*) [AddMonoidOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α
 
 instance

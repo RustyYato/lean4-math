@@ -138,4 +138,44 @@ instance : IsOrderedCommMonoid ℝ≥0 where
     assumption
     apply bot_le
 
+instance : IsAddCancel ℝ≥0 where
+  add_left_cancel := by
+    intro a b k h
+    have : -embedReal k + embedReal (k + a) = -embedReal k + embedReal (k + b) := by rw [h]
+    apply embedReal.inj
+    simpa [resp_add, ←add_assoc, neg_add_cancel] using this
+  add_right_cancel := by
+    intro a b k h
+    have : embedReal (a + k) + -embedReal k = embedReal (b + k) + -embedReal k := by rw [h]
+    apply embedReal.inj
+    simpa [resp_add, add_assoc, neg_add_cancel] using this
+
+def of_add_eq_zero (a b: ℝ≥0) : a + b = 0 -> a = 0 ∧ b = 0 := by
+  intro h
+  rcases lt_or_eq_of_le (bot_le a) with ha | ha
+  have : 0 < a + b := by
+    rw [←add_zero 0]
+    apply add_lt_add_of_lt_of_le
+    assumption
+    apply bot_le
+  rw [h] at this
+  have := lt_irrefl this
+  contradiction
+  rcases lt_or_eq_of_le (bot_le b) with hb | hb
+  have : 0 < a + b := by
+    rw [←add_zero 0]
+    apply add_lt_add_of_le_of_lt
+    apply bot_le
+    assumption
+  rw [h] at this
+  have := lt_irrefl this
+  contradiction
+  apply And.intro <;> (symm; assumption)
+
+instance : NeZero (2: ℝ≥0) where
+  out := by
+    intro h
+    have : embedReal 2 = embedReal 0 := by rw [h]
+    exact NeZero.ne (n := 2) (R := ℝ) this
+
 end NNReal

@@ -84,4 +84,42 @@ def sqrt_strictMonotoneOn : StrictMonotoneOn sqrt (Set.Ici 0) := by
   show max x 0 < max y 0
   rwa [max_iff_le_right.mp hx, max_iff_le_right.mp hy]
 
+@[simp]
+def sqrt_0 : sqrt 0 = 0 := by
+  rw (occs := [2]) [←abs_zero (α := ℝ)]
+  rw [←sqrt_of_sq]
+  rfl
+@[simp]
+def sqrt_1 : sqrt 1 = 1 := by
+  rw (occs := [2]) [←abs_one (α := ℝ)]
+  rw [←sqrt_of_sq]
+  rfl
+
+def npow_strictMonotoneOn (n: ℕ) (h: 0 < n) : StrictMonotoneOn (α := ℝ) (· ^ n) (Set.Ici 0) := by
+  intro x y hx hy h
+  simp
+  let x' : ℝ≥0 := ⟨x, hx⟩
+  let y' : ℝ≥0 := ⟨y, hy⟩
+  show x' ^ n < y' ^ n
+  apply NNReal.npowStrictMono
+  assumption
+  assumption
+
+def square_strictMonotoneOn : StrictMonotoneOn (α := ℝ) (· ^ 2) (Set.Ici 0) :=
+  npow_strictMonotoneOn 2 (by decide)
+
+def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (c ^ 2 + d ^ 2) := by
+  simp [npow_two, mul_add, add_mul]
+  ac_nf
+  apply add_le_add_left
+  rw [←add_assoc, ←add_assoc]
+  apply add_le_add_right
+  repeat rw [←mul_assoc]
+  rw [←two_mul]
+  rw [←npow_two, mul_assoc (_^2), ←npow_two]
+  rw [←npow_two, mul_assoc (_^2), ←npow_two]
+  rw [←mul_npow, ←mul_npow]
+  sorry
+
+
 end Real

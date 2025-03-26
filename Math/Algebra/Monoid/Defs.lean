@@ -37,8 +37,8 @@ def succ_nsmul (n: ℕ) (a: α) : (n + 1) • a = n • a + a := IsAddMonoid.suc
 @[simp] def npow_zero (a: α) : a ^ 0 = 1 := IsMonoid.npow_zero _
 def npow_succ (n: ℕ) (a: α) : a ^ (n + 1) = a ^ n * a := IsMonoid.npow_succ _ _
 
-@[simp] def zero_npow_zero [IsMulZeroClass α] : (0: α) ^ 0 = 1 := npow_zero _
-@[simp] def zero_npow_succ [IsMulZeroClass α] (n: ℕ) : (0: α) ^ (n + 1) = 0 := by simp [npow_succ]
+@[simp] def zero_npow_zero [Zero α] [IsMulZeroClass α] : (0: α) ^ 0 = 1 := npow_zero _
+@[simp] def zero_npow_succ [Zero α] [IsMulZeroClass α] (n: ℕ) : (0: α) ^ (n + 1) = 0 := by simp [npow_succ]
 
 
 instance : IsAddMonoid (AddOfMul α) where
