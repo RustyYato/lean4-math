@@ -212,13 +212,13 @@ instance instSMul [IsSMulComm R R B]: SMul R (A →ₗ[R] B) where
       rw [resp_smul, smul_comm]
   }
 
-@[simp] def LinearMap.apply_zero
+@[simp] def apply_zero
   (x: A) : (0: A →ₗ[R] B) x = 0 := rfl
-@[simp] def LinearMap.apply_add [IsAddCommMagma B]
+@[simp] def apply_add [IsAddCommMagma B]
   (f g: A →ₗ[R] B) (x: A) : (f + g) x = f x + g x := rfl
-@[simp] def LinearMap.apply_nsmul [IsAddCommMagma B]
+@[simp] def apply_nsmul [IsAddCommMagma B]
   (n: ℕ) (f: A →ₗ[R] B) (x: A) : (n • f) x = n • f x := rfl
-@[simp] def LinearMap.apply_smul [IsSMulComm R R B]
+@[simp] def apply_smul [IsSMulComm R R B]
   (f: A →ₗ[R] B) (r: R) (x: A) : (r • f) x = r • f x := rfl
 
 instance [IsAddCommMagma B] [IsSMulComm R R B]
@@ -274,11 +274,11 @@ instance instNZMul [IsAddCommMagma B]: SMul ℤ (A →ₗ[R] B) where
       rw [zsmul_negSucc]
       rfl
 
-@[simp] def LinearMap.apply_neg [IsAddCommMagma B]
+@[simp] def apply_neg [IsAddCommMagma B]
   (f: A →ₗ[R] B) (x: A) : (-f) x = -f x := rfl
-@[simp] def LinearMap.apply_sub [IsAddCommMagma B]
+@[simp] def apply_sub [IsAddCommMagma B]
   (f g: A →ₗ[R] B) (x: A) : (f - g) x = f x - g x := rfl
-@[simp] def LinearMap.apply_zsmul [IsAddCommMagma B]
+@[simp] def apply_zsmul [IsAddCommMagma B]
   (n: ℤ) (f: A →ₗ[R] B) (x: A) : (n • f) x = n • f x := rfl
 
 instance [IsAddCommMagma B] [IsSMulComm R R B]

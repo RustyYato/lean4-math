@@ -16,7 +16,7 @@ abbrev QuadraticForm (R M: Type*)
   [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M]
   [SMul R M] [IsModule R M]: Type _ := QuadraticMap R M R
 
-section
+namespace QuadraticMap
 
 variable
   [SemiringOps R] [IsSemiring R] [IsCommMagma R]
@@ -30,12 +30,21 @@ instance : FunLike (QuadraticMap R M N) M N where
   coe_inj := by
     intro a b _; cases a; congr
 
-def QuadraticMap.smul_eq_smul_sq (Q: QuadraticMap R M N) (r: R) (x: M) :
+def smul_eq_smul_sq (Q: QuadraticMap R M N) (r: R) (x: M) :
   Q (r • x) = (r * r) • Q x := Q.toFun_smul _ _
 
-def QuadraticMap.exists_companion (Q: QuadraticMap R M N) : ∃ B : BilinMap R M N, ∀ x y, Q (x + y) = Q x + Q y + B x y := Q.exists_companion'
+def exists_companion (Q: QuadraticMap R M N) : ∃ B : BilinMap R M N, ∀ x y, Q (x + y) = Q x + Q y + B x y := Q.exists_companion'
 
-end
+def copy (q: QuadraticMap R M N) (g: M -> N) (h: ∀x, q x = g x) : QuadraticMap R M N where
+  toFun := g
+  toFun_smul := by
+    intro a x
+    simp [←h, smul_eq_smul_sq]
+  exists_companion' := by
+    simp [←h]
+    exact q.exists_companion
+
+end QuadraticMap
 
 namespace QuadraticMap
 
