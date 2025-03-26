@@ -11,10 +11,10 @@ def Units.lift
     val_mul_inv := by rw [←resp_mul, x.val_mul_inv, resp_one]
     inv_mul_val := by rw [←resp_mul, x.inv_mul_val, resp_one]
   }
-  resp_one := by
+  resp_one' := by
     apply Units.val_inj.mp
     apply resp_one
-  resp_mul {a b} := by
+  resp_mul' {a b} := by
     apply Units.val_inj.mp
     apply resp_mul
 
@@ -28,9 +28,9 @@ def AddUnits.lift
     val_add_neg := by rw [←resp_add, x.val_add_neg, resp_zero]
     neg_add_val := by rw [←resp_add, x.neg_add_val, resp_zero]
   }
-  resp_zero := by
+  resp_zero' := by
     apply AddUnits.val_inj.mp
     apply resp_zero
-  resp_add {a b} := by
+  resp_add' {a b} := by
     apply AddUnits.val_inj.mp
     apply resp_add

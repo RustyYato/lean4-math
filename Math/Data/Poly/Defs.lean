@@ -70,10 +70,10 @@ instance [SemiringOps P] [IsSemiring P] : IsMonoid P[X] where
 def C [SemiringOps P] [IsSemiring P] : P ↪+* P[X] where
   toFun := AddMonoidAlgebra.single 0
   inj' := AddMonoidAlgebra.single_inj
-  resp_zero := AddMonoidAlgebra.single_zero _
-  resp_add := (AddMonoidAlgebra.single_add _ _ _).symm
-  resp_one := rfl
-  resp_mul {x y} := by
+  resp_zero' := AddMonoidAlgebra.single_zero _
+  resp_add' := (AddMonoidAlgebra.single_add _ _ _).symm
+  resp_one' := rfl
+  resp_mul' {x y} := by
     dsimp
     rw [AddMonoidAlgebra.single_mul, add_zero]
 
@@ -238,7 +238,7 @@ def smul_eq_C_mul [SemiringOps P] [IsSemiring P] (r: P) (p: P[X]) : r • p = C 
   simp
   let g : ZeroHom P P := {
     toFun := (r * ·)
-    resp_zero := mul_zero _
+    resp_zero' := mul_zero _
   }
   show _ = Finsupp.applyHom _ _
   rw [Finsupp.resp_sum]

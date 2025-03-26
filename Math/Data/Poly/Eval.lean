@@ -47,8 +47,8 @@ def evalWith_mul_X (x: M) (p: P[X]) : evalWith f x (p * X) = evalWith f x p * x 
   rw [evalWith_X]
   let f' : M →+ M := {
     toFun := (· * x)
-    resp_zero := zero_mul _
-    resp_add := add_mul _ _ _
+    resp_zero' := zero_mul _
+    resp_add' := add_mul _ _ _
   }
   show _ = f' _
   rw [Finsupp.resp_sum]
@@ -99,10 +99,10 @@ def evalWith_mul (x: M) (a b: P[X]) : evalWith f x (a * b) = evalWith f x a * ev
 
 def evalWithHom (x: M) : P[X] →+* M where
   toFun := evalWith f x
-  resp_zero := evalWith_zero _ _
-  resp_one := evalWith_one _ _
-  resp_add := evalWith_add _ _ _ _
-  resp_mul := evalWith_mul _ _ _ _
+  resp_zero' := evalWith_zero _ _
+  resp_one' := evalWith_one _ _
+  resp_add' := evalWith_add _ _ _ _
+  resp_mul' := evalWith_mul _ _ _ _
 
 def evalWithHom_C (x: M) (p: P) : evalWithHom f x (C p) = f p := evalWith_C _ _ _
 def evalWithHom_X (x: M) : evalWithHom f x (X: P[X]) = x := evalWith_X _ _

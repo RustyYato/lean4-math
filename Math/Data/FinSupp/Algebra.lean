@@ -165,8 +165,8 @@ def sum_single [DecidableEq ι] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMag
     ext i
     let f' : Finsupp ι α S →+ α := {
       toFun x := x i
-      resp_zero := rfl
-      resp_add := rfl
+      resp_zero' := rfl
+      resp_add' := rfl
     }
     show f' _ = _
     rw [resp_sum]
@@ -338,8 +338,8 @@ def sum_sum_index
     simp [sum_eq_sum' (g := g₁)]
     let sum'_hom : Finsupp ι γ S →+ γ₁ := {
       toFun f := Finsupp.sum' f g₁
-      resp_zero := ?_
-      resp_add := ?_
+      resp_zero' := ?_
+      resp_add' := ?_
     }
     show sum'_hom _ = _
     rw [resp_sum (f₀ := sum'_hom) (f := f) (g := g₀)]

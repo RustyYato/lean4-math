@@ -53,15 +53,15 @@ def i_isunit : IsUnit i where
 
 def real : ℤ[i] →+₁ ℤ where
   toFun x := (RMod.modPoly inferInstance x).toFinsupp 0
-  resp_zero := by
+  resp_zero' := by
     simp [RMod.modPoly_zero]
     rfl
-  resp_one := by
+  resp_one' := by
     simp
     erw [RMod.modPoly_const]
     rfl
     trivial
-  resp_add {x y} := by
+  resp_add' {x y} := by
     induction x using induction' with | mk x =>
     induction y using induction' with | mk y =>
     show (Poly.mod (x + y) _ (inv := _)).toFinsupp 0 =
@@ -72,10 +72,10 @@ def real : ℤ[i] →+₁ ℤ where
 
 def img : ℤ[i] →+ ℤ where
   toFun x := (RMod.modPoly inferInstance x).toFinsupp 1
-  resp_zero := by
+  resp_zero' := by
     simp [RMod.modPoly_zero]
     rfl
-  resp_add {x y} := by
+  resp_add' {x y} := by
     induction x using induction' with | mk x =>
     induction y using induction' with | mk y =>
     show (Poly.mod (x + y) _ (inv := _)).toFinsupp 1 =
@@ -254,9 +254,9 @@ def img_one : img 1 = 0 := by
 def conj (a: ℤ[i]) : ℤ := real a - img a
 def norm_sq : ℤ[i] →*₀ ℤ where
   toFun a := real a * real a + img a * img a
-  resp_zero := by simp
-  resp_one := by simp
-  resp_mul := by
+  resp_zero' := by simp
+  resp_one' := by simp
+  resp_mul' := by
     intro x y
     induction x with | mk a b =>
     induction y with | mk c d =>

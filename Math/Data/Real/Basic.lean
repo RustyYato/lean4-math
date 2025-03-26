@@ -741,10 +741,10 @@ instance : IsSemiring ℝ := inferInstance
 
 def ofRatHom : ℚ ↪+* ℝ where
   toFun := ofRat
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := rfl
+  resp_zero' := rfl
+  resp_one' := rfl
+  resp_add' := rfl
+  resp_mul' := rfl
   inj' := by
     suffices ∀a b: ℚ, ofRat a = ofRat b -> ¬a < b by
       intro a b eq

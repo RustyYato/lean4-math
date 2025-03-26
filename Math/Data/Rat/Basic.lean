@@ -575,10 +575,10 @@ instance : IsSemiring ℚ := (inferInstanceAs (IsField ℚ)).toIsSemiring
 
 def ofIntHom : ℤ ↪+* ℚ where
   toFun := algebraMap
-  resp_zero := resp_zero _
-  resp_one := resp_one _
-  resp_add := resp_add _
-  resp_mul := resp_mul _
+  resp_zero' := resp_zero _
+  resp_one' := resp_one _
+  resp_add' := resp_add _
+  resp_mul' := resp_mul _
   inj' := by
     intro x y eq
     have : _ = _ := Quotient.exact eq

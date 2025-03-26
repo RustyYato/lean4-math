@@ -172,8 +172,8 @@ def sum_toFinsupp
   (f.sum g₀ h₀).toFinsupp = f.sum (fun i a => (g₀ i a).toFinsupp) h₁ := by
   let f' : AddGroupHom (AddMonoidAlgebra ι γ S) (Finsupp ι γ S) := {
     toFun := toFinsupp
-    resp_zero := rfl
-    resp_add := rfl
+    resp_zero' := rfl
+    resp_add' := rfl
   }
   show f' (f.sum g₀ h₀) = _
   rw [Finsupp.resp_sum]
@@ -191,8 +191,8 @@ def sum_toFinsupp'
     rfl) := by
   let f' : (AddMonoidAlgebra ι γ S) →+ γ := {
     toFun x := x.toFinsupp i₀
-    resp_zero := rfl
-    resp_add := rfl
+    resp_zero' := rfl
+    resp_add' := rfl
   }
   show f' (f.sum g₀ h₀) = _
   rw [Finsupp.resp_sum]
@@ -309,8 +309,8 @@ def erase [Zero β] [DecidableEq α] (f: AddMonoidAlgebra α β S) (a: α) : Add
 
 abbrev applyHom [Add β] [Zero β] [IsAddZeroClass β] (a: α) :  AddMonoidAlgebra α β S →+ β where
   toFun f := f a
-  resp_zero := rfl
-  resp_add := rfl
+  resp_zero' := rfl
+  resp_add' := rfl
 
 def applyHom_eq [Add β] [Zero β] [IsAddZeroClass β] (f: AddMonoidAlgebra α β S) (a: α) : applyHom a f = f.toFinsupp a := rfl
 

@@ -12,10 +12,10 @@ instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] [IsAddCommMagma R] : IsMod
 
 instance (priority := 500) [RingOps R] [IsRing R] : AlgebraMap Int R where
   toFun n := n
-  resp_zero := intCast_zero
-  resp_one := intCast_one
-  resp_add := (intCast_add _ _).symm
-  resp_mul := (intCast_mul _ _).symm
+  resp_zero' := intCast_zero
+  resp_one' := intCast_one
+  resp_add' := (intCast_add _ _).symm
+  resp_mul' := (intCast_mul _ _).symm
 
 instance [RingOps R] [IsRing R] : IsAlgebra Int R where
   commutes r x := by
@@ -27,10 +27,10 @@ instance [RingOps R] [IsRing R] : IsAlgebra Int R where
 
 def ofNatHom : ℕ ↪+* ℤ where
   toFun := algebraMap
-  resp_zero := resp_zero _
-  resp_one := resp_one _
-  resp_add := resp_add _
-  resp_mul := resp_mul _
+  resp_zero' := resp_zero _
+  resp_one' := resp_one _
+  resp_add' := resp_add _
+  resp_mul' := resp_mul _
   inj' _ _ := Int.ofNat.inj
 
 instance : HasChar Int 0 := HasChar.of_ring_emb ofNatHom

@@ -8,13 +8,13 @@ variable [QAlgebraOps α] [IsQAlgebra α]
 
 instance : AlgebraMap ℚ α where
   toFun q := q
-  resp_zero := by
+  resp_zero' := by
     dsimp
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
     rw [div?_eq_mul_inv?]
     simp [intCast_zero]
-  resp_one := by
+  resp_one' := by
     dsimp
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
@@ -22,7 +22,7 @@ instance : AlgebraMap ℚ α where
     simp [intCast_one]
     apply inv?_eq_of_mul_left
     simp [natCast_one]
-  resp_add := by
+  resp_add' := by
     have := (inferInstanceAs (IsQAlgebra α)).toHasChar
     intro a b
     simp
@@ -49,7 +49,7 @@ instance : AlgebraMap ℚ α where
     intro h
     rw [←natCast_zero] at h
     exact b.den_nz (HasChar.natCast_inj h)
-  resp_mul := by
+  resp_mul' := by
     intro a b
     cases a, b with | mk a b =>
     simp [ratCast_eq_ratCastRec]

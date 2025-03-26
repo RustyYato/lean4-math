@@ -195,8 +195,8 @@ def mul_sum  [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α] [Is
   x * ∑i: ι, f i = ∑i: ι, x * f i  := by
   let g : α →+ α := {
     toFun a := x * a
-    resp_add := mul_add _ _ _
-    resp_zero := mul_zero _
+    resp_add' := mul_add _ _ _
+    resp_zero' := mul_zero _
   }
   show g (∑i: ι, f i) = _
   rw [resp_sum]
@@ -206,8 +206,8 @@ def sum_mul [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α] [IsR
   (∑i: ι, f i) * x = ∑i: ι, f i * x  := by
   let g : α →+ α := {
     toFun a := a * x
-    resp_add := add_mul _ _ _
-    resp_zero := zero_mul _
+    resp_add' := add_mul _ _ _
+    resp_zero' := zero_mul _
   }
   show g (∑i: ι, f i) = _
   rw [resp_sum]
@@ -218,8 +218,8 @@ def smul_sum [SMul β α] [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddComm
   x • (∑i: ι, f i) = ∑i: ι, x • f i  := by
   let g : α →+ α := {
     toFun a := x • a
-    resp_add := smul_add _ _ _
-    resp_zero := smul_zero _
+    resp_add' := smul_add _ _ _
+    resp_zero' := smul_zero _
   }
   show g (∑i: ι, f i) = _
   rw [resp_sum]
@@ -229,10 +229,10 @@ def neg_sum [AddGroupOps α] [Mul α] [IsAddGroup α] [IsAddCommMagma α] (f: ι
   -∑i, f i = ∑i, -f i := by
   let g : α →+ α := {
     toFun a := -a
-    resp_add := by
+    resp_add' := by
       intro a b
       simp [neg_add_rev, add_comm]
-    resp_zero := neg_zero
+    resp_zero' := neg_zero
   }
   show g (∑i: ι, f i) = _
   rw [resp_sum]

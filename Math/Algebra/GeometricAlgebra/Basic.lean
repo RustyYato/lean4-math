@@ -180,7 +180,7 @@ instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] : IsAddGroupWithOne (GA R 
     intro n
     let neg : ZeroHom R R := {
       toFun x := -x
-      resp_zero := neg_zero
+      resp_zero' := neg_zero
     }
     show .ofScalar _ = map neg (.ofScalar _)
     rw [map_ofScalar, intCast_negSucc]

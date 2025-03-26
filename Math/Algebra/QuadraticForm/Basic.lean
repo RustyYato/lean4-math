@@ -51,7 +51,7 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
     iterate 4 rw [spec]
-    simp only [resp_add, LineraMap.apply_add, sub_eq_add_neg, neg_add_rev]
+    simp only [resp_add, LinearMap.apply_add, sub_eq_add_neg, neg_add_rev]
     rw [
       show Q a + Q b + (B a) b + Q k + ((B a) k + (B b) k) + (-(B a) b + (-Q b + -Q a)) + -Q k
          = ((Q a + -Q a) + Q b + (-Q b)) + ((B a) b + (-(B a) b)) + (Q k + -Q k) + ((B a) k + (B b) k) by ac_rfl,
@@ -63,7 +63,7 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
     iterate 4 rw [spec]
-    simp only [resp_add, LineraMap.apply_add, sub_eq_add_neg, neg_add_rev]
+    simp only [resp_add, LinearMap.apply_add, sub_eq_add_neg, neg_add_rev]
     rw [
       show Q k + (Q a + Q b + (B a) b) + ((B k) a + (B k) b) + -Q k + (-(B a) b + (-Q b + -Q a))
          = (Q k + -Q k) + ((Q a + -Q a)+ (Q b + -Q b) + ((B a) b + (-(B a) b))) + ((B k) a + (B k) b) by ac_rfl,
@@ -120,10 +120,6 @@ variable
   [AddMonoidOps N] [IsAddMonoid N] [IsAddCommMagma N]
   [SMul R M] [SMul R N]
   [IsModule R M] [IsModule R N]
-
-#synth Add (M →ₗ[R] N)
-#synth SMul R (M →ₗ[R] N)
-#synth Add (M →ₗ[R] M →ₗ[R] N)
 
 instance : Add (QuadraticMap R M N) where
   add a b := {

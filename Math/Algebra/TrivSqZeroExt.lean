@@ -115,14 +115,14 @@ def linearMap_ext {N} [SemiringOps S] [IsSemiring S]
 def inrHom [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddCommMagma M] [IsAddMonoid M]
   [SMul R M] [IsModule R M] : M →ₗ[R] TrivSqZeroExt R M where
   toFun := inr
-  resp_add {x y} := by ext <;> simp [add_zero]
-  resp_smul {n x} := by ext <;> simp
+  resp_add' {x y} := by ext <;> simp [add_zero]
+  resp_smul' {n x} := by ext <;> simp
 
 def sndHom [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddCommMagma M] [IsAddMonoid M]
   [SMul R M] [IsModule R M] : TrivSqZeroExt R M →ₗ[R] M where
   toFun := snd
-  resp_add := rfl
-  resp_smul := rfl
+  resp_add' := rfl
+  resp_smul' := rfl
 
 end Add
 
@@ -332,12 +332,12 @@ def inlHom [SemiringOps R] [IsSemiring R]
   [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsModule R M] [IsModule Rᵐᵒᵖ M] : R →+* TrivSqZeroExt R M where
   toFun := inl
-  resp_zero := by intros; rfl
-  resp_one := by intros; rfl
-  resp_add := by
+  resp_zero' := by intros; rfl
+  resp_one' := by intros; rfl
+  resp_add' := by
     intro a b
     ext <;> simp [add_zero]
-  resp_mul := by
+  resp_mul' := by
     intro a b
     ext <;> simp [smul_zero]
     rfl
@@ -373,12 +373,12 @@ instance
   [IsDistribMulAction R M]
   [IsDistribMulAction Rᵐᵒᵖ M] : AlgebraMap R (TrivSqZeroExt R M) where
   toFun := inl
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := by
+  resp_zero' := rfl
+  resp_one' := rfl
+  resp_add' := by
     intro x y
     ext <;> simp [add_zero]
-  resp_mul := by
+  resp_mul' := by
     intro x y
     ext <;> simp [add_zero, smul_zero]
 

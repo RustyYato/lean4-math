@@ -83,10 +83,10 @@ instance : IsField ℂ where
 
 def ofRealHom : ℝ ↪+* ℂ where
   toFun a := ⟨a, 0⟩
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := by
+  resp_zero' := rfl
+  resp_one' := rfl
+  resp_add' := rfl
+  resp_mul' := by
     intro a b
     ext <;> simp
   inj' := by
@@ -97,10 +97,10 @@ instance : HasChar ℂ 0 := HasChar.of_ring_emb ofRealHom
 
 instance : AlgebraMap ℝ ℂ where
   toFun := (Complex.mk · 0)
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul {a b} := by
+  resp_zero' := rfl
+  resp_one' := rfl
+  resp_add' := rfl
+  resp_mul' {a b} := by
     simp
     ext <;> simp
 instance : SMul ℝ ℂ where

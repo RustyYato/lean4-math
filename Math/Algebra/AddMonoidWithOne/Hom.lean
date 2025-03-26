@@ -23,8 +23,8 @@ def resp_ofNat
 def natCast_AddGroupHom
   [FunLike F α β] [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : ℕ →+ α where
   toFun n := n
-  resp_zero := natCast_zero
-  resp_add := by
+  resp_zero' := natCast_zero
+  resp_add' := by
     dsimp
     intro x y
     rw [natCast_add]

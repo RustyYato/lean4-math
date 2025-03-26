@@ -165,8 +165,8 @@ def liftAux [GroupOps G] [IsGroup G] (f: α -> G) : FreeGroup α -> G := by
 -- lift a function to a group to a group homomorphism from the FreeGroup
 def lift [GroupOps G] [IsGroup G] (f: α -> G) : FreeGroup α →* G where
   toFun := liftAux f
-  resp_one := rfl
-  resp_mul := by
+  resp_one' := rfl
+  resp_mul' := by
     intro a b
     induction a, b using ind₂
     rfl
