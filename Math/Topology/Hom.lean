@@ -116,6 +116,20 @@ def subsing_prod_left [Subsingleton α₀] [Inhabited α₀] : α₀ × α ≃�
 def subsing_prod_right [Subsingleton α₀] [Inhabited α₀] : α × α₀ ≃ₜ α :=
   comm_prod.trans subsing_prod_left
 
+-- def congrPi {α: ι₀ -> Type*} {β: ι₁ -> Type*} [∀i, Topology (α i)] [∀i, Topology (β i)]
+--   (hι: ι₀ ≃ ι₁) (h: ∀i: ι₀, α i ≃ₜ β (hι i)) : (∀i, α i) ≃ₜ (∀i, β i) where
+--   toEquiv := Equiv.congrPi hι (fun i => (h i).toEquiv)
+--   toFun_continuous := by
+--     show IsContinuous <| _
+--     simp [Equiv.congrPi]
+--     sorry
+--   invFun_continuous := by
+--     show IsContinuous <| _
+--     simp [Equiv.congrPi]
+--     refine ⟨?_⟩
+--     intro S hS
+--     sorry
+
 def coe_symm (h: α ≃ₜ β) (x: α) : h.symm (h x) = x := h.leftInv _
 def symm_coe (h: α ≃ₜ β) (x: β) : h (h.symm x) = x := h.rightInv _
 

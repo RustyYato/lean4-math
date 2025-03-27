@@ -73,6 +73,12 @@ instance IsContinuous.subtype_val {P: α -> Prop} : IsContinuous (Subtype.val (p
     intro S hS
     exists S
 
+def IsContinuous.cast [ta: Topology α] [tb: Topology β] [Topology γ]
+  (heq: HEq ta tb)
+  (h: α = β) (f: β -> γ) (hf: IsContinuous f) : IsContinuous (fun x: α => f (cast h x)) := by
+    cases h; cases heq
+    assumption
+
 def IsContinuous.Prod.mk (x : α) : IsContinuous fun y : β => (x, y) :=
   (IsContinuous.const _).prod_mk IsContinuous.id
 

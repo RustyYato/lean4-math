@@ -1088,6 +1088,25 @@ def compl_union (s t: Set α) : (s ∪ t)ᶜ = sᶜ ∩ tᶜ := by
   ext
   simp [mem_inter, mem_compl, mem_union]
 
+def cast (h: α = β) (s: Set α) : Set β :=
+  s.preimage (fun x: β => h.symm ▸ x)
+
+@[simp]
+def cast_eq_cast (h: α = β) (s: Set α) : h ▸ s = Set.cast h s :=
+  sorry
+
+@[simp]
+def cast_univ (h: α = β) : Set.cast h ⊤ = ⊤ := rfl
+@[simp]
+def cast_inter (h: α = β) (a b: Set α) : Set.cast h (a ∩ b) = Set.cast h a ∩ Set.cast h b := rfl
+@[simp]
+def cast_sUnion (h: α = β) (s: Set (Set α)) :
+  Set.cast h (⋃s) = ⋃(s.cast (by rw [h]): Set (Set β)) := by
+  sorry
+
+@[simp]
+def mem_cast {h: α = β} {s: Set α} : ∀{x: β}, x ∈ Set.cast h s ↔ h.symm ▸ x ∈ s := Iff.rfl
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]

@@ -54,8 +54,17 @@ def square (r: ℝ) : ℝ≥0 where
     rw [Real.mem_nonneg, npow_two]
     exact Real.square_nonneg r
 
+def embedReal_abs (x: ℝ) : embedReal (abs x) = ‖x‖ := rfl
+
 @[simp] def square_zero : square 0 = 0 := rfl
 @[simp] def square_one : square 1 = 1 := rfl
+def square_eq_abs_sq (x: ℝ): square x = (abs x) ^ 2 := by
+  apply embedReal.inj
+  show x ^ 2 = ‖x‖ ^ 2
+  rw [Real.abs_def]
+  split
+  rfl
+  rw [square_neg]
 
 def square_sub_comm (a b: ℝ) : square (a - b) = square (b - a) := by
   apply embedReal.inj
@@ -118,5 +127,21 @@ def geom_mean_le_midpoint (a b: ℝ≥0) : sqrt (a * b) ≤ midpoint a b := by
     mul_comm, ←mul_assoc, ←square_sub]
   rw [npow_two]
   apply Real.square_nonneg
+
+def sqrt_pos (a: ℝ≥0) (h: 0 < a) : 0 < a.sqrt := by
+  rw [←sqrt_0]
+  apply sqrt_strictMonotone
+  assumption
+
+def sqrt_ne_zero (a: ℝ≥0) (h: a ≠ 0) : a.sqrt ≠ 0 := by
+  intro g; apply h
+  symm; apply (lt_or_eq_of_le (bot_le a)).resolve_left
+  clear h; intro h
+  have := sqrt_pos _ h
+  rw [g] at this
+  exact lt_irrefl this
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply sqrt_ne_zero <;> invert_tactic)
 
 end NNReal

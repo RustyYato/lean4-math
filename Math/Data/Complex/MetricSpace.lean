@@ -1,13 +1,16 @@
 import Math.Data.NNReal.Sqrt
 import Math.Algebra.Impls.Complex
 import Math.Data.Real.Sqrt
+import Math.Topology.Connected.Basic
 
-open NNReal
+open NNReal Topology
 
 namespace Complex
 
 noncomputable instance : AbsoluteValue ℂ ℝ≥0 where
   abs x := (square x.real + square x.img).sqrt
+
+def norm_sq (c: ℂ) : ‖c‖ ^ 2 = square c.real + square c.img := sqrt_sq _
 
 instance instLawfulAbs : IsLawfulAbs ℂ where
   abs_zero_iff := by
@@ -91,11 +94,92 @@ noncomputable instance : Dist ℂ ℝ≥0 where
 instance : IsMetricSpace ℂ := Abs.instIsMetricSpace ℂ
 instance : Topology ℂ := Topology.ofIsPseudoMetricSpace
 
-instance : Topology.IsConnected ℂ where
-  univ_preconnected := by
-    intro u v hu hv total ⟨x, hx', hx⟩ ⟨y, hy', hy⟩
-    rw [Set.univ_inter]; clear hx' hy'
-    sorry
+instance : Topology.IsContinuous Complex.real where
+  isOpen_preimage := by
+    intro S hS x h
+    replace ⟨ε, εpos, h⟩ := hS _ h
+    let δ : ℝ≥0 := ⟨ε, le_of_lt εpos⟩
+    refine ⟨δ, εpos, ?_⟩
+    intro y hy
+    apply h
+    simp [IsPseudoMetricSpace.mem_ball, dist] at *
+    show ‖_‖ < ε
+    replace hy : embedReal ‖_‖ < ε := hy
+    apply lt_of_le_of_lt _ hy
+    rw [←embedReal_abs]
+    show orderEmbedReal _ ≤ orderEmbedReal _
+    apply NNReal.orderEmbedReal.resp_le.mp
+    apply flip le_trans
+    apply sqrt_strictMonotone.le_iff_le.mpr
+    apply le_add_right
+    apply bot_le
+    rw [sqrt_square]
+    rfl
+
+instance : Topology.IsContinuous Complex.img where
+  isOpen_preimage := by
+    intro S hS x h
+    replace ⟨ε, εpos, h⟩ := hS _ h
+    let δ : ℝ≥0 := ⟨ε, le_of_lt εpos⟩
+    refine ⟨δ, εpos, ?_⟩
+    intro y hy
+    apply h
+    simp [IsPseudoMetricSpace.mem_ball, dist] at *
+    show ‖_‖ < ε
+    replace hy : embedReal ‖_‖ < ε := hy
+    apply lt_of_le_of_lt _ hy
+    rw [←embedReal_abs]
+    show orderEmbedReal _ ≤ orderEmbedReal _
+    apply NNReal.orderEmbedReal.resp_le.mp
+    apply flip le_trans
+    apply sqrt_strictMonotone.le_iff_le.mpr
+    apply le_add_left
+    apply bot_le
+    rw [sqrt_square]
+    rfl
+
+instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
+  isOpen_preimage := by
+    rw [Real.topo_prodct_eq_metric]
+    intro S hS (a, b) h
+    simp [Set.mem_preimage] at h
+    replace ⟨ε, εpos, h⟩ := hS _ h
+    refine ⟨orderEmbedReal (ε /? (NNReal.sqrt 2)), ?_, ?_⟩
+    apply div?_pos
+    assumption
+    apply sqrt_pos
+    exact two_pos
+    intro (c, d) g
+    apply h
+    simp
+    simp [IsPseudoMetricSpace.mem_ball, dist] at *
+    replace g := max_lt_iff.mp g
+    apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mpr
+    show ‖_‖ ^ 2 < ε ^ 2
+    rw [norm_sq]
+    simp [square_eq_abs_sq]
+    apply lt_of_lt_of_le
+    apply add_lt_add
+    apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mp
+    show _ < ε /? (NNReal.sqrt 2)
+    exact g.left
+    apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mp
+    show _ < ε /? (NNReal.sqrt 2)
+    exact g.right
+    clear g
+    show _  ^ 2 + _ ^ 2 ≤ ε ^ 2
+    rw [div?_npow]
+    have : NNReal.sqrt 2 ^ 2 = 2 := by rw [sqrt_sq]
+    iterate 2 conv in NNReal.sqrt 2 ^ 2 => { rw [this] }
+    rw [add_half]
+
+def homeoℝxℝ : ℝ × ℝ ≃ₜ ℂ where
+  toFun x := ⟨x.1, x.2⟩
+  invFun x := ⟨x.1, x.2⟩
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+instance : Topology.IsConnected ℂ := Topology.connected_of_ofHom homeoℝxℝ
 
 
 end Complex
