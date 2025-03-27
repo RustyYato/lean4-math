@@ -15,6 +15,13 @@ def HasChar.of_natCast_eq_zero [SemiringOps α] [IsSemiring α] (n: Nat) (h: n =
       intro a
       rw [mul_nsmul, nsmul_eq_natCast_mul, h, zero_mul]
 
+instance Nat.char_eq : HasChar Nat 0 := by
+  apply HasChar.of_natCast_eq_zero
+  rfl
+  intro m h
+  cases h
+  apply Nat.dvd_refl
+
 def char_eq_of_natCast_eq_zero [SemiringOps α] [IsSemiring α] (n: Nat) :
   n = (0: α) -> (∀m: Nat, m = (0: α) -> n ∣ m) -> char α = n := by
   intro h g
@@ -75,13 +82,6 @@ def char_eq_char_of_eqv (α β: Type*)
    have := HasChar.char β
    exact HasChar.eq_of_ring_equiv eqv
 
-instance Nat.char_eq : HasChar Nat 0 := by
-  apply HasChar.of_natCast_eq_zero
-  rfl
-  intro m h
-  cases h
-  apply Nat.dvd_refl
-
 def HasChar.char_dvd_natCast_eq_zero [SemiringOps α] [IsSemiring α] [HasChar α n]
   (m: ℕ) (h: (m: α) = 0): n ∣ m := by
   apply char_dvd (α := α)
@@ -107,3 +107,22 @@ def HasChar.natCast_inj [SemiringOps α] [IsSemiring α] [IsAddCancel α] [HasCh
   have := Nat.zero_dvd.mp this
   have := Nat.le_of_sub_eq_zero this
   apply Nat.le_antisymm <;> assumption
+
+def HasChar.eq_zero_of_add_hom
+  [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
+  [HasChar β 0] [IsAddCancel β]
+  [FunLike F α β] [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β]
+  (f: F) : HasChar α 0 :=
+  HasChar.of_ring_emb (α := ℕ) <| {
+    toFun n := n
+    resp_zero' := natCast_zero
+    resp_one' := natCast_one
+    resp_add' := natCast_add _ _
+    resp_mul' := natCast_mul _ _
+    inj' := by
+      intro a b h
+      replace h : (a : α) = (b: α) := h
+      have : f (a: α) = f (b: α) := by rw [h]
+      rw [resp_natCast, resp_natCast] at this
+      exact HasChar.natCast_inj this
+  }

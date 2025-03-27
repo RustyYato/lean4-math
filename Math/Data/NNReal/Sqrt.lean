@@ -1,4 +1,5 @@
 import Math.Data.NNReal.Pow
+import Math.Algebra.GroupWithZero.Order
 
 namespace NNReal
 
@@ -86,6 +87,10 @@ def of_square_eq_zero : square r = 0 -> r = 0 := by
   rw [sqrt_square] at this
   exact of_abs_eq_zero (Subtype.mk.inj this)
 
+def square_mul (a b: ℝ) : square a * square b = square (a * b) := by
+  apply Subtype.val_inj
+  symm; apply mul_npow
+
 def sqrt_mul (a b: ℝ≥0) : a.sqrt * b.sqrt = (a * b).sqrt := by
   symm; apply resp_mul sqrtEquiv
 
@@ -98,8 +103,20 @@ def geom_mean_le_midpoint (a b: ℝ≥0) : sqrt (a * b) ≤ midpoint a b := by
     symm; apply inv?_eq_of_mul_left
     rw [div?_eq_mul_inv?, ←mul_assoc, ←npow_two, mul_inv?_cancel]
   rw [div?_eq_mul_inv?, mul_assoc (a * b), ←div?_eq_mul_inv?, this, ←div?_eq_mul_inv?]
-
-  -- show a * b ≤ (a * b) /? 2 + _
-  sorry
+  clear this
+  rw (occs := [1]) [←add_half (a * b)]
+  apply add_le_add_left
+  apply le_of_mul_le_mul_right₀ (c := 4)
+  invert_tactic
+  show (a * b) /? 2 * (2 * 2) ≤ _ /? 4 * 4
+  rw [←mul_assoc, div?_mul_cancel, div?_mul_cancel]
+  obtain ⟨a, ha⟩ := a
+  obtain ⟨b, hb⟩ := b
+  show a * b * 2 ≤ a ^2 + b^2
+  apply le_of_add_le_add_right (a := _) (b := _) (c := -(a * b * 2))
+  rw [add_neg_cancel, add_comm_right, ←sub_eq_add_neg,
+    mul_comm, ←mul_assoc, ←square_sub]
+  rw [npow_two]
+  apply Real.square_nonneg
 
 end NNReal

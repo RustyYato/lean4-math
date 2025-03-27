@@ -9,7 +9,7 @@ namespace Complex
 noncomputable instance : AbsoluteValue ℂ ℝ≥0 where
   abs x := (square x.real + square x.img).sqrt
 
-instance : IsLawfulAbs ℂ where
+instance instLawfulAbs : IsLawfulAbs ℂ where
   abs_zero_iff := by
     intro x
     show NNReal.sqrtEquiv _ = 0 ↔ x = 0
@@ -85,62 +85,10 @@ instance : IsLawfulAbs ℂ where
     show NNReal.sqrt _ = NNReal.sqrt _
     simp [NNReal.square_neg]
 
--- noncomputable instance : Dist ℂ ℝ≥0 where
---   dist a b := ‖a - b‖
+noncomputable instance : Dist ℂ ℝ≥0 where
+  dist a b := ‖a - b‖
 
--- instance : IsMetricSpace ℂ where
---   dist_self x := by simp [dist]
---   dist_comm x y := by
---     simp [dist]
---     congr 2 <;> rw [←NNReal.square_sub_comm]
---   dist_triangle := by
---     intro a b k
---     simp [dist]
---     apply NNReal.square_strictMonotone.le_iff_le.mp
---     rw [square_add]; simp [sqrt_sq]
---     rw [add_comm_right]
---     apply flip le_trans
---     apply le_add_right
---     apply bot_le
---     unfold square
---     show (a.real - b.real) ^ 2 + (a.img - b.img) ^ 2 ≤
---        ((a.real - k.real) ^ 2 + (a.img - k.img) ^ 2) +
---        ((k.real - b.real) ^ 2 + (k.img - b.img) ^ 2)
---     simp [square_sub]
+instance : IsMetricSpace ℂ := Abs.instIsMetricSpace ℂ
+instance : Topology ℂ := Topology.ofIsPseudoMetricSpace
 
---   -- a.real ^ 2 + b.real ^ 2 +
---   -- a.img ^ 2 + b.img ^ 2
---   -- -2 * a.real * b.real + (-2 * a.img * b.img)
---   -- ≤
---   -- a.real ^ 2 - 2 * a.real * k.real + (a.img ^ 2 - 2 * a.img * k.img + k.img ^ 2) +
---   -- (k.real ^ 2 + k.real ^ 2 - 2 * k.real * b.real + b.real ^ 2 + (k.img ^ 2 - 2 * k.img * b.img + b.img ^ 2))
-
-
-
-
-
-
-
-
-
-
---     -- apply Real.square_strictMonotoneOn
---     sorry
---   of_dist_eq_zero := sorry
-
--- end Complex
-
--- structure C where
---   real: ℤ
---   img: ℤ
-
--- def a : C := ⟨2, 3⟩
--- def b : C := ⟨4, -5⟩
--- def k : C := ⟨2, -4⟩
-
--- #eval a.real ^ 2 + b.real ^ 2 +
---   a.img ^ 2 + b.img ^ 2
---   -2 * a.real * b.real + (-2 * a.img * b.img)
-
--- #eval a.real ^ 2 - 2 * a.real * k.real + (a.img ^ 2 - 2 * a.img * k.img + k.img ^ 2) +
---   (k.real ^ 2 + k.real ^ 2 - 2 * k.real * b.real + b.real ^ 2 + (k.img ^ 2 - 2 * k.img * b.img + b.img ^ 2))
+end Complex

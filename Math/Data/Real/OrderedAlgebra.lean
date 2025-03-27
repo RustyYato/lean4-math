@@ -1,4 +1,5 @@
 import Math.Data.Real.Div
+import Math.Algebra.Group.Order
 
 instance Real.instOrderedRing : IsStrictOrderedSemiring ℝ where
   zero_le_one := by

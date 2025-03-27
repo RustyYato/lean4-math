@@ -124,7 +124,7 @@ end
 
 section
 
-variable [FieldOps α] [IsNonCommField α] [LE α] [LT α] [IsStrictOrderedSemiring α]
+variable [SemifieldOps α] [IsNonCommSemifield α] [LE α] [LT α] [IsStrictOrderedSemiring α]
    [IsLinearOrder α]
 
 def div?_pos (a b: α) (ha: 0 < a) (hb: 0 < b): 0 < a /? b := by

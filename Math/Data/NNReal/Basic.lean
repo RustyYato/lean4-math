@@ -138,6 +138,9 @@ instance : IsOrderedCommMonoid ℝ≥0 where
     assumption
     apply bot_le
 
+instance : HasChar ℝ≥0 0 :=
+  HasChar.eq_zero_of_add_hom embedReal
+
 instance : IsAddCancel ℝ≥0 where
   add_left_cancel := by
     intro a b k h
