@@ -7,11 +7,14 @@ variable [t₁: Topology α] [t₂: Topology β] [t₃: Topology γ] [t₄: Topo
 instance topo_product : Topology (α × β) := induced Prod.fst t₁ ⊓ induced Prod.snd t₂
 instance topo_sum : Topology (α ⊕ β) := coinduced Sum.inl t₁ ⊔ coinduced Sum.inr t₂
 
-instance topo_sigma {ι : Type*} {X : ι → Type v} [t₂: ∀i: ι, Topology (X i)] : Topology (Sigma X) :=
+instance topo_sigma {ι : Type*} {X : ι → Type v} [t₂: ∀i: ι, Topology (X i)] : Topology (Σi: ι, X i) :=
   iSup fun i => coinduced (Sigma.mk i) (t₂ i)
 
-instance pi_topo {ι : Type*} {Y : ι → Type v} [t₂:  ∀i: ι, Topology (Y i)] : Topology (∀i: ι, Y i) :=
-  iInf fun  i => induced (fun f => f i) (t₂ i)
+instance topo_pi {ι : Type*} {Y : ι → Type v} [t₂:  ∀i: ι, Topology (Y i)] : Topology (∀i: ι, Y i) :=
+  iInf fun i => induced (fun f => f i) (t₂ i)
+
+instance topo_quot [s: Setoid α] [Topology α] : Topology (Quotient s) :=
+  coinduced (Quotient.mk s) inferInstance
 
 instance : IsContinuous (fun x: α × β => x.fst) where
   isOpen_preimage := by
@@ -42,6 +45,11 @@ instance : IsContinuous (Sum.inr (α := α) (β := β)) where
   isOpen_preimage := by
     intro s so
     exact Set.mem_sInter.mp so _ ⟨_, Set.mem_pair.mpr (.inr rfl), rfl⟩
+
+instance [s: Setoid α] : IsContinuous (Quotient.mk s) where
+  isOpen_preimage := by
+    intro s so
+    assumption
 
 def continuous_prod_mk {f : X → Y} {g : X → Z} :
     (IsContinuous fun x => (f x, g x)) ↔ IsContinuous f ∧ IsContinuous g :=
