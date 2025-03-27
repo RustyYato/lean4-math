@@ -57,6 +57,22 @@ def IsContinuous.prod_mk {f : Z → X} {g : Z → Y} (hf : IsContinuous f) (hg :
     IsContinuous fun x => (f x, g x) :=
   continuous_prod_mk.2 ⟨hf, hg⟩
 
+instance {f : Z → X} {g : Z → Y} [hf : IsContinuous f] [hg : IsContinuous g] :
+  IsContinuous fun x => (f x, g x) := IsContinuous.prod_mk hf hg
+
+def IsContinuous.subtype_mk
+  {P: α -> Prop} {f : Z → α} (hf : IsContinuous f) (prf: ∀x, P (f x)) :
+  IsContinuous fun x: Z => (Subtype.mk (f x) (prf x)) where
+  isOpen_preimage := by
+    intro S hS
+    obtain ⟨S, hS, rfl⟩ := hS
+    exact IsOpen.preimage f S hS
+
+instance IsContinuous.subtype_val {P: α -> Prop} : IsContinuous (Subtype.val (p := P)) where
+  isOpen_preimage := by
+    intro S hS
+    exists S
+
 def IsContinuous.Prod.mk (x : α) : IsContinuous fun y : β => (x, y) :=
   (IsContinuous.const _).prod_mk IsContinuous.id
 

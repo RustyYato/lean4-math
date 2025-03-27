@@ -109,6 +109,22 @@ def IsPreconnected.onSet (s: Set α) (hs: IsPreconnectedOn s) : IsPreconnected s
     intro x hx
     exact total ⟨x, hx⟩ True.intro
 
+def IsPreconnected.ofSet (s: Set α) (hs: IsPreconnected s) : IsPreconnectedOn s := by
+  intro u v hu hv total ⟨x, hx', hx⟩ ⟨y, hy', hy⟩
+  have ⟨⟨z, hz⟩, hz'⟩ := hs.univ_preconnected (Set.mk fun x => x.val ∈ u) (Set.mk fun x => x.val ∈ v)  ?_ ?_ ?_ ?_ ?_
+  exists z
+  simp [Set.mem_inter]
+  apply And.intro hz
+  simp at hz'
+  apply hz'
+  exists u
+  exists v
+  intro ⟨z, hz⟩ _
+  apply total
+  assumption
+  exists ⟨x, hx'⟩
+  exists ⟨y, hy'⟩
+
 def IsPreconnectedOn.not_split (s a b: Set α)
   (hs: IsPreconnectedOn s) (d: Disjoint a b) (sub_union: s ⊆ a ∪ b)
   (ha: IsOpen a) (hb: IsOpen b) : s ⊆ a ∨ s ⊆ b := by
@@ -149,7 +165,6 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
     intro ⟨x, hx⟩ ⟨y, hy⟩
     rw [←Set.not_disjoint_iff_nonempty_inter]
     intro disjoint
-    rw [←Set.subset_compl_iff_disjoint_right] at disjoint
     have preconn_slice_α : ∀x: β, IsPreconnected (α × ({x}: Set β)) := by
       intro x
       let α' := α × ({x}: Set β)
@@ -160,18 +175,110 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       let β' := ({x}: Set α) × β
       let β'_iso_β : β' ≃ₜ β := Iso.subsing_prod_left
       exact preconnected_of_ofHom β'_iso_β.symm
-    suffices U = ⊤ ∨ V = ⊤ by
-      rcases this with rfl | rfl
-      exact disjoint y (by trivial) hy
-      exact disjoint x hx (by trivial)
-    clear disjoint
+    have preconn_slice_α' : ∀x: β, IsPreconnectedOn (Set.zip (⊤: Set α) {x}) := by
+      intro b₀
+      apply IsPreconnected.ofSet
+      apply preconnected_of_ofHom (α := α × ({b₀}: Set β))
+      clear x hx y hy total disjoint hU hV U V preconn_slice_α preconn_slice_β
+      refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_⟩
+      intro (a, b); refine ⟨(a, b.val), ?_⟩
+      simp [Set.mem_zip, Set.mem_univ, b.property]
+      intro ⟨(a, b), hb⟩; refine (a, ⟨b, ?_⟩)
+      exact hb.right
+      intro; rfl
+      intro; rfl
+      simp
+      apply IsContinuous.subtype_mk
+      apply IsContinuous.prod_mk
+      infer_instance
+      apply IsContinuous.comp
+      simp
+      apply IsContinuous.prod_mk
+      apply IsContinuous.comp
+      apply IsContinuous.subtype_mk
+      apply IsContinuous.comp
+    have preconn_slice_β' : ∀x: α, IsPreconnectedOn (Set.zip {x} (⊤: Set β)) := by
+      intro a₀
+      apply IsPreconnected.ofSet
+      apply preconnected_of_ofHom (α := ({a₀}: Set α) × β)
+      clear x hx y hy total disjoint hU hV U V preconn_slice_α preconn_slice_β
+      refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_⟩
+      intro (a, b); refine ⟨(a.val, b), ?_⟩
+      simp [Set.mem_zip, Set.mem_univ, a.property]
+      intro ⟨(a, b), ha⟩; refine (⟨a, ?_⟩, b)
+      exact ha.left
+      intro; rfl
+      intro; rfl
+      simp
+      apply IsContinuous.subtype_mk
+      apply IsContinuous.prod_mk
+      apply IsContinuous.comp
+      infer_instance
+      simp
+      apply IsContinuous.prod_mk
+      apply IsContinuous.subtype_mk
+      apply IsContinuous.comp
+      apply IsContinuous.comp
+    have α₀ : ∀x: α, (Set.zip {x} (⊤: Set β)) ⊆ U ∨ (Set.zip {x} (⊤: Set β)) ⊆ V := by
+      intro x
+      apply IsPreconnectedOn.not_split
+      apply preconn_slice_β'
+      assumption
+      apply Set.sub_trans _ total
+      apply Set.sub_univ
+      assumption
+      assumption
+    have β₀: ∀x: β, (Set.zip (⊤: Set α) {x}) ⊆ U ∨ (Set.zip (⊤: Set α) {x}) ⊆ V := by
+      intro x
+      apply IsPreconnectedOn.not_split
+      apply preconn_slice_α'
+      assumption
+      apply Set.sub_trans _ total
+      apply Set.sub_univ
+      assumption
+      assumption
+    suffices (∀x: α, Set.zip {x} (⊤: Set β) ⊆ U) ∨ (∀x: α, Set.zip {x} (⊤: Set β) ⊆ V) by
+      rcases this with h | h
+      have : U = ⊤ := by
+        apply Set.ext_univ
+        intro z
+        apply h z.1
+        apply And.intro
+        rfl
+        trivial
+      rw [this] at disjoint
+      have := disjoint {y} (Set.sub_univ _) ((Set.singleton_sub _ _).mpr hy) y rfl
+      contradiction
+      have : V = ⊤ := by
+        apply Set.ext_univ
+        intro z
+        apply h z.1
+        apply And.intro
+        rfl
+        trivial
+      rw [this] at disjoint
+      have := disjoint {x} ((Set.singleton_sub _ _).mpr hx) (Set.sub_univ _) x rfl
+      contradiction
     apply Classical.or_iff_not_imp_left.mpr
+    intro h a z ⟨rfl, hz⟩; clear hz
+    clear a
+    simp [Classical.not_forall] at h
+    obtain ⟨a, ha⟩ := h
+    have h₂ := (α₀ a).resolve_left ha (a, z.snd) ?_
+    refine (β₀ z.snd).resolve_left ?_ z ?_
     intro h
-    have ⟨z, hz⟩ := Set.compl_nonempty_of_ne_top _ h
-    clear h
-    apply Set.ext_univ
-    intro v
-    sorry
+    have g := (h (a, z.snd) ?_)
+    have := disjoint _ ((Set.singleton_sub _ _).mpr g) ((Set.singleton_sub _ _).mpr h₂) _ rfl
+    contradiction
+    apply And.intro
+    trivial
+    rfl
+    apply And.intro
+    trivial
+    rfl
+    apply And.intro
+    rfl
+    trivial
 
 instance [IsConnected α] [IsConnected β] : IsConnected (α × β) where
 
