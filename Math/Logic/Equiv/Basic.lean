@@ -695,6 +695,28 @@ def fin_rev : Fin n ≃ Fin n where
   leftInv x := by rw [Fin.rev_rev]
   rightInv x := by rw [Fin.rev_rev]
 
+def subsing_prod_left [Subsingleton α] [Inhabited α] : α × β ≃ β where
+  toFun x := x.2
+  invFun x := ⟨default, x⟩
+  leftInv := by
+    intro x
+    simp
+    congr; apply Subsingleton.allEq
+  rightInv := by
+    intro x
+    rfl
+
+def subsing_prod_right [Subsingleton β] [Inhabited β] : α × β ≃ α where
+  toFun x := x.1
+  invFun x := ⟨x, default⟩
+  leftInv := by
+    intro x
+    simp
+    congr; apply Subsingleton.allEq
+  rightInv := by
+    intro x
+    rfl
+
 end Equiv
 
 def Fin.embedNat : Fin n ↪ Nat :=

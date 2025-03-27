@@ -335,6 +335,9 @@ instance : Subsingleton ({a}: Set α).Elem where
     cases hx; cases hy
     rfl
 
+instance : Inhabited ({a}: Set α).Elem where
+  default := ⟨a, rfl⟩
+
 @[simp]
 def sInter_insert (a: Set α) (as: Set (Set α)) : ⋂(insert  a as) = a ∩ ⋂as := by
    ext x
@@ -885,6 +888,15 @@ def compl_injective {a b: Set α} : aᶜ = bᶜ -> a = b := by
   apply Decidable.not_iff_not.mp
   rw [←mem_compl, h]
   rfl
+
+def compl_nonempty_of_ne_top (a: Set α) : a ≠ ⊤ -> (aᶜ).Nonempty := by
+  intro h
+  apply Classical.byContradiction
+  intro g
+  have := Set.not_nonempty _ g
+  apply h
+  rw [←compl_compl a, this]
+  exact empty_compl
 
 open Classical in
 noncomputable

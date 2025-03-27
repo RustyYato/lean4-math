@@ -1,9 +1,9 @@
-import Math.Topology.Basic
+import Math.Topology.Hom
 import Math.Data.Set.Disjoint
 
 namespace Topology
 
-variable [Topology α]
+variable [Topology α] [Topology β]
 
 def IsPreconnectedOn (s: Set α) :=
   -- if we have a partition of s given by u and v
@@ -71,5 +71,64 @@ def IsPreconnectedOn.closed_iff {s: Set α} :
     contradiction
     exists y
     exists x
+
+def preconnected_of_ofHom [IsPreconnected α] (h: α ≃ₜ β) : IsPreconnected β where
+  univ_preconnected := by
+    intro u v hu hv total hx hy
+    have partition : ⊤ = u.preimage h ∪ v.preimage h := by
+      symm
+      apply Set.ext_univ
+      intro x
+      simp [Set.mem_preimage, Set.mem_union]
+      apply total
+      trivial
+    have := IsPreconnected.univ_preconnected (u.preimage h) (v.preimage h)
+      (IsOpen.preimage h _ hu) (IsOpen.preimage h _ hv) (by rw [partition])
+    simp [Set.univ_inter] at *
+    replace ⟨x, g₀, g₁⟩ := this ?_ ?_
+    exists h x
+    obtain ⟨x, hx⟩ := hx
+    exists h.symm x
+    rwa [Set.mem_preimage, h.symm_coe]
+    obtain ⟨x, hx⟩ := hy
+    exists h.symm x
+    rwa [Set.mem_preimage, h.symm_coe]
+
+def connected_of_ofHom [IsConnected α] (h: α ≃ₜ β) : IsConnected β :=
+  have : Nonempty β := h.Nonempty
+  { preconnected_of_ofHom h with }
+
+instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) where
+  univ_preconnected := by
+    intro U V hU hV total
+    simp [Set.univ_inter]
+    intro ⟨x, hx⟩ ⟨y, hy⟩
+    rw [←Set.not_disjoint_iff_nonempty_inter]
+    intro disjoint
+    rw [←Set.subset_compl_iff_disjoint_right] at disjoint
+    have preconn_slice_α : ∀x: β, IsPreconnected (α × ({x}: Set β)) := by
+      intro x
+      let α' := α × ({x}: Set β)
+      let α'_iso_α : α' ≃ₜ α := Iso.subsing_prod_right
+      exact preconnected_of_ofHom α'_iso_α.symm
+    have preconn_slice_β : ∀x: α, IsPreconnected (({x}: Set α) × β) := by
+      intro x
+      let β' := ({x}: Set α) × β
+      let β'_iso_β : β' ≃ₜ β := Iso.subsing_prod_left
+      exact preconnected_of_ofHom β'_iso_β.symm
+    suffices U = ⊤ ∨ V = ⊤ by
+      rcases this with rfl | rfl
+      exact disjoint y (by trivial) hy
+      exact disjoint x hx (by trivial)
+    clear disjoint
+    apply Classical.or_iff_not_imp_left.mpr
+    intro h
+    have ⟨z, hz⟩ := Set.compl_nonempty_of_ne_top _ h
+    clear h
+    apply Set.ext_univ
+    intro v
+    sorry
+
+instance [IsConnected α] [IsConnected β] : IsConnected (α × β) where
 
 end Topology

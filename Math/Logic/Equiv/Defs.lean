@@ -150,4 +150,8 @@ def symm_symm (h: α ≃ β) : h.symm.symm = h := _root_.rfl
 @[simp]
 def mk_apply (f: α -> β) (g: β -> α) (h: Function.IsLeftInverse f g) (h': Function.IsRightInverse f g) (x: α) : Equiv.mk f g h' h x = f x := by rfl
 
+protected def Nonempty [g: Nonempty α] (h: α ≃ β) : Nonempty β :=
+  have ⟨x⟩ := g
+  ⟨h x⟩
+
 end Equiv

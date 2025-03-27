@@ -91,4 +91,11 @@ noncomputable instance : Dist ℂ ℝ≥0 where
 instance : IsMetricSpace ℂ := Abs.instIsMetricSpace ℂ
 instance : Topology ℂ := Topology.ofIsPseudoMetricSpace
 
+instance : Topology.IsConnected ℂ where
+  univ_preconnected := by
+    intro u v hu hv total ⟨x, hx', hx⟩ ⟨y, hy', hy⟩
+    rw [Set.univ_inter]; clear hx' hy'
+    sorry
+
+
 end Complex
