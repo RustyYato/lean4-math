@@ -98,6 +98,50 @@ def connected_of_ofHom [IsConnected α] (h: α ≃ₜ β) : IsConnected β :=
   have : Nonempty β := h.Nonempty
   { preconnected_of_ofHom h with }
 
+def IsPreconnected.onSet (s: Set α) (hs: IsPreconnectedOn s) : IsPreconnected s where
+  univ_preconnected := by
+    rintro _ _ ⟨u, hu, rfl⟩  ⟨v, hv, rfl⟩ total ha hb
+    simp at *
+    obtain ⟨a, ha⟩ := ha
+    obtain ⟨b, hb⟩ := hb
+    have ⟨x, hx, meminter⟩ := hs u v hu hv ?_ ⟨a.val, a.property, ha⟩ ⟨b.val, b.property, hb⟩
+    exists ⟨x, hx⟩
+    intro x hx
+    exact total ⟨x, hx⟩ True.intro
+
+def IsPreconnectedOn.not_split (s a b: Set α)
+  (hs: IsPreconnectedOn s) (d: Disjoint a b) (sub_union: s ⊆ a ∪ b)
+  (ha: IsOpen a) (hb: IsOpen b) : s ⊆ a ∨ s ⊆ b := by
+  rcases Set.empty_or_nonempty (s ∩ a) with h | h
+  right; intro x hx
+  apply (sub_union x hx).resolve_left
+  intro
+  suffices x ∈ (∅: Set α) by contradiction
+  rw [←h]; apply And.intro <;> assumption
+  rcases Set.empty_or_nonempty (s ∩ b) with g | g
+  left; intro x hx
+  apply (sub_union x hx).resolve_right
+  intro
+  suffices x ∈ (∅: Set α) by contradiction
+  rw [←g]; apply And.intro <;> assumption
+  have : IsPreconnected s := IsPreconnected.onSet _ hs
+  let C₁ : Set s := Set.mk fun x => x.val ∈ a
+  let C₂ : Set s := Set.mk fun x => x.val ∈ b
+  have ⟨x, _, x_in_a, x_in_b⟩ := this.univ_preconnected C₁ C₂ ?_ ?_ ?_ ?_ ?_
+  have := d {x.val} ?_ ?_ x.val rfl
+  contradiction
+  rintro _ rfl; assumption
+  rintro _ rfl; assumption
+  exists a
+  exists b
+  intro x hx
+  apply sub_union
+  exact x.property
+  simp; obtain ⟨x, x_in_s, hx⟩ := h
+  exists ⟨x, x_in_s⟩
+  simp; obtain ⟨x, x_in_s, hx⟩ := g
+  exists ⟨x, x_in_s⟩
+
 instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) where
   univ_preconnected := by
     intro U V hU hV total
