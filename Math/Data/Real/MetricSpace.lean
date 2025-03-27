@@ -42,8 +42,8 @@ instance : Topology.IsConnected ℝ where
     let A₀: Set sub := Set.mk fun x => x.val ∈ A
     let B₀: Set sub := Set.mk fun x => x.val ∈ B
 
-    have hA₀ : IsOpen[sub] A₀ := by exists A
-    have hB₀ : IsOpen[sub] B₀ := by exists B
+    have hA₀ : IsOpen A₀ := by exists A
+    have hB₀ : IsOpen B₀ := by exists B
 
     have total₀ : ∀x, x ∈ A₀ ∪ B₀ := by
       intro x
@@ -333,14 +333,12 @@ def topo_prodct_eq_metric : (Topology.topo_product: Topology (ℝ×ℝ)) = Topol
       from ?_]
     apply Generate.IsOpen.inter
     · apply Generate.IsOpen.of
-      simp
       left
       refine ⟨Ball x.1 δ, ?_, ?_⟩
       apply IsOpen.Ball
       rfl
 
     · apply Generate.IsOpen.of
-      simp
       right
       refine ⟨Ball x.2 δ, ?_, ?_⟩
       apply IsOpen.Ball

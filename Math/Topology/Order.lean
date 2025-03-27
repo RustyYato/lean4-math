@@ -63,8 +63,33 @@ def sSup' (Ts: Set (Topology α)) : Topology α where
     erw [Set.mem_sInter] at this
     exact this T.OpenSets (Set.mem_image' T_in_Ts)
 
+def sup' (ta: Topology α) (tb: Topology α) : Topology α where
+  IsOpen x := IsOpen[ta] x ∧ IsOpen[tb] x
+  univ_open := by
+    dsimp
+    apply And.intro
+    apply IsOpen.univ
+    apply IsOpen.univ
+  inter_open := by
+    intro a b ⟨_, _⟩ ⟨_, _⟩
+    apply And.intro
+    apply IsOpen.inter <;> assumption
+    apply IsOpen.inter <;> assumption
+  sUnion_open := by
+    intro s h
+    apply And.intro
+    apply IsOpen.sUnion
+    intro x hx
+    apply (h x hx).left
+    apply IsOpen.sUnion
+    intro x hx
+    apply (h x hx).right
+
 def sInf' (Ts: Set (Topology α)) : Topology α
-  := generate (sSup (Ts.image Topology.OpenSets))
+  := generate (⋃(Ts.image Topology.OpenSets))
+
+def inf' (ta: Topology α) (tb: Topology α) : Topology α
+  := generate (ta.OpenSets ∪ tb.OpenSets)
 
 instance : SupSet (Topology α) where
   sSup := sSup'
@@ -72,10 +97,23 @@ instance : InfSet (Topology α) where
   sInf s := sInf' s
 
 instance : Sup (Topology α) where
-  sup a b := sSup {a, b}
+  sup := sup'
 
 instance : Inf (Topology α) where
-  inf a b := sInf {a, b}
+  inf := inf'
+
+def sup_eq (a b: Topology α) : a ⊔ b = sSup {a, b} := by
+  show sup' a b = sSup' {a, b}
+  unfold sup' sSup'
+  ext s
+  simp
+  rfl
+
+def inf_eq (a b: Topology α) : a ⊓ b = sInf {a, b} := by
+  show inf' a b = sInf' {a, b}
+  unfold inf' sInf'
+  ext s
+  simp
 
 private def sSup_le: ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : Topology α), x ∈ s → x ≤ k) → sSup s ≤ k := by
   intro k Ts h s s_open x ⟨T, T_in_Ts, eq⟩
@@ -115,13 +153,16 @@ instance : IsCompleteLattice (Topology α) where
   sSup_le := sSup_le
   le_sSup := le_sSup _ _
   le_sup_left a b := by
+    rw [sup_eq]
     apply le_sSup
     apply Set.mem_pair.mpr; left; rfl
   le_sup_right a b := by
+    rw [sup_eq]
     apply le_sSup
     apply Set.mem_pair.mpr; right; rfl
   sup_le := by
     intro a b k ak bk
+    rw [sup_eq]
     apply sSup_le
     intro x mem
     cases Set.mem_pair.mp mem <;> subst x <;> assumption
@@ -129,14 +170,17 @@ instance : IsCompleteLattice (Topology α) where
   le_sInf := le_sInf
   inf_le_left := by
     intro a b
+    rw [inf_eq]
     apply sInf_le
     apply Set.mem_pair.mpr; left; rfl
   inf_le_right := by
     intro a b
+    rw [inf_eq]
     apply sInf_le
     apply Set.mem_pair.mpr; right; rfl
   le_inf := by
     intro a b k ka kb
+    rw [inf_eq]
     apply le_sInf
     intro x mem
     cases Set.mem_pair.mp mem <;> subst x <;> assumption

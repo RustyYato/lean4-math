@@ -46,59 +46,59 @@ def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
     else
       ι (basis_vector j)
 
-def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • basis_mvector i := by
-  induction v with
-  | algebraMap r =>
-    refine ⟨fun
-      | ⟨0, _⟩ => r
-      | ⟨_ + 1, _⟩ => 0, ?_⟩
-    rw [
-      Fin.sum_cast (m := (2 ^ n - 1 + 1)),
-      Fin.sum_succ', Fin.sum_eq_zero]
-    simp
-    unfold OfNat.ofNat Fin.instOfNat instOfNatNat
-      Fin.ofNat'
-    simp
-    rw [smul_def]
-    rw [show basis_mvector ⟨0, _⟩ = 1 from ?_, mul_one]
-    unfold basis_mvector
-    rw [Fin.prod_eq_one]
-    intro x
-    rw [if_pos]
-    simp
-    intro x
-    simp
-    rw [Fin.cast]
-    simp [zero_smul]
-    rw [Nat.sub_add_cancel]
-    exact Nat.one_le_two_pow
-  | ι v =>
-    refine ⟨fun i =>
-      if h:∃m < n, i.val == (1 <<< m) then
-        v ⟨Nat.findP h, (Nat.findP_spec h).left⟩
-      else
-        0, ?_⟩
-    induction n with
-    | zero =>
-      rw [Fin.sum_succ, Fin.sum_zero]
-      dsimp
-      rw [zero_add, zero_smul]
-      rw [←zero_smul (R := ℝ) (ι v), ←resp_smul]
-      congr
-      ext i; exact i.elim0
-    | succ n ih =>
-      simp at *
-      rw [Fin.sum_cast (m := 2 ^ n + (2 ^ n - 1) + 1) (by
-        rw [Nat.add_assoc, Nat.sub_add_cancel]
-        omega
-        exact Nat.one_le_two_pow),
-        Fin.sum_succ, Fin.sum_limit (m := 2 ^ n) (by
-          exact Nat.le_add_right (2 ^ n) (2 ^ n - 1))]
-      simp only [Function.comp_def, Fin.cast, Fin.castLE, Fin.castSucc, Fin.castAdd]
-      sorry
-      sorry
-  | add => sorry
-  | mul => sorry
+-- def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • basis_mvector i := by
+--   induction v with
+--   | algebraMap r =>
+--     refine ⟨fun
+--       | ⟨0, _⟩ => r
+--       | ⟨_ + 1, _⟩ => 0, ?_⟩
+--     rw [
+--       Fin.sum_cast (m := (2 ^ n - 1 + 1)),
+--       Fin.sum_succ', Fin.sum_eq_zero]
+--     simp
+--     unfold OfNat.ofNat Fin.instOfNat instOfNatNat
+--       Fin.ofNat'
+--     simp
+--     rw [smul_def]
+--     rw [show basis_mvector ⟨0, _⟩ = 1 from ?_, mul_one]
+--     unfold basis_mvector
+--     rw [Fin.prod_eq_one]
+--     intro x
+--     rw [if_pos]
+--     simp
+--     intro x
+--     simp
+--     rw [Fin.cast]
+--     simp [zero_smul]
+--     rw [Nat.sub_add_cancel]
+--     exact Nat.one_le_two_pow
+--   | ι v =>
+--     refine ⟨fun i =>
+--       if h:∃m < n, i.val == (1 <<< m) then
+--         v ⟨Nat.findP h, (Nat.findP_spec h).left⟩
+--       else
+--         0, ?_⟩
+--     induction n with
+--     | zero =>
+--       rw [Fin.sum_succ, Fin.sum_zero]
+--       dsimp
+--       rw [zero_add, zero_smul]
+--       rw [←zero_smul (R := ℝ) (ι v), ←resp_smul]
+--       congr
+--       ext i; exact i.elim0
+--     | succ n ih =>
+--       simp at *
+--       rw [Fin.sum_cast (m := 2 ^ n + (2 ^ n - 1) + 1) (by
+--         rw [Nat.add_assoc, Nat.sub_add_cancel]
+--         omega
+--         exact Nat.one_le_two_pow),
+--         Fin.sum_succ, Fin.sum_limit (m := 2 ^ n) (by
+--           exact Nat.le_add_right (2 ^ n) (2 ^ n - 1))]
+--       simp only [Function.comp_def, Fin.cast, Fin.castLE, Fin.castSucc, Fin.castAdd]
+--       sorry
+--       sorry
+--   | add => sorry
+--   | mul => sorry
 
 -- def basis (v: VGA n) : ∃c: Fin (2 ^ n) -> ℝ, v = Fin.sum fun i: Fin (2 ^ n) => c i • basis_mvector i := by
 --   induction v with
@@ -274,56 +274,56 @@ def ijk_sq : (ι i * ι j * ι k) ^ 2 = -1 := by
     ι_sq, ι_sq]
   simp [neg_neg]
 
-def basis (v: VGA 3) : ∃c: Fin 8 -> ℝ, v = algebraMap (A := VGA 3) (c 0)
-  + c 1 • ι i + c 2 • ι j + c 3 • ι k
-  + c 4 • (ι i * ι j) + c 5 • (ι i * ι k) + c 6 • (ι j * ι k)
-  + c 7 • (ι i * ι j * ι k) := by
-  induction v with
-  | algebraMap v =>
-    refine ⟨fun
-      | 0 => v
-      | ⟨_ + 1, _⟩ => 0, ?_⟩
-    simp [zero_smul]
-  | ι v =>
-    refine ⟨fun
-      | 1 => v 0
-      | 2 => v 1
-      | 3 => v 2
-      | _ => 0, ?_⟩
-    simp [zero_smul, resp_zero]
-    rw [ι_eq_lincomb]
-  | add a b ha hb =>
-    obtain ⟨a, rfl⟩ := ha
-    obtain ⟨b, rfl⟩ := hb
-    refine ⟨fun i => a i + b i, ?_⟩
-    simp [resp_add, add_smul]
-    ac_rfl
-  | mul a b ha hb =>
-    obtain ⟨a, rfl⟩ := ha
-    obtain ⟨b, rfl⟩ := hb
-    refine ⟨?_, ?_⟩
-    exact fun
-      | 0 => algebraMap (a 0 * b 0)
-      | 1 => sorry
-      | 2 => sorry
-      | 3 => sorry
-      | 4 => sorry
-      | 5 => sorry
-      | 6 => sorry
-      | 7 => sorry
-    simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
-    simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
-      smul_mul]
-    simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]
+-- def basis (v: VGA 3) : ∃c: Fin 8 -> ℝ, v = algebraMap (A := VGA 3) (c 0)
+--   + c 1 • ι i + c 2 • ι j + c 3 • ι k
+--   + c 4 • (ι i * ι j) + c 5 • (ι i * ι k) + c 6 • (ι j * ι k)
+--   + c 7 • (ι i * ι j * ι k) := by
+--   induction v with
+--   | algebraMap v =>
+--     refine ⟨fun
+--       | 0 => v
+--       | ⟨_ + 1, _⟩ => 0, ?_⟩
+--     simp [zero_smul]
+--   | ι v =>
+--     refine ⟨fun
+--       | 1 => v 0
+--       | 2 => v 1
+--       | 3 => v 2
+--       | _ => 0, ?_⟩
+--     simp [zero_smul, resp_zero]
+--     rw [ι_eq_lincomb]
+--   | add a b ha hb =>
+--     obtain ⟨a, rfl⟩ := ha
+--     obtain ⟨b, rfl⟩ := hb
+--     refine ⟨fun i => a i + b i, ?_⟩
+--     simp [resp_add, add_smul]
+--     ac_rfl
+--   | mul a b ha hb =>
+--     obtain ⟨a, rfl⟩ := ha
+--     obtain ⟨b, rfl⟩ := hb
+--     refine ⟨?_, ?_⟩
+--     exact fun
+--       | 0 => algebraMap (a 0 * b 0)
+--       | 1 => sorry
+--       | 2 => sorry
+--       | 3 => sorry
+--       | 4 => sorry
+--       | 5 => sorry
+--       | 6 => sorry
+--       | 7 => sorry
+--     simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
+--     simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
+--       smul_mul]
+--     simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]
 
-    -- repeat rw [add_assoc]
-    -- congr 1
-
-
+--     -- repeat rw [add_assoc]
+--     -- congr 1
 
 
-    congr
-    repeat sorry
+
+
+--     congr
+--     repeat sorry
 
 end VGA3
 

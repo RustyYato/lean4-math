@@ -20,31 +20,27 @@ instance : IsContinuous (fun x: α × β => x.fst) where
   isOpen_preimage := by
     intro s so
     apply Generate.IsOpen.of
-    apply Set.mem_sUnion.mpr
-    refine ⟨_, ⟨_, Set.mem_pair.mpr (.inl rfl), rfl⟩, ?_⟩
-    refine ⟨s, ?_, ?_⟩
+    apply Set.mem_union.mpr
+    left; refine ⟨s, ?_, rfl⟩
     assumption
-    rfl
 
 instance : IsContinuous (fun x: α × β => x.snd) where
   isOpen_preimage := by
     intro s so
     apply Generate.IsOpen.of
-    apply Set.mem_sUnion.mpr
-    refine ⟨_, ⟨_, Set.mem_pair.mpr (.inr rfl), rfl⟩, ?_⟩
-    refine ⟨s, ?_, ?_⟩
+    apply Set.mem_union.mpr
+    right; refine ⟨s, ?_, rfl⟩
     assumption
-    rfl
 
 instance : IsContinuous (Sum.inl (α := α) (β := β)) where
   isOpen_preimage := by
     intro s so
-    exact Set.mem_sInter.mp so _ ⟨_, Set.mem_pair.mpr (.inl rfl), rfl⟩
+    exact so.left
 
 instance : IsContinuous (Sum.inr (α := α) (β := β)) where
   isOpen_preimage := by
     intro s so
-    exact Set.mem_sInter.mp so _ ⟨_, Set.mem_pair.mpr (.inr rfl), rfl⟩
+    exact so.right
 
 instance [s: Setoid α] : IsContinuous (Quotient.mk s) where
   isOpen_preimage := by
@@ -77,117 +73,5 @@ def continuous_curry {g : X × Y → Z} (x : X) (h : IsContinuous g) : IsContinu
 
 def IsOpen.prod {s : Set X} {t : Set Y} (hs : IsOpen s) (ht : IsOpen t) : IsOpen (s.prod t) :=
   (hs.preimage Prod.fst).inter (ht.preimage Prod.snd)
-
--- instance : IsContinuous (fun (x: α) (y: β) => (x, y)) := by
---   -- have := (continuous_prod_mk (f := @id α) (g := id)).mpr
-
---   -- isOpen_preimage := by
---   --   intro s so
---   --   sorry
---     -- apply Generate.IsOpen.of
---     -- apply Set.mem_sUnion.mpr
---     -- refine ⟨_, ⟨_, Set.mem_pair.mpr (.inr rfl), rfl⟩, ?_⟩
---     -- refine ⟨s, ?_, ?_⟩
---     -- assumption
---     -- rfl
-
--- instance (f: γ -> α) (g: γ -> β) [IsContinuous f] [IsContinuous g] : IsContinuous (fun x => (f x, g x)) where
---   isOpen_preimage := by
---     intro s so
---     sorry
---     -- apply Generate.IsOpen.of
---     -- apply Set.mem_sUnion.mpr
---     -- refine ⟨_, ⟨_, Set.mem_pair.mpr (.inr rfl), rfl⟩, ?_⟩
---     -- refine ⟨s, ?_, ?_⟩
---     -- assumption
---     -- rfl
-
--- def comp₂ (f: α -> β -> γ) (g₀: α₀ -> α) (g₁: α₀ -> β) [IsContinuous f] [IsContinuous g₀] [IsContinuous g₁] : IsContinuous (fun x => f (g₀ x) (g₁ x)) := by
---   continuous_prod_mk.2 ⟨hf, hg⟩
-
-
-
--- instance
---   (f: α -> β -> α × β)
---   [ha: ∀a, IsContinuous (f a)]
---   [hb: ∀b, IsContinuous (f · b)] : IsContinuous (fun x: α × β => f x.1 x.2) where
---   isOpen_preimage := by
---     intro s so
---     induction so with
---     | univ => apply IsOpen.univ
---     | inter =>
---       rw [Set.preimage_inter]
---       apply IsOpen.inter
---       assumption
---       assumption
---     | sUnion _ ih =>
---       rw [Set.preimage_sUnion]
---       apply IsOpen.sUnion
---       intro _ ⟨x, h, eq⟩
---       subst eq
---       exact ih x h
---     | of mem =>
---       apply Generate.IsOpen.of
---       apply Set.mem_sUnion.mpr
---       obtain ⟨S, ⟨T, T_mem, eq⟩, x_open⟩ := mem
---       subst S
---       cases Set.mem_pair.mp T_mem <;> subst T
---       refine ⟨_, ⟨_, Set.mem_pair.mpr (.inl rfl), rfl⟩, ?_⟩
---       obtain ⟨as, as_open, eq⟩ := x_open; subst eq
---       rw [Set.preimage_preimage, Function.comp_def]
---       refine ⟨?_, ?_, ?_⟩
-
-
-
-
-
-
---       sorry
-    -- refine ⟨s, ?_, ?_⟩
-    -- assumption
-    -- rfl
-
--- def IsOpen.prod (s: Set (α × β)) : IsOpen s ↔ IsOpen (s.image Prod.fst) ∧ IsOpen (s.image Prod.snd) := by
---   apply flip Iff.intro
---   intro ⟨h, g⟩
---   apply Generate.IsOpen.of
---   apply Set.mem_sUnion.mpr
---   -- exists s
-
---   rfl
-  -- IsOpen s := Topology.IsOpen (s.image Prod.fst) ∧ Topology.IsOpen (s.image Prod.snd)
-  -- univ_open := by
-  --   apply And.intro
-  --   by_cases h:Nonempty β
-  --   suffices Set.image ⊤ Prod.fst = ⊤ by
-  --     rw [this]; apply IsOpen.univ
-  --   obtain ⟨b⟩ := h
-  --   apply Set.ext_univ
-  --   intro a; exists ⟨a, b⟩
-  --   suffices Set.image ⊤ Prod.fst = ∅ by
-  --     rw [this]; apply IsOpen.empty
-  --   apply Set.ext_empty
-  --   intro a ⟨x, _, mem⟩
-  --   exact h ⟨x.snd⟩
-
-  --   by_cases h:Nonempty α
-  --   suffices Set.image ⊤ Prod.snd = ⊤ by
-  --     rw [this]; apply IsOpen.univ
-  --   obtain ⟨a⟩ := h
-  --   apply Set.ext_univ
-  --   intro b; exists ⟨a, b⟩
-  --   suffices Set.image ⊤ Prod.snd = ∅ by
-  --     rw [this]; apply IsOpen.empty
-  --   apply Set.ext_empty
-  --   intro a ⟨x, _, mem⟩
-  --   exact h ⟨x.fst⟩
-  -- inter_open := by
-  --   intro x y ⟨hax, hbx⟩ ⟨hay, hby⟩
-  --   apply And.intro
-  --   rw [Set.image_inter]
-  --   apply IsOpen.inter
-
-  --   sorry
-
 
 end Topology

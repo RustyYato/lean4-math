@@ -1077,6 +1077,9 @@ def sSup_eq_iSup [SupSet α] (s: Set α) : sSup s = iSup fun x: s => x.val := by
   intro ⟨y, eq⟩; subst eq
   exact y.property
 
+@[simp] def sInf_eq_sInter (s: Set (Set α)) : sInf s = ⋂ s := rfl
+@[simp] def sSup_eq_sUnion (s: Set (Set α)) : sSup s = ⋃ s := rfl
+
 def compl_inter (s t: Set α) : (s ∩ t)ᶜ = sᶜ ∪ tᶜ := by
   ext
   simp [mem_inter, mem_compl, mem_union, ←Classical.not_and_iff_not_or_not]

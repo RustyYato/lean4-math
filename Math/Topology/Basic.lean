@@ -10,7 +10,7 @@ namespace Topology
 
 variable [Topology α] [Topology β] [Topology γ]
 
-scoped notation "IsOpen[" T "]" => IsOpen (α := T)
+scoped notation "IsOpen[" T "]" => @IsOpen _ T
 
 def IsClosed (s: Set α) : Prop := IsOpen sᶜ
 def IsClopen (s: Set α) : Prop := IsOpen s ∧ IsClosed s
@@ -42,6 +42,13 @@ def OpenSets.inj : Function.Injective (α := Topology α) OpenSets := by
   apply Set.mk.inj
   assumption
 
+@[ext]
+def ext (a b: Topology α) : (∀x, IsOpen[a] x ↔ IsOpen[b] x) -> a = b := by
+  intro h
+  apply IsOpen.inj
+  ext
+  apply h
+
 class IsContinuous (f : α → β) : Prop where
   /-- The preimage of an open set under a continuous function is an open set. Use `IsOpen.preimage`
   instead. -/
@@ -53,10 +60,10 @@ abbrev IsContinuous'.mk (Tα: Topology α) (Tβ: Topology β) (f: α -> β) :
   (∀s: Set β, IsOpen s → IsOpen (s.preimage f)) ->
   IsContinuous' Tα Tβ f := (⟨·⟩)
 
-def IsOpen.univ : IsOpen (Set.univ α) := Topology.univ_open
-def IsOpen.inter {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∩ b) := Topology.inter_open
-def IsOpen.sUnion {a: Set (Set α)} : (∀x ∈ a, IsOpen x) -> IsOpen (⋃a) := Topology.sUnion_open
-def IsOpen.union {a b: Set α} : IsOpen a -> IsOpen b -> IsOpen (a ∪ b) := by
+def IsOpen.univ {top: Topology α} : IsOpen[top] (Set.univ α) := Topology.univ_open
+def IsOpen.inter {top: Topology α} {a b: Set α} : IsOpen[top] a -> IsOpen[top] b -> IsOpen[top] (a ∩ b) := Topology.inter_open
+def IsOpen.sUnion {top: Topology α} {a: Set (Set α)} : (∀x ∈ a, IsOpen[top] x) -> IsOpen[top] (⋃a) := Topology.sUnion_open
+def IsOpen.union {top: Topology α} {a b: Set α} : IsOpen[top] a -> IsOpen[top] b -> IsOpen[top] (a ∪ b) := by
   intro ha hb
   rw [←Set.sUnion_pair]
   apply IsOpen.sUnion
