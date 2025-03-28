@@ -65,61 +65,58 @@ def dist_pos {β α}
   contradiction
 
 instance
-  Prod.distSup [Dist α γ] [Dist β γ] [Sup γ] : Dist (α × β) γ where
-  dist x y := dist x.fst y.fst ⊔ dist x.snd y.snd
+  Prod.distMax [Dist α γ] [Dist β γ] [Max γ] : Dist (α × β) γ where
+  dist x y := max (dist x.fst y.fst) (dist x.snd y.snd)
 
 instance
-  Prod.psuedometricSpaceSup
+  Prod.psuedometricMax
   [Dist α γ] [Dist β γ]
   [LE γ] [LT γ] [AddMonoidOps γ]
   [IsOrderedAddCommMonoid γ]
-  [Sup γ] [IsSemiLatticeSup γ]
-  [IsAddCancel γ] [IsLinearOrder γ]
+  [Min γ] [Max γ] [IsLinearMinMaxOrder γ]
   [IsPseudoMetric α] [IsPseudoMetric β] : IsPseudoMetric (α × β) where
   dist_self := by
     intro x
-    show _ ⊔ _ = _
-    rw [dist_self, dist_self, sup_self]
+    show max _ _ = _
+    rw [dist_self, dist_self, max_iff_le_left.mp (le_refl _)]
   dist_comm := by
     intro a b
-    show dist _ _ ⊔ dist _ _ = dist _ _ ⊔ dist _ _
+    show max (dist _ _) (dist _ _) = max (dist _ _) (dist _ _)
     congr 1 <;> apply dist_comm
   dist_triangle := by
     intro a b k
-    show dist _ _ ⊔ dist _ _ ≤ (dist _ _ ⊔ dist _ _) + (dist _ _ ⊔ dist _ _)
-    rw [sup_le_iff]; apply And.intro
+    show max (dist _ _) (dist _ _) ≤ max (dist _ _) (dist _ _) + max (dist _ _) (dist _ _)
+    rw [max_le_iff]; apply And.intro
     apply flip le_trans
     apply add_le_add
-    apply le_sup_left
-    apply le_sup_left
+    apply le_max_left
+    apply le_max_left
     apply dist_triangle
     apply flip le_trans
     apply add_le_add
-    apply le_sup_right
-    apply le_sup_right
+    apply le_max_right
+    apply le_max_right
     apply dist_triangle
 
+open Classical in
 instance
-  Prod.metricSpaceSup
+  Prod.metricMax
   [Dist α γ] [Dist β γ]
   [LE γ] [LT γ] [AddMonoidOps γ]
-  [IsOrderedAddCommMonoid γ]
-  [Sup γ] [IsSemiLatticeSup γ]
-  [IsAddCancel γ] [IsLinearOrder γ]
+  [IsAddCancel γ] [IsOrderedAddCommMonoid γ]
+  [Min γ] [Max γ] [IsLinearMinMaxOrder γ]
   [IsMetric α] [IsMetric β] : IsMetric (α × β) where
   of_dist_eq_zero a b h := by
-    replace h: _ ⊔ _ = (0: γ) := h
+    replace h: max _ _ = (0: γ) := h
     by_cases h₀:dist a.fst b.fst ≤ 0
     replace h₀ := of_dist_eq_zero _ _ <| le_antisymm h₀ (dist_nonneg _ _ )
-    rw [h₀, dist_self, sup_eq_right.mpr] at h
+    rw [h₀, dist_self, max_def] at h
     ext
     assumption
+    split at h <;> rename_i g
     exact of_dist_eq_zero _ _ h
+    exfalso; apply g
     apply dist_nonneg
-    rw [not_le] at h₀
-    have h₁ : 0 < dist a.fst b.fst ⊔ dist a.snd b.snd := by
-      apply lt_sup_left
-      assumption
-    rw [h] at h₁
-    have := lt_irrefl h₁
-    contradiction
+    exfalso; apply h₀
+    apply le_of_le_of_eq _ h
+    apply le_max_left

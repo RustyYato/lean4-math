@@ -263,94 +263,9 @@ def icc_closed (a b: ℝ) : IsClosed (Set.Icc a b) := by
   simp [Set.mem_compl, Set.mem_union, not_le, ←not_lt]
   apply Classical.or_iff_not_imp_left.symm
 
-instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) IsPseudoMetric.toTopology inferInstance Prod.fst := by
-  apply IsContinuous'.mk
-  intro S hS (a, b) ha
-  replace ha : a ∈ S := ha
-  have ⟨δ, δpos, ball⟩ := hS _ ha
-  refine ⟨_, δpos, ?_⟩
-  intro (c, d) hx
-  show c ∈ S
-  apply ball
-  replace hx :  max _ _ < δ := hx
-  exact (max_lt_iff.mp hx).left
-
-instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) IsPseudoMetric.toTopology inferInstance Prod.snd := by
-  apply IsContinuous'.mk
-  intro S hS (a, b) hb
-  replace ha : b ∈ S := hb
-  have ⟨δ, δpos, ball⟩ := hS _ hb
-  refine ⟨_, δpos, ?_⟩
-  intro (c, d) hx
-  show d ∈ S
-  apply ball
-  replace hx :  max _ _ < δ := hx
-  exact (max_lt_iff.mp hx).right
-
-def topo_prodct_eq_metric : (Topology.topo_product: Topology (ℝ×ℝ)) = IsPseudoMetric.toTopology := by
-  let t': Topology (ℝ × ℝ) := IsPseudoMetric.toTopology
-  apply Topology.IsOpen.inj
-  ext S
-  simp
-  apply Iff.intro
-  · intro h
-    induction h with
-    | univ => apply @IsOpen.univ _ t'
-    | inter => apply @IsOpen.inter _ t' <;> assumption
-    | sUnion => apply @IsOpen.sUnion _ t' <;> assumption
-    | of  =>
-      rename_i x hx
-      simp at hx
-      rcases hx with ⟨t,ht,rfl⟩ | ⟨t,ht,rfl⟩
-      apply IsOpen.preimage
-      assumption
-      apply IsOpen.preimage
-      assumption
-  · intro hS
-    have : S = ⋃(Set.mk fun s: Set (ℝ × ℝ) => (∃x r, s = Ball x r) ∧ s ⊆ S) := by
-      ext x
-      simp [Set.mem_sUnion]
-      apply Iff.intro
-      intro hx
-      have ⟨δ, δpos, ball_sub⟩ := hS _ hx
-      exists Ball x δ
-      apply And.intro
-      apply And.intro
-      exists x.1
-      exists x.2
-      exists δ
-      assumption
-      rwa [mem_ball, dist_self]
-      intro ⟨_, ⟨⟨a, b, δ, rfl⟩, ball_sub_s⟩, hx⟩
-      apply ball_sub_s
-      assumption
-    rw [this]; clear this
-    apply Topology.topo_product.sUnion_open
-    rintro _ ⟨⟨x, δ, rfl⟩, hb⟩
-    rw [show Ball x δ =
-      (Set.mk fun y => dist x.fst y.fst < δ) ∩
-      (Set.mk fun y => dist x.snd y.snd < δ)
-      from ?_]
-    apply Generate.IsOpen.inter
-    · apply Generate.IsOpen.of
-      left
-      refine ⟨Ball x.1 δ, ?_, ?_⟩
-      apply IsOpen.Ball
-      rfl
-
-    · apply Generate.IsOpen.of
-      right
-      refine ⟨Ball x.2 δ, ?_, ?_⟩
-      apply IsOpen.Ball
-      rfl
-
-    ext y
-    simp [mem_ball, Set.mem_inter]
-    apply max_lt_iff
-
 def continuous₂_of_eps_del (f: ℝ×ℝ -> ℝ) (h: ∀(ε: ℝ), 0 < ε -> ∃δ: ℝ, 0 < δ ∧  ∀a b: ℝ×ℝ, dist a b < δ -> dist (f a) (f b) < ε) : IsContinuous f where
   isOpen_preimage := by
-    rw [topo_prodct_eq_metric]
+    rw [topology_eq_metric (ℝ × ℝ)]
     intro S hS x hx
     have ⟨ε, εpos, ball_sub⟩ := hS _ hx
     replace ⟨δ, δpos, h⟩ := h ε εpos
@@ -404,7 +319,7 @@ instance instContℝadd : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 + x.2)
 
 instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2) where
   isOpen_preimage := by
-    rw [topo_prodct_eq_metric]
+    rw [topology_eq_metric (ℝ × ℝ)]
     intro S hS (a, b) hab
     replace hab : a * b ∈ S := hab
     simp
