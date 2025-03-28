@@ -11,7 +11,7 @@
 
 -- def notLimZero (c: CauchySeq α) (h: c.IsPos) (g: c.IsLimZero) : False := by
 --   obtain ⟨B, Bpos, k, pos⟩ := h
---   replace ⟨k', g⟩ := g ‖B‖ ?_
+--   replace ⟨k', g⟩ := g |B| ?_
 --   have := g (max k k') (le_max_right _ _)
 --   have := pos (max k k') (le_max_left _ _)
 --   dsimp at this

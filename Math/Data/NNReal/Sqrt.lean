@@ -45,7 +45,7 @@ noncomputable def sqrtEquiv : ℝ≥0 ≃*₀ ℝ≥0 := (npowEquiv 2 (by decide
 def apply_sqrtEquiv (x: ℝ≥0) : sqrtEquiv x = sqrt x := rfl
 
 def abs (r: ℝ) : ℝ≥0 where
-  val := ‖r‖
+  val := |r|
   property := by apply abs_nonneg (α := ℝ)
 
 def square (r: ℝ) : ℝ≥0 where
@@ -54,13 +54,13 @@ def square (r: ℝ) : ℝ≥0 where
     rw [Real.mem_nonneg, npow_two]
     exact Real.square_nonneg r
 
-def embedReal_abs (x: ℝ) : embedReal (abs x) = ‖x‖ := rfl
+def embedReal_abs (x: ℝ) : embedReal (abs x) = |x| := rfl
 
 @[simp] def square_zero : square 0 = 0 := rfl
 @[simp] def square_one : square 1 = 1 := rfl
 def square_eq_abs_sq (x: ℝ): square x = (abs x) ^ 2 := by
   apply embedReal.inj
-  show x ^ 2 = ‖x‖ ^ 2
+  show x ^ 2 = |x| ^ 2
   rw [Real.abs_def]
   split
   rfl

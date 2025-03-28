@@ -221,10 +221,10 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
   intro ε εpos
   let x := (b - a) /? ε
   let n := x.ceil
-  exists ‖n‖
+  exists |n|
   have altb : a < b := lower_lt_upper c a b ha hb
   apply lt_of_le_of_lt
-  rw [seq₂_diff_bounds c a b (le_of_lt altb) ‖n‖]
+  rw [seq₂_diff_bounds c a b (le_of_lt altb) |n|]
   clear ha hb c
   have ⟨ceil_pred_lt_x, x_le_ceil⟩ := (Rat.ceil_spec x x.ceil).mp rfl
   replace x_le_ceil : x ≤ n := x_le_ceil
@@ -237,13 +237,13 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
   apply lt_of_le_of_lt
   assumption
   assumption
-  replace hn' : (‖n‖: ℚ) ≠ 0 := by
+  replace hn' : (|n|: ℚ) ≠ 0 := by
     intro g;
     rw [←natCast_zero] at g
     have := HasChar.natCast_inj g
     have := Int.natAbs_eq_zero.mp this
     contradiction
-  replace := IsOrderedSemiring.mul_le_mul_of_nonneg_right _ _ this (1 /? ‖n‖) ?_
+  replace := IsOrderedSemiring.mul_le_mul_of_nonneg_right _ _ this (1 /? |n|) ?_
   rw [div?_eq_mul_inv?, one_mul, ←div?_eq_mul_inv?,
     mul_comm _ ε, mul_assoc] at this
   rw (occs := [2]) [←Int.sign_mul_natAbs n] at this
@@ -261,7 +261,7 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
       exact Nat.lt_two_pow_self
       show _ < ((2: ℕ): ℚ) ^ _
       rw [←natCast_npow, ←natCast_zero, Rat.natCast_lt_natCast]
-      exact Nat.two_pow_pos ‖n‖
+      exact Nat.two_pow_pos |n|
       apply lt_of_le_of_ne
       exact max_iff_le_left.mpr rfl
       symm; assumption
@@ -272,11 +272,11 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
   · rw [nsign] at this
     rw [Int.sign_eq_neg_one_iff_neg] at nsign
     rw [←intCast_neg, intCast_one, ←neg_mul_right, mul_one] at this
-    replace this : (b - a) /? ‖n‖ < 0 := by
+    replace this : (b - a) /? |n| < 0 := by
       apply lt_of_le_of_lt this
       refine Rat.neg_lt_neg_iff.mpr ?_
       rwa [neg_neg]
-    replace this := _root_.mul_lt_mul_of_pos_right _ _ this ‖n‖ ?_
+    replace this := _root_.mul_lt_mul_of_pos_right _ _ this |n| ?_
     rw [div?_mul_cancel, zero_mul, ←Rat.lt_add_iff_sub_lt, zero_add] at this
     have := lt_asymm this altb
     contradiction

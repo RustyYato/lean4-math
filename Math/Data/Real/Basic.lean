@@ -79,7 +79,7 @@ def CauchySeq.Eventually₂.lower_bound (n: Nat) : Eventually₂ fun i j => n �
   intro i j ni nj
   trivial
 
-abbrev Rat.is_cauchy_rel (a: Nat -> ℚ) (ε: ℚ) (_hε: 0 < ε) (n m: ℕ) : Prop := ‖a n - a m‖ < ε
+abbrev Rat.is_cauchy_rel (a: Nat -> ℚ) (ε: ℚ) (_hε: 0 < ε) (n m: ℕ) : Prop := |a n - a m| < ε
 
 instance : Relation.IsSymmetric (Rat.is_cauchy_rel a ε hε) where
   symm := by
@@ -94,7 +94,7 @@ instance : Relation.IsRefl (Rat.is_cauchy_rel a ε hε) where
     assumption
 
 def is_cauchy_equiv (a b: Nat -> ℚ) : Prop :=
-  ∀ε: ℚ, 0 < ε -> CauchySeq.Eventually₂ fun n m => ‖a n - b m‖ < ε
+  ∀ε: ℚ, 0 < ε -> CauchySeq.Eventually₂ fun n m => |a n - b m| < ε
 def Rat.is_cauchy (a: Nat -> ℚ) : Prop :=
   ∀(ε: ℚ) (hε: 0 < ε), CauchySeq.Eventually₂ (is_cauchy_rel a ε hε)
 
@@ -142,7 +142,7 @@ def CauchySeq.upper_bound (c: CauchySeq) : ∃bound: ℚ, ∀n, c n < bound := b
     rfl
     decide
   else
-    suffices c δ + ‖c n - c δ‖ < max + 1 by
+    suffices c δ + |c n - c δ| < max + 1 by
       apply lt_of_le_of_lt _ this
       rw [Rat.abs_def]
       split <;> rename_i g
@@ -280,10 +280,10 @@ def CauchySeq.add.spec (a b c d: CauchySeq) :
   have ⟨δ, h⟩ := (ac _ (Rat.half_pos ε_pos)).merge (bd _ (Rat.half_pos ε_pos))
   refine ⟨δ, ?_⟩
   intro n m δ_le_n δ_le_m
-  show ‖a n + b n - (c m + d m)‖ < ε
+  show |a n + b n - (c m + d m)| < ε
   rw [sub_eq_add_neg, neg_add_rev]
-  have : ‖a n + b n + (-d m + -c m)‖ =
-    ‖a n + -c m + (b n + -d m)‖ := by ac_rfl
+  have : |a n + b n + (-d m + -c m)| =
+    |a n + -c m + (b n + -d m)| := by ac_rfl
   rw [this]; clear this
   replace ⟨ab, cd⟩  := h n m δ_le_n δ_le_m
   have := Rat.add_lt_add ab cd
@@ -373,7 +373,7 @@ def Real.mk_sub (a b: CauchySeq) : ⟦a⟧ - ⟦b⟧ = ⟦a - b⟧ := rfl
 def CauchySeq.eval_sub (a b: CauchySeq) (n: Nat) : (a - b) n = a n - b n := rfl
 
 def CauchySeq.abs.proof1 (a b: Rat) :
-  0 ≤ a -> b ≤ 0 -> ‖a - b‖ < ε -> ‖a + b‖ < ε := by
+  0 ≤ a -> b ≤ 0 -> |a - b| < ε -> |a + b| < ε := by
   intro ha hb habs
   cases lt_or_eq_of_le hb <;> rename_i hb
   · apply lt_of_le_of_lt _ habs
@@ -396,14 +396,14 @@ def CauchySeq.abs.proof1 (a b: Rat) :
     rwa [add_zero]
 
 def CauchySeq.abs.spec (a b: CauchySeq) : a ≈ b ->
-  is_cauchy_equiv (fun n => ‖a n‖) (fun n => ‖b n‖) := by
+  is_cauchy_equiv (fun n => |a n|) (fun n => |b n|) := by
   intro ab ε ε_pos
   dsimp
   replace ⟨δ, ab⟩ := ab _ (Rat.half_pos ε_pos)
   refine ⟨δ, ?_⟩
   intro n m δ_le_n δ_le_m
   rw [Rat.abs_def (a n), Rat.abs_def (b m)]
-  suffices ‖a.seq n - b.seq m‖ < ε by
+  suffices |a.seq n - b.seq m| < ε by
     split <;> split <;> rename_i h g
     · exact this
     · rw [sub_eq_add_neg, neg_neg]
@@ -433,7 +433,7 @@ def CauchySeq.abs.spec (a b: CauchySeq) : a ≈ b ->
   exact Rat.half_pos ε_pos
 
 def CauchySeq.abs (a: CauchySeq) : CauchySeq where
-  seq n := ‖a n‖
+  seq n := |a n|
   is_cacuhy := by
     apply CauchySeq.abs.spec
     rfl
@@ -442,7 +442,7 @@ instance : AbsoluteValue CauchySeq CauchySeq where
   abs := .abs
 
 def Real.abs : ℝ -> ℝ := by
-  apply Quotient.lift (⟦‖·‖⟧)
+  apply Quotient.lift (⟦|·|⟧)
   intros
   apply Quotient.sound
   apply CauchySeq.abs.spec
@@ -455,8 +455,8 @@ def CauchySeq.mul.spec (a b c d: CauchySeq) : a ≈ c -> b ≈ d ->
   is_cauchy_equiv (fun n => a n * b n) (fun n => c n * d n) := by
   intro ac bd ε ε_pos
   simp
-  have ⟨amax,one_lt_amax,amax_spec⟩ := ‖a‖.upper_bound_with 1
-  have ⟨dmax,one_lt_dmax,dmax_spec⟩ := ‖d‖.upper_bound_with 1
+  have ⟨amax,one_lt_amax,amax_spec⟩ := |a|.upper_bound_with 1
+  have ⟨dmax,one_lt_dmax,dmax_spec⟩ := |d|.upper_bound_with 1
 
   have amax_pos : 0 < amax := lt_of_lt_of_le (by decide) one_lt_amax
   have dmax_pos : 0 < dmax := lt_of_lt_of_le (by decide) one_lt_dmax
@@ -755,7 +755,7 @@ def ofRatHom : ℚ ↪+* ℝ where
       assumption
     intro a b eq h
     have ⟨k, spec⟩ := Quotient.exact eq (b - a) ?_
-    have : ‖a - b‖ < b - a := spec k k (le_refl _) (le_refl _)
+    have : |a - b| < b - a := spec k k (le_refl _) (le_refl _)
     rw [Rat.abs_def, if_neg, neg_sub] at this
     exact lt_irrefl this
     rw [not_le, ←Rat.lt_add_iff_sub_lt, zero_add]
@@ -805,7 +805,7 @@ def eq_iff_sub_left {a b k: ℝ} : a = b ↔ k - a = k - b := by
 def non_zero_of_ofNat (n: Nat) : (OfNat.ofNat (α := ℝ) n.succ) ≠ 0 := by
   intro h
   have ⟨δ, prf⟩ := (Quotient.exact h) (1 /? 2) (by decide)
-  have : ‖(n.succ: ℚ) - 0‖ < 1 /? 2 := prf _ _ (le_refl _) (le_refl _)
+  have : |(n.succ: ℚ) - 0| < 1 /? 2 := prf _ _ (le_refl _) (le_refl _)
   simp at this
   rw [Rat.abs_of_nonneg] at this
   have two_eq : (2: ℚ) = (2: ℕ) := rfl
@@ -824,7 +824,7 @@ instance : IsNontrivial ℝ where
     intro h
     replace h := Quotient.exact h
     replace ⟨k, h⟩ := h  (1 /? 2) (by decide)
-    replace h: ‖0 - (1: ℚ)‖ < 1 /? (2: ℚ) := h k k (le_refl _) (le_refl _)
+    replace h: |0 - (1: ℚ)| < 1 /? (2: ℚ) := h k k (le_refl _) (le_refl _)
     dsimp at h
     contradiction⟩
 

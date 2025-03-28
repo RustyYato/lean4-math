@@ -59,12 +59,12 @@ instance Real.instOrderedRing : IsStrictOrderedSemiring ℝ where
     apply le_of_lt; assumption
     assumption
 
-def Real.abs_mul' (a b: ℝ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
+def Real.abs_mul' (a b: ℝ) : |a * b| = |a| * |b| := by
   cases a, b with | mk a b =>
   apply Quotient.sound
   apply CauchySeq.pointwise
   intro n
-  show ‖a n * b n‖ = ‖a n‖ * ‖b n‖
+  show |a n * b n| = |a n| * |b n|
   rw [Rat.abs_mul]
 
 instance : IsLawfulAbs ℝ where
@@ -89,11 +89,9 @@ instance : IsLawfulAbs ℝ where
     apply CauchySeq.le_pointwise
     intro n
     apply Rat.abs_add_le_add_abs
-  abs_eq_of_add_eq_zero := by
-    intro a b h
-    rw [neg_eq_of_add_right h,
-      ←neg_one_mul]
-    rw [Real.abs_mul']
+  abs_neg := by
+    intro a
+    rw [←neg_one_mul, Real.abs_mul']
     apply one_mul
 
 instance : NeZero (2: ℝ) where
@@ -101,7 +99,7 @@ instance : NeZero (2: ℝ) where
     symm; apply ne_of_lt
     exact two_pos
 
-def Real.abs_of_nonneg (a: ℝ) : 0 ≤ a ↔ ‖a‖ = a := by
+def Real.abs_of_nonneg (a: ℝ) : 0 ≤ a ↔ |a| = a := by
   apply flip Iff.intro
   · intro h
     rw [←h]

@@ -7,12 +7,12 @@ import Math.Data.Real.Lattice
 import Math.Topology.Algebra.Ring
 
 open Topology Classical
-open IsPseudoMetricSpace (Ball mem_ball ball_sub)
 namespace Real
 
 instance : Dist ℝ ℝ := Abs.instDist _
-instance : IsMetricSpace ℝ := Abs.instIsMetricSpace _
-instance : Topology ℝ := Topology.ofIsPseudoMetricSpace
+instance : IsMetric ℝ := Abs.instIsMetric _
+instance : Topology ℝ := IsPseudoMetric.toTopology
+instance : IsMetricSpace ℝ := inferInstance
 
 -- this proof was adapted from
 -- https://math.ucr.edu/~res/math205B-2018/Munkres%20-%20Topology.pdf
@@ -77,7 +77,7 @@ instance : Topology.IsConnected ℝ where
 
     rcases total₀ c' with hc | hc
     · have ⟨δ, δpos, ball⟩ := hA _ hc
-      replace ball : IsPseudoMetricSpace.Ball c _ ⊆ _ := ball
+      replace ball : Ball c _ ⊆ _ := ball
       have a_le_c : a ≤ c := c'.property.left
 
       let d := (c + δ /? 2) ⊓ b
@@ -104,7 +104,7 @@ instance : Topology.IsConnected ℝ where
         intro h
         rw [h] at ball
         refine disjoint _ (ball b ?_) hb
-        rwa [IsPseudoMetricSpace.mem_ball, dist_self]
+        rwa [mem_ball, dist_self]
 
       suffices d ∈ S by
         replace this : d ≤ c := le_csSup ?_ this
@@ -114,9 +114,9 @@ instance : Topology.IsConnected ℝ where
 
       apply And.intro _ d'.property
       apply ball
-      rw [IsPseudoMetricSpace.mem_ball]
+      rw [mem_ball]
       show dist c (min _ _) < δ
-      show ‖_‖ < _
+      show |_| < _
       rw [min_def]; split
       rw [add_comm, sub_add, sub_self, zero_sub, abs_neg, (Real.abs_of_nonneg _).mp]
       rw [div?_eq_mul_inv?]; rw (occs := [2]) [←mul_one δ]
@@ -141,7 +141,7 @@ instance : Topology.IsConnected ℝ where
       rw [Real.le_sub_iff_add_le, zero_add]
       apply c'.property.right
     · have ⟨δ, δpos, ball⟩ := hB _ hc
-      replace ball : IsPseudoMetricSpace.Ball c _ ⊆ _ := ball
+      replace ball : Ball c _ ⊆ _ := ball
       have c_le_b : c ≤ b := c'.property.right
       let d := (c - δ) ⊔ a
       let d': sub := ⟨d, by
@@ -162,8 +162,8 @@ instance : Topology.IsConnected ℝ where
         rw [←not_lt]
         intro g
         refine disjoint _ hx.left (ball x ?_)
-        rw [IsPseudoMetricSpace.mem_ball]
-        show ‖c - x‖ < δ
+        rw [mem_ball]
+        show |c - x| < δ
         have x_le_c : x ≤ c := le_csSup ?_ hx
         replace ⟨g, a_lt_x⟩ := max_lt_iff.mp g
         rw [Real.abs_def, if_pos]
@@ -200,8 +200,8 @@ def iio_open (a: ℝ) : IsOpen (Set.Iio a) := by
   show _ < _
   rwa [Real.lt_sub_iff_add_lt, zero_add]
   intro y hy
-  rw [Set.mem_Iio]; rw [IsPseudoMetricSpace.mem_ball] at hy
-  replace hy : ‖_‖ < a - x := hy
+  rw [Set.mem_Iio]; rw [mem_ball] at hy
+  replace hy : |_| < a - x := hy
   rw [abs_def] at hy
   split at hy
   rw [←not_le]; intro a_le_y
@@ -220,8 +220,8 @@ def ioi_open (a: ℝ) : IsOpen (Set.Ioi a) := by
   show _ < _
   rwa [Real.lt_sub_iff_add_lt, zero_add]
   intro y hy
-  rw [Set.mem_Ioi]; rw [IsPseudoMetricSpace.mem_ball] at hy
-  replace hy : ‖_‖ < x - a := hy
+  rw [Set.mem_Ioi]; rw [mem_ball] at hy
+  replace hy : |_| < x - a := hy
   rw [abs_def] at hy
   split at hy
   have := add_lt_add_left _ _ (-x) hy
@@ -263,7 +263,7 @@ def icc_closed (a b: ℝ) : IsClosed (Set.Icc a b) := by
   simp [Set.mem_compl, Set.mem_union, not_le, ←not_lt]
   apply Classical.or_iff_not_imp_left.symm
 
-instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) Topology.ofIsPseudoMetricSpace inferInstance Prod.fst := by
+instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) IsPseudoMetric.toTopology inferInstance Prod.fst := by
   apply IsContinuous'.mk
   intro S hS (a, b) ha
   replace ha : a ∈ S := ha
@@ -275,7 +275,7 @@ instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) Topology.ofIsPseudoMetri
   replace hx :  max _ _ < δ := hx
   exact (max_lt_iff.mp hx).left
 
-instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) Topology.ofIsPseudoMetricSpace inferInstance Prod.snd := by
+instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) IsPseudoMetric.toTopology inferInstance Prod.snd := by
   apply IsContinuous'.mk
   intro S hS (a, b) hb
   replace ha : b ∈ S := hb
@@ -287,8 +287,8 @@ instance : IsContinuous' (α := ℝ × ℝ) (β := ℝ) Topology.ofIsPseudoMetri
   replace hx :  max _ _ < δ := hx
   exact (max_lt_iff.mp hx).right
 
-def topo_prodct_eq_metric : (Topology.topo_product: Topology (ℝ×ℝ)) = Topology.ofIsPseudoMetricSpace := by
-  let t': Topology (ℝ × ℝ) := Topology.ofIsPseudoMetricSpace
+def topo_prodct_eq_metric : (Topology.topo_product: Topology (ℝ×ℝ)) = IsPseudoMetric.toTopology := by
+  let t': Topology (ℝ × ℝ) := IsPseudoMetric.toTopology
   apply Topology.IsOpen.inj
   ext S
   simp
@@ -368,9 +368,9 @@ instance instContℝneg : Topology.IsContinuous (fun x: ℝ => -x) where
     have ⟨δ, δpos, h⟩ := hS _ hx
     refine ⟨_, δpos, ?_⟩
     intro a ha
-    rw [IsPseudoMetricSpace.mem_ball] at ha
+    rw [mem_ball] at ha
     rw [Set.mem_preimage]
-    replace ha: ‖_‖ < δ := ha
+    replace ha: |_| < δ := ha
     rw [←neg_sub_neg] at ha
     replace ha: dist (-a) _ < δ := ha
     rw [dist_comm] at ha
@@ -386,7 +386,7 @@ instance instContℝadd : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 + x.2)
   intro (a, b) (c, d) h
   replace h : max _ _ < _ := h
   simp at *
-  show ‖_‖ < _
+  show |_| < _
   rw [sub_add, add_sub_assoc, add_comm, add_sub_assoc, add_comm]
   apply lt_of_le_of_lt
   apply abs_add_le_add_abs
@@ -409,7 +409,7 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     replace hab : a * b ∈ S := hab
     simp
     have ⟨ε, εpos, ball_sub⟩ := hS _ hab
-    let M := ‖a‖ + ‖b‖ + 1
+    let M := |a| + |b| + 1
     have one_le_M : 1 ≤ M := by
       apply le_add_left
       apply add_nonneg
@@ -430,14 +430,14 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     intro (c, d) hx
     rw [mem_ball] at hx
     rw [Set.mem_preimage]
-    replace hx : max ‖_‖ ‖_‖ < δ := hx
+    replace hx : max |_| |_| < δ := hx
     simp at hx
     rw [max_lt_iff] at hx
     obtain ⟨ha, hb⟩ := hx
     simp
     apply ball_sub
     rw [mem_ball]
-    show ‖_‖ < _
+    show |_| < _
     rw [←add_zero (a * b), ←neg_add_cancel (a * d),
       ←add_assoc, ←sub_eq_add_neg, ←mul_sub, add_sub_assoc, ←sub_mul]
     apply lt_of_le_of_lt
@@ -459,11 +459,11 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     rw (occs := [2]) [←mul_one ε]
     apply mul_lt_mul_of_pos_left
     assumption
-    replace hb : ‖b - d‖ < 1 := by
+    replace hb : |b - d| < 1 := by
       apply lt_of_lt_of_le
       assumption
       apply inf_le_right
-    have : ‖d‖ < ‖b‖ + 1 := by
+    have : |d| < |b| + 1 := by
       rw [←add_zero d, ←sub_self b, ←add_sub_assoc, add_comm, add_sub_assoc]
       apply lt_of_le_of_lt
       apply abs_add_le_add_abs

@@ -70,8 +70,8 @@ instance : IsLawfulBot MaxBool := ⟨by decide⟩
 
 namespace AbsoluteValue.Trivial
 
-variable [DecidableEq α] [AddMonoidOps α] [Mul α]
-  [IsNonUnitalNonAssocSemiring α] [NoZeroDivisors α]
+variable [DecidableEq α] [AddGroupOps α] [Mul α]
+  [IsNonUnitalNonAssocRing α] [NoZeroDivisors α]
 
 scoped instance : AbsoluteValue α MaxBool where
   abs a := if a = 0 then 0 else 1
@@ -103,11 +103,12 @@ scoped instance : IsLawfulAbs α where
     split
     apply bot_le
     apply le_refl
-  abs_eq_of_add_eq_zero a b h := by
+  abs_neg a := by
     simp [AbsoluteValue.abs]
-    split
-    subst a; rw [zero_add] at h; rw [if_pos h]
-    split; subst b; rw [add_zero] at h; contradiction
-    rfl
+    split <;> rename_i h
+    rw [←neg_neg a, h, neg_zero, if_pos rfl]
+    rw [if_neg]
+    intro g
+    rw [g, neg_zero] at h; contradiction
 
 end AbsoluteValue.Trivial

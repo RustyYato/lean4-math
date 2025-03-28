@@ -15,7 +15,7 @@ def sqrt_sq (x: ℝ) (h: 0 ≤ x) : x.sqrt ^ 2 = x := by
   rw [sqrt_def x h]
   rw [←resp_npow, NNReal.sqrt_sq]; rfl
 
-def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = ‖x‖ := by
+def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = |x| := by
   rw [sqrt_def (x^2) (by
     rw [npow_two]
     apply Real.square_nonneg x)]
@@ -118,7 +118,7 @@ def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (
   replace this : NNReal.embedReal (NNReal.abs ((a * d) * (b * c))) ≤
     NNReal.embedReal (midpoint (NNReal.square (a * d)) (NNReal.square (b * c))) := this
   apply le_trans _ this
-  show _ ≤ ‖(a * d) * (b * c)‖
+  show _ ≤ |(a * d) * (b * c)|
   rw [show (a * d) * (b * c) = a * b * c * d by ac_rfl]
   rw [Real.abs_def]
   split

@@ -149,27 +149,27 @@ instance : Max ℚ := maxOfLe
 instance : IsDecidableLinearOrder ℚ where
 
 def Fract.abs (f: Fract) : Fract where
-  num := ‖f.num‖
+  num := |f.num|
   den := f.den
   den_pos := f.den_pos
 
 instance : AbsoluteValue Fract Fract := ⟨.abs⟩
 
 @[simp]
-def Fract.abs_num (a: Fract) : ‖a‖.num = ‖a.num‖ := rfl
+def Fract.abs_num (a: Fract) : |a|.num = |a.num| := rfl
 @[simp]
-def Fract.abs_den (a: Fract) : ‖a‖.den = a.den := rfl
+def Fract.abs_den (a: Fract) : |a|.den = a.den := rfl
 
-def Fract.abs.spec (a b: Fract) : a ≈ b -> ‖a‖ ≈ ‖b‖ := by
+def Fract.abs.spec (a b: Fract) : a ≈ b -> |a| ≈ |b| := by
   intro eqv
   show _ * _ = _ * _
-  have : ‖a‖.num = ‖a.num‖ := rfl
+  have : |a|.num = |a.num| := rfl
   rw [this]
-  have : ‖b‖.num = ‖b.num‖ := rfl
+  have : |b|.num = |b.num| := rfl
   rw [this]
-  have : ‖a‖.den = ‖Int.ofNat a.den‖ := rfl
+  have : |a|.den = |Int.ofNat a.den| := rfl
   rw [this]
-  have : ‖b‖.den = ‖Int.ofNat b.den‖ := rfl
+  have : |b|.den = |Int.ofNat b.den| := rfl
   rw [this]
   rw [Int.ofNat_mul_ofNat, Int.ofNat_mul_ofNat]
   congr 1
@@ -178,16 +178,16 @@ def Fract.abs.spec (a b: Fract) : a ≈ b -> ‖a‖ ≈ ‖b‖ := by
 
 instance : AbsoluteValue ℚ ℚ where
   abs := by
-    apply Quotient.lift (⟦‖·‖⟧)
+    apply Quotient.lift (⟦|·|⟧)
     intro a b eq
     apply sound
     apply Fract.abs.spec
     assumption
 
 @[simp]
-def mk_abs (a: Fract) : ‖⟦a⟧‖ = ⟦‖a‖⟧ := rfl
+def mk_abs (a: Fract) : |⟦a⟧| = ⟦|a|⟧ := rfl
 
-def abs_def (q: ℚ) : ‖q‖ = if 0 ≤ q then q else -q := by
+def abs_def (q: ℚ) : |q| = if 0 ≤ q then q else -q := by
   cases q with | mk q =>
   simp
   split <;> (apply sound; show _ = _)
@@ -204,7 +204,7 @@ def abs_def (q: ℚ) : ‖q‖ = if 0 ≤ q then q else -q := by
   replace h: (-q).isPos := isPos.neg.mp h
   apply le_of_lt h
 
-def abs_nonzero (a: ℚ) : a ≠ 0 -> ‖a‖ ≠ 0 := by
+def abs_nonzero (a: ℚ) : a ≠ 0 -> |a| ≠ 0 := by
   cases a with | mk a =>
   intro ha
   simp
@@ -240,7 +240,7 @@ def neg_lt_neg_iff {a b: ℚ} : a < b ↔ -b < -a := by
 -- def neg_iff_sign_neg {a: ℚ} : a < 0 ↔ a.sign < 0 := by sorry
 -- def eq_zero_iff_sign_eq_zero {a: ℚ} : a = 0 ↔ a.sign = 0 := by sorry
 
-def abs_nonneg (a: ℚ) : 0 ≤ ‖a‖ := by
+def abs_nonneg (a: ℚ) : 0 ≤ |a| := by
   rw [abs_def]
   split
   assumption
@@ -250,7 +250,7 @@ def abs_nonneg (a: ℚ) : 0 ≤ ‖a‖ := by
   intro g; apply h
   cases a
   exact le_of_lt (α := Int) g
-def abs_pos (a: ℚ) : a ≠ 0 -> 0 < ‖a‖ := by
+def abs_pos (a: ℚ) : a ≠ 0 -> 0 < |a| := by
   intro h
   apply lt_of_le_of_ne
   apply abs_nonneg
@@ -421,7 +421,7 @@ def neg_le_of_nonneg (a: ℚ) : 0 ≤ a -> -a ≤ a := by
   apply le_trans _ h
   rw [neg_le_neg_iff, neg_neg]
   assumption
-def abs_add_le_add_abs.helper (a b: ℚ) : a < 0 -> 0 ≤ b -> ‖a + b‖ ≤ -a + b := by
+def abs_add_le_add_abs.helper (a b: ℚ) : a < 0 -> 0 ≤ b -> |a + b| ≤ -a + b := by
   intro ha hb
   rw [abs_def]
   split
@@ -435,7 +435,7 @@ def abs_add_le_add_abs.helper (a b: ℚ) : a < 0 -> 0 ≤ b -> ‖a + b‖ ≤ -
   apply add_le_add_right.mpr
   rw [neg_add_cancel]
   apply add_nonneg <;> assumption
-def abs_add_le_add_abs (a b: ℚ) : ‖a + b‖ ≤ ‖a‖ + ‖b‖ := by
+def abs_add_le_add_abs (a b: ℚ) : |a + b| ≤ |a| + |b| := by
   rw [abs_def a, abs_def b]
   split <;> split
   · rw [abs_def, if_pos]
@@ -454,7 +454,7 @@ def abs_add_le_add_abs (a b: ℚ) : ‖a + b‖ ≤ ‖a‖ + ‖b‖ := by
     rw [←add_zero 0]
     apply add_lt_add <;> assumption
 
-def sub_abs_self_sub (a b: ℚ) : a - ‖a - b‖ ≤ b := by
+def sub_abs_self_sub (a b: ℚ) : a - |a - b| ≤ b := by
   rw [abs_def]; split
   rw [sub_sub, add_sub_assoc, add_sub_cancel]
   rw [sub_eq_add_neg, neg_neg]
@@ -487,10 +487,10 @@ def pos_mul_lt_of_right_lt_one (a b: ℚ) : 0 < a -> b < 1 -> a * b < a := by
   apply (lt_iff_mul_left_pos _).mp
   assumption
   assumption
-def abs_of_nonneg (a: ℚ) : 0 ≤ a -> ‖a‖ = a := by
+def abs_of_nonneg (a: ℚ) : 0 ≤ a -> |a| = a := by
   intro h
   rw [abs_def, if_pos h]
-def abs_of_pos (a: ℚ) : 0 < a -> ‖a‖ = a := by
+def abs_of_pos (a: ℚ) : 0 < a -> |a| = a := by
   intro h
   rw [abs_def, if_pos (le_of_lt h)]
 def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
@@ -502,10 +502,7 @@ def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
   apply mul_pos
   assumption
   decide
-def abs_abs (a: ℚ) : ‖‖a‖‖ = ‖a‖ := by
-  rw [abs_of_nonneg]
-  apply abs_nonneg
-def abs_mul (a b: ℚ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
+def abs_mul (a b: ℚ) : |a * b| = |a| * |b| := by
   simp [abs_def]
   rcases lt_trichotomy 0 a with ha | ha | ha
   <;> rcases lt_trichotomy 0 b with hb | hb | hb
@@ -537,14 +534,14 @@ def abs_mul (a b: ℚ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   rw [←neg_neg (_ * _), neg_mul_right, neg_mul_left]
   apply mul_nonneg <;> rw [neg_le_neg_iff, neg_neg]
   repeat apply le_of_lt; assumption
-def abs_inv? (a: ℚ) (h: a ≠ 0) : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
-  refine inv?_eq_of_mul_right ‖a‖ ‖a⁻¹?‖ ?_
+def abs_inv? (a: ℚ) (h: a ≠ 0) : |a⁻¹?| = |a|⁻¹? := by
+  refine inv?_eq_of_mul_right |a| |a⁻¹?| ?_
   rw [←abs_mul, inv?_mul_cancel]
   rfl
-def abs_div? (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
+def abs_div? (a b: ℚ) (h: b ≠ 0) : |a /? b| = |a| /? |b| := by
   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, abs_mul, abs_inv?]
-def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : ‖a /? b‖ < 1 ↔ ‖a‖ < ‖b‖ := by
-  rw [lt_iff_mul_right_pos (k := ‖b‖), one_mul, ←abs_mul, div?_eq_mul_inv?,
+def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : |a /? b| < 1 ↔ |a| < |b| := by
+  rw [lt_iff_mul_right_pos (k := |b|), one_mul, ←abs_mul, div?_eq_mul_inv?,
     mul_assoc, inv?_mul_cancel, mul_one]
   exact abs_pos b h
 def le_add_left_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ b + a := by
@@ -611,7 +608,7 @@ def natCast_lt_natCast {a b: ℕ} : (a: ℚ) < b ↔ a < b := by
   apply lt_iff_of_le_iff
   apply natCast_le_natCast
 
-def eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ ‖a‖ = 0 := by
+def eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ |a| = 0 := by
   rw [abs_def]
   split <;> apply Iff.intro <;> intro h
   any_goals assumption
@@ -657,7 +654,7 @@ def Fract.floor.spec (a b: Fract) : a ≈ b -> a.floor = b.floor := by
     apply h.trans
     apply Fract.reduce.spec b
   intro a
-  let g := ‖a.num‖.gcd a.den
+  let g := |a.num|.gcd a.den
   have g_nz : g ≠ 0 := by
     unfold g
     intro h'

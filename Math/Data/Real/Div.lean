@@ -37,7 +37,7 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
     assumption
     rw [←Rat.abs_inv?, inv?_mul_rev, Rat.abs_mul,
       ←Rat.abs_of_pos _ (Rat.half_pos A_pos), ←Rat.abs_of_pos _ (Rat.half_pos B_pos)]
-    suffices ‖A/?2‖ *‖(a n)⁻¹?‖ * (‖B/?2‖ * ‖(b m)⁻¹?‖) < 1 by
+    suffices |A/?2| *|(a n)⁻¹?| * (|B/?2| * |(b m)⁻¹?|) < 1 by
       apply lt_of_le_of_lt _ this
       assumption
       assumption
@@ -79,7 +79,7 @@ def CauchySeq.inv.spec (a b: CauchySeq) (ha: ¬a ≈ 0) : a ≈ b ->
   assumption
   assumption
   assumption
-  have ⟨δ, prf⟩: Eventually₂ fun n m => ‖(if h : (-a).seq n = 0 then 0 else ((-a).seq n)⁻¹?) - if h : (-b).seq m = 0 then 0 else ((-b).seq m)⁻¹?‖ < ε := by
+  have ⟨δ, prf⟩: Eventually₂ fun n m => |(if h : (-a).seq n = 0 then 0 else ((-a).seq n)⁻¹?) - if h : (-b).seq m = 0 then 0 else ((-b).seq m)⁻¹?| < ε := by
     apply inv.spec_pos
     assumption
     apply Quotient.exact
@@ -126,7 +126,7 @@ def CauchySeq.inv (a: CauchySeq) (ha: ¬a ≈ 0) : CauchySeq where
 instance : CheckedInvert CauchySeq (fun x => ¬x ≈ 0) := ⟨.inv⟩
 
 def CauchySeq.eventually_pointwise_ne_of_ne (a b: CauchySeq) (h: ¬a ≈ b) : Eventually (fun n => a n ≠ b n) := by
-  have : IsPos ‖a - b‖ := CauchySeq.abs_pos_of_non_zero (by
+  have : IsPos |a - b| := CauchySeq.abs_pos_of_non_zero (by
     intro g; apply h
     apply Quotient.exact
     replace g : Real.mk a - Real.mk b = 0 := Quotient.sound g
@@ -136,7 +136,7 @@ def CauchySeq.eventually_pointwise_ne_of_ne (a b: CauchySeq) (h: ¬a ≈ b) : Ev
   intro n δn
   intro g
   simp at even
-  replace even : B ≤ ‖a n - b n‖ := even _ δn
+  replace even : B ≤ |a n - b n| := even _ δn
   rw [←g, sub_self] at even
   have := not_lt_of_le even
   contradiction
@@ -174,9 +174,9 @@ instance : CheckedDiv? ℝ where
   checked_div a b h := a * b⁻¹?
 
 instance : Min ℝ where
-  min x y := (x + y - ‖x - y‖) /? 2
+  min x y := (x + y - |x - y|) /? 2
 instance : Max ℝ where
-  max x y := (x + y + ‖x - y‖) /? 2
+  max x y := (x + y + |x - y|) /? 2
 
 def inv_self_mul (a: ℝ) (h: a ≠ 0) : a⁻¹? * a = 1 := by
   induction a using ind with | mk a =>
@@ -314,7 +314,7 @@ instance : SMul ℚ ℝ where
 def ratCast_ne_zero (a: ℚ) (ha: a ≠ 0) : (a: ℝ) ≠ 0 := by
   intro h
   replace h := Quotient.exact h
-  have ⟨k, spec⟩ := h ‖a‖ (Rat.abs_pos a ha)
+  have ⟨k, spec⟩ := h |a| (Rat.abs_pos a ha)
   have := spec k k (le_refl _) (le_refl _)
   dsimp [CauchySeq.ofRat] at this
   rw [natCast_zero, sub_zero] at this

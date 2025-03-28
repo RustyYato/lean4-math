@@ -10,7 +10,31 @@ namespace Complex
 noncomputable instance : AbsoluteValue ℂ ℝ≥0 where
   abs x := (square x.real + square x.img).sqrt
 
-def norm_sq (c: ℂ) : ‖c‖ ^ 2 = square c.real + square c.img := sqrt_sq _
+def norm_sq (c: ℂ) : |c| ^ 2 = square c.real + square c.img := sqrt_sq _
+
+def Complex.abs_mul' (a b: ℂ) : |a * b| = |a| * |b| := by
+  show NNReal.sqrtEquiv _ = NNReal.sqrtEquiv _ * NNReal.sqrtEquiv _
+  rw [←resp_mul]
+  simp
+  congr
+  apply Subtype.val_inj
+  unfold square
+  show (a.real * b.real - a.img * b.img) ^ 2 + (a.real * b.img + a.img * b.real) ^ 2 =
+    (a.real ^ 2 + a.img ^ 2) * (b.real ^ 2 + b.img ^ 2)
+
+  simp [mul_add, add_mul, mul_sub, sub_mul, square_sub, mul_npow, npow_two,
+    sub_eq_add_neg, neg_add_rev, ←neg_mul_left, ←neg_mul_right, neg_neg]
+  ac_nf
+  repeat first|rw [add_comm _ (a.img * (a.img * (b.img * b.img)))]|rw [←add_assoc]
+  congr 2
+  repeat rw [add_assoc]
+  congr 1
+  repeat first|rw [add_comm _ (a.img * (a.img * (b.real * b.real)))]|rw [←add_assoc]
+  repeat rw [add_assoc]
+  rw (occs := [2]) [←add_zero (a.img * (a.img * (b.real * b.real)))]
+  congr
+  rw (occs := [2]) [←add_assoc (-_)]
+  rw [neg_add_cancel, zero_add, neg_add_cancel]
 
 instance instLawfulAbs : IsLawfulAbs ℂ where
   abs_zero_iff := by
@@ -28,29 +52,7 @@ instance instLawfulAbs : IsLawfulAbs ℂ where
     rintro rfl
     simp [resp_zero]
   abs_nonneg _ := by apply bot_le
-  abs_mul a b := by
-    show NNReal.sqrtEquiv _ = NNReal.sqrtEquiv _ * NNReal.sqrtEquiv _
-    rw [←resp_mul]
-    simp
-    congr
-    apply Subtype.val_inj
-    unfold square
-    show (a.real * b.real - a.img * b.img) ^ 2 + (a.real * b.img + a.img * b.real) ^ 2 =
-      (a.real ^ 2 + a.img ^ 2) * (b.real ^ 2 + b.img ^ 2)
-
-    simp [mul_add, add_mul, mul_sub, sub_mul, square_sub, mul_npow, npow_two,
-      sub_eq_add_neg, neg_add_rev, ←neg_mul_left, ←neg_mul_right, neg_neg]
-    ac_nf
-    repeat first|rw [add_comm _ (a.img * (a.img * (b.img * b.img)))]|rw [←add_assoc]
-    congr 2
-    repeat rw [add_assoc]
-    congr 1
-    repeat first|rw [add_comm _ (a.img * (a.img * (b.real * b.real)))]|rw [←add_assoc]
-    repeat rw [add_assoc]
-    rw (occs := [2]) [←add_zero (a.img * (a.img * (b.real * b.real)))]
-    congr
-    rw (occs := [2]) [←add_assoc (-_)]
-    rw [neg_add_cancel, zero_add, neg_add_cancel]
+  abs_mul := Complex.abs_mul'
   abs_add_le_add_abs a b := by
     show NNReal.sqrt _ ≤ NNReal.sqrt _ + NNReal.sqrt _
     apply NNReal.square_strictMonotone.le_iff_le.mp
@@ -82,17 +84,20 @@ instance instLawfulAbs : IsLawfulAbs ℂ where
       assumption
     show 0 ≤ NNReal.sqrt _
     apply bot_le
-  abs_eq_of_add_eq_zero := by
-    intro a b h
-    cases neg_eq_of_add_left h; clear h
-    show NNReal.sqrt _ = NNReal.sqrt _
-    simp [NNReal.square_neg]
+  abs_neg := by
+    intro a
+    rw [←neg_one_mul, Complex.abs_mul']
+    rw (occs := [2]) [←one_mul |a|]
+    congr
+    show NNReal.sqrt _ = _
+    simp [square_neg]
 
 noncomputable instance : Dist ℂ ℝ≥0 where
-  dist a b := ‖a - b‖
+  dist a b := |a - b|
 
-instance : IsMetricSpace ℂ := Abs.instIsMetricSpace ℂ
-instance : Topology ℂ := Topology.ofIsPseudoMetricSpace
+instance : IsMetric ℂ := Abs.instIsMetric ℂ
+instance : Topology ℂ := IsPseudoMetric.toTopology
+instance : IsMetricSpace ℂ := inferInstance
 
 instance : Topology.IsContinuous Complex.real where
   isOpen_preimage := by
@@ -102,9 +107,9 @@ instance : Topology.IsContinuous Complex.real where
     refine ⟨δ, εpos, ?_⟩
     intro y hy
     apply h
-    simp [IsPseudoMetricSpace.mem_ball, dist] at *
-    show ‖_‖ < ε
-    replace hy : embedReal ‖_‖ < ε := hy
+    simp [mem_ball, dist] at *
+    show |_| < ε
+    replace hy : embedReal |_| < ε := hy
     apply lt_of_le_of_lt _ hy
     rw [←embedReal_abs]
     show orderEmbedReal _ ≤ orderEmbedReal _
@@ -124,9 +129,9 @@ instance : Topology.IsContinuous Complex.img where
     refine ⟨δ, εpos, ?_⟩
     intro y hy
     apply h
-    simp [IsPseudoMetricSpace.mem_ball, dist] at *
-    show ‖_‖ < ε
-    replace hy : embedReal ‖_‖ < ε := hy
+    simp [mem_ball, dist] at *
+    show |_| < ε
+    replace hy : embedReal |_| < ε := hy
     apply lt_of_le_of_lt _ hy
     rw [←embedReal_abs]
     show orderEmbedReal _ ≤ orderEmbedReal _
@@ -152,10 +157,10 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     intro (c, d) g
     apply h
     simp
-    simp [IsPseudoMetricSpace.mem_ball, dist] at *
+    simp [mem_ball, dist] at *
     replace g := max_lt_iff.mp g
     apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mpr
-    show ‖_‖ ^ 2 < ε ^ 2
+    show |_| ^ 2 < ε ^ 2
     rw [norm_sq]
     simp [square_eq_abs_sq]
     apply lt_of_lt_of_le
@@ -182,8 +187,6 @@ def homeoℝxℝ : ℝ × ℝ ≃ₜ ℂ where
 instance : Topology.IsConnected ℂ := Topology.connected_of_ofHom homeoℝxℝ
 
 abbrev mk' : ℝ × ℝ -> ℂ := fun x => ⟨x.1, x.2⟩
-
-
 
 @[continuity]
 def continuous_mk (f g: ℝ × ℝ -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x : ℝ × ℝ => Complex.mk (f x) (g x)) := by
@@ -242,3 +245,9 @@ instance : IsTopologicalSemiring ℂ where
 instance : IsTopologicalAddGroup ℂ where
 
 end Complex
+
+-- TODO:
+-- rework absolute value only for rings -> semiring
+-- rename IsPseudoMetricSpace -> IsPseudoMetric
+-- rework IsPseudoMetricSpace as a mixin for Topology
+--    which states that it is the same topology as generated by the metric

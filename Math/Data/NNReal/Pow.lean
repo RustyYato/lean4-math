@@ -79,10 +79,10 @@ def npowSurj (n: ℕ) (h: 0 < n) : Function.Surjective (α := ℝ≥0) (· ^ n) 
   intro x
   simp
   have ⟨y, hy⟩ := Real.has_root (· ^ n - embedReal x) ?_ ?_ ?_
-  exists ⟨‖y‖, ?_⟩
+  exists ⟨|y|, ?_⟩
   rw [Real.mem_nonneg]; apply abs_nonneg
   apply embedReal.inj
-  show x.val = ‖y‖ ^ n
+  show x.val = |y| ^ n
   rw [←abs_npow]
   rw [←sub_zero (y ^ n), ←hy,
     sub_sub, add_comm, add_sub_cancel',

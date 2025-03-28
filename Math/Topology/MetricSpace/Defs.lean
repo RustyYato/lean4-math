@@ -6,43 +6,43 @@ class Dist (α: Type*) (β: outParam Type*) where
 
 export Dist (dist)
 
-class IsPseudoMetricSpace (α: Type*) {β: Type*}
+class IsPseudoMetric (α: Type*) {β: Type*}
   [LT β] [LE β] [AddMonoidOps β] [IsOrderedAddCommMonoid β]
-  [Dist α β] : Prop extends IsLinearOrder β where
+  [Dist α β] [IsLinearOrder β] : Prop where
   dist_self: ∀x: α, dist x x = 0
   dist_comm: ∀x y: α, dist x y = dist y x
   dist_triangle: ∀x y k: α, dist x y ≤ dist x k + dist k y
 
-class IsMetricSpace (α: Type α) {β: Type*}
+class IsMetric (α: Type α) {β: Type*}
   [LT β] [LE β] [Zero β] [Add β] [SMul ℕ β]
-  [IsOrderedAddCommMonoid β]
-  [Dist α β] : Prop extends IsPseudoMetricSpace α where
+  [IsOrderedAddCommMonoid β] [IsLinearOrder β]
+  [Dist α β] : Prop extends IsPseudoMetric α where
   of_dist_eq_zero: ∀x y: α, dist x y = 0 -> x = y
 
 section
 
 variable [LT β] [LE β] [AddMonoidOps β] [IsOrderedAddCommMonoid β]
-  [Dist α β] [IsPseudoMetricSpace α]
+  [IsLinearOrder β] [Dist α β] [IsPseudoMetric α]
 
-def dist_self: ∀x: α, dist x x = 0 := IsPseudoMetricSpace.dist_self
-def dist_comm: ∀x y: α, dist x y = dist y x := IsPseudoMetricSpace.dist_comm
-def dist_triangle: ∀x y k: α, dist x y ≤ dist x k + dist k y := IsPseudoMetricSpace.dist_triangle
+def dist_self: ∀x: α, dist x x = 0 := IsPseudoMetric.dist_self
+def dist_comm: ∀x y: α, dist x y = dist y x := IsPseudoMetric.dist_comm
+def dist_triangle: ∀x y k: α, dist x y ≤ dist x k + dist k y := IsPseudoMetric.dist_triangle
 
 end
 
 section
 
 variable [LT β] [LE β] [AddMonoidOps β] [IsOrderedAddCommMonoid β]
-  [Dist α β] [IsMetricSpace α]
+  [IsLinearOrder β] [Dist α β] [IsMetric α]
 
-def of_dist_eq_zero: ∀x y: α, dist x y = 0 -> x = y := IsMetricSpace.of_dist_eq_zero
+def of_dist_eq_zero: ∀x y: α, dist x y = 0 -> x = y := IsMetric.of_dist_eq_zero
 
 end
 
 def dist_nonneg
   [LT β] [LE β] [Zero β] [Add β] [SMul ℕ β]
   [IsOrderedAddCommMonoid β] [IsAddCancel β]
-  [Dist α β] [IsPseudoMetricSpace α] (a b: α) : 0 ≤ dist a b := by
+  [Dist α β] [IsLinearOrder β] [IsPseudoMetric α] (a b: α) : 0 ≤ dist a b := by
   have : 0 ≤ 2 • dist a b := by
     rw [nsmul_eq_nsmulRec, nsmulRec, nsmulRec, nsmulRec, zero_add]
     conv => {
@@ -57,7 +57,7 @@ def dist_nonneg
 def dist_pos {β α}
   [LT β] [LE β] [Zero β] [Add β] [SMul ℕ β]
   [IsOrderedAddCommMonoid β] [IsAddCancel β]
-  [Dist α β] [IsMetricSpace α] (a b: α) (h: a ≠ b) : 0 < dist a b := by
+  [Dist α β] [IsLinearOrder β] [IsMetric α] (a b: α) (h: a ≠ b) : 0 < dist a b := by
   apply lt_of_le_of_ne
   apply dist_nonneg
   intro g
@@ -74,8 +74,8 @@ instance
   [LE γ] [LT γ] [AddMonoidOps γ]
   [IsOrderedAddCommMonoid γ]
   [Sup γ] [IsSemiLatticeSup γ]
-  [IsAddCancel γ]
-  [IsPseudoMetricSpace α] [IsPseudoMetricSpace β] : IsPseudoMetricSpace (α × β) where
+  [IsAddCancel γ] [IsLinearOrder γ]
+  [IsPseudoMetric α] [IsPseudoMetric β] : IsPseudoMetric (α × β) where
   dist_self := by
     intro x
     show _ ⊔ _ = _
@@ -105,8 +105,8 @@ instance
   [LE γ] [LT γ] [AddMonoidOps γ]
   [IsOrderedAddCommMonoid γ]
   [Sup γ] [IsSemiLatticeSup γ]
-  [IsAddCancel γ]
-  [IsMetricSpace α] [IsMetricSpace β] : IsMetricSpace (α × β) where
+  [IsAddCancel γ] [IsLinearOrder γ]
+  [IsMetric α] [IsMetric β] : IsMetric (α × β) where
   of_dist_eq_zero a b h := by
     replace h: _ ⊔ _ = (0: γ) := h
     by_cases h₀:dist a.fst b.fst ≤ 0

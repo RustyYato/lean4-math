@@ -32,10 +32,9 @@ instance : IsLawfulAbs ℚ where
   abs_zero_iff := Rat.eq_zero_iff_abs_eq_zero.symm
   abs_add_le_add_abs := Rat.abs_add_le_add_abs
   abs_mul := Rat.abs_mul
-  abs_eq_of_add_eq_zero := by
-    intro a b h
-    rw [neg_eq_of_add_right h, ←neg_one_mul,
-      Rat.abs_mul]
+  abs_neg := by
+    intro a
+    rw [←neg_one_mul, Rat.abs_mul]
     apply one_mul
 
 instance : Archimedean ℚ := by

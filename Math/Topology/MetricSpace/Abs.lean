@@ -1,19 +1,20 @@
-import Math.Topology.MetricSpace.Defs
+import Math.Topology.MetricSpace.Basic
 import Math.Algebra.Abs.Basic
 
 namespace Abs
 
 variable (α: Type*) {γ: Type*}
-  [LT γ] [LE γ]
-  [AddGroupOps α] [AddMonoidOps γ]
-  [IsAddGroup α] [IsAddCommMagma α]
-  [IsOrderedAddCommMonoid γ]
-  [AbsoluteValue α γ] [IsLawfulNorm α]
+  [LT γ] [LE γ] [IsNontrivial γ] [SemiringOps γ] [IsOrderedSemiring γ]
+  [IsLinearOrder γ]
+  [AddGroupOps α] [Mul α]
+  [IsNonUnitalNonAssocRing α] [IsAddCommMagma α]
+  [AbsoluteValue α γ] [IsLawfulAbs α]
+
 
 scoped instance : Dist α γ where
-  dist x y := ‖x - y‖
+  dist x y := |x - y|
 
-instance : IsMetricSpace α where
+instance : IsMetric α where
   dist_self := by
     intro x
     dsimp [dist]
@@ -35,5 +36,10 @@ instance : IsMetricSpace α where
     intro x y eq
     dsimp [dist] at eq
     exact eq_of_sub_eq_zero (of_abs_eq_zero eq)
+
+scoped instance : Topology α := IsPseudoMetric.toTopology
+
+instance : Topology.IsMetricSpace α where
+  open_iff_contains_ball _ := Iff.rfl
 
 end Abs

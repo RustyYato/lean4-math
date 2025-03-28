@@ -3,7 +3,7 @@ import Math.Topology.MetricSpace.Defs
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Semiring.Order.Defs
 
-namespace IsPseudoMetricSpace
+section
 
 variable [LT β] [LE β] [IsNontrivial β] [AddMonoidOps β] [IsOrderedAddCommMonoid β]
 
@@ -21,16 +21,17 @@ def ball_sub {_: Dist α β} (x: α) (δ₀ δ₁: β) (h: δ₀ ≤ δ₁) : Ba
   assumption
   assumption
 
-end IsPseudoMetricSpace
+end
 
-namespace Topology
+namespace IsPseudoMetric
 
 variable [LT β] [LE β] [IsNontrivial β] [SemiringOps β] [IsOrderedSemiring β]
+   [Dist α β] [IsLinearOrder β] [IsPseudoMetric α]
 
-def ofIsPseudoMetricSpace [Dist α β] [IsPseudoMetricSpace α] : Topology α where
+def toTopology : Topology α where
   -- a set is open if, forall points in the set, there is a ball with positive radius
   -- that is contained in the set
-  IsOpen s := ∀x ∈ s, ∃δ > 0, IsPseudoMetricSpace.Ball x δ ⊆ s
+  IsOpen s := ∀x ∈ s, ∃δ > 0, Ball x δ ⊆ s
   univ_open := by
     dsimp
     intro x mem
@@ -50,13 +51,13 @@ def ofIsPseudoMetricSpace [Dist α β] [IsPseudoMetricSpace α] : Topology α wh
     intro x mem
     apply And.intro
     apply ball_a_sub
-    apply IsPseudoMetricSpace.ball_sub _ _ _ _ _ mem
+    apply ball_sub _ _ _ _ _ mem
     split
     rfl
     apply le_of_not_le
     assumption
     apply ball_b_sub
-    apply IsPseudoMetricSpace.ball_sub _ _ _ _ _ mem
+    apply ball_sub _ _ _ _ _ mem
     split
     assumption
     rfl
@@ -68,12 +69,37 @@ def ofIsPseudoMetricSpace [Dist α β] [IsPseudoMetricSpace α] : Topology α wh
     apply Set.sub_sUnion
     assumption
 
-def IsOpen.Ball
-  [Dist α β]
-  [IsMetricSpace α]
-  [Sub β] [SMul ℤ β] [Neg β] [IntCast β]
-  [IsOrderedSemiring β] [IsRing β] :
-  (ofIsPseudoMetricSpace: Topology α).IsOpen (IsPseudoMetricSpace.Ball x δ) := by
+end IsPseudoMetric
+
+namespace Topology
+
+section
+
+variable (α: Type*) [LT β] [LE β] [IsNontrivial β] [SemiringOps β] [IsOrderedSemiring β]
+   [Dist α β] [IsLinearOrder β] [t: Topology α]
+
+class IsPseudoMetricSpace: Prop extends IsPseudoMetric α where
+  open_iff_contains_ball: ∀s: Set α, IsOpen s ↔ ∀x ∈ s, ∃δ > 0, Ball x δ ⊆ s
+
+class IsMetricSpace: Prop extends IsMetric α, IsPseudoMetricSpace α where
+
+def open_iff_contains_ball [IsPseudoMetricSpace α] : ∀s: Set α, IsOpen s ↔ ∀x ∈ s, ∃δ > 0, Ball x δ ⊆ s :=
+  IsPseudoMetricSpace.open_iff_contains_ball
+
+def metric_eq_topology [IsPseudoMetricSpace α] : t = IsPseudoMetric.toTopology := by
+  ext
+  apply open_iff_contains_ball
+
+end
+
+section
+
+variable [LT β] [LE β] [IsNontrivial β] [RingOps β] [IsOrderedSemiring β]
+  [IsRing β] [Dist α β] [IsLinearOrder β] [IsMetric α]
+  [Topology α] [IsMetricSpace α]
+
+def IsOpen.Ball: IsOpen (α := α) (Ball x δ) := by
+  rw [metric_eq_topology (α := α)]
   intro y hy
   exists δ - dist x y
   apply And.intro
@@ -89,5 +115,7 @@ def IsOpen.Ball
   apply lt_of_lt_of_le
   exact add_lt_add_of_le_of_lt (dist x y) (dist y z) (dist x y) (δ - dist x y) (le_refl _) hz
   rw [add_comm, sub_add_cancel]
+
+end
 
 end Topology

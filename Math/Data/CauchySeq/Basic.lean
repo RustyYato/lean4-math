@@ -59,7 +59,7 @@
 
 
 -- def CauchySeq.is_cauchy_equiv (a b: Nat -> α) : Prop :=
---   ∀ε: γ, 0 < ε -> Eventually₂ fun n m => ‖a n - b m‖ < ε
+--   ∀ε: γ, 0 < ε -> Eventually₂ fun n m => |a n - b m| < ε
 
 -- structure CauchySeq (α: Type*) {γ: Type*} [AbsoluteValue α γ] [LT γ] [LE γ] [Zero γ] [Sub α] where
 --   seq: Nat -> α
@@ -157,7 +157,7 @@
 --     apply add_lt_add_of_le_of_lt
 --     rfl
 --     apply zero_lt_one
---   · show ‖g n - f m‖ < _
+--   · show |g n - f m| < _
 --     apply lt_of_le_of_lt
 
 --     -- apply lt_of_le_of_lt
@@ -289,7 +289,7 @@
 
 -- -- if a cauchy sequence converges to zero
 -- def IsLimZero (c: CauchySeq α) : Prop :=
---   ∀ ε > 0, ∃ i, ∀ j ≥ i, ‖c j‖ < ε
+--   ∀ ε > 0, ∃ i, ∀ j ≥ i, |c j| < ε
 
 -- def add.spec (a b c d: CauchySeq α) : a ≈ c -> b ≈ d -> is_cauchy_equiv (fun n => a n + b n) (fun n => c n + d n) := by
 --   intro ac bd ε ε_pos
