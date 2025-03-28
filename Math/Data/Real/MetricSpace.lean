@@ -4,7 +4,7 @@ import Math.Data.Real.Div
 import Math.Data.Real.OrderedAlgebra
 import Math.Topology.Connected.Basic
 import Math.Data.Real.Lattice
-import Math.Topology.Constructions
+import Math.Topology.Algebra.Ring
 
 open Topology Classical
 open IsPseudoMetricSpace (Ball mem_ball ball_sub)
@@ -402,26 +402,6 @@ instance instContℝadd : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 + x.2)
   assumption
   rw [add_half]
 
-instance instContℝsub : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 - x.2) := by
-  show IsContinuous (fun x: ℝ × ℝ => x.1 - x.2)
-  simp [sub_eq_add_neg]
-  show IsContinuous ((fun x: ℝ × ℝ => x.1 + x.2) ∘ (fun x: ℝ × ℝ => (x.1, -x.2)))
-  apply Topology.IsContinuous.comp'
-  apply IsContinuous.prod_mk
-  infer_instance
-  show IsContinuous ((-·) ∘ (fun x: ℝ × ℝ => x.2))
-  apply Topology.IsContinuous.comp
-  infer_instance
-
-instance instContℝsub' : Topology.IsContinuous (fun x: ℝ × ℝ => x.2 - x.1) := by
-  show IsContinuous (fun x: ℝ × ℝ => x.2 - x.1)
-  conv => {
-      arg 1; intro x
-      rw [←neg_sub]
-  }
-  show IsContinuous ((fun x: ℝ => -x) ∘ (fun x: ℝ × ℝ => x.1 - x.2))
-  infer_instance
-
 instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2) where
   isOpen_preimage := by
     rw [topo_prodct_eq_metric]
@@ -500,12 +480,18 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     apply abs_nonneg
     apply abs_nonneg
 
+instance : IsTopologicalRing ℝ where
+instance : IsTopologicalSemiring ℝ where
+instance : IsTopologicalAddGroup ℝ where
+
 def isClosed_le_prod : IsClosed (Set.mk fun p: ℝ × ℝ => p.1 ≤ p.2) := by
   have :  (Set.mk fun p: ℝ × ℝ => p.fst ≤ p.snd) = Set.preimage (Set.Ici 0) (fun p : ℝ × ℝ => p.snd - p.fst) := by
     ext
     simp [Set.mem_preimage, Real.le_sub_iff_add_le]
   rw [this]
-  apply IsClosed.preimage
+  apply IsClosed.preimage'
+  show IsContinuous <| (fun x: ℝ × ℝ => x.1 - x.2) ∘ fun _ => (_, _)
+  apply IsContinuous.comp
   apply ici_closed
 
 def isClosed_le (f g: ℝ -> ℝ) [hf: IsContinuous f] [hg: IsContinuous g] :
@@ -514,83 +500,5 @@ def isClosed_le (f g: ℝ -> ℝ) [hf: IsContinuous f] [hg: IsContinuous g] :
   have := IsContinuous.prod_mk hf hg
   apply IsClosed.preimage
   apply isClosed_le_prod
-
-instance instContℝnpow (n: ℕ) : Topology.IsContinuous  (fun x: ℝ => x ^ n) := by
-  induction n with
-  | zero =>
-    simp
-    infer_instance
-  | succ n ih =>
-    simp [npow_succ]
-    show Topology.IsContinuous <| (fun x: ℝ × ℝ => x.1 * x.2) ∘ (fun x => (x ^ n, x))
-    apply Topology.IsContinuous.comp'
-    apply Topology.IsContinuous.prod_mk
-    assumption
-    infer_instance
-    infer_instance
-
-instance instContℝnsmul (n: ℕ) : Topology.IsContinuous  (fun x: ℝ => n • x) := by
-  induction n with
-  | zero =>
-    simp
-    infer_instance
-  | succ n ih =>
-    simp [succ_nsmul]
-    show Topology.IsContinuous <| (fun x: ℝ × ℝ => x.1 + x.2) ∘ (fun x => (n • x, x))
-    apply Topology.IsContinuous.comp'
-    apply Topology.IsContinuous.prod_mk
-    assumption
-    infer_instance
-    infer_instance
-
-instance instContℝzsmul (n: ℤ) : Topology.IsContinuous  (fun x: ℝ => n • x) := by
-  cases n with
-  | ofNat n =>
-    simp [zsmul_ofNat]
-    infer_instance
-  | negSucc n =>
-    simp [zsmul_negSucc]
-    show IsContinuous <| (fun x => -x) ∘ (fun x => (n + 1) • x)
-    infer_instance
-
-@[continuity]
-def continuous_add [Topology α] (f: α -> ℝ) (g: α -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x: α => f x + g x) := by
-  show IsContinuous <| (fun x: ℝ × ℝ => x.1 + x.2) ∘ (fun x => (f x, g x))
-  apply IsContinuous.comp
-
-@[continuity]
-def continuous_sub [Topology α] (f: α -> ℝ) (g: α -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x => f x - g x) := by
-  show IsContinuous <| (fun x: ℝ × ℝ => x.1 - x.2) ∘ (fun x => (f x, g x))
-  apply IsContinuous.comp
-
-@[continuity]
-def continuous_neg [Topology α] (f: α -> ℝ) (hf: IsContinuous f) : IsContinuous (fun x => -f x) := by
-  show IsContinuous <| (fun x: ℝ => -x) ∘ _
-  apply IsContinuous.comp
-
-@[continuity]
-def continuous_mul [Topology α] (f: α -> ℝ) (g: α -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x: α => f x * g x) := by
-  show IsContinuous <| (fun x: ℝ × ℝ => x.1 * x.2) ∘ (fun x => (f x, g x))
-  apply IsContinuous.comp
-
-@[continuity]
-def continuous_natCast [Topology α] (f: α -> ℕ) (hf: IsContinuous f) : IsContinuous (fun x : α => (f x: ℝ)) := by
-  apply IsContinuous.comp'
-  assumption
-  continuity
-
-@[continuity]
-def continuous_intCast [Topology α] (f: α -> ℤ) (hf: IsContinuous f) : IsContinuous (fun x : α => (f x: ℝ)) := by
-  apply IsContinuous.comp'
-  assumption
-  continuity
-
-@[continuity]
-def continuous_nmul [Topology α] (f: ℕ × α -> ℝ) (hf: IsContinuous f) : IsContinuous (fun x: ℕ × α => x.1 • f x) := by
-  continuity
-
-@[continuity]
-def continuous_zsmul [Topology α] (f: ℤ × α -> ℝ) (hf: IsContinuous f) : IsContinuous (fun x : ℤ × α => x.1 • f x) := by
-  continuity
 
 end Real

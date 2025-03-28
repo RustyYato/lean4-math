@@ -92,9 +92,8 @@ def npowSurj (n: ℕ) (h: 0 < n) : Function.Surjective (α := ℝ≥0) (· ^ n) 
   show Topology.IsContinuous<| (fun x: ℝ × ℝ => x.1 - x.2) ∘ (fun a => (a ^ n, x.val))
   apply Topology.IsContinuous.comp'
   apply Topology.IsContinuous.prod_mk
-  infer_instance
-  infer_instance
-  infer_instance
+  apply continuous_npow
+  repeat infer_instance
   simp
   exists 0
   cases n; contradiction

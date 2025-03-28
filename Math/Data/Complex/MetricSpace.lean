@@ -183,9 +183,16 @@ instance : Topology.IsConnected ℂ := Topology.connected_of_ofHom homeoℝxℝ
 
 abbrev mk' : ℝ × ℝ -> ℂ := fun x => ⟨x.1, x.2⟩
 
+
+
 @[continuity]
 def continuous_mk (f g: ℝ × ℝ -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x : ℝ × ℝ => Complex.mk (f x) (g x)) := by
   show IsContinuous <| (fun x: ℝ × ℝ => Complex.mk x.1 x.2) ∘ (fun x => (f x, g x))
+  infer_instance
+
+@[continuity]
+def continuous_mk' : IsContinuous mk' := by
+  show IsContinuous <| (fun x: ℝ × ℝ => Complex.mk x.1 x.2)
   infer_instance
 
 @[continuity]
@@ -203,47 +210,35 @@ def continuous_add [Topology α] (f g: α -> ℂ) (hf: IsContinuous f) (hg: IsCo
   show IsContinuous <| Complex.mk' ∘ (fun x: α => (_, _))
   apply IsContinuous.comp'
   continuity
-  continuity
+  apply continuous_mk'
 
 @[continuity]
 def continuous_neg [Topology α] (f: α -> ℂ) (hf: IsContinuous f) : IsContinuous (fun x : α => - f x) := by
   show IsContinuous <| Complex.mk' ∘ (fun x: α => (_, _))
   apply IsContinuous.comp'
   continuity
-  continuity
-
-@[continuity]
-def continuous_sub [Topology α] (f g: α -> ℂ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x : α => f x - g x) := by
-  show IsContinuous <| Complex.mk' ∘ (fun x: α => (_, _))
-  apply IsContinuous.comp'
-  continuity
-  continuity
+  apply continuous_mk'
 
 @[continuity]
 def continuous_mul [Topology α] (f g: α -> ℂ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x : α => f x * g x) := by
   show IsContinuous <| Complex.mk' ∘ (fun x: α => (_, _))
   apply IsContinuous.comp'
   continuity
-  continuity
+  apply continuous_mk'
 
-@[continuity]
-def continuous_natCast [Topology α] (f: α -> ℕ) (hf: IsContinuous f) : IsContinuous (fun x : α => (f x: ℂ)) := by
-  apply IsContinuous.comp'
-  assumption
-  continuity
-
-@[continuity]
-def continuous_intCast [Topology α] (f: α -> ℤ) (hf: IsContinuous f) : IsContinuous (fun x : α => (f x: ℂ)) := by
-  apply IsContinuous.comp'
-  assumption
-  continuity
-
-@[continuity]
-def continuous_nsmul [Topology α] (f: ℕ × α -> ℂ) (hf: IsContinuous f) : IsContinuous (fun x : ℕ × α => x.1 • f x) := by
-  continuity
-
-@[continuity]
-def continuous_zsmul [Topology α] (f: ℤ × α -> ℂ) (hf: IsContinuous f) : IsContinuous (fun x : ℤ × α => x.1 • f x) := by
-  continuity
+instance : IsTopologicalRing ℂ where
+  continuous_add := by
+    apply continuous_add
+    apply IsContinuous.Prod.fst
+    apply IsContinuous.Prod.snd
+  continuous_mul := by
+    apply continuous_mul
+    apply IsContinuous.Prod.fst
+    apply IsContinuous.Prod.snd
+  continuous_neg := by
+    apply continuous_neg
+    infer_instance
+instance : IsTopologicalSemiring ℂ where
+instance : IsTopologicalAddGroup ℂ where
 
 end Complex

@@ -102,6 +102,9 @@ def IsClosed.empty : IsClosed (∅: Set α) := by
 def IsClosed.preimage (f: α -> β) [IsContinuous f] : ∀s: Set β, IsClosed s → IsClosed (s.preimage f) := by
   intro s hs
   exact IsOpen.preimage f sᶜ hs
+def IsClosed.preimage' (f: α -> β) (hf: IsContinuous f) : ∀s: Set β, IsClosed s → IsClosed (s.preimage f) := by
+  intro s hs
+  exact IsOpen.preimage f sᶜ hs
 
 def IsClopen.univ : IsClopen (Set.univ α) := ⟨IsOpen.univ, IsClosed.univ⟩
 def IsClopen.empty : IsClopen (∅: Set α) := ⟨IsOpen.empty, IsClosed.empty⟩
@@ -172,7 +175,6 @@ instance IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
     intro
     assumption
 
-@[continuity]
 instance IsContinuous.id : IsContinuous (@id α) where
   isOpen_preimage s sopen := by
     suffices s.preimage (_root_.id ) = s by
@@ -183,7 +185,6 @@ instance IsContinuous.id : IsContinuous (@id α) where
     exact _root_.id
     exact _root_.id
 
-@[continuity]
 instance IsContinuous.id' : IsContinuous (fun x: α => x) :=
   IsContinuous.id
 

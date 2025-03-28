@@ -32,6 +32,9 @@ instance : IsContinuous (fun x: α × β => x.snd) where
     right; refine ⟨s, ?_, rfl⟩
     assumption
 
+instance IsContinuous.Prod.fst : IsContinuous (Prod.fst: α × β -> α) := inferInstance
+instance IsContinuous.Prod.snd : IsContinuous (Prod.snd: α × β -> β) := inferInstance
+
 instance : IsContinuous (Sum.inl (α := α) (β := β)) where
   isOpen_preimage := by
     intro s so
