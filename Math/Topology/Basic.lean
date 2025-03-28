@@ -386,6 +386,7 @@ instance {P: α -> Prop} [Topology α] : Topology.IsContinuous (Subtype.val (p :
 
 end Topology
 
+@[continuity]
 def Topology.IsContinuous.bot_dom (f: α -> β) [Tα: Topology.Discrete α] [Tβ: Topology β] : IsContinuous f where
   isOpen_preimage := by
     cases Tα
@@ -394,6 +395,7 @@ def Topology.IsContinuous.bot_dom (f: α -> β) [Tα: Topology.Discrete α] [Tβ
     intro s _
     exact True.intro
 
+@[continuity]
 def Topology.IsContinuous.top_rng (f: α -> β) [Tα: Topology α] [Tβ: Topology.Trivial β] : IsContinuous f where
   isOpen_preimage := by
     cases Tβ

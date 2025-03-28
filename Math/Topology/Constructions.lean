@@ -47,6 +47,9 @@ instance [s: Setoid α] : IsContinuous (Quotient.mk s) where
     intro s so
     assumption
 
+@[continuity]
+def infer_continuous (f: α -> β) [IsContinuous f] : IsContinuous f := inferInstance
+
 @[simp]
 def continuous_prod_mk {f : X → Y} {g : X → Z} :
     (IsContinuous fun x => (f x, g x)) ↔ IsContinuous f ∧ IsContinuous g :=
