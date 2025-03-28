@@ -16,9 +16,14 @@ globs = [
     "Math.Tactics.+",
     "Math.Topology.+",
     "Math.Type.+",
+    "Math.Polyfill",
     "Math.AxiomBlame",
 ]
 
 [[lean_exe]]
 name = "math"
 root = "Main"
+
+[[require]]
+name = "aesop"
+git = "https://github.com/leanprover-community/aesop"

@@ -255,7 +255,7 @@ instance : Fintype (Fin n) :=
     cases eq
     rfl) (by
     intro x
-    apply List.mem_ofFn.mpr
+    apply (List.mem_ofFn _ _).mpr
     exists x)
 
 def card_fin (n: Nat) : card (Fin n) = n := by

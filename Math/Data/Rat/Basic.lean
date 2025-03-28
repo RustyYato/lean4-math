@@ -133,8 +133,8 @@ def Fract.reduce.spec (a: Fract) : a ≈ a.reduce := by
   cases a with | mk n d dpos =>
   show _ * _ = _ * _
   unfold reduce
-  dsimp
-  rw [Int.ofNat_ediv, ←Int.mul_ediv_assoc, Int.mul_comm n, Int.mul_ediv_assoc, Int.mul_comm]
+  dsimp only [Int.ofNat_ediv]
+  rw [←Int.mul_ediv_assoc, Int.mul_comm n, Int.mul_ediv_assoc, Int.mul_comm]
   apply Int.dvd_natAbs.mp
   apply Int.ofNat_dvd.mpr
   apply Nat.gcd_dvd_left

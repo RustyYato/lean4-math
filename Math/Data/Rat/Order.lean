@@ -20,9 +20,9 @@ def isNonneg : ℚ -> Prop := by
   intro a b eq ha
   replace eq : _ = _ := eq
   unfold Fract.isNonneg at *
-  refine Int.sign_nonneg_iff.mp ?_
+  refine Int.sign_nonneg.mp ?_
   rw [show b.num.sign = a.num.sign from ?_]
-  refine Int.sign_nonneg_iff.mpr ?_
+  refine Int.sign_nonneg.mpr ?_
   assumption
   have : (b.num * a.den).sign = (a.num * b.den).sign := by rw [eq]
   rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero a.den_nz,
@@ -71,9 +71,11 @@ def isNonneg.mul {a b: ℚ} (ha: a.isNonneg) (hb: b.isNonneg) : (a * b).isNonneg
 def isNonneg.neg {a: ℚ} : ¬a.isPos ↔ (-a).isNonneg := by
   cases a
   simp [Fract.isNonneg, Fract.isPos, ←lt_iff_not_le]
+  omega
 def isPos.neg {a: ℚ} : ¬a.isNonneg ↔ (-a).isPos := by
   cases a
   simp [Fract.isNonneg, Fract.isPos, ←lt_iff_not_le]
+  omega
 def isPos.mul {a b: ℚ} (ha: a.isPos) : b.isPos ↔ (a * b).isPos := by
   cases a, b with | mk a b =>
   simp [Fract.isPos, ← Int.sign_eq_one_iff_pos] at *
@@ -88,9 +90,7 @@ def isNonneg.antisymm {a: ℚ} : a.isNonneg -> (-a).isNonneg -> a = 0 := by
   apply sound
   show _ = _
   simp [this]
-  apply le_antisymm
-  assumption
-  assumption
+  omega
   omega
 
 instance : LE ℚ where

@@ -98,7 +98,7 @@ instance : IsAddGroupWithOne (Fin (n + 1)) where
       apply Nat.zero_lt_succ
     refine Int.sub_nonneg_of_le ?_
     apply Int.le_of_lt_add_one
-    apply Int.emod_lt
+    apply Int.emod_lt_of_pos
     omega
     apply Int.ofNat_le.mp
     rw [Int.toNat_of_nonneg]
@@ -112,7 +112,7 @@ instance : IsAddGroupWithOne (Fin (n + 1)) where
     apply Int.le_sub_left_of_add_le
     rw [add_zero]
     apply Int.le_of_lt_add_one
-    apply Int.emod_lt
+    apply Int.emod_lt_of_pos
     omega
     omega
 
@@ -120,8 +120,8 @@ instance : IsSemiring (Fin (n + 1)) where
   mul_assoc := by
     intro a b c
     show Fin.mk _ _ = Fin.mk _ _
-    simp
-    rw [Nat.mul_assoc, Nat.mul_mod]
+    simp only [Nat.mod_mul_mod, Fin.mk.injEq]
+    rw [Nat.mul_mod a, Nat.mod_mod, ←Nat.mul_mod, Nat.mul_assoc]
   zero_mul := by
     intro
     show Fin.mk _ _ = Fin.mk _ _
@@ -138,17 +138,22 @@ instance : IsSemiring (Fin (n + 1)) where
   mul_one := by
     intro a
     show Fin.mk _ _ = Fin.mk _ _
-    simp
+    simp only [Fin.eta]
     congr
     cases n
     · match a with
       | 0 => rfl
     rw [Nat.mod_eq_of_lt (a := _)]
+    rw [Nat.mod_eq_of_lt, mul_one]
+    omega
+    rw [Nat.mod_eq_of_lt, mul_one]
     apply a.isLt
+    omega
   left_distrib := by
     intro _ _ _
     show Fin.mk _ _ = Fin.mk _ _
-    simp
+    simp only [Nat.add_mod_mod, Nat.mod_add_mod, Fin.mk.injEq]
+    rw [Nat.mul_mod, Nat.mod_mod, ←Nat.mul_mod]
     rw [mul_add]
   right_distrib := by
     intro _ _ _
