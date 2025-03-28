@@ -1,3 +1,4 @@
+import Batteries.Data.List.Basic
 import Math.Logic.Basic
 import Math.Logic.IsEmpty
 import Math.Function.Basic
@@ -412,12 +413,12 @@ def List.sum_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
   assumption
   assumption
 
-def List.product [Mul α] [OfNat α 1] : List α -> α
+def List.prod [Mul α] [OfNat α 1] : List α -> α
 | [] => 1
-| a::as => a * product as
+| a::as => a * prod as
 
-def List.product_const (as: List Nat) (h: ∀x y, x ∈ as -> y ∈ as -> x = y) :
-  as.product = match as.head? with
+def List.prod_const (as: List Nat) (h: ∀x y, x ∈ as -> y ∈ as -> x = y) :
+  as.prod = match as.head? with
   | .some x => x ^ as.length
   | .none => 1 := by
   induction as with
@@ -437,12 +438,12 @@ def List.product_const (as: List Nat) (h: ∀x y, x ∈ as -> y ∈ as -> x = y)
       have : a = a' := h a a' (List.Mem.head _) (List.Mem.tail _ <| List.Mem.head _)
       subst a'
       dsimp at this
-      rw [product, this]
+      rw [prod, this]
       rfl
 
-def List.product_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
-  as.product = a ^ as.length := by
-  rw [product_const]
+def List.prod_const' (as: List Nat) (a: Nat) (h: ∀x ∈ as, x = a) :
+  as.prod = a ^ as.length := by
+  rw [prod_const]
   cases as
   rfl
   dsimp
@@ -833,14 +834,14 @@ def List.eq_of_sublist_of_length_eq {as bs: List α} (h: as <+ bs) (g: bs.length
     apply Nat.le_of_succ_le_succ
     assumption
 
-def List.sublists (as: List α) : List (α × List α) :=
+def List.head_sublists (as: List α) : List (α × List α) :=
   (List.finRange as.length).map (fun x => (as[x], List.eraseIdx as x.val))
 
-def List.nodup_sublists {as: List α} : as.Nodup -> (sublists as).Nodup := by
+def List.nodup_head_sublists {as: List α} : as.Nodup -> (head_sublists as).Nodup := by
   intro h
   apply nodup_iff_getElem_inj.mpr
   intro i j eq
-  simp [sublists, List.finRange] at eq
+  simp [head_sublists, List.finRange] at eq
   erw [List.getElem_map, List.getElem_map] at eq
   simp at eq
   apply Fin.val_inj.mp

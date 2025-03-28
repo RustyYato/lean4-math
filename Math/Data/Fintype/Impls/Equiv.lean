@@ -53,14 +53,14 @@ private def allOn (as: List α) (bs: List β) (has: as.Nodup) (hbs: bs.Nodup) : 
     | [] => [Equiv.empty]
     | b::bs => []
   | a::as =>
-     (sublists bs).attach.flatMap fun ⟨⟨b, bs'⟩, hb⟩ =>
+     (head_sublists bs).attach.flatMap fun ⟨⟨b, bs'⟩, hb⟩ =>
      (allOn as bs' has.tail (by
-      simp [sublists, finRange] at hb
+      simp [head_sublists, finRange] at hb
       obtain ⟨i, rfl, rfl⟩ := hb
       exact Nodup.eraseIdx (↑i) hbs)).map fun f => by
       have notmem_head := (has.head _ · _root_.rfl)
       have hb : ∃a: Fin bs.length, bs[a] = b ∧ bs.eraseIdx a = bs' := by
-        simp [sublists, finRange] at hb
+        simp [head_sublists, finRange] at hb
         assumption
       refine {
         toFun x := allOn₁ x b hb f
@@ -124,7 +124,7 @@ private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nod
   | cons a as ih =>
     apply nodup_flatMap
     apply (nodup_attach _).mp
-    apply nodup_sublists
+    apply nodup_head_sublists
     assumption
     · intro ⟨⟨b, bs'⟩, hx⟩
       simp
@@ -159,7 +159,7 @@ private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nod
       have := congrFun eq₀ ⟨a, List.Mem.head _⟩
       simp [Equiv.allOn₁]  at this
       cases this
-      simp [sublists, finRange] at hb₀ hb₁
+      simp [head_sublists, finRange] at hb₀ hb₁
       obtain ⟨i, rfl, rfl⟩ := hb₀
       obtain ⟨j, eq, rfl⟩ := hb₁
       apply And.intro _root_.rfl
@@ -220,7 +220,7 @@ private def mem_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup
         rw [f.symm_coe]
     }
     refine ⟨f ⟨a, List.Mem.head _⟩ , _, ?_, f', ih _, ?_⟩
-    · simp [sublists, finRange]
+    · simp [head_sublists, finRange]
       refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
       exact bs.idxOf b.val
       apply idxOf_lt_length

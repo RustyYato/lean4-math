@@ -14,7 +14,7 @@ private def allOn (as: List α) (bs: List β) (hbs: bs.Nodup) : List (as ↪ bs)
     inj' := Function.empty_inj
   }]
   | a::as =>
-    (sublists bs).attach.flatMap (fun ⟨(b, bs'), h⟩ => by
+    (head_sublists bs).attach.flatMap (fun ⟨(b, bs'), h⟩ => by
       apply (allOn as bs' ?_).map
       intro f
       refine {
@@ -29,13 +29,13 @@ private def allOn (as: List α) (bs: List β) (hbs: bs.Nodup) : List (as ↪ bs)
           cases hx
           contradiction
           assumption
-      · simp [sublists, List.mem_map, List.finRange,] at h
+      · simp [head_sublists, List.mem_map, List.finRange,] at h
         obtain ⟨i, rfl, rfl⟩ := h
         split
         apply getElem_mem
         apply List.mem_of_mem_eraseIdx
         apply (f ⟨x.val, _⟩).property
-      · simp [sublists, List.mem_map, List.finRange,] at h
+      · simp [head_sublists, List.mem_map, List.finRange,] at h
         obtain ⟨i, rfl, rfl⟩ := h
         intro ⟨x, hx⟩ ⟨y, hy⟩ eq
         dsimp at eq
@@ -63,7 +63,7 @@ private def allOn (as: List α) (bs: List β) (hbs: bs.Nodup) : List (as ↪ bs)
           assumption
         · cases f.inj <| Subtype.val_inj (Subtype.mk.inj eq)
           rfl
-      · simp [sublists, List.mem_map, List.finRange,] at h
+      · simp [head_sublists, List.mem_map, List.finRange,] at h
         obtain ⟨_, _, rfl⟩ := h
         apply Nodup.eraseIdx
         assumption)
@@ -75,7 +75,7 @@ private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nod
     simp [Embedding.allOn]
     apply List.nodup_flatMap
     · apply (List.nodup_attach _).mp
-      apply nodup_sublists
+      apply nodup_head_sublists
       assumption
     · have : a ∉ as := (has.head _ · _root_.rfl)
       intro ⟨x, hx⟩
@@ -99,7 +99,7 @@ private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nod
       intro f₄ hf₄ g
       injection g with g
       replace g := congrFun g
-      simp [sublists, List.finRange]  at hf₀ hf₁
+      simp [head_sublists, List.finRange]  at hf₀ hf₁
       obtain ⟨i₀, rfl, rfl⟩ := hf₀
       obtain ⟨i₁, rfl, rfl⟩ := hf₁
       have := g ⟨a, List.Mem.head _⟩
@@ -139,7 +139,7 @@ private def mem_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup
     let b := f ⟨a, List.Mem.head _⟩
     refine ⟨?_, _, ?_, f', ?_, ?_⟩
     · exact b.val
-    · simp [sublists, List.finRange]
+    · simp [head_sublists, List.finRange]
       refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
       exact bs.idxOf b.val
       refine idxOf_lt_length ?_
