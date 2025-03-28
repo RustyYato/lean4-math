@@ -193,7 +193,7 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       infer_instance
       apply IsContinuous.comp
       simp
-      apply IsContinuous.prod_mk
+      apply And.intro
       apply IsContinuous.comp
       apply IsContinuous.subtype_mk
       apply IsContinuous.comp
@@ -215,7 +215,7 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       apply IsContinuous.comp
       infer_instance
       simp
-      apply IsContinuous.prod_mk
+      apply And.intro
       apply IsContinuous.subtype_mk
       apply IsContinuous.comp
       apply IsContinuous.comp

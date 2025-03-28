@@ -553,6 +553,48 @@ instance instContℝzsmul (n: ℤ) : Topology.IsContinuous  (fun x: ℝ => n •
     show IsContinuous <| (fun x => -x) ∘ (fun x => (n + 1) • x)
     infer_instance
 
+@[continuity]
+def continuous_add (f: ℝ × ℝ -> ℝ) (g: ℝ × ℝ -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x: ℝ × ℝ => f x + g x) := by
+  show IsContinuous <| (fun x: ℝ × ℝ => x.1 + x.2) ∘ (fun x: ℝ × ℝ => (f x, g x))
+  apply IsContinuous.comp
+
+@[continuity]
+def continuous_sub (f: ℝ × ℝ -> ℝ) (g: ℝ × ℝ -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x: ℝ × ℝ => f x - g x) := by
+  show IsContinuous <| (fun x: ℝ × ℝ => x.1 - x.2) ∘ (fun x: ℝ × ℝ => (f x, g x))
+  apply IsContinuous.comp
+
+@[continuity]
+def continuous_neg (f: ℝ -> ℝ) (hf: IsContinuous f) : IsContinuous (fun x: ℝ => -f x) := by
+  show IsContinuous <| (fun x: ℝ => -x) ∘ _
+  apply IsContinuous.comp
+
+@[continuity]
+def continuous_mul (f: ℝ × ℝ -> ℝ) (g: ℝ × ℝ -> ℝ) (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (fun x: ℝ × ℝ => f x * g x) := by
+  show IsContinuous <| (fun x: ℝ × ℝ => x.1 * x.2) ∘ (fun x: ℝ × ℝ => (f x, g x))
+  apply IsContinuous.comp
+
+@[continuity]
+def continuous_nmul (f: ℕ × ℝ -> ℝ) (hf: IsContinuous f) : IsContinuous (fun x: ℕ × ℝ => x.1 • f x) := by
+  apply IsContinuous.push_discrete
+  intro n
+  simp
+  show IsContinuous <| (fun x => n • x) ∘ _ ∘ _
+  apply IsContinuous.comp'
+  apply IsContinuous.comp'
+  apply IsContinuous.prod_mk
+  repeat infer_instance
+
+@[continuity]
+def continuous_zmul (f: ℤ × ℝ -> ℝ) (hf: IsContinuous f) : IsContinuous (fun x: ℤ × ℝ => x.1 • f x) := by
+  apply IsContinuous.push_discrete
+  intro n
+  simp
+  show IsContinuous <| (fun x => n • x) ∘ _ ∘ _
+  apply IsContinuous.comp'
+  apply IsContinuous.comp'
+  apply IsContinuous.prod_mk
+  repeat infer_instance
+
 -- instance instContℝadd₂
 --   (f g: ℝ × ℝ -> ℝ) [Topology.IsContinuous f] [Topology.IsContinuous g]
 --  : Topology.IsContinuous (fun x: ℝ × ℝ => f x + g x) :=

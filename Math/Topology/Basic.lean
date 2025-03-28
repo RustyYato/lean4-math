@@ -1,4 +1,5 @@
 import Math.Data.Set.Basic
+import Math.Tactics.Continuity
 
 class Topology (α: Type*) where
   IsOpen: Set α -> Prop
@@ -154,6 +155,7 @@ def Dense.univ : Dense (Set.univ α) := by
   rw [Closure.univ]
   apply Set.mem_univ
 
+@[continuity]
 instance IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
   isOpen_preimage s sopen := by
     by_cases h:x ∈ s
@@ -170,6 +172,7 @@ instance IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
     intro
     assumption
 
+@[continuity]
 instance IsContinuous.id : IsContinuous (@id α) where
   isOpen_preimage s sopen := by
     suffices s.preimage (_root_.id ) = s by
@@ -180,12 +183,14 @@ instance IsContinuous.id : IsContinuous (@id α) where
     exact _root_.id
     exact _root_.id
 
+@[continuity]
 instance IsContinuous.id' : IsContinuous (fun x: α => x) :=
   IsContinuous.id
 
 instance IsContinuous.comp (f: α -> β) (g: β -> γ) [IsContinuous f] [IsContinuous g] : IsContinuous (g ∘ f) where
   isOpen_preimage s sopen := isOpen_preimage (f := f) _ <| isOpen_preimage (f := g) s sopen
 
+@[continuity]
 def IsContinuous.comp' {f: α -> β} {g: β -> γ} (hf: IsContinuous f) (hg: IsContinuous g) : IsContinuous (g ∘ f) :=
   inferInstance
 
@@ -276,6 +281,10 @@ class Discrete (α: Type*) extends Topology α where
 
 class Trivial (α: Type*) extends Topology α where
   eq_top: toTopology = ⊤
+
+def IsOpen.discrete [h: Discrete α] (s: Set α) : IsOpen[h.toTopology] s := by
+  rw [h.eq_bot]
+  trivial
 
 instance [Subsingleton α₀] : Topology α₀ := ⊥
 instance [Subsingleton α₀] : Discrete α₀ := ⟨rfl⟩
