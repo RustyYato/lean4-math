@@ -155,8 +155,8 @@ instance [NatCast α] [Zero α] [DecidableEq n] : NatCast (Matrix α n n) where
 instance [IntCast α] [Zero α] [DecidableEq n] : IntCast (Matrix α n n) where
   intCast x := diagonal fun _ => (x: α)
 
-instance [OfNat α n] [Zero α] [DecidableEq N] : OfNat (Matrix α N N) n where
-  ofNat := diagonal fun _ => (OfNat.ofNat n)
+instance [OfNat α (n + 2)] [Zero α] [DecidableEq N] : OfNat (Matrix α N N) (n + 2) where
+  ofNat := diagonal fun _ => (OfNat.ofNat (n + 2))
 
 @[simp]
 def diagonal_mem [DecidableEq n] [Zero α] (f: n -> α) (i j: n) :
@@ -173,14 +173,12 @@ def natCast_mem [DecidableEq N] [NatCast α] [Zero α] (n: ℕ) (i j: N) :
 def intCast_mem [DecidableEq N] [IntCast α] [Zero α] (n: ℤ) (i j: N) :
  (n: Matrix α N N) i j = if i = j then (n: α) else 0 := rfl
 @[simp]
-def ofNat_mem [DecidableEq N] [OfNat α n] [Zero α] (i j: N) :
- (OfNat.ofNat n: Matrix α N N) i j = if i = j then OfNat.ofNat n else 0 := rfl
+def ofNat_mem [DecidableEq N] [OfNat α (n + 2)] [Zero α] (i j: N) :
+ (OfNat.ofNat (n + 2): Matrix α N N) i j = if i = j then OfNat.ofNat (n + 2) else 0 := rfl
 
 section
 
-open Classical
-
-instance instAddMonoidWithOne [AddMonoidWithOneOps α] [IsAddMonoidWithOne α]: IsAddMonoidWithOne (Matrix α N N) where
+instance instAddMonoidWithOne [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] [DecidableEq N]: IsAddMonoidWithOne (Matrix α N N) where
   natCast_zero := by
     ext i j
     simp
@@ -200,7 +198,7 @@ instance instAddMonoidWithOne [AddMonoidWithOneOps α] [IsAddMonoidWithOne α]: 
     apply ofNat_eq_natCast
     rfl
 
-instance instAddGroupWithOne [AddGroupWithOneOps α] [IsAddGroupWithOne α]: IsAddGroupWithOne (Matrix α N N) :=
+instance instAddGroupWithOne [AddGroupWithOneOps α] [IsAddGroupWithOne α] [DecidableEq N]: IsAddGroupWithOne (Matrix α N N) :=
   {
     instAddMonoidWithOne, instAddGroup with
     intCast_ofNat n := by
