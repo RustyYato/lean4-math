@@ -98,4 +98,12 @@ noncomputable def lim [Nonempty α] (f: Filter α) : α :=
 
 def lim_spec [Nonempty α] (f: Filter α) (h: ∃x, f ≤ 𝓝 x) : f ≤ 𝓝 (lim f) := Classical.epsilon_spec h
 
+def IsClusterPoint (x: α) (F: Filter α) : Prop := NeBot (𝓝 x ⊓ F)
+
+def IsCompactOn (S: Set α) : Prop :=
+  ∀ ⦃F⦄ [NeBot F], F ≤ 𝓟 S -> ∃x ∈ S, IsClusterPoint x F
+
+class IsCompactSpace (α: Type*) [Topology α] : Prop where
+  univ_compact: IsCompactOn (⊤: Set α)
+
 end Topology

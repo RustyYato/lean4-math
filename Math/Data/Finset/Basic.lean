@@ -404,6 +404,13 @@ def insert_unique (f: Finset α) (x: α) (h: x ∉ f) : Finset α where
     assumption
     assumption
 
+def mem_insert_unique {f: Finset α} {a: α} {h: a ∉ f} : ∀{x}, x ∈ f.insert_unique a h ↔ x = a ∨ x ∈ f := by
+  intro x
+  simp [insert_unique]
+  show x ∈ a::ₘf.val ↔ _
+  simp
+  rfl
+
 def powerset (as: Finset α): Finset (Finset α) where
   val := by
     apply (Multiset.powerset as.val).pmap (p := Multiset.Nodup)
