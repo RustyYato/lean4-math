@@ -7,15 +7,36 @@ open NNReal Topology
 
 namespace Complex
 
-noncomputable instance : AbsoluteValue ℂ ℝ≥0 where
-  abs x := (square x.real + square x.img).sqrt
+noncomputable instance : AbsoluteValue ℂ ℝ where
+  abs x := (x.real ^ 2 + x.img ^ 2).sqrt
 
-def norm_sq (c: ℂ) : |c| ^ 2 = square c.real + square c.img := sqrt_sq _
+def norm_sq (c: ℂ) : |c| ^ 2 = c.real ^ 2 + c.img ^ 2 := by
+  show (Real.sqrt _) ^ 2 = _
+  rw [Real.sqrt_sq]
+  apply Real.add_nonneg
+  apply Real.square_nonneg
+  apply Real.square_nonneg
+
+def Complex.abs_eq (x: ℂ) : NNReal.ofReal |x| = NNReal.sqrt (NNReal.square x.real + NNReal.square x.img) := by
+  simp [AbsoluteValue.abs]
+  rw [Real.sqrt, embedReal_ofReal]
+  congr
+  unfold ofReal
+  congr
+  rw [max_iff_le_right.mp]
+  rfl
+  apply Real.add_nonneg
+  apply Real.square_nonneg
+  apply Real.square_nonneg
 
 def Complex.abs_mul' (a b: ℂ) : |a * b| = |a| * |b| := by
-  show NNReal.sqrtEquiv _ = NNReal.sqrtEquiv _ * NNReal.sqrtEquiv _
-  rw [←resp_mul]
-  simp
+  apply ofReal_injOn
+  apply Real.sqrt_nonneg
+  apply Real.mul_nonneg
+  apply Real.sqrt_nonneg
+  apply Real.sqrt_nonneg
+  rw [ofReal_mul, abs_eq, abs_eq, abs_eq]
+  simp  [sqrt_mul]
   congr
   apply Subtype.val_inj
   unfold square
@@ -35,26 +56,44 @@ def Complex.abs_mul' (a b: ℂ) : |a * b| = |a| * |b| := by
   congr
   rw (occs := [2]) [←add_assoc (-_)]
   rw [neg_add_cancel, zero_add, neg_add_cancel]
+  apply Real.sqrt_nonneg
+  apply Real.sqrt_nonneg
 
 instance instLawfulAbs : IsLawfulAbs ℂ where
   abs_zero_iff := by
     intro x
-    show NNReal.sqrtEquiv _ = 0 ↔ x = 0
+    rw [←Real.sqrt_0]
+    apply Iff.trans (Real.sqrt_inj _ _)
     apply Iff.intro
     intro h
-    have : sqrtEquiv.symm (sqrtEquiv (square x.real + square x.img)) =
-       sqrtEquiv.symm 0 := by rw [h]
-    rw [sqrtEquiv.coe_symm, resp_zero] at this
-    have ⟨ha, hb⟩ := NNReal.of_add_eq_zero _ _ this
+    replace h := neg_eq_of_add_right h
+    have h₀: 0 ≤ x.real ^ 2 := by apply Real.square_nonneg
+    have h₁: -x.img ^ 2 ≤ 0 := by
+      rw [←Real.neg_le_neg_iff, neg_neg]
+      apply Real.square_nonneg
     ext
-    exact of_square_eq_zero ha
-    exact of_square_eq_zero hb
+    rw [←h] at h₁
+    apply Real.eq_zero_of_square_eq_zero
+    apply le_antisymm
+    assumption; apply Real.square_nonneg
+    rw [h] at h₀
+    apply Real.eq_zero_of_square_eq_zero
+    apply le_antisymm
+    rw [←Real.neg_le_neg_iff, neg_neg] at h₀
+    assumption; apply Real.square_nonneg
     rintro rfl
-    simp [resp_zero]
-  abs_nonneg _ := by apply bot_le
+    rfl
+    apply Real.add_nonneg
+    apply Real.square_nonneg
+    apply Real.square_nonneg
+    rfl
+  abs_nonneg _ := by apply Real.sqrt_nonneg
   abs_mul := Complex.abs_mul'
   abs_add_le_add_abs a b := by
     show NNReal.sqrt _ ≤ NNReal.sqrt _ + NNReal.sqrt _
+    iterate 3 rw [ofReal_add]
+    any_goals apply Real.square_nonneg
+    simp [ofReal_square]
     apply NNReal.square_strictMonotone.le_iff_le.mp
     rw [NNReal.sqrt_sq]
     simp [square, square_add, NNReal.sqrt_sq]
@@ -89,14 +128,15 @@ instance instLawfulAbs : IsLawfulAbs ℂ where
     rw [←neg_one_mul, Complex.abs_mul']
     rw (occs := [2]) [←one_mul |a|]
     congr
-    show NNReal.sqrt _ = _
-    simp [square_neg]
+    show Real.sqrt _ = _
+    simp [_root_.square_neg]
 
-noncomputable instance : Dist ℂ ℝ≥0 where
+noncomputable instance : Dist ℂ ℝ where
   dist a b := |a - b|
 
 instance : IsMetric ℂ := Abs.instIsMetric ℂ
 instance : Topology ℂ := IsPseudoMetric.toTopology
+instance : IsPseudoMetricSpace ℂ := inferInstance
 instance : IsMetricSpace ℂ := inferInstance
 
 instance : Topology.IsContinuous Complex.real where
@@ -104,21 +144,21 @@ instance : Topology.IsContinuous Complex.real where
     intro S hS x h
     replace ⟨ε, εpos, h⟩ := hS _ h
     let δ : ℝ≥0 := ⟨ε, le_of_lt εpos⟩
-    refine ⟨δ, εpos, ?_⟩
+    refine ⟨ε, εpos, ?_⟩
     intro y hy
     apply h
     simp [mem_ball, dist] at *
     show |_| < ε
-    replace hy : embedReal |_| < ε := hy
     apply lt_of_le_of_lt _ hy
-    rw [←embedReal_abs]
-    show orderEmbedReal _ ≤ orderEmbedReal _
-    apply NNReal.orderEmbedReal.resp_le.mp
     apply flip le_trans
-    apply sqrt_strictMonotone.le_iff_le.mpr
+    apply (Real.sqrt_strictMonotoneOn.le_iff_le _ _).mpr
     apply le_add_right
-    apply bot_le
-    rw [sqrt_square]
+    apply Real.square_nonneg
+    apply Real.square_nonneg
+    apply Real.add_nonneg
+    apply Real.square_nonneg
+    apply Real.square_nonneg
+    rw [Real.sqrt_of_sq]
     rfl
 
 instance : Topology.IsContinuous Complex.img where
@@ -126,21 +166,21 @@ instance : Topology.IsContinuous Complex.img where
     intro S hS x h
     replace ⟨ε, εpos, h⟩ := hS _ h
     let δ : ℝ≥0 := ⟨ε, le_of_lt εpos⟩
-    refine ⟨δ, εpos, ?_⟩
+    refine ⟨ε, εpos, ?_⟩
     intro y hy
     apply h
     simp [mem_ball, dist] at *
     show |_| < ε
-    replace hy : embedReal |_| < ε := hy
     apply lt_of_le_of_lt _ hy
-    rw [←embedReal_abs]
-    show orderEmbedReal _ ≤ orderEmbedReal _
-    apply NNReal.orderEmbedReal.resp_le.mp
     apply flip le_trans
-    apply sqrt_strictMonotone.le_iff_le.mpr
+    apply (Real.sqrt_strictMonotoneOn.le_iff_le _ _).mpr
     apply le_add_left
-    apply bot_le
-    rw [sqrt_square]
+    apply Real.square_nonneg
+    apply Real.square_nonneg
+    apply Real.add_nonneg
+    apply Real.square_nonneg
+    apply Real.square_nonneg
+    rw [Real.sqrt_of_sq]
     rfl
 
 instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
@@ -149,30 +189,52 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     intro S hS (a, b) h
     simp [Set.mem_preimage] at h
     replace ⟨ε, εpos, h⟩ := hS _ h
-    refine ⟨orderEmbedReal (ε /? (NNReal.sqrt 2)), ?_, ?_⟩
+    let ε' : ℝ≥0 := {
+      val := ε
+      property := le_of_lt εpos
+    }
+    have : 0 < (2: ℝ) := two_pos
+    refine ⟨ε /? Real.sqrt 2, ?_, ?_⟩
     apply div?_pos
     assumption
     apply sqrt_pos
-    exact two_pos
+    apply (lt_max_iff (α := ℝ)).mpr
+    left
+    exact two_pos (α := ℝ)
     intro (c, d) g
     apply h
     simp
     simp [mem_ball, dist] at *
     replace g := max_lt_iff.mp g
+    apply of_ofReal_lt
+    rw [Complex.abs_eq]
+    simp
+    rw [ofReal]; conv in max ε 0 => {
+      rw [max_iff_le_right.mp (le_of_lt εpos)] }
     apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mpr
-    show |_| ^ 2 < ε ^ 2
-    rw [norm_sq]
+    show _ ^ 2 < ε' ^ 2
+    rw [sqrt_sq]
     simp [square_eq_abs_sq]
     apply lt_of_lt_of_le
     apply add_lt_add
     apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mp
-    show _ < ε /? (NNReal.sqrt 2)
+    show _ < ε' /? (NNReal.sqrt 2)
+    show |a - c| < ε /? _ ~(_)
+    apply lt_of_lt_of_eq
     exact g.left
+    congr
+    rw [Real.sqrt_def _ (by apply le_of_lt; assumption)]
+    rfl
     apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mp
-    show _ < ε /? (NNReal.sqrt 2)
+    show _ < ε' /? (NNReal.sqrt 2)
+    show |b - d| < ε /? _ ~(_)
+    apply lt_of_lt_of_eq
     exact g.right
+    congr
+    rw [Real.sqrt_def _ (by apply le_of_lt; assumption)]
+    rfl
     clear g
-    show _  ^ 2 + _ ^ 2 ≤ ε ^ 2
+    show _  ^ 2 + _ ^ 2 ≤ ε' ^ 2
     rw [div?_npow]
     have : NNReal.sqrt 2 ^ 2 = 2 := by rw [sqrt_sq]
     iterate 2 conv in NNReal.sqrt 2 ^ 2 => { rw [this] }

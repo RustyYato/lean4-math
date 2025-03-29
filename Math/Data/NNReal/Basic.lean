@@ -181,4 +181,49 @@ instance : NeZero (2: ℝ≥0) where
     have : embedReal 2 = embedReal 0 := by rw [h]
     exact NeZero.ne (n := 2) (R := ℝ) this
 
+def ofReal_injOn : Function.InjectiveOn ofReal (Set.Ici 0) := by
+  intro x y hx hy h
+  have := Subtype.mk.inj h
+  rwa [max_iff_le_right.mp, max_iff_le_right.mp] at this
+  assumption
+  assumption
+
+def ofReal_lt (h: 0 ≤ a) (g: a < b) : ofReal a < ofReal b := by
+  apply (lt_max_iff (α := ℝ)).mpr
+  simp [ofReal]
+  left
+  apply max_lt_iff.mpr
+  apply And.intro
+  assumption
+  apply lt_of_le_of_lt
+  assumption
+  assumption
+
+def of_ofReal_lt (h: ofReal a < ofReal b) : a < b := by
+  replace h := (lt_max_iff (α := ℝ)).mp h
+  rcases h with h | h
+  exact (max_lt_iff.mp h).left
+  have := lt_irrefl (max_lt_iff.mp h).right
+  contradiction
+
+def ofReal_add (x y: ℝ) (hx: 0 ≤ x) (hy: 0 ≤ y) : ofReal (x + y) = ofReal x + ofReal y := by
+  unfold ofReal
+  congr; simp
+  iterate 3 rw [max_iff_le_right.mp]
+  assumption
+  assumption
+  apply Real.add_nonneg
+  assumption
+  assumption
+
+def ofReal_mul (x y: ℝ) (hx: 0 ≤ x) (hy: 0 ≤ y) : ofReal (x * y) = ofReal x * ofReal y := by
+  unfold ofReal
+  congr; simp
+  iterate 3 rw [max_iff_le_right.mp]
+  assumption
+  assumption
+  apply Real.mul_nonneg
+  assumption
+  assumption
+
 end NNReal

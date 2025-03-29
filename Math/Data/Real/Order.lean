@@ -414,7 +414,8 @@ def abs_sub_comm (a b: ℝ) : |a - b| = |b - a| := by
   apply le_of_lt
   assumption
 
-def square_nonneg (a: ℝ) : 0 ≤ a * a := by
+def square_nonneg (a: ℝ) : 0 ≤ a ^ 2 := by
+  rw [npow_two]
   rcases pos_or_eq_or_neg a with p | eq | n
   have := mul_pos_of_pos_of_pos a a p p
   left
@@ -428,7 +429,8 @@ def square_nonneg (a: ℝ) : 0 ≤ a * a := by
   rw [sub_zero]
   assumption
 
-def eq_zero_of_square_eq_zero (a: ℝ) : a * a = 0 -> a = 0 := by
+def eq_zero_of_square_eq_zero (a: ℝ) : a ^ 2 = 0 -> a = 0 := by
+  rw [npow_two]
   intro h
   rcases pos_or_eq_or_neg a with p | eq | n
   have := mul_pos_of_pos_of_pos a a p p

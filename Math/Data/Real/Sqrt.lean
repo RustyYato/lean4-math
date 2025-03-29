@@ -17,7 +17,6 @@ def sqrt_sq (x: ℝ) (h: 0 ≤ x) : x.sqrt ^ 2 = x := by
 
 def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = |x| := by
   rw [sqrt_def (x^2) (by
-    rw [npow_two]
     apply Real.square_nonneg x)]
   show NNReal.embedReal (NNReal.sqrt (NNReal.square x)) = _
   rw [NNReal.sqrt_square]
@@ -128,5 +127,20 @@ def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (
   replace h := le_of_lt h
   apply le_trans h
   rwa [←Real.neg_le_neg_iff, neg_neg]
+
+def sqrt_ne_zero (a: ℝ) (h: 0 < a) : a.sqrt ≠ 0 := by
+  intro g
+  rw [←resp_zero NNReal.embedReal] at g
+  have := (NNReal.sqrt_ne_zero _ · (NNReal.embedReal.inj g))
+  unfold NNReal.ofReal at this
+  replace this := Subtype.mk.inj (Classical.byContradiction this)
+  rw [max_def] at this
+  split at this
+  have := not_le_of_lt h; contradiction
+  rw [this] at h
+  exact lt_irrefl h
+
+macro_rules
+| `(tactic|invert_tactic_trivial) => `(tactic|apply sqrt_ne_zero <;> invert_tactic)
 
 end Real

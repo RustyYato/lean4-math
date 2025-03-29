@@ -63,6 +63,7 @@ def mag_sq_nonzero (c: ℂ) (h: c ≠ 0) : c.mag_sq ≠ 0 := by
   intro g
   apply h; clear h
   unfold mag_sq at g
+  rw [←npow_two, ←npow_two] at g
   replace g := neg_eq_of_add_left g
   ext
   have := Real.square_nonneg c.img
