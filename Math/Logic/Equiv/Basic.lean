@@ -488,16 +488,8 @@ def of_equiv_option_option {α β: Type*} (h: Option α ≃ Option β) : α ≃ 
     have := eq_coe_of_symm_eq _ this
     rw [set_spec] at this
     contradiction)
-  leftInv := by
-    intro x
-    simp
-    conv => { lhs; lhs; rw [coe_symm] }
-    rfl
-  rightInv := by
-    intro x
-    simp
-    conv => { lhs; lhs; rw [symm_coe] }
-    rfl
+  leftInv _ := by simp
+  rightInv _ := by simp
   }
 
 -- booleans are classically equivalent to Prop

@@ -97,10 +97,10 @@ def ext (a b: α ≃ β) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
 def trans_assoc {h₀: α₀ ≃ α₁} {h₁: α₁ ≃  α₂} {h₂: α₂ ≃  α₃} :
   (h₀.trans h₁).trans h₂ = h₀.trans (h₁.trans h₂) := by rfl
 
-def coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
-def symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
+@[simp] def coe_symm (h: α ≃ β) (x: α) : h.symm (h x) = x := h.leftInv _
+@[simp] def symm_coe (h: α ≃ β) (x: β) : h (h.symm x) = x := h.rightInv _
 
-def apply_trans {α β γ: Sort*} (h: α ≃ β) (g: β ≃ γ) (x: α) : (h.trans g) x = g (h x) := by rfl
+@[simp] def apply_trans {α β γ: Sort*} (h: α ≃ β) (g: β ≃ γ) (x: α) : (h.trans g) x = g (h x) := by rfl
 
 def trans_symm (h: α ≃ β) : h.trans h.symm = .rfl := by
   ext x
