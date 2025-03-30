@@ -182,6 +182,24 @@ def induction
     rw [zero_add]; subst i; rfl
     rw [add_zero]; rfl
 
+def alg_induction [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop}
+  (C: ∀x, motive (C x))
+  (X: motive X)
+  (add: ∀a b: P[X], motive a -> motive b -> motive (a + b))
+  (mul: ∀a b: P[X], motive a -> motive b -> motive (a * b)): ∀p, motive p := by
+  intro p
+  induction p with
+  | C => apply C
+  | monomial =>
+    rw [npow_succ, ←mul_assoc]
+    apply mul
+    assumption
+    apply X
+  | add =>
+    apply add
+    assumption
+    assumption
+
 instance [SemiringOps P] [IsSemiring P] : NatCast P[X] where
   natCast n := C n
 instance [SemiringOps P] [IsSemiring P] : OfNat P[X] (n+2) where
@@ -351,5 +369,7 @@ def subsingleton_of_monomial_eq_zero [Zero P] [One P] [Mul P] [IsMulZeroClass P]
     rfl
   unfold monomial
   erw [AddMonoidAlgebra.apply_single, if_pos rfl]
+
+def C_eq_algebraMap [SemiringOps P] [IsSemiring P]  : C x = algebraMap (R := P) x := rfl
 
 end Poly

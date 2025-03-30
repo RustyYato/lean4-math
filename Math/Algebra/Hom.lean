@@ -162,6 +162,9 @@ variable {R A B C: Type*}
   [SemiringOps R] [SemiringOps A] [SemiringOps B] [SemiringOps C]
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
 
+@[ext]
+def AlgHom.ext (f g: A →ₐ[R] B) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+
 def AlgHom.toLinearMap
   [SMul R A] [SMul R B]
   [IsSemiring R] [IsSemiring A] [IsSemiring B]
