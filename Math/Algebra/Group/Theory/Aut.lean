@@ -27,11 +27,11 @@ def Group.toAddAut (G M: Type*) [GroupOps G] [IsGroup G]
       intro m; simp [←mul_smul, MulOpp.mk]
     rightInv := by
       intro m; simp [←mul_smul, MulOpp.mk]
-    resp_zero' := by simp
-    resp_add' {m₀ m₁} := by simp [smul_add]
+    resp_zero := by simp
+    resp_add {m₀ m₁} := by simp [smul_add]
   }
-  resp_one' := by simp; rfl
-  resp_mul' := by
+  resp_one := by simp; rfl
+  resp_mul := by
     intro x y
     apply AddGroupEquiv.ext
     intro m

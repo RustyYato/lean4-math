@@ -39,10 +39,10 @@ namespace NNReal
 def embedReal : ℝ≥0 ↪+* ℝ where
   toFun x := x.val
   inj' := Subtype.val_inj
-  resp_zero' := rfl
-  resp_one' := rfl
-  resp_add' := rfl
-  resp_mul' := rfl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
 
 def ofReal (r: ℝ) : ℝ≥0 where
   val := max r 0

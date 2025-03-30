@@ -49,12 +49,12 @@ variable {A: Type*} {X: Type*} [SemiringOps A] [IsCommMagma A] [IsSemiring A] [S
 
 def ι : M →ₗ[R] (TensorAlgebra R M) where
   toFun x :=  RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)) (FreeAlgebra.ι R x)
-  resp_add' := by
+  resp_add := by
     intro x y
     rw [←resp_add (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)))]
     apply RingQuot.mkRingHom_rel
     apply Rel.add
-  resp_smul' := by
+  resp_smul := by
     intro x y
     rw [←resp_smul (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M))) (r := x)]
     apply RingQuot.mkRingHom_rel
@@ -130,10 +130,10 @@ def induction {motive: TensorAlgebra R M -> Prop}
 private def algebraMapInv : TensorAlgebra R M →ₐ[R] R :=
   lift R {
     toFun _ := 0
-    resp_add' := by
+    resp_add := by
       intro _ _
       rw [add_zero]
-    resp_smul' := by
+    resp_smul := by
       intro _ _
       rw [smul_zero]
   }

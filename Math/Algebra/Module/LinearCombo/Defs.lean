@@ -27,19 +27,19 @@ instance : IsModule R (LinearCombination R M) :=
 
 def valHom : LinearCombination R M →ₗ[R] M where
   toFun f := f.sum (fun v r => r • v) (fun v h => by simp [h])
-  resp_add' := by
+  resp_add := by
     intro a b
     dsimp
     rw [Finsupp.add_sum]
     intro v a b
     rw [add_smul]
-  resp_smul' := by
+  resp_smul := by
     intro r a
     dsimp
     let g : M →+ M := {
       toFun x := r • x
-      resp_zero' := by simp
-      resp_add' {x y} := smul_add _ _ _
+      resp_zero := by simp
+      resp_add {x y} := smul_add _ _ _
     }
     show _ = g (a.sum _ _)
     rw [Finsupp.resp_sum]

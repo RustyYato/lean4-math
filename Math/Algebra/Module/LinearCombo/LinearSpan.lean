@@ -102,8 +102,8 @@ instance : IsModule R (LinearSpan R M s) where
 def toLinearCombo : LinearSpan R M s ↪ₗ[R] LinearCombination R M where
   toFun := LinearSpan.toCombo
   inj' := by intro a b eq; cases a; congr
-  resp_add' := rfl
-  resp_smul' := rfl
+  resp_add := rfl
+  resp_smul := rfl
 
 def valHom : LinearSpan R M s →ₗ[R] M :=
   LinearCombination.valHom.comp toLinearCombo.toLinearMap

@@ -16,8 +16,8 @@ def resp_intCast
 def intCast_AddGroupHom
   [FunLike F α β] [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ℤ →+ α where
   toFun n := n
-  resp_zero' := intCast_zero
-  resp_add' := by
+  resp_zero := intCast_zero
+  resp_add := by
     dsimp
     intro x y
     rw [intCast_add]

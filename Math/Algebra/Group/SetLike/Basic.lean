@@ -136,14 +136,14 @@ def AddSubgroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddG
 def Subgroup.embed (S: Subgroup α) : S ↪* α where
   toFun x := x.val
   inj' := Subtype.val_inj
-  resp_one' := rfl
-  resp_mul' := rfl
+  resp_one := rfl
+  resp_mul := rfl
 
 def AddSubgroup.embed (S: AddSubgroup α) : S ↪+ α where
   toFun x := x.val
   inj' := Subtype.val_inj
-  resp_zero' := rfl
-  resp_add' := rfl
+  resp_zero := rfl
+  resp_add := rfl
 
 def Subgroup.of_hom [GroupOps β] [IsGroup β] (h: α →* β) : Subgroup β where
   carrier := Set.range h
@@ -192,10 +192,10 @@ def Subgroup.equiv_of_embed [GroupOps β] [IsGroup β] (h: α ↪* β) : α ≃*
     dsimp
     congr
     exact (Classical.choose_spec x.property).symm
-  resp_one' := by
+  resp_one := by
     dsimp; congr
     rw [resp_one]
-  resp_mul' := by
+  resp_mul := by
     intro a b
     dsimp; congr
     rw [resp_mul]
@@ -215,10 +215,10 @@ def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) 
     dsimp
     congr
     exact (Classical.choose_spec x.property).symm
-  resp_zero' := by
+  resp_zero := by
     dsimp; congr
     rw [resp_zero]
-  resp_add' := by
+  resp_add := by
     intro a b
     dsimp; congr
     rw [resp_add]

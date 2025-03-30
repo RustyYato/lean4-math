@@ -423,16 +423,16 @@ instance instIsRing [RingOps R] [IsRing R] : IsRing (RingQuot r) where
 
 instance [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [IsSemiring S] [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
   toFun s := ⟦algebraMap s⟧
-  resp_zero' := by
+  resp_zero := by
     simp
     rw [resp_zero]
-  resp_one' := by
+  resp_one := by
     simp
     rw [resp_one]
-  resp_add' := by
+  resp_add := by
     intro a b
     simp [resp_add]
-  resp_mul' := by
+  resp_mul := by
     intro a b
     simp [resp_mul]
 
@@ -452,10 +452,10 @@ instance instIsAlgebra [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R]
 
 def mkRingHom [SemiringOps R] [IsSemiring R] (r: R -> R -> Prop) : R →+* RingQuot r where
   toFun := (⟦·⟧)
-  resp_zero' := rfl
-  resp_one' := rfl
-  resp_mul' := rfl
-  resp_add' := rfl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_mul := rfl
+  resp_add := rfl
 
 def mkRingHom_rel [SemiringOps R] [IsSemiring R] (w: r x y) : mkRingHom r x = mkRingHom r y := Quot.sound (Rel.of w)
 
@@ -473,12 +473,12 @@ private def preLift [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T
     | add_left _ r' => rw [resp_add, resp_add, r']
     | mul_left _ r' => rw [resp_mul, resp_mul, r']
     | mul_right _ r' => rw [resp_mul, resp_mul, r']
-  resp_zero' := resp_zero f
-  resp_one' := resp_one f
-  resp_add' := by
+  resp_zero := resp_zero f
+  resp_one := resp_one f
+  resp_add := by
     rintro ⟨x⟩ ⟨y⟩
     apply resp_add
-  resp_mul' := by
+  resp_mul := by
     rintro ⟨x⟩ ⟨y⟩
     apply resp_mul
 
@@ -503,7 +503,7 @@ def lift_mkRingHom_apply [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemir
 
 def mkAlgHom (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
   toRingHom := mkRingHom _
-  resp_algebraMap' _ := rfl
+  resp_algebraMap _ := rfl
 
 variable (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
    [SemiringOps A] [IsSemiring A] [AlgebraMap S A] [SMul S A] [IsAlgebra S A]
@@ -536,14 +536,14 @@ def preLiftAlgHom {s : A → A → Prop} {f : A →ₐ[S] B }
     | mul_right =>
       rw [resp_mul, resp_mul]
       congr
-  resp_zero' := resp_zero _
-  resp_one' := resp_one _
-  resp_algebraMap' := resp_algebraMap _
-  resp_add' := by
+  resp_zero := resp_zero _
+  resp_one := resp_one _
+  resp_algebraMap := resp_algebraMap _
+  resp_add := by
     intro a b
     cases a, b
     apply resp_add
-  resp_mul' := by
+  resp_mul := by
     intro a b
     cases a, b
     apply resp_mul

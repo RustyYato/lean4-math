@@ -121,10 +121,10 @@ def equivComplex : ℂ ≃+* ℝ[i] where
     ext <;> simp
   rightInv := by
     apply rightInv
-  resp_zero' := by simp [resp_zero]
-  resp_one' := by simp [resp_zero, resp_one]
-  resp_add' {x y} := by simp [resp_add, add_mul]; ac_rfl
-  resp_mul' {x y} := by
+  resp_zero := by simp [resp_zero]
+  resp_one := by simp [resp_zero, resp_one]
+  resp_add {x y} := by simp [resp_add, add_mul]; ac_rfl
+  resp_mul {x y} := by
     simp [resp_add, resp_mul, resp_sub, add_mul, mul_add]
     repeat first|rw [add_assoc]|rw [mul_assoc]
     rw [mul_left_comm i, i_sq]

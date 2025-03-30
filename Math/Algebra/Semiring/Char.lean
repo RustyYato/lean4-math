@@ -115,10 +115,10 @@ def HasChar.eq_zero_of_add_hom
   (f: F) : HasChar α 0 :=
   HasChar.of_ring_emb (α := ℕ) <| {
     toFun n := n
-    resp_zero' := natCast_zero
-    resp_one' := natCast_one
-    resp_add' := natCast_add _ _
-    resp_mul' := natCast_mul _ _
+    resp_zero := natCast_zero
+    resp_one := natCast_one
+    resp_add := natCast_add _ _
+    resp_mul := natCast_mul _ _
     inj' := by
       intro a b h
       replace h : (a : α) = (b: α) := h

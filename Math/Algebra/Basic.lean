@@ -49,10 +49,10 @@ abbrev Algebra.ofModule [IsModule R A]
   (h₁ : ∀ (r : R) (x y : A), r • x * y = r • (x * y))
   (h₂ : ∀ (r : R) (x y : A), x * r • y = r • (x * y)) : Algebra R A where
   toFun r := r • (1: A)
-  resp_zero' := zero_smul _
-  resp_one' := one_smul _
-  resp_add' := add_smul _ _ _
-  resp_mul' := by
+  resp_zero := zero_smul _
+  resp_one := one_smul _
+  resp_add := add_smul _ _ _
+  resp_mul := by
     dsimp
     intro x y
     rw [h₁, one_mul, mul_smul]
@@ -82,10 +82,10 @@ instance [AlgebraMap R A] [IsAlgebra R A] : IsModule R A where
 
 instance (priority := 900) : AlgebraMap R R where
   toFun := id
-  resp_one' := rfl
-  resp_zero' := rfl
-  resp_add' := rfl
-  resp_mul' := rfl
+  resp_one := rfl
+  resp_zero := rfl
+  resp_add := rfl
+  resp_mul := rfl
 
 def algebraMap_id : algebraMap (R := R) (A := R) x = x := rfl
 
@@ -109,10 +109,10 @@ end Algebra
 
 instance (priority := 500) [SemiringOps R] [IsSemiring R] : AlgebraMap Nat R where
   toFun n := n
-  resp_zero' := natCast_zero
-  resp_one' := natCast_one
-  resp_add' := natCast_add _ _
-  resp_mul' := natCast_mul _ _
+  resp_zero := natCast_zero
+  resp_one := natCast_one
+  resp_add := natCast_add _ _
+  resp_mul := natCast_mul _ _
 
 instance [SemiringOps R] [IsSemiring R] : IsAlgebra Nat R where
   commutes r x := by

@@ -335,13 +335,13 @@ def apply_erase [Zero β] [DecidableEq α] (f: Finsupp α β S) (a x: α) :
 
 def singleHom [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (a: α) : β →+ Finsupp α β S where
   toFun := single a
-  resp_zero' := by ext; simp [apply_single]
-  resp_add' {f g} := by ext; simp only [apply_single, apply_add]; split <;> simp
+  resp_zero := by ext; simp [apply_single]
+  resp_add {f g} := by ext; simp only [apply_single, apply_add]; split <;> simp
 
 def applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) : Finsupp α β S →+ β where
   toFun f := f a
-  resp_zero' := rfl
-  resp_add' := rfl
+  resp_zero := rfl
+  resp_add := rfl
 
 def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): Finsupp α β S where
   toFun x := if x ∈ s then f x else 0

@@ -60,10 +60,10 @@ def Hom [RingOps R] (s t: Subring R) (h: s ⊆ t) : s ↪+* t where
   inj' := by
     intro a b eq
     cases a; cases eq; rfl
-  resp_zero' := rfl
-  resp_one' := rfl
-  resp_add' := rfl
-  resp_mul' := rfl
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := rfl
+  resp_mul := rfl
 
 def embedOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ↪+* ofHom f where
   toFun s := ⟨f s, Set.mem_range'⟩
@@ -71,19 +71,19 @@ def embedOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S 
     intro x y eq
     apply f.inj
     apply Subtype.mk.inj eq
-  resp_zero' := by
+  resp_zero := by
     dsimp
     congr
     rw [resp_zero]
-  resp_one' := by
+  resp_one := by
     dsimp
     congr
     rw [resp_one]
-  resp_add' {x y} := by
+  resp_add {x y} := by
     dsimp
     congr
     rw [resp_add]
-  resp_mul' {x y} := by
+  resp_mul {x y} := by
     dsimp
     congr
     rw [resp_mul]
@@ -103,9 +103,9 @@ noncomputable def equivOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S
     congr
     symm
     exact Classical.choose_spec hr
-  resp_zero' := resp_zero _
-  resp_one' := resp_one _
-  resp_add' := resp_add _
-  resp_mul' := resp_mul _
+  resp_zero := resp_zero _
+  resp_one := resp_one _
+  resp_add := resp_add _
+  resp_mul := resp_mul _
 
 end Subring

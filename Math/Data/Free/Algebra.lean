@@ -163,14 +163,14 @@ instance [SemiringOps R] : SemiringOps (FreeAlgebra R X) where
 
 instance [SemiringOps R] : AlgebraMap R (FreeAlgebra R X) where
   toFun := (⟦.scalar ·⟧)
-  resp_zero' := rfl
-  resp_one' := rfl
-  resp_add' := by
+  resp_zero := rfl
+  resp_one := rfl
+  resp_add := by
     intro x y
     dsimp
     apply Quotient.sound
     apply Rel.add_scalar
-  resp_mul' := by
+  resp_mul := by
     intro x y
     dsimp
     apply Quotient.sound
@@ -431,17 +431,17 @@ def liftAux
       show _ * _ = _ * _
       congr
 
-  resp_one' := resp_one _
-  resp_zero' := resp_zero _
-  resp_add' := by
+  resp_one := resp_one _
+  resp_zero := resp_zero _
+  resp_add := by
     intro x y
     induction x, y using ind₂ with | mk x y =>
     rfl
-  resp_mul' := by
+  resp_mul := by
     intro x y
     induction x, y using ind₂ with | mk x y =>
     rfl
-  resp_algebraMap' _ := rfl
+  resp_algebraMap _ := rfl
 
 def lift
   (R: Type*)

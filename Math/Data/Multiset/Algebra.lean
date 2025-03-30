@@ -93,8 +93,8 @@ def smul_sum
   [SMul α β] [IsModule α β] (s: Multiset β) (x: α) : x • s.sum = (s.map (x • ·)).sum := by
   let f: AddGroupHom β β := {
     toFun := (x • ·)
-    resp_zero' := ?_
-    resp_add' := ?_
+    resp_zero := ?_
+    resp_add := ?_
   }
   apply resp_sum f
   apply smul_zero
@@ -106,8 +106,8 @@ def mul_sum
   (s: Multiset α) (x: α) : x * s.sum = (s.map (x * ·)).sum := by
   let f: AddGroupHom α α := {
     toFun := (x * ·)
-    resp_zero' := ?_
-    resp_add' := ?_
+    resp_zero := ?_
+    resp_add := ?_
   }
   apply resp_sum f
   apply mul_zero
@@ -119,8 +119,8 @@ def sum_mul
   (s: Multiset α) (x: α) : s.sum * x = (s.map (· * x)).sum := by
   let f: AddGroupHom α α := {
     toFun := (· * x)
-    resp_zero' := ?_
-    resp_add' := ?_
+    resp_zero := ?_
+    resp_add := ?_
   }
   apply resp_sum f
   apply zero_mul

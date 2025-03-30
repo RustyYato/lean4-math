@@ -23,9 +23,9 @@ instance [Add A] [Add B] : FunLike (A →ₗ[R] B) A B where
     assumption
 
 instance [Add A] [Add B] : IsAddHom (A →ₗ[R] B) A B where
-  resp_add f := f.resp_add'
+  resp_add f := f.resp_add
 instance [Add A] [Add B] : IsSMulHom (A →ₗ[R] B) R A B where
-  resp_smul f := f.resp_smul'
+  resp_smul f := f.resp_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
@@ -42,9 +42,9 @@ instance [Add A] [Add B] : FunLike (A ↪ₗ[R] B) A B where
     assumption
 
 instance [Add A] [Add B] : IsAddHom (A ↪ₗ[R] B) A B where
-  resp_add f := f.resp_add'
+  resp_add f := f.resp_add
 instance [Add A] [Add B] : IsSMulHom (A ↪ₗ[R] B) R A B where
-  resp_smul f := f.resp_smul'
+  resp_smul f := f.resp_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
@@ -55,19 +55,19 @@ instance
 
 def LinearEmbedding.refl (R A: Type*) [Add A] [SMul R A] : A ↪ₗ[R] A where
   toEmbedding := .rfl
-  resp_add' := rfl
-  resp_smul' := rfl
+  resp_add := rfl
+  resp_smul := rfl
 
 def LinearEmbedding.trans {R A B C: Type*} [Add A] [Add B] [Add C] [SMul R A] [SMul R B] [SMul R C] (h: A ↪ₗ[R] B) (g: B ↪ₗ[R] C) : A ↪ₗ[R] C where
   toEmbedding := h.toEmbedding.trans g.toEmbedding
-  resp_add' := by
+  resp_add := by
     intro a b
     apply flip Eq.trans
-    apply g.resp_add'
+    apply g.resp_add
     show g _ = g _
     congr
-    apply h.resp_add'
-  resp_smul' := by
+    apply h.resp_add
+  resp_smul := by
     intro a b
     apply flip Eq.trans
     apply resp_smul g
@@ -83,9 +83,9 @@ instance [Add A] [Add B] : FunLike (A ≃ₗ[R] B) A B where
     assumption
 
 instance [Add A] [Add B] : IsAddHom (A ≃ₗ[R] B) A B where
-  resp_add f := f.resp_add'
+  resp_add f := f.resp_add
 instance [Add A] [Add B] : IsSMulHom (A ≃ₗ[R] B) R A B where
-  resp_smul f := f.resp_smul'
+  resp_smul f := f.resp_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
@@ -96,12 +96,12 @@ instance
 
 def LinearEquiv.refl (R A: Type*) [Add A] [SMul R A] : A ≃ₗ[R] A where
   toEquiv := .rfl
-  resp_add' := rfl
-  resp_smul' := rfl
+  resp_add := rfl
+  resp_smul := rfl
 
 def LinearEquiv.symm {R A B: Type*} [Add A] [Add B] [SMul R A] [SMul R B] (h: A ≃ₗ[R] B) : B ≃ₗ[R] A where
   toEquiv := h.toEquiv.symm
-  resp_add' := by
+  resp_add := by
     intro a b
     rw [←h.coe_symm (_ + _)]
     congr
@@ -110,7 +110,7 @@ def LinearEquiv.symm {R A B: Type*} [Add A] [Add B] [SMul R A] [SMul R B] (h: A 
     congr
     apply (h.symm_coe _).symm
     apply (h.symm_coe _).symm
-  resp_smul' := by
+  resp_smul := by
     intro r x
     apply h.inj
     show h.toEquiv (h.toEquiv.symm _) = h (_ • h.toEquiv.symm _)
@@ -119,14 +119,14 @@ def LinearEquiv.symm {R A B: Type*} [Add A] [Add B] [SMul R A] [SMul R B] (h: A 
 
 def LinearEquiv.trans {R A B C: Type*} [Add A] [Add B] [Add C] [SMul R A] [SMul R B] [SMul R C] (h: A ≃ₗ[R] B) (g: B ≃ₗ[R] C) : A ≃ₗ[R] C where
   toEquiv := h.toEquiv.trans g.toEquiv
-  resp_add' := by
+  resp_add := by
     intro a b
     apply flip Eq.trans
-    apply g.resp_add'
+    apply g.resp_add
     show g _ = g _
     congr
-    apply h.resp_add'
-  resp_smul' := by
+    apply h.resp_add
+  resp_smul := by
     intro a b
     apply flip Eq.trans
     apply resp_smul g
@@ -138,28 +138,28 @@ def toLinearMap
   [FunLike F A B] [SMul R A] [SMul R B] [Add A] [Add B]
   [IsAddHom F A B] [IsSMulHom F R A B] (f: F) : LinearMap R A B where
   toFun := f
-  resp_add' := resp_add _
-  resp_smul' := resp_smul _
+  resp_add := resp_add _
+  resp_smul := resp_smul _
 
 namespace LinearMap
 
 def comp [Add A] [Add B] [Add C] (f: B →ₗ[R] C) (g: A →ₗ[R] B) : A →ₗ[R] C where
   toFun := f ∘ g
-  resp_add' { _ _ } := by dsimp; rw [resp_add, resp_add]
-  resp_smul' { _ _ } := by dsimp; rw [resp_smul, resp_smul]
+  resp_add { _ _ } := by dsimp; rw [resp_add, resp_add]
+  resp_smul { _ _ } := by dsimp; rw [resp_smul, resp_smul]
 
 def id (A: Type*) [Add A] [SMul R A] : A →ₗ[R] A where
   toFun x := x
-  resp_add' := rfl
-  resp_smul' := rfl
+  resp_add := rfl
+  resp_smul := rfl
 
 @[ext]
 def ext [Add A] [Add B] (a b: A →ₗ[R] B) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
 
 def copy [Add A] [Add B] (f: A →ₗ[R] B) (g: A -> B) (h: ∀x, f x = g x) : A →ₗ[R] B where
   toFun := g
-  resp_add' {x y} := by simp only [←h, resp_add]
-  resp_smul' {r x} := by simp only [←h, resp_smul]
+  resp_add {x y} := by simp only [←h, resp_add]
+  resp_smul {r x} := by simp only [←h, resp_smul]
 
 section AddMonoid
 
@@ -170,19 +170,19 @@ variable
 instance instZero : Zero (A →ₗ[R] B) where
   zero := {
     toFun _ := 0
-    resp_add' {_ _} := by simp
-    resp_smul' {r m} := by simp
+    resp_add {_ _} := by simp
+    resp_smul {r m} := by simp
   }
 
 instance instAdd [IsAddCommMagma B] : Add (A →ₗ[R] B) where
   add f g := {
     toFun x := f x + g x
-    resp_add' := by
+    resp_add := by
       intro x y
       dsimp
       rw [resp_add, resp_add]
       rw [add_assoc, add_left_comm (f y), ←add_assoc]
-    resp_smul' := by
+    resp_smul := by
       intro r x
       dsimp
       rw [resp_smul, resp_smul, smul_add]
@@ -191,10 +191,10 @@ instance instAdd [IsAddCommMagma B] : Add (A →ₗ[R] B) where
 instance instNSMul [IsAddCommMagma B]: SMul ℕ (A →ₗ[R] B) where
   smul n f := {
     toFun x := n • f x
-    resp_add' := by
+    resp_add := by
       intro x y
       simp [resp_add, nsmul_add]
-    resp_smul' := by
+    resp_smul := by
       intro r x
       simp [resp_smul]
       rw [smul_comm]
@@ -203,10 +203,10 @@ instance instNSMul [IsAddCommMagma B]: SMul ℕ (A →ₗ[R] B) where
 instance instSMul [IsCommMagma R]: SMul R (A →ₗ[R] B) where
   smul r f := {
     toFun x := r • f x
-    resp_add' := by
+    resp_add := by
       intro x y; dsimp
       rw [resp_add, smul_add]
-    resp_smul' := by
+    resp_smul := by
       intro r x
       dsimp
       rw [resp_smul, smul_comm]
@@ -248,10 +248,10 @@ variable
 instance instNeg [IsAddCommMagma B] : Neg (A →ₗ[R] B) where
   neg f := {
     toFun x := -f x
-    resp_add' {_ _} := by
+    resp_add {_ _} := by
       simp [resp_add, neg_add_rev]
       rw [add_comm]
-    resp_smul' {r m} := by
+    resp_smul {r m} := by
       simp
       rw [neg_smul', resp_smul]
   }
@@ -311,14 +311,14 @@ def BilinMap.mk
   : A →ₗ[R] A →ₗ[R] B where
   toFun x := {
     toFun y := f x y
-    resp_add' := resp_add_right _ _ _
-    resp_smul' := resp_smul_right _ _ _
+    resp_add := resp_add_right _ _ _
+    resp_smul := resp_smul_right _ _ _
   }
-  resp_add' := by
+  resp_add := by
     intro a b
     ext k
     apply resp_add_left
-  resp_smul' := by
+  resp_smul := by
     intro a b
     ext k
     apply resp_smul_left
