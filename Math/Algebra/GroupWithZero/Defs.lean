@@ -2,18 +2,6 @@ import Math.Algebra.Monoid.Defs
 import Math.Ops.Checked
 import Math.Data.Int.Basic
 
-class NoZeroDivisors (α: Type*) [Mul α] [Zero α] where
-  of_mul_eq_zero: ∀{a b: α}, a * b = 0 -> a = 0 ∨ b = 0
-
-def of_mul_eq_zero [Mul α] [Zero α] [NoZeroDivisors α]: ∀{a b: α}, a * b = 0 -> a = 0 ∨ b = 0 :=
-  NoZeroDivisors.of_mul_eq_zero
-
-instance : NoZeroDivisors Nat where
-  of_mul_eq_zero := Nat.mul_eq_zero.mp
-
-instance : NoZeroDivisors Int where
-  of_mul_eq_zero := Int.mul_eq_zero.mp
-
 def of_npow_eq_zero [Zero α] [MonoidOps α] [IsMonoid α] [IsNontrivial α] [IsMulZeroClass α] [NoZeroDivisors α] (a: α) (n: ℕ) : a ^ n = 0 -> a = 0 := by
   induction n with
   | zero =>

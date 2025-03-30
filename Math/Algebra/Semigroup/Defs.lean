@@ -204,3 +204,15 @@ instance (priority := 100) [Mul α] [IsCommMagma α] : @Std.Commutative α (· *
 instance : IsAddCancel ℕ where
   add_left_cancel := Nat.add_left_cancel
   add_right_cancel := Nat.add_right_cancel
+
+class NoZeroDivisors (α: Type*) [Mul α] [Zero α] where
+  of_mul_eq_zero: ∀{a b: α}, a * b = 0 -> a = 0 ∨ b = 0
+
+def of_mul_eq_zero [Mul α] [Zero α] [NoZeroDivisors α]: ∀{a b: α}, a * b = 0 -> a = 0 ∨ b = 0 :=
+  NoZeroDivisors.of_mul_eq_zero
+
+instance : NoZeroDivisors ℕ where
+  of_mul_eq_zero := Nat.mul_eq_zero.mp
+
+instance : NoZeroDivisors ℤ where
+  of_mul_eq_zero := Int.mul_eq_zero.mp
