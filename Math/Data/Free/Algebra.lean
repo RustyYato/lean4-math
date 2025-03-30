@@ -325,7 +325,7 @@ def ι (R: Type*) [SemiringOps R] : X → FreeAlgebra R X := fun m ↦ ⟦.of m�
 
 def liftFun (R: Type*) {A : Type*}
   [SemiringOps A] [SemiringOps R] [SMul R A] [AlgebraMap R A]
-  [IsSemiring A] [IsAlgebra R A] (f : X → A) :
+  [IsSemiring A] [IsSemiring R] [IsAlgebra R A] (f : X → A) :
     Pre R X → A
   | .of t => f t
   | .scalar c => algebraMap c

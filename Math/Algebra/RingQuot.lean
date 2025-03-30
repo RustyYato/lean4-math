@@ -9,7 +9,7 @@ section Rel
 
 section
 
-variable [SemiringOps S] [SemiringOps R] [SMul S R] [IsSemiring R]
+variable [SemiringOps S] [IsSemiring S] [SemiringOps R] [SMul S R] [IsSemiring R]
 
 variable [AlgebraMap S R] [IsAlgebra S R]
 
@@ -124,7 +124,7 @@ def eqvgen_mul : EquivGen (Rel r) a c -> EquivGen (Rel r) b d -> EquivGen (Rel r
 
 end
 
-variable [RingOps S] [RingOps R] [SMul S R] [IsRing R]
+variable [SemiringOps S] [IsSemiring S] [RingOps R] [SMul S R] [IsRing R]
 
 variable [AlgebraMap S R] [IsAlgebra S R]
 
@@ -270,7 +270,7 @@ private def zsmul [RingOps R] [IsRing R] (n: Int) : RingQuot r -> RingQuot r := 
     apply Quot.sound
     assumption
 
-private def smul [SemiringOps R] [SemiringOps S] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (n: S) : RingQuot r -> RingQuot r := by
+private def smul [SemiringOps R] [SemiringOps S] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (n: S) : RingQuot r -> RingQuot r := by
   apply Quot.lift (⟦n • ·⟧)
   intro a b r
   apply Quot.sound
@@ -291,7 +291,7 @@ instance [RingOps R] [IsRing R] : Sub (RingQuot r) := ⟨sub⟩
 instance [SemiringOps R] [IsSemiring R] : Pow (RingQuot r) ℕ := ⟨flip npow⟩
 instance [SemiringOps R] [IsSemiring R] : SMul ℕ (RingQuot r) := ⟨nsmul⟩
 instance [RingOps R] [IsRing R] : SMul ℤ (RingQuot r) := ⟨zsmul⟩
-instance [SemiringOps R] [SemiringOps S] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] : SMul S (RingQuot r) := ⟨smul⟩
+instance [SemiringOps R] [SemiringOps S] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] : SMul S (RingQuot r) := ⟨smul⟩
 
 instance instSemiringOps [SemiringOps R] [IsSemiring R] : SemiringOps (RingQuot r) where
 instance instRingOps [RingOps R] [IsRing R] : RingOps (RingQuot r) where
@@ -315,7 +315,7 @@ def mk_nsmul [SemiringOps R] [IsSemiring R] {n: Nat} : (n • ⟦a⟧: RingQuot 
 @[simp]
 def mk_zsmul [RingOps R] [IsRing R] {n: Int} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 @[simp]
-def mk_smul [SemiringOps R] [SemiringOps S] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] {n: S} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
+def mk_smul [SemiringOps R] [SemiringOps S] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] {n: S} : (n • ⟦a⟧: RingQuot r) = ⟦n • a⟧ := rfl
 
 @[cases_eliminator]
 def ind [SemiringOps R] {motive: RingQuot r -> Prop} : (mk: ∀a, motive ⟦a⟧) -> ∀a, motive a := Quot.ind
@@ -421,7 +421,7 @@ instance instIsRing [RingOps R] [IsRing R] : IsRing (RingQuot r) where
     show ⟦_⟧ = -⟦_⟧
     simp [intCast_negSucc]
 
-instance [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
+instance [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [IsSemiring S] [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
   toFun s := ⟦algebraMap s⟧
   resp_zero' := by
     simp
@@ -436,7 +436,7 @@ instance [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [AlgebraMap S
     intro a b
     simp [resp_mul]
 
-instance instIsAlgebra [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [AlgebraMap S R] [IsAlgebra S R] : IsAlgebra S (RingQuot r) where
+instance instIsAlgebra [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [IsSemiring S] [AlgebraMap S R] [IsAlgebra S R] : IsAlgebra S (RingQuot r) where
   commutes := by
     intro s x
     cases x with| mk x=>
@@ -501,11 +501,11 @@ def lift [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T]: {f: R �
 def lift_mkRingHom_apply [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T] (f : R →+* T) {r : R → R → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
     lift ⟨f, w⟩ (mkRingHom r x) = f x := rfl
 
-def mkAlgHom (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
+def mkAlgHom (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
   toRingHom := mkRingHom _
   resp_algebraMap' _ := rfl
 
-variable (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
+variable (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
    [SemiringOps A] [IsSemiring A] [AlgebraMap S A] [SMul S A] [IsAlgebra S A]
    [SemiringOps B] [IsSemiring B] [AlgebraMap S B] [SMul S B] [IsAlgebra S B]
 

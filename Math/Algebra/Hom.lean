@@ -126,7 +126,7 @@ def toAlgHom' (f: F) : A →ₐ[R] B where
   toRingHom := toRingHom f
   resp_algebraMap' := resp_algebraMap f
 
-instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsAlgebra R A] [IsAlgebra R B]: IsSMulHom F R A B where
+instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsSemiring R] [IsAlgebra R A] [IsAlgebra R B]: IsSMulHom F R A B where
   resp_smul := by
     intro f r x
     rw [smul_def, smul_def, resp_mul, resp_algebraMap]
@@ -141,7 +141,7 @@ variable (F R A B: Type*)
   [AlgebraMap R A] [AlgebraMap R B] [AlgebraMap R C]
 
 variable [IsAddHom F A B] [IsMulHom F A B] [IsAlgebraMapHom F R A B]
-  [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsAlgebra R A] [IsAlgebra R B]
+  [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsSemiring R] [IsAlgebra R A] [IsAlgebra R B]
 
 def toAlgHom (f: F) : A →ₐ[R] B where
   toFun := f

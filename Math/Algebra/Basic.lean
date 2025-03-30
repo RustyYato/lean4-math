@@ -11,7 +11,7 @@ def AlgebraMap.ofHom {R A: Type*} [SemiringOps R] [SemiringOps A] (f: R →+* A)
 def algebraMap {R A: Type*} [SemiringOps R] [SemiringOps A] [f: AlgebraMap R A]
   : R →+* A := f.toRingHom
 
-class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A] : Prop extends IsSemiring R where
+class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A] [IsSemiring R] : Prop where
   commutes: ∀(r: R) (x: A), algebraMap r * x = x * algebraMap r
   smul_def: ∀(r: R) (x: A), r • x = algebraMap r * x
 
@@ -26,7 +26,7 @@ instance [SemiringOps A] [IsSemiring A] [a: Algebra R A] : IsAlgebra R A where
   smul_def := a.smul_def
 
 variable [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A]
-  [IsAlgebra R A]
+  [IsSemiring R] [IsAlgebra R A]
 
 def smul_mul
   (r s: R) (a b: A) : r • a * s • b = (r * s) • (a * b) := by
@@ -95,14 +95,14 @@ instance : IsAlgebra R R where
 
 variable [SemiringOps S] [SMul S A]
 
-instance [AlgebraMap R A] [IsAlgebra R A] [AlgebraMap S A] [IsAlgebra S A] : IsSMulComm R S A where
+instance [AlgebraMap R A] [IsAlgebra R A] [AlgebraMap S A] [IsSemiring S] [IsAlgebra S A] : IsSMulComm R S A where
   smul_comm := by
     intro r s x
     simp [smul_def, ←mul_assoc]
     congr 1
     apply commutes
 
-def smul_one [AlgebraMap S A] [IsAlgebra S A] (s: S) : s • (1: A) = algebraMap s := by
+def smul_one [AlgebraMap S A] [IsSemiring S] [IsAlgebra S A] (s: S) : s • (1: A) = algebraMap s := by
   rw [smul_def, mul_one]
 
 end Algebra
