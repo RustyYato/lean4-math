@@ -1,21 +1,57 @@
 import Math.Algebra.Semiring.Defs
 import Math.Algebra.AddGroupWithOne.Defs
 
+section PreRing
+
+class IsNonUnitalNonAssocRing (α: Type*) [AddGroupOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddGroup α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α
+
+class IsNonUnitalRing (α: Type*) [AddGroupOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddGroup α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α, IsSemigroup α
+
+class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] : Prop extends IsNonUnitalNonAssocRing α, IsMulOneClass α, IsAddGroupWithOne α
+
+def IsNonUnitalNonAssocRing.inst
+  [AddGroupOps α] [Mul α]
+  [IsAddCommMagma α] [IsAddGroup α]
+  [IsLeftDistrib α] [IsRightDistrib α]
+  [IsMulZeroClass α]
+  : IsNonUnitalNonAssocRing α where
+
+def IsNonUnitalRing.inst
+  [AddGroupOps α] [Mul α]
+  [IsAddCommMagma α] [IsAddGroup α]
+  [IsLeftDistrib α] [IsRightDistrib α]
+  [IsMulZeroClass α] [IsSemigroup α]
+  : IsNonUnitalRing α where
+
+def IsNonAssocRing.inst
+  [AddGroupWithOneOps α] [Mul α]
+  [IsAddCommMagma α] [IsAddGroup α]
+  [IsLeftDistrib α] [IsRightDistrib α]
+  [IsMulZeroClass α] [IsMulOneClass α]
+  [IsAddGroupWithOne α]
+  : IsNonAssocRing α := { inferInstanceAs (IsAddGroupWithOne α) with }
+
+instance (priority := 100) [AddGroupWithOneOps α] [Mul α] [IsNonAssocRing α] : IsNonUnitalNonAssocRing α where
+instance (priority := 100) [AddGroupOps α] [Mul α] [IsNonUnitalRing α] : IsNonUnitalNonAssocRing α where
+
+end PreRing
+
 class RingOps (α: Type*) extends SemiringOps α, AddGroupWithOneOps α where
 instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where
 
 class IsRing (α: Type*) [RingOps α] : Prop extends IsSemiring α, IsAddGroupWithOne α  where
 
-instance [RingOps α] [IsSemiring α] [IsAddGroupWithOne α] : IsRing α where
-  intCast_ofNat := intCast_ofNat
-  intCast_negSucc := intCast_negSucc
-  sub_eq_add_neg := sub_eq_add_neg
-  zsmul_ofNat := zsmul_ofNat
-  zsmul_negSucc := zsmul_negSucc
-  neg_add_cancel := neg_add_cancel
+def IsRing.inst' [RingOps α]
+  [IsAddCommMagma α] [IsAddGroupWithOne α] [IsSemigroup α] [IsMulZeroClass α] [IsMulOneClass α] [IsLeftDistrib α] [IsRightDistrib α] [IsMonoid α]  : IsRing α := {
+  inferInstanceAs (IsAddGroupWithOne α), inferInstanceAs (IsMonoid α) with
+}
+def IsRing.inst [RingOps α] [IsSemiring α] [IsAddGroupWithOne α] : IsRing α := {
+  inferInstanceAs (IsAddGroupWithOne α), inferInstanceAs (IsMonoid α) with
+}
 
-instance [RingOps α] [IsRing α] : IsRing αᵃᵒᵖ := inferInstance
-instance [RingOps α] [IsRing α] : IsRing αᵐᵒᵖ := inferInstance
+instance [RingOps α] [IsRing α] : IsRing αᵃᵒᵖ := IsRing.inst
+instance [RingOps α] [IsRing α] : IsRing αᵐᵒᵖ := IsRing.inst
+instance (priority := 500) [RingOps α] [IsRing α] : IsSemiring α := inferInstance
 
 def mul_sub [AddGroupOps α] [IsAddGroup α] [Mul α] [IsLeftDistrib α] [IsMulZeroClass α] (k a b: α): k * (a - b) = k * a - k * b := by
   rw [sub_eq_add_neg, sub_eq_add_neg, mul_add]
@@ -73,35 +109,9 @@ def intCast_mul [RingOps α] [IsRing α] (a b: ℤ) : a * b = ((a * b: Int): α)
 def neg_one_mul [RingOps α] [IsRing α] (a: α) : -1 * a = -a := by
   rw [←intCast_one, intCast_neg, ←zsmul_eq_intCast_mul, neg_one_zsmul]
 
-class IsNonAssocRing (α: Type*) [AddGroupWithOneOps α] [Mul α] : Prop extends IsNonAssocSemiring α, IsAddGroupWithOne α
-
-class IsNonUnitalNonAssocRing (α: Type*) [AddGroupOps α] [Mul α] : Prop extends IsNonUnitalNonAssocSemiring α, IsAddGroup α
-
-instance
-  [AddGroupWithOneOps α] [Mul α]
-  [h: IsNonAssocSemiring α]
-  [g: IsAddGroupWithOne α]
-  : IsNonAssocRing α := {
-    h, g with
-  }
-
-instance
-  [AddGroupOps α] [Mul α]
-  [h: IsNonUnitalNonAssocSemiring α]
-  [g: IsAddGroup α]
-  : IsNonUnitalNonAssocRing α := {
-    h, g with
-  }
-
-instance [RingOps α] [IsRing α] : IsNonAssocRing α := inferInstance
-instance [RingOps α] [IsRing α] : IsNonUnitalNonAssocRing α := inferInstance
-
-instance (priority := 100) [RingOps α] [h: IsNonAssocRing α] [g: IsMonoid α] :
-  IsRing α := inferInstance
-instance (priority := 100) [RingOps α] [h: IsNonUnitalNonAssocRing α]
-  [g: IsAddGroupWithOne α] [IsMulOneClass α] : IsNonAssocRing α := inferInstance
-instance (priority := 100) [RingOps α] [h: IsNonUnitalNonAssocRing α]
-  [g: IsAddGroupWithOne α] [IsMonoid α] : IsRing α := inferInstance
+instance [RingOps α] [IsRing α] : IsNonUnitalNonAssocRing α := IsNonUnitalNonAssocRing.inst
+instance [RingOps α] [IsRing α] : IsNonUnitalRing α := IsNonUnitalRing.inst
+instance [RingOps α] [IsRing α] : IsNonAssocRing α := IsNonAssocRing.inst
 
 instance instRingInt : IsRing Int where
   sub_eq_add_neg _ _ := Int.sub_eq_add_neg

@@ -1863,7 +1863,7 @@ instance : Pow BitInt ℕ where
 
 instance : IsMonoid BitInt where
 
-instance : IsRing BitInt := inferInstance
+instance : IsRing BitInt := IsRing.inst'
 
 def equivInt : Int ≃+* BitInt where
   toFun n := n

@@ -311,7 +311,7 @@ instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
     show algebraMap (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMap (R := R) (A := FreeAlgebra R X) _
     rw [resp_neg]
 
-instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) := inferInstance
+instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) := IsRing.inst
 
 instance [h: Zero R] [One R] [Add R] [Mul R] : Inhabited (FreeAlgebra R X) := ⟨Quot.mk _ (.scalar 0)⟩
 

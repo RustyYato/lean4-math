@@ -182,8 +182,8 @@ instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsRightDistrib (β i)] : I
     intro k a b; ext i
     apply add_mul
 
-instance [∀i, SemiringOps (β i)] [∀i, IsSemiring (β i)] : IsSemiring (∀i, β i) := inferInstance
-instance [∀i, RingOps (β i)] [∀i, IsRing (β i)] : IsRing (∀i, β i) := inferInstance
+instance [∀i, SemiringOps (β i)] [∀i, IsSemiring (β i)] : IsSemiring (∀i, β i) := IsSemiring.inst
+instance [∀i, RingOps (β i)] [∀i, IsRing (β i)] : IsRing (∀i, β i) := IsRing.inst
 
 instance [MonoidOps R] [∀i, SMul R (β i)] [IsMonoid R] [∀i, IsMulAction R (β i)] : IsMulAction R (∀i, β i) where
   one_smul := by

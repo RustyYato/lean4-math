@@ -9,7 +9,7 @@ variable [SetLike S α] [RingOps α] [IsSubring S] [IsRing α]
 instance : RingOps s := {
   instSemiringOpsElem s with
 }
-instance : IsRing s := inferInstance
+instance : IsRing s := IsRing.inst
 
 instance (s: Subring α) : RingOps s := {
   instSemiringOpsElem s with

@@ -167,7 +167,7 @@ instance : IsSemiring (Fin (n + 1)) where
     simp
     rw [Nat.pow_succ]
 
-instance : IsRing (Fin (n + 1)) := inferInstance
+instance : IsRing (Fin (n + 1)) := IsRing.inst
 
 instance : IsCommMagma (Fin (n + 1)) where
   mul_comm := by

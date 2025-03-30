@@ -211,9 +211,8 @@ instance instIsAddGroupWithOne [RingOps P] [IsRing P] : IsAddGroupWithOne P[X] :
     rw [intCast_negSucc, resp_neg]
 }
 
-instance [RingOps P] [IsRing P] : IsRing P[X] := {
-  instIsAddGroupWithOne with
-}
+instance [SemiringOps P] [IsSemiring P] : IsSemiring P[X] := IsSemiring.inst
+instance [RingOps P] [IsRing P] : IsRing P[X] := IsRing.inst
 
 instance [SemiringOps P] [IsSemiring P] : SMul P P[X] :=
   inferInstanceAs (SMul P (AddMonoidAlgebra ℕ P ℕ))

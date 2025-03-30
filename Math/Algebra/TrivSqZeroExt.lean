@@ -325,7 +325,7 @@ instance [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddC
   }
 
 instance [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M]
-  [SMul R M] [SMul Rᵐᵒᵖ M] [IsModule R M] [h: IsModule Rᵐᵒᵖ M] : IsNonAssocRing (TrivSqZeroExt R M) := inferInstance
+  [SMul R M] [SMul Rᵐᵒᵖ M] [IsModule R M] [h: IsModule Rᵐᵒᵖ M] : IsNonAssocRing (TrivSqZeroExt R M) := IsNonAssocRing.inst
 
 /-- The canonical inclusion of rings `R → TrivSqZeroExt R M`. -/
 def inlHom [SemiringOps R] [IsSemiring R]

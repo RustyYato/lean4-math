@@ -1,5 +1,7 @@
 import Math.Algebra.AddMonoidWithOne.Defs
 
+section Distrib
+
 class IsLeftDistrib (α: Type*) [Add α] [Mul α]: Prop where
   left_distrib (k a b: α): k * (a + b) = k * a + k * b
 class IsRightDistrib (α: Type*) [Add α] [Mul α]: Prop where
@@ -27,6 +29,41 @@ instance (priority := 100) [Add α] [Mul α] [IsCommMagma α] [IsRightDistrib α
     iterate 3 rw [mul_comm k]
     rw [add_mul]
 
+
+end Distrib
+
+section PreSemiring
+
+class IsNonUnitalNonAssocSemiring (α: Type*) [AddMonoidOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α
+
+class IsNonUnitalSemiring (α: Type*) [AddMonoidOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α, IsSemigroup α
+
+class IsNonAssocSemiring (α: Type*) [AddMonoidWithOneOps α] [Mul α] : Prop extends IsNonUnitalNonAssocSemiring α, IsMulOneClass α, IsAddMonoidWithOne α
+
+def IsNonUnitalNonAssocSemiring.inst
+  [AddMonoidOps α] [Mul α]
+  [IsAddCommMagma α] [IsAddMonoid α]
+  [IsLeftDistrib α] [IsRightDistrib α]
+  [IsMulZeroClass α]
+  : IsNonUnitalNonAssocSemiring α where
+
+def IsNonAssocSemiring.inst
+  [AddMonoidWithOneOps α] [Mul α]
+  [IsNonUnitalNonAssocSemiring α]
+  [IsMulOneClass α]
+  [IsAddMonoidWithOne α]
+  : IsNonAssocSemiring α where
+  natCast_zero := _root_.natCast_zero
+  natCast_succ := _root_.natCast_succ
+  ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
+
+instance (priority := 100) [AddMonoidWithOneOps α] [Mul α] [IsNonAssocSemiring α] : IsNonUnitalNonAssocSemiring α where
+instance (priority := 100) [AddMonoidOps α] [Mul α] [IsNonUnitalSemiring α] : IsNonUnitalNonAssocSemiring α where
+
+end PreSemiring
+
+section Semiring
+
 class SemiringOps (α: Type*) extends AddMonoidWithOneOps α, MonoidOps α where
 instance [AddMonoidWithOneOps α] [MonoidOps α] : SemiringOps α where
 
@@ -35,12 +72,12 @@ class IsSemiring (α: Type*) [SemiringOps α] : Prop extends
   IsSemigroup α, IsMulZeroClass α, IsMulOneClass α,
   IsLeftDistrib α, IsRightDistrib α, IsMonoid α where
 
-instance [SemiringOps α] [IsAddCommMagma α] [IsAddMonoidWithOne α] [IsSemigroup α] [IsMulZeroClass α] [IsMulOneClass α] [IsLeftDistrib α] [IsRightDistrib α] [IsMonoid α] : IsSemiring α where
-  npow_zero := npow_zero
-  npow_succ := npow_succ
+def IsSemiring.inst [SemiringOps α] [IsAddCommMagma α] [IsAddMonoidWithOne α] [IsSemigroup α] [IsMulZeroClass α] [IsMulOneClass α] [IsLeftDistrib α] [IsRightDistrib α] [IsMonoid α] : IsSemiring α where
+  npow_zero := _root_.npow_zero
+  npow_succ := _root_.npow_succ
 
-instance [SemiringOps α] [IsSemiring α] : IsSemiring αᵃᵒᵖ := inferInstance
-instance [SemiringOps α] [IsSemiring α] : IsSemiring αᵐᵒᵖ := inferInstance
+instance [SemiringOps α] [IsSemiring α] : IsSemiring αᵃᵒᵖ := IsSemiring.inst
+instance [SemiringOps α] [IsSemiring α] : IsSemiring αᵐᵒᵖ := IsSemiring.inst
 
 def natCast_mul_eq_nsmul [SemiringOps α] [IsSemiring α] (x: α) (r: Nat) : r * x = r • x := by
   induction r with
@@ -82,33 +119,15 @@ def square_add  [SemiringOps α] [IsSemiring α] [IsCommMagma α] (a b: α) : (a
   simp [two_mul, npow_two, mul_add, add_mul, add_comm b a]
   ac_rfl
 
-class IsNonUnitalNonAssocSemiring (α: Type*) [AddMonoidOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α
-
-instance
-  [AddMonoidOps α] [Mul α]
-  [IsAddCommMagma α] [IsAddMonoid α]
-  [IsLeftDistrib α] [IsRightDistrib α]
-  [IsMulZeroClass α]
-  : IsNonUnitalNonAssocSemiring α where
-
-class IsNonAssocSemiring (α: Type*) [AddMonoidWithOneOps α] [Mul α] : Prop extends IsNonUnitalNonAssocSemiring α, IsMulOneClass α, IsAddMonoidWithOne α
-
-instance
-  [AddMonoidWithOneOps α] [Mul α]
-  [IsNonUnitalNonAssocSemiring α]
-  [IsMulOneClass α]
-  [IsAddMonoidWithOne α]
-  : IsNonAssocSemiring α where
+instance (priority := 500) [SemiringOps α] [IsSemiring α] : IsNonAssocSemiring α where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
   ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
-instance [SemiringOps α] [IsSemiring α] : IsNonAssocSemiring α where
-  natCast_zero := natCast_zero
-  natCast_succ := natCast_succ
-  ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
+instance (priority := 500) [SemiringOps α] [IsSemiring α] : IsNonUnitalNonAssocSemiring α where
+instance (priority := 500) [SemiringOps α] [IsSemiring α] : IsNonUnitalSemiring α where
 
-instance (priority := 100) [SemiringOps α] [IsNonAssocSemiring α] [IsMonoid α] : IsSemiring α := inferInstance
+end Semiring
 
 instance : IsSemiring Nat where
   add_comm := Nat.add_comm
