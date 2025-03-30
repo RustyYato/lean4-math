@@ -49,14 +49,14 @@ variable {A: Type*} {X: Type*} [SemiringOps A] [IsCommMagma A] [IsSemiring A] [S
 
 def ι : M →ₗ[R] (TensorAlgebra R M) where
   toFun x :=  RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)) (FreeAlgebra.ι R x)
-  resp_add := by
+  map_add := by
     intro x y
-    rw [←resp_add (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)))]
+    rw [←map_add (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)))]
     apply RingQuot.mkRingHom_rel
     apply Rel.add
-  resp_smul := by
+  map_smul := by
     intro x y
-    rw [←resp_smul (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M))) (r := x)]
+    rw [←map_smul (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M))) (r := x)]
     apply RingQuot.mkRingHom_rel
     apply Rel.smul
 
@@ -64,8 +64,8 @@ def lift [IsSemiring A] [IsAlgebra R A] : (M →ₗ[R] A) ≃ (TensorAlgebra R M
   toFun := RingQuot.liftAlgHom R ∘ fun f => ⟨FreeAlgebra.lift R f, by
     intro x y r
     cases r
-    simp [FreeAlgebra.lift_ι_apply, resp_add]
-    simp [FreeAlgebra.lift_ι_apply, resp_smul]⟩
+    simp [FreeAlgebra.lift_ι_apply, map_add]
+    simp [FreeAlgebra.lift_ι_apply, map_smul]⟩
   invFun f := (toLinearMap f).comp (ι R)
   leftInv f := by
     dsimp; apply DFunLike.ext
@@ -130,10 +130,10 @@ def induction {motive: TensorAlgebra R M -> Prop}
 private def algebraMapInv : TensorAlgebra R M →ₐ[R] R :=
   lift R {
     toFun _ := 0
-    resp_add := by
+    map_add := by
       intro _ _
       rw [add_zero]
-    resp_smul := by
+    map_smul := by
       intro _ _
       rw [smul_zero]
   }

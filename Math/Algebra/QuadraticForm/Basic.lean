@@ -66,7 +66,7 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
     iterate 4 rw [spec]
-    simp only [resp_add, LinearMap.apply_add, sub_eq_add_neg, neg_add_rev]
+    simp only [map_add, LinearMap.apply_add, sub_eq_add_neg, neg_add_rev]
     rw [
       show Q a + Q b + (B a) b + Q k + ((B a) k + (B b) k) + (-(B a) b + (-Q b + -Q a)) + -Q k
          = ((Q a + -Q a) + Q b + (-Q b)) + ((B a) b + (-(B a) b)) + (Q k + -Q k) + ((B a) k + (B b) k) by ac_rfl,
@@ -78,7 +78,7 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
     iterate 4 rw [spec]
-    simp only [resp_add, LinearMap.apply_add, sub_eq_add_neg, neg_add_rev]
+    simp only [map_add, LinearMap.apply_add, sub_eq_add_neg, neg_add_rev]
     rw [
       show Q k + (Q a + Q b + (B a) b) + ((B k) a + (B k) b) + -Q k + (-(B a) b + (-Q b + -Q a))
          = (Q k + -Q k) + ((Q a + -Q a)+ (Q b + -Q b) + ((B a) b + (-(B a) b))) + ((B k) a + (B k) b) by ac_rfl,
@@ -97,7 +97,7 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
       show r • Q a + r • Q b + r • (B a) b + -(r • Q a) + -(r • Q b)
          = (r • Q a + -(r • Q a)) + (r • Q b + -(r • Q b)) + r • (B a) b by ac_rfl
     ]
-    simp [add_neg_cancel, resp_smul]
+    simp [add_neg_cancel, map_smul]
   · intro r b a
     dsimp only
     have ⟨B, spec⟩ := Q.exists_companion
@@ -109,7 +109,7 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
       show r • Q a + r • Q b + r • (B a) b + -(r • Q a) + -(r • Q b)
          = (r • Q a + -(r • Q a)) + (r • Q b + -(r • Q b)) + r • (B a) b by ac_rfl
     ]
-    simp [add_neg_cancel, resp_smul]
+    simp [add_neg_cancel, map_smul]
 
 end QuadraticMap
 

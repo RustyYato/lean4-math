@@ -28,7 +28,7 @@ def ι_sq (v: Vector n) : ι v * ι v = algebraMap (QF n v) := CliffordAlgebra.�
 def ι_mul_add_comm_mul (v w: Vector n) : ι v * ι w + ι w * ι v = algebraMap ((QF n).polar v w) := CliffordAlgebra.ι_mul_add_comm_mul _ _ _
 
 instance : IsZeroHom ((Vector n) →ₗ[ℝ] VGA n) (Vector n) (VGA n) where
-  resp_zero f := by rw [←smul_zero (0: ℝ), resp_smul, zero_smul]
+  map_zero f := by rw [←smul_zero (0: ℝ), map_smul, zero_smul]
 
 set_option linter.unusedVariables false in
 @[induction_eliminator]
@@ -83,7 +83,7 @@ def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
 --       rw [Fin.sum_succ, Fin.sum_zero]
 --       dsimp
 --       rw [zero_add, zero_smul]
---       rw [←zero_smul (R := ℝ) (ι v), ←resp_smul]
+--       rw [←zero_smul (R := ℝ) (ι v), ←map_smul]
 --       congr
 --       ext i; exact i.elim0
 --     | succ n ih =>
@@ -143,7 +143,7 @@ def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
 --       -- | zero =>
 --       --   rw [Fin.sum_succ, Fin.sum_zero, zero_add]
 --       --   simp
---       --   rw [zero_smul, show v = ((0: ℝ) • 0) from ?_, resp_smul, zero_smul]
+--       --   rw [zero_smul, show v = ((0: ℝ) • 0) from ?_, map_smul, zero_smul]
 --       --   rw [zero_smul]
 --       --   ext i
 --       --   exact i.elim0
@@ -163,7 +163,7 @@ def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
 --     obtain ⟨a, rfl⟩ := ha
 --     obtain ⟨b, rfl⟩ := hb
 --     refine ⟨fun i => a i + b i, ?_⟩
---     simp [resp_add, add_smul]
+--     simp [map_add, add_smul]
 --     ac_rfl
 --   | mul a b ha hb =>
 --     sorry
@@ -179,7 +179,7 @@ def basis_mvector (i: Fin (2 ^ n)) : VGA n :=
 --     --   | 5 => sorry
 --     --   | 6 => sorry
 --     --   | 7 => sorry
---     -- simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
+--     -- simp only [add_mul, mul_add, algebraMap_id, ←map_mul]
 --     -- simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
 --     --   smul_mul]
 --     -- simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]
@@ -196,7 +196,7 @@ def j : Vector 3 := basis_vector 1
 def k : Vector 3 := basis_vector 2
 
 def ι_eq_lincomb (v: Vector 3) : ι v = v 0 • ι i + v 1 • ι j + v 2 • ι k := by
-  simp only [←resp_smul, ←resp_add]
+  simp only [←map_smul, ←map_add]
   congr
   unfold i j k
   ext i
@@ -255,11 +255,11 @@ def anticomm' (v w: Vector 3) : ι v * ι w = -ι w * ι v + 2 * algebraMap (dot
     ι_sq, smul_one]
   ac_nf
   repeat rw [←add_assoc, smul_neg, neg_add_cancel, zero_add]
-  repeat rw [←resp_add]
+  repeat rw [←map_add]
   sorry
   -- rw [←add_assoc, ←two_mul, ←add_assoc (v 1 * _), ←two_mul, ←two_mul]
   -- rw [←mul_add, ←mul_add, ←add_assoc]
-  -- rw [resp_mul]
+  -- rw [map_mul]
   -- rfl
 
 def ijk_sq : (ι i * ι j * ι k) ^ 2 = -1 := by
@@ -290,13 +290,13 @@ def ijk_sq : (ι i * ι j * ι k) ^ 2 = -1 := by
 --       | 2 => v 1
 --       | 3 => v 2
 --       | _ => 0, ?_⟩
---     simp [zero_smul, resp_zero]
+--     simp [zero_smul, map_zero]
 --     rw [ι_eq_lincomb]
 --   | add a b ha hb =>
 --     obtain ⟨a, rfl⟩ := ha
 --     obtain ⟨b, rfl⟩ := hb
 --     refine ⟨fun i => a i + b i, ?_⟩
---     simp [resp_add, add_smul]
+--     simp [map_add, add_smul]
 --     ac_rfl
 --   | mul a b ha hb =>
 --     obtain ⟨a, rfl⟩ := ha
@@ -311,7 +311,7 @@ def ijk_sq : (ι i * ι j * ι k) ^ 2 = -1 := by
 --       | 5 => sorry
 --       | 6 => sorry
 --       | 7 => sorry
---     simp only [add_mul, mul_add, algebraMap_id, ←resp_mul]
+--     simp only [add_mul, mul_add, algebraMap_id, ←map_mul]
 --     simp only [←commutes (R := ℝ) (A := VGA 3), ←smul_def, ←mul_smul,
 --       smul_mul]
 --     simp only [ι_sq, i_sq, j_sq, k_sq, smul_one]

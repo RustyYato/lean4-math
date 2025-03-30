@@ -191,29 +191,29 @@ instance : FunLike (Prod.sndHomType (α := α) (β := β)) (α × β) β where
   coe_inj := by intro a b h; rfl
 
 instance [Zero α] [Zero β] : IsZeroHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
-  resp_zero _ := rfl
+  map_zero _ := rfl
 instance [Zero α] [Zero β] : IsZeroHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
-  resp_zero _ := rfl
+  map_zero _ := rfl
 
 instance [One α] [One β] : IsOneHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
-  resp_one _ := rfl
+  map_one _ := rfl
 instance [One α] [One β] : IsOneHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
-  resp_one _ := rfl
+  map_one _ := rfl
 
 instance [Add α] [Add β] : IsAddHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
-  resp_add _ := rfl
+  map_add _ := rfl
 instance [Add α] [Add β] : IsAddHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
-  resp_add _ := rfl
+  map_add _ := rfl
 
 instance [Mul α] [Mul β] : IsMulHom (Prod.fstHomType (α := α) (β := β)) (α × β) α where
-  resp_mul _ := rfl
+  map_mul _ := rfl
 instance [Mul α] [Mul β] : IsMulHom (Prod.sndHomType (α := α) (β := β)) (α × β) β where
-  resp_mul _ := rfl
+  map_mul _ := rfl
 
 instance [SMul R α] [SMul R β] : IsSMulHom (Prod.fstHomType (α := α) (β := β)) R (α × β) α where
-  resp_smul _ := rfl
+  map_smul _ := rfl
 instance [SMul R α] [SMul R β] : IsSMulHom (Prod.sndHomType (α := α) (β := β)) R (α × β) β where
-  resp_smul _ := rfl
+  map_smul _ := rfl
 
 instance [Subsingleton β] : EmbeddingLike (Prod.fstHomType (α := α) (β := β)) (α × β) α where
   coe h := {

@@ -39,7 +39,7 @@ def HasChar.dvd_of_ring_hom
   apply HasChar.char_dvd (α := β)
   intro b
   rw [←one_mul b, nsmul_eq_natCast_mul, ←mul_assoc, ←nsmul_eq_natCast_mul,
-  ←resp_one h, ←resp_nsmul, char_spec α, resp_zero, zero_mul]
+  ←map_one h, ←map_nsmul, char_spec α, map_zero, zero_mul]
 
 def HasChar.eq_of_ring_equiv
   [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
@@ -54,13 +54,13 @@ def HasChar.of_ring_emb
   [HasChar α n]
   (emb: α ↪+* β) : HasChar β n := by
   apply HasChar.of_natCast_eq_zero
-  · rw [←resp_zero emb, ←HasChar.natCast_eq_zero, resp_natCast]
+  · rw [←map_zero emb, ←HasChar.natCast_eq_zero, map_natCast]
   · intro m h
     apply HasChar.char_dvd α
     intro x
     apply emb.inj
     show emb _ = emb _
-    rw [resp_zero, resp_nsmul, nsmul_eq_natCast_mul, h, zero_mul]
+    rw [map_zero, map_nsmul, nsmul_eq_natCast_mul, h, zero_mul]
 
 def HasChar.of_ring_equiv
   [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
@@ -115,14 +115,14 @@ def HasChar.eq_zero_of_add_hom
   (f: F) : HasChar α 0 :=
   HasChar.of_ring_emb (α := ℕ) <| {
     toFun n := n
-    resp_zero := natCast_zero
-    resp_one := natCast_one
-    resp_add := natCast_add _ _
-    resp_mul := natCast_mul _ _
+    map_zero := natCast_zero
+    map_one := natCast_one
+    map_add := natCast_add _ _
+    map_mul := natCast_mul _ _
     inj' := by
       intro a b h
       replace h : (a : α) = (b: α) := h
       have : f (a: α) = f (b: α) := by rw [h]
-      rw [resp_natCast, resp_natCast] at this
+      rw [map_natCast, map_natCast] at this
       exact HasChar.natCast_inj this
   }

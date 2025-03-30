@@ -46,10 +46,10 @@ def groupHom_of_functor (f: α ⥤ β) (x: α) : Aut x →* Aut (f.obj x) where
       rw [f.map_id]
       rfl
   }
-  resp_one := by
+  map_one := by
     apply Units.val.inj
     apply f.map_id
-  resp_mul := by
+  map_mul := by
     intro a b
     apply Units.val.inj
     apply f.map_comp

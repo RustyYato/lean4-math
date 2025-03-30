@@ -30,7 +30,7 @@ variable [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring
 
 def smul_mul
   (r s: R) (a b: A) : r • a * s • b = (r * s) • (a * b) := by
-  simp [smul_def, resp_mul]
+  simp [smul_def, map_mul]
   rw [mul_assoc, mul_assoc]; congr 1
   rw [←mul_assoc, ←mul_assoc, commutes]
 
@@ -49,10 +49,10 @@ abbrev Algebra.ofModule [IsModule R A]
   (h₁ : ∀ (r : R) (x y : A), r • x * y = r • (x * y))
   (h₂ : ∀ (r : R) (x y : A), x * r • y = r • (x * y)) : Algebra R A where
   toFun r := r • (1: A)
-  resp_zero := zero_smul _
-  resp_one := one_smul _
-  resp_add := add_smul _ _ _
-  resp_mul := by
+  map_zero := zero_smul _
+  map_one := one_smul _
+  map_add := add_smul _ _ _
+  map_mul := by
     dsimp
     intro x y
     rw [h₁, one_mul, mul_smul]
@@ -73,19 +73,19 @@ def AlgebraMap.toAlgebra [AlgebraMap R A] (h : ∀(c: R) (x: A), algebraMap c * 
   smul_def _ _ := rfl
 
 instance [AlgebraMap R A] [IsAlgebra R A] : IsModule R A where
-  one_smul x := by rw [smul_def, resp_one, one_mul]
-  zero_smul x := by rw [smul_def, resp_zero, zero_mul]
-  mul_smul a b x := by simp [smul_def, resp_mul, mul_assoc]
+  one_smul x := by rw [smul_def, map_one, one_mul]
+  zero_smul x := by rw [smul_def, map_zero, zero_mul]
+  mul_smul a b x := by simp [smul_def, map_mul, mul_assoc]
   smul_zero x := by rw [smul_def, mul_zero]
   smul_add a x y := by rw [smul_def, mul_add, ←smul_def, ←smul_def]
-  add_smul a b x := by rw [smul_def, resp_add, add_mul, ←smul_def, ←smul_def]
+  add_smul a b x := by rw [smul_def, map_add, add_mul, ←smul_def, ←smul_def]
 
 instance (priority := 900) : AlgebraMap R R where
   toFun := id
-  resp_one := rfl
-  resp_zero := rfl
-  resp_add := rfl
-  resp_mul := rfl
+  map_one := rfl
+  map_zero := rfl
+  map_add := rfl
+  map_mul := rfl
 
 def algebraMap_id : algebraMap (R := R) (A := R) x = x := rfl
 
@@ -109,10 +109,10 @@ end Algebra
 
 instance (priority := 500) [SemiringOps R] [IsSemiring R] : AlgebraMap Nat R where
   toFun n := n
-  resp_zero := natCast_zero
-  resp_one := natCast_one
-  resp_add := natCast_add _ _
-  resp_mul := natCast_mul _ _
+  map_zero := natCast_zero
+  map_one := natCast_one
+  map_add := natCast_add _ _
+  map_mul := natCast_mul _ _
 
 instance [SemiringOps R] [IsSemiring R] : IsAlgebra Nat R where
   commutes r x := by

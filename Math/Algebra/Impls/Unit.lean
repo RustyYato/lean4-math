@@ -62,5 +62,5 @@ instance Unit.subsingleton_of_module
 example [Add α] [Zero α] [IsAddZeroClass α] : Unit ↪+ α where
   toFun _ := 0
   inj' _ _ _ := rfl
-  resp_zero := rfl
-  resp_add := (add_zero _).symm
+  map_zero := rfl
+  map_add := (add_zero _).symm

@@ -11,9 +11,9 @@ def IsModule.compHom
     IsDistribMulAction.compHom f.toGroupHom with
     add_smul r s x := by
       show (f (r + s)) • x = _
-      rw [resp_add, add_smul]
+      rw [map_add, add_smul]
       rfl
     zero_smul x := by
       show f 0 • x = 0
-      rw [resp_zero, zero_smul]
+      rw [map_zero, zero_smul]
   }

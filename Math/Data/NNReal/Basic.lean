@@ -39,10 +39,10 @@ namespace NNReal
 def embedReal : ℝ≥0 ↪+* ℝ where
   toFun x := x.val
   inj' := Subtype.val_inj
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := rfl
+  map_zero := rfl
+  map_one := rfl
+  map_add := rfl
+  map_mul := rfl
 
 def ofReal (r: ℝ) : ℝ≥0 where
   val := max r 0
@@ -146,12 +146,12 @@ instance : IsAddCancel ℝ≥0 where
     intro a b k h
     have : -embedReal k + embedReal (k + a) = -embedReal k + embedReal (k + b) := by rw [h]
     apply embedReal.inj
-    simpa [resp_add, ←add_assoc, neg_add_cancel] using this
+    simpa [map_add, ←add_assoc, neg_add_cancel] using this
   add_right_cancel := by
     intro a b k h
     have : embedReal (a + k) + -embedReal k = embedReal (b + k) + -embedReal k := by rw [h]
     apply embedReal.inj
-    simpa [resp_add, add_assoc, neg_add_cancel] using this
+    simpa [map_add, add_assoc, neg_add_cancel] using this
 
 def of_add_eq_zero (a b: ℝ≥0) : a + b = 0 -> a = 0 ∧ b = 0 := by
   intro h

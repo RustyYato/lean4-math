@@ -163,14 +163,14 @@ instance [SemiringOps R] : SemiringOps (FreeAlgebra R X) where
 
 instance [SemiringOps R] : AlgebraMap R (FreeAlgebra R X) where
   toFun := (⟦.scalar ·⟧)
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := by
+  map_zero := rfl
+  map_one := rfl
+  map_add := by
     intro x y
     dsimp
     apply Quotient.sound
     apply Rel.add_scalar
-  resp_mul := by
+  map_mul := by
     intro x y
     dsimp
     apply Quotient.sound
@@ -245,7 +245,7 @@ instance [SemiringOps R] [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
     intro n
     show ⟦.scalar _⟧ = ⟦_⟧ + ⟦_⟧
     rw [natCast_succ]
-    apply resp_add (algebraMap (R := R) (A := FreeAlgebra R X))
+    apply map_add (algebraMap (R := R) (A := FreeAlgebra R X))
   ofNat_eq_natCast _ := by
     show ⟦_⟧ = ⟦_⟧
     rw [ofNat_eq_natCast]
@@ -295,8 +295,8 @@ instance [RingOps R] [IsRing R] : IsAddGroup (FreeAlgebra R X) where
     induction a with | mk a =>
     simp [Neg.neg, smul_def]
     conv => { lhs; rhs; rw [←one_mul ⟦a⟧] }
-    rw [←add_mul, ←resp_one (algebraMap (R := R) (A := FreeAlgebra R X)),
-      ←resp_add, neg_add_cancel, resp_zero, zero_mul]
+    rw [←add_mul, ←map_one (algebraMap (R := R) (A := FreeAlgebra R X)),
+      ←map_add, neg_add_cancel, map_zero, zero_mul]
 
 instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
   natCast_zero := natCast_zero
@@ -309,7 +309,7 @@ instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
     show ⟦_⟧ = ⟦_⟧
     simp [IntCast.intCast, intCast_negSucc]
     show algebraMap (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMap (R := R) (A := FreeAlgebra R X) _
-    rw [resp_neg]
+    rw [map_neg]
 
 instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) := IsRing.inst
 
@@ -391,37 +391,37 @@ def liftAux
     | refl => rfl
     | symm => symm; assumption
     | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
-    | add_scalar => apply resp_add
-    | mul_scalar => apply resp_mul
+    | add_scalar => apply map_add
+    | mul_scalar => apply map_mul
     | central_scalar => apply IsAlgebra.commutes
     | zero_nsmul =>
       show 0 • _ = algebraMap _
       rw [zero_nsmul]; symm
-      apply resp_zero
+      apply map_zero
     | succ_nsmul => apply succ_nsmul
     | npow_zero =>
       show _ ^ 0 = algebraMap _
       rw [npow_zero]; symm
-      apply resp_one
+      apply map_one
     | npow_succ => apply npow_succ
     | add_assoc => apply add_assoc
     | add_comm => apply add_comm
     | add_zero =>
       show _ + algebraMap 0 = _
-      rw [resp_zero, add_zero]
+      rw [map_zero, add_zero]
     | mul_assoc => apply mul_assoc
     | one_mul =>
       show algebraMap 1 * _ = _
-      rw [resp_one, one_mul]
+      rw [map_one, one_mul]
     | mul_one =>
       show _ * algebraMap 1 = _
-      rw [resp_one, mul_one]
+      rw [map_one, mul_one]
     | zero_mul =>
       show algebraMap 0 * _ = algebraMap 0
-      rw [resp_zero, zero_mul]
+      rw [map_zero, zero_mul]
     | mul_zero =>
       show _ * algebraMap 0 = algebraMap 0
-      rw [resp_zero, mul_zero]
+      rw [map_zero, mul_zero]
     | mul_add => apply mul_add
     | add_mul => apply add_mul
     | add_congr =>
@@ -431,17 +431,17 @@ def liftAux
       show _ * _ = _ * _
       congr
 
-  resp_one := resp_one _
-  resp_zero := resp_zero _
-  resp_add := by
+  map_one := map_one _
+  map_zero := map_zero _
+  map_add := by
     intro x y
     induction x, y using ind₂ with | mk x y =>
     rfl
-  resp_mul := by
+  map_mul := by
     intro x y
     induction x, y using ind₂ with | mk x y =>
     rfl
-  resp_algebraMap _ := rfl
+  map_algebraMap _ := rfl
 
 def lift
   (R: Type*)
@@ -461,12 +461,12 @@ def lift
     intro x
     induction x with
     | grade1 => rfl
-    | grade0 => simp [resp_algebraMap]
+    | grade0 => simp [map_algebraMap]
     | add =>
-      simp [resp_add]
+      simp [map_add]
       congr
     | mul =>
-      simp [resp_mul]
+      simp [map_mul]
       congr
 
 end FreeAlgebra

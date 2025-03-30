@@ -27,22 +27,22 @@ instance : IsModule R (LinearCombination R M) :=
 
 def valHom : LinearCombination R M →ₗ[R] M where
   toFun f := f.sum (fun v r => r • v) (fun v h => by simp [h])
-  resp_add := by
+  map_add := by
     intro a b
     dsimp
     rw [Finsupp.add_sum]
     intro v a b
     rw [add_smul]
-  resp_smul := by
+  map_smul := by
     intro r a
     dsimp
     let g : M →+ M := {
       toFun x := r • x
-      resp_zero := by simp
-      resp_add {x y} := smul_add _ _ _
+      map_zero := by simp
+      map_add {x y} := smul_add _ _ _
     }
     show _ = g (a.sum _ _)
-    rw [Finsupp.resp_sum]
+    rw [Finsupp.map_sum]
     apply Finsupp.sum_eq_pairwise
     intro i
     show _ =  r • _
@@ -56,10 +56,10 @@ abbrev val (f: LinearCombination R M) := valHom f
 def zero_val : (0 : LinearCombination R M).val = 0 := rfl
 
 @[simp]
-def add_val (a b: LinearCombination R M) : (a + b).val = a.val + b.val := resp_add _
+def add_val (a b: LinearCombination R M) : (a + b).val = a.val + b.val := map_add _
 
 @[simp]
-def smul_val (r: R) (a: LinearCombination R M) : (r • a).val = r • a.val := resp_smul _
+def smul_val (r: R) (a: LinearCombination R M) : (r • a).val = r • a.val := map_smul _
 
 def single (r: R) (m: M) : LinearCombination R M := Finsupp.single m r
 

@@ -14,7 +14,7 @@ def evalWith (x: M) (p: P[X]) : M :=
   p.toFinsupp.sum (fun i p => f p * x ^ i) (by
     intro i eq
     dsimp
-    rw [eq, resp_zero, zero_mul])
+    rw [eq, map_zero, zero_mul])
 
 def evalWith_C (x: M) (p: P) : evalWith f x (C p) = f p := by
   unfold evalWith
@@ -24,12 +24,12 @@ def evalWith_C (x: M) (p: P) : evalWith f x (C p) = f p := by
 def evalWith_zero (x: M) : evalWith f x (0: P[X]) = 0 := rfl
 def evalWith_one (x: M) : evalWith f x (1: P[X]) = 1 := by
   show evalWith f x (C 1) = 1
-  rw [evalWith_C, resp_one]
+  rw [evalWith_C, map_one]
 
 def evalWith_monomial (x: M) (n: ℕ) : evalWith f x (monomial n: P[X]) = x ^ n := by
   unfold evalWith
   show Finsupp.sum (Finsupp.single _ _) _ _ = _
-  rw [Finsupp.single_sum, resp_one, one_mul]
+  rw [Finsupp.single_sum, map_one, one_mul]
 def evalWith_X (x: M) : evalWith f x (X: P[X]) = x := by
   unfold X
   rw [evalWith_monomial, npow_one]
@@ -38,7 +38,7 @@ def evalWith_add (x: M) (a b: P[X]) : evalWith f x (a + b) = evalWith f x a + ev
   unfold evalWith
   apply Finsupp.add_sum
   intro i a b
-  rw [resp_add, add_mul]
+  rw [map_add, add_mul]
 
 def evalWith_mul_X (x: M) (p: P[X]) : evalWith f x (p * X) = evalWith f x p * x := by
   rw [←evalWith_X f x (P := P)]
@@ -47,11 +47,11 @@ def evalWith_mul_X (x: M) (p: P[X]) : evalWith f x (p * X) = evalWith f x p * x 
   rw [evalWith_X]
   let f' : M →+ M := {
     toFun := (· * x)
-    resp_zero := zero_mul _
-    resp_add := add_mul _ _ _
+    map_zero := zero_mul _
+    map_add := add_mul _ _ _
   }
   show _ = f' _
-  rw [Finsupp.resp_sum]
+  rw [Finsupp.map_sum]
   unfold f'
   simp [DFunLike.coe, mul_assoc, ←npow_succ]
   rw [←X_mul_eq_mul_X, AddMonoidAlgebra.mul_def]
@@ -69,19 +69,19 @@ def evalWith_mul_X (x: M) (p: P[X]) : evalWith f x (p * X) = evalWith f x p * x 
   congr; ext a b
   rw [add_comm]
   intro i a b
-  rw [resp_add, add_mul]
+  rw [map_add, add_mul]
   intro i
   simp; rfl
   intro i
-  simp [resp_zero]
+  simp [map_zero]
 
 def evalWith_mul (x: M) (a b: P[X]) : evalWith f x (a * b) = evalWith f x a * evalWith f x b := by
   induction a generalizing b with
   | C =>
     induction b with
     | C =>
-      rw [←resp_mul, evalWith_C, evalWith_C, evalWith_C]
-      rw [resp_mul]
+      rw [←map_mul, evalWith_C, evalWith_C, evalWith_C]
+      rw [map_mul]
     | monomial =>
       rename_i a r n ih
       rw [npow_succ, ←mul_assoc (C r),  evalWith_mul_X, ←mul_assoc (evalWith f x _),
@@ -99,10 +99,10 @@ def evalWith_mul (x: M) (a b: P[X]) : evalWith f x (a * b) = evalWith f x a * ev
 
 def evalWithHom (x: M) : P[X] →+* M where
   toFun := evalWith f x
-  resp_zero := evalWith_zero _ _
-  resp_one := evalWith_one _ _
-  resp_add := evalWith_add _ _ _ _
-  resp_mul := evalWith_mul _ _ _ _
+  map_zero := evalWith_zero _ _
+  map_one := evalWith_one _ _
+  map_add := evalWith_add _ _ _ _
+  map_mul := evalWith_mul _ _ _ _
 
 def evalWithHom_C (x: M) (p: P) : evalWithHom f x (C p) = f p := evalWith_C _ _ _
 def evalWithHom_X (x: M) : evalWithHom f x (X: P[X]) = x := evalWith_X _ _

@@ -115,67 +115,67 @@ instance (s: AddSubgroup α) : IsAddGroup s := inferInstance
 
 def Subgroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : Subgroup α where
   carrier := Set.preimage {1} f
-  mem_one' := resp_one _
+  mem_one' := map_one _
   mem_inv' := by
     intro _ ha
-    rw [Set.mem_preimage, resp_inv, ha, inv_one]; rfl
+    rw [Set.mem_preimage, map_inv, ha, inv_one]; rfl
   mem_mul' := by
     intro a b ha hb
-    rw [Set.mem_preimage, resp_mul, ha, hb, one_mul]; rfl
+    rw [Set.mem_preimage, map_mul, ha, hb, one_mul]; rfl
 
 def AddSubgroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : AddSubgroup α where
   carrier := Set.preimage {0} f
-  mem_zero' := resp_zero _
+  mem_zero' := map_zero _
   mem_neg' := by
     intro _ ha
-    rw [Set.mem_preimage, resp_neg, ha, neg_zero]; rfl
+    rw [Set.mem_preimage, map_neg, ha, neg_zero]; rfl
   mem_add' := by
     intro a b ha hb
-    rw [Set.mem_preimage, resp_add, ha, hb, zero_add]; rfl
+    rw [Set.mem_preimage, map_add, ha, hb, zero_add]; rfl
 
 def Subgroup.embed (S: Subgroup α) : S ↪* α where
   toFun x := x.val
   inj' := Subtype.val_inj
-  resp_one := rfl
-  resp_mul := rfl
+  map_one := rfl
+  map_mul := rfl
 
 def AddSubgroup.embed (S: AddSubgroup α) : S ↪+ α where
   toFun x := x.val
   inj' := Subtype.val_inj
-  resp_zero := rfl
-  resp_add := rfl
+  map_zero := rfl
+  map_add := rfl
 
 def Subgroup.of_hom [GroupOps β] [IsGroup β] (h: α →* β) : Subgroup β where
   carrier := Set.range h
   mem_one' := by
     apply Set.mem_range.mpr
-    exists 1; rw [resp_one]
+    exists 1; rw [map_one]
   mem_mul' := by
     rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
     apply Set.mem_range.mpr
     exists a * b
-    rw [resp_mul]
+    rw [map_mul]
   mem_inv' := by
     rintro _ ⟨a, rfl⟩
     apply Set.mem_range.mpr
     exists a⁻¹
-    rw [resp_inv]
+    rw [map_inv]
 
 def AddSubgroup.of_hom [AddGroupOps β] [IsAddGroup β] (h: α →+ β) : AddSubgroup β where
   carrier := Set.range h
   mem_zero' := by
     apply Set.mem_range.mpr
-    exists 0; rw [resp_zero]
+    exists 0; rw [map_zero]
   mem_add' := by
     rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
     apply Set.mem_range.mpr
     exists a + b
-    rw [resp_add]
+    rw [map_add]
   mem_neg' := by
     rintro _ ⟨a, rfl⟩
     apply Set.mem_range.mpr
     exists -a
-    rw [resp_neg]
+    rw [map_neg]
 
 noncomputable
 def Subgroup.equiv_of_embed [GroupOps β] [IsGroup β] (h: α ↪* β) : α ≃* Subgroup.of_hom (toGroupHom h) where
@@ -192,13 +192,13 @@ def Subgroup.equiv_of_embed [GroupOps β] [IsGroup β] (h: α ↪* β) : α ≃*
     dsimp
     congr
     exact (Classical.choose_spec x.property).symm
-  resp_one := by
+  map_one := by
     dsimp; congr
-    rw [resp_one]
-  resp_mul := by
+    rw [map_one]
+  map_mul := by
     intro a b
     dsimp; congr
-    rw [resp_mul]
+    rw [map_mul]
 
 noncomputable
 def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) : α ≃+ AddSubgroup.of_hom (toAddGroupHom h) where
@@ -215,10 +215,10 @@ def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) 
     dsimp
     congr
     exact (Classical.choose_spec x.property).symm
-  resp_zero := by
+  map_zero := by
     dsimp; congr
-    rw [resp_zero]
-  resp_add := by
+    rw [map_zero]
+  map_add := by
     intro a b
     dsimp; congr
-    rw [resp_add]
+    rw [map_add]

@@ -13,11 +13,11 @@ def IsMulAction.compHom
   {
     one_smul a := by
       show (f 1) • a = a
-      rw [resp_one, one_smul]
+      rw [map_one, one_smul]
     mul_smul := by
       intro x y b
       show (f _) • _ = _
-      rw [resp_mul, mul_smul]
+      rw [map_mul, mul_smul]
       rfl
   }
 

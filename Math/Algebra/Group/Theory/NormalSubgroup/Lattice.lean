@@ -50,7 +50,7 @@ private instance builder : SetLike.LatticeBuilder (NormalSubgroup α) where
       rw [inv_one]; rfl
     mem_conj' := by
       rintro _ _ rfl
-      rw [resp_one]; rfl
+      rw [map_one]; rfl
   }, by rintro _ _ rfl; apply Generate.one⟩
 
 private local instance : SetLike.CompleteLatticeLE (NormalSubgroup α) := SetLike.toCompleteLattice

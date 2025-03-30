@@ -74,29 +74,29 @@ def neg_sum [AddGroupOps α] [IsAddCommMagma α] [IsAddGroup α] (s: Multiset α
 def inv_prod [GroupOps α] [IsCommMagma α] [IsGroup α] (s: Multiset α) : s.prod⁻¹ = (s.map (·⁻¹)).prod :=
   neg_sum (α := AddOfMul α) _
 
-def resp_sum
+def map_sum
   [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α]
   [Zero β] [Add β] [IsAddCommMagma β] [IsAddSemigroup β]
   [FunLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (f: F) (s: Multiset α) : f s.sum = (s.map f).sum := by
   induction s with
-  | nil => simp [resp_zero]
-  | cons _ _ ih => simp [resp_add, ih]
+  | nil => simp [map_zero]
+  | cons _ _ ih => simp [map_add, ih]
 
-def resp_mul
+def map_mul
   [One α] [Mul α] [IsCommMagma α] [IsSemigroup α]
   [One β] [Mul β] [IsCommMagma β] [IsSemigroup β]
   [FunLike F α β] [IsOneHom F α β] [IsMulHom F α β] (f: F) (s: Multiset α) : f s.prod = (s.map f).prod :=
-  resp_sum (α := AddOfMul α) (β := AddOfMul β) _ _
+  map_sum (α := AddOfMul α) (β := AddOfMul β) _ _
 
 def smul_sum
   [SemiringOps α] [AddMonoidOps β] [IsSemiring α] [IsAddMonoid β] [IsAddCommMagma β]
   [SMul α β] [IsModule α β] (s: Multiset β) (x: α) : x • s.sum = (s.map (x • ·)).sum := by
   let f: AddGroupHom β β := {
     toFun := (x • ·)
-    resp_zero := ?_
-    resp_add := ?_
+    map_zero := ?_
+    map_add := ?_
   }
-  apply resp_sum f
+  apply map_sum f
   apply smul_zero
   apply smul_add
 
@@ -106,10 +106,10 @@ def mul_sum
   (s: Multiset α) (x: α) : x * s.sum = (s.map (x * ·)).sum := by
   let f: AddGroupHom α α := {
     toFun := (x * ·)
-    resp_zero := ?_
-    resp_add := ?_
+    map_zero := ?_
+    map_add := ?_
   }
-  apply resp_sum f
+  apply map_sum f
   apply mul_zero
   apply mul_add
 
@@ -119,10 +119,10 @@ def sum_mul
   (s: Multiset α) (x: α) : s.sum * x = (s.map (· * x)).sum := by
   let f: AddGroupHom α α := {
     toFun := (· * x)
-    resp_zero := ?_
-    resp_add := ?_
+    map_zero := ?_
+    map_add := ?_
   }
-  apply resp_sum f
+  apply map_sum f
   apply zero_mul
   intros; apply add_mul
 

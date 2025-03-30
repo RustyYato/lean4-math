@@ -12,12 +12,12 @@ variable (F R A B: Type*)
 
 structure AlgebraMapHom where
   toFun: A -> B
-  protected resp_algebraMap : ∀r: R, toFun (algebraMap r: A) = (algebraMap r: B)
+  protected map_algebraMap : ∀r: R, toFun (algebraMap r: A) = (algebraMap r: B)
 
 notation:25 A " →ₐ₀[" R "] " B => AlgebraMapHom R A B
 
 class IsAlgebraMapHom where
-  protected resp_algebraMap (f: F) : ∀r: R, f (algebraMap r: A) = (algebraMap r: B)
+  protected map_algebraMap (f: F) : ∀r: R, f (algebraMap r: A) = (algebraMap r: B)
 
 structure AlgHom extends A →+* B, A →ₐ₀[R] B where
 
@@ -32,19 +32,19 @@ instance : FunLike (A →ₐ[R] B) A B where
     apply DFunLike.coe_inj eq
 
 instance : IsZeroHom (A →ₐ[R] B) A B where
-  resp_zero f := f.resp_zero
+  map_zero f := f.map_zero
 
 instance : IsOneHom (A →ₐ[R] B) A B where
-  resp_one f := f.resp_one
+  map_one f := f.map_one
 
 instance : IsAddHom (A →ₐ[R] B) A B where
-  resp_add f := f.resp_add
+  map_add f := f.map_add
 
 instance : IsMulHom (A →ₐ[R] B) A B where
-  resp_mul f := f.resp_mul
+  map_mul f := f.map_mul
 
 instance : IsAlgebraMapHom (A →ₐ[R] B) R A B where
-  resp_algebraMap f := f.resp_algebraMap
+  map_algebraMap f := f.map_algebraMap
 
 structure AlgEmbedding extends A ↪ B, A →ₐ[R] B where
 
@@ -68,19 +68,19 @@ instance : EmbeddingLike (A ↪ₐ[R] B) A B where
 
 
 instance : IsZeroHom (A ↪ₐ[R] B) A B where
-  resp_zero f := f.resp_zero
+  map_zero f := f.map_zero
 
 instance : IsOneHom (A ↪ₐ[R] B) A B where
-  resp_one f := f.resp_one
+  map_one f := f.map_one
 
 instance : IsAddHom (A ↪ₐ[R] B) A B where
-  resp_add f := f.resp_add
+  map_add f := f.map_add
 
 instance : IsMulHom (A ↪ₐ[R] B) A B where
-  resp_mul f := f.resp_mul
+  map_mul f := f.map_mul
 
 instance : IsAlgebraMapHom (A ↪ₐ[R] B) R A B where
-  resp_algebraMap f := f.resp_algebraMap
+  map_algebraMap f := f.map_algebraMap
 
 instance : EquivLike (A ≃ₐ[R] B) A B where
   coe := AlgEquiv.toEquiv
@@ -89,19 +89,19 @@ instance : EquivLike (A ≃ₐ[R] B) A B where
     congr
 
 instance : IsZeroHom (A ≃ₐ[R] B) A B where
-  resp_zero f := f.resp_zero
+  map_zero f := f.map_zero
 
 instance : IsOneHom (A ≃ₐ[R] B) A B where
-  resp_one f := f.resp_one
+  map_one f := f.map_one
 
 instance : IsAddHom (A ≃ₐ[R] B) A B where
-  resp_add f := f.resp_add
+  map_add f := f.map_add
 
 instance : IsMulHom (A ≃ₐ[R] B) A B where
-  resp_mul f := f.resp_mul
+  map_mul f := f.map_mul
 
 instance : IsAlgebraMapHom (A ≃ₐ[R] B) R A B where
-  resp_algebraMap f := f.resp_algebraMap
+  map_algebraMap f := f.map_algebraMap
 
 end
 
@@ -114,23 +114,23 @@ variable {F R A B: Type*}
 variable [IsZeroHom F A B] [IsOneHom F A B] [IsAddHom F A B] [IsMulHom F A B]
    [IsAlgebraMapHom F R A B]
 
-def resp_algebraMap (f: F) : ∀r: R, f (algebraMap r: A) = (algebraMap r: B) :=
-  IsAlgebraMapHom.resp_algebraMap f
+def map_algebraMap (f: F) : ∀r: R, f (algebraMap r: A) = (algebraMap r: B) :=
+  IsAlgebraMapHom.map_algebraMap f
 
 @[coe]
 def toAlgebraMapHom (f: F) : A →ₐ₀[R] B where
   toFun := f
-  resp_algebraMap := resp_algebraMap f
+  map_algebraMap := map_algebraMap f
 
 @[coe]
 def toAlgHom' (f: F) : A →ₐ[R] B where
   toRingHom := toRingHom f
-  resp_algebraMap := resp_algebraMap f
+  map_algebraMap := map_algebraMap f
 
 instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsSemiring R] [IsAlgebra R A] [IsAlgebra R B]: IsSMulHom F R A B where
-  resp_smul := by
+  map_smul := by
     intro f r x
-    rw [smul_def, smul_def, resp_mul, resp_algebraMap]
+    rw [smul_def, smul_def, map_mul, map_algebraMap]
 
 end
 
@@ -146,13 +146,13 @@ variable [IsAddHom F A B] [IsMulHom F A B] [IsAlgebraMapHom F R A B]
 
 def toAlgHom (f: F) : A →ₐ[R] B where
   toFun := f
-  resp_algebraMap := resp_algebraMap f
-  resp_mul := resp_mul f
-  resp_add := resp_add f
-  resp_zero := by rw [←resp_zero (algebraMap (R := R)), resp_algebraMap, resp_zero]
-  resp_one := by
+  map_algebraMap := map_algebraMap f
+  map_mul := map_mul f
+  map_add := map_add f
+  map_zero := by rw [←map_zero (algebraMap (R := R)), map_algebraMap, map_zero]
+  map_one := by
     dsimp
-    rw [←resp_one (algebraMap (R := R)), resp_algebraMap, resp_one]
+    rw [←map_one (algebraMap (R := R)), map_algebraMap, map_one]
 
 end
 
@@ -172,106 +172,106 @@ def AlgHom.toLinearMap
   [IsAlgebra R A] [IsAlgebra R B]
   (h: A →ₐ[R] B) : A →ₗ[R] B where
   toFun := h
-  resp_add := resp_add h
-  resp_smul := resp_smul h
+  map_add := map_add h
+  map_smul := map_smul h
 
 def AlgHom.comp (h: B →ₐ[R] C) (g: A →ₐ[R] B) : A →ₐ[R] C where
   toFun := h.toFun ∘ g.toFun
-  resp_zero := by
+  map_zero := by
     dsimp
-    rw [g.resp_zero, h.resp_zero]
-  resp_one := by
+    rw [g.map_zero, h.map_zero]
+  map_one := by
     dsimp
-    rw [g.resp_one, h.resp_one]
-  resp_add {_ _} := by
+    rw [g.map_one, h.map_one]
+  map_add {_ _} := by
     dsimp
-    rw [g.resp_add, h.resp_add]
-  resp_mul {_ _} := by
+    rw [g.map_add, h.map_add]
+  map_mul {_ _} := by
     dsimp
-    rw [g.resp_mul, h.resp_mul]
-  resp_algebraMap {_} := by
+    rw [g.map_mul, h.map_mul]
+  map_algebraMap {_} := by
     dsimp
-    rw [g.resp_algebraMap, h.resp_algebraMap]
+    rw [g.map_algebraMap, h.map_algebraMap]
 
 def AlgEmbedding.comp (h: B ↪ₐ[R] C) (g: A ↪ₐ[R] B) : A ↪ₐ[R] C where
   toEmbedding := (g.toEmbedding.trans h.toEmbedding)
   -- inj := (g.toEmbedding.trans h.toEmbedding).inj
-  resp_zero := by
+  map_zero := by
     show h (g _) = _
-    rw [resp_zero, resp_zero]
-  resp_one := by
+    rw [map_zero, map_zero]
+  map_one := by
     show h (g _) = _
-    rw [resp_one, resp_one]
-  resp_add {_ _} := by
+    rw [map_one, map_one]
+  map_add {_ _} := by
     show h (g _) = _
-    rw [resp_add, resp_add]
+    rw [map_add, map_add]
     rfl
-  resp_mul {_ _} := by
+  map_mul {_ _} := by
     show h (g _) = _
-    rw [resp_mul, resp_mul]
+    rw [map_mul, map_mul]
     rfl
-  resp_algebraMap {_} := by
+  map_algebraMap {_} := by
     show h (g _) = _
-    rw [resp_algebraMap, resp_algebraMap]
+    rw [map_algebraMap, map_algebraMap]
 
 def AlgEquiv.comp (h: B ≃ₐ[R] C) (g: A ≃ₐ[R] B) : A ≃ₐ[R] C where
   toEquiv := g.toEquiv.trans h.toEquiv
-  resp_zero := by
+  map_zero := by
     dsimp [Equiv.trans]
-    rw [g.resp_zero, h.resp_zero]
-  resp_one := by
+    rw [g.map_zero, h.map_zero]
+  map_one := by
     dsimp [Equiv.trans]
-    rw [g.resp_one, h.resp_one]
-  resp_add {_ _} := by
+    rw [g.map_one, h.map_one]
+  map_add {_ _} := by
     dsimp [Equiv.trans]
-    rw [g.resp_add, h.resp_add]
-  resp_mul {_ _} := by
+    rw [g.map_add, h.map_add]
+  map_mul {_ _} := by
     dsimp [Equiv.trans]
-    rw [g.resp_mul, h.resp_mul]
-  resp_algebraMap {_} := by
+    rw [g.map_mul, h.map_mul]
+  map_algebraMap {_} := by
     dsimp [Equiv.trans]
-    rw [g.resp_algebraMap, h.resp_algebraMap]
+    rw [g.map_algebraMap, h.map_algebraMap]
 
 def AlgEmbedding.trans (h: A ↪ₐ[R] B) (g: B ↪ₐ[R] C) : A ↪ₐ[R] C := g.comp h
 def AlgEquiv.trans (h: A ≃ₐ[R] B) (g: B ≃ₐ[R] C) : A ≃ₐ[R] C := g.comp h
 
 def AlgEmbedding.refl : A ↪ₐ[R] A where
   toEmbedding := .rfl
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := rfl
-  resp_algebraMap _ := rfl
+  map_zero := rfl
+  map_one := rfl
+  map_add := rfl
+  map_mul := rfl
+  map_algebraMap _ := rfl
 
 def AlgEquiv.refl : A ≃ₐ[R] A where
   toEquiv := .rfl
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := rfl
-  resp_algebraMap _ := rfl
+  map_zero := rfl
+  map_one := rfl
+  map_add := rfl
+  map_mul := rfl
+  map_algebraMap _ := rfl
 
 def AlgEquiv.symm (h: A ≃ₐ[R] B) : B ≃ₐ[R] A where
   toEquiv := h.toEquiv.symm
-  resp_zero := by
+  map_zero := by
     rw [←h.coe_symm 0]
     show h.toEquiv.symm 0 = h.toEquiv.symm (h.toFun 0)
-    rw [h.resp_zero]
-  resp_one := by
+    rw [h.map_zero]
+  map_one := by
     rw [←h.coe_symm 1]
     show h.toEquiv.symm 1 = h.toEquiv.symm (h.toFun 1)
-    rw [h.resp_one]
-  resp_add {a b} := by
+    rw [h.map_one]
+  map_add {a b} := by
     rw [←h.coe_symm (_ + _)]
     show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
-    erw [h.resp_add, h.rightInv, h.rightInv]
-  resp_mul {a b} := by
+    erw [h.map_add, h.rightInv, h.rightInv]
+  map_mul {a b} := by
     rw [←h.coe_symm (_ * _)]
     show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
-    erw [h.resp_mul, h.rightInv, h.rightInv]
-  resp_algebraMap x := by
+    erw [h.map_mul, h.rightInv, h.rightInv]
+  map_algebraMap x := by
     rw [←h.coe_symm (algebraMap x)]
     show h.toEquiv.symm (algebraMap x) = h.toEquiv.symm (h.toFun (algebraMap x))
-    rw [h.resp_algebraMap]
+    rw [h.map_algebraMap]
 
 end

@@ -137,10 +137,10 @@ def HasChar.of_eqv
   intro x
   apply eqv.symm.inj
   show eqv.symm _ = eqv.symm _
-  rw [resp_nsmul, HasChar.char_spec, resp_zero]
+  rw [map_nsmul, HasChar.char_spec, map_zero]
   intro m h
   apply HasChar.char_dvd α
   intro a
   apply eqv.inj
   show eqv _ = eqv _
-  rw [resp_nsmul, h, resp_zero]
+  rw [map_nsmul, h, map_zero]

@@ -33,7 +33,7 @@ def map_ofScalar [Zero R] [Zero α] [FunLike F R α] [IsZeroHom F R α] (f: F) (
     unfold ofScalar map
     congr
     apply ih
-    rw [ih, resp_zero]
+    rw [ih, map_zero]
 
 instance [Zero R] [OfNat R (N + 2)] : OfNat (GA R basis) (N + 2) := ⟨.ofScalar (OfNat.ofNat (N + 2))⟩
 instance [Zero R] : Zero (GA R basis) := ⟨.ofScalar (OfNat.ofNat 0)⟩
@@ -180,7 +180,7 @@ instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] : IsAddGroupWithOne (GA R 
     intro n
     let neg : ZeroHom R R := {
       toFun x := -x
-      resp_zero := neg_zero
+      map_zero := neg_zero
     }
     show .ofScalar _ = map neg (.ofScalar _)
     rw [map_ofScalar, intCast_negSucc]

@@ -70,10 +70,10 @@ instance [SemiringOps P] [IsSemiring P] : IsMonoid P[X] where
 def C [SemiringOps P] [IsSemiring P] : P ↪+* P[X] where
   toFun := AddMonoidAlgebra.single 0
   inj' := AddMonoidAlgebra.single_inj
-  resp_zero := AddMonoidAlgebra.single_zero _
-  resp_add := (AddMonoidAlgebra.single_add _ _ _).symm
-  resp_one := rfl
-  resp_mul {x y} := by
+  map_zero := AddMonoidAlgebra.single_zero _
+  map_add := (AddMonoidAlgebra.single_add _ _ _).symm
+  map_one := rfl
+  map_mul {x y} := by
     dsimp
     rw [AddMonoidAlgebra.single_mul, add_zero]
 
@@ -120,7 +120,7 @@ private def apply_monomial [SemiringOps P] [IsSemiring P] (x: P) (n i: ℕ) : (C
   rw [AddMonoidAlgebra.mul_def, AddMonoidAlgebra.mul']
   rw [←AddMonoidAlgebra.applyHom_eq]
   show AddMonoidAlgebra.applyHom i _ = _
-  simp [Finsupp.resp_sum]
+  simp [Finsupp.map_sum]
   show (Finsupp.single _ _).sum _ _ = _
   rw [Finsupp.single_sum]
   rw [x_npow_eq]
@@ -147,7 +147,7 @@ def induction
       rw [this]
       apply C
     ext n
-    rw [resp_zero]
+    rw [map_zero]
     show p n = 0
     apply Classical.byContradiction
     intro h
@@ -210,10 +210,10 @@ instance [RingOps P] [IsRing P] : IntCast P[X] where
 instance instIsAddMonoidWithOne [SemiringOps P] [IsSemiring P] : IsAddMonoidWithOne P[X] where
   natCast_zero := by
     show C (Nat.cast 0) = 0
-    rw [natCast_zero, resp_zero]
+    rw [natCast_zero, map_zero]
   natCast_succ n := by
     show C _ = _
-    rw [natCast_succ, resp_add, resp_one]
+    rw [natCast_succ, map_add, map_one]
     rfl
   ofNat_eq_natCast n := by
     show C _ = C _
@@ -226,7 +226,7 @@ instance instIsAddGroupWithOne [RingOps P] [IsRing P] : IsAddGroupWithOne P[X] :
     rw [intCast_ofNat]
   intCast_negSucc n := by
     show C _ = -C _
-    rw [intCast_negSucc, resp_neg]
+    rw [intCast_negSucc, map_neg]
 }
 
 instance [SemiringOps P] [IsSemiring P] : IsSemiring P[X] := IsSemiring.inst
@@ -251,14 +251,14 @@ def smul_eq_C_mul [SemiringOps P] [IsSemiring P] (r: P) (p: P[X]) : r • p = C 
   rw [AddMonoidAlgebra.sum_toFinsupp (h₁ := by
     intro i eq
     show Finsupp.singleHom _ _ = _
-    rw [eq, mul_zero, resp_zero])]
+    rw [eq, mul_zero, map_zero])]
   simp
   let g : ZeroHom P P := {
     toFun := (r * ·)
-    resp_zero := mul_zero _
+    map_zero := mul_zero _
   }
   show _ = Finsupp.applyHom _ _
-  rw [Finsupp.resp_sum]
+  rw [Finsupp.map_sum]
   show r * p.toFinsupp i = p.toFinsupp.sum (fun i₀ a => (Finsupp.single (S := ℕ) i₀ (g a)) i) _
   rw [Finsupp.sum_apply_single]
   rfl

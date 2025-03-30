@@ -74,25 +74,25 @@ private def algmap_coe_eq
 def ι_sq_scalar (v: V) : ι Q v * ι Q v = algebraMap (Q v) := by
   rw [ι]
   dsimp [LinearMap.comp, DFunLike.coe, AlgHom.toLinearMap]
-  rw [algmap_coe_eq, ←resp_mul (f := RingQuot.mkAlgHom R (CliffordAlgebra.Rel Q))]
+  rw [algmap_coe_eq, ←map_mul (f := RingQuot.mkAlgHom R (CliffordAlgebra.Rel Q))]
   show _ = algebraMap _
   apply (RingQuot.mkAlgHom_rel R (CliffordAlgebra.Rel.intro v)).trans
-  apply resp_algebraMap
+  apply map_algebraMap
 
 def lift [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R A]  :
     { f : V →ₗ[R] A // ∀ m, f m * f m = algebraMap (Q m) } ≃ (CliffordAlgebra Q →ₐ[R] A) where
   toFun f := RingQuot.liftAlgHom (S := R) ⟨TensorAlgebra.lift R f.val, by
       intro a b r
       induction r with | intro v =>
-      rw [resp_mul, TensorAlgebra.lift_ι_apply, f.property,
-        resp_algebraMap]⟩
+      rw [map_mul, TensorAlgebra.lift_ι_apply, f.property,
+        map_algebraMap]⟩
   invFun f := {
     val := f.toLinearMap.comp (ι Q)
     property := by
       intro v
       rw [LinearMap.comp]
       show f (ι Q v) * f (ι Q v) = _
-      rw [←resp_mul, ι_sq_scalar, resp_algebraMap]
+      rw [←map_mul, ι_sq_scalar, map_algebraMap]
   }
   leftInv f := by
     ext v
@@ -113,16 +113,16 @@ def induction {C : CliffordAlgebra Q → Prop}
   obtain ⟨a, rfl⟩  := RingQuot.mkAlgHom_surj R _ a
   induction a with
   | algebraMap =>
-    rw [resp_algebraMap]
+    rw [map_algebraMap]
     apply algebraMap
   | ι v => apply ι
   | add =>
-    rw [resp_add]
+    rw [map_add]
     apply add
     assumption
     assumption
   | mul =>
-    rw [resp_mul]
+    rw [map_mul]
     apply mul
     assumption
     assumption
@@ -155,8 +155,8 @@ def ι_mul_add_comm_mul (Q: QuadraticForm R V) (v w: V) : ι Q v * ι Q w + ι Q
     (ι Q) v * (ι Q) w + (ι Q) w * (ι Q) v + algebraMap (Q w) + algebraMap (Q v) := by
     simp only [mul_add, add_mul, ι_sq_scalar]
     ac_rfl
-  rw [resp_sub, resp_sub]
+  rw [map_sub, map_sub]
   apply add_right_cancel (k := algebraMap (Q w) + algebraMap (Q v))
-  rw [←add_assoc, ←add_assoc, sub_add_cancel, sub_add_cancel, ←this, ←resp_add, ι_sq_scalar]
+  rw [←add_assoc, ←add_assoc, sub_add_cancel, sub_add_cancel, ←this, ←map_add, ι_sq_scalar]
 
 end CliffordAlgebra

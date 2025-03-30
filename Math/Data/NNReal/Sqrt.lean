@@ -107,7 +107,7 @@ def ofReal_square (x: ℝ) : ofReal (x ^ 2) = square x := by
   apply Real.square_nonneg
 
 def sqrt_mul (a b: ℝ≥0) : a.sqrt * b.sqrt = (a * b).sqrt := by
-  symm; apply resp_mul sqrtEquiv
+  symm; apply map_mul sqrtEquiv
 
 def geom_mean_le_midpoint (a b: ℝ≥0) : sqrt (a * b) ≤ midpoint a b := by
   apply square_strictMonotone.le_iff_le.mp

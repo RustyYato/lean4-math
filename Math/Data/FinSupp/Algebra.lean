@@ -102,7 +102,7 @@ def add_sum
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   (f₀ f₁: Finsupp ι α S) (g: ι -> α -> γ)
-  (resp_add: ∀i a b, g i (a + b) = g i a + g i b)
+  (map_add: ∀i a b, g i (a + b) = g i a + g i b)
   (eq₀: ∀i, f₀ i = 0 -> g i (f₀ i) = 0)
   (eq₁: ∀i, f₁ i = 0 -> g i (f₁ i) = 0)
   (eq₂: ∀i, f₀ i + f₁ i = 0 -> g i (f₀ i + f₁ i) = 0) :
@@ -113,7 +113,7 @@ def add_sum
     sum_eq_support_sup_sum (f := f₁) (h := Finset.sub_union_right f₀.support f₁.support)]
   rw [Multiset.sum_pairwise]
   congr; ext i
-  apply resp_add
+  apply map_add
 
 def add_sum'
   [Zero α] [Add α] [IsAddZeroClass α]
@@ -142,7 +142,7 @@ def single_sum
   show (if _ then _ else _) = b
   rw [if_pos rfl]
 
-def resp_sum
+def map_sum
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   [AddMonoidOps γ'] [IsAddCommMagma γ'] [IsAddMonoid γ']
@@ -150,11 +150,11 @@ def resp_sum
   (f: Finsupp ι α S) (g: ι -> α -> γ) {h} (f₀: F) : f₀ (f.sum g h) = f.sum (fun i a => f₀ (g i a)) (by
     intro i eq
     dsimp
-    rw [h _ eq, resp_zero]) := by
+    rw [h _ eq, map_zero]) := by
     cases f with | mk f spec =>
     induction spec with | mk spec =>
     apply Eq.trans
-    apply Multiset.resp_sum
+    apply Multiset.map_sum
     rw [Multiset.map_map]
     rfl
 
@@ -165,11 +165,11 @@ def sum_single [DecidableEq ι] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMag
     ext i
     let f' : Finsupp ι α S →+ α := {
       toFun x := x i
-      resp_zero := rfl
-      resp_add := rfl
+      map_zero := rfl
+      map_add := rfl
     }
     show f' _ = _
-    rw [resp_sum]
+    rw [map_sum]
     show f.sum (fun x a => single (S := S) x a i) _ = _
     by_cases h:f i = 0
     rw [sum_eq_zero, h]
@@ -200,7 +200,7 @@ def sum_apply_single
   (f: Finsupp ι α S) (g: F):
   f.sum (fun i a => Finsupp.single (S := S) (β := γ) i (g a) j) (by
     intro i eq
-    dsimp; rw [eq, resp_zero, apply_single]
+    dsimp; rw [eq, map_zero, apply_single]
     split <;> rfl) = g (f j) := by
   cases f with | mk f spec =>
   induction spec with | mk spec =>
@@ -221,7 +221,7 @@ def sum_apply_single
   | nil =>
     show 0 = _
     suffices f j = 0 by
-      rw [this, resp_zero]
+      rw [this, map_zero]
     apply Classical.byContradiction
     intro h'
     have := h h'
@@ -251,7 +251,7 @@ def sum_select
   (f: Finsupp ι α S) (g: F):
   f.sum (fun i a => if i = j then g a else 0) (by
     intro i eq
-    dsimp; rw [eq, resp_zero]
+    dsimp; rw [eq, map_zero]
     split <;> rfl) = g (f j) := by
   cases f with | mk f spec =>
   induction spec with | mk spec =>
@@ -272,7 +272,7 @@ def sum_select
   | nil =>
     show 0 = _
     suffices f j = 0 by
-      rw [this, resp_zero]
+      rw [this, map_zero]
     apply Classical.byContradiction
     intro h'
     have := h h'
@@ -322,7 +322,7 @@ def sum_sum_index
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   [AddMonoidOps γ₁] [IsAddCommMagma γ₁] [IsAddMonoid γ₁]
   (f: Finsupp ι α S) (g₀: ι -> α -> Finsupp ι γ S) (g₁: ι -> γ -> γ₁)
-  (resp_add: ∀i a b, g₁ i (a + b) = g₁ i a + g₁ i b)
+  (map_add: ∀i a b, g₁ i (a + b) = g₁ i a + g₁ i b)
   {h₀: ∀i, g₀ i 0 = 0}
   {h₁: ∀i, g₁ i 0 = 0}:
   (f.sum g₀ (by intro i eq; rw [eq, h₀])).sum g₁ (by
@@ -338,11 +338,11 @@ def sum_sum_index
     simp [sum_eq_sum' (g := g₁)]
     let sum'_hom : Finsupp ι γ S →+ γ₁ := {
       toFun f := Finsupp.sum' f g₁
-      resp_zero := ?_
-      resp_add := ?_
+      map_zero := ?_
+      map_add := ?_
     }
     show sum'_hom _ = _
-    rw [resp_sum (f₀ := sum'_hom) (f := f) (g := g₀)]
+    rw [map_sum (f₀ := sum'_hom) (f := f) (g := g₀)]
     rfl
     apply Multiset.sum_eq_zero
     intro x h
@@ -357,7 +357,7 @@ def sum_sum_index
     rw [sum_eq_support_sup_sum _ _ _ _ (Finset.sub_union_left x.support y.support)]
     rw [sum_eq_support_sup_sum _ _ _ _ (Finset.sub_union_right x.support y.support)]
     generalize (x.support ∪ y.support).val = supp
-    simp [resp_add]
+    simp [map_add]
     symm; apply Multiset.sum_pairwise
 
 def sum_eq_pairwise [Zero α] [Zero β]  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]

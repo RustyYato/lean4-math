@@ -20,16 +20,16 @@ def single (i: ι) : QuadraticForm R (ι -> R) where
       case f =>
         intro f g
         exact 2 * f i * g i
-      case resp_add_left =>
+      case map_add_left =>
         intro a b k
         simp [mul_add, add_mul]
-      case resp_add_right =>
+      case map_add_right =>
         intro k a b
         simp [mul_add, add_mul]
-      case resp_smul_left =>
+      case map_smul_left =>
         intro r' a k
         simp; ac_rfl
-      case resp_smul_right =>
+      case map_smul_right =>
         intro r' a k
         simp; ac_rfl
     · intro x y

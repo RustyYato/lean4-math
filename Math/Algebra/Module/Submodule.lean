@@ -37,7 +37,7 @@ def span (U: Set M) : Submodule R M where
       apply ha v
       rw [Set.mem_support]
       assumption
-    · rw [resp_add]
+    · rw [map_add]
   mem_smul' := by
     rintro r _ ⟨f, hf, rfl⟩
     exists r • f
@@ -51,7 +51,7 @@ def span (U: Set M) : Submodule R M where
       apply hf
       rw [Set.mem_support]
       assumption
-    · rw [resp_smul]
+    · rw [map_smul]
 
 def mem_span_of (U: Set M) : ∀x ∈ U, x ∈ span R U := by
   intro x h
@@ -71,7 +71,7 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
       apply mem_zero
     | add f₀ f₁ h₀ h₁ g =>
       rw [g] at h
-      rw [resp_add]
+      rw [map_add]
       apply mem_add
       · apply h₀
         intro x hx
@@ -148,10 +148,10 @@ def insertLinindep (S: Set M) (hS: Submodule.IsLinindep R S) (m: M) (hm: m ∉ S
   intro C sub eq
   rw [←add_zero C, ←sub_self (LinearCombination.single (C m) m),
     sub_eq_add_neg, add_left_comm, ←sub_eq_add_neg,
-    add_comm, resp_add,
+    add_comm, map_add,
     LinearCombination.single_valHom] at eq
   by_cases hc:C m = 0
-  simp [hc, resp_sub] at eq
+  simp [hc, map_sub] at eq
   apply hS C _ eq
   intro x hx
   cases sub x hx
@@ -161,7 +161,7 @@ def insertLinindep (S: Set M) (hS: Submodule.IsLinindep R S) (m: M) (hm: m ∉ S
   replace eq := (neg_eq_of_add_left eq).symm
   replace eq : (C m)⁻¹? • (C m • m) = (C m)⁻¹? • (-LinearCombination.valHom (C - LinearCombination.single (C m) m)) := by
     rw [eq]
-  rw [←mul_smul, inv?_mul_cancel, one_smul, ←resp_neg, ←resp_smul] at eq
+  rw [←mul_smul, inv?_mul_cancel, one_smul, ←map_neg, ←map_smul] at eq
   exfalso; apply hm
   refine ⟨_, ?_, eq⟩
   have : Set.support (((C m)⁻¹? • -(C - LinearCombination.single (C m) m)): LinearCombination R M) ⊆ Set.support C := by
@@ -201,7 +201,7 @@ def valEmb [Fact (Submodule.IsLinindep R (s: Set M))] : LinearSpan R M s ↪ₗ[
     replace eq : valHom x = valHom y := eq
     have linindep := of_fact (Submodule.IsLinindep R (s: Set M))
     have : valHom (x - y) = 0 → toLinearCombo (x - y) = 0 := Submodule.is_linear_indep R _ (x - y).toCombo (x - y).subS
-    rw [resp_sub, resp_sub, eq, sub_self] at this
+    rw [map_sub, map_sub, eq, sub_self] at this
     replace this := this rfl
     apply eq_of_sub_eq_zero
     apply toLinearCombo.inj

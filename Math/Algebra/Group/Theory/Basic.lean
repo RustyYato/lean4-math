@@ -128,10 +128,10 @@ def conj [GroupOps α] [IsGroup α] (x: α) : α ≃* α where
     dsimp
     rw [←mul_assoc, mul_assoc, inv_mul_cancel, mul_one,
       ←mul_assoc, inv_mul_cancel, one_mul]
-  resp_one := by
+  map_one := by
     dsimp
     rw [mul_one, inv_mul_cancel]
-  resp_mul := by
+  map_mul := by
     intro a b; dsimp
     rw [mul_assoc (_ * _), ←mul_assoc x (x⁻¹ * _), ←mul_assoc x x⁻¹,
       mul_inv_cancel, one_mul]
@@ -147,22 +147,22 @@ def Trivial : Group Unit := Group.ofAxiomsLeft () (fun _ _ => ()) (fun _ => ())
 
 def toTrival (G: Type*) [GroupOps G] [IsGroup G] : G →* Trivial where
   toFun _ := 1
-  resp_one := rfl
-  resp_mul := rfl
+  map_one := rfl
+  map_mul := rfl
 
 def ofTrival (G: Type*) [GroupOps G] [IsGroup G] : Trivial ↪* G where
   toFun _ := 1
   inj' _ _ _ := rfl
-  resp_one := rfl
-  resp_mul { _ _ } := (mul_one 1).symm
+  map_one := rfl
+  map_mul { _ _ } := (mul_one 1).symm
 
 def eqv_trivial (G: Type*) [GroupOps G] [IsGroup G] [Subsingleton G] : G ≃* Trivial where
   toFun _ := 1
   invFun _ := 1
   leftInv _ := Subsingleton.allEq _ _
   rightInv _ := rfl
-  resp_one := rfl
-  resp_mul := rfl
+  map_one := rfl
+  map_mul := rfl
 
 instance (G: Type*) [GroupOps G] [IsGroup G] : Subsingleton (G →* Trivial) where
   allEq a b := by
@@ -172,7 +172,7 @@ instance (G: Type*) [GroupOps G] [IsGroup G] : Subsingleton (G →* Trivial) whe
 instance (G: Type*) [GroupOps G] [IsGroup G] : Subsingleton (Trivial →* G) where
   allEq a b := by
     ext x; show a 1 = b 1
-    rw [resp_one, resp_one]
+    rw [map_one, map_one]
 
 end Group
 

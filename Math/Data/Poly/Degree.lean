@@ -489,7 +489,7 @@ def const_degree_ne_zero [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x =
 def const_degree_eq [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P) : (C x).degree = if x = 0 then ⊥ else .of 0 := by
   split
   subst x
-  rw [resp_zero]; rfl
+  rw [map_zero]; rfl
   rw [const_degree_ne_zero]
   assumption
 
@@ -528,7 +528,7 @@ def lead_C [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P) : 
   unfold degreeNat
   rw [const_degree_eq]
   by_cases h:x=0
-  subst h; rw [resp_zero, if_pos rfl]
+  subst h; rw [map_zero, if_pos rfl]
   rfl
   rw [if_neg h]
   rfl
@@ -652,11 +652,11 @@ instance [Zero P] [∀x: P, Decidable (x = 0)] : FunLike (leadHomType P) P[X] P 
   coe_inj := by intro ⟨⟩ ⟨⟩ _; rfl
 
 instance [Zero P] [∀x: P, Decidable (x = 0)] : IsZeroHom (leadHomType P) P[X] P where
-  resp_zero _ := rfl
+  map_zero _ := rfl
 instance [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] : IsOneHom (leadHomType P) P[X] P where
-  resp_one _ := lead_C _
+  map_one _ := lead_C _
 instance [SemiringOps P] [IsSemiring P] [NoZeroDivisors P] [∀x: P, Decidable (x = 0)] : IsMulHom (leadHomType P) P[X] P where
-  resp_mul _ := lead_mul _ _
+  map_mul _ := lead_mul _ _
 
 def eq_C_of_deg_eq_0 [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x = 0)] (x: P[X]) (hx: x.degree = .of 0) : ∃a: P, x = C a ∧ a ≠ 0 := by
   exists x.toFinsupp 0

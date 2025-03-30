@@ -16,13 +16,13 @@ def prime_iff_no_zero_divisors (i: Ideal R) : i.IsPrime ↔ NoZeroDivisors i.toR
     intro a b g
     induction a with | mk a =>
     induction b with | mk b =>
-    rw [←resp_mul] at g
+    rw [←map_mul] at g
     simp [i.mkQuot_eq_zero_iff] at *
     exact h a b g
   · intro ⟨h⟩
     intro a b g
     simp [←i.mkQuot_eq_zero_iff] at *
-    rw [resp_mul] at g
+    rw [map_mul] at g
     exact h g
 
 def prime_iff_compl_subsemigroup (i: Ideal R) : i.IsPrime ↔ ∃m: Subsemigroup R, m.carrier = i.carrierᶜ := by
@@ -73,7 +73,7 @@ def prime_iff_compl_sumonoid (i: Ideal R) : i.IsPrime ∧ i < ⊤ ↔ ∃m: Subm
 def prime_preimage [RingOps S] [IsRing S] (f: R →+* S) (i: Ideal S) : i.IsPrime -> (i.preimage f).IsPrime := by
   intro h a b eq
   apply h
-  rw [←resp_mul]
+  rw [←map_mul]
   assumption
 
 end Ideal

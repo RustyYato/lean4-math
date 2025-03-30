@@ -25,11 +25,11 @@ def lfp_le_fixed {a : α} (h : f a = a) : lfp f ≤ a :=
 def le_lfp {a : α} (h : ∀ b, f b ≤ b → a ≤ b) : a ≤ lfp f :=
   le_sInf _ _ h
 
-def map_le_lfp {a : α} (ha : a ≤ lfp f) : f a ≤ lfp f :=
+def resp_le_lfp {a : α} (ha : a ≤ lfp f) : f a ≤ lfp f :=
   f.le_lfp fun _ hb => le_trans (f.resp_rel <| le_sInf_iff.mp ha _ hb) hb
 
 def map_lfp : f (lfp f) = lfp f :=
-  have h : f (lfp f) ≤ lfp f := f.map_le_lfp (le_refl _)
+  have h : f (lfp f) ≤ lfp f := f.resp_le_lfp (le_refl _)
   le_antisymm h <| f.lfp_le <| f.resp_rel h
 
 end OrderHom

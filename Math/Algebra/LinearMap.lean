@@ -23,16 +23,16 @@ instance [Add A] [Add B] : FunLike (A →ₗ[R] B) A B where
     assumption
 
 instance [Add A] [Add B] : IsAddHom (A →ₗ[R] B) A B where
-  resp_add f := f.resp_add
+  map_add f := f.map_add
 instance [Add A] [Add B] : IsSMulHom (A →ₗ[R] B) R A B where
-  resp_smul f := f.resp_smul
+  map_smul f := f.map_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
   [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A →ₗ[R] B) A B where
-  resp_zero := by
+  map_zero := by
     intro f
-    rw [←smul_zero (0: R), resp_smul, zero_smul]
+    rw [←smul_zero (0: R), map_smul, zero_smul]
 
 instance [Add A] [Add B] : FunLike (A ↪ₗ[R] B) A B where
   coe f := f.toFun
@@ -42,38 +42,38 @@ instance [Add A] [Add B] : FunLike (A ↪ₗ[R] B) A B where
     assumption
 
 instance [Add A] [Add B] : IsAddHom (A ↪ₗ[R] B) A B where
-  resp_add f := f.resp_add
+  map_add f := f.map_add
 instance [Add A] [Add B] : IsSMulHom (A ↪ₗ[R] B) R A B where
-  resp_smul f := f.resp_smul
+  map_smul f := f.map_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
   [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A ↪ₗ[R] B) A B where
-  resp_zero := by
+  map_zero := by
     intro f
-    rw [←smul_zero (0: R), resp_smul, zero_smul]
+    rw [←smul_zero (0: R), map_smul, zero_smul]
 
 def LinearEmbedding.refl (R A: Type*) [Add A] [SMul R A] : A ↪ₗ[R] A where
   toEmbedding := .rfl
-  resp_add := rfl
-  resp_smul := rfl
+  map_add := rfl
+  map_smul := rfl
 
 def LinearEmbedding.trans {R A B C: Type*} [Add A] [Add B] [Add C] [SMul R A] [SMul R B] [SMul R C] (h: A ↪ₗ[R] B) (g: B ↪ₗ[R] C) : A ↪ₗ[R] C where
   toEmbedding := h.toEmbedding.trans g.toEmbedding
-  resp_add := by
+  map_add := by
     intro a b
     apply flip Eq.trans
-    apply g.resp_add
+    apply g.map_add
     show g _ = g _
     congr
-    apply h.resp_add
-  resp_smul := by
+    apply h.map_add
+  map_smul := by
     intro a b
     apply flip Eq.trans
-    apply resp_smul g
+    apply map_smul g
     show g _ = g _
     congr
-    apply resp_smul h
+    apply map_smul h
 
 instance [Add A] [Add B] : FunLike (A ≃ₗ[R] B) A B where
   coe f := f.toFun
@@ -83,83 +83,83 @@ instance [Add A] [Add B] : FunLike (A ≃ₗ[R] B) A B where
     assumption
 
 instance [Add A] [Add B] : IsAddHom (A ≃ₗ[R] B) A B where
-  resp_add f := f.resp_add
+  map_add f := f.map_add
 instance [Add A] [Add B] : IsSMulHom (A ≃ₗ[R] B) R A B where
-  resp_smul f := f.resp_smul
+  map_smul f := f.map_smul
 instance
   [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
   [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
   [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A ≃ₗ[R] B) A B where
-  resp_zero := by
+  map_zero := by
     intro f
-    rw [←smul_zero (0: R), resp_smul, zero_smul]
+    rw [←smul_zero (0: R), map_smul, zero_smul]
 
 def LinearEquiv.refl (R A: Type*) [Add A] [SMul R A] : A ≃ₗ[R] A where
   toEquiv := .rfl
-  resp_add := rfl
-  resp_smul := rfl
+  map_add := rfl
+  map_smul := rfl
 
 def LinearEquiv.symm {R A B: Type*} [Add A] [Add B] [SMul R A] [SMul R B] (h: A ≃ₗ[R] B) : B ≃ₗ[R] A where
   toEquiv := h.toEquiv.symm
-  resp_add := by
+  map_add := by
     intro a b
     rw [←h.coe_symm (_ + _)]
     congr
     show _ = h (h.toEquiv.symm _ + h.toEquiv.symm _)
-    rw [resp_add]
+    rw [map_add]
     congr
     apply (h.symm_coe _).symm
     apply (h.symm_coe _).symm
-  resp_smul := by
+  map_smul := by
     intro r x
     apply h.inj
     show h.toEquiv (h.toEquiv.symm _) = h (_ • h.toEquiv.symm _)
-    rw [h.symm_coe, resp_smul h]
+    rw [h.symm_coe, map_smul h]
     congr; symm; apply Equiv.symm_coe
 
 def LinearEquiv.trans {R A B C: Type*} [Add A] [Add B] [Add C] [SMul R A] [SMul R B] [SMul R C] (h: A ≃ₗ[R] B) (g: B ≃ₗ[R] C) : A ≃ₗ[R] C where
   toEquiv := h.toEquiv.trans g.toEquiv
-  resp_add := by
+  map_add := by
     intro a b
     apply flip Eq.trans
-    apply g.resp_add
+    apply g.map_add
     show g _ = g _
     congr
-    apply h.resp_add
-  resp_smul := by
+    apply h.map_add
+  map_smul := by
     intro a b
     apply flip Eq.trans
-    apply resp_smul g
+    apply map_smul g
     show g _ = g _
     congr
-    apply resp_smul h
+    apply map_smul h
 
 def toLinearMap
   [FunLike F A B] [SMul R A] [SMul R B] [Add A] [Add B]
   [IsAddHom F A B] [IsSMulHom F R A B] (f: F) : LinearMap R A B where
   toFun := f
-  resp_add := resp_add _
-  resp_smul := resp_smul _
+  map_add := map_add _
+  map_smul := map_smul _
 
 namespace LinearMap
 
 def comp [Add A] [Add B] [Add C] (f: B →ₗ[R] C) (g: A →ₗ[R] B) : A →ₗ[R] C where
   toFun := f ∘ g
-  resp_add { _ _ } := by dsimp; rw [resp_add, resp_add]
-  resp_smul { _ _ } := by dsimp; rw [resp_smul, resp_smul]
+  map_add { _ _ } := by dsimp; rw [map_add, map_add]
+  map_smul { _ _ } := by dsimp; rw [map_smul, map_smul]
 
 def id (A: Type*) [Add A] [SMul R A] : A →ₗ[R] A where
   toFun x := x
-  resp_add := rfl
-  resp_smul := rfl
+  map_add := rfl
+  map_smul := rfl
 
 @[ext]
 def ext [Add A] [Add B] (a b: A →ₗ[R] B) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
 
 def copy [Add A] [Add B] (f: A →ₗ[R] B) (g: A -> B) (h: ∀x, f x = g x) : A →ₗ[R] B where
   toFun := g
-  resp_add {x y} := by simp only [←h, resp_add]
-  resp_smul {r x} := by simp only [←h, resp_smul]
+  map_add {x y} := by simp only [←h, map_add]
+  map_smul {r x} := by simp only [←h, map_smul]
 
 section AddMonoid
 
@@ -170,46 +170,46 @@ variable
 instance instZero : Zero (A →ₗ[R] B) where
   zero := {
     toFun _ := 0
-    resp_add {_ _} := by simp
-    resp_smul {r m} := by simp
+    map_add {_ _} := by simp
+    map_smul {r m} := by simp
   }
 
 instance instAdd [IsAddCommMagma B] : Add (A →ₗ[R] B) where
   add f g := {
     toFun x := f x + g x
-    resp_add := by
+    map_add := by
       intro x y
       dsimp
-      rw [resp_add, resp_add]
+      rw [map_add, map_add]
       rw [add_assoc, add_left_comm (f y), ←add_assoc]
-    resp_smul := by
+    map_smul := by
       intro r x
       dsimp
-      rw [resp_smul, resp_smul, smul_add]
+      rw [map_smul, map_smul, smul_add]
   }
 
 instance instNSMul [IsAddCommMagma B]: SMul ℕ (A →ₗ[R] B) where
   smul n f := {
     toFun x := n • f x
-    resp_add := by
+    map_add := by
       intro x y
-      simp [resp_add, nsmul_add]
-    resp_smul := by
+      simp [map_add, nsmul_add]
+    map_smul := by
       intro r x
-      simp [resp_smul]
+      simp [map_smul]
       rw [smul_comm]
   }
 
 instance instSMul [IsCommMagma R]: SMul R (A →ₗ[R] B) where
   smul r f := {
     toFun x := r • f x
-    resp_add := by
+    map_add := by
       intro x y; dsimp
-      rw [resp_add, smul_add]
-    resp_smul := by
+      rw [map_add, smul_add]
+    map_smul := by
       intro r x
       dsimp
-      rw [resp_smul, smul_comm]
+      rw [map_smul, smul_comm]
   }
 
 @[simp] def apply_zero
@@ -248,12 +248,12 @@ variable
 instance instNeg [IsAddCommMagma B] : Neg (A →ₗ[R] B) where
   neg f := {
     toFun x := -f x
-    resp_add {_ _} := by
-      simp [resp_add, neg_add_rev]
+    map_add {_ _} := by
+      simp [map_add, neg_add_rev]
       rw [add_comm]
-    resp_smul {r m} := by
+    map_smul {r m} := by
       simp
-      rw [neg_smul', resp_smul]
+      rw [neg_smul', map_smul]
   }
 
 instance instSub [IsAddCommMagma B] : Sub (A →ₗ[R] B) where
@@ -304,24 +304,24 @@ def BilinMap.mk
   [IsAddMonoid B] [IsAddCommMagma B]
   [SMul R A] [SMul R B] [IsDistribMulAction R B]
   (f: A -> A -> B)
-  (resp_add_left: ∀(a b k: A), f (a + b) k = f a k + f b k)
-  (resp_add_right: ∀(k a b: A), f k (a + b) = f k a + f k b)
-  (resp_smul_left: ∀(r: R) (a k: A), f (r • a) k = r • f a k)
-  (resp_smul_right: ∀(r: R) (a k: A), f k (r • a) = r • f k a)
+  (map_add_left: ∀(a b k: A), f (a + b) k = f a k + f b k)
+  (map_add_right: ∀(k a b: A), f k (a + b) = f k a + f k b)
+  (map_smul_left: ∀(r: R) (a k: A), f (r • a) k = r • f a k)
+  (map_smul_right: ∀(r: R) (a k: A), f k (r • a) = r • f k a)
   : A →ₗ[R] A →ₗ[R] B where
   toFun x := {
     toFun y := f x y
-    resp_add := resp_add_right _ _ _
-    resp_smul := resp_smul_right _ _ _
+    map_add := map_add_right _ _ _
+    map_smul := map_smul_right _ _ _
   }
-  resp_add := by
+  map_add := by
     intro a b
     ext k
-    apply resp_add_left
-  resp_smul := by
+    apply map_add_left
+  map_smul := by
     intro a b
     ext k
-    apply resp_smul_left
+    apply map_smul_left
 
 @[simp]
 def BilinMap.apply_mk
@@ -330,8 +330,8 @@ def BilinMap.apply_mk
   [IsAddMonoid B] [IsAddCommMagma B]
   [SMul R A] [SMul R B] [IsDistribMulAction R B]
   (f: A -> A -> B)
-  {resp_add_left: ∀(a b k: A), f (a + b) k = f a k + f b k}
-  {resp_add_right: ∀(k a b: A), f k (a + b) = f k a + f k b}
-  {resp_smul_left: ∀(r: R) (a k: A), f (r • a) k = r • f a k}
-  {resp_smul_right: ∀(r: R) (a k: A), f k (r • a) = r • f k a}
-  (a b: A) : BilinMap.mk f resp_add_left resp_add_right resp_smul_left resp_smul_right a b = f a b := rfl
+  {map_add_left: ∀(a b k: A), f (a + b) k = f a k + f b k}
+  {map_add_right: ∀(k a b: A), f k (a + b) = f k a + f k b}
+  {map_smul_left: ∀(r: R) (a k: A), f (r • a) k = r • f a k}
+  {map_smul_right: ∀(r: R) (a k: A), f k (r • a) = r • f k a}
+  (a b: A) : BilinMap.mk f map_add_left map_add_right map_smul_left map_smul_right a b = f a b := rfl

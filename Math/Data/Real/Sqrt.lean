@@ -13,7 +13,7 @@ def sqrt_def (x: ℝ) (hx: 0 ≤ x) : sqrt x = NNReal.embedReal (NNReal.sqrt ⟨
 
 def sqrt_sq (x: ℝ) (h: 0 ≤ x) : x.sqrt ^ 2 = x := by
   rw [sqrt_def x h]
-  rw [←resp_npow, NNReal.sqrt_sq]; rfl
+  rw [←map_npow, NNReal.sqrt_sq]; rfl
 
 def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = |x| := by
   rw [sqrt_def (x^2) (by
@@ -130,7 +130,7 @@ def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (
 
 def sqrt_ne_zero (a: ℝ) (h: 0 < a) : a.sqrt ≠ 0 := by
   intro g
-  rw [←resp_zero NNReal.embedReal] at g
+  rw [←map_zero NNReal.embedReal] at g
   have := (NNReal.sqrt_ne_zero _ · (NNReal.embedReal.inj g))
   unfold NNReal.ofReal at this
   replace this := Subtype.mk.inj (Classical.byContradiction this)

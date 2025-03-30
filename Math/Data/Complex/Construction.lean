@@ -10,10 +10,10 @@ open Poly Classical
 def Complex.charPoly : ℝ[X] := X ^ 2 + 1
 def Complex.charPoly.degree : charPoly.degree = .of 2 := by
   unfold charPoly
-  rw [add_degree_of_ne_degree, Xpow_degree, ←resp_one C, const_degree_ne_zero]
+  rw [add_degree_of_ne_degree, Xpow_degree, ←map_one C, const_degree_ne_zero]
   rfl
   symm; apply zero_ne_one
-  rw [Xpow_degree, ←resp_one C, const_degree_ne_zero]
+  rw [Xpow_degree, ←map_one C, const_degree_ne_zero]
   trivial
   symm; apply zero_ne_one
 
@@ -98,12 +98,12 @@ def rightInv : Function.IsRightInverse toComplex ofComplex := by
   show ofComplex r' = _
 
   rw [←r.div_mul_add_mod Complex.charPoly (inv := inferInstance),
-    resp_add, resp_mul, algMap_charPoly, mul_zero, zero_add]
+    map_add, map_mul, algMap_charPoly, mul_zero, zero_add]
   unfold r'; clear r'
   have ⟨a, b, eq⟩ := eq_linear_of_deg_lt_2 (r.mod Complex.charPoly) ?_
   rw [eq]; clear eq r
   simp [eval_add, eval_mul, eval_C, eval_X]
-  rw [resp_add, resp_mul]
+  rw [map_add, map_mul]
   rfl
   rw [←Complex.charPoly.degree]
   apply mod_degree_lt
@@ -121,11 +121,11 @@ def equivComplex : ℂ ≃+* ℝ[i] where
     ext <;> simp
   rightInv := by
     apply rightInv
-  resp_zero := by simp [resp_zero]
-  resp_one := by simp [resp_zero, resp_one]
-  resp_add {x y} := by simp [resp_add, add_mul]; ac_rfl
-  resp_mul {x y} := by
-    simp [resp_add, resp_mul, resp_sub, add_mul, mul_add]
+  map_zero := by simp [map_zero]
+  map_one := by simp [map_zero, map_one]
+  map_add {x y} := by simp [map_add, add_mul]; ac_rfl
+  map_mul {x y} := by
+    simp [map_add, map_mul, map_sub, add_mul, mul_add]
     repeat first|rw [add_assoc]|rw [mul_assoc]
     rw [mul_left_comm i, i_sq]
     rw (occs := [2]) [add_comm (algebraMap x.real * _)]

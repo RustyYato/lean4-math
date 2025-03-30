@@ -172,7 +172,7 @@ def sum_select_unique [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f:
   rw [fi_spec] at g
   contradiction
 
-def resp_sum
+def map_sum
   [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
   [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β]
   [FunLike F α β] [IsZeroHom F α β] [IsAddHom F α β]
@@ -180,37 +180,37 @@ def resp_sum
   g (∑i: ι, f i) = ∑i: ι, g (f i)  := by
   rename Fintype ι => ft
   unfold sum
-  rw [Multiset.resp_sum, Multiset.map_map]
+  rw [Multiset.map_sum, Multiset.map_map]
   rfl
 
-def resp_prod
+def map_prod
   [MonoidOps α] [IsMonoid α] [IsCommMagma α]
   [MonoidOps β] [IsMonoid β] [IsCommMagma β]
   [FunLike F α β] [IsOneHom F α β] [IsMulHom F α β]
   (g: F) (f: ι -> α) :
   g (∏i: ι, f i) = ∏i: ι, g (f i)  :=
-  resp_sum (α := AddOfMul α) (β := AddOfMul β) g f
+  map_sum (α := AddOfMul α) (β := AddOfMul β) g f
 
 def mul_sum  [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α] [IsLeftDistrib α] [IsMulZeroClass α] (x: α) (f: ι -> α) :
   x * ∑i: ι, f i = ∑i: ι, x * f i  := by
   let g : α →+ α := {
     toFun a := x * a
-    resp_add := mul_add _ _ _
-    resp_zero := mul_zero _
+    map_add := mul_add _ _ _
+    map_zero := mul_zero _
   }
   show g (∑i: ι, f i) = _
-  rw [resp_sum]
+  rw [map_sum]
   rfl
 
 def sum_mul [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α] [IsRightDistrib α] [IsMulZeroClass α] (x: α) (f: ι -> α) :
   (∑i: ι, f i) * x = ∑i: ι, f i * x  := by
   let g : α →+ α := {
     toFun a := a * x
-    resp_add := add_mul _ _ _
-    resp_zero := zero_mul _
+    map_add := add_mul _ _ _
+    map_zero := zero_mul _
   }
   show g (∑i: ι, f i) = _
-  rw [resp_sum]
+  rw [map_sum]
   rfl
 
 def smul_sum [SMul β α] [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α]
@@ -218,24 +218,24 @@ def smul_sum [SMul β α] [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddComm
   x • (∑i: ι, f i) = ∑i: ι, x • f i  := by
   let g : α →+ α := {
     toFun a := x • a
-    resp_add := smul_add _ _ _
-    resp_zero := smul_zero _
+    map_add := smul_add _ _ _
+    map_zero := smul_zero _
   }
   show g (∑i: ι, f i) = _
-  rw [resp_sum]
+  rw [map_sum]
   rfl
 
 def neg_sum [AddGroupOps α] [Mul α] [IsAddGroup α] [IsAddCommMagma α] (f: ι -> α) :
   -∑i, f i = ∑i, -f i := by
   let g : α →+ α := {
     toFun a := -a
-    resp_add := by
+    map_add := by
       intro a b
       simp [neg_add_rev, add_comm]
-    resp_zero := neg_zero
+    map_zero := neg_zero
   }
   show g (∑i: ι, f i) = _
-  rw [resp_sum]
+  rw [map_sum]
   rfl
 
 def sum_add_sum [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f g: ι -> α) : (∑i, f i) + (∑i, g i) = ∑i, f i + g i := by

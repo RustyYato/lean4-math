@@ -423,18 +423,18 @@ instance instIsRing [RingOps R] [IsRing R] : IsRing (RingQuot r) where
 
 instance [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [IsSemiring S] [AlgebraMap S R] [IsAlgebra S R] : AlgebraMap S (RingQuot r) where
   toFun s := ⟦algebraMap s⟧
-  resp_zero := by
+  map_zero := by
     simp
-    rw [resp_zero]
-  resp_one := by
+    rw [map_zero]
+  map_one := by
     simp
-    rw [resp_one]
-  resp_add := by
+    rw [map_one]
+  map_add := by
     intro a b
-    simp [resp_add]
-  resp_mul := by
+    simp [map_add]
+  map_mul := by
     intro a b
-    simp [resp_mul]
+    simp [map_mul]
 
 instance instIsAlgebra [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R] [IsSemiring S] [AlgebraMap S R] [IsAlgebra S R] : IsAlgebra S (RingQuot r) where
   commutes := by
@@ -452,10 +452,10 @@ instance instIsAlgebra [SemiringOps R] [SemiringOps S] [SMul S R] [IsSemiring R]
 
 def mkRingHom [SemiringOps R] [IsSemiring R] (r: R -> R -> Prop) : R →+* RingQuot r where
   toFun := (⟦·⟧)
-  resp_zero := rfl
-  resp_one := rfl
-  resp_mul := rfl
-  resp_add := rfl
+  map_zero := rfl
+  map_one := rfl
+  map_mul := rfl
+  map_add := rfl
 
 def mkRingHom_rel [SemiringOps R] [IsSemiring R] (w: r x y) : mkRingHom r x = mkRingHom r y := Quot.sound (Rel.of w)
 
@@ -470,17 +470,17 @@ private def preLift [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T
     intro _ _ r
     induction r with
     | of r => exact h r
-    | add_left _ r' => rw [resp_add, resp_add, r']
-    | mul_left _ r' => rw [resp_mul, resp_mul, r']
-    | mul_right _ r' => rw [resp_mul, resp_mul, r']
-  resp_zero := resp_zero f
-  resp_one := resp_one f
-  resp_add := by
+    | add_left _ r' => rw [map_add, map_add, r']
+    | mul_left _ r' => rw [map_mul, map_mul, r']
+    | mul_right _ r' => rw [map_mul, map_mul, r']
+  map_zero := map_zero f
+  map_one := map_one f
+  map_add := by
     rintro ⟨x⟩ ⟨y⟩
-    apply resp_add
-  resp_mul := by
+    apply map_add
+  map_mul := by
     rintro ⟨x⟩ ⟨y⟩
-    apply resp_mul
+    apply map_mul
 
 def lift [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemiring T]: {f: R →+* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (RingQuot r →+* T) where
   toFun f := preLift f.property
@@ -503,7 +503,7 @@ def lift_mkRingHom_apply [SemiringOps R] [IsSemiring R] [SemiringOps T] [IsSemir
 
 def mkAlgHom (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R] (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
   toRingHom := mkRingHom _
-  resp_algebraMap _ := rfl
+  map_algebraMap _ := rfl
 
 variable (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [IsSemiring S] [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
    [SemiringOps A] [IsSemiring A] [AlgebraMap S A] [SMul S A] [IsAlgebra S A]
@@ -528,25 +528,25 @@ def preLiftAlgHom {s : A → A → Prop} {f : A →ₐ[S] B }
       apply h
       assumption
     | add_left =>
-      rw [resp_add, resp_add]
+      rw [map_add, map_add]
       congr
     | mul_left =>
-      rw [resp_mul, resp_mul]
+      rw [map_mul, map_mul]
       congr
     | mul_right =>
-      rw [resp_mul, resp_mul]
+      rw [map_mul, map_mul]
       congr
-  resp_zero := resp_zero _
-  resp_one := resp_one _
-  resp_algebraMap := resp_algebraMap _
-  resp_add := by
+  map_zero := map_zero _
+  map_one := map_one _
+  map_algebraMap := map_algebraMap _
+  map_add := by
     intro a b
     cases a, b
-    apply resp_add
-  resp_mul := by
+    apply map_add
+  map_mul := by
     intro a b
     cases a, b
-    apply resp_mul
+    apply map_mul
 
 def liftAlgHom {s : A → A → Prop} :
   { f : A →ₐ[S] B // ∀ ⦃x y⦄, s x y → f x = f y } ≃ (RingQuot s →ₐ[S] B) where

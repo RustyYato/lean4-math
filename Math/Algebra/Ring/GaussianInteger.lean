@@ -53,15 +53,15 @@ def i_isunit : IsUnit i where
 
 def real : ℤ[i] →+₁ ℤ where
   toFun x := (RMod.modPoly inferInstance x).toFinsupp 0
-  resp_zero := by
+  map_zero := by
     simp [RMod.modPoly_zero]
     rfl
-  resp_one := by
+  map_one := by
     simp
     erw [RMod.modPoly_const]
     rfl
     trivial
-  resp_add {x y} := by
+  map_add {x y} := by
     induction x using induction' with | mk x =>
     induction y using induction' with | mk y =>
     show (Poly.mod (x + y) _ (inv := _)).toFinsupp 0 =
@@ -72,10 +72,10 @@ def real : ℤ[i] →+₁ ℤ where
 
 def img : ℤ[i] →+ ℤ where
   toFun x := (RMod.modPoly inferInstance x).toFinsupp 1
-  resp_zero := by
+  map_zero := by
     simp [RMod.modPoly_zero]
     rfl
-  resp_add {x y} := by
+  map_add {x y} := by
     induction x using induction' with | mk x =>
     induction y using induction' with | mk y =>
     show (Poly.mod (x + y) _ (inv := _)).toFinsupp 1 =
@@ -100,18 +100,18 @@ private def basis_mod (a b: ℤ) : (a + b * (X: ℤ[X])).mod char = a + b * (X: 
   rw [Poly.mul_degree, ←npow_one X, Poly.Xpow_degree]
   rw [max_lt_iff]
   apply And.intro
-  rw [←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
+  rw [←map_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
   split
   apply WithBot.LT.bot
   any_goals decide
-  rw [←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
+  rw [←map_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
   split
   apply WithBot.LT.bot
   apply WithBot.LT.of
   decide
-  rw [←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
+  rw [←map_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq]
   split
-  rw [Poly.mul_degree, ←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_ne_zero,
+  rw [Poly.mul_degree, ←map_intCast (Poly.C (P := ℤ)), Poly.const_degree_ne_zero,
     ←npow_one X, Poly.Xpow_degree]
   decide
   intro g
@@ -119,7 +119,7 @@ private def basis_mod (a b: ℤ) : (a + b * (X: ℤ[X])).mod char = a + b * (X: 
   apply h; apply And.intro
   exact h'
   exact g
-  rw [mul_degree, ←resp_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq, ←npow_one X, Poly.Xpow_degree]
+  rw [mul_degree, ←map_intCast (Poly.C (P := ℤ)), Poly.const_degree_eq, ←npow_one X, Poly.Xpow_degree]
   split
   decide
   decide
@@ -180,9 +180,9 @@ instance : HasChar ℤ[i] 0 := HasChar.of_ring_emb {
     intro a b eq
     replace eq : (a: ℤ[i]) = b := eq
     have : real b = b := by
-      rw [resp_intCast]
+      rw [map_intCast]
       rfl
-    rw [←eq, resp_intCast] at this
+    rw [←eq, map_intCast] at this
     assumption
 }
 
@@ -254,9 +254,9 @@ def img_one : img 1 = 0 := by
 def conj (a: ℤ[i]) : ℤ := real a - img a
 def norm_sq : ℤ[i] →*₀ ℤ where
   toFun a := real a * real a + img a * img a
-  resp_zero := by simp
-  resp_one := by simp
-  resp_mul := by
+  map_zero := by simp
+  map_one := by simp
+  map_mul := by
     intro x y
     induction x with | mk a b =>
     induction y with | mk c d =>
@@ -289,7 +289,7 @@ def apply_norm_sq : norm_sq a = real a * real a + img a * img a := rfl
 
 def norm_sq_eq_zero : norm_sq a = 0 ↔ a = 0 := by
   apply flip Iff.intro
-  rintro rfl; rw [resp_zero]
+  rintro rfl; rw [map_zero]
   intro h
   induction a with | mk a b =>
   replace h : a * a + b * b = 0 := by simpa using h
@@ -320,8 +320,8 @@ def of_basis_eq_zero {a b: ℤ} : a + b * i = 0 -> a = 0 ∧ b = 0 := by
 instance : NoZeroDivisors ℤ[i] where
   of_mul_eq_zero {x y} := by
     intro h
-    have : norm_sq (x * y) = 0 := by rw [h, resp_zero]
-    rw [resp_mul] at this
+    have : norm_sq (x * y) = 0 := by rw [h, map_zero]
+    rw [map_mul] at this
     rcases of_mul_eq_zero this with g | g
     left; rwa [norm_sq_eq_zero] at g
     right; rwa [norm_sq_eq_zero] at g

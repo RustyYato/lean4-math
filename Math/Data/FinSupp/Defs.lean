@@ -7,7 +7,7 @@ import Math.Logic.Basic
 import Math.Algebra.Module.Defs
 
 class FiniteSupportSet (S: Type*) (α: outParam Type*) extends FinsetLike S α, Sup S, Inf S, LE S, LT S, IsLattice S, Inhabited S, IsLawfulEmptyFinsetLike S where
-  coe_resp_le: ∀{a b: S}, a ≤ b ↔ (a: Finset α) ≤ (b: Finset α)
+  coe_map_le: ∀{a b: S}, a ≤ b ↔ (a: Finset α) ≤ (b: Finset α)
   singleton: α -> S
   mem_singleton: ∀a: α, a ∈ singleton a
   remove: α -> S -> S
@@ -21,34 +21,34 @@ namespace FiniteSupportSet
 
 variable [FiniteSupportSet S α] [DecidableEq α]
 
-def coe_resp_lt {a b: S} : a < b ↔ (a: Finset α) < (b: Finset α) := by
-  simp only [lt_iff_le_and_not_le, coe_resp_le]
+def coe_map_lt {a b: S} : a < b ↔ (a: Finset α) < (b: Finset α) := by
+  simp only [lt_iff_le_and_not_le, coe_map_le]
 
 def coe_sup_sub_sup_coe (a b: S) : (a ⊔ b: Finset α) ≤ ((a ⊔ b: S): Finset α) := by
   apply sup_le
-  apply coe_resp_le.mp
+  apply coe_map_le.mp
   apply le_sup_left
-  apply coe_resp_le.mp
+  apply coe_map_le.mp
   apply le_sup_right
 
 def inf_coe_sub_coe_inf (a b: S) : ((a ⊓ b: S): Finset α) ≤ (a ⊓ b: Finset α) := by
   apply le_inf
-  apply coe_resp_le.mp
+  apply coe_map_le.mp
   apply inf_le_left
-  apply coe_resp_le.mp
+  apply coe_map_le.mp
   apply inf_le_right
 
 end FiniteSupportSet
 
 instance [DecidableEq α] : FiniteSupportSet (Finset α) α where
-  coe_resp_le := Iff.rfl
+  coe_map_le := Iff.rfl
   singleton a := {a}
   mem_singleton _ := Finset.mem_singleton.mpr rfl
   remove a s := s.erase a
   mem_remove _ _ _ h g := Finset.mem_erase.mpr ⟨h, g.symm⟩
 
 instance : FiniteSupportSet Nat Nat where
-  coe_resp_le {a b} := by
+  coe_map_le {a b} := by
     conv => {
       rhs; rw [LE.le, Finset.instLE]
     }
@@ -335,13 +335,13 @@ def apply_erase [Zero β] [DecidableEq α] (f: Finsupp α β S) (a x: α) :
 
 def singleHom [DecidableEq α] [Zero β] [Add β] [IsAddZeroClass β] (a: α) : β →+ Finsupp α β S where
   toFun := single a
-  resp_zero := by ext; simp [apply_single]
-  resp_add {f g} := by ext; simp only [apply_single, apply_add]; split <;> simp
+  map_zero := by ext; simp [apply_single]
+  map_add {f g} := by ext; simp only [apply_single, apply_add]; split <;> simp
 
 def applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) : Finsupp α β S →+ β where
   toFun f := f a
-  resp_zero := rfl
-  resp_add := rfl
+  map_zero := rfl
+  map_add := rfl
 
 def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): Finsupp α β S where
   toFun x := if x ∈ s then f x else 0
@@ -399,7 +399,7 @@ def mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f
       intro x hx
       dsimp at hx
       by_cases hf:f x = 0
-      rw [hf, resp_zero] at hx
+      rw [hf, map_zero] at hx
       contradiction
       apply h
       assumption
@@ -409,7 +409,7 @@ def mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f
 
 def mapRange_zero [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) :
   mapRange g (0: Finsupp α β S) = 0 := by
-  ext x; simp [resp_zero]
+  ext x; simp [map_zero]
 
 def toFinset [DecidableEq α] [Zero β] (f: Finsupp α β S) : Finsupp α β (Finset α) where
   toFun := f

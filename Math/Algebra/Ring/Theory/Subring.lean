@@ -37,21 +37,21 @@ def ofHom
   carrier := Set.range f
   mem_zero' := by
     exists 0
-    rw [resp_zero]
+    rw [map_zero]
   mem_one' := by
     exists 1
-    rw [resp_one]
+    rw [map_one]
   mem_add' := by
     rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
-    rw [←resp_add]
+    rw [←map_add]
     apply Set.mem_range'
   mem_neg' := by
     rintro _ ⟨_, rfl⟩
-    rw [←resp_neg]
+    rw [←map_neg]
     apply Set.mem_range'
   mem_mul' := by
     rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
-    rw [←resp_mul]
+    rw [←map_mul]
     apply Set.mem_range'
 
 -- there is a homomorphism between to a subring from each of it's subsets
@@ -60,10 +60,10 @@ def Hom [RingOps R] (s t: Subring R) (h: s ⊆ t) : s ↪+* t where
   inj' := by
     intro a b eq
     cases a; cases eq; rfl
-  resp_zero := rfl
-  resp_one := rfl
-  resp_add := rfl
-  resp_mul := rfl
+  map_zero := rfl
+  map_one := rfl
+  map_add := rfl
+  map_mul := rfl
 
 def embedOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ↪+* ofHom f where
   toFun s := ⟨f s, Set.mem_range'⟩
@@ -71,22 +71,22 @@ def embedOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S 
     intro x y eq
     apply f.inj
     apply Subtype.mk.inj eq
-  resp_zero := by
+  map_zero := by
     dsimp
     congr
-    rw [resp_zero]
-  resp_one := by
+    rw [map_zero]
+  map_one := by
     dsimp
     congr
-    rw [resp_one]
-  resp_add {x y} := by
+    rw [map_one]
+  map_add {x y} := by
     dsimp
     congr
-    rw [resp_add]
-  resp_mul {x y} := by
+    rw [map_add]
+  map_mul {x y} := by
     dsimp
     congr
-    rw [resp_mul]
+    rw [map_mul]
 
 noncomputable def equivOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ≃+* ofHom f where
   toFun := embedOfHom f
@@ -103,9 +103,9 @@ noncomputable def equivOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S
     congr
     symm
     exact Classical.choose_spec hr
-  resp_zero := resp_zero _
-  resp_one := resp_one _
-  resp_add := resp_add _
-  resp_mul := resp_mul _
+  map_zero := map_zero _
+  map_one := map_one _
+  map_add := map_add _
+  map_mul := map_mul _
 
 end Subring

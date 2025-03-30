@@ -81,7 +81,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       simp
       apply Fin.val_inj.mp
       let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
-      rw [←resp_natCast mkQuot]
+      rw [←map_natCast mkQuot]
       show Int.toNat ((x.val: ℤ) % n) = x.val
       apply Int.ofNat.inj
       rw [Int.ofNat_eq_coe, Int.ofNat_eq_coe, Int.toNat_of_nonneg]
@@ -95,7 +95,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       obtain ⟨x, rfl⟩ := (Int.multiples n).mkQuot_surj x
       dsimp
       let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
-      rw [←resp_natCast mkQuot]
+      rw [←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ ↑(x % ↑n).toNat - x
       rw [Int.toNat_of_nonneg]
@@ -103,27 +103,27 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       refine Int.emod_nonneg x ?_
       have := h.out
       omega
-    resp_zero := rfl
-    resp_one := by
+    map_zero := rfl
+    map_one := by
       match n, h with
       | 1, h =>
         apply Quotient.sound
         apply Int.one_dvd
       | n + 2, h => rfl
-    resp_add {x y} := by
+    map_add {x y} := by
       show (((x.val + y.val) % n): ZMod n) = (x.val: ZMod n) + (y.val: ZMod n)
       rw [←natCast_add]
       let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
-      rw [←resp_natCast mkQuot, ←resp_natCast mkQuot]
+      rw [←map_natCast mkQuot, ←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ _
       rw [Int.ofNat_emod]
       apply int_dvd_emod_sub
-    resp_mul {x y} := by
+    map_mul {x y} := by
       show (((x.val * y.val) % n): ZMod n) = (x.val: ZMod n) * (y.val: ZMod n)
       rw [←natCast_mul]
       let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
-      rw [←resp_natCast mkQuot, ←resp_natCast mkQuot]
+      rw [←map_natCast mkQuot, ←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ _
       rw [Int.ofNat_emod]
@@ -135,10 +135,10 @@ instance : IsCommMagma (ZMod n) where
     intro a b; cases n
     apply zmod_zero_eqv_int.inj
     show zmod_zero_eqv_int _ = zmod_zero_eqv_int _
-    rw [resp_mul, resp_mul, mul_comm]
+    rw [map_mul, map_mul, mul_comm]
     apply (zmod_succ_eqv_fin _).inj
     show zmod_succ_eqv_fin _ _ = zmod_succ_eqv_fin _ _
-    rw [resp_mul, resp_mul, mul_comm]
+    rw [map_mul, map_mul, mul_comm]
 
 instance : DecidableEq (ZMod n) :=
   match n with
@@ -207,7 +207,7 @@ def n_eq_zero : (n: ZMod n) = 0 := by
   rfl
   apply (zmod_succ_eqv_fin _).inj
   show zmod_succ_eqv_fin _ _ = zmod_succ_eqv_fin _ 0
-  rw [resp_natCast, resp_zero]
+  rw [map_natCast, map_zero]
   simp [Nat.cast, NatCast.natCast]
 
 @[simp]
@@ -241,18 +241,18 @@ def intCast_eq_intCast {n: ℕ} {a b: ℤ} :
     | succ n =>
     apply (zmod_succ_eqv_fin (n+1)).inj
     show zmod_succ_eqv_fin _ _ = zmod_succ_eqv_fin _ _
-    rw [resp_intCast, resp_intCast]
+    rw [map_intCast, map_intCast]
     show Fin.mk _ _ = Fin.mk _ _
     congr 2
   · intro eq
     rw [←intCast_mod_n, ←intCast_mod_n b] at eq
     cases n
     rw [natCast_zero, Int.emod_zero, Int.emod_zero] at *
-    rw [←resp_intCast zmod_zero_eqv_int.symm, ←resp_intCast zmod_zero_eqv_int.symm] at eq
+    rw [←map_intCast zmod_zero_eqv_int.symm, ←map_intCast zmod_zero_eqv_int.symm] at eq
     apply zmod_zero_eqv_int.symm.inj
     assumption
     rename_i n
-    rw [←resp_intCast (zmod_succ_eqv_fin (n+1)).symm, ←resp_intCast (zmod_succ_eqv_fin (n+1)).symm] at eq
+    rw [←map_intCast (zmod_succ_eqv_fin (n+1)).symm, ←map_intCast (zmod_succ_eqv_fin (n+1)).symm] at eq
     replace eq := Int.ofNat_inj.mpr <| Fin.mk.inj <| (zmod_succ_eqv_fin _).symm.inj eq
     rw [Int.toNat_of_nonneg, Int.toNat_of_nonneg,
       Int.ofNat_succ, Int.emod_emod, Int.emod_emod] at eq
@@ -270,7 +270,7 @@ def natCast_eq_natCast {a b: ℕ} :
 
 def toInt_intCast (x: ZMod n) : x.toInt = x := by
   let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
-  rw [←resp_intCast mkQuot]
+  rw [←map_intCast mkQuot]
   obtain ⟨x, rfl⟩ := (Int.multiples n).mkQuot_surj x
   apply Quotient.sound
   cases n
@@ -284,41 +284,41 @@ def toInt_intCast (x: ZMod n) : x.toInt = x := by
 
 def homOfDvd (n m: ℕ) (h: m ∣ n) : ZMod n →+* ZMod m where
   toFun n := toInt n
-  resp_zero := by
+  map_zero := by
     dsimp
     cases n <;> unfold toInt <;> dsimp
-    rw [resp_zero, intCast_zero]
-    rw [resp_zero]
+    rw [map_zero, intCast_zero]
+    rw [map_zero]
     rfl
-  resp_one := by
+  map_one := by
     cases n <;> unfold toInt <;> dsimp
-    rw [resp_one, intCast_one]
-    rw [resp_one]
+    rw [map_one, intCast_one]
+    rw [map_one]
     rename_i n
     cases n
     cases Nat.dvd_one.mp h
     decide
     rename_i n
     rfl
-  resp_add {x y} := by
+  map_add {x y} := by
     cases n
     unfold toInt
     dsimp only
-    rw [resp_add, intCast_add]
+    rw [map_add, intCast_add]
     unfold toInt
     dsimp only
-    rw [resp_add, intCast_ofNat, intCast_ofNat, intCast_ofNat,
+    rw [map_add, intCast_ofNat, intCast_ofNat, intCast_ofNat,
       Fin.add_def, Fin.val_mk]
     rw [←natCast_mod_n, Nat.mod_mod_of_dvd, natCast_mod_n, natCast_add]
     assumption
-  resp_mul {x y} := by
+  map_mul {x y} := by
     cases n
     unfold toInt
     dsimp only
-    rw [resp_mul, intCast_mul]
+    rw [map_mul, intCast_mul]
     unfold toInt
     dsimp only
-    rw [resp_mul, intCast_ofNat, intCast_ofNat, intCast_ofNat,
+    rw [map_mul, intCast_ofNat, intCast_ofNat, intCast_ofNat,
       Fin.mul_def, Fin.val_mk]
     rw [←natCast_mod_n, Nat.mod_mod_of_dvd, natCast_mod_n, natCast_mul]
     assumption
@@ -328,14 +328,14 @@ def homOfDvd (n m: ℕ) (h: m ∣ n) : ZMod n →+* ZMod m where
 --     match m with
 --     | 0 => toInt x
 --     | m + 1 => (((m + 1) * toInt x / n): ℤ)
---   resp_zero := by
+--   map_zero := by
 --     dsimp
 --     have : ¬NeZero 0 := by
 --       intro ⟨_⟩
 --       contradiction
 --     cases m <;> unfold toInt <;> dsimp only
---     rw [resp_zero, intCast_zero]
---     rw [resp_zero]
+--     rw [map_zero, intCast_zero]
+--     rw [map_zero]
 --     simp [intCast_zero, mul_zero]
 --   inj' := by
 --     have : ¬NeZero 0 := by
@@ -355,13 +355,13 @@ def homOfDvd (n m: ℕ) (h: m ∣ n) : ZMod n →+* ZMod m where
 --     generalize (zmod_succ_eqv_fin (m + 1)) y = y'
 --     clear x y; intro eq
 --     sorry
---   resp_add {x y} := by
+--   map_add {x y} := by
 --     cases m <;> dsimp
 --     cases Nat.zero_dvd.mp h
 --     simp [toInt_intCast]
 --     rename_i m
 --     sorry
---   resp_mul {x y} := by
+--   map_mul {x y} := by
 --     cases m <;> dsimp
 --     cases Nat.zero_dvd.mp h
 --     simp [toInt_intCast]

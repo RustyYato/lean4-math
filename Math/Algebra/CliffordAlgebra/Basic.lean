@@ -18,8 +18,8 @@ def IsVersor.toIsUnit (x: CliffordAlgebra Q) (h: x.IsVersor) : IsUnit x := by
   | scalar x hx =>
     obtain ⟨⟨x, inv, xinv, invx⟩ , rfl⟩ := hx
     refine ⟨⟨_, algebraMap inv, ?_, ?_⟩, rfl⟩
-    rw [←resp_mul, xinv, resp_one]
-    rw [←resp_mul, invx, resp_one]
+    rw [←map_mul, xinv, map_one]
+    rw [←map_mul, invx, map_one]
   | mul_vec x v _ hv hx =>
     obtain ⟨⟨x, x', xinv, invx⟩ , rfl⟩ := hx
     obtain ⟨⟨v, v', vinv, invv⟩ , rfl⟩ := hv

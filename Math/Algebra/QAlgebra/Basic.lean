@@ -8,13 +8,13 @@ variable [QAlgebraOps α] [IsQAlgebra α]
 
 instance : AlgebraMap ℚ α where
   toFun q := q
-  resp_zero := by
+  map_zero := by
     dsimp
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
     rw [div?_eq_mul_inv?]
     simp [intCast_zero]
-  resp_one := by
+  map_one := by
     dsimp
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
@@ -22,7 +22,7 @@ instance : AlgebraMap ℚ α where
     simp [intCast_one]
     apply inv?_eq_of_mul_left
     simp [natCast_one]
-  resp_add := by
+  map_add := by
     have := (inferInstanceAs (IsQAlgebra α)).toHasChar
     intro a b
     simp
@@ -49,7 +49,7 @@ instance : AlgebraMap ℚ α where
     intro h
     rw [←natCast_zero] at h
     exact b.den_nz (HasChar.natCast_inj h)
-  resp_mul := by
+  map_mul := by
     intro a b
     cases a, b with | mk a b =>
     simp [ratCast_eq_ratCastRec]
@@ -135,10 +135,10 @@ def HasChar.ofQAlgebra [IsNontrivial α] [RingOps α] [IsRing α] [SMul ℚ α] 
   have : (algebraMap (m: ℚ): α) = m := by
     clear h
     induction m with
-    | zero => simp [natCast_zero, resp_zero]
+    | zero => simp [natCast_zero, map_zero]
     | succ m ih =>
-      simp [natCast_succ, resp_add, resp_one, ih]
-  rw [h, ←resp_zero (algebraMap (R := ℚ) (A := α))] at this
+      simp [natCast_succ, map_add, map_one, ih]
+  rw [h, ←map_zero (algebraMap (R := ℚ) (A := α))] at this
   replace this := field_hom_inj (F := ℚ) (R := α) algebraMap this
   rw [natCast_inj this]
   apply Nat.dvd_refl

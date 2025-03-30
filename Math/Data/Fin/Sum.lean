@@ -69,21 +69,21 @@ section Hom
 
 open Fin
 
-def resp_sum_from [FunLike F α β] [Add α] [Add β] [IsAddHom F α β] (start: α) (f: Fin n -> α) (h: F) : h (Fin.sum_from start f) = Fin.sum_from (h start) (h ∘ f) := by
+def map_sum_from [FunLike F α β] [Add α] [Add β] [IsAddHom F α β] (start: α) (f: Fin n -> α) (h: F) : h (Fin.sum_from start f) = Fin.sum_from (h start) (h ∘ f) := by
   induction n with
   | zero => rfl
   | succ n ih =>
-    rw [sum_from_succ, resp_add, ih]
+    rw [sum_from_succ, map_add, ih]
     rfl
 
-def resp_prod_from [FunLike F α β] [Mul α] [Mul β] [IsMulHom F α β] (start: α) (f: Fin n -> α) (h: F) : h (Fin.prod_from start f) = Fin.prod_from (h start) (h ∘ f) :=
-  resp_sum_from (α := AddOfMul α) (β := AddOfMul β) start f h
+def map_prod_from [FunLike F α β] [Mul α] [Mul β] [IsMulHom F α β] (start: α) (f: Fin n -> α) (h: F) : h (Fin.prod_from start f) = Fin.prod_from (h start) (h ∘ f) :=
+  map_sum_from (α := AddOfMul α) (β := AddOfMul β) start f h
 
-def resp_sum [FunLike F α β] [Zero α] [Zero β] [Add α] [Add β] [IsZeroHom F α β] [IsAddHom F α β] (f: Fin n -> α) (h: F) : h (Fin.sum f) = Fin.sum (h ∘ f) := by
-  rw [sum, sum, resp_sum_from, resp_zero]
+def map_sum [FunLike F α β] [Zero α] [Zero β] [Add α] [Add β] [IsZeroHom F α β] [IsAddHom F α β] (f: Fin n -> α) (h: F) : h (Fin.sum f) = Fin.sum (h ∘ f) := by
+  rw [sum, sum, map_sum_from, map_zero]
 
-def resp_prod [FunLike F α β] [One α] [One β] [Mul α] [Mul β] [IsOneHom F α β] [IsMulHom F α β] (f: Fin n -> α) (h: F) : h (Fin.prod f) = Fin.prod (h ∘ f) :=
-  resp_sum (α := AddOfMul α) (β := AddOfMul β) f h
+def map_prod [FunLike F α β] [One α] [One β] [Mul α] [Mul β] [IsOneHom F α β] [IsMulHom F α β] (f: Fin n -> α) (h: F) : h (Fin.prod f) = Fin.prod (h ∘ f) :=
+  map_sum (α := AddOfMul α) (β := AddOfMul β) f h
 
 end Hom
 
@@ -279,33 +279,33 @@ def sum_smul
   [SMul α β] [IsModule α β] (f: Fin n -> α) (x: β) : sum f • x = sum (fun i => f i • x) := by
   let smul_hom: α →+ β := {
     toFun a := a • x
-    resp_zero := zero_smul _
-    resp_add := add_smul _ _ _
+    map_zero := zero_smul _
+    map_add := add_smul _ _ _
   }
   show smul_hom (sum f) = _
-  rw [resp_sum]
+  rw [map_sum]
   rfl
 
 def sum_mul [SemiringOps α] [IsSemiring α] [IsMulZeroClass α]
    (f: Fin n -> α) (x: α) : sum f * x = sum (fun i => f i * x) := by
   let smul_hom: α →+ α := {
     toFun a := a * x
-    resp_zero := zero_mul _
-    resp_add := add_mul _ _ _
+    map_zero := zero_mul _
+    map_add := add_mul _ _ _
   }
   show smul_hom (sum f) = _
-  rw [resp_sum]
+  rw [map_sum]
   rfl
 
 def mul_sum [SemiringOps α] [IsSemiring α] [IsMulZeroClass α]
    (f: Fin n -> α) (x: α) : x * sum f = sum (fun i => x * f i) := by
   let smul_hom: α →+ α := {
     toFun a := x * a
-    resp_zero := mul_zero _
-    resp_add := mul_add _ _ _
+    map_zero := mul_zero _
+    map_add := mul_add _ _ _
   }
   show smul_hom (sum f) = _
-  rw [resp_sum]
+  rw [map_sum]
   rfl
 
 def sum_rev [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: Fin n -> α) : Fin.sum f = Fin.sum (fun x => f x.rev) := by

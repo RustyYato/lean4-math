@@ -157,7 +157,7 @@ def coe_symm (h: α ≃o β) (x: α) : h.symm (h x) = x := h.leftInv _
 def symm_coe (h: α ≃o β) (x: β) : h (h.symm x) = x := h.rightInv _
 
 def resp_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: α}, a ≤ b ↔ h a ≤ h b := h.resp_rel
-def symm_resp_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: β}, a ≤ b ↔ h.symm a ≤ h.symm b := h.symm.resp_rel
+def symm_map_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: β}, a ≤ b ↔ h.symm a ≤ h.symm b := h.symm.resp_rel
 
 def resp_lt {_: LE α} {_: LE β} {_: LT α} {_: LT β} [IsLawfulLT α] [IsLawfulLT β] (h: α ≃o β) : ∀{a b: α}, a < b ↔ h a < h b := by
   intro a b

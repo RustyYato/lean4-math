@@ -12,31 +12,31 @@ def preimage (f: α →+* β) (i: Ideal β) : Ideal α where
   carrier := Set.preimage i.carrier f
   mem_zero' := by
     show f 0 ∈ i
-    erw [resp_zero]
+    erw [map_zero]
     apply mem_zero
   mem_neg' := by
     intro a ha
     show f _ ∈ i
-    rw [resp_neg]
+    rw [map_neg]
     apply mem_neg
     assumption
   mem_add' := by
     intro a b ha hb
     show f (a + b) ∈ i
-    rw [resp_add]
+    rw [map_add]
     apply mem_add
     assumption
     assumption
   mem_mul_left' := by
     intro a b hb
     show f _ ∈ i
-    rw [resp_mul]
+    rw [map_mul]
     apply mem_mul_left
     assumption
   mem_mul_right' := by
     intro a b hb
     show f _ ∈ i
-    rw [resp_mul]
+    rw [map_mul]
     apply mem_mul_right
     assumption
 

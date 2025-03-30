@@ -27,11 +27,11 @@ def Group.toAddAut (G M: Type*) [GroupOps G] [IsGroup G]
       intro m; simp [←mul_smul, MulOpp.mk]
     rightInv := by
       intro m; simp [←mul_smul, MulOpp.mk]
-    resp_zero := by simp
-    resp_add {m₀ m₁} := by simp [smul_add]
+    map_zero := by simp
+    map_add {m₀ m₁} := by simp [smul_add]
   }
-  resp_one := by simp; rfl
-  resp_mul := by
+  map_one := by simp; rfl
+  map_mul := by
     intro x y
     apply AddGroupEquiv.ext
     intro m
@@ -65,14 +65,14 @@ instance (h: G →* AddAut M) : IsDistribMulAction (ofAddAut h)ᵐᵒᵖ M where
   one_smul := by
     intro a
     show h _ _ = _
-    rw [MulOpp.get_one, resp_one]; rfl
+    rw [MulOpp.get_one, map_one]; rfl
   mul_smul x y m := by
     show h _ _ = h _ (h _ _)
     cases x with | mk x =>
     cases y with | mk y =>
     simp [←MulOpp.mk_mul]
-    rw [resp_mul]; rfl
-  smul_zero a := resp_zero (F := M ≃+ M) _
-  smul_add _ _ _ := resp_add (F := M ≃+ M) _
+    rw [map_mul]; rfl
+  smul_zero a := map_zero (F := M ≃+ M) _
+  smul_add _ _ _ := map_add (F := M ≃+ M) _
 
 end section
