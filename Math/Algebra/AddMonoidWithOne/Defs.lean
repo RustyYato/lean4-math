@@ -9,7 +9,7 @@ def instNatCast [Add α] [Zero α] [One α] : NatCast α := ⟨natCastRec⟩
 class AddMonoidWithOneOps (α: Type*) extends AddMonoidOps α, One α, NatCast α where
   ofNat n : OfNat α (n + 2) := by infer_instance
 
-instance [AddMonoidOps α] [One α] [NatCast α] [∀n, OfNat α (n + 2)] : AddMonoidWithOneOps α where
+instance (priority := 50) [AddMonoidOps α] [One α] [NatCast α] [∀n, OfNat α (n + 2)] : AddMonoidWithOneOps α where
 
 instance (priority := 50) [AddMonoidWithOneOps α] : OfNat α (n + 2) := AddMonoidWithOneOps.ofNat n
 

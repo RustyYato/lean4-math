@@ -38,7 +38,7 @@ def ratCastRec [FieldOps α] [IsField α] [HasChar α 0] (q: ℚ) : α :=
 
 class QAlgebraOps (α: Type*) extends FieldOps α, RatCast α, SMul ℚ α where
 
-instance [FieldOps α] [RatCast α] [SMul ℚ α] : QAlgebraOps α where
+instance (priority := 50) [FieldOps α] [RatCast α] [SMul ℚ α] : QAlgebraOps α where
 
 class IsQAlgebra (α: Type*) [QAlgebraOps α] extends IsField α, HasChar α 0 where
   qsmul_eq_ratCast_mul: ∀(q: ℚ) (a: α), q • a = q * a := by intro q a; rfl

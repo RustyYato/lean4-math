@@ -3,7 +3,7 @@ import Math.Algebra.Semifield.Defs
 
 class FieldOps (α: Type*) extends RingOps α, SemifieldOps α where
 
-instance [h: RingOps α] [CheckedIntPow? α] [CheckedInv? α] [CheckedDiv? α] : FieldOps α where
+instance (priority := 50) [RingOps α] [CheckedIntPow? α] [CheckedInv? α] [CheckedDiv? α] : FieldOps α where
 
 class IsNonCommField (α: Type*) [FieldOps α] : Prop extends IsRing α, IsNonCommSemifield α where
 class IsField (α: Type*) [FieldOps α] : Prop extends IsNonCommField α, IsSemifield α  where

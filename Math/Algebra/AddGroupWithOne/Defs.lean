@@ -7,7 +7,7 @@ def intCastRec [NatCast α] [Neg α] : ℤ -> α
 
 class AddGroupWithOneOps (α: Type*) extends AddGroupOps α, AddMonoidWithOneOps α, IntCast α where
 
-instance [AddMonoidWithOneOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : AddGroupWithOneOps α where
+instance (priority := 50) [AddMonoidWithOneOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : AddGroupWithOneOps α where
 
 class IsAddGroupWithOne (α: Type*) [AddGroupWithOneOps α] : Prop extends IsAddGroup α, IsAddMonoidWithOne α where
   intCast_ofNat (n: ℕ) : ((n: Int): α) = (n: α)

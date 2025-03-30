@@ -3,7 +3,7 @@ import Math.Algebra.GroupWithZero.Defs
 
 class SemifieldOps (α: Type*) extends SemiringOps α, GroupWithZeroOps α where
 
-instance [h: SemiringOps α] [CheckedIntPow? α] [CheckedInv? α] [CheckedDiv? α] : SemifieldOps α where
+instance (priority := 50) [SemiringOps α] [CheckedIntPow? α] [CheckedInv? α] [CheckedDiv? α] : SemifieldOps α where
 
 def zpow?Rec [SemiringOps α] [CheckedInv? α] (a: α) (n: ℤ) (h: a ≠ 0 ∨ 0 ≤ n) : α :=
   match n with

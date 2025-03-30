@@ -53,8 +53,8 @@ class GroupOps (α: Type*) extends MonoidOps α, Inv α, Div α where
   div := div'
   zpow: α -> ℤ -> α := by exact Pow.pow
 
-instance [AddMonoidOps α] [Neg α] [Sub α] [SMul ℤ α] : AddGroupOps α where
-instance [MonoidOps α] [Inv α] [Div α] [Pow α ℤ] : GroupOps α where
+instance (priority := 50) [AddMonoidOps α] [Neg α] [Sub α] [SMul ℤ α] : AddGroupOps α where
+instance (priority := 50) [MonoidOps α] [Inv α] [Div α] [Pow α ℤ] : GroupOps α where
 
 instance (priority := 50) [AddGroupOps α] : SMul ℤ α where
   smul := AddGroupOps.zsmul

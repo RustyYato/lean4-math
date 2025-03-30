@@ -37,7 +37,7 @@ instance (priority := 100) [AddGroupOps α] [Mul α] [IsNonUnitalRing α] : IsNo
 end PreRing
 
 class RingOps (α: Type*) extends SemiringOps α, AddGroupWithOneOps α where
-instance [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where
+instance (priority := 50) [SemiringOps α] [Neg α] [Sub α] [IntCast α] [SMul ℤ α] : RingOps α where
 
 class IsRing (α: Type*) [RingOps α] : Prop extends IsSemiring α, IsAddGroupWithOne α  where
 

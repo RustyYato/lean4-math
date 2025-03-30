@@ -65,7 +65,7 @@ end PreSemiring
 section Semiring
 
 class SemiringOps (α: Type*) extends AddMonoidWithOneOps α, MonoidOps α where
-instance [AddMonoidWithOneOps α] [MonoidOps α] : SemiringOps α where
+instance (priority := 50) [AddMonoidWithOneOps α] [MonoidOps α] : SemiringOps α where
 
 class IsSemiring (α: Type*) [SemiringOps α] : Prop extends
   IsAddCommMagma α, IsAddMonoidWithOne α,
