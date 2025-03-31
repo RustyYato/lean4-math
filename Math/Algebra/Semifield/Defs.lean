@@ -24,9 +24,6 @@ variable [SemifieldOps α] [IsNonCommSemifield α]
 def add_div?_add' [SemifieldOps α] [IsNonCommSemifield α] (a b c: α) (h: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, div?_eq_mul_inv?, ←add_mul]
 
-def div?_self [SemifieldOps α] [IsNonCommSemifield α] (a: α) (h: a ≠ 0) : a /? a = 1 := by
-  rw [div?_eq_mul_inv?, mul_inv?_cancel]
-
 instance [SemifieldOps α] [IsNonCommSemifield α] : IsMulCancel₀ α where
   mul_left_cancel₀ := by
     intro a b k hk h

@@ -186,6 +186,9 @@ def inv?_npow (a: α) (h: a ≠ 0) (n: ℕ) : (a⁻¹?) ^ n = (a ^ n)⁻¹? := b
 def div?_npow [IsCommMagma α] (a b: α) (h: b ≠ 0) (n: ℕ) : (a /? b) ^ n = (a ^ n) /? (b ^ n) := by
   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, mul_npow, inv?_npow]
 
+def div?_self (a: α) (ha: a ≠ 0) : a /? a = 1 := by
+  rw [div?_eq_mul_inv?, mul_inv?_cancel]
+
 class IsLeftCancel₀ (α: Type*) [Mul α] [Zero α]: Prop where
   mul_left_cancel₀ {a b k: α}: k ≠ 0 -> k * a = k * b -> a = b
 class IsRightCancel₀ (α: Type*) [Mul α] [Zero α]: Prop where

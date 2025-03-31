@@ -140,6 +140,8 @@ variable {C α: Type*} [RelLike C α]
 
 instance : RelLike (MulOfAdd C) (MulOfAdd α) := inferInstanceAs (RelLike C α)
 instance : RelLike (AddOfMul C) (AddOfMul α) := inferInstanceAs (RelLike C α)
+instance : RelLike (Cᵃᵒᵖ) (αᵃᵒᵖ) := inferInstanceAs (RelLike C α)
+instance : RelLike (Cᵐᵒᵖ) (αᵐᵒᵖ) := inferInstanceAs (RelLike C α)
 
 instance [Add α] [IsAddCon C] : IsMulCon (MulOfAdd C) where
   resp_mul := resp_add (C := C)
@@ -147,6 +149,34 @@ instance [Add α] [IsAddCon C] : IsMulCon (MulOfAdd C) where
 instance [Mul α] [IsMulCon C] : IsAddCon (AddOfMul C) where
   resp_add := resp_mul (C := C)
   toEquivalence := IsCon.toEquivalence (C := C)
+
+instance [IsCon C] : IsCon (Cᵃᵒᵖ) := inferInstanceAs (IsCon C)
+instance [IsCon C] : IsCon (Cᵐᵒᵖ) := inferInstanceAs (IsCon C)
+
+instance [Add α] [IsAddCon C] : IsAddCon (Cᵃᵒᵖ) where
+  resp_add := by
+    intro c w x y z h g
+    apply resp_add (C := C)
+    assumption
+    assumption
+instance [Add α] [IsAddCon C] : IsAddCon (Cᵐᵒᵖ) := inferInstanceAs (IsAddCon C)
+
+instance [Mul α] [IsMulCon C] : IsMulCon (Cᵃᵒᵖ) := inferInstanceAs (IsMulCon C)
+instance [Mul α] [IsMulCon C] : IsMulCon (Cᵐᵒᵖ) where
+  resp_mul := by
+    intro c w x y z h g
+    apply resp_mul (C := C)
+    assumption
+    assumption
+
+instance [Add α] [Mul α] [IsRingCon C] : IsRingCon (Cᵃᵒᵖ) := {
+  instIsAddConAddOpp, instIsMulConAddOpp with
+}
+
+instance [Add α] [Mul α] [IsRingCon C] : IsRingCon (Cᵐᵒᵖ) := {
+  instIsAddConMulOpp, instIsMulConMulOpp with
+}
+
 
 protected def IsCon.Quotient [IsCon C] (c: C) : Type _ := Quotient (IsCon.toSetoid c)
 

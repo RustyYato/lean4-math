@@ -5,33 +5,15 @@ import Math.Algebra.Monoid.Units.Defs
 variable {C α: Type*} [RelLike C α] (c: C)
 
 def resp_neg [AddGroupOps α] [IsAddGroup α] [IsAddCon C] (c: C) {a b: α} (h: c a b) : c (-a) (-b) := by
-  let a' : AddUnits (IsCon.Quotient c) := {
-    val := IsCon.mkQuot c a
-    neg := IsCon.mkQuot c (-a)
-    val_add_neg := by
-      apply Quotient.sound
-      rw [add_neg_cancel]
-    neg_add_val := by
-      apply Quotient.sound
-      rw [neg_add_cancel]
-  }
-  let b' : AddUnits (IsCon.Quotient c) := {
-    val := IsCon.mkQuot c b
-    neg := IsCon.mkQuot c (-b)
-    val_add_neg := by
-      apply Quotient.sound
-      rw [add_neg_cancel]
-    neg_add_val := by
-      apply Quotient.sound
-      rw [neg_add_cancel]
-  }
-  have a'_eq_b' : a' = b' := by
-    apply AddUnits.val_inj.mp
-    apply Quotient.sound
-    assumption
-  apply Quotient.exact (s := IsCon.toSetoid c)
-  show a'.neg = b'.neg
-  rw [a'_eq_b']
+  rw [←add_zero (-a), ←add_neg_cancel b, ←add_assoc]
+  apply Relation.trans'
+  apply resp_add
+  apply resp_add
+  rfl
+  apply Relation.symm
+  assumption
+  rfl
+  rw [neg_add_cancel, zero_add]
 
 def resp_zsmul [AddGroupOps α] [IsAddGroup α] [IsAddCon C] (c: C) (n: ℤ) {a b: α} (h: c a b) : c (n • a) (n • b) := by
   cases n
