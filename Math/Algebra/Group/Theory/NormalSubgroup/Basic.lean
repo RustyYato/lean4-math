@@ -13,7 +13,7 @@ structure NormalSubgroup (α: Type*) [GroupOps α] [IsGroup α] extends Subgroup
 
 namespace NormalSubgroup
 
-variable [GroupOps α] [IsGroup α]
+variable [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β]
 
 instance : SetLike (NormalSubgroup α) α where
   coe s := s.carrier
@@ -42,5 +42,41 @@ def generate (U: Set α) : NormalSubgroup α where
   mem_inv' := Generate.inv
   mem_mul' := Generate.mul
   mem_conj' := Generate.conj
+
+instance [GroupOps α] [IsGroup α] : Bot (NormalSubgroup α) where
+  bot := {
+    toSubgroup := ⊥
+    mem_conj' := by
+      rintro x a rfl
+      rw [map_one]
+      apply mem_one (⊥: Subgroup α)
+  }
+
+@[ext]
+def ext (a b: NormalSubgroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
+def preimage (f: α →* β) (s: NormalSubgroup β) : NormalSubgroup α where
+  toSubgroup := Subgroup.preimage f s.toSubgroup
+  mem_conj' := by
+    intro x a ha
+    show f (x⁻¹ * a * x) ∈ s
+    rw [map_mul,map_mul, map_inv]
+    apply mem_conj
+    assumption
+
+def image (f: α →* β) (s: NormalSubgroup α) (h: Function.Surjective f) : NormalSubgroup β where
+  toSubgroup := Subgroup.image f s.toSubgroup
+  mem_conj' := by
+    rintro x _ ⟨a, ha, rfl⟩
+    apply Set.mem_image.mpr
+    obtain ⟨x, rfl⟩ := h x
+    exists Group.conj x a
+    apply And.intro
+    apply mem_conj s
+    assumption
+    rw [Group.apply_conj, Group.apply_conj]
+    simp [map_mul, map_inv]
+
+def kernel (f: α →* β) : NormalSubgroup α := preimage f ⊥
 
 end NormalSubgroup

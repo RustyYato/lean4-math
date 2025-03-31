@@ -1,6 +1,5 @@
 import Math.Algebra.AddMonoidWithOne.Con
 import Math.Algebra.Semiring.Defs
-import Math.Algebra.Hom.Defs
 
 variable {C α: Type*} [RelLike C α] (c: C)
 

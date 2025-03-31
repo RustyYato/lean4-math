@@ -1,5 +1,6 @@
 import Math.Algebra.Semigroup.Con
 import Math.Algebra.Monoid.Defs
+import Math.Algebra.Hom.Defs
 
 variable {C α: Type*} [RelLike C α] (c: C)
 
@@ -43,3 +44,13 @@ instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : IsAddMonoid (IsCon.Qu
 instance [MonoidOps α] [IsMonoid α] [IsMulCon C] : IsMonoid (IsCon.Quotient c) where
   npow_zero := zero_nsmul (α := (IsCon.Quotient (AddOfMul.mk c)))
   npow_succ := succ_nsmul (α := (IsCon.Quotient (AddOfMul.mk c)))
+
+def IsAddCon.mkQuot [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : α →+ IsCon.Quotient c where
+  toFun a := IsCon.mkQuot c a
+  map_zero := rfl
+  map_add := rfl
+
+def IsMulCon.mkQuot [MonoidOps α] [IsMonoid α] [IsMulCon C] : α →* IsCon.Quotient c where
+  toFun a := IsCon.mkQuot c a
+  map_one := rfl
+  map_mul := rfl
