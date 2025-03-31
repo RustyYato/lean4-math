@@ -1,5 +1,7 @@
 import Math.Data.Like.Func
+import Math.Relation.Basic
 import Math.Algebra.Notation
+import Math.Algebra.AddMul
 
 section Algebra
 
@@ -114,6 +116,16 @@ section Quotient
 
 variable {C α: Type*} [RelLike C α]
 
+instance : RelLike (MulOfAdd C) (MulOfAdd α) := inferInstanceAs (RelLike C α)
+instance : RelLike (AddOfMul C) (AddOfMul α) := inferInstanceAs (RelLike C α)
+
+instance [Add α] [IsAddCon C] : IsMulCon (MulOfAdd C) where
+  resp_mul := resp_add (C := C)
+  toEquivalence := IsCon.toEquivalence (C := C)
+instance [Mul α] [IsMulCon C] : IsAddCon (AddOfMul C) where
+  resp_add := resp_mul (C := C)
+  toEquivalence := IsCon.toEquivalence (C := C)
+
 protected def IsCon.Quotient [IsCon C] (c: C) : Type _ := Quotient (IsCon.toSetoid c)
 
 def IsCon.mkQuot [IsCon C] (c: C) : α -> IsCon.Quotient c := Quotient.mk _
@@ -142,7 +154,23 @@ instance [Mul α] [IsMulCon C] (c: C) : Mul (IsCon.Quotient c) where
     assumption
     assumption
 
+instance [Mul α] [IsMulCon C] (c: C) : Mul (IsCon.Quotient c) where
+  mul := by
+    apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a * b))
+    intro w x y z wy xz
+    apply Quotient.sound
+    apply IsMulCon.resp_mul
+    assumption
+    assumption
+
 variable [IsCon C] (c: C)
+
+instance : Relation.IsRefl c where
+  refl := (IsCon.toEquivalence c).refl
+instance : Relation.IsSymmetric c where
+  symm := (IsCon.toEquivalence c).symm
+instance : Relation.IsTrans c where
+  trans := (IsCon.toEquivalence c).trans
 
 instance [Zero α] : Zero (IsCon.Quotient c) where
   zero := IsCon.mkQuot _ 0

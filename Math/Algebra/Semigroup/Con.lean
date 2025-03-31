@@ -13,12 +13,7 @@ instance [Add α] [IsAddCon C] [IsAddCommMagma α] : IsAddCommMagma (IsCon.Quoti
     rw [add_comm]
 
 instance [Mul α] [IsMulCon C] [IsCommMagma α] : IsCommMagma (IsCon.Quotient c) where
-  mul_comm := by
-    intro a b
-    induction a with | mk a =>
-    induction b with | mk b =>
-    apply Quotient.sound
-    rw [mul_comm]
+  mul_comm := add_comm (α := (IsCon.Quotient (AddOfMul.mk c)))
 
 instance [Add α] [IsAddCon C] [IsAddSemigroup α] : IsAddSemigroup (IsCon.Quotient c) where
   add_assoc := by
@@ -30,13 +25,7 @@ instance [Add α] [IsAddCon C] [IsAddSemigroup α] : IsAddSemigroup (IsCon.Quoti
     rw [add_assoc]
 
 instance [Mul α] [IsMulCon C] [IsSemigroup α] : IsSemigroup (IsCon.Quotient c) where
-  mul_assoc := by
-    intro x y z
-    induction x with | mk x =>
-    induction y with | mk y =>
-    induction z with | mk z =>
-    apply Quotient.sound
-    rw [mul_assoc]
+  mul_assoc := add_assoc (α := (IsCon.Quotient (AddOfMul.mk c)))
 
 instance [Zero α] [Add α] [IsAddCon C] [IsAddZeroClass α] : IsAddZeroClass (IsCon.Quotient c) where
   add_zero x := by
@@ -59,11 +48,5 @@ instance [Zero α] [Mul α] [IsMulCon C] [IsMulZeroClass α] : IsMulZeroClass (I
     rw [zero_mul]
 
 instance [One α] [Mul α] [IsMulCon C] [IsMulOneClass α] : IsMulOneClass (IsCon.Quotient c) where
-  mul_one x := by
-    induction x with | mk x =>
-    apply Quotient.sound
-    rw [mul_one]
-  one_mul x := by
-    induction x with | mk x =>
-    apply Quotient.sound
-    rw [one_mul]
+  mul_one := add_zero (α := (IsCon.Quotient (AddOfMul.mk c)))
+  one_mul := zero_add (α := (IsCon.Quotient (AddOfMul.mk c)))
