@@ -1,6 +1,6 @@
 import Math.Data.Free.Algebra
 import Math.Data.Poly.Eval
-import Math.Algebra.RingQuot
+import Math.Algebra.RingQuot.Defs
 
 -- show that polynomials are precicely the commutative free algebra over a
 -- commutative semiring
@@ -22,10 +22,10 @@ instance : AlgebraMap P (CommFreeAlgebra P X) := inferInstanceAs (AlgebraMap _ (
 instance : IsAlgebra P (CommFreeAlgebra P X) := inferInstanceAs (IsAlgebra _ (RingQuot _))
 instance : IsCommMagma (CommFreeAlgebra P X) where
   mul_comm a b := by
-    obtain ⟨a, rfl⟩ := RingQuot.mkRingHom_surj a
-    obtain ⟨b, rfl⟩ := RingQuot.mkRingHom_surj b
-    rw [←map_mul (RingQuot.mkRingHom _), ←map_mul (RingQuot.mkRingHom _)]
-    apply RingQuot.mkRingHom_rel
+    obtain ⟨a, rfl⟩ := RingQuot.mk_surj a
+    obtain ⟨b, rfl⟩ := RingQuot.mk_surj b
+    rw [←map_mul (RingQuot.mk _), ←map_mul (RingQuot.mk _)]
+    apply RingQuot.mk_rel
     apply CommFreeAlgebra.Rel.mul_comm
 
 def CommFreeAlgebra.lift (P: Type*)

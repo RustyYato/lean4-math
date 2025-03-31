@@ -25,7 +25,7 @@ variable [SemiringOps R] [IsSemiring R] [IsCommMagma R] [AddMonoidOps V]
 
 variable (Q: QuadraticForm R V)
 
-instance : SemiringOps (CliffordAlgebra Q) := RingQuot.instSemiringOps (R := TensorAlgebra R V)
+instance : SemiringOps (CliffordAlgebra Q) := inferInstanceAs (SemiringOps (RingQuot (Rel Q)))
 instance : SMul R (CliffordAlgebra Q) := inferInstanceAs (SMul R (RingQuot (Rel Q)))
 instance : AlgebraMap R (CliffordAlgebra Q) := inferInstanceAs (AlgebraMap R (RingQuot (Rel Q)))
 instance : IsSemiring (CliffordAlgebra Q) := inferInstanceAs (IsSemiring (RingQuot (Rel Q)))
@@ -62,8 +62,11 @@ variable (Q: QuadraticForm R V)
 
 namespace CliffordAlgebra
 
+def ofTensorAlgebra :
+  TensorAlgebra R V →ₐ[R] CliffordAlgebra Q := RingQuot.mkAlgHom R _
+
 def ι : V →ₗ[R] CliffordAlgebra Q :=
-  (RingQuot.mkAlgHom R _).toLinearMap.comp (TensorAlgebra.ι R)
+  (ofTensorAlgebra Q).toLinearMap.comp (TensorAlgebra.ι R)
 
 private def algmap_coe_eq
   [SemiringOps A] [SemiringOps B] [AlgebraMap R A] [AlgebraMap R B]
@@ -74,7 +77,7 @@ private def algmap_coe_eq
 def ι_sq_scalar (v: V) : ι Q v * ι Q v = algebraMap (Q v) := by
   rw [ι]
   dsimp [LinearMap.comp, DFunLike.coe, AlgHom.toLinearMap]
-  rw [algmap_coe_eq, ←map_mul (f := RingQuot.mkAlgHom R (CliffordAlgebra.Rel Q))]
+  rw [algmap_coe_eq, ←map_mul (f := ofTensorAlgebra Q)]
   show _ = algebraMap _
   apply (RingQuot.mkAlgHom_rel R (CliffordAlgebra.Rel.intro v)).trans
   apply map_algebraMap

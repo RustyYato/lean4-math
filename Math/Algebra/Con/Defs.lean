@@ -16,6 +16,10 @@ class IsMulCon (C: Sort*) {α: Type*} [RelLike C α] [Mul α]: Prop extends IsCo
 
 class IsRingCon (F: Sort*) {α: Type*} [RelLike F α] [Add α] [Mul α]: Prop extends IsAddCon F, IsMulCon F where
 
+instance [Add α] [Mul α] [RelLike F α] [IsMulCon F] [IsAddCon F] : IsRingCon F := {
+  inferInstanceAs (IsMulCon F), inferInstanceAs (IsAddCon F) with
+}
+
 def resp_add [RelLike C α] [Add α] [IsAddCon C] (c: C): ∀{w x y z: α}, c w y -> c x z -> c (w + x) (y + z) := IsAddCon.resp_add _
 def resp_mul [RelLike C α] [Mul α] [IsMulCon C] (c: C): ∀{w x y z: α}, c w y -> c x z -> c (w * x) (y * z) := IsMulCon.resp_mul _
 def IsCon.toSetoid [RelLike C α] [IsCon C] (c: C) : Setoid α where

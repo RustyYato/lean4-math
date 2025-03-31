@@ -1,5 +1,5 @@
 import Math.Data.Free.Algebra
-import Math.Algebra.RingQuot
+import Math.Algebra.RingQuot.Defs
 import Math.Algebra.LinearMap
 import Math.Algebra.Module.Hom
 import Math.Algebra.Hom
@@ -52,12 +52,12 @@ def ι : M →ₗ[R] (TensorAlgebra R M) where
   map_add := by
     intro x y
     rw [←map_add (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M)))]
-    apply RingQuot.mkRingHom_rel
+    apply RingQuot.mk_rel
     apply Rel.add
   map_smul := by
     intro x y
     rw [←map_smul (RingQuot.mkAlgHom (S := R) (Rel (R := R) (M := M))) (r := x)]
-    apply RingQuot.mkRingHom_rel
+    apply RingQuot.mk_rel
     apply Rel.smul
 
 def lift [IsSemiring A] [IsAlgebra R A] : (M →ₗ[R] A) ≃ (TensorAlgebra R M →ₐ[R] A) where
@@ -109,20 +109,19 @@ def induction {motive: TensorAlgebra R M -> Prop}
   (add: ∀x y, motive x -> motive y -> motive (x + y))
   (mul: ∀x y, motive x -> motive y -> motive (x * y))
   (x: TensorAlgebra R M): motive x := by
-  induction x using Quot.ind with | mk x =>
+  obtain ⟨x, rfl⟩ := RingQuot.mkAlgHom_surj R _ x
   induction x with
-  | grade0 => apply algebraMap
-  | grade1 x =>
-    have := ι x
-    unfold TensorAlgebra.ι RingQuot.mkAlgHom RingQuot.mkRingHom at this
-    apply this
+  | grade0 =>
+    rw [map_algebraMap]
+    apply algebraMap
+  | grade1 x => apply ι
   | add =>
-    erw [←RingQuot.mk, ←RingQuot.mk_add]
+    rw [map_add]
     apply add
     assumption
     assumption
   | mul =>
-    erw [←RingQuot.mk, ←RingQuot.mk_mul]
+    rw [map_mul]
     apply mul
     assumption
     assumption
@@ -138,9 +137,8 @@ private def algebraMapInv : TensorAlgebra R M →ₐ[R] R :=
       rw [smul_zero]
   }
 
-unseal RingQuot.liftAlgHom RingQuot.preLiftAlgHom in
-private def algebraMap_leftInverse :
-    Function.IsLeftInverse algebraMapInv (algebraMap (R := R) (A := TensorAlgebra R M)) := fun _ => rfl
+unseal RingQuot.liftAlgHom in
+private def algebraMap_leftInverse : Function.IsLeftInverse algebraMapInv (algebraMap (R := R) (A := TensorAlgebra R M)) := fun _ => rfl
 
 def algebraMap_inj : Function.Injective (algebraMap (R := R) (A := TensorAlgebra R M)) := algebraMap_leftInverse.Injective
 
