@@ -68,6 +68,10 @@ instance [Add α] [Mul α] : RelLike (RingCon α) α where
     apply DFunLike.coe_inj
     assumption
 
+instance [Add α] [Mul α] : IsAddCon (RingCon α) where
+  resp_add f := f.resp_add
+  toEquivalence f := f.iseqv
+
 instance [Add α] [Mul α] : IsMulCon (RingCon α) where
   resp_mul f := f.resp_mul
   toEquivalence f := f.iseqv
@@ -92,6 +96,14 @@ inductive MulCon.Generator [Mul α] : α -> α -> Prop where
 | trans {a b c: α} : Generator a b -> Generator b c -> Generator a c
 | mul {a b c d: α} : Generator a c -> Generator b d -> Generator (a * b) (c * d)
 
+inductive RingCon.Generator [Add α] [Mul α] : α -> α -> Prop where
+| of {a b: α} : r a b -> Generator a b
+| refl (a: α) : Generator a a
+| symm {a b: α} : Generator a b -> Generator b a
+| trans {a b c: α} : Generator a b -> Generator b c -> Generator a c
+| add {a b c d: α} : Generator a c -> Generator b d -> Generator (a + b) (c + d)
+| mul {a b c d: α} : Generator a c -> Generator b d -> Generator (a * b) (c * d)
+
 def AddCon.generate [Add α] (r: α -> α -> Prop) : AddCon α where
   r := Generator r
   iseqv := {
@@ -108,6 +120,16 @@ def MulCon.generate [Mul α] (r: α -> α -> Prop) : MulCon α where
     symm := Generator.symm
     trans := Generator.trans
   }
+  resp_mul := Generator.mul
+
+def RingCon.generate [Add α] [Mul α] (r: α -> α -> Prop) : RingCon α where
+  r := Generator r
+  iseqv := {
+    refl := Generator.refl
+    symm := Generator.symm
+    trans := Generator.trans
+  }
+  resp_add := Generator.add
   resp_mul := Generator.mul
 
 end Generator
