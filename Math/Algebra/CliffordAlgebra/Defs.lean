@@ -65,8 +65,7 @@ namespace CliffordAlgebra
 def ofTensorAlgebra :
   TensorAlgebra R V →ₐ[R] CliffordAlgebra Q := RingQuot.mkAlgHom R _
 
-def ι : V →ₗ[R] CliffordAlgebra Q :=
-  (ofTensorAlgebra Q).toLinearMap.comp (TensorAlgebra.ι R)
+def ι : V →ₗ[R] CliffordAlgebra Q := (ofTensorAlgebra Q).toLinearMap.comp (TensorAlgebra.ι R)
 
 private def algmap_coe_eq
   [SemiringOps A] [SemiringOps B] [AlgebraMap R A] [AlgebraMap R B]
