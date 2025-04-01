@@ -399,3 +399,95 @@ def WithBot.of_lt [_root_.LT α] : ∀{x y: α}, WithBot.of x < .of y ↔ x < y 
   apply Iff.intro
   rintro ⟨h⟩; assumption
   exact WithBot.LT.of
+
+
+instance [LE α] [LT α] [Max α] [IsSemiLatticeMax α] : IsSemiLatticeMax (WithTop α) where
+  le_max_left := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply le_max_left
+  le_max_right := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply le_max_right
+  max_le := by
+    intro a b k ak bk
+    cases ak <;> cases bk
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply max_le <;> assumption
+
+instance [LE α] [LT α] [Min α] [IsSemiLatticeMin α] : IsSemiLatticeMin (WithTop α) where
+  min_le_left := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply min_le_left
+  min_le_right := by
+    intro a b
+    cases a <;> cases b
+    any_goals rfl
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    apply min_le_right
+  le_min := by
+    intro a b k ak bk
+    cases ak <;> cases bk
+    apply WithTop.LE.top
+    apply WithTop.LE.of
+    assumption
+    apply WithTop.LE.of
+    assumption
+    apply WithTop.LE.of
+    apply le_min <;> assumption
+
+instance [LE α] [LT α] [Max α] [IsSemiLatticeMax α] : IsSemiLatticeMax (WithBot α) :=
+  OrderEmbedding.instIsSemiLatticeMax WithBot.orderIsoWithTop.toEmbedding <| by
+    intro a b
+    cases a <;> cases b
+    all_goals rfl
+
+instance [LE α] [LT α] [Min α] [IsSemiLatticeMin α] : IsSemiLatticeMin (WithBot α) :=
+  OrderEmbedding.instIsSemiLatticeMin WithBot.orderIsoWithTop.toEmbedding <| by
+    intro a b
+    cases a <;> cases b
+    all_goals rfl
+
+instance [LE α] [LT α] [Min α] [Max α] [IsLattice α] : IsLattice (WithTop α) where
+  min_le_left := min_le_left
+  min_le_right := min_le_right
+  le_min := le_min
+
+instance [LE α] [LT α] [Min α] [Max α] [IsLattice α] : IsLattice (WithBot α) where
+  min_le_left := min_le_left
+  min_le_right := min_le_right
+  le_min := le_min
+
+instance [LE α] [LT α] [Min α] [Max α] [IsLinearOrder α] : IsLinearOrder (WithTop α) :=
+  inferInstance
+
+instance [LE α] [LT α] [Min α] [Max α] [IsLinearOrder α] : IsLinearOrder (WithBot α) :=
+  inferInstance
+
+instance [LE α] [LT α] [Min α] [Max α] [IsLinearLattice α] : IsLinearLattice (WithBot α) := {
+  inferInstanceAs (IsPartialOrder (WithBot α)), inferInstanceAs (IsLinearOrder (WithBot α))
+  , inferInstanceAs (IsLattice (WithBot α)) with
+}
+
+instance [LE α] [LT α] [Min α] [Max α] [IsLinearLattice α] : IsLinearLattice (WithTop α) := {
+  inferInstanceAs (IsPartialOrder (WithTop α)), inferInstanceAs (IsLinearOrder (WithTop α))
+  , inferInstanceAs (IsLattice (WithTop α)) with
+}
+
+instance [LE α] [LT α] [Min α] [Max α] [IsLinearLattice α] : IsLinearLattice (WithBot α) := {
+  inferInstanceAs (IsPartialOrder (WithBot α)), inferInstanceAs (IsLinearOrder (WithBot α))
+  , inferInstanceAs (IsLattice (WithBot α)) with
+}

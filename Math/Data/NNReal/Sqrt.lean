@@ -103,7 +103,7 @@ def square_mul (a b: ℝ) : square a * square b = square (a * b) := by
 def ofReal_square (x: ℝ) : ofReal (x ^ 2) = square x := by
   unfold ofReal
   congr
-  rw [max_iff_le_right.mp]
+  rw [max_eq_left.mpr]
   apply Real.square_nonneg
 
 def sqrt_mul (a b: ℝ≥0) : a.sqrt * b.sqrt = (a * b).sqrt := by

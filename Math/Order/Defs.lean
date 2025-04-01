@@ -24,66 +24,17 @@ instance [LT α] [LE α] [IsLinearOrder α] : IsPartialOrder α where
     assumption
   le_trans := IsLinearOrder.le_trans
 
-class IsLinearMinMaxOrder (α: Type*) [LT α] [LE α] [Min α] [Max α] : Prop extends IsLinearOrder α where
-  min_iff_le_left: ∀{a b: α}, a ≤ b ↔ min a b = a := by
-    intro a b
-    apply Iff.intro
-    intro h
-    suffices (if a ≤ b then a else b) = a from this
-    rw [if_pos h]
-    intro h
-    have h : (if a ≤ b then a else b) = a := h
-    split at h
-    assumption
-    subst h
-    apply le_refl
-  min_iff_le_right: ∀{a b: α}, b ≤ a ↔ min a b = b := by
-    intro a b
-    apply Iff.intro
-    intro h
-    suffices (if a ≤ b then a else b) = b from this
-    split
-    apply le_antisymm <;> assumption
-    rfl
-    intro h
-    have h : (if a ≤ b then a else b) = b := h
-    split at h
-    subst h
-    apply le_refl
-    apply le_of_lt
-    apply lt_of_not_le
-    assumption
-  max_iff_le_left: ∀{a b: α}, a ≤ b ↔ max a b = b := by
-    intro a b
-    apply Iff.intro
-    intro h
-    suffices (if a ≤ b then b else a) = b from this
-    rw [if_pos]
-    assumption
-    intro h
-    have h : (if a ≤ b then b else a) = b := h
-    split at h
-    assumption
-    subst h
-    apply le_refl
-  max_iff_le_right: ∀{a b: α}, b ≤ a ↔ max a b = a := by
-    intro a b
-    apply Iff.intro
-    intro h
-    suffices (if a ≤ b then b else a) = a from this
-    split
-    apply le_antisymm <;> assumption
-    rfl
-    intro h
-    have h : (if a ≤ b then b else a) = a := h
-    split at h
-    subst h
-    apply le_refl
-    apply le_of_lt
-    apply lt_of_not_le
-    assumption
+class IsSemiLatticeMax (α: Type*) [LE α] [LT α]  [Max α] : Prop extends IsLawfulMax α, IsPartialOrder α where
+  max_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
 
-class IsDecidableLinearOrder (α: Type _) [LE α] [LT α] [Min α] [Max α] extends IsLinearMinMaxOrder α where
+class IsSemiLatticeMin (α: Type*) [LE α] [LT α] [Min α] : Prop extends IsLawfulMin α, IsPartialOrder α where
+  le_min: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
+
+class IsLattice (α: Type*) [LE α] [LT α] [Max α] [Min α] : Prop extends IsSemiLatticeMax α, IsSemiLatticeMin α, IsPartialOrder α where
+
+class IsLinearLattice (α: Type*) [LT α] [LE α] [Min α] [Max α] : Prop extends IsLinearOrder α, IsLattice α where
+
+class IsDecidableLinearOrder (α: Type _) [LE α] [LT α] [Min α] [Max α] extends IsLinearLattice α where
   decLE (a b: α): Decidable (a ≤ b) := by intros; exact inferInstance
   decLT (a b: α): Decidable (a < b) := decidable_of_iff _ (lt_iff_le_and_not_le (a := a) (b := b)).symm
   decEQ (a b: α): Decidable (a = b) := decidable_of_iff (a ≤ b ∧ b ≤ a) (by
@@ -315,264 +266,379 @@ def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomo
 
 end IsLinearOrder
 
-section IsLinearMinMaxOrder
+instance Lattice.mk [LE α] [LT α] [Max α] [Min α] [IsSemiLatticeMax α] [IsSemiLatticeMin α] : IsLattice α where
+  le_min := IsSemiLatticeMin.le_min
 
-variable [LT α] [LE α] [Min α] [Max α] [IsLinearMinMaxOrder α] {a b c: α}
+instance [LE α] [LT α] [Max α] [IsSemiLatticeMax α] : IsSemiLatticeMin αᵒᵖ where
+  le_min := IsSemiLatticeMax.max_le (α := α)
+
+instance [LE α] [LT α] [Min α] [IsSemiLatticeMin α] : IsSemiLatticeMax αᵒᵖ where
+  max_le := IsSemiLatticeMin.le_min (α := α)
+
+instance {α} [LE α] [LT α] [Max α] [Min α] [IsLattice α] : IsLattice (Opposite α) := inferInstance
+
+section IsSemiLatticeMax
+
+variable {α: Type*} [LE α] [LT α] [Max α] [IsSemiLatticeMax α]
+
+def max_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k :=
+  IsSemiLatticeMax.max_le
+
+def max_le_iff : ∀{a b k: α}, a ⊔ b ≤ k ↔ a ≤ k ∧ b ≤ k := by
+  intro a b k
+  apply Iff.intro
+  intro h
+  apply And.intro
+  apply le_trans _ h
+  apply le_max_left
+  apply le_trans _ h
+  apply le_max_right
+  intro h
+  exact max_le h.left h.right
+
+def max_idemp: ∀a: α, a ⊔ a = a := by
+  intro a
+  apply le_antisymm
+  apply max_le <;> rfl
+  apply le_max_left
+
+def max_comm: ∀a b: α, a ⊔ b = b ⊔ a := by
+  intro a b
+  apply le_antisymm
+  apply max_le
+  apply le_max_right
+  apply le_max_left
+  apply max_le
+  apply le_max_right
+  apply le_max_left
+
+def max_assoc: ∀a b c: α, a ⊔ b ⊔ c = a ⊔ (b ⊔ c) := by
+  intro a b c
+  apply le_antisymm
+  apply max_le
+  apply max_le
+  apply le_max_left
+  apply flip le_trans
+  apply le_max_right
+  apply le_max_left
+  apply flip le_trans
+  apply le_max_right
+  apply le_max_right
+
+  apply max_le
+  apply flip le_trans
+  apply le_max_left
+  apply le_max_left
+  apply max_le
+  apply flip le_trans
+  apply le_max_left
+  apply le_max_right
+  apply le_max_right
+
+instance : @Std.Commutative α (· ⊔ ·) := ⟨max_comm⟩
+instance : @Std.Associative α (· ⊔ ·) := ⟨max_assoc⟩
+instance : @Std.IdempotentOp α (· ⊔ ·) := ⟨max_idemp⟩
+
+def of_max_eq_right {a b: α} : a ⊔ b = b -> a ≤ b := by
+  intro h
+  rw [←h]
+  apply le_max_left
+def of_max_eq_left {a b: α} : a ⊔ b = a -> b ≤ a := by
+  intro h
+  rw [←h]
+  apply le_max_right
+
+def max_eq_right {a b: α} : a ⊔ b = b ↔ a ≤ b := by
+  apply Iff.intro
+  apply of_max_eq_right
+  intro h
+  apply le_antisymm
+  apply max_le <;> trivial
+  apply le_max_right
+def max_eq_left {a b: α} : a ⊔ b = a ↔ b ≤ a := by
+  rw [max_comm]
+  apply max_eq_right
+def max_of_le (a b: α) : a ≤ b -> max a b = b := max_eq_right.mpr
+def max_of_ge (a b: α) : b ≤ a -> max a b = a := max_eq_left.mpr
+
+def lt_max_left {a b k: α} : k < a -> k < a ⊔ b := by
+  simp [lt_iff_le_and_not_le]
+  intro ka nak
+  apply And.intro
+  apply le_trans
+  assumption
+  apply le_max_left
+  intro ak
+  exact nak (max_le_iff.mp ak).left
+
+def lt_max_right {a b k: α} : k < b -> k < a ⊔ b := by
+  rw [max_comm]
+  apply lt_max_left
+
+def max_le_max {a b c d: α} :
+  a ≤ c ->
+  b ≤ d ->
+  a ⊔ b ≤ c ⊔ d := by
+  intro ac bd
+  apply max_le
+  apply le_trans _ (le_max_left _ _)
+  assumption
+  apply le_trans _ (le_max_right _ _)
+  assumption
+
+def max_self (a: α) : a ⊔ a = a := by
+  apply le_antisymm
+  rw [max_le_iff]; trivial
+  apply le_max_left
+
+variable [Top α] [Bot α] [IsLawfulBot α] [IsLawfulTop α]
+variable {a: α}
+
+@[simp]
+def bot_max : ⊥ ⊔ a = a := by
+  apply le_antisymm
+  apply max_le
+  apply bot_le
+  rfl
+  apply le_max_right
+
+@[simp]
+def max_bot : a ⊔ ⊥ = a := by
+  simp [max_comm a]
+
+@[simp]
+def top_max : ⊤ ⊔ a = ⊤ := by
+  apply le_antisymm
+  apply max_le
+  rfl
+  apply le_top
+  apply le_max_left
+
+@[simp]
+def max_top : a ⊔ ⊤ = ⊤ := by
+  simp [max_comm a]
+
+end IsSemiLatticeMax
+
+section IsSemiLatticeMin
+
+variable {α: Type*} [LE α] [LT α] [Min α] [IsSemiLatticeMin α]
+
+def le_min: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b :=
+  IsSemiLatticeMin.le_min
+
+@[simp]
+def le_min_iff : ∀{a b k: α}, k ≤ a ⊓ b ↔ k ≤ a ∧ k ≤ b :=
+  max_le_iff (α := Opposite α)
+
+def min_idemp: ∀a: α, a ⊓ a = a :=
+  max_idemp (α := Opposite α)
+
+def min_comm: ∀a b: α, a ⊓ b = b ⊓ a :=
+  max_comm (α := Opposite α)
+
+def min_assoc: ∀a b c: α, a ⊓ b ⊓ c = a ⊓ (b ⊓ c) :=
+  max_assoc (α := Opposite α)
+
+instance : @Std.Commutative α (· ⊓ ·) := ⟨min_comm⟩
+instance : @Std.Associative α (· ⊓ ·) := ⟨min_assoc⟩
+instance : @Std.IdempotentOp α (· ⊓ ·) := ⟨min_idemp⟩
+
+def of_min_eq_right {a b: α} : a ⊓ b = b -> b ≤ a :=
+  of_max_eq_right (α := Opposite α)
+def of_min_eq_left {a b: α} : a ⊓ b = a -> a ≤ b :=
+  of_max_eq_left (α := Opposite α)
+
+def min_eq_right {a b: α} : a ⊓ b = b ↔ b ≤ a :=
+  max_eq_right (α := Opposite α)
+def min_eq_left {a b: α} : a ⊓ b = a ↔ a ≤ b :=
+  max_eq_left (α := Opposite α)
+def min_of_le (a b: α) : a ≤ b -> min a b = a := min_eq_left.mpr
+def min_of_ge (a b: α) : b ≤ a -> min a b = b := min_eq_right.mpr
+
+def min_le_min {a b c d: α} :
+  a ≤ c -> b ≤ d -> a ⊓ b ≤ c ⊓ d := max_le_max (α := αᵒᵖ)
+
+def min_self (a: α) : a ⊓ a = a :=
+  max_self (α := Opposite α) _
+
+variable [Top α] [Bot α] [IsLawfulBot α] [IsLawfulTop α]
+variable {a: α}
+
+@[simp]
+def bot_min : ⊥ ⊓ a = ⊥ :=
+  top_max (α := Opposite α)
+
+@[simp]
+def min_bot : a ⊓ ⊥ = ⊥ :=
+  max_top (α := Opposite α)
+
+@[simp]
+def top_min : ⊤ ⊓ a = a :=
+  bot_max (α := Opposite α)
+
+@[simp]
+def min_top : a ⊓ ⊤ = a :=
+  max_bot (α := Opposite α)
+
+end IsSemiLatticeMin
+
+section
+
+variable [LE α] [LT α] [Min α] [Max α] [IsLattice α]
+
+def min_le_max (a b: α) : a ⊓ b ≤ a ⊔ b :=
+  le_trans (min_le_left _ _) (le_max_left _ _)
+
+def min_max_self (a b: α) : a ⊓ (a ⊔ b) = a := by
+  apply le_antisymm
+  apply min_le_left
+  apply le_min
+  rfl; apply le_max_left
+
+def max_min_self (a b: α) : a ⊔ (a ⊓ b) = a := by
+  apply le_antisymm
+  apply max_le
+  rfl
+  apply min_le_left
+  apply le_max_left
+
+def max_eq_iff_min_eq {a b: α} : a ⊔ b = a ↔ a ⊓ b = b := by
+  rw [max_eq_left, min_eq_right]
+
+end
+
+section IsLinearLattice
+
+variable [LT α] [LE α] [Min α] [Max α] [IsLinearLattice α] {a b c: α}
 
 def clamp (x a b: α) := min (max x a) b
-
-def min_iff_le_left: a ≤ b ↔ min a b = a := IsLinearMinMaxOrder.min_iff_le_left
-def min_iff_le_right: b ≤ a ↔ min a b = b := IsLinearMinMaxOrder.min_iff_le_right
-def max_iff_le_left: a ≤ b ↔ max a b = b := IsLinearMinMaxOrder.max_iff_le_left
-def max_iff_le_right: b ≤ a ↔ max a b = a := IsLinearMinMaxOrder.max_iff_le_right
 
 def min_le_iff : min a b ≤ k ↔ a ≤ k ∨ b ≤ k := by
   apply Iff.intro
   intro h
   rcases le_total a b with ab | ba
-  rw [min_iff_le_left.mp ab] at h
+  rw [min_eq_left.mpr ab] at h
   apply Or.inl
   assumption
-  rw [min_iff_le_right.mp ba] at h
+  rw [min_eq_right.mpr ba] at h
   apply Or.inr
   assumption
   intro h
-  rcases h with ak | bk <;> rcases le_total a b with ab | ba
-  any_goals try rw [min_iff_le_left.mp ab]
-  any_goals try rw [min_iff_le_right.mp ba]
-  any_goals assumption
-  apply le_trans <;> assumption
-  apply le_trans <;> assumption
-
-def le_min_iff : k ≤ min a b ↔ k ≤ a ∧ k ≤ b := by
-  apply Iff.intro
-  intro h
-  rcases le_total a b with ab | ba
-  rw [min_iff_le_left.mp ab] at h
-  apply And.intro
-  assumption
-  apply le_trans <;> assumption
-  rw [min_iff_le_right.mp ba] at h
-  apply And.intro
-  apply le_trans <;> assumption
-  assumption
-  intro ⟨h₀,h₁⟩
-  rcases le_total a b with ab | ba
-  rw [min_iff_le_left.mp ab]
-  assumption
-  rw [min_iff_le_right.mp ba]
-  assumption
-
-def max_le_iff : max a b ≤ k ↔ a ≤ k ∧ b ≤ k := by
-  apply Iff.intro
-  intro h
-  rcases le_total a b with ab | ba
-  rw [max_iff_le_left.mp ab] at h
-  apply And.intro
-  apply le_trans <;> assumption
-  assumption
-  rw [max_iff_le_right.mp ba] at h
-  apply And.intro
-  assumption
-  apply le_trans <;> assumption
-  intro ⟨h₀,h₁⟩
-  rcases le_total a b with ab | ba
-  rw [max_iff_le_left.mp ab]
-  assumption
-  rw [max_iff_le_right.mp ba]
-  assumption
+  rcases h with ak | bk
+  apply le_trans
+  apply min_le_left; assumption
+  apply le_trans
+  apply min_le_right; assumption
 
 def le_max_iff : k ≤ max a b ↔ k ≤ a ∨ k ≤ b := by
   apply Iff.intro
   intro h
   rcases le_total a b with ab | ba
-  rw [max_iff_le_left.mp ab] at h
+  rw [max_eq_right.mpr ab] at h
   apply Or.inr
   assumption
-  rw [max_iff_le_right.mp ba] at h
+  rw [max_eq_left.mpr ba] at h
   apply Or.inl
   assumption
   intro h
-  rcases h with ak | bk <;> rcases le_total a b with ab | ba
-  any_goals try rw [max_iff_le_left.mp ab]
-  any_goals try rw [max_iff_le_right.mp ba]
-  any_goals assumption
-  apply le_trans <;> assumption
-  apply le_trans <;> assumption
+  rcases h with ak | bk
+  apply flip le_trans
+  apply le_max_left; assumption
+  apply flip le_trans
+  apply le_max_right; assumption
 
 def min_lt_iff : min a b < k ↔ a < k ∨ b < k := by
   apply Iff.intro
   intro h
   rcases le_total a b with ab | ba
-  rw [min_iff_le_left.mp ab] at h
+  rw [min_eq_left.mpr ab] at h
   apply Or.inl
   assumption
-  rw [min_iff_le_right.mp ba] at h
+  rw [min_eq_right.mpr ba] at h
   apply Or.inr
   assumption
   intro h
-  rcases h with ak | bk <;> rcases le_total a b with ab | ba
-  any_goals try rw [min_iff_le_left.mp ab]
-  any_goals try rw [min_iff_le_right.mp ba]
-  any_goals assumption
-  apply lt_of_le_of_lt <;> assumption
-  apply lt_of_le_of_lt <;> assumption
+  rcases h with ak | bk
+  apply lt_of_le_of_lt _ ak
+  apply min_le_left
+  apply lt_of_le_of_lt _ bk
+  apply min_le_right
 
 def lt_min_iff : k < min a b ↔ k < a ∧ k < b := by
   apply Iff.intro
   intro h
   rcases le_total a b with ab | ba
-  rw [min_iff_le_left.mp ab] at h
+  rw [min_eq_left.mpr ab] at h
   apply And.intro
   assumption
   apply lt_of_lt_of_le <;> assumption
-  rw [min_iff_le_right.mp ba] at h
+  rw [min_eq_right.mpr ba] at h
   apply And.intro
   apply lt_of_lt_of_le <;> assumption
   assumption
   intro ⟨h₀,h₁⟩
-  rcases le_total a b with ab | ba
-  rw [min_iff_le_left.mp ab]
-  assumption
-  rw [min_iff_le_right.mp ba]
-  assumption
+  rw [←not_le, min_le_iff]
+  intro h
+  rcases h with h | h
+  exact lt_irrefl (lt_of_lt_of_le h₀ h)
+  exact lt_irrefl (lt_of_lt_of_le h₁ h)
 
 def max_lt_iff : max a b < k ↔ a < k ∧ b < k := by
   apply Iff.intro
   intro h
   rcases le_total a b with ab | ba
-  rw [max_iff_le_left.mp ab] at h
+  rw [max_eq_right.mpr ab] at h
   apply And.intro
   apply lt_of_le_of_lt <;> assumption
   assumption
-  rw [max_iff_le_right.mp ba] at h
+  rw [max_eq_left.mpr ba] at h
   apply And.intro
   assumption
   apply lt_of_le_of_lt <;> assumption
   intro ⟨h₀,h₁⟩
-  rcases le_total a b with ab | ba
-  rw [max_iff_le_left.mp ab]
-  assumption
-  rw [max_iff_le_right.mp ba]
-  assumption
+  rw [←not_le, le_max_iff]
+  intro h
+  rcases h with h | h
+  exact lt_irrefl (lt_of_lt_of_le h₀ h)
+  exact lt_irrefl (lt_of_lt_of_le h₁ h)
 
 def lt_max_iff : k < max a b ↔ k < a ∨ k < b := by
   apply Iff.intro
   intro h
   rcases le_total a b with ab | ba
-  rw [max_iff_le_left.mp ab] at h
+  rw [max_eq_right.mpr ab] at h
   apply Or.inr
   assumption
-  rw [max_iff_le_right.mp ba] at h
+  rw [max_eq_left.mpr ba] at h
   apply Or.inl
   assumption
   intro h
-  rcases h with ak | bk <;> rcases le_total a b with ab | ba
-  any_goals try rw [max_iff_le_left.mp ab]
-  any_goals try rw [max_iff_le_right.mp ba]
-  any_goals assumption
-  apply lt_of_lt_of_le <;> assumption
-  apply lt_of_lt_of_le <;> assumption
+  rcases h with ak | bk
+  apply lt_of_lt_of_le
+  assumption; apply le_max_left
+  apply lt_of_lt_of_le
+  assumption; apply le_max_right
 
-def min_le_max (a b: α) : min a b ≤ max a b := by
-  rcases le_total a b with ab | ba
-  rw [min_iff_le_left.mp ab, max_iff_le_left.mp ab]
-  assumption
-  rw [min_iff_le_right.mp ba, max_iff_le_right.mp ba]
-  assumption
-
-def min_le_left (a b: α) : min a b ≤ a := by
-  apply min_le_iff.mpr
-  apply Or.inl
-  rfl
-
-def min_le_right (a b: α) : min a b ≤ b := by
-  apply min_le_iff.mpr
-  apply Or.inr
-  rfl
-
-def le_max_left (a b: α) : a ≤ max a b := by
-  apply le_max_iff.mpr
-  apply Or.inl
-  rfl
-
-def le_max_right (a b: α) : b ≤ max a b := by
-  apply le_max_iff.mpr
-  apply Or.inr
-  rfl
-
-def max_le : a ≤ k -> b ≤ k -> max a b ≤ k := by
-  intro h g
-  apply max_le_iff.mpr
-  apply And.intro <;> assumption
-
-def le_min : k ≤ a -> k ≤ b -> k ≤ min a b := by
-  intro h g
-  apply le_min_iff.mpr
-  apply And.intro <;> assumption
-
-def min_of_le (a b: α) : a ≤ b -> min a b = a := min_iff_le_left.mp
-def max_of_le (a b: α) : a ≤ b -> max a b = b := max_iff_le_left.mp
-
-def min_le_comm (a b: α) : min a b ≤ min b a := by
-  apply le_min_iff.mpr
-  apply And.intro
-  apply min_le_right
-  apply min_le_left
-
-def min_comm (a b: α) : min a b = min b a := by
-  apply le_antisymm
-  apply min_le_comm
-  apply min_le_comm
-
-def max_le_comm (a b: α) : max a b ≤ max b a := by
-  apply max_le_iff.mpr
-  apply And.intro
-  apply le_max_right
-  apply le_max_left
-
-def max_comm (a b: α) : max a b = max b a := by
-  apply le_antisymm
-  apply max_le_comm
-  apply max_le_comm
-
-def min_assoc (a b c: α) : min a (min b c) = min (min a b) c := by
-  apply le_antisymm
-  · repeat any_goals apply le_min_iff.mpr; apply And.intro
-    apply min_le_left
-    apply min_le_iff.mpr
-    apply Or.inr
-    apply min_le_left
-    apply min_le_iff.mpr
-    apply Or.inr
-    apply min_le_right
-  · repeat any_goals apply le_min_iff.mpr; apply And.intro
+instance : IsLawfulMin α where
+  min_le_left a b := by
     apply min_le_iff.mpr
     apply Or.inl
-    apply min_le_left
+    rfl
+  min_le_right a b := by
     apply min_le_iff.mpr
-    apply Or.inl
-    apply min_le_right
-    apply min_le_right
+    apply Or.inr
+    rfl
 
-def max_assoc (a b c: α) : max a (max b c) = max (max a b) c := by
-  apply le_antisymm
-  · repeat any_goals apply max_le_iff.mpr; apply And.intro
+instance : IsLawfulMax α where
+  le_max_left a b := by
     apply le_max_iff.mpr
     apply Or.inl
-    apply le_max_left
-    apply le_max_iff.mpr
-    apply Or.inl
-    apply le_max_right
-    apply le_max_right
-  · repeat any_goals apply max_le_iff.mpr; apply And.intro
-    apply le_max_left
+    rfl
+  le_max_right a b := by
     apply le_max_iff.mpr
     apply Or.inr
-    apply le_max_left
-    apply le_max_iff.mpr
-    apply Or.inr
-    apply le_max_right
+    rfl
 
 def clamp_eq_left (h: a ≤ b) : x ≤ a -> clamp x a b = a := by
   intro g
@@ -604,7 +670,7 @@ def left_le_clamp (h: a ≤ b) : a ≤ clamp x a b := by
   assumption
 def clamp_le_right (_h: a ≤ b) : clamp x a b ≤ b := by apply min_le_right
 
-end IsLinearMinMaxOrder
+end IsLinearLattice
 
 section IsDecidableLinearOrder
 
@@ -646,6 +712,55 @@ attribute [irreducible] clamp
 
 end IsDecidableLinearOrder
 
+section MinMaxOfLe
+
+variable (α: Type*) [LE α] [LT α] [IsLinearOrder α] [DecidableLE α]
+
+instance instSemilatticeMaxOfLe : @IsSemiLatticeMax α _ _ maxOfLe :=
+  let m : Max α  := maxOfLe
+  {
+    max_le := by
+      intro a b k ak bk
+      unfold Max.max maxOfLe
+      simp; split <;> assumption
+    le_max_left := by
+      intro a b
+      unfold Max.max maxOfLe
+      simp; split <;> trivial
+    le_max_right := by
+      intro a b
+      unfold Max.max maxOfLe
+      simp; split; trivial
+      apply le_of_not_le
+      assumption
+  }
+
+instance instSemilatticeMinOfLe : @IsSemiLatticeMin α _ _ minOfLe :=
+  let m : Min α  := minOfLe
+  {
+    le_min := by
+      intro a b k ak kb
+      unfold Min.min minOfLe
+      simp; split <;> assumption
+    min_le_left := by
+      intro a b
+      unfold Min.min minOfLe
+      simp; split; trivial
+      apply le_of_not_le
+      assumption
+    min_le_right := by
+      intro a b
+      unfold Min.min minOfLe
+      simp; split <;> trivial
+  }
+
+instance instLatticeOfLe : @IsLattice α _ _ maxOfLe minOfLe :=
+  let _m : Min α  := minOfLe
+  let _m : Max α  := maxOfLe
+  { instSemilatticeMaxOfLe α, instSemilatticeMinOfLe α with }
+
+end MinMaxOfLe
+
 section Impls
 
 instance : IsDecidableLinearOrder Bool where
@@ -656,19 +771,28 @@ instance : IsDecidableLinearOrder Bool where
   le_trans := by decide
   min_def := by decide
   max_def := by decide
-  min_iff_le_left := by decide
-  min_iff_le_right := by decide
-  max_iff_le_left := by decide
-  max_iff_le_right := by decide
+  le_max_left := by decide
+  le_max_right := by decide
+  le_refl := by decide
+  max_le := by decide
+  min_le_left := by decide
+  min_le_right := by decide
+  le_min := by decide
 instance : IsPartialOrder Bool := inferInstance
+instance : IsLattice Bool := inferInstance
 
 instance : IsLinearOrder Nat where
   lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
   le_antisymm := Nat.le_antisymm
   lt_or_le := Nat.lt_or_ge
   le_trans := Nat.le_trans
-instance : IsDecidableLinearOrder Nat where
+instance : IsDecidableLinearOrder Nat := {
+  inferInstanceAs (IsPartialOrder Nat),
+  inferInstanceAs (IsLinearOrder Nat),
+  instLatticeOfLe Nat with
+}
 instance : IsPartialOrder Nat := inferInstance
+instance : IsLattice Nat := inferInstance
 
 instance : IsLinearOrder (Fin n) where
   lt_iff_le_and_not_le := Nat.lt_iff_le_not_le
@@ -680,8 +804,12 @@ instance : IsLinearOrder (Fin n) where
   le_trans := Nat.le_trans
 instance : Min (Fin n) := minOfLe
 instance : Max (Fin n) := maxOfLe
-instance : IsDecidableLinearOrder (Fin n) where
+instance : IsDecidableLinearOrder (Fin n) := {
+  inferInstanceAs (IsLinearOrder (Fin n)),
+  instLatticeOfLe (Fin n) with
+}
 instance : IsPartialOrder (Fin n) := inferInstance
+instance : IsLattice (Fin n) := inferInstance
 
 instance : Bot Bool where
   bot := false
@@ -703,8 +831,13 @@ instance : IsLinearOrder Int where
     left; assumption
     right; apply Int.le_of_lt; assumption
     right; subst b; apply Int.le_refl
-instance : IsDecidableLinearOrder Int where
+instance : IsDecidableLinearOrder Int := {
+  inferInstanceAs (IsPartialOrder Int),
+  inferInstanceAs (IsLinearOrder Int),
+  instLatticeOfLe Int with
+}
 instance : IsPartialOrder Int := inferInstance
+instance : IsLattice Int := inferInstance
 
 def le_setoid (α: Type*) [LE α] [LT α] [IsPreOrder α] : Setoid α where
   r a b := a ≤ b ∧ b ≤ a
@@ -716,22 +849,22 @@ def le_setoid (α: Type*) [LE α] [LT α] [IsPreOrder α] : Setoid α where
 
 namespace Classical
 
-variable [LE α] [LT α] [Min α] [Max α] [IsLinearMinMaxOrder α]
+variable [LE α] [LT α] [Min α] [Max α] [IsLinearLattice α]
 
 noncomputable scoped instance (priority := 10) : IsDecidableLinearOrder α where
   min_def := by
     intro a b
     split <;> rename_i h
-    rwa [min_iff_le_left.mp]
+    rwa [min_eq_left.mpr]
     rw [not_le] at h
-    rw [min_iff_le_right.mp]
+    rw [min_eq_right.mpr]
     apply le_of_lt; assumption
   max_def := by
     intro a b
     split <;> rename_i h
-    rwa [max_iff_le_left.mp]
+    rwa [max_eq_right.mpr]
     rw [not_le] at h
-    rw [max_iff_le_right.mp]
+    rw [max_eq_left.mpr]
     apply le_of_lt; assumption
 
 end Classical

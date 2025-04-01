@@ -143,19 +143,19 @@ def BoundedBelow.singleton (a: α) : BoundedBelow {a} := by
   cases mem
   rfl
 
-def BoundedAbove.insert [Max α] [IsLawfulSup α] {a: α} {as: Set α} (h: BoundedAbove as) : BoundedAbove (insert a as) := by
+def BoundedAbove.insert [Max α] [IsLawfulMax α] {a: α} {as: Set α} (h: BoundedAbove as) : BoundedAbove (insert a as) := by
   obtain ⟨x, h⟩ := h
   exists a ⊔ x
   intro x mem
   cases Set.mem_insert.mp mem
   subst x
-  apply le_sup_left
+  apply le_max_left
   apply flip le_trans
-  apply le_sup_right
+  apply le_max_right
   apply h
   assumption
 
-def BoundedBelow.insert [Min α] [IsLawfulInf α] {a: α} {as: Set α} (h: BoundedBelow as) : BoundedBelow (insert a as) :=
+def BoundedBelow.insert [Min α] [IsLawfulMin α] {a: α} {as: Set α} (h: BoundedBelow as) : BoundedBelow (insert a as) :=
   BoundedAbove.insert (α := Opposite α) h
 
 def allBoundedAbove [LE α] [Top α] [IsLawfulTop α] (s: Set α) : Set.BoundedAbove s := by

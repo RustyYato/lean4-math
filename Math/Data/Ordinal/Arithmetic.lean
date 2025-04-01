@@ -170,7 +170,7 @@ def limit_iff_le (a b: Ordinal) (alim: a.IsLimitOrdinal) : a ≤ b ↔ ∀a' < a
     have := not_le_of_lt (lt_succ_self b)
     contradiction
 
-def limit_eq_sup (a: Ordinal) (lim: a.IsLimitOrdinal) : a = iSup fun x: a => x.val := by
+def limit_eq_max (a: Ordinal) (lim: a.IsLimitOrdinal) : a = iSup fun x: a => x.val := by
   have : (Set.range fun x: a => x.val).BoundedAbove := by
     exists a
     intro x mem

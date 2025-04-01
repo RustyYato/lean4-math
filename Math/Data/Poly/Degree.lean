@@ -1,6 +1,6 @@
 import Math.Data.Poly.Defs
 import Math.Data.Nat.Basic
-import Math.Order.TopBot.Linear
+import Math.Order.TopBot
 import Math.Data.FinSupp.Fintype
 
 namespace Poly
@@ -421,7 +421,7 @@ def add_degree_of_ne_degree [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (
   intro a b h
   apply le_antisymm
   apply add_degree
-  rw [max_iff_le_left.mp (le_of_lt h)]
+  rw [max_eq_right.mpr (le_of_lt h)]
   cases hb:b.degree
   apply bot_le
   apply le_degree
@@ -571,7 +571,7 @@ def lead_add_of_degree_lt [SemiringOps P] [IsSemiring P] [∀x: P, Decidable (x 
     assumption
     apply lt_of_lt_of_le _ (degree_le_degreeNat _)
     rw [this]; assumption
-  rw [add_degree_of_ne_degree a b, max_iff_le_right.mp]
+  rw [add_degree_of_ne_degree a b, max_eq_left.mpr]
   apply le_of_lt; assumption
   symm; apply ne_of_lt; assumption
 

@@ -24,16 +24,16 @@ instance : InfSet Nat where
       0
 
 instance : IsConditionallyCompleteLattice Nat where
-  le_sup_left := le_max_left
-  le_sup_right := le_max_right
-  inf_le_left := min_le_left
-  inf_le_right := min_le_right
-  sup_le := by
+  le_max_left := le_max_left
+  le_max_right := le_max_right
+  min_le_left := min_le_left
+  min_le_right := min_le_right
+  max_le := by
     intro a b k ak bk
     show max a b ≤ k
     rw [max_def]
     split <;> assumption
-  le_inf := by
+  le_min := by
     intro a b k ak bk
     show k ≤ min a b
     rw [min_def]

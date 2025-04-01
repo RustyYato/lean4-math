@@ -8,7 +8,7 @@ noncomputable def sqrt (x: ℝ) : ℝ :=
 def sqrt_def (x: ℝ) (hx: 0 ≤ x) : sqrt x = NNReal.embedReal (NNReal.sqrt ⟨x, hx⟩) := by
   unfold sqrt NNReal.ofReal
   conv in max x 0 =>{
-    rw (occs := [1]) [max_iff_le_right.mp hx]
+    rw (occs := [1]) [max_eq_left.mpr hx]
   }
 
 def sqrt_sq (x: ℝ) (h: 0 ≤ x) : x.sqrt ^ 2 = x := by
@@ -35,7 +35,7 @@ def sqrt_inj {x y: ℝ} (hx: 0 ≤ x) (hy: 0 ≤ y) : x.sqrt = y.sqrt ↔ x = y 
   apply Iff.intro
   intro h
   have := Subtype.mk.inj h
-  rwa [max_iff_le_right.mp, max_iff_le_right.mp] at this
+  rwa [max_eq_left.mpr, max_eq_left.mpr] at this
   assumption
   assumption
   intro h
@@ -70,7 +70,7 @@ def sqrt_strictMonotoneOn : StrictMonotoneOn sqrt (Set.Ici 0) := by
   apply (OrderIso.resp_lt _).mp
   unfold NNReal.ofReal
   show max x 0 < max y 0
-  rwa [max_iff_le_right.mp hx, max_iff_le_right.mp hy]
+  rwa [max_eq_left.mpr hx, max_eq_left.mpr hy]
 
 @[simp]
 def sqrt_0 : sqrt 0 = 0 := by

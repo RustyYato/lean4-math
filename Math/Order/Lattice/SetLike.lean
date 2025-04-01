@@ -2,8 +2,8 @@ import Math.Data.Set.Lattice
 import Math.Data.Set.Like
 
 class IsSetLikeLattice (α: Type*) {β: outParam Type*} [Max α] [Min α] [LE α] [LT α] [SetLike α β] : Prop extends IsLawfulLT α where
-  inf_eq_set_inf: ∀a b: α, (a ⊓ b: α) = (a ⊓ b: Set β)
-  sup_eq_set_sup: ∀a b: α, (a ⊔ b: α) = (a ⊔ b: Set β)
+  min_eq_set_min: ∀a b: α, (a ⊓ b: α) = (a ⊓ b: Set β)
+  max_eq_set_max: ∀a b: α, (a ⊔ b: α) = (a ⊔ b: Set β)
   le_iff_sub: ∀a b: α, a ≤ b ↔ (a: Set β) ≤ b
 
 variable [Max α] [Min α] [LE α] [LT α] [SetLike α β] [IsSetLikeLattice α]
@@ -17,29 +17,29 @@ instance [IsSetLikeLattice α] : IsPartialOrder α :=
   IsSetLikeLattice.OrderEmbedding.inducedIsPartialOrder'
 
 instance [h: IsSetLikeLattice α] : IsLattice α where
-  le_sup_left := by
+  le_max_left := by
     intro a b
-    rw [h.le_iff_sub, h.sup_eq_set_sup]
-    apply le_sup_left (α := Set β)
-  le_sup_right := by
+    rw [h.le_iff_sub, h.max_eq_set_max]
+    apply le_max_left (α := Set β)
+  le_max_right := by
     intro a b
-    rw [h.le_iff_sub, h.sup_eq_set_sup]
-    apply le_sup_right (α := Set β)
-  inf_le_left := by
+    rw [h.le_iff_sub, h.max_eq_set_max]
+    apply le_max_right (α := Set β)
+  min_le_left := by
     intro a b
-    rw [h.le_iff_sub, h.inf_eq_set_inf]
-    apply inf_le_left (α := Set β)
-  inf_le_right := by
+    rw [h.le_iff_sub, h.min_eq_set_min]
+    apply min_le_left (α := Set β)
+  min_le_right := by
     intro a b
-    rw [h.le_iff_sub, h.inf_eq_set_inf]
-    apply inf_le_right (α := Set β)
-  sup_le := by
+    rw [h.le_iff_sub, h.min_eq_set_min]
+    apply min_le_right (α := Set β)
+  max_le := by
     intro a b k ak bk
     rw [h.le_iff_sub] at *
-    rw [h.sup_eq_set_sup]
-    apply sup_le <;> assumption
-  le_inf := by
+    rw [h.max_eq_set_max]
+    apply max_le <;> assumption
+  le_min := by
     intro a b k ak bk
     rw [h.le_iff_sub] at *
-    rw [h.inf_eq_set_inf]
-    apply le_inf <;> assumption
+    rw [h.min_eq_set_min]
+    apply le_min <;> assumption

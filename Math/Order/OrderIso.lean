@@ -117,6 +117,58 @@ def instIsLawfulBot {_: LE α} [LT α] {_: LE β} [LT β]
     rw [map_bot]
     apply bot_le
 
+def instIsSemiLatticeMax
+  {α}
+  [LE α] [LT α] [Max α]
+  [LE β] [LT β] [Max β]
+  [IsSemiLatticeMax α]
+  [_root_.IsPartialOrder β]
+  (h: β ↪o α)
+  (hs: ∀a b, h (a ⊔ b) = h a ⊔ h b): IsSemiLatticeMax β where
+  le_max_left := by
+    intro a b
+    have : h a ≤ h a ⊔ h b := le_max_left _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  le_max_right := by
+    intro a b
+    have : h b ≤ h a ⊔ h b := le_max_right _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  max_le := by
+    intro a b k ak bk
+    replace ak := h.resp_le.mp ak
+    replace bk := h.resp_le.mp bk
+    have := max_le ak bk
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+
+def instIsSemiLatticeMin
+  {α}
+  [LE α] [LT α] [Min α]
+  [LE β] [LT β] [Min β]
+  [IsSemiLatticeMin α]
+  [_root_.IsPartialOrder β]
+  (h: β ↪o α)
+  (hs: ∀a b, h (a ⊓ b) = h a ⊓ h b): IsSemiLatticeMin β where
+  min_le_left := by
+    intro a b
+    have : h a ⊓ h b ≤ h a := min_le_left _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  min_le_right := by
+    intro a b
+    have : h a ⊓ h b ≤ h b := min_le_right _ _
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+  le_min := by
+    intro a b k ak bk
+    replace ak := h.resp_le.mp ak
+    replace bk := h.resp_le.mp bk
+    have := le_min ak bk
+    rw [←hs] at this
+    exact h.resp_le.mpr this
+
 end OrderEmbedding
 
 namespace OrderIso
@@ -189,36 +241,42 @@ def instIsLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
   (h: α ≃o β)
   : _root_.IsLinearOrder α := h.toEmbedding.inducedIsLinearOrder
 
-def instIsLinearMinMaxOrder {_: LE α} [LT α] {_: LE β} [LT β]
+def instIsSemilatticeMax {_: LE α} [LT α] {_: LE β} [LT β]
+  [Max α] [Max β]
+  [IsSemiLatticeMax β]
+  [IsLawfulLT α]
+  (h: α ≃o β)
+  (max_eq: ∀a b: α, max a b = h.symm (max (h a) (h b))) :
+  IsSemiLatticeMax α :=
+  have := h.symm.instIsPartialOrder'
+  h.toEmbedding.instIsSemiLatticeMax <| by
+    intro a b
+    rw [max_eq]; show h (h.symm _) = _
+    rw [h.symm_coe]; rfl
+
+def instIsSemilatticeMin {_: LE α} [LT α] {_: LE β} [LT β]
+  [Min α] [Min β]
+  [IsSemiLatticeMin β]
+  [IsLawfulLT α]
+  (h: α ≃o β)
+  (min_eq: ∀a b: α, min a b = h.symm (min (h a) (h b))) :
+  IsSemiLatticeMin α :=
+  have := h.symm.instIsPartialOrder'
+  h.toEmbedding.instIsSemiLatticeMin <| by
+    intro a b
+    rw [min_eq]; show h (h.symm _) = _
+    rw [h.symm_coe]; rfl
+
+def instIsLinearLattice {_: LE α} [LT α] {_: LE β} [LT β]
   [Min α] [Min β] [Max α] [Max β]
-  [IsLinearMinMaxOrder β]
+  [IsLinearLattice β]
   [IsLawfulLT α]
   (h: α ≃o β)
   (min_eq: ∀a b: α, min a b = h.symm (min (h a) (h b)))
   (max_eq: ∀a b: α, max a b = h.symm (max (h a) (h b)))
-  : _root_.IsLinearMinMaxOrder α :=
+  : IsLinearLattice α :=
   {
-    toIsLinearOrder := h.instIsLinearOrder
-    min_iff_le_left := by
-      intro a b
-      rw [h.resp_le, min_eq, ←Function.Injective.eq_iff h.inj]
-      show _ ↔ h (h.symm _) = _
-      rw [h.symm_coe]; apply min_iff_le_left
-    min_iff_le_right := by
-      intro a b
-      rw [h.resp_le, min_eq, ←Function.Injective.eq_iff h.inj]
-      show _ ↔ h (h.symm _) = _
-      rw [h.symm_coe]; apply min_iff_le_right
-    max_iff_le_left := by
-      intro a b
-      rw [h.resp_le, max_eq, ←Function.Injective.eq_iff h.inj]
-      show _ ↔ h (h.symm _) = _
-      rw [h.symm_coe]; apply max_iff_le_left
-    max_iff_le_right := by
-      intro a b
-      rw [h.resp_le, max_eq, ←Function.Injective.eq_iff h.inj]
-      show _ ↔ h (h.symm _) = _
-      rw [h.symm_coe]; apply max_iff_le_right
+    h.instIsLinearOrder, h.instIsSemilatticeMax max_eq, h.instIsSemilatticeMin min_eq with
   }
 
 def instIsDecidableLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
@@ -230,7 +288,7 @@ def instIsDecidableLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
   (max_eq: ∀a b: α, max a b = h.symm (max (h a) (h b)))
   : _root_.IsDecidableLinearOrder α :=
   {
-    toIsLinearMinMaxOrder := h.instIsLinearMinMaxOrder min_eq max_eq
+    toIsLinearLattice := h.instIsLinearLattice min_eq max_eq
     min_def := by
       intro a b
       rw [min_eq, min_def]

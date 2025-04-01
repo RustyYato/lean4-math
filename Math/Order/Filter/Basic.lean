@@ -5,11 +5,11 @@ import Math.Order.Lattice.Complete
 import Math.Order.GaloisConnection
 
 -- a general filter on an arbitrary order
-structure FilterBase (α: Type*) [LE α] [Min α] extends IsLawfulInf α where
+structure FilterBase (α: Type*) [LE α] [Min α] extends IsLawfulMin α where
   set: Set α
   nonempty: set.Nonempty
   closed_upward: ∀{x y}, x ∈ set -> x ≤ y -> y ∈ set
-  closed_inf: ∀{x y}, x ∈ set -> y ∈ set -> x ⊓ y ∈ set
+  closed_min: ∀{x y}, x ∈ set -> y ∈ set -> x ⊓ y ∈ set
 
 -- a filter over sets using their usual ordering
 abbrev Filter (α: Type*) := FilterBase (Set α)
@@ -62,29 +62,29 @@ def ext {f g: FilterBase α} : (∀x, x ∈ f ↔ x ∈ g) -> f = g := by
 
 protected def copy (f : FilterBase α) (S : Set α) (hmem : ∀ s, s ∈ S ↔ s ∈ f) : FilterBase α := by
   have : S = f.set := Set.ext _ _ hmem
-  apply FilterBase.mk f.toIsLawfulInf S
+  apply FilterBase.mk f.toIsLawfulMin S
   rw [this]; exact f.nonempty
   rw [this]; exact f.closed_upward
-  rw [this]; exact f.closed_inf
+  rw [this]; exact f.closed_min
 
 def copy_eq {f: FilterBase α} {S} (hmem : ∀ s, s ∈ S ↔ s ∈ f) : f.copy S hmem = f := FilterBase.ext hmem
 @[simp] def mem_copy {f: FilterBase α} {S hmem} : s ∈ f.copy S hmem ↔ s ∈ S := Iff.rfl
 
 @[simp]
-def closed_inf_iff [IsLawfulInf α] {f: FilterBase α} {s t : α} : s ⊓ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
+def closed_min_iff [IsLawfulMin α] {f: FilterBase α} {s t : α} : s ⊓ t ∈ f ↔ s ∈ f ∧ t ∈ f := by
   apply Iff.intro
   intro h
   apply And.intro
   apply closed_upward
   assumption
-  apply inf_le_left
+  apply min_le_left
   apply closed_upward
   assumption
-  apply inf_le_right
+  apply min_le_right
   intro ⟨_, _⟩
-  apply closed_inf <;> assumption
+  apply closed_min <;> assumption
 
-def closed_finite_sInf [LT α] [InfSet α] [IsCompleteSemiLatticeInf α]
+def closed_finite_sInf [LT α] [InfSet α] [IsCompleteSemiLatticeMin α]
   (s: Set α) [s.IsFinite] (f: FilterBase α): sInf s ∈ f ↔ s ⊆ f.set := by
   induction s using Set.IsFinite.induction with
   | nil =>
@@ -96,7 +96,7 @@ def closed_finite_sInf [LT α] [InfSet α] [IsCompleteSemiLatticeInf α]
     intro x
     apply le_sInf_empty
   | cons x s hx sfin ih =>
-    rw [sInf_insert, closed_inf_iff, ih]
+    rw [sInf_insert, closed_min_iff, ih]
     apply Iff.intro
     intro ⟨_, g⟩
     intro a h
@@ -116,7 +116,7 @@ def exists_mem_le_iff [LT α] [IsPreOrder α] {f: FilterBase α} : (∃ t ∈ f,
   ⟨fun ⟨_, ht, ts⟩ => closed_upward _ ht ts, fun hs => ⟨s, hs, le_refl _⟩⟩
 
 variable {α : Type u} {β : Type v} {γ : Type w} {δ : Type*} {ι : Sort x}
-variable {α: Type*} [LE α] [LT α] [Min α] [IsSemiLatticeInf α] {f g: FilterBase α} {s t: α}
+variable {α: Type*} [LE α] [LT α] [Min α] [IsSemiLatticeMin α] {f g: FilterBase α} {s t: α}
 
 section Principal
 
@@ -125,7 +125,7 @@ def principal (s : α) : FilterBase α where
   set := .mk fun x => s ≤ x
   nonempty := ⟨s, le_refl _⟩
   closed_upward := le_trans
-  closed_inf := by
+  closed_min := by
     intro x y
     simp [←Set.sub_inter]
     intros
@@ -175,7 +175,7 @@ def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : FilterBase α where
     apply GenerateSets.up
     assumption
     assumption
-  closed_inf := by
+  closed_min := by
     intro x y hx hy
     apply GenerateSets.min
     assumption
@@ -237,7 +237,7 @@ def le_generate_iff {s : Set α} {f : FilterBase α} {ne: s.Nonempty} : f ≤ ge
     assumption
     assumption
   | min =>
-    apply f.closed_inf
+    apply f.closed_min
     assumption
     assumption
 
@@ -255,7 +255,7 @@ def le_generate_iff' [Top α] [IsLawfulTop α] {s : Set α} {f : FilterBase α} 
   apply h
   assumption
 
-def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeInf α] {s : Set α} {ne: s.Nonempty} {x: α} : x ∈ generate_of_nonempty s ne ↔ ∃ t ⊆ s, Set.IsFinite t ∧ sInf t ≤ x := by
+def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne: s.Nonempty} {x: α} : x ∈ generate_of_nonempty s ne ↔ ∃ t ⊆ s, Set.IsFinite t ∧ sInf t ≤ x := by
   apply Iff.intro
   intro mem
   induction mem with
@@ -279,7 +279,7 @@ def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeInf α] {s : Set α} {ne:
     apply And.intro <;> assumption
     infer_instance
     rw [sInf_union]
-    apply inf_le_inf
+    apply min_le_min
     assumption
     assumption
   intro ⟨t, sub, fin, le⟩
@@ -337,12 +337,12 @@ def join [Top α] [IsLawfulTop α] (fs : FilterBase (Set (FilterBase α))) : Fil
     apply closed_upward
     assumption
     assumption
-  closed_inf := by
+  closed_min := by
     simp [Set.mk_mem]
     intro x y hx hy
     suffices ({ Mem := fun t => x ∈ t ∧ y ∈ t }: Set (FilterBase _)) = { Mem := fun t => x ∈ t } ∩ { Mem := fun t => y ∈ t } by
       rw [this]
-      apply closed_inf
+      apply closed_min
       assumption
       assumption
     ext k
@@ -362,7 +362,7 @@ instance [Top α] [IsLawfulTop α] : Top (FilterBase α) where
       apply le_antisymm
       apply le_top
       assumption
-    closed_inf := by
+    closed_min := by
       intro x y _ _; subst x; subst y
       simp
   }
@@ -376,7 +376,7 @@ instance [h: Nonempty α] : Bot (FilterBase α) where
     closed_upward := by
       intros
       apply Set.mem_univ
-    closed_inf := by
+    closed_min := by
       intros
       apply Set.mem_univ
   }
@@ -390,10 +390,10 @@ instance [Top α] [IsLawfulTop α] : Min (FilterBase α) where
 protected def mkOfClosure [Top α] [IsLawfulTop α] (s : Set α) (hs : (generate s).set = s) : FilterBase α where
   set := s
   nonempty := hs ▸ nonempty _
-  closed_inf := hs ▸ closed_inf _
+  closed_min := hs ▸ closed_min _
   closed_upward := hs ▸ closed_upward _
 
-def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] :
+def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeMin α] :
   GaloisInsertion (α := Set α) (β := Opposite (FilterBase α)) FilterBase.generate FilterBase.set where
   choice s hs := FilterBase.mkOfClosure s (le_antisymm hs <| le_generate_iff.1 <| by
     rw [generate_eq_generate_nonempty])
@@ -417,19 +417,19 @@ def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf �
   gc _ _ := le_generate_iff'
   le_l_u _ _ h := GenerateSets.basic (Set.mem_insert.mpr (.inr h))
 
-instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] : CompleteLattice (FilterBase α) := {
+instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeMin α] : CompleteLattice (FilterBase α) := {
     (giGenerate (α := α)).liftCompleteLattice.opposite with
     top := ⊤
     min := (· ⊓ ·)
     sSup := join ∘ 𝓟
-    inf_le_left := by
+    min_le_left := by
       intro f g x mem
       apply FilterBase.GenerateSets.basic
       rw [Set.mem_insert]; right
       refine ⟨x, ⊤, ?_, ?_, ?_⟩
       assumption
       repeat simp
-    inf_le_right := by
+    min_le_right := by
       intro f g x mem
       apply FilterBase.GenerateSets.basic
       rw [Set.mem_insert]; right
@@ -437,7 +437,7 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
       simp
       assumption
       simp
-    le_inf := by
+    le_min := by
       intro a b k ka kb x mem
       induction mem with
       | up =>
@@ -445,7 +445,7 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
         assumption
         assumption
       | min =>
-        apply closed_inf
+        apply closed_min
         assumption
         assumption
       | basic h =>
@@ -453,7 +453,7 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
         subst h; apply top_mem
         obtain ⟨f₀, f₁, f₀_in_a, f₁_in_b, eq⟩ := h
         subst eq; clear h
-        apply closed_inf
+        apply closed_min
         apply ka; assumption
         apply kb; assumption
     le_sSup := by
@@ -485,7 +485,7 @@ def not_neBot [Nonempty α] : ¬NeBot f ↔ f = ⊥ := by
   intro h g
   exact g.ne h
 
-def neBot_of_le [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] {f g : FilterBase α} [hf : NeBot f] (hg : f ≤ g) : NeBot g where
+def neBot_of_le [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeMin α] {f g : FilterBase α} [hf : NeBot f] (hg : f ≤ g) : NeBot g where
   ne := by
     rintro rfl
     apply hf.ne
@@ -530,7 +530,7 @@ def map (f: α -> β) (F: Filter α) : Filter β where
     intro x hx
     apply hb
     assumption
-  closed_inf := F.closed_inf
+  closed_min := F.closed_min
 
 @[simp]
 def map_eq_bot_iff : map m f = ⊥ ↔ f = ⊥ := by
@@ -598,7 +598,7 @@ def tail (seq: ℕ -> α) (N: ℕ) : Set α := Set.image (Set.Ici N) seq
 def of_seq (seq: ℕ -> α) : Filter α where
   set := Set.mk fun A => ∃N, tail seq N ⊆ A
   nonempty := ⟨tail seq 0, 0, Set.sub_refl _⟩
-  closed_inf := by
+  closed_min := by
     intro x y ⟨n, hx⟩ ⟨m, hy⟩
     exists max n m
     intro i h

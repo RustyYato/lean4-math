@@ -56,7 +56,7 @@ def infer_continuous (f: α -> β) [IsContinuous f] : IsContinuous f := inferIns
 @[simp]
 def continuous_prod_mk {f : X → Y} {g : X → Z} :
     (IsContinuous fun x => (f x, g x)) ↔ IsContinuous f ∧ IsContinuous g :=
-  (@continuous_inf_rng X (Y × Z) _ _ (Topology.induced Prod.fst _)
+  (@continuous_min_rng X (Y × Z) _ _ (Topology.induced Prod.fst _)
     (Topology.induced Prod.snd _)).trans <|
     continuous_induced_rng.and continuous_induced_rng
 

@@ -8,7 +8,7 @@ variable {X Y: Type*} [Topology X] [Topology Y]
 
 def tendsto_nhds_unique_inseparable [R1 X] {f : Y → X} {l : Filter Y} {a b : X} [FilterBase.NeBot l]
     (ha : TendsTo f l (𝓝 a)) (hb : TendsTo f l (𝓝 b)) : Inseparable a b :=
-  Inseparable.of_nhds_neBot <| neBot_of_le <| le_inf ha hb
+  Inseparable.of_nhds_neBot <| neBot_of_le <| le_min ha hb
 
 def tendsto_nhds_unique [T2 X] {f : Y → X} {l : Filter Y} {a b : X} [NeBot l]
     (ha : TendsTo f l (𝓝 a)) (hb : TendsTo f l (𝓝 b)) : a = b :=
@@ -31,7 +31,7 @@ def lim_eq' [T2 X] (f: Filter X) [f.NeBot] (o: X) : (∀s: Set X, Topology.IsOpe
     assumption
     assumption
   | min =>
-    apply FilterBase.closed_inf
+    apply FilterBase.closed_min
     assumption
     assumption
   | basic hx =>

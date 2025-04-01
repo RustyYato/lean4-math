@@ -34,10 +34,10 @@ instance Nat.isSetLikeFinite {a: Nat} : IsFinite { x // x ∈ a } := IsFinite.in
 instance (a b: Nat) : Decidable (a ∈ b) := inferInstanceAs (Decidable (a < b))
 
 instance : IsSetLikeLattice Nat where
-  inf_eq_set_inf a b := by
+  min_eq_set_min a b := by
     ext x
     exact Nat.lt_min
-  sup_eq_set_sup a b := by
+  max_eq_set_max a b := by
     ext x
     show x < max a b ↔ x < a ∨ x < b
     exact lt_max_iff

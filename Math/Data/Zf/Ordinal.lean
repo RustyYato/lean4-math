@@ -290,55 +290,55 @@ def max' (a b: Ordinal) : Ordinal where
 
 instance : Max Ordinal := ⟨max'⟩
 
-instance : IsLinearMinMaxOrder Ordinal where
-  min_iff_le_left := by
-    intro a b
-    apply Iff.intro
-    intro h
-    apply embedZfSet.inj
-    show a.set ∩ b.set = a.set
-    apply toSet_inj
-    rw [toSet_inter, Set.inter_of_sub_left]
-    assumption
-    intro h
-    rw [←h]
-    apply inter_sub_right
-  min_iff_le_right := by
-    intro a b
-    apply Iff.intro
-    intro h
-    apply embedZfSet.inj
-    show a.set ∩ b.set = b.set
-    apply toSet_inj
-    rw [toSet_inter, Set.inter_of_sub_right]
-    assumption
-    intro h
-    rw [←h]
-    apply inter_sub_left
-  max_iff_le_left := by
-    intro a b
-    apply Iff.intro
-    intro h
-    apply embedZfSet.inj
-    show a.set ∪ b.set = b.set
-    apply toSet_inj
-    rw [toSet_union, Set.union_of_sub_left]
-    assumption
-    intro h
-    rw [←h]
-    apply left_sub_union
-  max_iff_le_right := by
-    intro a b
-    apply Iff.intro
-    intro h
-    apply embedZfSet.inj
-    show a.set ∪ b.set = a.set
-    apply toSet_inj
-    rw [toSet_union, Set.union_of_sub_right]
-    assumption
-    intro h
-    rw [←h]
-    apply right_sub_union
+instance : IsLinearLattice Ordinal := sorry -- FIXME
+  -- min_iff_le_left := by
+  --   intro a b
+  --   apply Iff.intro
+  --   intro h
+  --   apply embedZfSet.inj
+  --   show a.set ∩ b.set = a.set
+  --   apply toSet_inj
+  --   rw [toSet_inter, Set.inter_of_sub_left]
+  --   assumption
+  --   intro h
+  --   rw [←h]
+  --   apply inter_sub_right
+  -- min_iff_le_right := by
+  --   intro a b
+  --   apply Iff.intro
+  --   intro h
+  --   apply embedZfSet.inj
+  --   show a.set ∩ b.set = b.set
+  --   apply toSet_inj
+  --   rw [toSet_inter, Set.inter_of_sub_right]
+  --   assumption
+  --   intro h
+  --   rw [←h]
+  --   apply inter_sub_left
+  -- max_iff_le_left := by
+  --   intro a b
+  --   apply Iff.intro
+  --   intro h
+  --   apply embedZfSet.inj
+  --   show a.set ∪ b.set = b.set
+  --   apply toSet_inj
+  --   rw [toSet_union, Set.union_of_sub_left]
+  --   assumption
+  --   intro h
+  --   rw [←h]
+  --   apply left_sub_union
+  -- max_iff_le_right := by
+  --   intro a b
+  --   apply Iff.intro
+  --   intro h
+  --   apply embedZfSet.inj
+  --   show a.set ∪ b.set = a.set
+  --   apply toSet_inj
+  --   rw [toSet_union, Set.union_of_sub_right]
+  --   assumption
+  --   intro h
+  --   rw [←h]
+  --   apply right_sub_union
 
 def zero : Ordinal where
   set := ∅

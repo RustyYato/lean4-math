@@ -24,19 +24,19 @@ variable [FiniteSupportSet S α] [DecidableEq α]
 def coe_map_lt {a b: S} : a < b ↔ (a: Finset α) < (b: Finset α) := by
   simp only [lt_iff_le_and_not_le, coe_map_le]
 
-def coe_sup_sub_sup_coe (a b: S) : (a ⊔ b: Finset α) ≤ ((a ⊔ b: S): Finset α) := by
-  apply sup_le
+def coe_max_sub_max_coe (a b: S) : (a ⊔ b: Finset α) ≤ ((a ⊔ b: S): Finset α) := by
+  apply max_le
   apply coe_map_le.mp
-  apply le_sup_left
+  apply le_max_left
   apply coe_map_le.mp
-  apply le_sup_right
+  apply le_max_right
 
-def inf_coe_sub_coe_inf (a b: S) : ((a ⊓ b: S): Finset α) ≤ (a ⊓ b: Finset α) := by
-  apply le_inf
+def min_coe_sub_coe_min (a b: S) : ((a ⊓ b: S): Finset α) ≤ (a ⊓ b: Finset α) := by
+  apply le_min
   apply coe_map_le.mp
-  apply inf_le_left
+  apply min_le_left
   apply coe_map_le.mp
-  apply inf_le_right
+  apply min_le_right
 
 end FiniteSupportSet
 
@@ -123,11 +123,11 @@ instance [Zero β] [Add β] [IsAddZeroClass β] : Add (Finsupp α β S) where
           classical
           replace ne : f x + g x ≠ 0 := ne
           by_cases x ∈ fs
-          apply FiniteSupportSet.coe_sup_sub_sup_coe
+          apply FiniteSupportSet.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           left; assumption
           by_cases x ∈ gs
-          apply FiniteSupportSet.coe_sup_sub_sup_coe
+          apply FiniteSupportSet.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           right; assumption
           rename_i fx gx
@@ -186,11 +186,11 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (Finsupp
           classical
           replace ne : f x - g x ≠ 0 := ne
           by_cases x ∈ fs
-          apply FiniteSupportSet.coe_sup_sub_sup_coe
+          apply FiniteSupportSet.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           left; assumption
           by_cases x ∈ gs
-          apply FiniteSupportSet.coe_sup_sub_sup_coe
+          apply FiniteSupportSet.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           right; assumption
           rename_i fx gx
@@ -304,7 +304,7 @@ def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: Finsupp α β S) : Fin
       val := FiniteSupportSet.singleton a ⊔ fs
       property x ne := by
         dsimp only at ne
-        apply FiniteSupportSet.coe_sup_sub_sup_coe
+        apply FiniteSupportSet.coe_max_sub_max_coe
         apply Finset.mem_union.mpr
         split at ne
         subst x

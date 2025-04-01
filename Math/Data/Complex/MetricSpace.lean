@@ -23,7 +23,7 @@ def Complex.abs_eq (x: ℂ) : NNReal.ofReal |x| = NNReal.sqrt (NNReal.square x.r
   congr
   unfold ofReal
   congr
-  rw [max_iff_le_right.mp]
+  rw [max_eq_left.mpr]
   rfl
   apply Real.add_nonneg
   apply Real.square_nonneg
@@ -210,7 +210,7 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     rw [Complex.abs_eq]
     simp
     rw [ofReal]; conv in max ε 0 => {
-      rw [max_iff_le_right.mp (le_of_lt εpos)] }
+      rw [max_eq_left.mpr (le_of_lt εpos)] }
     apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mpr
     show _ ^ 2 < ε' ^ 2
     rw [sqrt_sq]

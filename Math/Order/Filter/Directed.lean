@@ -5,7 +5,7 @@ namespace FilterBase
 
 open Classical Set
 
-variable {α : Type*} [LE α] [LT α] [Min α] [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α]
+variable {α : Type*} [LE α] [LT α] [Min α] [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeMin α]
 
 def eq_sInf_of_mem_iff_exists_mem {S : Set (Filter α)} {l : Filter α}
     (h : ∀ {s}, s ∈ l ↔ ∃ f ∈ S, s ∈ f) : l = sInf S := by
@@ -46,12 +46,12 @@ def iInf_set_eq {f : ι → Filter α} (h : Directed (· ≥ ·) f) [ne : Nonemp
       closed_upward := by
         simp only [mem_iSup, exists_imp]
         exact fun i hx hxy => ⟨i, closed_upward _ hx hxy⟩
-      closed_inf := by
+      closed_min := by
         simp only [mem_iSup, exists_imp]
         intro x y a hx b hy
         rcases h a b with ⟨c, ha, hb⟩
         exists c
-        apply closed_inf
+        apply closed_min
         apply ha; assumption
         apply hb; assumption }
   have : u = iInf f := eq_iInf_of_mem_iff_exists_mem mem_iSup

@@ -35,16 +35,16 @@ instance : IsCompleteLattice (α -> α -> Prop) where
     apply ba
   le_top _ _ _ _ := True.intro
   bot_le _ _ _ := False.elim
-  le_sup_left _ _ := Or.inl
-  le_sup_right _ _ := Or.inr
-  inf_le_left _ _ := And.left
-  inf_le_right _ _ := And.right
-  sup_le ak bk := by
+  le_max_left _ _ := Or.inl
+  le_max_right _ _ := Or.inr
+  min_le_left _ _ := And.left
+  min_le_right _ _ := And.right
+  max_le ak bk := by
     intro x y h
     cases h
     apply ak; assumption
     apply bk; assumption
-  le_inf ak bk := by
+  le_min ak bk := by
     intro x y h
     exact ⟨ak h, bk h⟩
   le_sSup := by

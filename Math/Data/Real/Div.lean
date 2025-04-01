@@ -407,42 +407,42 @@ def max_def (a b: ℝ) : max a b = if a ≤ b then b else a := by
 
 end
 
-instance : IsLinearMinMaxOrder ℝ where
-  min_iff_le_left := by
-    intro a b
-    rw [min_def]
-    apply Iff.intro
-    intro h
-    rw [if_pos h]
-    intro h; split at h
-    assumption
-    rw [h]
-  min_iff_le_right := by
-    intro a b
-    rw [min_comm, min_def]
-    apply Iff.intro
-    intro h
-    rw [if_pos h]
-    intro h; split at h
-    assumption
-    rw [h]
-  max_iff_le_left := by
-    intro a b
-    rw [max_def]
-    apply Iff.intro
-    intro h
-    rw [if_pos h]
-    intro h; split at h
-    assumption
-    rw [h]
-  max_iff_le_right := by
-    intro a b
-    rw [max_comm, max_def]
-    apply Iff.intro
-    intro h
-    rw [if_pos h]
-    intro h; split at h
-    assumption
-    rw [h]
+instance : IsLinearLattice ℝ := sorry -- FIXME
+  -- min_iff_le_left := by
+  --   intro a b
+  --   rw [min_def]
+  --   apply Iff.intro
+  --   intro h
+  --   rw [if_pos h]
+  --   intro h; split at h
+  --   assumption
+  --   rw [h]
+  -- min_iff_le_right := by
+  --   intro a b
+  --   rw [min_comm, min_def]
+  --   apply Iff.intro
+  --   intro h
+  --   rw [if_pos h]
+  --   intro h; split at h
+  --   assumption
+  --   rw [h]
+  -- max_iff_le_left := by
+  --   intro a b
+  --   rw [max_def]
+  --   apply Iff.intro
+  --   intro h
+  --   rw [if_pos h]
+  --   intro h; split at h
+  --   assumption
+  --   rw [h]
+  -- max_iff_le_right := by
+  --   intro a b
+  --   rw [max_comm, max_def]
+  --   apply Iff.intro
+  --   intro h
+  --   rw [if_pos h]
+  --   intro h; split at h
+  --   assumption
+  --   rw [h]
 
 end Real

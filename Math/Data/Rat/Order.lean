@@ -146,7 +146,10 @@ instance : DecidableLT ℚ := inferInstanceAs (∀a b: ℚ, Decidable (b - a).is
 instance : Min ℚ := minOfLe
 instance : Max ℚ := maxOfLe
 
-instance : IsDecidableLinearOrder ℚ where
+instance : IsDecidableLinearOrder ℚ := {
+  inferInstanceAs (IsLinearOrder ℚ),
+  instLatticeOfLe ℚ with
+}
 
 def Fract.abs (f: Fract) : Fract where
   num := |f.num|

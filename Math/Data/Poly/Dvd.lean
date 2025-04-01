@@ -1,7 +1,7 @@
 import Math.Data.Poly.Degree
 import Math.Data.FinSupp.Fintype
 import Math.Algebra.Dvd
-import Math.Order.TopBot.Linear
+import Math.Order.TopBot
 
 def Nat.sub_sub' (a b c: Nat) (h: c ≤ b) : a - (b - c) = a + c - b := by omega
 
@@ -383,7 +383,7 @@ def divmod_sub_coeff₃ (q r: P[X]) (h: r.degree < (q * p).degree) :
   apply WithBot.LT.bot
   apply degreeNat_eq_of_degree_eq
   rw [add_degree_of_ne_degree]
-  rw [max_iff_le_right.mp]
+  rw [max_eq_left.mpr]
   apply le_of_lt; assumption
   symm; apply ne_of_lt; assumption
   assumption
@@ -393,7 +393,7 @@ def div_mod_unique_helper₀ (q r: P[X]) (h: r.degree < (q * p).degree) :  (q * 
 
 def div_mod_unique_helper₁ (q r: P[X]) (h: r.degree < (q * p).degree) : (q * p + r).degree = (q * p).degree := by
   rw [add_degree_of_ne_degree]
-  rw [max_iff_le_right.mp]
+  rw [max_eq_left.mpr]
   apply le_of_lt; assumption
   symm; apply ne_of_lt; assumption
 

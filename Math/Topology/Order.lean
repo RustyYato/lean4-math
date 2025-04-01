@@ -102,14 +102,14 @@ instance : Max (Topology α) where
 instance : Min (Topology α) where
   min := min'
 
-def sup_eq (a b: Topology α) : a ⊔ b = sSup {a, b} := by
+def max_eq (a b: Topology α) : a ⊔ b = sSup {a, b} := by
   show max' a b = sSup' {a, b}
   unfold max' sSup'
   ext s
   simp
   rfl
 
-def inf_eq (a b: Topology α) : a ⊓ b = sInf {a, b} := by
+def min_eq (a b: Topology α) : a ⊓ b = sInf {a, b} := by
   show min' a b = sInf' {a, b}
   unfold min' sInf'
   ext s
@@ -152,35 +152,35 @@ private def le_sInf : ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : T
 instance : IsCompleteLattice (Topology α) where
   sSup_le := sSup_le
   le_sSup := le_sSup _ _
-  le_sup_left a b := by
-    rw [sup_eq]
+  le_max_left a b := by
+    rw [max_eq]
     apply le_sSup
     apply Set.mem_pair.mpr; left; rfl
-  le_sup_right a b := by
-    rw [sup_eq]
+  le_max_right a b := by
+    rw [max_eq]
     apply le_sSup
     apply Set.mem_pair.mpr; right; rfl
-  sup_le := by
+  max_le := by
     intro a b k ak bk
-    rw [sup_eq]
+    rw [max_eq]
     apply sSup_le
     intro x mem
     cases Set.mem_pair.mp mem <;> subst x <;> assumption
   sInf_le := sInf_le _ _
   le_sInf := le_sInf
-  inf_le_left := by
+  min_le_left := by
     intro a b
-    rw [inf_eq]
+    rw [min_eq]
     apply sInf_le
     apply Set.mem_pair.mpr; left; rfl
-  inf_le_right := by
+  min_le_right := by
     intro a b
-    rw [inf_eq]
+    rw [min_eq]
     apply sInf_le
     apply Set.mem_pair.mpr; right; rfl
-  le_inf := by
+  le_min := by
     intro a b k ka kb
-    rw [inf_eq]
+    rw [min_eq]
     apply le_sInf
     intro x mem
     cases Set.mem_pair.mp mem <;> subst x <;> assumption
@@ -215,23 +215,23 @@ def continuous_induced_rng {g : γ → α} {t₂ : Topology β} {t₁ : Topology
     IsContinuous' t₁ (induced f t₂) g ↔ IsContinuous' t₁ t₂ (f ∘ g) := by
   simp only [continuous_iff_le_induced, induced_compose]
 
-def continuous_inf_rng {t₁ : Topology α} {t₂ t₃ : Topology β} :
+def continuous_min_rng {t₁ : Topology α} {t₂ t₃ : Topology β} :
     IsContinuous' t₁  (t₂ ⊓ t₃) f ↔ IsContinuous' t₁ t₂ f ∧ IsContinuous' t₁ t₃ f := by
-  simp only [continuous_iff_coinduced_le, le_inf_iff]
+  simp only [continuous_iff_coinduced_le, le_min_iff]
 
-def continuous_sup_rng_left {t₁ : Topology α} {t₂ t₃ : Topology β} :
+def continuous_max_rng_left {t₁ : Topology α} {t₂ t₃ : Topology β} :
     IsContinuous' t₁ t₂ f -> IsContinuous' t₁  (t₂ ⊔ t₃) f := by
   simp only [continuous_iff_coinduced_le]
   intro h
   apply le_trans h
-  apply le_sup_left
+  apply le_max_left
 
-def continuous_sup_rng_right {t₁ : Topology α} {t₂ t₃ : Topology β} :
+def continuous_max_rng_right {t₁ : Topology α} {t₂ t₃ : Topology β} :
     IsContinuous' t₁ t₃ f -> IsContinuous' t₁  (t₂ ⊔ t₃) f := by
   simp only [continuous_iff_coinduced_le]
   intro h
   apply le_trans h
-  apply le_sup_right
+  apply le_max_right
 
 def continuous_sSup_dom {T : Set (Topology α)} {t₂ : Topology β} :
     IsContinuous' (sSup T) t₂ f ↔ ∀ t ∈ T, IsContinuous' t t₂ f := by

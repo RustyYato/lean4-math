@@ -6,7 +6,7 @@ class LinearOrder (α: Type*) extends LT α, LE α, IsLinearOrder α
 
 -- do not use this in bounds directly, this is only meant to be used to create a PreOrder
 -- for example, via `GaloisConnection`
-class LinearMinMaxOrder (α: Type*) extends LT α, LE α, Min α, Max α, IsLinearMinMaxOrder α
+class LinearMinMaxOrder (α: Type*) extends LT α, LE α, Min α, Max α, IsLinearLattice α
 
 variable {α: Type*} {a b c d: α}
 variable [LT α] [LE α] [Min α] [Max α]

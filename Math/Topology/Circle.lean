@@ -45,7 +45,7 @@ def Real.Icc_compact (a b: ℝ) (h: a ≤ b) : Topology.IsCompactOn (Set.Icc a b
     refine ⟨?_, ?_, ?_⟩
     apply Filter.univ_mem
     apply Filter.univ_mem
-    rw [inf_self]
+    rw [min_self]
     rename_i h'
     exact h'
   have sInter_empty : ∀x, x ∉ ⋂U := by
@@ -168,7 +168,7 @@ instance : Topology.IsCompactSpace S₁ where
         refine ⟨?_, ?_, ?_⟩
         apply Filter.univ_mem
         apply Filter.univ_mem
-        rw [inf_self]
+        rw [min_self]
         rename_i h
         exact h
     induction U using Set.IsFinite.induction with

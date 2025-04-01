@@ -76,15 +76,15 @@ instance : InfSet Int where
       0
 
 instance : IsConditionallyCompleteLattice Int where
-  le_sup_right := le_max_right
-  le_sup_left := le_max_left
-  inf_le_right := min_le_right
-  inf_le_left := min_le_left
-  sup_le := by
+  le_max_right := le_max_right
+  le_max_left := le_max_left
+  min_le_right := min_le_right
+  min_le_left := min_le_left
+  max_le := by
     intro a b k ak bk
     apply max_le_iff.mpr
     omega
-  le_inf := by
+  le_min := by
     intro a b k ak bk
     apply le_min_iff.mpr
     omega

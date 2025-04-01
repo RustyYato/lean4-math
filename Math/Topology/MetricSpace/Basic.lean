@@ -124,7 +124,7 @@ namespace Topology
 
 variable {α β γ: Type*}
   [LT γ] [LE γ] [IsNontrivial γ] [RingOps γ] [IsOrderedSemiring γ]
-  [IsRing γ] [Dist α γ] [Dist β γ] [Min γ] [Max γ] [IsLinearMinMaxOrder γ]
+  [IsRing γ] [Dist α γ] [Dist β γ] [Min γ] [Max γ] [IsLinearLattice γ]
   [ta: Topology α] [tb: Topology β]
 
 section IsPseudoMetricSpace

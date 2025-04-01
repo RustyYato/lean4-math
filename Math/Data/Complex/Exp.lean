@@ -55,7 +55,7 @@ instance : Topology.T2 ℂ where
     let Sa := Ball a d
     let Sb := Ball b d
     suffices Sa ⊓ Sb = ∅ by
-      have hf := f.closed_inf (ha Sa ?_) (hb Sb ?_)
+      have hf := f.closed_min (ha Sa ?_) (hb Sb ?_)
       rw [this] at hf
       intro x hx
       apply f.closed_upward

@@ -197,35 +197,35 @@ abbrev instLawfulBot (gc : GaloisConnection l u) : LawfulBot β where
 
 end LawfulBot
 
-section SemiLatticeSup
+section SemiLatticeMax
 
-variable [Max α] [Max β] [IsSemiLatticeSup α] [IsSemiLatticeSup β]
+variable [Max α] [Max β] [IsSemiLatticeMax α] [IsSemiLatticeMax β]
 
-def l_sup : l (a₁ ⊔ a₂) = l a₁ ⊔ l a₂ := by
+def l_max : l (a₁ ⊔ a₂) = l a₁ ⊔ l a₂ := by
   apply le_antisymm
   apply gc.l_le
-  rw [sup_le_iff]
+  rw [max_le_iff]
   apply And.intro
   apply gc.le_u
-  apply le_sup_left
+  apply le_max_left
   apply gc.le_u
-  apply le_sup_right
-  rw [sup_le_iff]
+  apply le_max_right
+  rw [max_le_iff]
   apply And.intro
   apply gc.monotone_l
-  apply le_sup_left
+  apply le_max_left
   apply gc.monotone_l
-  apply le_sup_right
+  apply le_max_right
 
-end SemiLatticeSup
+end SemiLatticeMax
 
-section SemiLatticeInf
+section SemiLatticeMin
 
-variable [Min α] [Min β] [IsSemiLatticeInf α] [IsSemiLatticeInf β]
+variable [Min α] [Min β] [IsSemiLatticeMin α] [IsSemiLatticeMin β]
 
-def u_inf : u (a₁ ⊓ a₂) = u a₁ ⊓ u a₂ := gc.dual.l_sup
+def u_min : u (a₁ ⊓ a₂) = u a₁ ⊓ u a₂ := gc.dual.l_max
 
-end SemiLatticeInf
+end SemiLatticeMin
 
 end GaloisConnection
 
@@ -325,91 +325,91 @@ abbrev GaloisCoinsertion.instLawfulBot [Bot β] [IsLawfulBot β] (gi : GaloisCoi
     have := gi.dual.instLawfulTop
     inferInstanceAs (LawfulBot αᵒᵖᵒᵖ)
 
-abbrev GaloisInsertion.instLawfulSup [Max α] [IsLawfulSup α] (gi: GaloisInsertion l u) : LawfulSup β where
+abbrev GaloisInsertion.instLawfulSup [Max α] [IsLawfulMax α] (gi: GaloisInsertion l u) : LawfulSup β where
   max a b := l (u a ⊔ u b)
-  le_sup_left := by
+  le_max_left := by
     intro x y
     show x ≤ l _
     apply le_trans
     apply gi.le_l_u
     apply gi.gc.monotone_l
-    apply le_sup_left
-  le_sup_right := by
+    apply le_max_left
+  le_max_right := by
     intro x y
     show y ≤ l _
     apply le_trans
     apply gi.le_l_u
     apply gi.gc.monotone_l
-    apply le_sup_right
+    apply le_max_right
 
-abbrev GaloisCoinsertion.instLawfulInf [Min β] [IsLawfulInf β] [IsPreOrder β] (gi: GaloisCoinsertion l u) : LawfulInf α :=
+abbrev GaloisCoinsertion.instLawfulInf [Min β] [IsLawfulMin β] [IsPreOrder β] (gi: GaloisCoinsertion l u) : LawfulInf α :=
   have := gi.dual.instLawfulSup (β := αᵒᵖ) (α := βᵒᵖ)
   inferInstanceAs (LawfulInf αᵒᵖᵒᵖ)
 
-abbrev GaloisInsertion.instSemilatticeSup [Max α] [IsPartialOrder β] [IsSemiLatticeSup α] (gi: GaloisInsertion l u) : SemiLatticeSup β where
+abbrev GaloisInsertion.instSemilatticeSup [Max α] [IsPartialOrder β] [IsSemiLatticeMax α] (gi: GaloisInsertion l u) : SemiLatticeMax β where
   max a b := l (u a ⊔ u b)
-  le_sup_left := by
+  le_max_left := by
     intro x y
     apply le_trans
     apply gi.le_l_u
     apply gi.gc.monotone_l
-    apply le_sup_left
-  le_sup_right := by
+    apply le_max_left
+  le_max_right := by
     intro x y
     apply le_trans
     apply gi.le_l_u
     apply gi.gc.monotone_l
-    apply le_sup_right
-  sup_le := by
+    apply le_max_right
+  max_le := by
     intro a b k ka kb
     apply gi.gc.l_le
-    apply sup_le
+    apply max_le
     apply gi.gc.monotone_u
     assumption
     apply gi.gc.monotone_u
     assumption
 
-abbrev GaloisInsertion.instSemilatticeInf [Min α] [IsPartialOrder β] [IsSemiLatticeInf α] (gi: GaloisInsertion l u) : SemiLatticeInf β where
+abbrev GaloisInsertion.instSemilatticeInf [Min α] [IsPartialOrder β] [IsSemiLatticeMin α] (gi: GaloisInsertion l u) : SemiLatticeMin β where
   min a b := gi.choice (u a ⊓ u b) (by
-    apply le_inf
+    apply le_min
     apply gi.gc.monotone_u
     apply gi.gc.l_le
-    apply inf_le_left
+    apply min_le_left
     apply gi.gc.monotone_u
     apply gi.gc.l_le
-    apply inf_le_right)
-  inf_le_left := by
+    apply min_le_right)
+  min_le_left := by
     intro x y
     show gi.choice _ _ ≤ _
     rw [gi.choice_eq]
     apply gi.gc.l_le
-    apply inf_le_left
-  inf_le_right := by
+    apply min_le_left
+  min_le_right := by
     intro x y
     show gi.choice _ _ ≤ _
     rw [gi.choice_eq]
     apply gi.gc.l_le
-    apply inf_le_right
-  le_inf := by
+    apply min_le_right
+  le_min := by
     intro a b k ka kb
     show _ ≤ gi.choice _ _
     rw [gi.choice_eq]
     apply le_trans
     apply gi.le_l_u
     apply gi.gc.monotone_l
-    apply le_inf
+    apply le_min
     apply gi.gc.monotone_u
     assumption
     apply gi.gc.monotone_u
     assumption
 
-abbrev GaloisCoinsertion.instSemilatticeSup [Max β] [IsPartialOrder α] [IsSemiLatticeSup β] (gi: GaloisCoinsertion l u) : SemiLatticeSup α :=
+abbrev GaloisCoinsertion.instSemilatticeSup [Max β] [IsPartialOrder α] [IsSemiLatticeMax β] (gi: GaloisCoinsertion l u) : SemiLatticeMax α :=
   have := gi.dual.instSemilatticeInf (β := αᵒᵖ) (α := βᵒᵖ)
-  inferInstanceAs (SemiLatticeSup αᵒᵖᵒᵖ)
+  inferInstanceAs (SemiLatticeMax αᵒᵖᵒᵖ)
 
-abbrev GaloisCoinsertion.instSemilatticeInf [Min β] [IsPartialOrder α] [IsSemiLatticeInf β] (gi: GaloisCoinsertion l u) : SemiLatticeInf α :=
+abbrev GaloisCoinsertion.instSemilatticeInf [Min β] [IsPartialOrder α] [IsSemiLatticeMin β] (gi: GaloisCoinsertion l u) : SemiLatticeMin α :=
   have := gi.dual.instSemilatticeSup (β := αᵒᵖ) (α := βᵒᵖ)
-  inferInstanceAs (SemiLatticeInf αᵒᵖᵒᵖ)
+  inferInstanceAs (SemiLatticeMin αᵒᵖᵒᵖ)
 
 abbrev GaloisInsertion.instLattice [Min α] [Max α] [IsPartialOrder β] [IsLattice α] (gi: GaloisInsertion l u) : Lattice β :=
   have := gi.instSemilatticeSup

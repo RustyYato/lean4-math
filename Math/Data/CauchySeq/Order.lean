@@ -4,7 +4,7 @@
 
 -- variable {α: Type*} {γ: Type*} [AbsoluteValue α α]
 --   [FieldOps α] [LT α] [LE α] [Min α] [Max α]
---   [IsField α] [IsLinearMinMaxOrder α] [IsOrderedRing α]
+--   [IsField α] [IsLinearLattice α] [IsOrderedRing α]
 --   [IsOrderedAbsAddGroup α] [IsOrderedAddCommMonoid α]
 
 -- def IsPos (c: CauchySeq α) : Prop := ∃B: α, B > 0 ∧ Eventually fun n => B < c n

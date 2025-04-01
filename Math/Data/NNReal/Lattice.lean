@@ -100,15 +100,15 @@ noncomputable instance : InfSet ℝ≥0 where
     contradiction⟩
 
 instance : IsConditionallyCompleteLattice ℝ≥0 where
-  le_sup_left := le_max_left
-  le_sup_right := le_max_right
-  inf_le_left := min_le_left
-  inf_le_right := min_le_right
-  sup_le := by
+  le_max_left := le_max_left
+  le_max_right := le_max_right
+  min_le_left := min_le_left
+  min_le_right := min_le_right
+  max_le := by
     intro a b k ak bk
     apply max_le_iff.mpr
     apply And.intro <;> assumption
-  le_inf := by
+  le_min := by
     intro a b k ka kb
     apply le_min_iff.mpr
     apply And.intro <;> assumption

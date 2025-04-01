@@ -73,12 +73,12 @@ instance
   [Dist α γ] [Dist β γ]
   [LE γ] [LT γ] [AddMonoidOps γ]
   [IsOrderedAddCommMonoid γ]
-  [Min γ] [Max γ] [IsLinearMinMaxOrder γ]
+  [Min γ] [Max γ] [IsLinearLattice γ]
   [IsPseudoMetric α] [IsPseudoMetric β] : IsPseudoMetric (α × β) where
   dist_self := by
     intro x
     show max _ _ = _
-    rw [dist_self, dist_self, max_iff_le_left.mp (le_refl _)]
+    rw [dist_self, dist_self, max_eq_right.mpr (le_refl _)]
   dist_comm := by
     intro a b
     show max (dist _ _) (dist _ _) = max (dist _ _) (dist _ _)
@@ -104,7 +104,7 @@ instance
   [Dist α γ] [Dist β γ]
   [LE γ] [LT γ] [AddMonoidOps γ]
   [IsAddCancel γ] [IsOrderedAddCommMonoid γ]
-  [Min γ] [Max γ] [IsLinearMinMaxOrder γ]
+  [Min γ] [Max γ] [IsLinearLattice γ]
   [IsMetric α] [IsMetric β] : IsMetric (α × β) where
   of_dist_eq_zero a b h := by
     replace h: max _ _ = (0: γ) := h

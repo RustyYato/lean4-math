@@ -84,13 +84,13 @@ instance : Topology.IsConnected ℝ where
       let d': sub := ⟨d, by
         rw [Set.mem_Icc]
         apply And.intro
-        apply le_inf_iff.mpr
+        apply le_min_iff.mpr
         apply And.intro
         apply le_trans a_le_c
         apply le_add_right
         apply le_of_lt; apply half_pos; assumption
         apply le_of_lt; assumption
-        apply inf_le_right⟩
+        apply min_le_right⟩
 
       have : c < d := by
         apply lt_min_iff.mpr
@@ -147,8 +147,8 @@ instance : Topology.IsConnected ℝ where
       let d': sub := ⟨d, by
         rw [Set.mem_Icc]
         apply And.intro
-        apply le_sup_right
-        apply sup_le_iff.mpr
+        apply le_max_right
+        apply max_le_iff.mpr
         apply And.intro
         rw [Real.sub_le_iff_le_add]
         apply le_trans
@@ -368,7 +368,7 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     apply le_of_lt; assumption
     rw [mul_comm _ δ, ←mul_add]
     unfold δ M
-    rw [inf_mul]
+    rw [min_mul]
     apply min_lt_iff.mpr; left
     rw [mul_comm, div?_eq_mul_inv?, mul_left_comm, ←div?_eq_mul_inv?]
     rw (occs := [2]) [←mul_one ε]
@@ -377,7 +377,7 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     replace hb : |b - d| < 1 := by
       apply lt_of_lt_of_le
       assumption
-      apply inf_le_right
+      apply min_le_right
     have : |d| < |b| + 1 := by
       rw [←add_zero d, ←sub_self b, ←add_sub_assoc, add_comm, add_sub_assoc]
       apply lt_of_le_of_lt

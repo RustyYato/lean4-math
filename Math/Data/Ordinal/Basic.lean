@@ -1179,19 +1179,19 @@ def max_eq_left_iff (a b: Ordinal) : max a b = a ↔ b ≤ a := by
     apply Pre.maxType.LT.mk
     assumption
 
-instance : IsLinearMinMaxOrder Ordinal where
-   min_iff_le_left := min_eq_left_iff
-   min_iff_le_right := by
-    intro a b
-    rw [min_comm']
-    exact min_eq_left_iff
-   max_iff_le_left := by
-    intro a b
-    rw [max_comm']
-    apply (max_eq_left_iff _ _).symm
-   max_iff_le_right := by
-    intro a b
-    apply (max_eq_left_iff _ _).symm
+instance : IsLinearLattice Ordinal := sorry -- FIXME
+  --  min_iff_le_left := min_eq_left_iff
+  --  min_iff_le_right := by
+  --   intro a b
+  --   rw [min_comm']
+  --   exact min_eq_left_iff
+  --  max_iff_le_left := by
+  --   intro a b
+  --   rw [max_comm']
+  --   apply (max_eq_left_iff _ _).symm
+  --  max_iff_le_right := by
+  --   intro a b
+  --   apply (max_eq_left_iff _ _).symm
 
 def IsLimitOrdinal (o: Ordinal) := ∀x, x + 1 ≠ o
 
@@ -1390,12 +1390,12 @@ instance : Min Ordinal where
   min := min
 
 instance : IsConditionallyCompleteLattice Ordinal where
-  le_sup_left := le_max_left
-  le_sup_right := le_max_right
-  sup_le ha hb  := max_le_iff.mpr ⟨ha, hb⟩
-  inf_le_left := min_le_left
-  inf_le_right := min_le_right
-  le_inf ha hb := le_min_iff.mpr ⟨ha, hb⟩
+  le_max_left := le_max_left
+  le_max_right := le_max_right
+  max_le ha hb  := max_le_iff.mpr ⟨ha, hb⟩
+  min_le_left := min_le_left
+  min_le_right := min_le_right
+  le_min ha hb := le_min_iff.mpr ⟨ha, hb⟩
   le_csSup := by
     intro s a h mem
     simp [sSup]

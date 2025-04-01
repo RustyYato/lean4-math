@@ -203,7 +203,7 @@ def seq₂_diff_bounds (c: DedekindCut) (a b: ℚ) (h: a ≤ b) (n: ℕ) : (c.se
         rw [mul_comm, div?_eq_mul_inv?, div?_eq_mul_inv?, one_mul]
       · apply le_trans
         apply midpoint_le_max
-        apply le_of_eq; exact max_iff_le_left.mp h
+        apply le_of_eq; exact max_eq_right.mpr h
     · rw [ih]
       · rw [npow_succ, mul_assoc]
         congr
@@ -215,7 +215,7 @@ def seq₂_diff_bounds (c: DedekindCut) (a b: ℚ) (h: a ≤ b) (n: ℕ) : (c.se
           rw [mul_comm, div?_eq_mul_inv?, div?_eq_mul_inv?, one_mul]
       · apply flip le_trans
         apply min_le_midpoint
-        apply le_of_eq; symm; exact min_iff_le_left.mp h
+        apply le_of_eq; symm; exact min_eq_left.mpr h
 
 def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : ∀ε: ℚ, 0 < ε -> ∃n: ℕ, (c.seq₂ a b n).snd - (c.seq₂ a b n).fst < ε := by
   intro ε εpos
@@ -263,7 +263,7 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
       rw [←natCast_npow, ←natCast_zero, Rat.natCast_lt_natCast]
       exact Nat.two_pow_pos |n|
       apply lt_of_le_of_ne
-      exact max_iff_le_left.mpr rfl
+      exact max_eq_right.mp rfl
       symm; assumption
     refine Rat.add_lt_iff_lt_sub.mp ?_
     rwa [zero_add]
@@ -281,13 +281,13 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
     have := lt_asymm this altb
     contradiction
     apply lt_of_le_of_ne
-    exact max_iff_le_left.mpr rfl
+    exact max_eq_right.mp rfl
     symm; assumption
   · apply le_of_lt
     rw [div?_eq_mul_inv?, one_mul]
     apply inv?_pos
     apply lt_of_le_of_ne
-    exact max_iff_le_left.mpr rfl
+    exact max_eq_right.mp rfl
     symm; assumption
 
 def seq₂_fst_nomax (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) (n: ℕ) : ∃m, (c.seq₂ a b n).fst < (c.seq₂ a b m).fst := by

@@ -82,53 +82,53 @@ instance [LE α] [LawfulBot α] : LawfulTop αᵒᵖ where
 
 -- `LawfulInf` states that the min is always at most as large as it's inputs
 -- this does *not* provide a tight bound on min, if you need that use
--- `IsSemiLatticeInf`
-class IsLawfulInf (α: Type*) [LE α] [Min α] where
-  inf_le_left: ∀(x y: α), x ⊓ y ≤ x
-  inf_le_right: ∀(x y: α), x ⊓ y ≤ y
+-- `IsSemiLatticeMin`
+class IsLawfulMin (α: Type*) [LE α] [Min α] where
+  min_le_left: ∀(x y: α), x ⊓ y ≤ x
+  min_le_right: ∀(x y: α), x ⊓ y ≤ y
 
 -- `LawfulSup` states that the max is always at least as large as it's inputs
 -- this does *not* provide a tight bound on min, if you need that use
--- `IsSemiLatticeSup`
-class IsLawfulSup (α: Type*) [LE α] [Max α] where
-  le_sup_left: ∀(x y: α), x ≤ x ⊔ y
-  le_sup_right: ∀(x y: α), y ≤ x ⊔ y
+-- `IsSemiLatticeMax`
+class IsLawfulMax (α: Type*) [LE α] [Max α] where
+  le_max_left: ∀(x y: α), x ≤ x ⊔ y
+  le_max_right: ∀(x y: α), y ≤ x ⊔ y
 
 -- do not use this in bounds directly, this is only meant to be used to create a LawfulInf
 -- for example, via `GaloisConnection`
 class LawfulInf (α: Type*) [LE α] extends Min α where
-  inf_le_left: ∀(x y: α), x ⊓ y ≤ x
-  inf_le_right: ∀(x y: α), x ⊓ y ≤ y
+  min_le_left: ∀(x y: α), x ⊓ y ≤ x
+  min_le_right: ∀(x y: α), x ⊓ y ≤ y
 -- do not use this in bounds directly, this is only meant to be used to create a LawfulSup
 -- for example, via `GaloisConnection`
 class LawfulSup (α: Type*) [LE α] extends Max α where
-  le_sup_left: ∀(x y: α), x ≤ x ⊔ y
-  le_sup_right: ∀(x y: α), y ≤ x ⊔ y
+  le_max_left: ∀(x y: α), x ≤ x ⊔ y
+  le_max_right: ∀(x y: α), y ≤ x ⊔ y
 
-export IsLawfulInf (inf_le_left inf_le_right)
-export IsLawfulSup (le_sup_left le_sup_right)
+export IsLawfulMin (min_le_left min_le_right)
+export IsLawfulMax (le_max_left le_max_right)
 
-instance [LE α] [Max α] [IsLawfulSup α] : IsLawfulInf αᵒᵖ where
-  inf_le_left := le_sup_left (α := α)
-  inf_le_right := le_sup_right (α := α)
-instance [LE α] [Min α] [IsLawfulInf α] : IsLawfulSup αᵒᵖ where
-  le_sup_left := inf_le_left (α := α)
-  le_sup_right := inf_le_right (α := α)
+instance [LE α] [Max α] [IsLawfulMax α] : IsLawfulMin αᵒᵖ where
+  min_le_left := le_max_left (α := α)
+  min_le_right := le_max_right (α := α)
+instance [LE α] [Min α] [IsLawfulMin α] : IsLawfulMax αᵒᵖ where
+  le_max_left := min_le_left (α := α)
+  le_max_right := min_le_right (α := α)
 
-instance [LE α] [LawfulInf α] : IsLawfulInf α where
-  inf_le_left := LawfulInf.inf_le_left
-  inf_le_right := LawfulInf.inf_le_right
+instance [LE α] [LawfulInf α] : IsLawfulMin α where
+  min_le_left := LawfulInf.min_le_left
+  min_le_right := LawfulInf.min_le_right
 
-instance [LE α] [LawfulSup α] : IsLawfulSup α where
-  le_sup_left := LawfulSup.le_sup_left
-  le_sup_right := LawfulSup.le_sup_right
+instance [LE α] [LawfulSup α] : IsLawfulMax α where
+  le_max_left := LawfulSup.le_max_left
+  le_max_right := LawfulSup.le_max_right
 
 instance [LE α] [LawfulInf α] : LawfulSup αᵒᵖ where
-  le_sup_left := inf_le_left (α := α)
-  le_sup_right := inf_le_right (α := α)
+  le_max_left := min_le_left (α := α)
+  le_max_right := min_le_right (α := α)
 instance [LE α] [LawfulSup α] : LawfulInf αᵒᵖ where
-  inf_le_left := le_sup_left (α := α)
-  inf_le_right := le_sup_right (α := α)
+  min_le_left := le_max_left (α := α)
+  min_le_right := le_max_right (α := α)
 
 instance [Top α] : Nonempty α := ⟨⊤⟩
 instance [Bot α] : Nonempty α := ⟨⊥⟩

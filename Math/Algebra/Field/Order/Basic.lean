@@ -142,7 +142,7 @@ def half_pos {ε: α} (h: 0 < ε) : 0 < ε /? 2 ~(((ne_of_lt two_pos).symm: (2: 
 def add_half (a: α) : a /? 2 ~(by symm; apply ne_of_lt two_pos) + a /? 2 ~(by symm; apply ne_of_lt two_pos) = a := by
   rw [add_div?_add', ←mul_two, div?_eq_mul_inv?, mul_assoc, mul_inv?_cancel, mul_one]
 
-variable [Min α] [Max α] [IsLinearMinMaxOrder α] [NeZero (2: α)]
+variable [Min α] [Max α] [IsLinearLattice α] [NeZero (2: α)]
 
 def min_le_midpoint (a b: α) : min a b ≤ midpoint a b := by
   apply min_le_iff.mpr

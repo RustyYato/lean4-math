@@ -10,9 +10,9 @@ instance : Min (Set α) where
   min a b := a ∩ b
 
 instance : IsLattice (Set α) where
-  le_sup_left := Set.sub_union_left
-  le_sup_right := Set.sub_union_right
-  sup_le := by
+  le_max_left := Set.sub_union_left
+  le_max_right := Set.sub_union_right
+  max_le := by
     intro a b k ak bk
     intro x mem
     cases Set.mem_union.mp mem
@@ -20,9 +20,9 @@ instance : IsLattice (Set α) where
     assumption
     apply bk
     assumption
-  inf_le_left := Set.inter_sub_left
-  inf_le_right := Set.inter_sub_right
-  le_inf := by
+  min_le_left := Set.inter_sub_left
+  min_le_right := Set.inter_sub_right
+  le_min := by
     intro a b k ka kb x mem
     apply Set.mem_inter.mpr
     apply And.intro

@@ -81,7 +81,7 @@ def sum_eq_support_sum
    have : f i = 0 := Classical.not_not.mp <| Iff.not_iff_not (Finsupp.mem_support (f := ⟨f, Trunc.mk spec⟩) (x := i)) |>.mp (disjoint _ · mem_rest)
    exact resp _ this
 
-def sum_eq_support_sup_sum
+def sum_eq_support_max_sum
    [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0)
    (s: Finset ι) (h: f.support ⊆ s):
    f.sum g resp = (s.val.map (fun i => g i (f i))).sum := by
@@ -108,9 +108,9 @@ def add_sum
   (eq₂: ∀i, f₀ i + f₁ i = 0 -> g i (f₀ i + f₁ i) = 0) :
   sum (f₀ + f₁) g eq₂ = sum f₀ g eq₀ + sum f₁ g eq₁ := by
   classical
-  rw [sum_eq_support_sup_sum (f := f₀ + f₁) (h := Finsupp.support_add f₀ f₁),
-    sum_eq_support_sup_sum (f := f₀) (h := Finset.sub_union_left f₀.support f₁.support),
-    sum_eq_support_sup_sum (f := f₁) (h := Finset.sub_union_right f₀.support f₁.support)]
+  rw [sum_eq_support_max_sum (f := f₀ + f₁) (h := Finsupp.support_add f₀ f₁),
+    sum_eq_support_max_sum (f := f₀) (h := Finset.sub_union_left f₀.support f₁.support),
+    sum_eq_support_max_sum (f := f₁) (h := Finset.sub_union_right f₀.support f₁.support)]
   rw [Multiset.sum_pairwise]
   congr; ext i
   apply map_add
@@ -136,7 +136,7 @@ def single_sum
   (f: ι -> α -> γ) {h}:
   (single a b: Finsupp ι α S).sum f h = f a b := by
   classical
-  rw [sum_eq_support_sup_sum (h := Finsupp.support_single)]
+  rw [sum_eq_support_max_sum (h := Finsupp.support_single)]
   simp; congr
   rw [Finsupp.single]
   show (if _ then _ else _) = b
@@ -353,9 +353,9 @@ def sum_sum_index
     dsimp; repeat rw [←sum_eq_sum' (g := g₁) (resp := by
       intro i h
       rw [h, h₁])]
-    rw [sum_eq_support_sup_sum _ _ _ _ (Finsupp.support_add x y)]
-    rw [sum_eq_support_sup_sum _ _ _ _ (Finset.sub_union_left x.support y.support)]
-    rw [sum_eq_support_sup_sum _ _ _ _ (Finset.sub_union_right x.support y.support)]
+    rw [sum_eq_support_max_sum _ _ _ _ (Finsupp.support_add x y)]
+    rw [sum_eq_support_max_sum _ _ _ _ (Finset.sub_union_left x.support y.support)]
+    rw [sum_eq_support_max_sum _ _ _ _ (Finset.sub_union_right x.support y.support)]
     generalize (x.support ∪ y.support).val = supp
     simp [map_add]
     symm; apply Multiset.sum_pairwise
@@ -370,8 +370,8 @@ def sum_eq_pairwise [Zero α] [Zero β]  [AddMonoidOps γ] [IsAddCommMagma γ] [
   (eq₀: ∀i, g₀ i (f₀ i) = g₁ i (f₁ i))
   : f₀.sum g₀ h₀ = f₁.sum g₁ h₁ := by
   classical
-  rw [sum_eq_support_sup_sum (s := f₀.support ∪ f₁.support),
-    sum_eq_support_sup_sum (s := f₀.support ∪ f₁.support)]
+  rw [sum_eq_support_max_sum (s := f₀.support ∪ f₁.support),
+    sum_eq_support_max_sum (s := f₀.support ∪ f₁.support)]
   congr; ext i; apply eq₀
   exact Finset.sub_union_right f₀.support f₁.support
   exact Finset.sub_union_left f₀.support f₁.support

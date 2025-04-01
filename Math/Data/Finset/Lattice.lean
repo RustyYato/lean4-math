@@ -32,24 +32,24 @@ instance : IsLattice (Finset α) where
     apply Iff.intro
     apply ab
     apply ba
-  le_sup_left := by
+  le_max_left := by
     intro a b x mem
     exact mem_union.mpr (.inl mem)
-  le_sup_right := by
+  le_max_right := by
     intro a b x mem
     exact mem_union.mpr (.inr mem)
-  inf_le_left := by
+  min_le_left := by
     intro a b x mem
     exact (mem_inter.mp mem).left
-  inf_le_right := by
+  min_le_right := by
     intro a b x mem
     exact (mem_inter.mp mem).right
-  sup_le := by
+  max_le := by
     intro a b k ka kb x mem
     cases mem_union.mp mem
     apply ka; assumption
     apply kb; assumption
-  le_inf := by
+  le_min := by
     intro a b k ka kb x mem
     apply mem_inter.mpr
     apply And.intro

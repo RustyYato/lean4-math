@@ -53,19 +53,19 @@ instance : IsPartialOrder (Ideal R) := (SetLike.toCompleteLattice (S := Ideal R)
 private local instance : SetLike.CompleteLatticeLE (Ideal R) := {
   SetLike.toCompleteLattice with
   max a b := a + b
-  le_sup_left := by
+  le_max_left := by
     intro a b x hx
     refine ⟨(x, 0), ?_, ?_, ?_⟩
     assumption
     apply mem_zero
     apply add_zero
-  le_sup_right := by
+  le_max_right := by
     intro a b x hx
     refine ⟨(0, x), ?_, ?_, ?_⟩
     apply mem_zero
     assumption
     apply zero_add
-  sup_le := by
+  max_le := by
     rintro a b k ak bk _ ⟨⟨x, y⟩, _, _, rfl⟩
     apply mem_add k
     apply ak; assumption

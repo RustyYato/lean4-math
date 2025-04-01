@@ -1,4 +1,3 @@
-import Math.Order.Lattice.Basic
 import Math.Data.Set.Basic
 import Math.Data.Set.TopBot
 
@@ -124,12 +123,12 @@ def csSup_union (hs : BoundedAbove s) (sne : s.Nonempty) (ht : BoundedAbove t) (
     intro x mem
     cases Set.mem_union.mp mem <;> rename_i mem
     apply flip le_trans
-    apply le_sup_left
+    apply le_max_left
     apply le_csSup
     assumption
     assumption
     apply flip le_trans
-    apply le_sup_right
+    apply le_max_right
     apply le_csSup
     assumption
     assumption
@@ -140,15 +139,15 @@ def csSup_union (hs : BoundedAbove s) (sne : s.Nonempty) (ht : BoundedAbove t) (
   intro x mem
   cases mem
   apply flip le_trans
-  apply le_sup_left
+  apply le_max_left
   apply le_csSup
   assumption
   assumption
   apply flip le_trans
-  apply le_sup_right
+  apply le_max_right
   apply le_csSup
   repeat assumption
-  apply sup_le_iff.mpr
+  apply max_le_iff.mpr
   apply And.intro
   apply csSup_le_csSup
   assumption
@@ -188,7 +187,7 @@ def csSup_inter_le (hs: BoundedAbove s) (ht: BoundedAbove t) (ne : (s ∩ t).Non
     intro y mem
     apply hs
     exact mem.left
-  apply le_inf_iff.mpr
+  apply le_min_iff.mpr
   apply And.intro
   apply csSup_le_csSup
   assumption

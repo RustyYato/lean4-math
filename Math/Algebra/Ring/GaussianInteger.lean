@@ -96,7 +96,7 @@ private def basis_mod (a b: ℤ) : (a + b * (X: ℤ[X])).mod char = a + b * (X: 
   simp
   apply WithBot.LT.bot
   rw [Poly.add_degree_of_ne_degree, Poly.add_degree_of_ne_degree, Poly.Xpow_degree, Poly.const_degree_ne_zero]
-  rw (occs := [2]) [max_iff_le_right.mp]
+  rw (occs := [2]) [max_eq_left.mpr]
   rw [Poly.mul_degree, ←npow_one X, Poly.Xpow_degree]
   rw [max_lt_iff]
   apply And.intro

@@ -50,12 +50,12 @@ def ofReal (r: ℝ) : ℝ≥0 where
 
 def ofReal_embedReal (r: ℝ) (h: 0 ≤ r) : embedReal (ofReal r) = r := by
   show max r 0 = r
-  rwa [max_iff_le_right.mp]
+  rwa [max_eq_left.mpr]
 
 def embedReal_ofReal (r: ℝ≥0) : ofReal (embedReal r) = r := by
   unfold ofReal
   congr
-  rw [max_iff_le_right.mp]
+  rw [max_eq_left.mpr]
   rfl
   exact r.property
 
@@ -89,19 +89,19 @@ instance : Max ℝ≥0 where
     left; exact a.property⟩
 
 instance : IsLinearOrder ℝ≥0 := inferInstanceAs (IsLinearOrder (Subtype _))
-instance : IsLinearMinMaxOrder ℝ≥0 where
-  min_iff_le_left {a b} := by
-    rw [←orderEmbedReal.inj.eq_iff]
-    apply min_iff_le_left (α := ℝ)
-  min_iff_le_right {a b} := by
-    rw [←orderEmbedReal.inj.eq_iff]
-    apply min_iff_le_right (α := ℝ)
-  max_iff_le_left {a b} := by
-    rw [←orderEmbedReal.inj.eq_iff]
-    apply max_iff_le_left (α := ℝ)
-  max_iff_le_right {a b} := by
-    rw [←orderEmbedReal.inj.eq_iff]
-    apply max_iff_le_right (α := ℝ)
+instance : IsLinearLattice ℝ≥0 := sorry -- FIXME
+  -- min_iff_le_left {a b} := by
+  --   rw [←orderEmbedReal.inj.eq_iff]
+  --   apply min_iff_le_left (α := ℝ)
+  -- min_iff_le_right {a b} := by
+  --   rw [←orderEmbedReal.inj.eq_iff]
+  --   apply min_iff_le_right (α := ℝ)
+  -- max_iff_le_left {a b} := by
+  --   rw [←orderEmbedReal.inj.eq_iff]
+  --   apply max_iff_le_left (α := ℝ)
+  -- max_iff_le_right {a b} := by
+  --   rw [←orderEmbedReal.inj.eq_iff]
+  --   apply max_iff_le_right (α := ℝ)
 
 instance : NeZero (2: ℝ) where
   out := by
@@ -184,7 +184,7 @@ instance : NeZero (2: ℝ≥0) where
 def ofReal_injOn : Function.InjectiveOn ofReal (Set.Ici 0) := by
   intro x y hx hy h
   have := Subtype.mk.inj h
-  rwa [max_iff_le_right.mp, max_iff_le_right.mp] at this
+  rwa [max_eq_left.mpr, max_eq_left.mpr] at this
   assumption
   assumption
 
@@ -209,7 +209,7 @@ def of_ofReal_lt (h: ofReal a < ofReal b) : a < b := by
 def ofReal_add (x y: ℝ) (hx: 0 ≤ x) (hy: 0 ≤ y) : ofReal (x + y) = ofReal x + ofReal y := by
   unfold ofReal
   congr; simp
-  iterate 3 rw [max_iff_le_right.mp]
+  iterate 3 rw [max_eq_left.mpr]
   assumption
   assumption
   apply Real.add_nonneg
@@ -219,7 +219,7 @@ def ofReal_add (x y: ℝ) (hx: 0 ≤ x) (hy: 0 ≤ y) : ofReal (x + y) = ofReal 
 def ofReal_mul (x y: ℝ) (hx: 0 ≤ x) (hy: 0 ≤ y) : ofReal (x * y) = ofReal x * ofReal y := by
   unfold ofReal
   congr; simp
-  iterate 3 rw [max_iff_le_right.mp]
+  iterate 3 rw [max_eq_left.mpr]
   assumption
   assumption
   apply Real.mul_nonneg

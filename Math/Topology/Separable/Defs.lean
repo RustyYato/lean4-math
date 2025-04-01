@@ -115,7 +115,7 @@ def Inseparable.of_nhds_neBot [R1 X] {x y : X} (h: NeBot (𝓝 x ⊓ 𝓝 y)) : 
     apply flip le_antisymm
     apply bot_le
     apply h'
-    apply LawfulInf.inf_le_left
-    apply LawfulInf.inf_le_right
+    apply LawfulInf.min_le_left
+    apply LawfulInf.min_le_right
 
 end Topology

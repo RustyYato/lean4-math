@@ -70,10 +70,10 @@
 
 -- variable {α: Type*} [AbsoluteValue α γ]
 --   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
---   [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
+--   [IsField γ] [IsLinearLattice γ] [IsOrderedRing γ]
 --   [FieldOps α] [IsField α] [IsOrderedAbsRing α]
 
--- local instance : IsLinearOrder γ := (inferInstanceAs (IsLinearMinMaxOrder γ)).toIsLinearOrder
+-- local instance : IsLinearOrder γ := (inferInstanceAs (IsLinearLattice γ)).toIsLinearOrder
 -- local instance : Dist α γ := Abs.instDist α
 -- local instance : IsMetricSpace α := Abs.instIsMetricSpace α
 -- local instance : @Std.Commutative α (· + ·) := ⟨add_comm⟩
@@ -413,7 +413,7 @@
 
 -- variable (α: Type*) {γ: Type*} [AbsoluteValue α γ]
 --   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
---   [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
+--   [IsField γ] [IsLinearLattice γ] [IsOrderedRing γ]
 --   [FieldOps α] [IsField α] [IsOrderedAbsRing α]
 
 -- def Cauchy := Quotient (CauchySeq.setoid (α := α))
@@ -424,7 +424,7 @@
 
 -- variable {α: Type*} {γ: Type*} [AbsoluteValue α γ]
 --   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
---   [IsField γ] [IsLinearMinMaxOrder γ] [IsOrderedRing γ]
+--   [IsField γ] [IsLinearLattice γ] [IsOrderedRing γ]
 --   [FieldOps α] [IsField α] [IsOrderedAbsRing α]
 
 -- def mk : CauchySeq α -> Cauchy α := Quotient.mk _

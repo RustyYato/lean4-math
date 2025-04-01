@@ -12,7 +12,7 @@ instance : IsAtomic (Filter α) := by
 
 instance : IsAtomic (Filter α) := inferInstance
 
-structure UltraFilterBase (α: Type*) [LE α] [LT α] [Min α] [Bot α] [IsSemiLatticeInf α] [IsAtomic (FilterBase α)] extends FilterBase α where
+structure UltraFilterBase (α: Type*) [LE α] [LT α] [Min α] [Bot α] [IsSemiLatticeMin α] [IsAtomic (FilterBase α)] extends FilterBase α where
   protected neBot: toFilterBase.NeBot
   protected le_of_le : ∀g: FilterBase α, FilterBase.NeBot g → g ≤ toFilter → toFilter ≤ g
 
@@ -22,7 +22,7 @@ namespace UltraFilterBase
 
 attribute [coe] UltraFilterBase.toFilterBase
 
-variable [LE α] [LT α] [Min α] [Bot α] [IsSemiLatticeInf α] [IsAtomic (FilterBase α)]
+variable [LE α] [LT α] [Min α] [Bot α] [IsSemiLatticeMin α] [IsAtomic (FilterBase α)]
 
 instance : CoeTC (UltraFilterBase α) (FilterBase α) :=
   ⟨UltraFilterBase.toFilterBase⟩
