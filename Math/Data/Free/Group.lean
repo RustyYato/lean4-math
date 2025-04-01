@@ -85,6 +85,13 @@ instance : IsGroup (FreeGroup α) where
 
 def of (a: α) : FreeGroup α := GroupQuot.mk _ (FreeMonoid.of (false, a))
 
+def of_inv (a: α) : (of a)⁻¹ = GroupQuot.mk _ (FreeMonoid.of (true, a)) := by
+  show inv _ = _
+  unfold FreeGroup.inv
+  erw [GroupQuot.lift_mk_apply]
+  rw [GroupQuot.mkQuot_eq_mk]
+  rfl
+
 private def preLift [GroupOps G] [IsGroup G] (f: α -> G) : FreeGroup α →* G := by
   apply GroupQuot.lift ⟨?_, ?_⟩
   apply FreeMonoid.lift (M := G) (fun
@@ -119,11 +126,7 @@ def lift [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeGroup α →* G) where
       unfold of
       rw [←map_inv]
       congr
-      show inv _ = _
-      unfold FreeGroup.inv
-      erw [GroupQuot.lift_mk_apply]
-      rw [GroupQuot.mkQuot_eq_mk]
-      rfl
+      rw [←of_inv]; rfl
 
 @[simp]
 def lift_of [GroupOps G] [IsGroup G] (f: α -> G) : lift f (of a) = f a := by
@@ -171,8 +174,27 @@ def one_ne_of (a: α) : 1 ≠ of a := by
   have : f 1 = true := by rw [h, this]
   simp [f, map_one] at this
 
-attribute [irreducible] of lift instMonoidOps instInv instDiv instPowInt
+@[induction_eliminator]
+def induction {motive: FreeGroup α -> Prop}
+  (one: motive 1)
+  (of: ∀a, motive (.of a))
+  (inv: ∀a, motive (.of a)⁻¹)
+  (mul: ∀a b, motive a -> motive b -> motive (a * b)) :
+  ∀a, motive a := by
+  intro a
+  induction a using GroupQuot.ind with | mk a =>
+  induction a with
+  | one => rwa [map_one]
+  | of_mul a as ih =>
+    rw [map_mul]
+    apply mul _ _ _ ih
+    obtain ⟨b, a⟩ := a
+    cases b
+    apply of
+    rw [←of_inv]
+    apply inv
 
+instance : Inhabited (FreeGroup α) := ⟨1⟩
 instance : Nonempty (FreeGroup α) := inferInstance
 instance [IsEmpty α] : Subsingleton (FreeGroup α) where
   allEq a b := by
@@ -186,5 +208,33 @@ instance [h: Nonempty α] : IsNontrivial (FreeGroup α) where
     exists 1
     exists .of a
     apply one_ne_of
+
+attribute [irreducible] FreeGroup of lift instMonoidOps instInv instDiv instPowInt
+
+def lift_of' (a : FreeGroup α) : lift of a = a := by
+  induction a with
+  | one | of | inv => simp [map_one, map_inv]
+  | mul => rw [map_mul]; congr
+
+instance : Monad FreeGroup where
+  pure := of
+  bind a b := lift b a
+
+instance : LawfulMonad FreeGroup := by
+  apply LawfulMonad.mk'
+  case id_map =>
+    apply lift_of'
+  case pure_bind =>
+    intro α β x f
+    apply lift_of
+  case bind_assoc =>
+    intro α β γ x f g
+    show lift _ (lift _ _) = lift (fun x => lift _ _) _
+    induction x with
+    | one => simp [map_one]
+    | of => simp
+    | inv => simp [map_inv]
+    | mul => simp [map_mul]; congr
+  all_goals intro α β x y; rfl
 
 end FreeGroup

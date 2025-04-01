@@ -151,4 +151,28 @@ instance [h: Nonempty α] : IsNontrivial (FreeMonoid α) where
     exists .of a
     apply one_ne_of
 
+def lift_of' (a : FreeMonoid α) : lift of a = a := by
+  induction a with
+  | one => simp [map_one]
+  | of_mul => rw [map_mul, lift_of]; congr
+
+instance : Monad FreeMonoid where
+  pure := of
+  bind a b := lift b a
+
+instance : LawfulMonad FreeMonoid := by
+  apply LawfulMonad.mk'
+  case id_map =>
+    apply lift_of'
+  case pure_bind =>
+    intro α β x f
+    apply lift_of
+  case bind_assoc =>
+    intro α β γ x f g
+    show lift _ (lift _ _) = lift (fun x => lift _ _) _
+    induction x with
+    | one => simp [map_one]
+    | of_mul => simp [map_mul]; congr
+  all_goals intro α β x y; rfl
+
 end FreeMonoid
