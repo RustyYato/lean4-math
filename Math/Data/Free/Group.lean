@@ -163,6 +163,14 @@ def of_inj : Function.Injective (of (α := α)) := by
   have : f (of a) = false := by rw [h, this]
   simpa [f] using this
 
+def one_ne_of (a: α) : 1 ≠ of a := by
+  intro h
+  classical
+  let f := lift (G := Indicator) (fun x => if x = a then true else false)
+  have : f (of a) = true := by rw [lift_of, if_pos rfl]
+  have : f 1 = true := by rw [h, this]
+  simp [f, map_one] at this
+
 attribute [irreducible] of lift instMonoidOps instInv instDiv instPowInt
 
 end FreeGroup
