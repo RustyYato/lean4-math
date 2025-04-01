@@ -254,7 +254,7 @@ def Equiv.congrFreeGroup (h: α ≃ β) : FreeGroup α ≃ FreeGroup β where
     simp
     apply FreeGroup.lift_of'
 
-def GroupEquiv.congrFreeGroup (h: α ≃ β) : FreeGroup α ≃* FreeGroup β where
-  toEquiv := Equiv.congrFreeGroup h
+def GroupEquiv.congrFreeGroup (f: α ≃ β) : FreeGroup α ≃* FreeGroup β where
+  toEquiv := Equiv.congrFreeGroup f
   map_one := by simp [Equiv.congrFreeGroup, map_one]
   map_mul := by simp [Equiv.congrFreeGroup, map_mul]

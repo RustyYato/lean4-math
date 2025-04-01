@@ -187,7 +187,7 @@ instance : LawfulMonad FreeMonoid := by
 
 end FreeMonoid
 
-def Equiv.congrFreeGroup (h: α ≃ β) : FreeMonoid α ≃ FreeMonoid β where
+def Equiv.congrFreeMonoid (h: α ≃ β) : FreeMonoid α ≃ FreeMonoid β where
   toFun a := FreeMonoid.lift (fun a => .of (h a)) a
   invFun a := FreeMonoid.lift (fun a => .of (h.symm a)) a
   leftInv a := by
@@ -201,7 +201,7 @@ def Equiv.congrFreeGroup (h: α ≃ β) : FreeMonoid α ≃ FreeMonoid β where
     simp
     apply FreeMonoid.lift_of'
 
-def GroupEquiv.congrFreeGroup (h: α ≃ β) : FreeMonoid α ≃* FreeMonoid β where
-  toEquiv := Equiv.congrFreeGroup h
-  map_one := by simp [Equiv.congrFreeGroup, map_one]
-  map_mul := by simp [Equiv.congrFreeGroup, map_mul]
+def MonoidEquiv.congrFreeMonoid (h: α ≃ β) : FreeMonoid α ≃* FreeMonoid β where
+  toEquiv := Equiv.congrFreeMonoid h
+  map_one := by simp [Equiv.congrFreeMonoid, map_one]
+  map_mul := by simp [Equiv.congrFreeMonoid, map_mul]
