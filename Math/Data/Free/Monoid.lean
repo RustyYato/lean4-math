@@ -57,10 +57,33 @@ def reverseEquiv : FreeMonoid α ≃* (FreeMonoid α)ᵐᵒᵖ where
     intro x y
     apply List.reverse_append
 
-def reverse_of : reverse (of a) = of a := rfl
+@[simp] def reverse_one : (reverse 1: FreeMonoid α) = 1 := rfl
+@[simp] def reverse_of : reverse (of a) = of a := rfl
 def reverseEquiv_of : reverseEquiv (of a) = of a := rfl
 
 def reverse_mul {a b : FreeMonoid α} : reverse (a * b) = reverse b * reverse a := by
   apply List.reverse_append
+
+@[induction_eliminator]
+def induction {motive: FreeMonoid α -> Prop}
+  (one: motive 1)
+  (of_mul: ∀a b, motive b -> motive (.of a * b)) :
+  ∀a, motive a := by
+  intro a
+  induction a with
+  | nil => apply one
+  | cons a as ih =>
+    apply of_mul
+    assumption
+
+def map (a: FreeMonoid α) (f: α -> β) : FreeMonoid β :=
+  .ofList (a.toList.map f)
+
+@[simp]
+def of_map (a: α) (f: α -> β) : map (.of a) f  = .of (f a) := rfl
+
+@[simp]
+def mul_map (a b: FreeMonoid α) (f: α -> β) : (a * b).map f = (a.map f) * (b.map f) :=
+  List.map_append _ _ _
 
 end FreeMonoid

@@ -995,3 +995,45 @@ def RngEquiv.inj (h: α ≃+*₀ β) : Function.Injective h := Equiv.inj h.toEqu
 @[ext] def GroupEquiv.ext (f g: α ≃* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def GroupWithZeroEquiv.ext (f g: α ≃*₀ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def RingEquiv.ext (f g: α ≃+* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+
+def AddGroupHom.congrAddOpp : (α →+ β) ≃ (αᵃᵒᵖ →+ βᵃᵒᵖ) where
+  toFun f := {
+    toFun a := .mk (f a.get)
+    map_zero := map_zero f
+    map_add {x y} := by
+      simp
+      rw [map_add, AddOpp.mk_add]
+  }
+  invFun f := {
+    toFun a := (f (.mk a)).get
+    map_zero := map_zero f
+    map_add {x y} := by
+      simp
+      rw [map_add, AddOpp.get_add]
+  }
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def GroupHom.congrMulOpp : (α →* β) ≃ (αᵐᵒᵖ →* βᵐᵒᵖ) where
+  toFun f := {
+    toFun a := .mk (f a.get)
+    map_one := map_one f
+    map_mul {x y} := by
+      simp
+      rw [map_mul, MulOpp.mk_mul]
+  }
+  invFun f := {
+    toFun a := (f (.mk a)).get
+    map_one := map_one f
+    map_mul {x y} := by
+      simp
+      rw [map_mul, MulOpp.get_mul]
+  }
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def AddGroupHom.apply_congrMulOpp (f: α →+ β) : AddGroupHom.congrAddOpp f a = .mk (f a.get) := rfl
+def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk (f a.get) := rfl
+
+def AddGroupHom.apply_comp (f: β →+ γ) (g: α →+ β) : (f.comp g) x = f (g x) := rfl
+def GroupHom.apply_comp (f: β →* γ) (g: α →* β) : (f.comp g) x = f (g x) := rfl

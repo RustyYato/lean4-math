@@ -137,7 +137,7 @@ def cases {motive: αᵃᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 @[simp] def get_ofNat [OfNat α (n + 2)] : get (OfNat.ofNat (n + 2): αᵃᵒᵖ) = OfNat.ofNat (n + 2) := rfl
 @[simp] def get_add [Add α] (a b: αᵃᵒᵖ) : get (a + b) = get b + get a := rfl
 @[simp] def get_neg [Neg α] (a: αᵃᵒᵖ) : get (-a) = -get a := rfl
-@[simp] def get_mul [Mul α] (a b: αᵃᵒᵖ) : mk (a * b) = get a * get b := rfl
+@[simp] def get_mul [Mul α] (a b: αᵃᵒᵖ) : get (a * b) = get a * get b := rfl
 
 end AddOpp
 
@@ -158,7 +158,7 @@ def cases {motive: αᵐᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 @[simp] def get_ofNat [OfNat α (n + 2)] : get (OfNat.ofNat (n + 2): αᵐᵒᵖ) = OfNat.ofNat (n + 2) := rfl
 @[simp] def get_add [Add α] (a b: αᵐᵒᵖ) : get (a + b) = get a + get b := rfl
 @[simp] def get_neg [Neg α] (a: αᵐᵒᵖ) : get (-a) = -get a := rfl
-@[simp] def get_mul [Mul α] (a b: αᵐᵒᵖ) : mk (a * b) = get b * get a := rfl
+@[simp] def get_mul [Mul α] (a b: αᵐᵒᵖ) : get (a * b) = get b * get a := rfl
 
 @[simp] def mk_get (a: α) : (mk a).get = a := rfl
 
