@@ -125,4 +125,42 @@ def lift [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeGroup α →* G) where
       rw [GroupQuot.mkQuot_eq_mk]
       rfl
 
+@[simp]
+def lift_of [GroupOps G] [IsGroup G] (f: α -> G) : lift f (of a) = f a := by
+  show GroupQuot.lift _ (GroupQuot.mk _ _) = _
+  rw [GroupQuot.lift_mk_apply]
+  apply mul_one
+
+private def Indicator := Bool
+
+private instance : DecidableEq Indicator := inferInstanceAs (DecidableEq Bool)
+private instance {P: Indicator -> Prop} [DecidablePred P] : Decidable (∃x, P x) := inferInstanceAs (Decidable (∃x: Bool, P x))
+private instance {P: Indicator -> Prop} [DecidablePred P] : Decidable (∀x, P x) := inferInstanceAs (Decidable (∀x: Bool, P x))
+
+private instance : One Indicator := ⟨false⟩
+private instance : Mul Indicator := ⟨xor⟩
+private instance : Inv Indicator := ⟨id⟩
+
+private instance : MonoidOps Indicator where
+  npow := _root_.flip npowRec
+private instance : GroupOps Indicator where
+  zpow := _root_.flip zpowRec
+
+private instance : IsGroup Indicator where
+  mul_assoc := by decide
+  one_mul := by decide
+  mul_one := by decide
+  div_eq_mul_inv := by decide
+  inv_mul_cancel := by decide
+  zpow_ofNat _ _ := rfl
+  zpow_negSucc _ _ := rfl
+
+def of_inj : Function.Injective (of (α := α)) := by
+  intro a b h
+  classical
+  let f := lift (G := Indicator) (fun x => if x = b then false else true)
+  have : f (of b) = false := by rw [lift_of, if_pos rfl]
+  have : f (of a) = false := by rw [h, this]
+  simpa [f] using this
+
 end FreeGroup
