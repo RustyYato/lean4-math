@@ -2,12 +2,13 @@ import Math.Algebra.Ring.Theory.Ideal.TwoSided.Basic
 import Math.Algebra.Ring.Theory.Basic
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Impls.Unit
+import Math.Algebra.Ring.Con
 
 namespace Ideal
 
 variable [RingOps R] [IsRing R]
 
-def setoid (i: Ideal R) : Setoid R where
+protected def Con (i: Ideal R) : RingCon R where
   r a b := a - b ∈ i
   iseqv := {
     refl x := by
@@ -27,244 +28,28 @@ def setoid (i: Ideal R) : Setoid R where
       assumption
       assumption
   }
-
-def Quot (i: Ideal R) : Type _ := Quotient (setoid i)
-
-@[cases_eliminator]
-private def Quot.ind
-  {i: Ideal R} {motive: i.Quot -> Prop} : (mk: ∀x: R, motive (Quotient.mk _ x)) -> ∀q, motive q := Quotient.ind
-
-@[cases_eliminator]
-private def Quot.ind₂
-  {i: Ideal R} {motive: i.Quot -> i.Quot -> Prop} : (mk: ∀a b: R, motive (Quotient.mk _ a) (Quotient.mk _ b)) -> ∀a b, motive a b := Quotient.ind₂
-
-@[cases_eliminator]
-private def Quot.ind₃
-  {i: Ideal R} {motive: i.Quot -> i.Quot -> i.Quot -> Prop} : (mk: ∀a b c: R, motive (Quotient.mk _ a) (Quotient.mk _ b) (Quotient.mk _ c)) -> ∀a b c, motive a b c := by
-  intro h a b c
-  cases a, b
-  cases c
-  apply h
-
-section
-
-variable {i: Ideal R}
-
-instance : Zero i.Quot where
-  zero :=  Quotient.mk _ 0
-instance : One i.Quot where
-  one :=  Quotient.mk _ 1
-instance : OfNat i.Quot (n + 2) where
-  ofNat := Quotient.mk _ (OfNat.ofNat (n + 2))
-instance : NatCast i.Quot where
-  natCast n := Quotient.mk _ n
-instance : IntCast i.Quot where
-  intCast n := Quotient.mk _ n
-
-private def map_add' (a b c d: R) (ac: a - c ∈ i) (bd: b - d ∈ i) : (a + b) - (c + d) ∈ i := by
-  rw [sub_eq_add_neg, neg_add_rev, add_assoc, ←add_assoc b,
-    ←sub_eq_add_neg b, add_comm _ (-c), ←add_assoc,
-    ←sub_eq_add_neg]
-  apply mem_add
-  assumption
-  assumption
-
-private def map_mul' (a b c d) (ac: a - c ∈ i) (bd: b - d ∈ i) : (a * b) - (c * d) ∈ i := by
-  rw [←add_zero (_ - _), ←add_neg_cancel (a * d), sub_add_assoc,
-    ←add_assoc (-_), add_comm _ (a * d), add_comm (_ + _),
-    ←add_assoc, ←sub_eq_add_neg, ←sub_eq_add_neg,
-    ←mul_sub, ←sub_mul]
-  apply mem_add
-  apply mem_mul_left
-  assumption
-  apply mem_mul_right
-  assumption
-
-private def map_neg' (a b) (ac: a - b ∈ i) : (-a) - (-b) ∈ i := by
-  rw [neg_sub_neg, ←neg_sub]
-  apply mem_neg
-  assumption
-
-private def map_nsmul' (n: ℕ) (a b: R) (ab: a - b ∈ i) : (n • a) - (n • b) ∈ i := by
-  induction n with
-  | zero => simp; apply mem_zero
-  | succ n ih =>
-    rw [succ_nsmul, succ_nsmul]
-    apply map_add' <;> assumption
-
-instance : Add i.Quot where
-  add := by
-    apply Quotient.lift₂ (fun a b => Quotient.mk _ (a + b))
+  resp_add := by
     intro a b c d ac bd
-    apply Quotient.sound
-    apply map_add' <;> assumption
-
-instance : Mul i.Quot where
-  mul := by
-    apply Quotient.lift₂ (fun a b => Quotient.mk _ (a * b))
+    show (a + b) - (c + d) ∈ i
+    rw [sub_add, add_sub_assoc, add_comm, add_sub_assoc]
+    apply mem_add
+    assumption
+    assumption
+  resp_mul := by
     intro a b c d ac bd
-    apply Quotient.sound
-    apply map_mul' <;> assumption
-
-instance : Neg i.Quot where
-  neg := by
-    apply Quotient.lift (fun a => Quotient.mk _ (-a))
-    intro a b eq
-    apply Quotient.sound
-    show _ - _ ∈ i
-    rw [neg_sub_neg, ←neg_sub]
-    apply mem_neg
+    show a * b - c * d ∈ i
+    rw [←add_zero (a * b), ←neg_add_cancel (a * d), ←add_assoc,
+      ←sub_eq_add_neg, add_sub_assoc, ←mul_sub, ←sub_mul]
+    apply mem_add
+    apply mem_mul_left
+    assumption
+    apply mem_mul_right
     assumption
 
-instance : Sub i.Quot where
-  sub := by
-    apply Quotient.lift₂ (fun a b => Quotient.mk _ (a - b))
-    intro a b c d ac bd
-    apply Quotient.sound
-    rw [sub_eq_add_neg, sub_eq_add_neg]
-    apply map_add'
-    assumption
-    apply map_neg'
-    assumption
+protected def toRing (i: Ideal R) := IsCon.Quotient i.Con
 
-instance : SMul ℕ i.Quot where
-  smul n := by
-    apply Quotient.lift (fun a => Quotient.mk _ (n • a))
-    intro a b eq
-    apply Quotient.sound
-    apply map_nsmul'
-    assumption
-
-instance : SMul ℤ i.Quot where
-  smul n := by
-    apply Quotient.lift (fun a => Quotient.mk _ (n • a))
-    intro a b eq
-    apply Quotient.sound
-    cases n
-    rw [zsmul_ofNat, zsmul_ofNat]
-    apply map_nsmul'
-    assumption
-    rw [zsmul_negSucc, zsmul_negSucc]
-    apply map_neg'
-    apply map_nsmul'
-    assumption
-
-instance : Pow i.Quot ℕ where
-  pow := flip <| by
-    intro n
-    apply Quotient.lift (fun a => Quotient.mk _ (a ^ n))
-    intro a b eq
-    apply Quotient.sound
-    induction n with
-    | zero => rw [npow_zero, npow_zero]
-    | succ n ih =>
-      rw [npow_succ, npow_succ, ]
-      apply map_mul' <;> assumption
-
-instance : IsRing i.Quot where
-  add_comm a b := by
-    cases a, b
-    apply Quotient.sound
-    rw [add_comm]
-  add_assoc a b c := by
-    cases a, b, c
-    apply Quotient.sound
-    rw [add_assoc]
-  zero_add a := by
-    cases a
-    apply Quotient.sound
-    rw [zero_add]
-  add_zero a := by
-    cases a
-    apply Quotient.sound
-    rw [add_zero]
-  natCast_zero := by
-    apply Quotient.sound
-    rw [natCast_zero]
-  natCast_succ n := by
-    apply Quotient.sound
-    rw [natCast_succ]
-  ofNat_eq_natCast n := by
-    apply Quotient.sound
-    rw [ofNat_eq_natCast]
-  mul_assoc a b c := by
-    cases a, b, c
-    apply Quotient.sound
-    rw [mul_assoc]
-  zero_mul a := by
-    cases a
-    apply Quotient.sound
-    rw [zero_mul]
-  mul_zero a := by
-    cases a
-    apply Quotient.sound
-    rw [mul_zero]
-  one_mul a := by
-    cases a
-    apply Quotient.sound
-    rw [one_mul]
-  mul_one a := by
-    cases a
-    apply Quotient.sound
-    rw [mul_one]
-  left_distrib a b c := by
-    cases a, b, c
-    apply Quotient.sound
-    rw [mul_add]
-  right_distrib a b c := by
-    cases a, b, c
-    apply Quotient.sound
-    rw [add_mul]
-  sub_eq_add_neg a b := by
-    cases a, b
-    apply Quotient.sound
-    rw [sub_eq_add_neg]
-  zsmul_ofNat n a := by
-    cases a
-    apply Quotient.sound
-    rw [zsmul_ofNat]
-  zsmul_negSucc n a := by
-    cases a
-    apply Quotient.sound
-    rw [zsmul_negSucc]
-  neg_add_cancel a := by
-    cases a
-    apply Quotient.sound
-    rw [neg_add_cancel]
-  intCast_ofNat n := by
-    apply Quotient.sound
-    rw [intCast_ofNat]
-  intCast_negSucc n := by
-    apply Quotient.sound
-    rw [intCast_negSucc]
-  zero_nsmul a := by
-    cases a
-    apply Quotient.sound
-    rw [zero_nsmul]
-  succ_nsmul n a := by
-    cases a
-    apply Quotient.sound
-    rw [succ_nsmul]
-  npow_zero a := by
-    cases a
-    apply Quotient.sound
-    rw [npow_zero]
-  npow_succ n a := by
-    cases a
-    apply Quotient.sound
-    rw [npow_succ]
-
-def toRing (i: Ideal R) : Ring i.Quot where
-
-instance [IsCommMagma R] (i: Ideal R) : IsCommMagma i.toRing where
-  mul_comm := by
-    intro a b
-    induction a using Quot.ind with | mk a =>
-    induction b using Quot.ind with | mk b =>
-    show Quotient.mk  _ _ =Quotient.mk  _ _
-    rw [mul_comm]
-
-end
+instance (i: Ideal R) : RingOps i.toRing := inferInstanceAs (RingOps (IsCon.Quotient i.Con))
+instance (i: Ideal R) : IsRing i.toRing := inferInstanceAs (IsRing (IsCon.Quotient i.Con))
 
 -- the canonical projection into the subring generated by the ideal
 def mkQuot (i: Ideal R) : R →+* i.toRing where
