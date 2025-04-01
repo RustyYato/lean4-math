@@ -42,6 +42,8 @@ instance (s: NormalSubgroup α) : GroupOps s.Quotient :=
   inferInstanceAs (GroupOps (IsCon.Quotient s.Con))
 instance (s: NormalSubgroup α) : IsGroup s.Quotient :=
   inferInstanceAs (IsGroup (IsCon.Quotient s.Con))
+instance [IsCommMagma α] (s: NormalSubgroup α) : IsCommMagma s.Quotient :=
+  inferInstanceAs (IsCommMagma (IsCon.Quotient s.Con))
 
 def mkQuot (s: NormalSubgroup α) : α →* s.Quotient :=
   IsMulCon.mkQuot _
