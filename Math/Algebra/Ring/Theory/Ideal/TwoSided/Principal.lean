@@ -8,8 +8,8 @@ variable [RingOps α] [IsRing α]
 
 def principal (a: α) : Ideal α where
   carrier := Set.mk fun x => ∃l: List (α × α), x = (l.map fun (r, s) => (r * a * s)).sum
-  mem_zero' := by exists []
-  mem_neg' := by
+  mem_zero := by exists []
+  mem_neg := by
     simp only [Set.mk_mem, forall_exists_index, forall_eq_apply_imp_iff]
     intro l
     exists l.map (fun (r, s) => (-r, s))
@@ -20,12 +20,12 @@ def principal (a: α) : Ideal α where
       simp only [List.map_cons, List.sum_cons, List.map_map]
       rw [neg_add_rev, add_comm, ←neg_mul_left, ←neg_mul_left, ih,
         List.map_map]
-  mem_add' := by
+  mem_add := by
     simp only [Set.mk_mem, forall_exists_index]
     rintro _ _ x rfl y rfl
     exists x ++ y
     rw [List.map_append, List.sum_append]
-  mem_mul_left' := by
+  mem_mul_left := by
     simp only [Set.mk_mem, forall_exists_index, forall_eq_apply_imp_iff]
     rintro r₀ l
     exists l.map (fun (r, s) => (r₀ * r, s))
@@ -36,7 +36,7 @@ def principal (a: α) : Ideal α where
       simp only [List.map_cons, List.sum_cons, List.map_map]
       rw [mul_add, mul_assoc r₀, mul_assoc r₀, ih,
         List.map_map]
-  mem_mul_right' := by
+  mem_mul_right := by
     simp only [Set.mk_mem, forall_exists_index, forall_eq_apply_imp_iff]
     rintro r₀ l
     exists l.map (fun (r, s) => (r, s * r₀))
@@ -108,21 +108,21 @@ variable [Dvd α] [IsCommMagma α] [IsLawfulDvd α]
 
 def of_dvd (a: α) : Ideal α where
   carrier := Set.mk fun x => a ∣ x
-  mem_zero' := dvd_zero _
-  mem_add' := by
+  mem_zero := dvd_zero _
+  mem_add := by
     intro x y hx hy
     apply dvd_add
     assumption
     assumption
-  mem_neg' := by
+  mem_neg := by
     intro x hx
     apply dvd_neg.mp
     assumption
-  mem_mul_left' := by
+  mem_mul_left := by
     intro r x hx
     apply dvd_trans hx
     exact dvd_mul_right x r
-  mem_mul_right' := by
+  mem_mul_right := by
     intro r x hx
     apply dvd_trans hx
     exact dvd_mul_left x r

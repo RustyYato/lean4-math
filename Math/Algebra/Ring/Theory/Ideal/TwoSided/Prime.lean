@@ -30,7 +30,7 @@ def prime_iff_compl_subsemigroup (i: Ideal R) : i.IsPrime ↔ ∃m: Subsemigroup
   · intro h
     refine ⟨{
       carrier := _
-      mem_mul' := ?_
+      mem_mul := ?_
     } , rfl⟩
     · intro a b ha hb
       intro g
@@ -46,8 +46,8 @@ def prime_iff_compl_sumonoid (i: Ideal R) : i.IsPrime ∧ i < ⊤ ↔ ∃m: Subm
   · intro ⟨h, proper⟩
     refine ⟨{
       carrier := _
-      mem_one' := ?_
-      mem_mul' := ?_
+      mem_one := ?_
+      mem_mul := ?_
     } , rfl⟩
     · intro a b ha hb
       intro g

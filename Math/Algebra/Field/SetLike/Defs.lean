@@ -20,12 +20,12 @@ instance : SetLike (Subfield α) α where
     apply SetLike.coe_inj; assumption
 
 instance : IsSubfield (Subfield α) where
-  mem_zero s := s.mem_zero'
-  mem_one s := s.mem_one'
-  mem_neg s := s.mem_neg'
+  mem_zero s := s.mem_zero
+  mem_one s := s.mem_one
+  mem_neg s := s.mem_neg
   mem_inv? s := s.mem_inv?'
-  mem_add s := s.mem_add'
-  mem_mul s := s.mem_mul'
+  mem_add s := s.mem_add
+  mem_mul s := s.mem_mul
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
@@ -38,11 +38,11 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : Subfield α where
   carrier := Set.mk (Generate U)
-  mem_mul' := Generate.mul
-  mem_add' := Generate.add
+  mem_mul := Generate.mul
+  mem_add := Generate.add
   mem_inv?' := Generate.inv?
-  mem_neg' := Generate.neg
-  mem_one' := Generate.one
-  mem_zero' := Generate.zero
+  mem_neg := Generate.neg
+  mem_one := Generate.one
+  mem_zero := Generate.zero
 
 end Subfield

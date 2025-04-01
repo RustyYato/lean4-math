@@ -19,10 +19,10 @@ class IsSubmonoid [Mul α] [One α] : Prop extends IsMulMem S, IsOneMem S where
 class IsAddSubmonoid [Add α] [Zero α] : Prop extends IsAddMem S, IsZeroMem S where
 
 structure Submonoid (α: Type*) [Mul α] [One α] extends Subsemigroup α where
-  mem_one': 1 ∈ carrier
+  protected mem_one: 1 ∈ carrier
 
 structure AddSubmonoid (α: Type*) [Add α] [Zero α] extends AddSubsemigroup α where
-  mem_zero': 0 ∈ carrier
+  protected mem_zero: 0 ∈ carrier
 
 instance [SetLike S α] [Add α] [Zero α] [IsAddSubmonoid S] : IsSubmonoid (MulOfAdd S) where
   mem_one := mem_zero (S := S)
@@ -41,8 +41,8 @@ instance : SetLike (Submonoid α) α where
     assumption
 
 instance : IsSubmonoid (Submonoid α) where
-  mem_mul a := a.mem_mul'
-  mem_one a := a.mem_one'
+  mem_mul a := a.mem_mul
+  mem_one a := a.mem_one
 
 @[ext]
 def ext (a b: Submonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -54,8 +54,8 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : Submonoid α where
   carrier := Set.mk (Generate U)
-  mem_mul' := Generate.mul
-  mem_one' := Generate.one
+  mem_mul := Generate.mul
+  mem_one := Generate.one
 
 end Submonoid
 
@@ -71,8 +71,8 @@ instance : SetLike (AddSubmonoid α) α where
     assumption
 
 instance : IsAddSubmonoid (AddSubmonoid α) where
-  mem_add a := a.mem_add'
-  mem_zero a := a.mem_zero'
+  mem_add a := a.mem_add
+  mem_zero a := a.mem_zero
 
 @[ext]
 def ext (a b: AddSubmonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -84,7 +84,7 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : AddSubmonoid α where
   carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
-  mem_zero' := Generate.zero
+  mem_add := Generate.add
+  mem_zero := Generate.zero
 
 end AddSubmonoid

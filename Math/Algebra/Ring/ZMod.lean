@@ -10,20 +10,20 @@ import Math.Algebra.Ring.Basic
 -- the multiplies of n, as an ideal over the integers
 def Int.multiples (n: ℕ) : Ideal ℤ where
   carrier := Set.mk fun x => (n: ℤ) ∣ x
-  mem_zero' := by exists 0
-  mem_neg' := by
+  mem_zero := by exists 0
+  mem_neg := by
     intro x hx
     apply Int.dvd_neg.mpr
     assumption
-  mem_add' := by
+  mem_add := by
     intro x y hx hy
     apply Int.dvd_add <;> assumption
-  mem_mul_left' := by
+  mem_mul_left := by
     intro r x hx
     apply Int.dvd_trans
     assumption
     apply Int.dvd_mul_left
-  mem_mul_right' := by
+  mem_mul_right := by
     intro r x hx
     apply Int.dvd_trans
     assumption

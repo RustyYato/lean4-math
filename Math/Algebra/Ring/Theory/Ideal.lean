@@ -33,19 +33,19 @@ instance : SetLike (Ideal R) R where
     assumption
 
 instance : IsAddSubgroup (LeftIdeal R) where
-  mem_add i := i.mem_add'
-  mem_neg i := i.mem_neg'
-  mem_zero i := i.mem_zero'
+  mem_add i := i.mem_add
+  mem_neg i := i.mem_neg
+  mem_zero i := i.mem_zero
 
 instance : IsAddSubgroup (RightIdeal R) where
-  mem_add i := i.mem_add'
-  mem_neg i := i.mem_neg'
-  mem_zero i := i.mem_zero'
+  mem_add i := i.mem_add
+  mem_neg i := i.mem_neg
+  mem_zero i := i.mem_zero
 
 instance : IsAddSubgroup (Ideal R) where
-  mem_add i := i.mem_add'
-  mem_neg i := i.mem_neg'
-  mem_zero i := i.mem_zero'
+  mem_add i := i.mem_add
+  mem_neg i := i.mem_neg
+  mem_zero i := i.mem_zero
 
 instance : IsMulMem (LeftIdeal R) where
   mem_mul i := by
@@ -67,11 +67,11 @@ instance : IsMulMem (Ideal R) where
 
 def Ideal.zero (R: Ring α) : Ideal R where
   carrier := {0}
-  mem_zero' := rfl
-  mem_add' := by
+  mem_zero := rfl
+  mem_add := by
     rintro _ _ rfl rfl
     apply add_zero
-  mem_neg' := by
+  mem_neg := by
     rintro _ rfl
     apply neg_zero
   mem_mul_left := by
@@ -83,9 +83,9 @@ def Ideal.zero (R: Ring α) : Ideal R where
 
 def Ideal.univ (R: Ring α) : Ideal R where
   carrier := ⊤
-  mem_zero' := True.intro
-  mem_add' _ _ := True.intro
-  mem_neg' _ := True.intro
+  mem_zero := True.intro
+  mem_add _ _ := True.intro
+  mem_neg _ := True.intro
   mem_mul_left _ _ _ := True.intro
   mem_mul_right _ _ _ := True.intro
 
@@ -125,9 +125,9 @@ inductive Ideal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 
 def toIdeal (R: Ring α) (U: Set R) : Ideal R where
   carrier := Set.mk (Ideal.Generate R U)
-  mem_zero' := Ideal.Generate.zero
-  mem_add' := Ideal.Generate.add _ _
-  mem_neg' := Ideal.Generate.neg _
+  mem_zero := Ideal.Generate.zero
+  mem_add := Ideal.Generate.add _ _
+  mem_neg := Ideal.Generate.neg _
   mem_mul_left _ _ := Ideal.Generate.mul_left _ _
   mem_mul_right _ _ := Ideal.Generate.mul_right _ _
 
@@ -144,7 +144,7 @@ instance : IsPartialOrder (Ideal R) :=
 def Ideal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (Ideal R) _ _ R.toIdeal (fun x => x.carrier) where
   choice S hS := {
     carrier := S
-    mem_add' := by
+    mem_add := by
       intro a b ha hb
       apply hS
       apply Generate.add
@@ -152,13 +152,13 @@ def Ideal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (Ideal R) _ _ R.toI
       assumption
       apply Generate.of
       assumption
-    mem_neg' := by
+    mem_neg := by
       intro a ha
       apply hS
       apply Generate.neg
       apply Generate.of
       assumption
-    mem_zero' := by
+    mem_zero := by
       apply hS
       apply Generate.zero
     mem_mul_left := by
@@ -228,9 +228,9 @@ inductive LeftIdeal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 
 def toLeftIdeal (R: Ring α) (U: Set R) : LeftIdeal R where
   carrier := Set.mk (LeftIdeal.Generate R U)
-  mem_zero' := LeftIdeal.Generate.zero
-  mem_add' := LeftIdeal.Generate.add _ _
-  mem_neg' := LeftIdeal.Generate.neg _
+  mem_zero := LeftIdeal.Generate.zero
+  mem_add := LeftIdeal.Generate.add _ _
+  mem_neg := LeftIdeal.Generate.neg _
   mem_mul_left _ _ := LeftIdeal.Generate.mul_left _ _
 
 def LeftIdeal.oemb : LeftIdeal R ↪o Set R where
@@ -246,7 +246,7 @@ instance : IsPartialOrder (LeftIdeal R) :=
 def LeftIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (LeftIdeal R) _ _ R.toLeftIdeal (fun x => x.carrier) where
   choice S hS := {
     carrier := S
-    mem_add' := by
+    mem_add := by
       intro a b ha hb
       apply hS
       apply Generate.add
@@ -254,13 +254,13 @@ def LeftIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (LeftIdeal R) _
       assumption
       apply Generate.of
       assumption
-    mem_neg' := by
+    mem_neg := by
       intro a ha
       apply hS
       apply Generate.neg
       apply Generate.of
       assumption
-    mem_zero' := by
+    mem_zero := by
       apply hS
       apply Generate.zero
     mem_mul_left := by
@@ -323,9 +323,9 @@ inductive RightIdeal.Generate (R: Ring α) (U: Set R) : R -> Prop where
 
 def toRightIdeal (R: Ring α) (U: Set R) : RightIdeal R where
   carrier := Set.mk (RightIdeal.Generate R U)
-  mem_zero' := RightIdeal.Generate.zero
-  mem_add' := RightIdeal.Generate.add _ _
-  mem_neg' := RightIdeal.Generate.neg _
+  mem_zero := RightIdeal.Generate.zero
+  mem_add := RightIdeal.Generate.add _ _
+  mem_neg := RightIdeal.Generate.neg _
   mem_mul_right _ _ := RightIdeal.Generate.mul_right _ _
 
 def RightIdeal.oemb : RightIdeal R ↪o Set R where
@@ -341,7 +341,7 @@ instance : IsPartialOrder (RightIdeal R) :=
 def RightIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (RightIdeal R) _ _ R.toRightIdeal (fun x => x.carrier) where
   choice S hS := {
     carrier := S
-    mem_add' := by
+    mem_add := by
       intro a b ha hb
       apply hS
       apply Generate.add
@@ -349,13 +349,13 @@ def RightIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (RightIdeal R)
       assumption
       apply Generate.of
       assumption
-    mem_neg' := by
+    mem_neg := by
       intro a ha
       apply hS
       apply Generate.neg
       apply Generate.of
       assumption
-    mem_zero' := by
+    mem_zero := by
       apply hS
       apply Generate.zero
     mem_mul_right := by
@@ -554,12 +554,12 @@ def Ideal.mkQuot_surj (i: Ideal R) : Function.Surjective i.mkQuot := by
 -- the kernel (preimage of 0) of a ring homomorphism generates an ideal
 def Ideal.kernel {S R: Ring α} (f: S →+* R) : Ideal S where
   carrier := Set.preimage {0} f
-  mem_zero' := map_zero _
-  mem_add' := by
+  mem_zero := map_zero _
+  mem_add := by
     intro a b ha hb
     rw [Set.mem_preimage, map_add, ha, hb, add_zero]
     rfl
-  mem_neg' := by
+  mem_neg := by
     intro a ha
     rw [Set.mem_preimage, map_neg, ha, neg_zero]
     rfl

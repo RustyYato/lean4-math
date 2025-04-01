@@ -13,26 +13,26 @@ instance (i: Ideal α) : IsAddGroup i := inferInstance
 instance : Add (Ideal α) where
   add a b := {
     carrier := Set.mk fun z => ∃x: α × α, x.fst ∈ a ∧ x.snd ∈ b ∧ x.fst + x.snd = z
-    mem_zero' := ⟨(0, 0), mem_zero _, mem_zero _, add_zero _⟩
-    mem_neg' := by
+    mem_zero := ⟨(0, 0), mem_zero _, mem_zero _, add_zero _⟩
+    mem_neg := by
       rintro _ ⟨⟨x, y⟩, hx, hy, rfl⟩
       refine ⟨(-x, -y), ?_, ?_, ?_⟩
       apply mem_neg; assumption
       apply mem_neg; assumption
       rw [neg_add_rev, add_comm]
-    mem_add' := by
+    mem_add := by
       rintro _ _ ⟨⟨xa, xb⟩, hxa, hxb, rfl⟩ ⟨⟨ya, yb⟩, hya, hyb, rfl⟩
       refine ⟨(xa + ya, xb + yb), ?_, ?_, ?_⟩
       apply mem_add <;> assumption
       apply mem_add <;> assumption
       dsimp only; ac_rfl
-    mem_mul_left' := by
+    mem_mul_left := by
       rintro r _ ⟨⟨x, y⟩, hx, hy, rfl⟩
       refine ⟨(r * x, r * y), ?_, ?_, ?_⟩
       apply mem_mul_left a; assumption
       apply mem_mul_left b; assumption
       rw [mul_add]
-    mem_mul_right' := by
+    mem_mul_right := by
       rintro r _ ⟨⟨x, y⟩, hx, hy, rfl⟩
       refine ⟨(x * r, y * r), ?_, ?_, ?_⟩
       apply mem_mul_right; assumption
@@ -43,18 +43,18 @@ instance : Add (Ideal α) where
 instance : Mul (Ideal α) where
   mul a b := {
     carrier := Set.mk fun x => ∃l: List (a × b), (l.map (fun (a, b) => a.val * b.val)).sum = x
-    mem_zero' := by
+    mem_zero := by
       refine ⟨[(⟨0, ?_⟩, ⟨0, ?_⟩)], ?_⟩
       apply mem_zero
       apply mem_zero
       simp [mul_zero, add_zero]
-    mem_add' := by
+    mem_add := by
       intro _ _ ⟨x, hx⟩ ⟨y, hy⟩
       simp at *
       exists x ++ y
       rw [List.map_append, List.sum_append]
       congr
-    mem_neg' := by
+    mem_neg := by
       intro _ ⟨xs, hxs⟩
       simp at *
       exists xs.map (fun (a, b) => (-a, b))
@@ -62,13 +62,13 @@ instance : Mul (Ideal α) where
       congr; ext ⟨x, y⟩
       show -x.val * y.val = -1 • (x.val * y.val)
       rw [neg_one_zsmul, neg_mul_left]
-    mem_mul_left' := by
+    mem_mul_left := by
       intro r _ ⟨xs, hxs⟩
       exists xs.map (fun (a, b) => (⟨r * a.val, mem_mul_left _ _ _ a.property⟩, b))
       rw [←hxs, List.mul_sum, List.map_map, List.map_map]
       congr; ext
       apply mul_assoc
-    mem_mul_right' := by
+    mem_mul_right := by
       intro r _ ⟨xs, hxs⟩
       exists xs.map (fun (a, b) => (a, ⟨b.val * r, mem_mul_right _ _ _ b.property⟩))
       rw [←hxs, List.sum_mul, List.map_map, List.map_map]

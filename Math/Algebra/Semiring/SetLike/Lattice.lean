@@ -13,16 +13,16 @@ private instance builder : SetLike.LatticeBuilder (Subsemiring α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_zero' := by
+    mem_zero := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_zero s
-    mem_one' := by
+    mem_one := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_one s
-    mem_add' := by
+    mem_add := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_add s <;> assumption
-    mem_mul' := by
+    mem_mul := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_mul s <;> assumption
   }
@@ -42,13 +42,13 @@ private instance builder : SetLike.LatticeBuilder (Subsemiring α) where
     | mul => apply mem_mul t <;> assumption
   bot := ⟨{
     carrier := Set.range (fun n: ℕ => (n: α))
-    mem_zero' := ⟨0, natCast_zero.symm⟩
-    mem_one' := ⟨1, natCast_one.symm⟩
-    mem_add' := by
+    mem_zero := ⟨0, natCast_zero.symm⟩
+    mem_one := ⟨1, natCast_one.symm⟩
+    mem_add := by
       rintro _ _ ⟨n, rfl⟩ ⟨m, rfl⟩
       dsimp; rw [←natCast_add]
       apply Set.mem_range'
-    mem_mul' := by
+    mem_mul := by
       rintro _ _ ⟨n, rfl⟩ ⟨m, rfl⟩
       dsimp; rw [←natCast_mul]
       apply Set.mem_range'

@@ -9,7 +9,7 @@ def mem_conj [SetLike S α] [GroupOps α] [IsGroup α] [IsNormalSubgroup S]
   (s: S): ∀x: α, ∀{a}, a ∈ s -> Group.conj x a ∈ s := IsNormalSubgroup.mem_conj _
 
 structure NormalSubgroup (α: Type*) [GroupOps α] [IsGroup α] extends Subgroup α where
-  mem_conj': ∀x: α, ∀{a}, a ∈ carrier -> Group.conj x a ∈ carrier
+  mem_conj: ∀x: α, ∀{a}, a ∈ carrier -> Group.conj x a ∈ carrier
 
 namespace NormalSubgroup
 
@@ -24,10 +24,10 @@ instance : SetLike (NormalSubgroup α) α where
     assumption
 
 instance : IsNormalSubgroup (NormalSubgroup α) where
-  mem_one s := s.mem_one'
-  mem_inv s := s.mem_inv'
-  mem_mul s := s.mem_mul'
-  mem_conj s := s.mem_conj'
+  mem_one s := s.mem_one
+  mem_inv s := s.mem_inv
+  mem_mul s := s.mem_mul
+  mem_conj s := s.mem_conj
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (x: α) : x ∈ U -> Generate U x
@@ -38,15 +38,15 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : NormalSubgroup α where
   carrier := Set.mk (Generate U)
-  mem_one' := Generate.one
-  mem_inv' := Generate.inv
-  mem_mul' := Generate.mul
-  mem_conj' := Generate.conj
+  mem_one := Generate.one
+  mem_inv := Generate.inv
+  mem_mul := Generate.mul
+  mem_conj := Generate.conj
 
 instance [GroupOps α] [IsGroup α] : Bot (NormalSubgroup α) where
   bot := {
     toSubgroup := ⊥
-    mem_conj' := by
+    mem_conj := by
       rintro x a rfl
       rw [map_one]
       apply mem_one (⊥: Subgroup α)
@@ -57,7 +57,7 @@ def ext (a b: NormalSubgroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLi
 
 def preimage (f: α →* β) (s: NormalSubgroup β) : NormalSubgroup α where
   toSubgroup := Subgroup.preimage f s.toSubgroup
-  mem_conj' := by
+  mem_conj := by
     intro x a ha
     show f (x⁻¹ * a * x) ∈ s
     rw [map_mul,map_mul, map_inv]
@@ -66,7 +66,7 @@ def preimage (f: α →* β) (s: NormalSubgroup β) : NormalSubgroup α where
 
 def image (f: α →* β) (s: NormalSubgroup α) (h: Function.Surjective f) : NormalSubgroup β where
   toSubgroup := Subgroup.image f s.toSubgroup
-  mem_conj' := by
+  mem_conj := by
     rintro x _ ⟨a, ha, rfl⟩
     apply Set.mem_image.mpr
     obtain ⟨x, rfl⟩ := h x

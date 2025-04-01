@@ -11,7 +11,7 @@ private instance builder : SetLike.LatticeBuilder (Subsemigroup α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_mul' := by
+    mem_mul := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_mul s <;> assumption
   }
@@ -52,7 +52,7 @@ private instance builder : SetLike.LatticeBuilder (AddSubsemigroup α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_add' := by
+    mem_add := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_add s <;> assumption
   }

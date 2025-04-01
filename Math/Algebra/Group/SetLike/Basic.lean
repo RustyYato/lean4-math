@@ -8,11 +8,11 @@ variable [SetLike S α]
 instance [AddGroupOps α] [IsAddGroup α] : Bot (AddSubgroup α) where
   bot := {
     carrier := {0}
-    mem_zero' := rfl
-    mem_add' := by
+    mem_zero := rfl
+    mem_add := by
       rintro _ _ rfl rfl
       rw [add_zero]; rfl
-    mem_neg' := by
+    mem_neg := by
       rintro _ rfl
       rw [neg_zero]; rfl
   }
@@ -20,11 +20,11 @@ instance [AddGroupOps α] [IsAddGroup α] : Bot (AddSubgroup α) where
 instance [GroupOps α] [IsGroup α] : Bot (Subgroup α) where
   bot := {
     carrier := {1}
-    mem_one' := rfl
-    mem_mul' := by
+    mem_one := rfl
+    mem_mul := by
       rintro _ _ rfl rfl
       rw [mul_one]; rfl
-    mem_inv' := by
+    mem_inv := by
       rintro _ rfl
       rw [inv_one]; rfl
   }
@@ -32,17 +32,17 @@ instance [GroupOps α] [IsGroup α] : Bot (Subgroup α) where
 instance [GroupOps α] [IsGroup α] : Top (Subgroup α) where
   top := {
     carrier := ⊤
-    mem_one' := True.intro
-    mem_mul' _ _ := True.intro
-    mem_inv' _ := True.intro
+    mem_one := True.intro
+    mem_mul _ _ := True.intro
+    mem_inv _ := True.intro
   }
 
 instance [AddGroupOps α] [IsAddGroup α] : Top (AddSubgroup α) where
   top := {
     carrier := ⊤
-    mem_zero' := True.intro
-    mem_add' _ _ := True.intro
-    mem_neg' _ := True.intro
+    mem_zero := True.intro
+    mem_add _ _ := True.intro
+    mem_neg _ := True.intro
   }
 
 def mem_div
@@ -155,15 +155,15 @@ instance (s: AddSubgroup α) : IsAddGroup s := inferInstance
 
 def Subgroup.preimage [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) (s: Subgroup β) : Subgroup α where
   carrier := Set.preimage s f
-  mem_one' := by
+  mem_one := by
     rw [Set.mem_preimage, map_one]
     apply mem_one s
-  mem_inv' := by
+  mem_inv := by
     intro _ ha
     rw [Set.mem_preimage, map_inv]
     apply mem_inv s
     assumption
-  mem_mul' := by
+  mem_mul := by
     intro a b ha hb
     rw [Set.mem_preimage, map_mul]
     apply mem_mul s
@@ -172,15 +172,15 @@ def Subgroup.preimage [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: 
 
 def AddSubgroup.preimage [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) (s: AddSubgroup β) : AddSubgroup α where
   carrier := Set.preimage s f
-  mem_zero' := by
+  mem_zero := by
     rw [Set.mem_preimage, map_zero]
     apply mem_zero s
-  mem_neg' := by
+  mem_neg := by
     intro _ ha
     rw [Set.mem_preimage, map_neg]
     apply mem_neg s
     assumption
-  mem_add' := by
+  mem_add := by
     intro a b ha hb
     rw [Set.mem_preimage, map_add]
     apply mem_add s
@@ -189,17 +189,17 @@ def AddSubgroup.preimage [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAd
 
 def Subgroup.image [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) (s: Subgroup α) : Subgroup β where
   carrier := Set.image s f
-  mem_one' := by
+  mem_one := by
     rw [←map_one f]
     apply Set.mem_image'
     apply mem_one s
-  mem_inv' := by
+  mem_inv := by
     rintro _ ⟨a, ha, rfl⟩
     rw [←map_inv]
     apply Set.mem_image'
     apply mem_inv s
     assumption
-  mem_mul' := by
+  mem_mul := by
     rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
     rw [←map_mul]
     apply Set.mem_image'
@@ -209,17 +209,17 @@ def Subgroup.image [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α 
 
 def AddSubgroup.image [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) (s: AddSubgroup α) : AddSubgroup β where
   carrier := Set.image s f
-  mem_zero' := by
+  mem_zero := by
     rw [←map_zero f]
     apply Set.mem_image'
     apply mem_zero s
-  mem_neg' := by
+  mem_neg := by
     rintro _ ⟨a, ha, rfl⟩
     rw [←map_neg]
     apply Set.mem_image'
     apply mem_neg s
     assumption
-  mem_add' := by
+  mem_add := by
     rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
     rw [←map_add]
     apply Set.mem_image'
@@ -229,28 +229,28 @@ def AddSubgroup.image [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGr
 
 def Subgroup.range [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : Subgroup β where
   carrier := Set.range f
-  mem_one' := by
+  mem_one := by
     rw [←map_one f]
     apply Set.mem_range'
-  mem_inv' := by
+  mem_inv := by
     rintro _ ⟨a, ha, rfl⟩
     rw [←map_inv]
     apply Set.mem_range'
-  mem_mul' := by
+  mem_mul := by
     rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
     rw [←map_mul]
     apply Set.mem_range'
 
 def AddSubgroup.range [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : AddSubgroup β where
   carrier := Set.range f
-  mem_zero' := by
+  mem_zero := by
     rw [←map_zero f]
     apply Set.mem_range'
-  mem_neg' := by
+  mem_neg := by
     rintro _ ⟨a, ha, rfl⟩
     rw [←map_neg]
     apply Set.mem_range'
-  mem_add' := by
+  mem_add := by
     rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
     rw [←map_add]
     apply Set.mem_range'
@@ -272,15 +272,15 @@ def AddSubgroup.embed (S: AddSubgroup α) : S ↪+ α where
 
 def Subgroup.of_hom [GroupOps β] [IsGroup β] (h: α →* β) : Subgroup β where
   carrier := Set.range h
-  mem_one' := by
+  mem_one := by
     apply Set.mem_range.mpr
     exists 1; rw [map_one]
-  mem_mul' := by
+  mem_mul := by
     rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
     apply Set.mem_range.mpr
     exists a * b
     rw [map_mul]
-  mem_inv' := by
+  mem_inv := by
     rintro _ ⟨a, rfl⟩
     apply Set.mem_range.mpr
     exists a⁻¹
@@ -288,15 +288,15 @@ def Subgroup.of_hom [GroupOps β] [IsGroup β] (h: α →* β) : Subgroup β whe
 
 def AddSubgroup.of_hom [AddGroupOps β] [IsAddGroup β] (h: α →+ β) : AddSubgroup β where
   carrier := Set.range h
-  mem_zero' := by
+  mem_zero := by
     apply Set.mem_range.mpr
     exists 0; rw [map_zero]
-  mem_add' := by
+  mem_add := by
     rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
     apply Set.mem_range.mpr
     exists a + b
     rw [map_add]
-  mem_neg' := by
+  mem_neg := by
     rintro _ ⟨a, rfl⟩
     apply Set.mem_range.mpr
     exists -a

@@ -17,11 +17,11 @@ def mem_add {S α: Type*} [SetLike S α] [Add α] [IsAddMem S]
 
 structure Subsemigroup (α: Type*) [Mul α] where
   carrier: Set α
-  mem_mul' {a b: α} : a ∈ carrier -> b ∈ carrier -> a * b ∈ carrier
+  protected mem_mul {a b: α} : a ∈ carrier -> b ∈ carrier -> a * b ∈ carrier
 
 structure AddSubsemigroup (α: Type*) [Add α] where
   carrier: Set α
-  mem_add' {a b: α} : a ∈ carrier -> b ∈ carrier -> a + b ∈ carrier
+  protected mem_add {a b: α} : a ∈ carrier -> b ∈ carrier -> a + b ∈ carrier
 
 instance [h: SetLike S α] : SetLike (AddOfMul S) (AddOfMul α) where
   coe a := (a.get: Set α)
@@ -45,7 +45,7 @@ instance : SetLike (Subsemigroup α) α where
     intro a b eq; cases a; congr
 
 instance : IsMulMem (Subsemigroup α) where
-  mem_mul := Subsemigroup.mem_mul'
+  mem_mul := Subsemigroup.mem_mul
 
 @[ext]
 def ext (a b: Subsemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -56,7 +56,7 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : Subsemigroup α where
   carrier := Set.mk (Generate U)
-  mem_mul' := Generate.mul
+  mem_mul := Generate.mul
 
 end Subsemigroup
 
@@ -70,7 +70,7 @@ instance : SetLike (AddSubsemigroup α) α where
     intro a b eq; cases a; congr
 
 instance : IsAddMem (AddSubsemigroup α) where
-  mem_add := AddSubsemigroup.mem_add'
+  mem_add := AddSubsemigroup.mem_add
 
 @[ext]
 def ext (a b: AddSubsemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -81,6 +81,6 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : AddSubsemigroup α where
   carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
+  mem_add := Generate.add
 
 end AddSubsemigroup

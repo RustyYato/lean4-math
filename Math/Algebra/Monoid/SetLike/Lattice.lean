@@ -11,10 +11,10 @@ private instance builder : SetLike.LatticeBuilder (Submonoid α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_one' := by
+    mem_one := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_one s
-    mem_mul' := by
+    mem_mul := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_mul s <;> assumption
   }
@@ -32,8 +32,8 @@ private instance builder : SetLike.LatticeBuilder (Submonoid α) where
     | mul => apply mem_mul t <;> assumption
   bot := ⟨{
     carrier := {1}
-    mem_one' := rfl
-    mem_mul' := by
+    mem_one := rfl
+    mem_mul := by
       rintro _ _ rfl rfl
       rw [mul_one]; rfl
   }, by rintro _ _ rfl; apply Generate.one⟩
@@ -62,10 +62,10 @@ private instance builder : SetLike.LatticeBuilder (AddSubmonoid α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_zero' := by
+    mem_zero := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_zero s
-    mem_add' := by
+    mem_add := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_add s <;> assumption
   }
@@ -83,8 +83,8 @@ private instance builder : SetLike.LatticeBuilder (AddSubmonoid α) where
     | add => apply mem_add t <;> assumption
   bot := ⟨{
     carrier := {0}
-    mem_zero' := rfl
-    mem_add' := by
+    mem_zero := rfl
+    mem_add := by
       rintro _ _ rfl rfl
       rw [add_zero]; rfl
   }, by rintro _ _ rfl; apply Generate.zero⟩

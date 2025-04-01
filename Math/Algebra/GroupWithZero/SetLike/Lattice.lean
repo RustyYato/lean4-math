@@ -11,16 +11,16 @@ private instance builder : SetLike.LatticeBuilder (SubgroupWithZero α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_zero' := by
+    mem_zero := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_zero s
-    mem_one' := by
+    mem_one := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_one s
     mem_inv?' := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_inv? s <;> assumption
-    mem_mul' := by
+    mem_mul := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_mul s <;> assumption
   }
@@ -40,15 +40,15 @@ private instance builder : SetLike.LatticeBuilder (SubgroupWithZero α) where
     | mul => apply mem_mul t <;> assumption
   bot := ⟨{
     carrier := {0, 1}
-    mem_zero' := by simp
-    mem_one' := by simp
+    mem_zero := by simp
+    mem_one := by simp
     mem_inv?' := by
       rintro _ _ h
       simp at *
       cases h; contradiction
       right; rename_i h; subst h
       rw [inv?_one]
-    mem_mul' := by
+    mem_mul := by
       rintro _ _ h g
       simp at *
       rcases h with rfl | rfl

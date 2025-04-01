@@ -5,7 +5,7 @@ variable (S: Type*) {α: Type*} [SetLike S α]
 class IsAddSubmonoidWithOne [Add α] [Zero α] [One α] : Prop extends IsAddSubmonoid S, IsOneMem S where
 
 structure AddSubmonoidWithOne (α: Type*) [Add α] [Zero α] [One α] extends AddSubmonoid α where
-  mem_one' : 1 ∈ carrier
+  mem_one : 1 ∈ carrier
 
 namespace AddSubmonoidWithOne
 
@@ -19,9 +19,9 @@ instance : SetLike (AddSubmonoidWithOne α) α where
     assumption
 
 instance : IsAddSubmonoidWithOne (AddSubmonoidWithOne α) where
-  mem_add a := a.mem_add'
-  mem_zero a := a.mem_zero'
-  mem_one a := a.mem_one'
+  mem_add a := a.mem_add
+  mem_zero a := a.mem_zero
+  mem_one a := a.mem_one
 
 @[ext]
 def ext (a b: AddSubmonoidWithOne α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -34,8 +34,8 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : AddSubmonoidWithOne α where
   carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
-  mem_zero' := Generate.zero
-  mem_one' := Generate.one
+  mem_add := Generate.add
+  mem_zero := Generate.zero
+  mem_one := Generate.one
 
 end AddSubmonoidWithOne

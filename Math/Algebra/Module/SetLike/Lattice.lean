@@ -11,10 +11,10 @@ private instance builder : SetLike.LatticeBuilder (Submodule R M) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_zero' := by
+    mem_zero := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_zero s
-    mem_add' := by
+    mem_add := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_add s <;> assumption
     mem_smul' := by
@@ -36,8 +36,8 @@ private instance builder : SetLike.LatticeBuilder (Submodule R M) where
     | smul => apply mem_smul t <;> assumption
   bot := ⟨{
     carrier := {0}
-    mem_zero' := rfl
-    mem_add' := by
+    mem_zero := rfl
+    mem_add := by
       rintro _ _ rfl rfl
       rw [add_zero]; rfl
     mem_smul' := by

@@ -11,15 +11,15 @@ variable [RingOps R] [IsRing R]
 -- of the given ring
 def center (R: Type*) [RingOps R] [IsRing R] : Subring R where
   carrier := Set.mk fun r => ∀x: R, r * x = x * r
-  mem_zero' := by intro x; simp
-  mem_one' := by intro x; simp
-  mem_add' := by
+  mem_zero := by intro x; simp
+  mem_one := by intro x; simp
+  mem_add := by
     intro a b ha hb x
     rw [add_mul, mul_add, ha, hb ]
-  mem_mul' := by
+  mem_mul := by
     intro a b ha hb x
     rw [mul_assoc, hb, ←mul_assoc, ha, mul_assoc]
-  mem_neg' := by
+  mem_neg := by
     intro a ha x
     rw [←neg_mul_left, ha, ←neg_mul_right]
 

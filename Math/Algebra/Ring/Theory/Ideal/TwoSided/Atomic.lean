@@ -49,13 +49,13 @@ instance : IsCoatomic (Ideal R) where
     let bound : Ideal R :=
       {
         carrier := ⋃ C.image fun x => x.val.carrier
-        mem_zero' := by
+        mem_zero := by
           have ⟨j, j_mem⟩ := h
           exists j.val.carrier
           apply And.intro
           apply Set.mem_image'; assumption
           apply mem_zero j.val
-        mem_add' := by
+        mem_add := by
           intro a b ⟨_, ⟨c, c_in_C, rfl⟩, a_in_c⟩ ⟨_, ⟨d, d_in_C, rfl⟩, b_in_d⟩
           rcases Relation.total (C.Induced (· ≤ ·)) ⟨c, c_in_C⟩ ⟨d, d_in_C⟩ with h | h
           refine ⟨d.val.carrier, ?_, ?_⟩
@@ -68,20 +68,20 @@ instance : IsCoatomic (Ideal R) where
           apply mem_add c.val
           assumption
           apply h; assumption
-        mem_neg' := by
+        mem_neg := by
           intro x ⟨_, ⟨a, _, rfl⟩, _⟩
           refine ⟨a.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption
           apply mem_neg a.val
           assumption
-        mem_mul_left' := by
+        mem_mul_left := by
           intro r x ⟨_, ⟨a, _, rfl⟩, _⟩
           refine ⟨a.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption
           show _ ∈ a.val
           apply mem_mul_left
           assumption
-        mem_mul_right' := by
+        mem_mul_right := by
           intro r x ⟨_, ⟨a, _, rfl⟩, _⟩
           refine ⟨a.val.carrier, ?_, ?_⟩
           apply Set.mem_image'; assumption

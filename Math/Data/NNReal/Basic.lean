@@ -4,14 +4,14 @@ import Math.Algebra.Semifield.SetLike.Basic
 
 abbrev Real.nonneg : Subsemifield ℝ where
   carrier := Set.mk (0 ≤ ·)
-  mem_zero' := by apply le_refl (0: ℝ)
-  mem_one' := by apply zero_le_one (α := ℝ)
-  mem_add' := by
+  mem_zero := by apply le_refl (0: ℝ)
+  mem_one := by apply zero_le_one (α := ℝ)
+  mem_add := by
     intro a b ha hb
     apply Real.add_nonneg
     assumption
     assumption
-  mem_mul' := by
+  mem_mul := by
     intro a b ha hb
     apply Real.mul_nonneg
     assumption

@@ -17,10 +17,10 @@ class IsSubgroup [Mul α] [One α] [Inv α] : Prop extends IsSubmonoid S, IsInvM
 class IsAddSubgroup [Add α] [Zero α] [Neg α] : Prop extends IsAddSubmonoid S, IsNegMem S where
 
 structure Subgroup (α: Type*) [Mul α] [One α] [Inv α] extends Submonoid α where
-  mem_inv': ∀{a}, a ∈ carrier -> a⁻¹ ∈ carrier
+  protected mem_inv: ∀{a}, a ∈ carrier -> a⁻¹ ∈ carrier
 
 structure AddSubgroup (α: Type*) [Add α] [Zero α] [Neg α] extends AddSubmonoid α where
-  mem_neg': ∀{a}, a ∈ carrier -> -a ∈ carrier
+  protected mem_neg: ∀{a}, a ∈ carrier -> -a ∈ carrier
 
 instance [SetLike S α] [Add α] [Zero α] [Neg α] [IsAddSubgroup S] : IsSubgroup (MulOfAdd S) where
   mem_inv := mem_neg (S := S)
@@ -39,9 +39,9 @@ instance : SetLike (Subgroup α) α where
     assumption
 
 instance : IsSubgroup (Subgroup α) where
-  mem_mul a := a.mem_mul'
-  mem_one a := a.mem_one'
-  mem_inv a := a.mem_inv'
+  mem_mul a := a.mem_mul
+  mem_one a := a.mem_one
+  mem_inv a := a.mem_inv
 
 @[ext]
 def ext [Mul α] [Inv α] [One α] (a b: Subgroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -54,9 +54,9 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : Subgroup α where
   carrier := Set.mk (Generate U)
-  mem_mul' := Generate.mul
-  mem_one' := Generate.one
-  mem_inv' := Generate.inv
+  mem_mul := Generate.mul
+  mem_one := Generate.one
+  mem_inv := Generate.inv
 
 end Subgroup
 
@@ -72,9 +72,9 @@ instance : SetLike (AddSubgroup α) α where
     assumption
 
 instance : IsAddSubgroup (AddSubgroup α) where
-  mem_add a := a.mem_add'
-  mem_zero a := a.mem_zero'
-  mem_neg a := a.mem_neg'
+  mem_add a := a.mem_add
+  mem_zero a := a.mem_zero
+  mem_neg a := a.mem_neg
 
 @[ext]
 def ext [Add α] [Neg α] [Zero α] (a b: AddSubgroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -87,8 +87,8 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : AddSubgroup α where
   carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
-  mem_zero' := Generate.zero
-  mem_neg' := Generate.neg
+  mem_add := Generate.add
+  mem_zero := Generate.zero
+  mem_neg := Generate.neg
 
 end AddSubgroup

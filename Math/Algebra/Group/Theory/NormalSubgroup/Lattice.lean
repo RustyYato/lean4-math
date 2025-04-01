@@ -12,16 +12,16 @@ private instance builder : SetLike.LatticeBuilder (NormalSubgroup α) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_conj' := by
+    mem_conj := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_conj s <;> assumption
-    mem_mul' := by
+    mem_mul := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_mul s <;> assumption
-    mem_inv' := by
+    mem_inv := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_inv s <;> assumption
-    mem_one' := by
+    mem_one := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_one s
   }
@@ -41,14 +41,14 @@ private instance builder : SetLike.LatticeBuilder (NormalSubgroup α) where
     | conj => apply mem_conj t <;> assumption
   bot := ⟨{
     carrier := {1}
-    mem_one' := rfl
-    mem_mul' := by
+    mem_one := rfl
+    mem_mul := by
       rintro _ _ rfl rfl
       rw [mul_one]; rfl
-    mem_inv' := by
+    mem_inv := by
       rintro _ rfl
       rw [inv_one]; rfl
-    mem_conj' := by
+    mem_conj := by
       rintro _ _ rfl
       rw [map_one]; rfl
   }, by rintro _ _ rfl; apply Generate.one⟩

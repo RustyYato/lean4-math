@@ -18,10 +18,10 @@ instance : SetLike (Subsemiring α) α where
     assumption
 
 instance : IsSubsemiring (Subsemiring α) where
-  mem_add a := a.mem_add'
-  mem_mul a := a.mem_mul'
-  mem_zero a := a.mem_zero'
-  mem_one a := a.mem_one'
+  mem_add a := a.mem_add
+  mem_mul a := a.mem_mul
+  mem_zero a := a.mem_zero
+  mem_one a := a.mem_one
 
 @[ext]
 def ext (a b: Subsemiring α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -35,9 +35,9 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : Subsemiring α where
   carrier := Set.mk (Generate U)
-  mem_add' := Generate.add
-  mem_mul' := Generate.mul
-  mem_zero' := Generate.zero
-  mem_one' := Generate.one
+  mem_add := Generate.add
+  mem_mul := Generate.mul
+  mem_zero := Generate.zero
+  mem_one := Generate.one
 
 end Subsemiring

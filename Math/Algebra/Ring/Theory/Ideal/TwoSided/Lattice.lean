@@ -13,19 +13,19 @@ private instance builder : SetLike.LatticeBuilder (Ideal R) where
   closure_spec s := ⟨generate s, rfl⟩
   create s P := {
     carrier := s
-    mem_add' := by
+    mem_add := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_add s <;> assumption
-    mem_neg' := by
+    mem_neg := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_neg s <;> assumption
-    mem_zero' := by
+    mem_zero := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_zero s
-    mem_mul_left' := by
+    mem_mul_left := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_mul_left s <;> assumption
-    mem_mul_right' := by
+    mem_mul_right := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_mul_right s <;> assumption
   }

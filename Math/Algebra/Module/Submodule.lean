@@ -17,11 +17,11 @@ variable {M: Type*} (R: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [
 -- linear combinations of members of the set
 def span (U: Set M) : Submodule R M where
   carrier := Set.mk fun v => ∃f: LinearCombination R M, Set.support f ⊆ U ∧ v = f
-  mem_zero' := ⟨0, by
+  mem_zero := ⟨0, by
     intro v h
     rw [Set.mem_support] at h
     contradiction , rfl⟩
-  mem_add' := by
+  mem_add := by
     rintro a b ⟨fa, ha, rfl⟩ ⟨fb, hb, rfl⟩
     exists fa + fb
     apply And.intro

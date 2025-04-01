@@ -16,8 +16,8 @@ instance : SetLike (Submodule R M) M where
     assumption
 
 instance : IsSubmodule (Submodule R M) R where
-  mem_zero s := s.mem_zero'
-  mem_add s := s.mem_add'
+  mem_zero s := s.mem_zero
+  mem_add s := s.mem_add
   mem_smul s := s.mem_smul'
 
 inductive Generate (U: Set M) : M -> Prop where
@@ -28,8 +28,8 @@ inductive Generate (U: Set M) : M -> Prop where
 
 def generate (U: Set M) : Submodule R M where
   carrier := Set.mk (Generate U)
-  mem_zero' := Generate.zero
-  mem_add' := Generate.add
+  mem_zero := Generate.zero
+  mem_add := Generate.add
   mem_smul' := Generate.smul
 
 def of_mem_generate [SetLike S M] [IsSubmodule S R] (U: Set M) (s: S) :

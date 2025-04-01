@@ -35,21 +35,21 @@ def ofHom
   [FunLike F S R] [IsZeroHom F S R] [IsOneHom F S R] [IsAddHom F S R] [IsMulHom F S R]
   (f: F) : Subring R where
   carrier := Set.range f
-  mem_zero' := by
+  mem_zero := by
     exists 0
     rw [map_zero]
-  mem_one' := by
+  mem_one := by
     exists 1
     rw [map_one]
-  mem_add' := by
+  mem_add := by
     rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
     rw [←map_add]
     apply Set.mem_range'
-  mem_neg' := by
+  mem_neg := by
     rintro _ ⟨_, rfl⟩
     rw [←map_neg]
     apply Set.mem_range'
-  mem_mul' := by
+  mem_mul := by
     rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
     rw [←map_mul]
     apply Set.mem_range'

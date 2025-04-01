@@ -12,7 +12,7 @@ class IsSubgroupWithZero [Mul α] [One α] [Zero α] [CheckedInv? α] : Prop ext
 
 structure SubgroupWithZero (α: Type*) [Mul α] [One α] [Zero α] [CheckedInv? α] extends Submonoid α where
   mem_inv?': ∀{a} (h: a ≠ 0), a ∈ carrier -> a⁻¹? ∈ carrier
-  mem_zero': 0 ∈ carrier
+  mem_zero: 0 ∈ carrier
 
 namespace SubgroupWithZero
 
@@ -25,10 +25,10 @@ instance : SetLike (SubgroupWithZero α) α where
     apply SetLike.coe_inj; assumption
 
 instance : IsSubgroupWithZero (SubgroupWithZero α) where
-  mem_mul s := s.mem_mul'
-  mem_one s := s.mem_one'
+  mem_mul s := s.mem_mul
+  mem_one s := s.mem_one
   mem_inv? s := s.mem_inv?'
-  mem_zero s := s.mem_zero'
+  mem_zero s := s.mem_zero
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
@@ -39,9 +39,9 @@ inductive Generate (U: Set α) : α -> Prop where
 
 def generate (U: Set α) : SubgroupWithZero α where
   carrier := Set.mk (Generate U)
-  mem_mul' := Generate.mul
+  mem_mul := Generate.mul
   mem_inv?' := Generate.inv?
-  mem_one' := Generate.one
-  mem_zero' := Generate.zero
+  mem_one := Generate.one
+  mem_zero := Generate.zero
 
 end SubgroupWithZero

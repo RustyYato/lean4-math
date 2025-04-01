@@ -10,30 +10,30 @@ variable [RingOps α] [RingOps β] [IsRing α] [IsRing β]
 -- the preimage of a ring homomorphism is always an ideal
 def preimage (f: α →+* β) (i: Ideal β) : Ideal α where
   carrier := Set.preimage i.carrier f
-  mem_zero' := by
+  mem_zero := by
     show f 0 ∈ i
     erw [map_zero]
     apply mem_zero
-  mem_neg' := by
+  mem_neg := by
     intro a ha
     show f _ ∈ i
     rw [map_neg]
     apply mem_neg
     assumption
-  mem_add' := by
+  mem_add := by
     intro a b ha hb
     show f (a + b) ∈ i
     rw [map_add]
     apply mem_add
     assumption
     assumption
-  mem_mul_left' := by
+  mem_mul_left := by
     intro a b hb
     show f _ ∈ i
     rw [map_mul]
     apply mem_mul_left
     assumption
-  mem_mul_right' := by
+  mem_mul_right := by
     intro a b hb
     show f _ ∈ i
     rw [map_mul]
