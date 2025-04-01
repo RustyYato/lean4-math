@@ -35,6 +35,14 @@ def of : α ↪ FreeMonoid α where
     intro x y h
     exact (List.cons.inj h).left
 
+@[simp] def one_toList : toList (1: FreeMonoid α) = [] := rfl
+@[simp] def of_toList (a: α) : toList (.of a) = [a] := rfl
+@[simp] def mul_toList (a b: FreeMonoid α) : toList (a * b) = a.toList ++ b.toList := rfl
+
+@[simp] def one_ofList : ofList ([]: List α) = 1 := rfl
+@[simp] def of_ofList (a: α) : ofList [a] = .of a := rfl
+@[simp] def mul_ofList (a b: List α) : ofList (a ++ b) = ofList a * ofList b := rfl
+
 def reverse (a: FreeMonoid α) : FreeMonoid α := .ofList a.toList.reverse
 
 def reverseEquiv : FreeMonoid α ≃* (FreeMonoid α)ᵐᵒᵖ where
@@ -103,8 +111,6 @@ def lift [MonoidOps M] [IsMonoid M] : (α -> M) ≃ (FreeMonoid α →* M) where
     map_mul := by
       intro x y
       simp
-      show List.foldr _ _ (x.toList ++ y.toList) = _
-      rw [List.foldr_append]
       generalize x.toList=x'
       generalize y.toList=y'
       clear x y

@@ -123,10 +123,7 @@ def lift [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeGroup α →* G) where
       obtain ⟨b, a⟩ := a
       cases b <;> simp
       rfl
-      unfold of
-      rw [←map_inv]
-      congr
-      rw [←of_inv]; rfl
+      rw [←of_inv, ←map_inv]
 
 @[simp]
 def lift_of [GroupOps G] [IsGroup G] (f: α -> G) : lift f (of a) = f a := by
