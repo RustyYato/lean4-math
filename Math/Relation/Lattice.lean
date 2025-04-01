@@ -8,11 +8,11 @@ instance : LE (α -> α -> Prop) where
 instance : LT (α -> α -> Prop) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-instance : Sup (α -> α -> Prop) where
-  sup a b x y := a x y ∨ b x y
+instance : Max (α -> α -> Prop) where
+  max a b x y := a x y ∨ b x y
 
-instance : Inf (α -> α -> Prop) where
-  inf a b x y := a x y ∧ b x y
+instance : Min (α -> α -> Prop) where
+  min a b x y := a x y ∧ b x y
 
 instance : SupSet (α -> α -> Prop) where
   sSup S x y := ∃r ∈ S, r x y

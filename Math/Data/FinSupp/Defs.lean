@@ -6,7 +6,7 @@ import Math.Algebra.Group.Hom
 import Math.Logic.Basic
 import Math.Algebra.Module.Defs
 
-class FiniteSupportSet (S: Type*) (α: outParam Type*) extends FinsetLike S α, Sup S, Inf S, LE S, LT S, IsLattice S, Inhabited S, IsLawfulEmptyFinsetLike S where
+class FiniteSupportSet (S: Type*) (α: outParam Type*) extends FinsetLike S α, Max S, Min S, LE S, LT S, IsLattice S, Inhabited S, IsLawfulEmptyFinsetLike S where
   coe_map_le: ∀{a b: S}, a ≤ b ↔ (a: Finset α) ≤ (b: Finset α)
   singleton: α -> S
   mem_singleton: ∀a: α, a ∈ singleton a

@@ -3,8 +3,8 @@ import Math.Order.Linear
 
 open Classical
 
-instance : Sup Nat := ⟨max⟩
-instance : Inf Nat := ⟨min⟩
+instance : Max Nat := ⟨max⟩
+instance : Min Nat := ⟨min⟩
 
 noncomputable
 instance : SupSet Nat where

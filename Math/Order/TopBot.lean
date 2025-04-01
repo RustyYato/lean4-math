@@ -64,23 +64,23 @@ instance [LE α] : LE (WithBot α) := ⟨WithBot.LE⟩
 instance [LT α] : LT (WithTop α) := ⟨WithTop.LT⟩
 instance [LT α] : LT (WithBot α) := ⟨WithBot.LT⟩
 
-instance [Sup α] : Sup (WithTop α) where
-  sup
+instance [Max α] : Max (WithTop α) where
+  max
   | ⊤, _ | _, ⊤ => ⊤
   | .of a, .of b => .of (a ⊔ b)
 
-instance [Inf α] : Inf (WithTop α) where
-  inf
+instance [Min α] : Min (WithTop α) where
+  min
   | ⊤, a | a, ⊤ => a
   | .of a, .of b => .of (a ⊓ b)
 
-instance [Sup α] : Sup (WithBot α) where
-  sup
+instance [Max α] : Max (WithBot α) where
+  max
   | ⊥, a | a, ⊥ => a
   | .of a, .of b => .of (a ⊔ b)
 
-instance [Inf α] : Inf (WithBot α) where
-  inf
+instance [Min α] : Min (WithBot α) where
+  min
   | ⊥, _ | _, ⊥ => ⊥
   | .of a, .of b => .of (a ⊓ b)
 

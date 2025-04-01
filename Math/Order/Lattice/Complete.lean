@@ -4,8 +4,8 @@ import Math.Data.Set.TopBot
 
 section
 
-variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
-variable {α₀: Type*} [Sup α₀] [Inf α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
+variable (α: Type*) [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
+variable {α₀: Type*} [Max α₀] [Min α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 
 class IsCompleteSemiLatticeSup : Prop extends IsLawfulSupSet α, IsSemiLatticeSup α where
   sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> sSup s ≤ k
@@ -39,19 +39,19 @@ def CompleteLattice.mk [CompleteSemiLatticeSup α] [h: CompleteSemiLatticeInf α
   le_inf := h.le_inf
   le_sInf := h.le_sInf
 
-instance [Inf α] [InfSet α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup αᵒᵖ where
+instance [Min α] [InfSet α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup αᵒᵖ where
   sSup_le := le_sInf (α := α)
 
-instance [Sup α] [SupSet α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf αᵒᵖ where
+instance [Max α] [SupSet α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf αᵒᵖ where
   le_sInf := sSup_le (α := α)
 
-instance [Sup α] [SupSet α] [Inf α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α] : IsCompleteLattice αᵒᵖ where
+instance [Max α] [SupSet α] [Min α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α] : IsCompleteLattice αᵒᵖ where
   le_top := bot_le (α := α)
   bot_le := le_top (α := α)
   sSup_le := sSup_le
   le_sInf := le_sInf
 
-instance [Sup α] [SupSet α] [Inf α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α] : IsConditionallyCompleteLattice α where
+instance [Max α] [SupSet α] [Min α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α] : IsConditionallyCompleteLattice α where
   le_csInf _ := le_sInf _ _
   le_csSup _ := le_sSup
   csSup_le _ := sSup_le _ _
@@ -75,8 +75,8 @@ instance [h: CompleteSemiLatticeSup α] : CompleteSemiLatticeInf αᵒᵖ where
   le_sInf := sSup_le (α := α)
 instance [h: CompleteLattice α] : CompleteLattice αᵒᵖ := CompleteLattice.mk _
 
-variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
-variable {α₀: Type*} [Sup α₀] [Inf α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
+variable (α: Type*) [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
+variable {α₀: Type*} [Max α₀] [Min α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 
 section
 
@@ -283,8 +283,8 @@ namespace OrderEmbedding
 
 def instIsCompleteSemiLatticeSup
   {α}
-  [LE α] [LT α] [Sup α] [SupSet α]
-  [LE β] [LT β] [Sup β] [SupSet β]
+  [LE α] [LT α] [Max α] [SupSet α]
+  [LE β] [LT β] [Max β] [SupSet β]
   [IsCompleteSemiLatticeSup α]
   [IsSemiLatticeSup β]
   (h: β ↪o α)
@@ -309,8 +309,8 @@ def instIsCompleteSemiLatticeSup
 
 def instIsCompleteSemiLatticeInf
   {α}
-  [LE α] [LT α] [Inf α] [InfSet α]
-  [LE β] [LT β] [Inf β] [InfSet β]
+  [LE α] [LT α] [Min α] [InfSet α]
+  [LE β] [LT β] [Min β] [InfSet β]
   [IsCompleteSemiLatticeInf α]
   [IsSemiLatticeInf β]
   (h: β ↪o α)
@@ -328,8 +328,8 @@ namespace OrderIso
 
 def instIsCompleteSemiLatticeSup
   {α}
-  [LE α] [LT α] [Sup α] [SupSet α]
-  [LE β] [LT β] [Sup β] [SupSet β]
+  [LE α] [LT α] [Max α] [SupSet α]
+  [LE β] [LT β] [Max β] [SupSet β]
   [IsCompleteSemiLatticeSup α]
   [IsSemiLatticeSup β]
   (h: β ≃o α)
@@ -347,8 +347,8 @@ def instIsCompleteSemiLatticeSup
 
 def instIsCompleteSemiLatticeInf
   {α}
-  [LE α] [LT α] [Inf α] [InfSet α]
-  [LE β] [LT β] [Inf β] [InfSet β]
+  [LE α] [LT α] [Min α] [InfSet α]
+  [LE β] [LT β] [Min β] [InfSet β]
   [IsCompleteSemiLatticeInf α]
   [IsSemiLatticeInf β]
   (h: β ≃o α)
@@ -363,7 +363,7 @@ def instIsCompleteSemiLatticeInf
 end OrderIso
 
 instance
-  {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithTop α) where
+  {α} [LE α] [LT α] [SupSet α] [Max α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithTop α) where
   sSup_le := by
     intro k s h
     simp [sSup]
@@ -418,7 +418,7 @@ def sInf_sdiff_top [IsCompleteSemiLatticeInf α₀] [IsLawfulTop α₀] (s: Set 
 def sSup_sdiff_bot [IsCompleteSemiLatticeSup α₀] [IsLawfulBot α₀] (s: Set α₀) :
   sSup s = sSup (s \ {⊥}) := sInf_sdiff_top (α₀ := Opposite α₀) s
 
-instance {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithTop α) where
+instance {α} [LE α] [LT α] [InfSet α] [Min α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithTop α) where
   le_sInf := by
     intro k s h
     cases k
@@ -443,7 +443,7 @@ instance {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α]
     apply le_top
     rfl
 
-instance {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithTop α) where
+instance {α} [LE α] [LT α] [SupSet α] [Max α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithTop α) where
   sSup_le := by
     intro k s h
     simp [sSup]
@@ -473,17 +473,17 @@ instance {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α]
     cases h _ mem
     assumption
 
-instance {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithBot α) :=
+instance {α} [LE α] [LT α] [InfSet α] [Min α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeInf (WithBot α) :=
   WithBot.orderIsoWithTop.instIsCompleteSemiLatticeInf fun _ => rfl
 
-instance {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithBot α) :=
+instance {α} [LE α] [LT α] [SupSet α] [Max α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithBot α) :=
   WithBot.orderIsoWithTop.instIsCompleteSemiLatticeSup fun _ => rfl
 
-instance Opposite.instCompleteLatticeSup {α} [LE α] [LT α] [InfSet α] [Inf α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (Opposite α) where
+instance Opposite.instCompleteLatticeSup {α} [LE α] [LT α] [InfSet α] [Min α] [IsCompleteSemiLatticeInf α] : IsCompleteSemiLatticeSup (Opposite α) where
   sSup_le := le_sInf (α := α)
-instance Opposite.instCompleteLatticeInf {α} [LE α] [LT α] [SupSet α] [Sup α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf (Opposite α) where
+instance Opposite.instCompleteLatticeInf {α} [LE α] [LT α] [SupSet α] [Max α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeInf (Opposite α) where
   le_sInf := sSup_le (α := α)
-instance Opposite.instCompleteLattice {α} [LE α] [LT α] [SupSet α] [Sup α] [InfSet α] [Inf α] [Top α] [Bot α] [inst: IsCompleteLattice α] : IsCompleteLattice (Opposite α) := {
+instance Opposite.instCompleteLattice {α} [LE α] [LT α] [SupSet α] [Max α] [InfSet α] [Min α] [Top α] [Bot α] [inst: IsCompleteLattice α] : IsCompleteLattice (Opposite α) := {
     Opposite.instCompleteLatticeSup, Opposite.instCompleteLatticeInf with
 }
 

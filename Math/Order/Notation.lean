@@ -3,15 +3,9 @@ import Math.Data.Opposite
 
 variable (α: Type*)
 
-class Sup where
-  sup: α -> α -> α
+infixl:68 " ⊔ " => max
 
-class Inf where
-  inf: α -> α -> α
-
-infixl:68 " ⊔ " => Sup.sup
-
-infixl:69 " ⊓ " => Inf.inf
+infixl:69 " ⊓ " => min
 
 /-- Typeclass for the `⊤` (`\top`) notation -/
 @[ext]
@@ -63,10 +57,10 @@ instance [LE α] [LawfulTop α] : IsLawfulTop α where
 instance [LE α] [LawfulBot α] : IsLawfulBot α where
   bot_le := LawfulBot.bot_le
 
-instance [Inf α] : Sup (Opposite α) where
-  sup a b := .mk (a.get ⊓ b.get)
-instance [Sup α] : Inf (Opposite α) where
-  inf a b := .mk (a.get ⊔ b.get)
+instance [Min α] : Max (Opposite α) where
+  max a b := .mk (a.get ⊓ b.get)
+instance [Max α] : Min (Opposite α) where
+  min a b := .mk (a.get ⊔ b.get)
 
 instance [Top α] : Bot (Opposite α) where
   bot := .mk ⊤
@@ -86,38 +80,38 @@ instance [LE α] [LawfulBot α] : LawfulTop αᵒᵖ where
   top := ⊤
   le_top := bot_le (α := α)
 
--- `LawfulInf` states that the inf is always at most as large as it's inputs
--- this does *not* provide a tight bound on inf, if you need that use
+-- `LawfulInf` states that the min is always at most as large as it's inputs
+-- this does *not* provide a tight bound on min, if you need that use
 -- `IsSemiLatticeInf`
-class IsLawfulInf (α: Type*) [LE α] [Inf α] where
+class IsLawfulInf (α: Type*) [LE α] [Min α] where
   inf_le_left: ∀(x y: α), x ⊓ y ≤ x
   inf_le_right: ∀(x y: α), x ⊓ y ≤ y
 
--- `LawfulSup` states that the sup is always at least as large as it's inputs
--- this does *not* provide a tight bound on inf, if you need that use
+-- `LawfulSup` states that the max is always at least as large as it's inputs
+-- this does *not* provide a tight bound on min, if you need that use
 -- `IsSemiLatticeSup`
-class IsLawfulSup (α: Type*) [LE α] [Sup α] where
+class IsLawfulSup (α: Type*) [LE α] [Max α] where
   le_sup_left: ∀(x y: α), x ≤ x ⊔ y
   le_sup_right: ∀(x y: α), y ≤ x ⊔ y
 
 -- do not use this in bounds directly, this is only meant to be used to create a LawfulInf
 -- for example, via `GaloisConnection`
-class LawfulInf (α: Type*) [LE α] extends Inf α where
+class LawfulInf (α: Type*) [LE α] extends Min α where
   inf_le_left: ∀(x y: α), x ⊓ y ≤ x
   inf_le_right: ∀(x y: α), x ⊓ y ≤ y
 -- do not use this in bounds directly, this is only meant to be used to create a LawfulSup
 -- for example, via `GaloisConnection`
-class LawfulSup (α: Type*) [LE α] extends Sup α where
+class LawfulSup (α: Type*) [LE α] extends Max α where
   le_sup_left: ∀(x y: α), x ≤ x ⊔ y
   le_sup_right: ∀(x y: α), y ≤ x ⊔ y
 
 export IsLawfulInf (inf_le_left inf_le_right)
 export IsLawfulSup (le_sup_left le_sup_right)
 
-instance [LE α] [Sup α] [IsLawfulSup α] : IsLawfulInf αᵒᵖ where
+instance [LE α] [Max α] [IsLawfulSup α] : IsLawfulInf αᵒᵖ where
   inf_le_left := le_sup_left (α := α)
   inf_le_right := le_sup_right (α := α)
-instance [LE α] [Inf α] [IsLawfulInf α] : IsLawfulSup αᵒᵖ where
+instance [LE α] [Min α] [IsLawfulInf α] : IsLawfulSup αᵒᵖ where
   le_sup_left := inf_le_left (α := α)
   le_sup_right := inf_le_right (α := α)
 

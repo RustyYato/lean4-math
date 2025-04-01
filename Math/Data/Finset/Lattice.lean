@@ -10,10 +10,10 @@ instance : LE (Finset α) where
 instance : LT (Finset α) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-instance : Sup (Finset α) where
-  sup a b := a ∪ b
-instance : Inf (Finset α) where
-  inf a b := a ∩ b
+instance : Max (Finset α) where
+  max a b := a ∪ b
+instance : Min (Finset α) where
+  min a b := a ∩ b
 
 instance [Fintype α] : Top (Finset α) := ⟨.univ _⟩
 instance : Bot (Finset α) := ⟨∅⟩

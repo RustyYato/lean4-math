@@ -4,10 +4,10 @@ import Math.Data.Set.Order.Basic
 def Set.Induced (r: α -> α -> Prop) (s: Set α) :=
   fun x y: s => r x y
 
-instance : Sup (Set α) where
-  sup a b := a ∪ b
-instance : Inf (Set α) where
-  inf a b := a ∩ b
+instance : Max (Set α) where
+  max a b := a ∪ b
+instance : Min (Set α) where
+  min a b := a ∩ b
 
 instance : IsLattice (Set α) where
   le_sup_left := Set.sub_union_left

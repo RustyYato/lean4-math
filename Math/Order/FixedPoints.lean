@@ -1,7 +1,7 @@
 import Math.Order.OrderIso
 import Math.Order.Lattice.Complete
 
-variable [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
+variable [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
 variable [IsCompleteLattice α] (f : α →o α)
 
 namespace OrderHom

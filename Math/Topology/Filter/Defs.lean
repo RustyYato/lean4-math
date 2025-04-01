@@ -45,7 +45,7 @@ def mem_nhds {a: α} : ∀{s}, s ∈ 𝓝 a ↔ ∃ t ⊆ s, IsOpen t ∧ a ∈ 
       refine ⟨t', ?_, ?_, ?_⟩
       apply Set.sub_trans
       repeat assumption
-    | inf _ _ ih₀ ih₁ =>
+    | min _ _ ih₀ ih₁ =>
       obtain ⟨t₀, _, _, _⟩ := ih₀
       obtain ⟨t₁, _, _, _⟩ := ih₁
       refine ⟨t₀ ∩ t₁, ?_, ?_, ?_⟩

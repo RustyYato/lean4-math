@@ -3,10 +3,10 @@ import Math.Data.Real.Lattice
 
 namespace NNReal
 
-instance : Sup ℝ≥0 where
-  sup := max
-instance : Inf ℝ≥0 where
-  inf := min
+instance : Max ℝ≥0 where
+  max := max
+instance : Min ℝ≥0 where
+  min := min
 
 def nonempty_iff (S: Set ℝ≥0) : S.Nonempty ↔ (S.image orderEmbedReal).Nonempty := by
   apply Iff.intro

@@ -8,10 +8,10 @@ noncomputable section
 
 open Classical Real
 
-instance : Sup ℝ where
-  sup := max
-instance : Inf ℝ where
-  inf := min
+instance : Max ℝ where
+  max := max
+instance : Min ℝ where
+  min := min
 
 instance : NeZero (2: ℝ) where
   out := by
@@ -171,7 +171,6 @@ end
 namespace Real
 
 def sup_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊔ b) * c = (a * c) ⊔ (b * c) := by
-  simp [Sup.sup]
   rw [max_def, max_def]
   split <;> rename_i h
   rw [if_pos]
@@ -186,7 +185,6 @@ def sup_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊔ b) * c = (a * c) ⊔ (b * c) := 
   simp
 
 def inf_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊓ b) * c = (a * c) ⊓ (b * c) := by
-  simp [Inf.inf]
   rw [min_def, min_def]
   split <;> rename_i h
   rw [if_pos]

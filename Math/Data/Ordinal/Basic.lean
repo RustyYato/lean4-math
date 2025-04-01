@@ -1384,10 +1384,10 @@ def sSup_le (s: Set Ordinal) (h: s.BoundedAbove) (k: Ordinal) : (∀x ∈ s, x �
   rw [Set.mem_upperBounds]
   apply g
 
-instance : Sup Ordinal where
-  sup := max
-instance : Inf Ordinal where
-  inf := min
+instance : Max Ordinal where
+  max := max
+instance : Min Ordinal where
+  min := min
 
 instance : IsConditionallyCompleteLattice Ordinal where
   le_sup_left := le_max_left

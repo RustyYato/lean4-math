@@ -9,10 +9,10 @@ open Classical
 
 namespace Int
 
-instance : Sup Int where
-  sup := max
-instance : Inf Int where
-  inf := min
+instance : Max Int where
+  max := max
+instance : Min Int where
+  min := min
 
 def exists_max_of_bounded_above (S: Set Int) (h: S.Nonempty) (hbdd: S.BoundedAbove) : ∃x: Int, x ∈ S ∧ ∀y ∈ S, y ≤ x := by
   classical

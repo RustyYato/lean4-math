@@ -52,7 +52,7 @@ instance : IsPartialOrder (Ideal R) := (SetLike.toCompleteLattice (S := Ideal R)
 
 private local instance : SetLike.CompleteLatticeLE (Ideal R) := {
   SetLike.toCompleteLattice with
-  sup a b := a + b
+  max a b := a + b
   le_sup_left := by
     intro a b x hx
     refine ⟨(x, 0), ?_, ?_, ?_⟩
@@ -74,8 +74,8 @@ private local instance : SetLike.CompleteLatticeLE (Ideal R) := {
 
 instance : Top (Ideal R) := inferInstance
 instance : Bot (Ideal R) := inferInstance
-instance : Sup (Ideal R) := inferInstance
-instance : Inf (Ideal R) := inferInstance
+instance : Max (Ideal R) := inferInstance
+instance : Min (Ideal R) := inferInstance
 instance : SupSet (Ideal R) := inferInstance
 instance : InfSet (Ideal R) := inferInstance
 instance : IsCompleteLattice (Ideal R) := inferInstance

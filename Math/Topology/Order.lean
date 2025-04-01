@@ -63,7 +63,7 @@ def sSup' (Ts: Set (Topology α)) : Topology α where
     erw [Set.mem_sInter] at this
     exact this T.OpenSets (Set.mem_image' T_in_Ts)
 
-def sup' (ta: Topology α) (tb: Topology α) : Topology α where
+def max' (ta: Topology α) (tb: Topology α) : Topology α where
   IsOpen x := IsOpen[ta] x ∧ IsOpen[tb] x
   univ_open := by
     dsimp
@@ -88,7 +88,7 @@ def sup' (ta: Topology α) (tb: Topology α) : Topology α where
 def sInf' (Ts: Set (Topology α)) : Topology α
   := generate (⋃(Ts.image Topology.OpenSets))
 
-def inf' (ta: Topology α) (tb: Topology α) : Topology α
+def min' (ta: Topology α) (tb: Topology α) : Topology α
   := generate (ta.OpenSets ∪ tb.OpenSets)
 
 instance : SupSet (Topology α) where
@@ -96,22 +96,22 @@ instance : SupSet (Topology α) where
 instance : InfSet (Topology α) where
   sInf s := sInf' s
 
-instance : Sup (Topology α) where
-  sup := sup'
+instance : Max (Topology α) where
+  max := max'
 
-instance : Inf (Topology α) where
-  inf := inf'
+instance : Min (Topology α) where
+  min := min'
 
 def sup_eq (a b: Topology α) : a ⊔ b = sSup {a, b} := by
-  show sup' a b = sSup' {a, b}
-  unfold sup' sSup'
+  show max' a b = sSup' {a, b}
+  unfold max' sSup'
   ext s
   simp
   rfl
 
 def inf_eq (a b: Topology α) : a ⊓ b = sInf {a, b} := by
-  show inf' a b = sInf' {a, b}
-  unfold inf' sInf'
+  show min' a b = sInf' {a, b}
+  unfold min' sInf'
   ext s
   simp
 

@@ -6,7 +6,7 @@ open Set hiding Nonempty
 
 section
 
-variable (α: Type*) [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α]
+variable (α: Type*) [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α]
 
 class IsConditionallyCompleteLattice : Prop extends IsLattice α where
   le_csSup : ∀{s} {a: α}, BoundedAbove s → a ∈ s → a ≤ sSup s
@@ -24,7 +24,7 @@ instance [IsConditionallyCompleteLattice α] : IsConditionallyCompleteLattice (O
 
 end
 
-variable {α: Type*} [Sup α] [Inf α] [SupSet α] [InfSet α] [LE α] [LT α]
+variable {α: Type*} [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α]
 variable {a b c: α} {s t: Set α} [IsConditionallyCompleteLattice α]
 
 def le_csSup_of_le (hs : BoundedAbove s) (hb : b ∈ s) (h : a ≤ b) : a ≤ sSup s :=

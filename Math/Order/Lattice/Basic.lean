@@ -2,15 +2,15 @@ import Math.Order.Defs
 import Math.Order.TopBot
 
 variable (α: Type*) [LE α] [LT α]
-variable {α₀: Type*} [Sup α₀] [Inf α₀] [LE α₀] [LT α₀]
+variable {α₀: Type*} [Max α₀] [Min α₀] [LE α₀] [LT α₀]
 
-class IsSemiLatticeSup  [Sup α] : Prop extends IsLawfulSup α, IsPartialOrder α where
+class IsSemiLatticeSup  [Max α] : Prop extends IsLawfulSup α, IsPartialOrder α where
   sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
 
-class IsSemiLatticeInf [Inf α] : Prop extends IsLawfulInf α, IsPartialOrder α where
+class IsSemiLatticeInf [Min α] : Prop extends IsLawfulInf α, IsPartialOrder α where
   le_inf: ∀{a b k: α}, k ≤ a -> k ≤ b -> k ≤ a ⊓ b
 
-class IsLattice [Sup α] [Inf α] : Prop extends IsSemiLatticeSup α, IsSemiLatticeInf α, IsPartialOrder α where
+class IsLattice [Max α] [Min α] : Prop extends IsSemiLatticeSup α, IsSemiLatticeInf α, IsPartialOrder α where
 
 class SemiLatticeSup extends LawfulSup α, IsPartialOrder α where
   sup_le: ∀{a b k: α}, a ≤ k -> b ≤ k -> a ⊔ b ≤ k
@@ -24,16 +24,16 @@ class Lattice extends SemiLatticeSup α, SemiLatticeInf α where
 export IsSemiLatticeSup (sup_le)
 export IsSemiLatticeInf (le_inf)
 
-instance Lattice.mk [Sup α] [Inf α] [IsSemiLatticeSup α] [IsSemiLatticeInf α] : IsLattice α where
+instance Lattice.mk [Max α] [Min α] [IsSemiLatticeSup α] [IsSemiLatticeInf α] : IsLattice α where
   le_inf := IsSemiLatticeInf.le_inf
 
-instance [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
+instance [Max α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
   le_inf := sup_le (α := α)
 
-instance [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeSup αᵒᵖ where
+instance [Min α] [IsSemiLatticeInf α] : IsSemiLatticeSup αᵒᵖ where
   sup_le := le_inf (α := α)
 
-instance [Sup α] [Inf α] [IsLattice α] : IsLattice αᵒᵖ where
+instance [Max α] [Min α] [IsLattice α] : IsLattice αᵒᵖ where
   toIsSemiLatticeSup := inferInstance
   inf_le_left := inf_le_left
   inf_le_right := inf_le_right
@@ -63,7 +63,7 @@ instance [h: SemiLatticeSup α] [g: SemiLatticeInf α] : Lattice α where
 attribute [simp] le_sup_left le_sup_right
 attribute [simp] inf_le_left inf_le_right
 
-variable (α: Type*) [Sup α] [Inf α] [LE α] [LT α]
+variable (α: Type*) [Max α] [Min α] [LE α] [LT α]
 
 section
 
@@ -276,8 +276,8 @@ namespace OrderEmbedding
 
 def instIsSemiLatticeSup
   {α}
-  [LE α] [LT α] [Sup α]
-  [LE β] [LT β] [Sup β]
+  [LE α] [LT α] [Max α]
+  [LE β] [LT β] [Max β]
   [IsSemiLatticeSup α]
   [_root_.IsPartialOrder β]
   (h: β ↪o α)
@@ -302,8 +302,8 @@ def instIsSemiLatticeSup
 
 def instIsSemiLatticeInf
   {α}
-  [LE α] [LT α] [Inf α]
-  [LE β] [LT β] [Inf β]
+  [LE α] [LT α] [Min α]
+  [LE β] [LT β] [Min β]
   [IsSemiLatticeInf α]
   [_root_.IsPartialOrder β]
   (h: β ↪o α)
@@ -328,7 +328,7 @@ def instIsSemiLatticeInf
 
 end OrderEmbedding
 
-instance [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithTop α) where
+instance [LE α] [LT α] [Max α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithTop α) where
   le_sup_left := by
     intro a b
     cases a <;> cases b
@@ -350,7 +350,7 @@ instance [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeSup (With
     apply WithTop.LE.of
     apply sup_le <;> assumption
 
-instance [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeInf (WithTop α) where
+instance [LE α] [LT α] [Min α] [IsSemiLatticeInf α] : IsSemiLatticeInf (WithTop α) where
   inf_le_left := by
     intro a b
     cases a <;> cases b
@@ -376,41 +376,41 @@ instance [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeInf (With
     apply WithTop.LE.of
     apply le_inf <;> assumption
 
-instance [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithBot α) :=
+instance [LE α] [LT α] [Max α] [IsSemiLatticeSup α] : IsSemiLatticeSup (WithBot α) :=
   OrderEmbedding.instIsSemiLatticeSup WithBot.orderIsoWithTop.toEmbedding <| by
     intro a b
     cases a <;> cases b
     all_goals rfl
 
-instance [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeInf (WithBot α) :=
+instance [LE α] [LT α] [Min α] [IsSemiLatticeInf α] : IsSemiLatticeInf (WithBot α) :=
   OrderEmbedding.instIsSemiLatticeInf WithBot.orderIsoWithTop.toEmbedding <| by
     intro a b
     cases a <;> cases b
     all_goals rfl
 
-instance [LE α] [LT α] [Inf α] [IsLattice α] : IsLattice (WithTop α) where
+instance [LE α] [LT α] [Min α] [IsLattice α] : IsLattice (WithTop α) where
   inf_le_left := inf_le_left
   inf_le_right := inf_le_right
   le_inf := le_inf
 
-instance [LE α] [LT α] [Inf α] [IsLattice α] : IsLattice (WithBot α) where
+instance [LE α] [LT α] [Min α] [IsLattice α] : IsLattice (WithBot α) where
   inf_le_left := inf_le_left
   inf_le_right := inf_le_right
   le_inf := le_inf
 
-instance Opposite.instLatticeSup {α} [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] : IsSemiLatticeSup αᵒᵖ where
+instance Opposite.instLatticeSup {α} [LE α] [LT α] [Min α] [IsSemiLatticeInf α] : IsSemiLatticeSup αᵒᵖ where
   sup_le := le_inf (α := α)
-instance Opposite.instLatticeInf {α} [LE α] [LT α] [Sup α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
+instance Opposite.instLatticeInf {α} [LE α] [LT α] [Max α] [IsSemiLatticeSup α] : IsSemiLatticeInf αᵒᵖ where
   le_inf := sup_le (α := α)
-instance Opposite.instLattice {α} [LE α] [LT α] [Sup α] [Inf α] [IsLattice α] : IsLattice (Opposite α) := inferInstance
+instance Opposite.instLattice {α} [LE α] [LT α] [Max α] [Min α] [IsLattice α] : IsLattice (Opposite α) := inferInstance
 
 def SemiLatticeSup.opposite (c: SemiLatticeSup α) : SemiLatticeInf αᵒᵖ := inferInstance
 def SemiLatticeInf.opposite (c: SemiLatticeInf α) : SemiLatticeSup αᵒᵖ := inferInstance
 def Lattice.opposite (c: Lattice α) : Lattice αᵒᵖ := inferInstance
 
 instance : Lattice Nat where
-  sup := Nat.max
-  inf := Nat.min
+  max := Nat.max
+  min := Nat.min
   le_sup_left := Nat.le_max_left
   le_sup_right := Nat.le_max_right
   inf_le_left := Nat.min_le_left

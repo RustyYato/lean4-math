@@ -5,7 +5,7 @@ namespace FilterBase
 
 open Classical Set
 
-variable {α : Type*} [LE α] [LT α] [Inf α] [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α]
+variable {α : Type*} [LE α] [LT α] [Min α] [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α]
 
 def eq_sInf_of_mem_iff_exists_mem {S : Set (Filter α)} {l : Filter α}
     (h : ∀ {s}, s ∈ l ↔ ∃ f ∈ S, s ∈ f) : l = sInf S := by

@@ -5,7 +5,7 @@ import Math.Order.Lattice.Complete
 import Math.Order.GaloisConnection
 
 -- a general filter on an arbitrary order
-structure FilterBase (α: Type*) [LE α] [Inf α] extends IsLawfulInf α where
+structure FilterBase (α: Type*) [LE α] [Min α] extends IsLawfulInf α where
   set: Set α
   nonempty: set.Nonempty
   closed_upward: ∀{x y}, x ∈ set -> x ≤ y -> y ∈ set
@@ -16,7 +16,7 @@ abbrev Filter (α: Type*) := FilterBase (Set α)
 
 namespace FilterBase
 
-variable {α : Type*} [LE α] [Inf α]
+variable {α : Type*} [LE α] [Min α]
 
 instance : Membership α (FilterBase α) :=
   ⟨fun F U => U ∈ F.set⟩
@@ -116,7 +116,7 @@ def exists_mem_le_iff [LT α] [IsPreOrder α] {f: FilterBase α} : (∃ t ∈ f,
   ⟨fun ⟨_, ht, ts⟩ => closed_upward _ ht ts, fun hs => ⟨s, hs, le_refl _⟩⟩
 
 variable {α : Type u} {β : Type v} {γ : Type w} {δ : Type*} {ι : Sort x}
-variable {α: Type*} [LE α] [LT α] [Inf α] [IsSemiLatticeInf α] {f g: FilterBase α} {s t: α}
+variable {α: Type*} [LE α] [LT α] [Min α] [IsSemiLatticeInf α] {f g: FilterBase α} {s t: α}
 
 section Principal
 
@@ -161,7 +161,7 @@ section Generate
 inductive GenerateSets (g : Set α) : α → Prop
   | basic {s : α} : s ∈ g → GenerateSets g s
   | up {s t : α} : GenerateSets g s → s ≤ t → GenerateSets g t
-  | inf {s t : α} : GenerateSets g s → GenerateSets g t → GenerateSets g (s ⊓ t)
+  | min {s t : α} : GenerateSets g s → GenerateSets g t → GenerateSets g (s ⊓ t)
 
 def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : FilterBase α where
   set := Set.mk (GenerateSets g)
@@ -177,7 +177,7 @@ def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : FilterBase α where
     assumption
   closed_inf := by
     intro x y hx hy
-    apply GenerateSets.inf
+    apply GenerateSets.min
     assumption
     assumption
 
@@ -199,8 +199,8 @@ def generate_eq_generate_nonempty [Top α] [IsLawfulTop α] (s: Set α) (h: s.No
       apply GenerateSets.up
       assumption
       assumption
-    | inf =>
-      apply GenerateSets.inf
+    | min =>
+      apply GenerateSets.min
       assumption
       assumption
   · intro x hx
@@ -213,8 +213,8 @@ def generate_eq_generate_nonempty [Top α] [IsLawfulTop α] (s: Set α) (h: s.No
       apply GenerateSets.up
       assumption
       assumption
-    | inf =>
-      apply GenerateSets.inf
+    | min =>
+      apply GenerateSets.min
       assumption
       assumption
 
@@ -236,7 +236,7 @@ def le_generate_iff {s : Set α} {f : FilterBase α} {ne: s.Nonempty} : f ≤ ge
     apply f.closed_upward
     assumption
     assumption
-  | inf =>
+  | min =>
     apply f.closed_inf
     assumption
     assumption
@@ -271,7 +271,7 @@ def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeInf α] {s : Set α} {ne:
     refine ⟨t, ?_, tfin, le_trans le ?_⟩
     assumption
     assumption
-  | inf _ _ ih₀ ih₁ =>
+  | min _ _ ih₀ ih₁ =>
     obtain ⟨s, ssub, sfin, sle⟩ := ih₀
     obtain ⟨t, tsub, tfin, tle⟩ := ih₁
     refine ⟨s ∪ t, ?_, ?_, ?_⟩
@@ -384,8 +384,8 @@ instance [h: Nonempty α] : Bot (FilterBase α) where
 instance [Top α] [IsLawfulTop α] : SupSet (FilterBase α) where
   sSup := join ∘ 𝓟
 
-instance [Top α] [IsLawfulTop α] : Inf (FilterBase α) where
-  inf a b := generate (Set.mk fun s => ∃f₀ f₁: α, f₀ ∈ a ∧ f₁ ∈ b ∧ s = f₀ ⊓ f₁)
+instance [Top α] [IsLawfulTop α] : Min (FilterBase α) where
+  min a b := generate (Set.mk fun s => ∃f₀ f₁: α, f₀ ∈ a ∧ f₁ ∈ b ∧ s = f₀ ⊓ f₁)
 
 protected def mkOfClosure [Top α] [IsLawfulTop α] (s : Set α) (hs : (generate s).set = s) : FilterBase α where
   set := s
@@ -420,7 +420,7 @@ def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf �
 instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeInf α] : CompleteLattice (FilterBase α) := {
     (giGenerate (α := α)).liftCompleteLattice.opposite with
     top := ⊤
-    inf := (· ⊓ ·)
+    min := (· ⊓ ·)
     sSup := join ∘ 𝓟
     inf_le_left := by
       intro f g x mem
@@ -444,7 +444,7 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
         apply closed_upward
         assumption
         assumption
-      | inf =>
+      | min =>
         apply closed_inf
         assumption
         assumption

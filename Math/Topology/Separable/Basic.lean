@@ -30,7 +30,7 @@ def lim_eq' [T2 X] (f: Filter X) [f.NeBot] (o: X) : (∀s: Set X, Topology.IsOpe
     apply FilterBase.closed_upward
     assumption
     assumption
-  | inf =>
+  | min =>
     apply FilterBase.closed_inf
     assumption
     assumption
