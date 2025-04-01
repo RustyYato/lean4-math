@@ -213,6 +213,15 @@ def lift_of' (a : FreeGroup α) : lift of a = a := by
   | one | of | inv => simp [map_one, map_inv]
   | mul => rw [map_mul]; congr
 
+def lift_assoc {x: FreeGroup α} (f: α -> FreeGroup β) (g: β -> FreeGroup γ) :
+  (lift g) ((lift f) x) = (lift fun x => (lift g) (f x)) x := by
+  show lift _ (lift _ _) = lift (fun x => lift _ _) _
+  induction x with
+  | one => simp [map_one]
+  | of => simp
+  | inv => simp [map_inv]
+  | mul => simp [map_mul]; congr
+
 instance : Monad FreeGroup where
   pure := of
   bind a b := lift b a
@@ -226,12 +235,26 @@ instance : LawfulMonad FreeGroup := by
     apply lift_of
   case bind_assoc =>
     intro α β γ x f g
-    show lift _ (lift _ _) = lift (fun x => lift _ _) _
-    induction x with
-    | one => simp [map_one]
-    | of => simp
-    | inv => simp [map_inv]
-    | mul => simp [map_mul]; congr
+    apply lift_assoc
   all_goals intro α β x y; rfl
 
 end FreeGroup
+
+def Equiv.congrFreeGroup (h: α ≃ β) : FreeGroup α ≃ FreeGroup β where
+  toFun a := FreeGroup.lift (fun a => .of (h a)) a
+  invFun a := FreeGroup.lift (fun a => .of (h.symm a)) a
+  leftInv a := by
+    simp
+    rw [FreeGroup.lift_assoc]
+    simp
+    apply FreeGroup.lift_of'
+  rightInv a := by
+    simp
+    rw [FreeGroup.lift_assoc]
+    simp
+    apply FreeGroup.lift_of'
+
+def GroupEquiv.congrFreeGroup (h: α ≃ β) : FreeGroup α ≃* FreeGroup β where
+  toEquiv := Equiv.congrFreeGroup h
+  map_one := by simp [Equiv.congrFreeGroup, map_one]
+  map_mul := by simp [Equiv.congrFreeGroup, map_mul]
