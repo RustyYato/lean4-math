@@ -29,16 +29,6 @@ instance : IsMulCancel (FreeMonoid α) where
   mul_left_cancel := List.append_cancel_left
   mul_right_cancel := List.append_cancel_right
 
-instance [IsEmpty α] : Subsingleton (FreeMonoid α) where
-  allEq a b := by
-    cases a
-    cases b
-    rfl
-    rename_i a _
-    exact elim_empty a
-    rename_i a _
-    exact elim_empty a
-
 def of : α ↪ FreeMonoid α where
   toFun a := .ofList [a]
   inj' := by
@@ -143,5 +133,22 @@ def lift [MonoidOps M] [IsMonoid M] : (α -> M) ≃ (FreeMonoid α →* M) where
   apply mul_one
 
 def one_ne_of (a: α) : 1 ≠ of a := nofun
+
+instance : Nonempty (FreeMonoid α) := inferInstance
+instance [IsEmpty α] : Subsingleton (FreeMonoid α) where
+  allEq a b := by
+    cases a
+    cases b
+    rfl
+    rename_i a _
+    exact elim_empty a
+    rename_i a _
+    exact elim_empty a
+instance [h: Nonempty α] : IsNontrivial (FreeMonoid α) where
+  exists_ne := by
+    obtain ⟨a⟩ := h
+    exists 1
+    exists .of a
+    apply one_ne_of
 
 end FreeMonoid

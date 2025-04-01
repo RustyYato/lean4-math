@@ -173,4 +173,18 @@ def one_ne_of (a: α) : 1 ≠ of a := by
 
 attribute [irreducible] of lift instMonoidOps instInv instDiv instPowInt
 
+instance : Nonempty (FreeGroup α) := inferInstance
+instance [IsEmpty α] : Subsingleton (FreeGroup α) where
+  allEq a b := by
+    induction a using GroupQuot.ind with | mk a =>
+    induction b using GroupQuot.ind with | mk b =>
+    congr
+    apply Subsingleton.allEq
+instance [h: Nonempty α] : IsNontrivial (FreeGroup α) where
+  exists_ne := by
+    obtain ⟨a⟩ := h
+    exists 1
+    exists .of a
+    apply one_ne_of
+
 end FreeGroup
