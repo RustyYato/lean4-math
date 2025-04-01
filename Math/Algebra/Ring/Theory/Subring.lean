@@ -30,7 +30,7 @@ def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
 namespace Subring
 
 -- every ring homomorphism identifies a subring of R
-def ofHom
+def range
   [RingOps R] [RingOps S] [IsRing R] [IsRing S]
   [FunLike F S R] [IsZeroHom F S R] [IsOneHom F S R] [IsAddHom F S R] [IsMulHom F S R]
   (f: F) : Subring R where
@@ -65,7 +65,7 @@ def Hom [RingOps R] (s t: Subring R) (h: s ⊆ t) : s ↪+* t where
   map_add := rfl
   map_mul := rfl
 
-def embedOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ↪+* ofHom f where
+def embed_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ↪+* range f where
   toFun s := ⟨f s, Set.mem_range'⟩
   inj' := by
     intro x y eq
@@ -88,14 +88,14 @@ def embedOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S 
     congr
     rw [map_mul]
 
-noncomputable def equivOfHom [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ≃+* ofHom f where
-  toFun := embedOfHom f
+noncomputable def equiv_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ≃+* range f where
+  toFun := embed_range f
   invFun x := Classical.choose x.property
   leftInv := by
     intro s
     dsimp
     apply f.inj
-    have : f s ∈ ofHom f := Set.mem_range'
+    have : f s ∈ range f := Set.mem_range'
     symm; apply Classical.choose_spec this
   rightInv := by
     intro ⟨r, hr⟩

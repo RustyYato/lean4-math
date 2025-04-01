@@ -1,12 +1,13 @@
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Basic
 import Math.Algebra.Ring.Theory.Basic
+import Math.Algebra.Ring.Theory.Subring
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Impls.Unit
 import Math.Algebra.Ring.Con
 
 namespace Ideal
 
-variable [RingOps R] [IsRing R]
+variable [RingOps R] [IsRing R] [RingOps S] [IsRing S]
 
 protected def Con (i: Ideal R) : RingCon R where
   r a b := a - b ∈ i
@@ -163,5 +164,48 @@ def toRing_eqv_toRing_of_eq {i j: Ideal R} (h: i = j) : i.toRing ≃+* j.toRing 
     cases a using Quot.ind
     cases b using Quot.ind
     apply map_mul
+
+noncomputable def image_equiv (f: R →+* S) : (kernel f).toRing ≃+* Subring.range f where
+  toFun := by
+    refine Quotient.lift ?_ ?_
+    intro a
+    exact ⟨f a, Set.mem_range'⟩
+    intro a b h
+    congr 1
+    apply eq_of_sub_eq_zero
+    rw [←map_sub, h]
+  invFun f := mkQuot _ (Classical.choose f.property)
+  leftInv := by
+    intro x
+    induction x using IsCon.Quotient.ind with | mk x =>
+    simp
+    apply Quotient.sound
+    show f (_ - x) = 0
+    have : f x ∈ (Subring.range f) := Set.mem_range'
+    rw [map_sub, (Classical.choose_spec this), sub_self]
+  rightInv := by
+    intro x
+    simp
+    apply Subtype.val_inj
+    show f (Classical.choose _) = x.val
+    symm; exact Classical.choose_spec x.property
+  map_zero := by
+    apply Subtype.val_inj
+    apply map_zero f
+  map_one := by
+    apply Subtype.val_inj
+    apply map_one f
+  map_add := by
+    intro x y
+    induction x using IsCon.Quotient.ind with | mk x =>
+    induction y using IsCon.Quotient.ind with | mk y =>
+    apply Subtype.val_inj
+    apply map_add f
+  map_mul := by
+    intro x y
+    induction x using IsCon.Quotient.ind with | mk x =>
+    induction y using IsCon.Quotient.ind with | mk y =>
+    apply Subtype.val_inj
+    apply map_mul f
 
 end Ideal
