@@ -163,4 +163,6 @@ def of_inj : Function.Injective (of (α := α)) := by
   have : f (of a) = false := by rw [h, this]
   simpa [f] using this
 
+attribute [irreducible] of lift instMonoidOps instInv instDiv instPowInt
+
 end FreeGroup
