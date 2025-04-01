@@ -76,6 +76,17 @@ def induction {motive: FreeMonoid α -> Prop}
     apply of_mul
     assumption
 
+@[cases_eliminator]
+def cases {motive: FreeMonoid α -> Prop}
+  (one: motive 1)
+  (of_mul: ∀a b, motive (.of a * b)) :
+  ∀a, motive a := by
+  intro a
+  cases a with
+  | nil => apply one
+  | cons a as =>
+    apply of_mul
+
 def map (a: FreeMonoid α) (f: α -> β) : FreeMonoid β :=
   .ofList (a.toList.map f)
 
@@ -85,5 +96,52 @@ def of_map (a: α) (f: α -> β) : map (.of a) f  = .of (f a) := rfl
 @[simp]
 def mul_map (a b: FreeMonoid α) (f: α -> β) : (a * b).map f = (a.map f) * (b.map f) :=
   List.map_append _ _ _
+
+def length (a: FreeMonoid α) : Nat :=
+  a.toList.length
+
+@[simp] def one_length : length (1: FreeMonoid α) = 0 := rfl
+@[simp] def of_length : length (of a) = 1 := rfl
+@[simp] def mul_length : length (a * b) = a.length + b.length := List.length_append _ _
+
+-- lift any assignment of variables to a monoid into a group homomorphism from the
+-- free monoid to the given monoid
+def lift [MonoidOps M] [IsMonoid M] : (α -> M) ≃ (FreeMonoid α →* M) where
+  toFun f := {
+    toFun a := a.toList.foldr (fun a m => f a * m) 1
+    map_one := rfl
+    map_mul := by
+      intro x y
+      simp
+      show List.foldr _ _ (x.toList ++ y.toList) = _
+      rw [List.foldr_append]
+      generalize x.toList=x'
+      generalize y.toList=y'
+      clear x y
+      induction x' with
+      | nil => simp
+      | cons x xs ih => simp [ih, mul_assoc]
+  }
+  invFun f a := f (.of a)
+  leftInv := by
+    intro  f
+    simp
+    ext a
+    apply mul_one
+  rightInv := by
+    intro f
+    ext a
+    simp
+    show List.foldr _ _ a.toList = f a
+    induction a with
+    | one => rw [map_one]; rfl
+    | of_mul a as ih =>
+      show List.foldr _ _ (a :: as.toList) = _
+      rw [List.foldr_cons, ih, map_mul]
+
+@[simp] def lift_of [MonoidOps M] [IsMonoid M] (f: α -> M) (a: α) : lift f (.of a) = f a := by
+  apply mul_one
+
+def one_ne_of (a: α) : 1 ≠ of a := nofun
 
 end FreeMonoid
