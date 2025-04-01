@@ -14,7 +14,7 @@ def IsSetLikeLattice.OrderEmbedding : α ↪o Set β where
   resp_rel := le_iff_sub _ _
 
 instance [IsSetLikeLattice α] : IsPartialOrder α :=
-  IsSetLikeLattice.OrderEmbedding.inducedIsPartialOrder'
+  IsSetLikeLattice.OrderEmbedding.instIsPartialOrder'
 
 instance [h: IsSetLikeLattice α] : IsLattice α where
   le_max_left := by

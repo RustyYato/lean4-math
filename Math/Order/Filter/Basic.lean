@@ -147,7 +147,7 @@ def orderEmbSetOp : FilterBase α ↪o (Set α)ᵒᵖ where
   resp_rel := Iff.rfl
 
 instance : IsPartialOrder (FilterBase α) :=
-  orderEmbSetOp.inducedIsPartialOrder'
+  orderEmbSetOp.instIsPartialOrder'
 
 def le_def : (f ≤ g) = ∀x ∈ g, x ∈ f := rfl
 

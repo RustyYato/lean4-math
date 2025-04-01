@@ -89,19 +89,10 @@ instance : Max ℝ≥0 where
     left; exact a.property⟩
 
 instance : IsLinearOrder ℝ≥0 := inferInstanceAs (IsLinearOrder (Subtype _))
-instance : IsLinearLattice ℝ≥0 := sorry -- FIXME
-  -- min_iff_le_left {a b} := by
-  --   rw [←orderEmbedReal.inj.eq_iff]
-  --   apply min_iff_le_left (α := ℝ)
-  -- min_iff_le_right {a b} := by
-  --   rw [←orderEmbedReal.inj.eq_iff]
-  --   apply min_iff_le_right (α := ℝ)
-  -- max_iff_le_left {a b} := by
-  --   rw [←orderEmbedReal.inj.eq_iff]
-  --   apply max_iff_le_left (α := ℝ)
-  -- max_iff_le_right {a b} := by
-  --   rw [←orderEmbedReal.inj.eq_iff]
-  --   apply max_iff_le_right (α := ℝ)
+instance : IsLinearLattice ℝ≥0 := by
+  apply orderEmbedReal.instIsLinearLattice
+  intro a b; rfl
+  intro a b; rfl
 
 instance : NeZero (2: ℝ) where
   out := by

@@ -407,42 +407,29 @@ def max_def (a b: ℝ) : max a b = if a ≤ b then b else a := by
 
 end
 
-instance : IsLinearLattice ℝ := sorry -- FIXME
-  -- min_iff_le_left := by
-  --   intro a b
-  --   rw [min_def]
-  --   apply Iff.intro
-  --   intro h
-  --   rw [if_pos h]
-  --   intro h; split at h
-  --   assumption
-  --   rw [h]
-  -- min_iff_le_right := by
-  --   intro a b
-  --   rw [min_comm, min_def]
-  --   apply Iff.intro
-  --   intro h
-  --   rw [if_pos h]
-  --   intro h; split at h
-  --   assumption
-  --   rw [h]
-  -- max_iff_le_left := by
-  --   intro a b
-  --   rw [max_def]
-  --   apply Iff.intro
-  --   intro h
-  --   rw [if_pos h]
-  --   intro h; split at h
-  --   assumption
-  --   rw [h]
-  -- max_iff_le_right := by
-  --   intro a b
-  --   rw [max_comm, max_def]
-  --   apply Iff.intro
-  --   intro h
-  --   rw [if_pos h]
-  --   intro h; split at h
-  --   assumption
-  --   rw [h]
+instance : IsLinearLattice ℝ := {
+  inferInstanceAs (IsLinearOrder ℝ),
+  inferInstanceAs (IsPartialOrder ℝ) with
+  le_max_left x y := by
+    rw [max_def]
+    split; assumption
+    rfl
+  le_max_right x y := by
+    rw [max_def]; split; rfl
+    apply le_of_not_le; assumption
+  max_le {a b k} ak bk := by
+    rw [max_def]
+    split <;> assumption
+  min_le_left x y := by
+    rw [min_def]; split; rfl
+    apply le_of_not_le; assumption
+  min_le_right x y := by
+    rw [min_def]
+    split; assumption
+    rfl
+  le_min {a b k} ak bk := by
+    rw [min_def]
+    split <;> assumption
+}
 
 end Real

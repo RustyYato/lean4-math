@@ -290,55 +290,27 @@ def max' (a b: Ordinal) : Ordinal where
 
 instance : Max Ordinal := ⟨max'⟩
 
-instance : IsLinearLattice Ordinal := sorry -- FIXME
-  -- min_iff_le_left := by
-  --   intro a b
-  --   apply Iff.intro
-  --   intro h
-  --   apply embedZfSet.inj
-  --   show a.set ∩ b.set = a.set
-  --   apply toSet_inj
-  --   rw [toSet_inter, Set.inter_of_sub_left]
-  --   assumption
-  --   intro h
-  --   rw [←h]
-  --   apply inter_sub_right
-  -- min_iff_le_right := by
-  --   intro a b
-  --   apply Iff.intro
-  --   intro h
-  --   apply embedZfSet.inj
-  --   show a.set ∩ b.set = b.set
-  --   apply toSet_inj
-  --   rw [toSet_inter, Set.inter_of_sub_right]
-  --   assumption
-  --   intro h
-  --   rw [←h]
-  --   apply inter_sub_left
-  -- max_iff_le_left := by
-  --   intro a b
-  --   apply Iff.intro
-  --   intro h
-  --   apply embedZfSet.inj
-  --   show a.set ∪ b.set = b.set
-  --   apply toSet_inj
-  --   rw [toSet_union, Set.union_of_sub_left]
-  --   assumption
-  --   intro h
-  --   rw [←h]
-  --   apply left_sub_union
-  -- max_iff_le_right := by
-  --   intro a b
-  --   apply Iff.intro
-  --   intro h
-  --   apply embedZfSet.inj
-  --   show a.set ∪ b.set = a.set
-  --   apply toSet_inj
-  --   rw [toSet_union, Set.union_of_sub_right]
-  --   assumption
-  --   intro h
-  --   rw [←h]
-  --   apply right_sub_union
+instance : IsLinearLattice Ordinal := {
+  inferInstanceAs (IsLinearOrder Ordinal),
+  inferInstanceAs (IsPartialOrder Ordinal) with
+  le_max_left _ _ := by apply ZfSet.sub_union_left
+  le_max_right _ _ := by apply ZfSet.sub_union_right
+  max_le := by
+    intro a b k ak bk
+    intro x hx
+    cases mem_union.mp hx
+    apply ak; assumption
+    apply bk; assumption
+  min_le_left _ _ := by apply ZfSet.inter_sub_left
+  min_le_right _ _ := by apply ZfSet.inter_sub_right
+  le_min := by
+    intro a b k ka kb
+    intro x hx
+    apply mem_inter.mpr
+    apply And.intro
+    apply ka; assumption
+    apply kb; assumption
+}
 
 def zero : Ordinal where
   set := ∅

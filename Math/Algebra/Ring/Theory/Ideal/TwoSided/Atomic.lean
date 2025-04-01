@@ -19,7 +19,7 @@ private def ProperIdeal.oemb (i: Ideal R) : ProperIdeal i ↪o Ideal R where
   inj' := Subtype.val_inj
   resp_rel := Iff.rfl
 
-private instance : IsPartialOrder (ProperIdeal i) := (ProperIdeal.oemb _).inducedIsPartialOrder'
+private instance : IsPartialOrder (ProperIdeal i) := (ProperIdeal.oemb _).instIsPartialOrder'
 
 instance : IsCoatomic (Ideal R) where
   exists_coatom_of_ne_top := by

@@ -139,7 +139,7 @@ def Ideal.oemb : Ideal R ↪o Set R where
 instance : IsLawfulLT (Ideal R) := ⟨Iff.rfl⟩
 
 instance : IsPartialOrder (Ideal R) :=
-  Ideal.oemb.inducedIsPartialOrder'
+  Ideal.oemb.instIsPartialOrder'
 
 def Ideal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (Ideal R) _ _ R.toIdeal (fun x => x.carrier) where
   choice S hS := {
@@ -241,7 +241,7 @@ def LeftIdeal.oemb : LeftIdeal R ↪o Set R where
 instance : IsLawfulLT (LeftIdeal R) := ⟨Iff.rfl⟩
 
 instance : IsPartialOrder (LeftIdeal R) :=
-  LeftIdeal.oemb.inducedIsPartialOrder'
+  LeftIdeal.oemb.instIsPartialOrder'
 
 def LeftIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (LeftIdeal R) _ _ R.toLeftIdeal (fun x => x.carrier) where
   choice S hS := {
@@ -336,7 +336,7 @@ def RightIdeal.oemb : RightIdeal R ↪o Set R where
 instance : IsLawfulLT (RightIdeal R) := ⟨Iff.rfl⟩
 
 instance : IsPartialOrder (RightIdeal R) :=
-  RightIdeal.oemb.inducedIsPartialOrder'
+  RightIdeal.oemb.instIsPartialOrder'
 
 def RightIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (RightIdeal R) _ _ R.toRightIdeal (fun x => x.carrier) where
   choice S hS := {

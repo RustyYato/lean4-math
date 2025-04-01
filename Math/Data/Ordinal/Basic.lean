@@ -481,7 +481,7 @@ def min' : Ordinal -> Ordinal -> Ordinal := by
 
 instance : Min Ordinal := ⟨min'⟩
 
-def min_comm' (a b: Ordinal) : min a b = min' b a := by
+def min_comm' (a b: Ordinal) : a ⊓ b = b ⊓ a := by
   induction a, b using ind₂ with | mk a b =>
   apply sound
   refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩
@@ -1179,7 +1179,36 @@ def max_eq_left_iff (a b: Ordinal) : max a b = a ↔ b ≤ a := by
     apply Pre.maxType.LT.mk
     assumption
 
-instance : IsLinearLattice Ordinal := sorry -- FIXME
+instance : IsLinearLattice Ordinal := {
+  inferInstanceAs (IsLinearOrder Ordinal),
+  inferInstanceAs (IsPartialOrder Ordinal) with
+  le_max_left x y := by exact left_le_max' x y
+  le_max_right x y := by rw [max_comm']; apply left_le_max'
+  max_le := by
+    intro a b k ak bk
+    rcases le_total a b with h | h
+    rwa [max_comm', (max_eq_left_iff _ _).mpr]
+    assumption
+    rwa [(max_eq_left_iff _ _).mpr]
+    assumption
+  min_le_left x y := by
+    rcases le_total x y with h | h
+    rwa [←(min_eq_left_iff.mp _).symm]
+    rwa [min_comm', ←(min_eq_left_iff.mp _).symm]
+    assumption
+  min_le_right x y := by
+    rcases le_total x y with h | h
+    rwa [←(min_eq_left_iff.mp _).symm]
+    assumption
+    rwa [min_comm', ←(min_eq_left_iff.mp _).symm]
+  le_min := by
+    intro a b k ka kb
+    rcases le_total a b with h | h
+    rwa [←(min_eq_left_iff.mp _).symm]
+    assumption
+    rwa [min_comm', ←(min_eq_left_iff.mp _).symm]
+    assumption
+}
   --  min_iff_le_left := min_eq_left_iff
   --  min_iff_le_right := by
   --   intro a b

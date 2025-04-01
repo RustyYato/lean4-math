@@ -46,7 +46,7 @@ def resp_lt {_: LE α} {_: LE β} {_: LT α} {_: LT β} [IsLawfulLT α] [IsLawfu
 
 def inj (h: α ↪o β) : Function.Injective h := Embedding.inj h.toEmbedding
 
-def inducedIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
+def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder β]
   [IsLawfulLT α]
   (h: α ↪o β)
@@ -57,7 +57,7 @@ def inducedIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
     iterate 3 rw [h.resp_le]
     exact le_trans
 
-def inducedIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
+def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPartialOrder β]
   [_root_.IsPreOrder α]
   (h: α ↪o β)
@@ -69,24 +69,24 @@ def inducedIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
     have := le_antisymm ab ba
     exact h.inj this
 
-def inducedIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
+def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsPartialOrder β]
   [IsLawfulLT α]
   (h: α ↪o β)
   : _root_.IsPartialOrder α where
-  toIsPreOrder := h.inducedIsPreOrder
+  toIsPreOrder := h.instIsPreOrder
   le_antisymm := by
     intro a b
     rw [h.resp_le, h.resp_le]
     intro ab ba
     exact h.inj (le_antisymm ab ba)
 
-def inducedIsLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
+def instIsLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsLinearOrder β]
   [IsLawfulLT α]
   (h: α ↪o β)
   : _root_.IsLinearOrder α :=
-  have := h.inducedIsPartialOrder'
+  have := h.instIsPartialOrder'
   {
     le_antisymm := le_antisymm
     le_trans := le_trans
@@ -169,6 +169,19 @@ def instIsSemiLatticeMin
     rw [←hs] at this
     exact h.resp_le.mpr this
 
+def instIsLinearLattice {_: LE α} [LT α] {_: LE β} [LT β]
+  [Min α] [Min β] [Max α] [Max β]
+  [IsLinearLattice β]
+  [IsLawfulLT α]
+  (h: α ↪o β)
+  (min_eq: ∀a b: α, h (min a b) = (min (h a) (h b)))
+  (max_eq: ∀a b: α, h (max a b) = (max (h a) (h b)))
+  : IsLinearLattice α :=
+  have := h.instIsPartialOrder'
+  {
+    h.instIsLinearOrder, h.instIsSemiLatticeMax max_eq, h.instIsSemiLatticeMin min_eq with
+  }
+
 end OrderEmbedding
 
 namespace OrderIso
@@ -221,25 +234,25 @@ def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder α]
   [IsLawfulLT β]
   (h: α ≃o β): IsPreOrder β :=
-  OrderEmbedding.inducedIsPreOrder (α := β) (β := α) h.symm
+  OrderEmbedding.instIsPreOrder (α := β) (β := α) h.symm
 
 def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPartialOrder α]
   [_root_.IsPreOrder β]
   (h: α ≃o β): IsPartialOrder β :=
-  OrderEmbedding.inducedIsPartialOrder (α := β) (β := α) h.symm
+  OrderEmbedding.instIsPartialOrder (α := β) (β := α) h.symm
 
 def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsPartialOrder α]
   [IsLawfulLT β]
   (h: α ≃o β): _root_.IsPartialOrder β :=
-  OrderEmbedding.inducedIsPartialOrder' (α := β) (β := α) h.symm
+  OrderEmbedding.instIsPartialOrder' (α := β) (β := α) h.symm
 
 def instIsLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsLinearOrder β]
   [IsLawfulLT α]
   (h: α ≃o β)
-  : _root_.IsLinearOrder α := h.toEmbedding.inducedIsLinearOrder
+  : _root_.IsLinearOrder α := h.toEmbedding.instIsLinearOrder
 
 def instIsSemilatticeMax {_: LE α} [LT α] {_: LE β} [LT β]
   [Max α] [Max β]
@@ -362,10 +375,10 @@ instance : IsLawfulLT (α →o β) where
   lt_iff_le_and_not_le := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α ↪ β) :=
-  Embedding.oemb_fun.inducedIsPreOrder
+  Embedding.oemb_fun.instIsPreOrder
 
 instance [IsPartialOrder β] : IsPartialOrder (α ↪ β) :=
-  Embedding.oemb_fun.inducedIsPartialOrder
+  Embedding.oemb_fun.instIsPartialOrder
 
 def OrderHom.oemb_fun : (α →o β) ↪o (α -> β) where
   toFun := RelHom.toFun
@@ -373,10 +386,10 @@ def OrderHom.oemb_fun : (α →o β) ↪o (α -> β) where
   resp_rel := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α →o β) :=
-  OrderHom.oemb_fun.inducedIsPreOrder
+  OrderHom.oemb_fun.instIsPreOrder
 
 instance [IsPartialOrder β] : IsPartialOrder (α →o β) :=
-  OrderHom.oemb_fun.inducedIsPartialOrder
+  OrderHom.oemb_fun.instIsPartialOrder
 
 def OrderEmbedding.oemb_fun : (α ↪o β) ↪o (α ↪ β) where
   toFun := RelEmbedding.toEmbedding
@@ -384,10 +397,10 @@ def OrderEmbedding.oemb_fun : (α ↪o β) ↪o (α ↪ β) where
   resp_rel := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α ↪o β) :=
-  OrderEmbedding.oemb_fun.inducedIsPreOrder
+  OrderEmbedding.oemb_fun.instIsPreOrder
 
 instance [IsPartialOrder β] : IsPartialOrder (α ↪o β) :=
-  OrderEmbedding.oemb_fun.inducedIsPartialOrder
+  OrderEmbedding.oemb_fun.instIsPartialOrder
 
 def OrderEmbedding.toLtRelEmbedding
   [IsPreOrder α] [IsPreOrder β]

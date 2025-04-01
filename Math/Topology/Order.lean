@@ -28,9 +28,9 @@ instance : IsLawfulLT (Topology α) where
   lt_iff_le_and_not_le := Iff.rfl
 
 instance : IsPreOrder (Topology α) :=
-  orderEmbedSet.inducedIsPreOrder
+  orderEmbedSet.instIsPreOrder
 instance : IsPartialOrder (Topology α) :=
-  orderEmbedSet.inducedIsPartialOrder
+  orderEmbedSet.instIsPartialOrder
 
 def sSup' (Ts: Set (Topology α)) : Topology α where
   IsOpen x := x ∈ sInf (Ts.image Topology.OpenSets)
