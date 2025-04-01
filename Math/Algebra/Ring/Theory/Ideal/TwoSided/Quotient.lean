@@ -165,7 +165,7 @@ def toRing_eqv_toRing_of_eq {i j: Ideal R} (h: i = j) : i.toRing ≃+* j.toRing 
     cases b using Quot.ind
     apply map_mul
 
-noncomputable def image_equiv (f: R →+* S) : (kernel f).toRing ≃+* Subring.range f where
+def image_embed (f: R →+* S) : (kernel f).toRing ↪+* Subring.range f where
   toFun := by
     refine Quotient.lift ?_ ?_
     intro a
@@ -174,21 +174,13 @@ noncomputable def image_equiv (f: R →+* S) : (kernel f).toRing ≃+* Subring.r
     congr 1
     apply eq_of_sub_eq_zero
     rw [←map_sub, h]
-  invFun f := mkQuot _ (Classical.choose f.property)
-  leftInv := by
-    intro x
-    induction x using IsCon.Quotient.ind with | mk x =>
-    simp
+  inj' := by
+    intro x y h
+    induction x; induction y
+    have := Subtype.mk.inj h
     apply Quotient.sound
-    show f (_ - x) = 0
-    have : f x ∈ (Subring.range f) := Set.mem_range'
-    rw [map_sub, (Classical.choose_spec this), sub_self]
-  rightInv := by
-    intro x
-    simp
-    apply Subtype.val_inj
-    show f (Classical.choose _) = x.val
-    symm; exact Classical.choose_spec x.property
+    show f (_ - _) = 0
+    rw [map_sub, this, sub_self]
   map_zero := by
     apply Subtype.val_inj
     apply map_zero f
@@ -207,5 +199,24 @@ noncomputable def image_equiv (f: R →+* S) : (kernel f).toRing ≃+* Subring.r
     induction y using IsCon.Quotient.ind with | mk y =>
     apply Subtype.val_inj
     apply map_mul f
+
+noncomputable def image_equiv (f: R →+* S) : (kernel f).toRing ≃+* Subring.range f := {
+  image_embed f with
+  invFun f := mkQuot _ (Classical.choose f.property)
+  leftInv := by
+    intro x
+    induction x using IsCon.Quotient.ind with | mk x =>
+    simp
+    apply Quotient.sound
+    show f (_ - x) = 0
+    have : f x ∈ (Subring.range f) := Set.mem_range'
+    rw [map_sub, (Classical.choose_spec this), sub_self]
+  rightInv := by
+    intro x
+    simp
+    apply Subtype.val_inj
+    show f (Classical.choose _) = x.val
+    symm; exact Classical.choose_spec x.property
+}
 
 end Ideal
