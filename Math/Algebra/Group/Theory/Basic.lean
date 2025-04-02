@@ -81,34 +81,8 @@ section
 
 variable (G: Group α)
 
-instance : One G where
-  one := G.ops.one
-
-instance : Inv G where
-  inv := G.ops.inv
-
-instance : Mul G where
-  mul := G.ops.mul
-
-instance : Div G where
-  div := G.ops.div
-
-instance : Pow G ℕ where
-  pow := G.ops.npow
-
-instance : Pow G ℤ where
-  pow := G.ops.zpow
-
-instance : IsGroup G where
-  mul_assoc := G.spec.mul_assoc
-  one_mul := G.spec.one_mul
-  mul_one := G.spec.mul_one
-  div_eq_mul_inv := G.spec.div_eq_mul_inv
-  zpow_ofNat := G.spec.zpow_ofNat
-  zpow_negSucc := G.spec.zpow_negSucc
-  inv_mul_cancel := G.spec.inv_mul_cancel
-  npow_zero := G.spec.npow_zero
-  npow_succ := G.spec.npow_succ
+instance : GroupOps G := G.ops
+instance : IsGroup G := G.spec
 
 instance : IsDivInvMonoid G := inferInstance
 instance : IsDivisionMonoid G := inferInstance

@@ -7,9 +7,8 @@ structure Ring (α: Type*) where
 
 namespace Ring
 
+@[coe]
 def Elem (_: Ring α) := α
-
-attribute [coe] Elem
 
 instance : CoeSort (Ring α) (Type _) := ⟨Elem⟩
 
