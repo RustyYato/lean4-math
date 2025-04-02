@@ -16,13 +16,13 @@ macro "∑ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders `
 macro "∏ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders ``prod xs b
 
 @[app_unexpander sum] def unexpand_sum : Lean.PrettyPrinter.Unexpander
-  | `($(_) fun $x:ident => ∃ $xs:binderIdent*, $b) => `(∑ $x:ident $xs:binderIdent*, $b)
+  | `($(_) fun $x:ident => ∑ $xs:binderIdent*, $b) => `(∑ $x:ident $xs:binderIdent*, $b)
   | `($(_) fun $x:ident => $b)                     => `(∑ $x:ident, $b)
   | `($(_) fun ($x:ident : $t) => $b)              => `(∑ ($x:ident : $t), $b)
   | _                                              => throw ()
 
 @[app_unexpander prod] def unexpand_prod : Lean.PrettyPrinter.Unexpander
-  | `($(_) fun $x:ident => ∃ $xs:binderIdent*, $b) => `(∏ $x:ident $xs:binderIdent*, $b)
+  | `($(_) fun $x:ident => ∏ $xs:binderIdent*, $b) => `(∏ $x:ident $xs:binderIdent*, $b)
   | `($(_) fun $x:ident => $b)                     => `(∏ $x:ident, $b)
   | `($(_) fun ($x:ident : $t) => $b)              => `(∏ ($x:ident : $t), $b)
   | _                                              => throw ()

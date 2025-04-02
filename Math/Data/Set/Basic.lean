@@ -279,13 +279,13 @@ macro (name := big_op_iSup) "⨆ " xs:explicitBinders ", " b:term:60 : term => e
 macro (name := big_op_iInf) "⨅ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders ``iInf xs b
 
 @[app_unexpander iSup] def unexpand_iSup : Unexpander
-  | `($(_) fun $x:ident => ∃ $xs:binderIdent*, $b) => `(⨆ $x:ident $xs:binderIdent*, $b)
+  | `($(_) fun $x:ident => ⨆ $xs:binderIdent*, $b) => `(⨆ $x:ident $xs:binderIdent*, $b)
   | `($(_) fun $x:ident => $b)                     => `(⨆ $x:ident, $b)
   | `($(_) fun ($x:ident : $t) => $b)              => `(⨆ ($x:ident : $t), $b)
   | _                                              => throw ()
 
 @[app_unexpander iInf] def unexpand_iInf : Unexpander
-  | `($(_) fun $x:ident => ∃ $xs:binderIdent*, $b) => `(⨅ $x:ident $xs:binderIdent*, $b)
+  | `($(_) fun $x:ident => ⨅ $xs:binderIdent*, $b) => `(⨅ $x:ident $xs:binderIdent*, $b)
   | `($(_) fun $x:ident => $b)                     => `(⨅ $x:ident, $b)
   | `($(_) fun ($x:ident : $t) => $b)              => `(⨅ ($x:ident : $t), $b)
   | _                                              => throw ()
