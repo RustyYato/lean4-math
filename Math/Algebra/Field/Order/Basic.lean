@@ -1,5 +1,6 @@
 import Math.Algebra.Field.Basic
 import Math.Algebra.Semiring.Order.Defs
+import Math.Algebra.Group.Order
 import Math.Ops.CheckedOrder
 
 section

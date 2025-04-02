@@ -75,10 +75,6 @@ instance : Nonempty (Set.preimage {c} Ordinal.card) := by
   cases c with | mk c =>
   exact ⟨Ordinal.type (WellOrdering.order c), rfl⟩
 
-instance : Nonempty (Set.range (fun x: Set.preimage {c} Ordinal.card => x.val)) := by
-  apply Set.nonempty_elem
-  apply Set.nonempty_range
-
 -- ord is the smallest ordinal that has cardinality as c
 noncomputable
 def ord (c: Cardinal): Ordinal := ⨅x: Set.preimage {c} Ordinal.card, x.val
