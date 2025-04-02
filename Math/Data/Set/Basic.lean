@@ -268,6 +268,32 @@ end Set
 def iSup [SupSet α] (s: ι -> α) : α := sSup (Set.range s)
 def iInf [InfSet α] (s: ι -> α) : α := sInf (Set.range s)
 
+section Syntax
+
+open Lean Meta PrettyPrinter TSyntax.Compat
+
+notation "⨆ " xs:60 => sSup xs
+notation "⨅ " xs:60 => sInf xs
+
+macro (name := big_op_iSup) "⨆ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders ``iSup xs b
+macro (name := big_op_iInf) "⨅ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders ``iInf xs b
+
+@[app_unexpander iSup] def unexpand_iSup : Unexpander
+  | `($(_) fun $x:ident => ∃ $xs:binderIdent*, $b) => `(⨆ $x:ident $xs:binderIdent*, $b)
+  | `($(_) fun $x:ident => $b)                     => `(⨆ $x:ident, $b)
+  | `($(_) fun ($x:ident : $t) => $b)              => `(⨆ ($x:ident : $t), $b)
+  | _                                              => throw ()
+
+@[app_unexpander iInf] def unexpand_iInf : Unexpander
+  | `($(_) fun $x:ident => ∃ $xs:binderIdent*, $b) => `(⨅ $x:ident $xs:binderIdent*, $b)
+  | `($(_) fun $x:ident => $b)                     => `(⨅ $x:ident, $b)
+  | `($(_) fun ($x:ident : $t) => $b)              => `(⨅ ($x:ident : $t), $b)
+  | _                                              => throw ()
+
+end Syntax
+
+namespace Set
+
 instance : SupSet (Set α) where
   sSup x := ⋃x
 instance : InfSet (Set α) where
@@ -278,23 +304,57 @@ instance : IsLawfulSupSet (Set α) where
 instance : IsLawfulInfSet (Set α) where
   sInf_le := Set.sInter_sub _ _
 
-namespace Set
+@[simp] def sInf_eq_sInter (s: Set (Set α)) : ⨅ s = ⋂ s := rfl
+@[simp] def sSup_eq_sUnion (s: Set (Set α)) : ⨆ s = ⋃ s := rfl
 
 def sub_sSup (a: Set α) (s: Set (Set α)): a ∈ s -> a ⊆ sSup s := sub_sUnion _ _
 def sInf_sub (a: Set α) (s: Set (Set α)): a ∈ s -> sInf s ⊆ a := sInter_sub _ _
 
-def sub_iSup (a: Set α) (s: ι -> Set α): a ∈ range s -> a ⊆ iSup s := by
+def mem_iSup {f: ι -> Set α} : x ∈ ⨆i, f i ↔ ∃i, x ∈ f i := by
+  simp [iSup, sSup, mem_sUnion, mem_range]
+  apply Iff.intro
+  intro ⟨_, ⟨i, rfl⟩ , _⟩
+  exists i
+  intro ⟨i, _⟩
+  exists f i
+  refine ⟨⟨i, rfl⟩, ?_⟩
+  assumption
+
+def mem_iInf {f: ι -> Set α} : x ∈ ⨅i, f i ↔ ∀i, x ∈ f i := by
+  simp [iInf, mem_sInter, mem_range]
+
+def sub_iSup (a: Set α) (s: ι -> Set α): a ∈ range s -> a ⊆ ⨆i, s i := by
   intro eq
   apply sub_trans _ (sub_sSup _ _ _)
   exact a
   rfl
   assumption
 
-def iInf_sub (a: Set α) (s: ι -> Set α): a ∈ range s -> iInf s ⊆ a := by
+def iInf_sub (a: Set α) (s: ι -> Set α): a ∈ range s -> ⨅i, s i ⊆ a := by
   intro eq
   apply sub_trans (sInf_sub _ _ _)
   rfl
   assumption
+
+def sInf_eq_iInf [InfSet α] (s: Set α) : ⨅ s = ⨅x: s, x.val := by
+  congr
+  ext x
+  apply Iff.intro
+  intro h
+  apply Set.mem_range.mpr
+  exists ⟨_, h⟩
+  intro ⟨y, eq⟩; subst eq
+  exact y.property
+
+def sSup_eq_iSup [SupSet α] (s: Set α) : ⨆ s = ⨆x: s, x.val := by
+  congr
+  ext x
+  apply Iff.intro
+  intro h
+  apply Set.mem_range.mpr
+  exists ⟨_, h⟩
+  intro ⟨y, eq⟩; subst eq
+  exact y.property
 
 instance : SDiff (Set α) where
   sdiff a b := a ∩ bᶜ
@@ -1045,41 +1105,6 @@ def inter_eq_empty_iff {a b: Set α} : a ∩ b = ∅ ↔ ∀x, x ∈ a -> x ∈ 
   apply ext_empty
   intro x ⟨ha, hb⟩
   apply h x <;> assumption
-
-def mem_iSup {f: ι -> Set α} : x ∈ iSup f ↔ ∃i, x ∈ f i := by
-  simp [iSup, sSup, mem_sUnion, mem_range]
-  apply Iff.intro
-  intro ⟨_, ⟨i, rfl⟩ , _⟩
-  exists i
-  intro ⟨i, _⟩
-  exists f i
-  refine ⟨⟨i, rfl⟩, ?_⟩
-  assumption
-
-def sInf_eq_iInf [InfSet α] (s: Set α) : sInf s = iInf fun x: s => x.val := by
-  rw [iInf]
-  congr
-  ext x
-  apply Iff.intro
-  intro h
-  apply Set.mem_range.mpr
-  exists ⟨_, h⟩
-  intro ⟨y, eq⟩; subst eq
-  exact y.property
-
-def sSup_eq_iSup [SupSet α] (s: Set α) : sSup s = iSup fun x: s => x.val := by
-  rw [iSup]
-  congr
-  ext x
-  apply Iff.intro
-  intro h
-  apply Set.mem_range.mpr
-  exists ⟨_, h⟩
-  intro ⟨y, eq⟩; subst eq
-  exact y.property
-
-@[simp] def sInf_eq_sInter (s: Set (Set α)) : sInf s = ⋂ s := rfl
-@[simp] def sSup_eq_sUnion (s: Set (Set α)) : sSup s = ⋃ s := rfl
 
 def compl_inter (s t: Set α) : (s ∩ t)ᶜ = sᶜ ∪ tᶜ := by
   ext
