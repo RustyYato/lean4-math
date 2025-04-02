@@ -1,7 +1,6 @@
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Hom
 import Math.Algebra.Group.Hom
-import Math.Relation.RelIso
 
 namespace Free.Algebra
 
@@ -536,3 +535,5 @@ instance [Subsingleton R] : Subsingleton (FreeAlgebra R X) :=
     rw [Subsingleton.allEq 0 1]
 
 end FreeAlgebra
+
+abbrev FreeRing (α: Type*) : Type _ := FreeAlgebra ℤ α

@@ -452,6 +452,22 @@ def support_single [DecidableEq α] [Zero β] [∀b: β, Decidable (b = 0)] :
  assumption
  contradiction
 
+def smul_single [Zero β] [Mul β] [IsMulZeroClass β] [∀b: β, Decidable (b = 0)] [DecidableEq α] (x b: β) (a: α) :
+  x • Finsupp.single a b = Finsupp.single (S := S) a (x * b) := by
+  ext i
+  show x * single a b i = _
+  rw [Finsupp.apply_single, Finsupp.apply_single]
+  split; rfl
+  rw [mul_zero]
+
+def support_smul [Zero β] [Mul β] [IsMulZeroClass β] [∀b: β, Decidable (b = 0)] [DecidableEq α] (x: β) (f: Finsupp α β S) :
+  (x • f).support ⊆ f.support := by
+  intro i
+  simp [mem_support, Finset.mem_union]
+  intro h g; apply h
+  show x * f i = 0
+  rw [g, mul_zero]
+
 def support_add [Zero β] [Add β] [IsAddZeroClass β] [∀b: β, Decidable (b = 0)] [DecidableEq α] (f g: Finsupp α β S) :
   (f + g).support ⊆ f.support ∪ g.support := by
   intro i

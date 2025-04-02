@@ -129,6 +129,22 @@ def add_sum'
   simp [sum_eq_support_sum]
   apply Multiset.sum_pairwise
 
+def smul_sum
+  [SemiringOps α] [IsSemiring α]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  [SMul α γ] [IsModule α γ]
+  (a₀: α)
+  (f: Finsupp ι α S) (g: ι -> α -> γ)
+  (map_smul: ∀i a, g i (a₀ * a) = a₀ • g i a)
+  (eq₀: ∀i, f i = 0 -> g i (f i) = 0)
+  (eq₂: ∀i, a₀ • f i = 0 -> g i (a₀ • f i) = 0):
+  sum (a₀ • f) g eq₂ = a₀ • sum f g eq₀ := by
+  classical
+  rw [sum_eq_support_max_sum (h := f.support_smul a₀), sum_eq_support_sum]
+  rw [Multiset.smul_sum, Multiset.map_map, Function.comp_def]
+  congr; ext i
+  apply map_smul
+
 def single_sum
   [DecidableEq ι]
   [Zero α] [Add α] [IsAddZeroClass α]
