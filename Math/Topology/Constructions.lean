@@ -8,10 +8,10 @@ instance topo_product : Topology (α × β) := induced Prod.fst t₁ ⊓ induced
 instance topo_sum : Topology (α ⊕ β) := coinduced Sum.inl t₁ ⊔ coinduced Sum.inr t₂
 
 instance topo_sigma {ι : Type*} {X : ι → Type v} [t₂: ∀i: ι, Topology (X i)] : Topology (Σi: ι, X i) :=
-  iSup fun i => coinduced (Sigma.mk i) (t₂ i)
+  ⨆i, coinduced (Sigma.mk i) (t₂ i)
 
 instance topo_pi {ι : Type*} {Y : ι → Type v} [t₂:  ∀i: ι, Topology (Y i)] : Topology (∀i: ι, Y i) :=
-  iInf fun i => induced (fun f => f i) (t₂ i)
+  ⨅i, induced (fun f => f i) (t₂ i)
 
 instance topo_quot [s: Setoid α] [Topology α] : Topology (Quotient s) :=
   coinduced (Quotient.mk s) inferInstance
@@ -143,7 +143,7 @@ def IsContinuous.push_discrete [Discrete α'] (f: α' × β -> γ) (hf: ∀x, Is
     have : ∀a, IsContinuous (f' a) := by continuity
     let pre_f' (a: α'): Set β := S.preimage (f' a)
     have pre_f'_open (a: α') : IsOpen (pre_f' a) := IsOpen.preimage (f' a) S hS
-    rw [show S.preimage f = iSup fun a: α' => Set.zip {a} (pre_f' a) from ?_]
+    rw [show S.preimage f = ⨆a: α', Set.zip {a} (pre_f' a) from ?_]
     apply IsOpen.sUnion
     rintro _ ⟨a, rfl⟩
     simp

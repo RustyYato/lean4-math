@@ -140,10 +140,10 @@ def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R
     apply this
     exists x; right; assumption
 
-def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrdered R) (chain: S.IsChain (· ≤ ·)) : IsLocallyWellOrdered (sSup S) where
+def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrdered R) (chain: S.IsChain (· ≤ ·)) : IsLocallyWellOrdered (⨆ S) where
   rel_defined_is_chain := {
     tri := by
-      have memtri : ∀s ∈ S, ∀a b: α, s.defines a -> s.defines b -> sSup S a b ∨ a = b ∨ sSup S b a := by
+      have memtri : ∀s ∈ S, ∀a b: α, s.defines a -> s.defines b -> (⨆ S) a b ∨ a = b ∨ (⨆ S) b a := by
         intro s hs a b ⟨a', ha⟩ ⟨b', hb⟩
         have := h s hs
         have adef : s.defines a := by exists a'
@@ -192,7 +192,7 @@ def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrde
     have total := (inferInstanceAs (Relation.IsTotal (S.Induced (· ≤ ·)))).total
     apply WellFounded.intro
     intro a
-    by_cases h:(sSup S).defines a
+    by_cases h:(⨆ S).defines a
     · rcases h with ⟨a', h⟩
       rename_i h
       rcases h with ⟨s, hs, ha⟩ | ⟨s, hs, ha⟩

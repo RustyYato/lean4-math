@@ -81,7 +81,7 @@ instance : Nonempty (Set.range (fun x: Set.preimage {c} Ordinal.card => x.val)) 
 
 -- ord is the smallest ordinal that has cardinality as c
 noncomputable
-def ord (c: Cardinal): Ordinal := iInf fun x: Set.preimage {c} Ordinal.card => x.val
+def ord (c: Cardinal): Ordinal := ⨅x: Set.preimage {c} Ordinal.card, x.val
 
 def ord_eq (α: Type*) : ∃ (r : α → α → Prop) (_wo: Relation.IsWellOrder r), ord ⟦α⟧ = Ordinal.type r := by
   unfold ord

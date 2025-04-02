@@ -85,7 +85,7 @@ def closed_min_iff [IsLawfulMin α] {f: FilterBase α} {s t : α} : s ⊓ t ∈ 
   apply closed_min <;> assumption
 
 def closed_finite_sInf [LT α] [InfSet α] [IsCompleteSemiLatticeMin α]
-  (s: Set α) [s.IsFinite] (f: FilterBase α): sInf s ∈ f ↔ s ⊆ f.set := by
+  (s: Set α) [s.IsFinite] (f: FilterBase α): ⨅ s ∈ f ↔ s ⊆ f.set := by
   induction s using Set.IsFinite.induction with
   | nil =>
     apply Iff.intro
@@ -255,7 +255,7 @@ def le_generate_iff' [Top α] [IsLawfulTop α] {s : Set α} {f : FilterBase α} 
   apply h
   assumption
 
-def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne: s.Nonempty} {x: α} : x ∈ generate_of_nonempty s ne ↔ ∃ t ⊆ s, Set.IsFinite t ∧ sInf t ≤ x := by
+def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne: s.Nonempty} {x: α} : x ∈ generate_of_nonempty s ne ↔ ∃ t ⊆ s, Set.IsFinite t ∧ ⨅ t ≤ x := by
   apply Iff.intro
   intro mem
   induction mem with
@@ -284,7 +284,7 @@ def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne:
     assumption
   intro ⟨t, sub, fin, le⟩
   apply closed_upward _ _ le
-  show sInf t ∈ generate_of_nonempty s ne
+  show ⨅ t ∈ generate_of_nonempty s ne
   apply (closed_finite_sInf _ _).mpr
   intro x mem
   apply GenerateSets.basic

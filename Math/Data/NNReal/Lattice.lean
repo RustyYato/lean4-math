@@ -74,7 +74,7 @@ def bdd_below (S: Set ℝ≥0) : S.BoundedBelow := by
   apply zero_mem_lowerbounds
 
 noncomputable instance : SupSet ℝ≥0 where
-  sSup S := ⟨sSup (S.image orderEmbedReal), by
+  sSup S := ⟨⨆ (S.image orderEmbedReal), by
     by_cases h:S.BoundedAbove ∧ S.Nonempty
     have ⟨x, hx⟩ := h.right
     apply le_trans (α := ℝ) x.property

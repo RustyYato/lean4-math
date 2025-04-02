@@ -4,7 +4,7 @@ import Math.Order.Atom.Zorn
 instance : IsAtomic (Filter α) := by
     apply IsAtomic.of_isChain_bounded
     intro S Schain Sne bot_not_mem
-    refine ⟨sInf S, ?_, (isGLB_sInf S).left⟩
+    refine ⟨_, ?_, (isGLB_sInf S).left⟩
     intro h
     have : S.IsChain (· ≥ ·) := Schain.opp
     have := FilterBase.sInf_neBot_of_directed' Sne this.directedOn bot_not_mem

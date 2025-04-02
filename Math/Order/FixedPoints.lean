@@ -8,12 +8,12 @@ namespace OrderHom
 
 /-- Least fixed point of a monotone function -/
 def lfp : (α →o α) →o α where
-  toFun f := sInf (Set.mk fun a => f a ≤ a)
+  toFun f := ⨅ (Set.mk fun a => f a ≤ a)
   resp_rel hle := sInf_le_sInf fun a ha => le_trans (hle a) ha
 
 /-- Greatest fixed point of a monotone function -/
 def gfp : (α →o α) →o α where
-  toFun f := sSup (Set.mk fun a => a ≤ f a)
+  toFun f := ⨆ (Set.mk fun a => a ≤ f a)
   resp_rel hle := sSup_le_sSup fun a ha => le_trans ha (hle a)
 
 def lfp_le {a : α} (h : f a ≤ a) : lfp f ≤ a :=

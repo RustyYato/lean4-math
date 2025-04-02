@@ -5,10 +5,10 @@ import Math.Order.OrderIso.Set
 namespace OrderIso
 
 def instSupSet [SupSet α] [LE α] [LE β] (h: β ≃o α) : SupSet β where
-  sSup s := h.symm (sSup (s.preimage h.symm))
+  sSup s := h.symm (⨆ (s.preimage h.symm))
 
 def instInfSet [InfSet α] [LE α] [LE β] (h: β ≃o α) : InfSet β where
-  sInf s := h.symm (sInf (s.preimage h.symm))
+  sInf s := h.symm (⨅ (s.preimage h.symm))
 
 end OrderIso
 
@@ -20,12 +20,12 @@ instance instSupSetWithTop [SupSet α] [LE α] : SupSet (WithTop α) where
   sSup s :=
     have s' := s.preimage .of
     if ⊤ ∈ s ∨ ¬Set.BoundedAbove s' then ⊤
-    else ↑(sSup (s.preimage .of))
+    else ↑(⨆ (s.preimage .of))
 
 instance instInfSetWithTop [InfSet α] [LE α] : InfSet (WithTop α) where
   sInf s :=
     if s ⊆ {⊤} ∨ ¬s.BoundedBelow then ⊤
-    else ↑(sInf (s.preimage .of))
+    else ↑(⨅ (s.preimage .of))
 
 instance instSupSetWithBot [SupSet α] [LE α] : SupSet (WithBot α) :=
   WithBot.orderIsoWithTop.instSupSet
@@ -33,8 +33,8 @@ instance instInfSetWithBot [InfSet α] [LE α] : InfSet (WithBot α) :=
   WithBot.orderIsoWithTop.instInfSet
 
 private
-def WithBot.sSup_def [SupSet α] [_root_.LE α] (s: Set (WithBot α)) : sSup s = (
-  WithBot.orderIsoWithTop.symm (sSup (s.preimage WithBot.orderIsoWithTop.symm))
+def WithBot.sSup_def [SupSet α] [_root_.LE α] (s: Set (WithBot α)) : ⨆ s = (
+  WithBot.orderIsoWithTop.symm (⨆ (s.preimage WithBot.orderIsoWithTop.symm))
 ) := rfl
 
 instance [SupSet α] [LE α] [IsLawfulSupSet α] : IsLawfulSupSet (WithTop α) where
@@ -63,7 +63,7 @@ instance [InfSet α] [LE α] [IsLawfulInfSet α] : IsLawfulInfSet (WithTop α) w
       rename_i x
       exfalso
       apply h
-      exists ↑(sInf (s.preimage WithTop.of))
+      exists ↑(⨅ (s.preimage WithTop.of))
       intro y hy
       cases y
       apply le_top

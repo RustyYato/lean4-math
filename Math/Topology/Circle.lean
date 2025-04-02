@@ -72,8 +72,8 @@ def Real.Icc_compact (a b: ℝ) (h: a ≤ b) : Topology.IsCompactOn (Set.Icc a b
     (Classical.choose_spec <|
     Classical.choose_spec (U_sub u (by
       assumption))).right.right
-  let f₀ : Set ℝ := iInf fun i: U => get_f₀' i.val i.property
-  let f₁ : Set ℝ := iInf fun i: U => get_f₁' i.val i.property
+  let f₀ : Set ℝ := ⨅i: U, get_f₀' i i.property
+  let f₁ : Set ℝ := ⨅i: U, get_f₁' i i.property
   have f₀_in_nhbd : f₀ ∈ 𝓝 a := by
     apply (FilterBase.closed_finite_sInf _ _).mpr
     intro s hs

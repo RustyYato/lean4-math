@@ -307,8 +307,8 @@ instance : IsLawfulInfSet (Set α) where
 @[simp] def sInf_eq_sInter (s: Set (Set α)) : ⨅ s = ⋂ s := rfl
 @[simp] def sSup_eq_sUnion (s: Set (Set α)) : ⨆ s = ⋃ s := rfl
 
-def sub_sSup (a: Set α) (s: Set (Set α)): a ∈ s -> a ⊆ sSup s := sub_sUnion _ _
-def sInf_sub (a: Set α) (s: Set (Set α)): a ∈ s -> sInf s ⊆ a := sInter_sub _ _
+def sub_sSup (a: Set α) (s: Set (Set α)): a ∈ s -> a ⊆ ⨆ s := sub_sUnion _ _
+def sInf_sub (a: Set α) (s: Set (Set α)): a ∈ s -> ⨅  s ⊆ a := sInter_sub _ _
 
 def mem_iSup {f: ι -> Set α} : x ∈ ⨆i, f i ↔ ∃i, x ∈ f i := by
   simp [iSup, sSup, mem_sUnion, mem_range]

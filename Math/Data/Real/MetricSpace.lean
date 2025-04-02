@@ -52,7 +52,7 @@ instance : Topology.IsConnected ℝ where
       right; assumption
 
     let S := (A ∩ Set.Icc a b)
-    let c := sSup S
+    let c := ⨆ S
     have b_in_bdd : b ∈ S.upperBounds := by
       intro x ⟨_, hx⟩
       apply hx.right

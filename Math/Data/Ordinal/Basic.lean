@@ -1343,12 +1343,12 @@ open Classical in
 noncomputable instance : SupSet Ordinal where
   sSup s := if h:s.BoundedAbove then s.upperBounds.min (· < ·) h else ⊥
 
-def sSup_eq_sInf_upperbounds (s: Set Ordinal) (h: s.BoundedAbove) : sSup s = sInf s.upperBounds := by
+def sSup_eq_sInf_upperbounds (s: Set Ordinal) (h: s.BoundedAbove) : ⨆ s = ⨅ s.upperBounds := by
   simp [sSup, sInf]
   unfold Set.BoundedAbove at *
   rw [dif_pos h]
 
-def sInf_le (s: Set Ordinal) : ∀x ∈ s, sInf s ≤ x := by
+def sInf_le (s: Set Ordinal) : ∀x ∈ s, ⨅ s ≤ x := by
   intro x mem
   dsimp [sInf]
   rw [dif_pos ⟨_, mem⟩]
@@ -1356,7 +1356,7 @@ def sInf_le (s: Set Ordinal) : ∀x ∈ s, sInf s ≤ x := by
   apply Set.not_lt_min
   assumption
 
-def le_sSup (s: Set Ordinal) (h: s.BoundedAbove) : ∀x ∈ s, x ≤ sSup s := by
+def le_sSup (s: Set Ordinal) (h: s.BoundedAbove) : ∀x ∈ s, x ≤ ⨆ s := by
   intro x mem
   dsimp [sSup]
   rw [dif_pos h]
@@ -1365,7 +1365,7 @@ def le_sSup (s: Set Ordinal) (h: s.BoundedAbove) : ∀x ∈ s, x ≤ sSup s := b
   apply this
   assumption
 
-def sInf_le' (s: Set Ordinal) (k: Ordinal) : (∀x ∈ s, x ≤ k) -> sInf s ≤ k := by
+def sInf_le' (s: Set Ordinal) (k: Ordinal) : (∀x ∈ s, x ≤ k) -> ⨅ s ≤ k := by
   intro h
   simp [sInf]
   split
@@ -1379,14 +1379,14 @@ def sInf_le' (s: Set Ordinal) (k: Ordinal) : (∀x ∈ s, x ≤ k) -> sInf s ≤
   assumption
   apply bot_le
 
-def le_sInf (s: Set Ordinal) (h: s.Nonempty) (k: Ordinal) : (∀x ∈ s, k ≤ x) -> k ≤ sInf s := by
+def le_sInf (s: Set Ordinal) (h: s.Nonempty) (k: Ordinal) : (∀x ∈ s, k ≤ x) -> k ≤ ⨅ s := by
   intro g
   simp [sInf]
   rw [dif_pos h]
   apply g
   apply Set.min_mem
 
-def sSup_empty : sSup ∅ = (0: Ordinal) := by
+def sSup_empty : ⨆ ∅ = (0: Ordinal) := by
   have zero_in_upper_bounds: (0: Ordinal) ∈ Set.upperBounds ∅ := fun x h => (Set.not_mem_empty h).elim
   have empty_bounded : (∅: Set Ordinal).BoundedAbove := ⟨0, zero_in_upper_bounds⟩
   simp [sSup]
@@ -1397,13 +1397,13 @@ def sSup_empty : sSup ∅ = (0: Ordinal) := by
   assumption
   apply zero_le
 
-def le_sSup' (s: Set Ordinal) (h: s.BoundedAbove) : (∀x ∈ s.upperBounds, k ≤ x) -> k ≤ sSup s := by
+def le_sSup' (s: Set Ordinal) (h: s.BoundedAbove) : (∀x ∈ s.upperBounds, k ≤ x) -> k ≤ ⨆ s := by
   intro g
   rw [sSup_eq_sInf_upperbounds]
   apply le_sInf <;> assumption
   assumption
 
-def sSup_le (s: Set Ordinal) (h: s.BoundedAbove) (k: Ordinal) : (∀x ∈ s, x ≤ k) -> sSup s ≤ k := by
+def sSup_le (s: Set Ordinal) (h: s.BoundedAbove) (k: Ordinal) : (∀x ∈ s, x ≤ k) -> ⨆ s ≤ k := by
   intro g
   simp [sSup]
   rw [dif_pos h]
@@ -2078,7 +2078,7 @@ def sSup_lift.{u} (s: Set Ordinal.{u}) : Ordinal.{u+1} :=
   (s.image lift.{u, u+1}).upperBounds.min (· < ·) (sSup_lift_bounded s)
 
 open Classical in
-def sSup_lift_eq_sSup (s: Set Ordinal) : sSup_lift s = sSup (s.image lift.{u,u+1}) := by
+def sSup_lift_eq_sSup (s: Set Ordinal) : sSup_lift s = ⨆ (s.image lift.{u,u+1}) := by
   show _ = if h:_ then _ else _
   rw [dif_pos (sSup_lift_bounded s)]
   rfl
@@ -2175,7 +2175,7 @@ def le_ofNat (n: Nat) (o: Ordinal) : o ≤ ofNat n -> ∃m, o = ofNat m := by
     assumption
 
 -- omega is precisely the supremum of all the naturals
-example : sSup (Set.range Ordinal.ofNat) = ω := by
+example : ⨆ (Set.range Ordinal.ofNat) = ω := by
   have : ω ∈ (Set.range Ordinal.ofNat).upperBounds := by
     intro x ⟨n, eq⟩
     subst x
@@ -2192,7 +2192,7 @@ example : sSup (Set.range Ordinal.ofNat) = ω := by
   apply ofNat_lt_omega
   apply omega_le_of_ne_finite
   intro n h
-  have : ofNat n < sSup (Set.range ofNat) := by
+  have : ofNat n < ⨆ (Set.range ofNat) := by
     apply lt_of_lt_of_le
     apply lt_succ_self
     rw [add_one_eq_succ, ofNat_succ]

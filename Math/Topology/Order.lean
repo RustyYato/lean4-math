@@ -33,7 +33,7 @@ instance : IsPartialOrder (Topology α) :=
   orderEmbedSet.instIsPartialOrder
 
 def sSup' (Ts: Set (Topology α)) : Topology α where
-  IsOpen x := x ∈ sInf (Ts.image Topology.OpenSets)
+  IsOpen x := x ∈ ⨅ (Ts.image Topology.OpenSets)
   univ_open := by
     dsimp
     apply Set.mem_sInter.mpr
@@ -102,31 +102,31 @@ instance : Max (Topology α) where
 instance : Min (Topology α) where
   min := min'
 
-def max_eq (a b: Topology α) : a ⊔ b = sSup {a, b} := by
+def max_eq (a b: Topology α) : a ⊔ b = ⨆ {a, b} := by
   show max' a b = sSup' {a, b}
   unfold max' sSup'
   ext s
   simp
   rfl
 
-def min_eq (a b: Topology α) : a ⊓ b = sInf {a, b} := by
+def min_eq (a b: Topology α) : a ⊓ b = ⨅ {a, b} := by
   show min' a b = sInf' {a, b}
   unfold min' sInf'
   ext s
   simp
 
-private def sSup_le: ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : Topology α), x ∈ s → x ≤ k) → sSup s ≤ k := by
+private def sSup_le: ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : Topology α), x ∈ s → x ≤ k) → ⨆ s ≤ k := by
   intro k Ts h s s_open x ⟨T, T_in_Ts, eq⟩
   subst x
   apply h
   assumption
   assumption
 
-private def le_sSup : ∀ (s : Set (Topology α)) (x : Topology α), x ∈ s → x ≤ sSup s := by
+private def le_sSup : ∀ (s : Set (Topology α)) (x : Topology α), x ∈ s → x ≤ ⨆ s := by
   intro Ts T T_in_Ts s s_in_sSup
   exact s_in_sSup T.OpenSets (Set.mem_image' T_in_Ts)
 
-private def sInf_le : ∀ (s : Set (Topology α)) (x : Topology α), x ∈ s → sInf s ≤ x := by
+private def sInf_le : ∀ (s : Set (Topology α)) (x : Topology α), x ∈ s → ⨅ s ≤ x := by
   intro Ts T T_in_Ts x x_open
   apply Generate.IsOpen.of
   exists T.OpenSets
@@ -135,7 +135,7 @@ private def sInf_le : ∀ (s : Set (Topology α)) (x : Topology α), x ∈ s →
   assumption
   assumption
 
-private def le_sInf : ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : Topology α), x ∈ s → k ≤ x) → k ≤ sInf s := by
+private def le_sInf : ∀ (k : Topology α) (s : Set (Topology α)), (∀ (x : Topology α), x ∈ s → k ≤ x) → k ≤ ⨅ s := by
   intro T Ts h x x_open
   induction x_open with
   | of g =>
@@ -234,7 +234,7 @@ def continuous_max_rng_right {t₁ : Topology α} {t₂ t₃ : Topology β} :
   apply le_max_right
 
 def continuous_sSup_dom {T : Set (Topology α)} {t₂ : Topology β} :
-    IsContinuous' (sSup T) t₂ f ↔ ∀ t ∈ T, IsContinuous' t t₂ f := by
+    IsContinuous' (⨆ T) t₂ f ↔ ∀ t ∈ T, IsContinuous' t t₂ f := by
   simp only [continuous_iff_le_induced, sSup_le_iff]
 
 instance [Subsingleton α] : Subsingleton (Topology α) where

@@ -72,7 +72,7 @@ def principal_eq_generate (a: α) : principal a = generate {a} := by
     simp
     assumption
 -- the principal ideal is the smallest ideal which contains a
-def principal_spec (a: α) : principal a = sInf (Set.mk fun i => a ∈ i) := by
+def principal_spec (a: α) : principal a = ⨅ (Set.mk fun i => a ∈ i) := by
   rw [principal_eq_generate, generate_spec]
   congr
   ext i

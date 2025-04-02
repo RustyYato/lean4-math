@@ -4,7 +4,7 @@ import Math.Data.Set.Basic
 variable [LE α] [LE β]
 
 def OrderIso.instIsLawfulSupSet (h: β ≃o α) [SupSet β] [SupSet α] [IsLawfulSupSet α]
-  (hs: ∀s: Set β, sSup s = h.symm (sSup (s.preimage h.symm))): IsLawfulSupSet β where
+  (hs: ∀s: Set β, ⨆ s = h.symm (⨆ (s.preimage h.symm))): IsLawfulSupSet β where
   le_sSup := by
     intro s x mem
     have : s.preimage id = s := rfl
@@ -19,7 +19,7 @@ def OrderIso.instIsLawfulSupSet (h: β ≃o α) [SupSet β] [SupSet α] [IsLawfu
     simp [h.coe_symm]
 
 def OrderIso.instIsLawfulInfSet (h: β ≃o α) [InfSet β] [InfSet α] [IsLawfulInfSet α]
-  (hs: ∀s: Set β, sInf s = h.symm (sInf (s.preimage h.symm))): IsLawfulInfSet β where
+  (hs: ∀s: Set β, ⨅ s = h.symm (⨅ (s.preimage h.symm))): IsLawfulInfSet β where
   sInf_le := by
     intro s x mem
     have : s.preimage id = s := rfl

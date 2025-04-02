@@ -8,12 +8,12 @@ variable (α: Type*) [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α] [
 variable {α₀: Type*} [Max α₀] [Min α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 
 class IsCompleteSemiLatticeSup : Prop extends IsLawfulSupSet α, IsSemiLatticeMax α where
-  sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> sSup s ≤ k
+  sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> ⨆ s ≤ k
 
 export IsCompleteSemiLatticeSup (sSup_le)
 
 class IsCompleteSemiLatticeMin : Prop extends IsLawfulInfSet α, IsSemiLatticeMin α where
-  le_sInf: ∀k: α, ∀s: Set α, (∀x ∈ s, k ≤ x) -> k ≤ sInf s
+  le_sInf: ∀k: α, ∀s: Set α, (∀x ∈ s, k ≤ x) -> k ≤ ⨅ s
 
 export IsCompleteSemiLatticeMin (le_sInf)
 
@@ -25,9 +25,9 @@ instance IsCompleteLattice.mk [IsLattice α] [IsCompleteSemiLatticeSup α] [IsCo
   le_sInf := IsCompleteSemiLatticeMin.le_sInf
 
 class CompleteSemiLatticeSup extends LawfulSupSet α, SemiLatticeMax α where
-  sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> sSup s ≤ k
+  sSup_le: ∀k: α, ∀s: Set α, (∀x ∈ s, x ≤ k) -> ⨆ s ≤ k
 class CompleteSemiLatticeMin extends LawfulInfSet α, SemiLatticeMin α where
-  le_sInf: ∀k: α, ∀s: Set α, (∀x ∈ s, k ≤ x) -> k ≤ sInf s
+  le_sInf: ∀k: α, ∀s: Set α, (∀x ∈ s, k ≤ x) -> k ≤ ⨅ s
 class CompleteLattice extends CompleteSemiLatticeSup α, CompleteSemiLatticeMin α, LawfulTop α, LawfulBot α where
   mk' ::
 
@@ -83,7 +83,7 @@ section
 variable [IsCompleteSemiLatticeSup α₀] {s t : Set α₀} {a b : α₀}
 
 @[simp]
-def sSup_le_iff : sSup s ≤ a ↔ ∀b ∈ s, b ≤ a := by
+def sSup_le_iff : ⨆ s ≤ a ↔ ∀b ∈ s, b ≤ a := by
   apply Iff.intro
   intro h
   intro x x_in_s
@@ -95,7 +95,7 @@ def sSup_le_iff : sSup s ≤ a ↔ ∀b ∈ s, b ≤ a := by
   assumption
 
 @[simp]
-def sSup_singleton : sSup ({ x }: Set α₀) = x := by
+def sSup_singleton : ⨆ ({ x }: Set α₀) = x := by
   apply le_antisymm
   apply sSup_le
   intro y mem
@@ -104,7 +104,7 @@ def sSup_singleton : sSup ({ x }: Set α₀) = x := by
   rfl
 
 @[simp]
-def sSup_union : sSup (s ∪ t) = sSup s ⊔ sSup t := by
+def sSup_union : ⨆ (s ∪ t) = (⨆ s) ⊔ ⨆ t := by
   apply le_antisymm
   apply sSup_le
   intro k mem
@@ -124,29 +124,29 @@ def sSup_union : sSup (s ∪ t) = sSup s ⊔ sSup t := by
   apply le_sSup; apply Set.mem_union.mpr; right; assumption
 
 @[simp]
-def sSup_insert : sSup (insert a s) = a ⊔ sSup s := by
+def sSup_insert : ⨆ (insert a s) = a ⊔ ⨆ s := by
   erw [sSup_union, sSup_singleton]
 
-def sSup_le_sSup (h: s ⊆ t) : sSup s ≤ sSup t := by
+def sSup_le_sSup (h: s ⊆ t) : ⨆ s ≤ ⨆ t := by
   apply sSup_le
   intro x mem_s
   apply le_sSup
   apply h
   assumption
 
-def sSup_empty_le : ∀x: α₀, sSup ∅ ≤ x := by
+def sSup_empty_le : ∀x: α₀, ⨆ ∅ ≤ x := by
   intro x
   apply sSup_le
   intro x mem_s
   contradiction
 
-def le_sSup_univ : ∀x: α₀, x ≤ sSup (Set.univ _) := by
+def le_sSup_univ : ∀x: α₀, x ≤ ⨆ (Set.univ _) := by
   intro x
   apply le_sSup
   apply Set.mem_univ
 
 @[simp]
-def sSup_empty [IsLawfulBot α₀] : sSup ∅ = (⊥: α₀) := by
+def sSup_empty [IsLawfulBot α₀] : ⨆ ∅ = (⊥: α₀) := by
   apply le_antisymm
   apply sSup_empty_le
   apply bot_le
@@ -158,37 +158,37 @@ section
 variable [IsCompleteSemiLatticeMin α₀] {s t : Set α₀} {a b : α₀}
 
 @[simp]
-def le_sInf_iff : a ≤ sInf s ↔ ∀b ∈ s, a ≤ b :=
+def le_sInf_iff : a ≤ ⨅ s ↔ ∀b ∈ s, a ≤ b :=
   sSup_le_iff (α₀ := Opposite α₀)
 
 @[simp]
-def sInf_singleton : sInf ({ x }: Set α₀) = x :=
+def sInf_singleton : ⨅ ({ x }: Set α₀) = x :=
   sSup_singleton (α₀ := Opposite α₀)
 
 @[simp]
-def sInf_union : sInf (s ∪ t) = sInf s ⊓ sInf t :=
+def sInf_union : ⨅ (s ∪ t) = (⨅ s) ⊓ ⨅ t :=
   sSup_union (α₀ := Opposite α₀)
 
 @[simp]
-def sInf_insert : sInf (insert a s) = a ⊓ sInf s :=
+def sInf_insert : ⨅ (insert a s) = a ⊓ ⨅ s :=
   sSup_insert (α₀ := Opposite α₀)
 
-def sInf_le_sInf (h: s ⊆ t) : sInf t ≤ sInf s :=
+def sInf_le_sInf (h: s ⊆ t) : ⨅ t ≤ ⨅ s :=
   sSup_le_sSup (α₀ := Opposite α₀) h
 
-def le_sInf_empty : ∀x: α₀, x ≤ (sInf ∅) := by
+def le_sInf_empty : ∀x: α₀, x ≤ (⨅ ∅) := by
   intro x
   apply le_sInf
   intros
   contradiction
 
-def sInf_univ_le : ∀x: α₀, sInf (Set.univ _) ≤ x := by
+def sInf_univ_le : ∀x: α₀, ⨅ (Set.univ _) ≤ x := by
   intro x
   apply sInf_le
   apply Set.mem_univ
 
 @[simp]
-def sInf_empty [IsLawfulTop α₀] : sInf ∅ = (⊤: α₀) :=
+def sInf_empty [IsLawfulTop α₀] : ⨅ ∅ = (⊤: α₀) :=
   sSup_empty (α₀ := Opposite α₀)
 
 end
@@ -198,16 +198,16 @@ section
 variable [IsCompleteLattice α₀] {s t : Set α₀} {a b : α₀}
 
 @[simp]
-def sSup_univ [IsCompleteLattice α] : sSup (Set.univ α) = (⊤: α) := by
+def sSup_univ [IsCompleteLattice α] : ⨆ (Set.univ α) = (⊤: α) := by
   apply le_antisymm
   apply le_top
   apply le_sSup_univ
 
 @[simp]
-def sInf_univ [IsCompleteLattice α] : sInf (Set.univ α) = (⊥: α) :=
+def sInf_univ [IsCompleteLattice α] : ⨅ (Set.univ α) = (⊥: α) :=
   sSup_univ (α := Opposite α)
 
-def sInf_le_sSup (h: s.Nonempty) : sInf s ≤ sSup s := by
+def sInf_le_sSup (h: s.Nonempty) : ⨅ s ≤ ⨆ s := by
   obtain ⟨x, mem⟩ := h
   apply le_trans
   apply sInf_le
@@ -216,7 +216,7 @@ def sInf_le_sSup (h: s.Nonempty) : sInf s ≤ sSup s := by
   assumption
 
 @[simp]
-def sSup_inter_le : sSup (s ∩ t) ≤ sSup s ⊓ sSup t := by
+def sSup_inter_le : ⨆ (s ∩ t) ≤ (⨆ s) ⊓ ⨆ t := by
   apply sSup_le
   intro x mem
   have ⟨_, _⟩ := Set.mem_inter.mp mem
@@ -225,26 +225,26 @@ def sSup_inter_le : sSup (s ∩ t) ≤ sSup s ⊓ sSup t := by
   apply le_sSup; assumption
 
 @[simp]
-def le_sInf_inter : sInf s ⊔ sInf t ≤ sInf (s ∩ t) :=
+def le_sInf_inter : (⨅ s) ⊔ ⨅ t ≤ ⨅ (s ∩ t) :=
   sSup_inter_le (α₀ := Opposite α₀)
 
 @[simp]
-def sSup_insert_bot : sSup (insert ⊥ s) = sSup s := by
+def sSup_insert_bot : ⨆ (insert ⊥ s) = ⨆ s := by
   simp
 
 @[simp]
-def sSup_insert_top : sSup (insert ⊤ s) = ⊤ := by
+def sSup_insert_top : ⨆ (insert ⊤ s) = ⊤ := by
   simp
 
 @[simp]
-def sInf_insert_bot : sInf (insert ⊥ s) = ⊥ := by
+def sInf_insert_bot : ⨅ (insert ⊥ s) = ⊥ := by
   simp
 
 @[simp]
-def sInf_insert_top : sInf (insert ⊤ s) = sInf s := by
+def sInf_insert_top : ⨅ (insert ⊤ s) = ⨅ s := by
   simp
 
-def sSup_eq_bot : sSup s = ⊥ ↔ ∀x ∈ s, x = ⊥ := by
+def sSup_eq_bot : ⨆ s = ⊥ ↔ ∀x ∈ s, x = ⊥ := by
   apply Iff.intro
   intro h x emm
   apply le_antisymm
@@ -260,10 +260,10 @@ def sSup_eq_bot : sSup s = ⊥ ↔ ∀x ∈ s, x = ⊥ := by
   assumption
   apply bot_le
 
-def sInf_eq_top : sInf s = ⊤ ↔ ∀x ∈ s, x = ⊤ :=
+def sInf_eq_top : ⨅ s = ⊤ ↔ ∀x ∈ s, x = ⊤ :=
   sSup_eq_bot (α₀ := Opposite α₀)
 
-def isLUB_sSup (s: Set α₀) : s.IsLUB (sSup s) := by
+def isLUB_sSup (s: Set α₀) : s.IsLUB (⨆ s) := by
   apply And.intro
   intro x hx
   apply le_sSup
@@ -274,7 +274,7 @@ def isLUB_sSup (s: Set α₀) : s.IsLUB (sSup s) := by
   apply hx
   assumption
 
-def isGLB_sInf (s: Set α₀) : s.IsGLB (sInf s) :=
+def isGLB_sInf (s: Set α₀) : s.IsGLB (⨅ s) :=
   isLUB_sSup (α₀ := α₀ᵒᵖ) s
 
 end
@@ -288,7 +288,7 @@ def instIsCompleteSemiLatticeSup
   [IsCompleteSemiLatticeSup α]
   [IsSemiLatticeMax β]
   (h: β ↪o α)
-  (hs: ∀s: Set β, h (sSup s) = sSup (s.image h))
+  (hs: ∀s: Set β, h (⨆ s) = ⨆ (s.image h))
   : IsCompleteSemiLatticeSup β where
   le_sSup := by
     intro s x mem
@@ -314,7 +314,7 @@ def instIsCompleteSemiLatticeMin
   [IsCompleteSemiLatticeMin α]
   [IsSemiLatticeMin β]
   (h: β ↪o α)
-  (hs: ∀s: Set β, h (sInf s) = sInf (s.image h))
+  (hs: ∀s: Set β, h (⨅ s) = ⨅ (s.image h))
   : IsCompleteSemiLatticeMin β :=
   let h': Opposite β ↪o Opposite α := Opposite.orderEmbeddingCongr h
   have := instIsCompleteSemiLatticeSup h' hs
@@ -333,11 +333,11 @@ def instIsCompleteSemiLatticeSup
   [IsCompleteSemiLatticeSup α]
   [IsSemiLatticeMax β]
   (h: β ≃o α)
-  (hs: ∀s: Set β, sSup s = h.symm (sSup (s.preimage h.symm)))
+  (hs: ∀s: Set β, ⨆ s = h.symm (⨆ (s.preimage h.symm)))
   : IsCompleteSemiLatticeSup β :=
   h.toEmbedding.instIsCompleteSemiLatticeSup <| by
   intro s
-  show h _ = sSup (Set.image _ h)
+  show h _ = ⨆ (Set.image _ h)
   rw [hs]
   rw [h.symm_coe]
   congr
@@ -352,7 +352,7 @@ def instIsCompleteSemiLatticeMin
   [IsCompleteSemiLatticeMin α]
   [IsSemiLatticeMin β]
   (h: β ≃o α)
-  (hs: ∀s: Set β, sInf s = h.symm (sInf (s.preimage h.symm)))
+  (hs: ∀s: Set β, ⨅ s = h.symm (⨅ (s.preimage h.symm)))
   : IsCompleteSemiLatticeMin β :=
   let h': Opposite β ≃o Opposite α := Opposite.orderIsoCongr h
   have := instIsCompleteSemiLatticeSup h' hs
@@ -400,7 +400,7 @@ instance
     exact mem
 
 def sInf_sdiff_top [IsCompleteSemiLatticeMin α₀] [IsLawfulTop α₀] (s: Set α₀) :
-  sInf s = sInf (s \ {⊤}) := by
+  ⨅ s = ⨅ (s \ {⊤}) := by
   apply le_antisymm
   apply sInf_le_sInf
   intro x; exact And.left
@@ -416,7 +416,7 @@ def sInf_sdiff_top [IsCompleteSemiLatticeMin α₀] [IsLawfulTop α₀] (s: Set 
     assumption
 
 def sSup_sdiff_bot [IsCompleteSemiLatticeSup α₀] [IsLawfulBot α₀] (s: Set α₀) :
-  sSup s = sSup (s \ {⊥}) := sInf_sdiff_top (α₀ := Opposite α₀) s
+  ⨆ s = ⨆ (s \ {⊥}) := sInf_sdiff_top (α₀ := Opposite α₀) s
 
 instance {α} [LE α] [LT α] [InfSet α] [Min α] [IsCompleteSemiLatticeMin α] : IsCompleteSemiLatticeMin (WithTop α) where
   le_sInf := by

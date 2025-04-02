@@ -15,7 +15,7 @@ def sInf_eq_argmin_on (hs : s.Nonempty) :
   have : Nonempty s := by
     obtain ⟨x, h⟩ := hs
     exact ⟨x, h⟩
-  sInf s = Relation.argMin (fun x: s => x.val) (· < ·) := by
+  ⨅ s = Relation.argMin (fun x: s => x.val) (· < ·) := by
   have : Nonempty s := by
     obtain ⟨x, h⟩ := hs
     exact ⟨x, h⟩
@@ -29,12 +29,12 @@ def sInf_eq_argmin_on (hs : s.Nonempty) :
   conv at this => { rhs; rw [not_true] }
   exact le_of_not_lt this
 
-def csInf_mem (hs : s.Nonempty) : sInf s ∈ s := by
+def csInf_mem (hs : s.Nonempty) : ⨅ s ∈ s := by
   rw [sInf_eq_argmin_on]
   apply Subtype.property
   assumption
 
-def ciInf_mem [Nonempty ι] (f : ι → α) : iInf f ∈ range f :=
+def ciInf_mem [Nonempty ι] (f : ι → α) : ⨅i, f i ∈ range f :=
   csInf_mem (nonempty_range f)
 
 end

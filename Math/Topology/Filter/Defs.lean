@@ -10,7 +10,7 @@ namespace Topology
 /-- a set is a neighborhood if it contains an open set around x
     and the set of all neighborhoods is a filter --/
 def nhds (a: α) : Filter α :=
-  iInf fun x: Set.mk (fun s: Set α => a ∈ s ∧ IsOpen s) => 𝓟 x.val
+  ⨅x: Set.mk (fun s: Set α => a ∈ s ∧ IsOpen s), 𝓟 x.val
 
 @[inherit_doc]
 scoped notation "𝓝" => nhds

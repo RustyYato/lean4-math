@@ -425,13 +425,13 @@ abbrev GaloisInsertion.liftCompleteLattice
   [Max α] [Min α] [SupSet α] [InfSet α] [Top α] [Bot α] [IsCompleteLattice α]
   [IsPartialOrder β] (gi : GaloisInsertion l u) : CompleteLattice β :=
   { gi.instLawfulTop, gi.gc.instLawfulBot, gi.instLattice with
-    sSup := fun s => l (sSup (s.image u))
+    sSup := fun s => l (⨆ (s.image u))
     sSup_le := fun s _ => by apply (gi.isLUB_of_u_image (isLUB_sSup _)).2
     le_sSup := fun s => by
       apply (gi.isLUB_of_u_image (isLUB_sSup _)).1
       assumption
     sInf s :=  by
-      apply gi.choice (sInf (s.image u))
+      apply gi.choice (⨅ (s.image u))
       apply (isGLB_sInf _).right
       apply gi.gc.monotone_u.mem_lowerBounds_image
       intro b hb
