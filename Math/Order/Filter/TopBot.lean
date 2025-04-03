@@ -87,6 +87,29 @@ instance neBot_atBot [hα: Nonempty α] [IsDirected α (· ≥ ·)] [IsPreOrder 
   rw [mem_principal] at this
   exact lt_irrefl (this a (le_refl _))
 
+def tendsto_atTop_atTop_of_monotone
+  [OrderOps β] [IsPreOrder α] [IsPreOrder β] {f : α → β} (hf : Monotone f)
+  (h : ∀ b, ∃ a, b ≤ f a) : TendsTo f atTop atTop := by
+  erw [tendsto_iInf]
+  intro b
+  rw [tendsto_principal]
+  simp
+  have ⟨a, b_le_fb⟩ := h b
+  apply FilterBase.closed_upward
+  apply mem_atTop
+  assumption
+  intro x hx
+  simp at *
+  apply le_trans
+  assumption
+  apply hf
+  assumption
+
+def tendsto_atBot_atBot_of_monotone
+  [OrderOps β] [IsPreOrder α] [IsPreOrder β] {f : α → β} (hf : Monotone f)
+  (h : ∀ b, ∃ a, f a ≤ b) : TendsTo f atBot atBot :=
+  tendsto_atTop_atTop_of_monotone (α := αᵒᵖ) (β := βᵒᵖ) hf.dual h
+
 end
 
 end Filter

@@ -1,5 +1,6 @@
 import Math.Data.NNReal.Topology
 import Math.Data.Real.IVT
+import Math.AxiomBlame
 
 namespace NNReal
 
@@ -76,66 +77,37 @@ def npowStrictMono (n: ℕ) (h: 0 < n) : StrictMonotone (α := ℝ≥0) (· ^ n)
     assumption
 
 def npowSurj (n: ℕ) (h: 0 < n) : Function.Surjective (α := ℝ≥0) (· ^ n) := by
-  intro x
-  simp
-  have ⟨y, hy⟩ := Real.has_root (· ^ n - embedReal x) ?_ ?_ ?_
-  exists ⟨|y|, ?_⟩
-  rw [Real.mem_nonneg]; apply abs_nonneg
-  apply embedReal.inj
-  show x.val = |y| ^ n
-  rw [←abs_npow]
-  rw [←sub_zero (y ^ n), ←hy,
-    sub_sub, add_comm, add_sub_cancel',
-    (Real.abs_of_nonneg _).mp]
-  rfl
-  apply x.property
-  show Topology.IsContinuous<| (fun x: ℝ × ℝ => x.1 - x.2) ∘ (fun a => (a ^ n, x.val))
-  apply Topology.IsContinuous.comp'
-  apply Topology.IsContinuous.prod_mk
-  apply continuous_npow
-  repeat infer_instance
-  simp
-  exists 0
-  cases n; contradiction
-  rw [zero_npow_succ, zero_sub, ←Real.neg_le_neg_iff, neg_neg]
-  apply x.property
-  simp
-  cases n; contradiction
-  rename_i n
-  classical
-  obtain ⟨x, xnonneg⟩ := x
-  let x' : ℝ≥0 := ⟨x, xnonneg⟩
-  replace xnonneg : 0 ≤ x := xnonneg
-  by_cases hx:x = 0
-  · subst x
+  apply Topology.surjective
+  continuity
+  · apply Filter.tendsto_atTop_atTop_of_monotone
+    refine StrictMonotone.toMonotone ?_
+    exact npowStrictMono n h
+    intro b
+    classical
+    refine if hb:b ≤ 1 then ?_ else ?_
+    exists 1
+    rwa [one_npow]
+    exists b
+    cases n
+    contradiction
+    rw (occs := [1]) [npow_succ, ←one_mul b]
+    rename_i n; clear h
+    apply mul_le_mul_right
+    rw [←one_npow n]
+    cases n
+    rw [npow_zero, npow_zero]
+    rename_i n
+    apply (npowStrictMono _ (Nat.zero_lt_succ _)).le_iff_le.mpr
+    apply le_of_not_le
+    assumption
+  · apply Filter.tendsto_atBot_atBot_of_monotone
+    refine StrictMonotone.toMonotone ?_
+    exact npowStrictMono n h
+    intro b
     exists 0
-    simp [zero_npow_succ]
-    rfl
-  · have xpos : 0 < x := lt_of_le_of_ne xnonneg (Ne.symm hx)
-    exists if h:x < 1 then 1 /? x else x
-    show _ ≤ _ - x
-    rw [Real.le_sub_iff_add_le, zero_add]
-    simp
-    split <;> rename_i h
-    · rw [div?_eq_mul_inv?, mul_npow, inv?_npow, one_npow, one_mul]
-      suffices x * x ^ (n+1) ≤ 1 by
-        have := mul_le_mul_of_nonneg_right _ _ this (x^(n+1))⁻¹? ?_
-        rwa [one_mul, mul_assoc, mul_inv?_cancel, mul_one] at this
-        apply le_of_lt
-        apply inv?_pos
-        show 0 < x' ^ (n + 1)
-        apply npow_pos
-        assumption
-      rw [←npow_succ']
-      show x' ^ (n + 1 + 1) ≤ 1
-      apply npow_le_one
-      apply le_of_lt; assumption
-    · rw (occs := [1]) [←one_mul x, npow_succ]
-      apply mul_le_mul_of_nonneg_right
-      show 1 ≤ x' ^ n
-      apply one_le_npow
-      rwa [not_lt] at h
-      assumption
+    cases n; contradiction
+    rw [zero_npow_succ]
+    apply bot_le
 
 noncomputable def npowOrderIso (n: ℕ) (h: 0 < n) : ℝ≥0 ≃o ℝ≥0 :=
   have := Equiv.ofBij (α := ℝ≥0) (f := (· ^ n)) ⟨(npowStrictMono n h).Injective, npowSurj n h⟩

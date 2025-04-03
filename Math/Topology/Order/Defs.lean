@@ -18,6 +18,26 @@ def isClosed_le [Topology β] {f g : β → α} (hf : IsContinuous f) (hg : IsCo
   apply IsClosed.preimage
   apply isClosed_le_prod
 
+instance {P: α -> Prop} : Topology.IsOrderClosed (Subtype P) where
+  isClosed_le_prod := by
+    show IsClosed <| (Set.mk fun p: α × α => p.fst ≤ p.snd).preimage (fun x: (Subtype P) × (Subtype P) => (x.1.val, x.2.val))
+    apply Generate.IsOpen.map _ (isClosed_le_prod α)
+    intro s hs
+    apply Generate.IsOpen.of
+    rcases hs with hs | hs
+    left; obtain ⟨t, topen, rfl⟩ := hs
+    refine ⟨?_, ?_, ?_⟩
+    exact t.preimage Subtype.val
+    apply IsOpen.preimage
+    assumption
+    rfl
+    right; obtain ⟨t, topen, rfl⟩ := hs
+    refine ⟨?_, ?_, ?_⟩
+    exact t.preimage Subtype.val
+    apply IsOpen.preimage
+    assumption
+    rfl
+
 end
 
 section

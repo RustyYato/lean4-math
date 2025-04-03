@@ -161,6 +161,17 @@ def principal_le_principal {s t: α} : s ≤ t -> 𝓟 s ≤ 𝓟 t := by
   assumption
   assumption
 
+def le_principal_iff : f ≤ 𝓟 s ↔ s ∈ f := by
+  apply Iff.intro
+  intro h
+  apply h
+  apply mem_principal_self
+  intro h x hx
+  have := mem_principal.mp hx
+  apply closed_upward
+  assumption
+  assumption
+
 end Principal
 
 section Generate
@@ -480,7 +491,7 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
 -- a shortcut instance
 instance (priority := 5000) : IsCompleteLattice (Filter α) := inferInstance
 
-def mem_sInf [CompleteLatticeOps α] [IsCompleteLattice α] (f: ι -> FilterBase α) : a ∈ ⨅i, f i ↔ ∃ t, t ⊆ (⨆ (Set.range f).image set) ∧ t.IsFinite ∧ ⨅ t ≤ a := by
+def mem_iInf [CompleteLatticeOps α] [IsCompleteLattice α] (f: ι -> FilterBase α) : a ∈ ⨅i, f i ↔ ∃ t, t ⊆ (⨆ (Set.range f).image set) ∧ t.IsFinite ∧ ⨅ t ≤ a := by
   apply Iff.trans (mem_generate_iff (ne := by exists ⊤; simp))
   apply flip Iff.intro
   intro ⟨s, s_sub, sfin, sinf_le⟩
@@ -553,9 +564,9 @@ end FilterBase
 
 namespace Filter
 
-section Basic
-
 open FilterBase
+
+section Basic
 
 def univ_mem (f: Filter α) : ⊤ ∈ f := FilterBase.top_mem f
 
@@ -610,6 +621,25 @@ def map_neBot_iff (f : α → β) {F : Filter α} : NeBot (map f F) ↔ NeBot F 
 instance [NeBot F] : NeBot (map f F) := (map_neBot_iff _).mpr inferInstance
 
 end Basic
+
+@[simp]
+def mem_map (g: α -> β) (f: Filter α) : ∀{x}, x ∈ f.map g ↔ x.preimage g ∈ f := Iff.rfl
+
+def mem_iInf (f: ι -> Filter α) : a ∈ ⨅i, f i ↔ ∃ t, (∀x ∈ t, ∃i, x ∈ f i) ∧ t.IsFinite ∧ ⨅ t ≤ a := by
+  apply Iff.trans (FilterBase.mem_iInf f)
+  apply Iff.intro
+  intro ⟨t, h, h₀, h₁⟩
+  refine ⟨t, ?_, h₀, h₁⟩
+  intro x hx
+  obtain ⟨_, ⟨_, ⟨i, rfl⟩, rfl⟩, _⟩ := h x hx
+  exists i
+  intro ⟨t, h, h₀, h₁⟩
+  refine ⟨t, ?_, h₀, h₁⟩
+  intro x hx
+  have ⟨i, hi⟩ := h x hx
+  refine ⟨_, ⟨_, ⟨?_, rfl⟩, rfl⟩, ?_⟩
+  assumption
+  assumption
 
 section Limit
 
@@ -672,6 +702,15 @@ def TendsTo.top {f : α → β} {l : Filter α} : TendsTo f l ⊤ := le_top _
 
 @[simp]
 theorem tendsto_id {x : Filter α} : TendsTo id x x := le_refl x
+
+def tendsto_iInf {f : α → β} {x : Filter α} {y : ι → Filter β} :
+    TendsTo f x (⨅ i, y i) ↔ ∀ i, TendsTo f x (y i) := by
+  simp only [TendsTo, le_iInf_iff]
+
+@[simp]
+theorem tendsto_principal {f : α → β} {l : Filter α} {s : Set β} :
+    TendsTo f l (𝓟 s) ↔ Eventually (fun a => f a ∈ s) l := by
+  simp only [TendsTo, le_principal_iff, mem_map, Set.preimage, Filter.Eventually]
 
 end Limit
 

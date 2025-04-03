@@ -281,6 +281,19 @@ def isLUB_sSup (s: Set α₀) : s.IsLUB (⨆ s) := by
 def isGLB_sInf (s: Set α₀) : s.IsGLB (⨅ s) :=
   isLUB_sSup (α₀ := α₀ᵒᵖ) s
 
+@[simp]
+def le_iInf_iff : a ≤ iInf f ↔ ∀ i, a ≤ f i := by
+  apply Iff.intro
+  intro h i
+  apply le_trans
+  assumption
+  apply sInf_le
+  apply Set.mem_range'
+  intro h
+  apply le_sInf
+  rintro a ⟨a, rfl⟩
+  apply h
+
 end
 
 namespace OrderEmbedding
