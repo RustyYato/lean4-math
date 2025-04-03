@@ -12,13 +12,6 @@ instance : Max ℝ where
 instance : Min ℝ where
   min := min
 
-instance : NeZero (2: ℝ) where
-  out := by
-    intro h
-    have ⟨k, spec⟩ := Quotient.exact h (1 /? 2) (by decide)
-    replace spec := spec _ _ (le_refl _) (le_refl _)
-    contradiction
-
 def Real.exists_rat_lt (r: ℝ) : ∃q: ℚ, q < r := by
   induction r using ind with | mk r =>
   have ⟨q, hq⟩ := (-r).upper_bound

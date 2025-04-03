@@ -98,8 +98,14 @@ instance (n: ℕ) [NeZero n] : NeZero (n: α) where
     have := NeZero.ne n
     contradiction
 
-instance instNeZeroOfOrderedSemiring (n: ℕ) : NeZero (OfNat.ofNat (n + 2): α) := by
-  rw [ofNat_eq_natCast]; infer_instance
+instance instNeZeroOfOrderedSemiring (n: ℕ) [Nat.AtLeastTwo n] : NeZero (OfNat.ofNat n: α) := by
+  rw [ofNat_eq_natCast]
+  have := two_le n
+  match n with | n + 2 => infer_instance
+
+instance : NeZero (2: α) := instNeZeroOfOrderedSemiring 2
+instance : NeZero (3: α) := instNeZeroOfOrderedSemiring 3
+instance : NeZero (4: α) := instNeZeroOfOrderedSemiring 4
 
 def two_pos : 0 < (2: α) := by
   rw [ofNat_eq_natCast (α := α) 2]

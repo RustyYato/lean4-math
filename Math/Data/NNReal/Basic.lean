@@ -94,13 +94,6 @@ instance : IsLinearLattice ℝ≥0 := by
   intro a b; rfl
   intro a b; rfl
 
-instance : NeZero (2: ℝ) where
-  out := by
-    intro h
-    have ⟨k, spec⟩ := Quotient.exact h (1 /? 2) (by decide)
-    replace spec := spec _ _ (le_refl _) (le_refl _)
-    contradiction
-
 instance : IsStrictOrderedSemiring ℝ≥0 where
   zero_le_one := by apply bot_le
   add_le_add_left := by
@@ -165,12 +158,6 @@ def of_add_eq_zero (a b: ℝ≥0) : a + b = 0 -> a = 0 ∧ b = 0 := by
   have := lt_irrefl this
   contradiction
   apply And.intro <;> (symm; assumption)
-
-instance : NeZero (2: ℝ≥0) where
-  out := by
-    intro h
-    have : embedReal 2 = embedReal 0 := by rw [h]
-    exact NeZero.ne (n := 2) (R := ℝ) this
 
 def ofReal_injOn : Function.InjectiveOn ofReal (Set.Ici 0) := by
   intro x y hx hy h

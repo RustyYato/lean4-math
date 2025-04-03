@@ -371,6 +371,31 @@ def le_add_right_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ a + b := by
   apply add_le_add_left.mp
   assumption
 
+instance : IsStrictOrderedSemiring ℚ where
+  add_le_add_left := by
+    intro a b h c
+    apply Rat.add_le_add_left.mp
+    assumption
+  zero_le_one := by decide
+  mul_nonneg := by
+    intro a b ha hb
+    cases lt_or_eq_of_le ha
+    cases lt_or_eq_of_le hb
+    apply le_of_lt
+    apply Rat.mul_pos
+    assumption
+    assumption
+    subst b
+    rw [mul_zero]
+    subst a
+    rw [zero_mul]
+  mul_le_mul_of_nonneg_left := by
+    exact fun a b a_1 c a_2 => Rat.mul_le_mul_of_left_nonneg a b c a_2 a_1
+  mul_le_mul_of_nonneg_right := by
+    exact fun a b a_1 c a_2 => Rat.mul_le_mul_of_right_nonneg a b c a_2 a_1
+  mul_pos := by
+    exact fun a b a_1 a_2 => Rat.mul_pos a_1 a_2
+
 def le_div_iff_mul_le_of_pos (a b c: ℚ) (h: 0 < b) : c ≤ a /? b ↔ c * b ≤ a := by
   rw [le_iff_mul_right_pos  (k := b), div?_mul_cancel]
   assumption
@@ -654,31 +679,6 @@ def ceil_le (a: ℚ) : ∀x: ℤ, a.ceil ≤ x ↔ a ≤ x := by
   rw [le_floor, ←intCast_neg, ←neg_le_neg_iff]
 
 end Rat
-
-instance : IsStrictOrderedSemiring ℚ where
-  add_le_add_left := by
-    intro a b h c
-    apply Rat.add_le_add_left.mp
-    assumption
-  zero_le_one := by decide
-  mul_nonneg := by
-    intro a b ha hb
-    cases lt_or_eq_of_le ha
-    cases lt_or_eq_of_le hb
-    apply le_of_lt
-    apply Rat.mul_pos
-    assumption
-    assumption
-    subst b
-    rw [mul_zero]
-    subst a
-    rw [zero_mul]
-  mul_le_mul_of_nonneg_left := by
-    exact fun a b a_1 c a_2 => Rat.mul_le_mul_of_left_nonneg a b c a_2 a_1
-  mul_le_mul_of_nonneg_right := by
-    exact fun a b a_1 c a_2 => Rat.mul_le_mul_of_right_nonneg a b c a_2 a_1
-  mul_pos := by
-    exact fun a b a_1 a_2 => Rat.mul_pos a_1 a_2
 
 instance : Archimedean ℚ := by
   apply archimedean_iff_nat_lt.mpr

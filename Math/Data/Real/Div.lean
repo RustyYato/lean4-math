@@ -536,8 +536,6 @@ instance : IsLawfulNorm ℝ where
     congr
     rw [Real.norm_eq_abs]
 
-instance : NeZero (2: ℝ) :=  instNeZeroOfOrderedSemiring _
-
 instance : Archimedean ℝ := archimedean_iff_nat_lt.mpr <| by
   intro x
   induction x using ind with | mk x =>

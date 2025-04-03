@@ -626,14 +626,4 @@ instance (q: ℚ) : Decidable (NeZero q) :=
   else
     .isTrue ⟨h⟩
 
-instance : NeZero (2: ℚ) := by decide
-
-def binarySearch (P: ℚ -> Bool) (a b: ℚ) : ℕ -> ℚ
-| 0 => a
-| n + 1 =>
-  if P (midpoint a b) then
-    binarySearch P a (midpoint a b) n
-  else
-    binarySearch P (midpoint a b) b n
-
 end Rat
