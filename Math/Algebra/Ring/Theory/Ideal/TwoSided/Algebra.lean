@@ -80,8 +80,6 @@ instance : SMul ℕ (Ideal α) := instNSMulrec
 instance : Pow (Ideal α) ℕ := instNPowrec
 
 instance : NatCast (Ideal α) := _root_.instNatCast
-instance : OfNat (Ideal α) (n + 2) where
-  ofNat := (n + 2: ℕ)
 
 instance : SemiringOps (Ideal α) := inferInstance
 
@@ -195,7 +193,6 @@ instance : IsAddCommMagma (Ideal α) where
 instance : IsAddMonoidWithOne (Ideal α) where
   natCast_zero := rfl
   natCast_succ _ := rfl
-  ofNat_eq_natCast _ := rfl
 
 instance : IsSemigroup (Ideal α) where
   mul_assoc a b c := by

@@ -201,8 +201,6 @@ instance [NatCast R] [Zero M] : NatCast (TrivSqZeroExt R M) where
   natCast n := inl n
 instance [IntCast R] [Zero M] : IntCast (TrivSqZeroExt R M) where
   intCast n := inl n
-instance [OfNat R (n + 2)] [Zero M] : OfNat (TrivSqZeroExt R M) (n + 2) where
-  ofNat := inl (OfNat.ofNat (n + 2))
 
 @[simp] def fst_natCast [NatCast R] [Zero M] (n: Nat) : (n: TrivSqZeroExt R M).fst = n := rfl
 @[simp] def snd_natCast [NatCast R] [Zero M] (n: Nat) : (n: TrivSqZeroExt R M).snd = 0 := rfl
@@ -214,18 +212,13 @@ instance [OfNat R (n + 2)] [Zero M] : OfNat (TrivSqZeroExt R M) (n + 2) where
 
 @[simp] def inl_intCast [IntCast R] [Zero M] (n: Int) : (.inl n: TrivSqZeroExt R M) = n := rfl
 
-@[simp] def fst_ofNat (n: Nat) [OfNat R (n + 2)] [Zero M] : (OfNat.ofNat (n + 2): TrivSqZeroExt R M).fst = OfNat.ofNat (n + 2) := rfl
-@[simp] def snd_ofNat (n: Nat) [OfNat R (n + 2)] [Zero M] : (OfNat.ofNat (n + 2): TrivSqZeroExt R M).snd = 0 := rfl
-
 instance instAddMonoidWithOne [AddMonoidWithOneOps R] [AddMonoidOps M] [IsAddMonoidWithOne R] [IsAddMonoid M] : IsAddMonoidWithOne (TrivSqZeroExt R M) where
   natCast_zero := by ext <;> simp [natCast_zero]
   natCast_succ n := by ext <;> simp [natCast_succ, add_zero]
-  ofNat_eq_natCast n := by ext <;> (simp; try rw [ofNat_eq_natCast])
 
 instance instAddGroupWithOne [AddGroupWithOneOps R] [AddGroupOps M] [IsAddGroupWithOne R] [IsAddGroup M] : IsAddGroupWithOne (TrivSqZeroExt R M) where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_eq_natCast := ofNat_eq_natCast
   intCast_ofNat n := by ext <;> simp [intCast_ofNat]
   intCast_negSucc n := by ext <;> simp [intCast_negSucc, neg_zero]
 

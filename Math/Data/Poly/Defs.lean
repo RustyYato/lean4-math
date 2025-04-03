@@ -202,8 +202,6 @@ def alg_induction [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop}
 
 instance [SemiringOps P] [IsSemiring P] : NatCast P[X] where
   natCast n := C n
-instance [SemiringOps P] [IsSemiring P] : OfNat P[X] (n+2) where
-  ofNat := C (OfNat.ofNat (n+2))
 instance [RingOps P] [IsRing P] : IntCast P[X] where
   intCast n := C n
 
@@ -215,9 +213,6 @@ instance instIsAddMonoidWithOne [SemiringOps P] [IsSemiring P] : IsAddMonoidWith
     show C _ = _
     rw [natCast_succ, map_add, map_one]
     rfl
-  ofNat_eq_natCast n := by
-    show C _ = C _
-    rw [ofNat_eq_natCast]
 
 instance instIsAddGroupWithOne [RingOps P] [IsRing P] : IsAddGroupWithOne P[X] := {
   instIsAddMonoidWithOne, instIsAddGroup with

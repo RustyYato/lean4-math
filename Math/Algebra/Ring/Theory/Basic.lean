@@ -60,7 +60,6 @@ def ofMinimalAxioms
     }
     let ops₁ : AddMonoidWithOneOps α := {
       natCast := natCastRec
-      ofNat n := ⟨natCastRec (n + 2)⟩
     }
     let ops : RingOps α := {
       sub a b := a + -b
@@ -92,7 +91,6 @@ def ofMinimalAxioms
       right_distrib := add_mul
       natCast_zero := rfl
       natCast_succ _ := rfl
-      ofNat_eq_natCast _ := rfl
       zero_mul a := by
         have : (0 + 0) * a = 0 + (0: α) * a := by rw [add_zero, zero_add]
         rw [add_mul] at this

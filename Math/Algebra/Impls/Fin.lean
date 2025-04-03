@@ -70,7 +70,6 @@ instance : IsAddGroupWithOne (Fin (n + 1)) where
     intro a
     show Fin.mk _ _ = Fin.mk _ _
     simp
-  ofNat_eq_natCast _ := rfl
   intCast_ofNat _ := rfl
   intCast_negSucc x := by
     apply neg_inj.mp

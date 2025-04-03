@@ -79,7 +79,6 @@ instance : IsField ℂ where
   intCast_ofNat n := rfl
   intCast_negSucc _ := rfl
   div?_eq_mul_inv? _ _ _ := rfl
-  ofNat_eq_natCast _ := rfl
 
 def ofRealHom : ℝ ↪+* ℂ where
   toFun a := ⟨a, 0⟩

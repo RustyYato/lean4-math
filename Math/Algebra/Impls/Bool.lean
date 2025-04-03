@@ -8,7 +8,6 @@ instance : SemiringOps Bool where
   zero := false
   one := true
   natCast n := n % 2 != 0
-  ofNat n := ⟨n % 2 != 0⟩
   nsmul n x := and (n % 2 != 0) x
   npow
   | _, 0 => true
@@ -19,7 +18,6 @@ instance : Neg Bool := ⟨id⟩
 instance : RingOps Bool where
   sub := xor
   intCast n := n % 2 != 0
-  ofNat n := ⟨n % 2 != 0⟩
   zsmul n x := and (n % 2 != 0) x
 
 instance : FieldOps Bool where
@@ -50,10 +48,6 @@ instance : IsField Bool where
     contradiction
     rw [h, beq_false_of_ne, bne_eq_false_iff_eq]
     decide
-  ofNat_eq_natCast := by
-    intro n
-    dsimp [OfNat.ofNat, Nat.cast, NatCast.natCast]
-    rw [Nat.add_mod, Nat.mod_self, Nat.add_zero, Nat.mod_mod]
   mul_assoc := by decide +kernel
   zero_mul := by decide +kernel
   mul_zero := by decide +kernel

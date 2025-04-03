@@ -8,8 +8,6 @@ instance [Zero α] [Zero β] : Zero (α × β) where
   zero := (0, 0)
 instance [One α] [One β] : One (α × β) where
   one := (1, 1)
-instance [OfNat α (n+2)] [OfNat β (n+2)] : OfNat (α × β) (n+2) where
-  ofNat := (OfNat.ofNat (n+2), OfNat.ofNat (n+2))
 instance [NatCast α] [NatCast β] : NatCast (α × β) where
   natCast n := (n, n)
 instance [IntCast α] [IntCast β] : IntCast (α × β) where
@@ -127,14 +125,12 @@ instance [GroupOps α] [GroupOps β] [IsGroup α] [IsGroup β] : IsGroup (α × 
 instance [AddMonoidWithOneOps α] [AddMonoidWithOneOps β] [IsAddMonoidWithOne α] [IsAddMonoidWithOne β] : IsAddMonoidWithOne (α × β) where
   natCast_zero := by ext <;> apply natCast_zero
   natCast_succ := by intro n; ext <;> apply natCast_succ
-  ofNat_eq_natCast := by intro n; ext <;> apply ofNat_eq_natCast
 
 instance [AddGroupWithOneOps α] [AddGroupWithOneOps β] [IsAddGroupWithOne α] [IsAddGroupWithOne β] : IsAddGroupWithOne (α × β) where
   intCast_ofNat := fun n => by ext <;> apply intCast_ofNat
   intCast_negSucc := fun n => by ext <;> apply intCast_negSucc
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_eq_natCast := ofNat_eq_natCast
 
 instance [Add α] [Add β] [Mul α] [Mul β] [IsLeftDistrib α] [IsLeftDistrib β] : IsLeftDistrib (α × β) where
   left_distrib := by

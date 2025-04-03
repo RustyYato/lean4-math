@@ -501,7 +501,6 @@ instance : IsField ℚ where
     apply sound
     show _ = _
     simp
-  ofNat_eq_natCast _ := rfl
   left_distrib k a b := by
     cases k, a, b
     apply sound

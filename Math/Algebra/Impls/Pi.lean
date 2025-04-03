@@ -8,8 +8,6 @@ instance [∀i, Zero (β i)] : Zero (∀i, β i) where
   zero _ := 0
 instance [∀i, One (β i)] : One (∀i, β i) where
   one _ := 1
-instance [∀i, OfNat (β i) (n+2)] : OfNat (∀i, β i) (n+2) where
-  ofNat _ := OfNat.ofNat (n+2)
 instance [∀i, NatCast (β i)] : NatCast (∀i, β i) where
   natCast n _ := n
 instance [∀i, IntCast (β i)] : IntCast (∀i, β i) where
@@ -44,7 +42,6 @@ instance [∀i, Inv (β i)] : Inv (∀i, β i) where
 
 def Pi.zero_eq [∀i, Zero (β i)] : (0: ∀i, β i) = fun _ => 0 := rfl
 def Pi.one_eq [∀i, One (β i)] : (1: ∀i, β i) = fun _ => 1 := rfl
-def Pi.ofNat_eq [∀i, OfNat (β i) (n + 2)]: (OfNat.ofNat (n + 2): ∀i, β i) = fun _ => OfNat.ofNat (n + 2) := rfl
 def Pi.natCast_eq [∀i, NatCast (β i)] (n: ℕ): (n: ∀i, β i) = fun _ => (n: β _) := rfl
 def Pi.intCast_eq [∀i, IntCast (β i)] (n: ℤ): (n: ∀i, β i) = fun _ => (n: β _) := rfl
 def Pi.add_eq [∀i, Add (β i)] (f g: ∀i, β i): f + g = fun x => f x + g x := rfl
@@ -59,7 +56,6 @@ def Pi.inv_eq [∀i, Inv (β i)] (f: ∀i, β i): f⁻¹ = fun x => (f x)⁻¹ :
 
 @[simp] def Pi.apply_zero [∀i, Zero (β i)] (i: ι) : (0: ∀i, β i) i = 0 := rfl
 @[simp] def Pi.apply_one [∀i, One (β i)] (i: ι) : (1: ∀i, β i) i = 1 := rfl
-@[simp] def Pi.apply_ofNat [∀i, OfNat (β i) (n + 2)] (i: ι): (OfNat.ofNat (n + 2): ∀i, β i) i = OfNat.ofNat (n + 2) := rfl
 @[simp] def Pi.apply_natCast [∀i, NatCast (β i)] (n: ℕ) (i: ι): (n: ∀i, β i) i = (n: β _) := rfl
 @[simp] def Pi.apply_intCast [∀i, IntCast (β i)] (n: ℤ) (i: ι): (n: ∀i, β i) i = (n: β _) := rfl
 @[simp] def Pi.apply_add [∀i, Add (β i)] (f g: ∀i, β i) (i: ι): (f + g) i = f i + g i := rfl
@@ -163,14 +159,12 @@ instance [∀i, GroupOps (β i)] [∀i, IsGroup (β i)] : IsGroup (∀i, β i)  
 instance [∀i, AddMonoidWithOneOps (β i)] [∀i, IsAddMonoidWithOne (β i)] : IsAddMonoidWithOne (∀i, β i) where
   natCast_zero := by ext i; apply natCast_zero
   natCast_succ := by intro n; ext i; apply natCast_succ
-  ofNat_eq_natCast := by intro n; ext i; apply ofNat_eq_natCast
 
 instance [∀i, AddGroupWithOneOps (β i)] [∀i, IsAddGroupWithOne (β i)] : IsAddGroupWithOne (∀i, β i) where
   intCast_ofNat := fun n => by ext; apply intCast_ofNat
   intCast_negSucc := fun n => by ext; apply intCast_negSucc
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_eq_natCast := ofNat_eq_natCast
 
 instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsLeftDistrib (β i)] : IsLeftDistrib (∀i, β i) where
   left_distrib := by
@@ -224,8 +218,6 @@ instance [Zero β] : Zero (ι -> β) :=
   inferInstance
 instance [One β] : One (ι -> β) :=
   inferInstance
-instance [OfNat β (n+2)] : OfNat (ι -> β) (n+2) :=
-  inferInstance
 instance [NatCast β] : NatCast (ι -> β) :=
   inferInstance
 instance [IntCast β] : IntCast (ι -> β) :=
@@ -253,7 +245,6 @@ instance [Inv β] : Inv (ι -> β) :=
 
 def Function.zero_eq [Zero β] : (0: ι -> β) = fun _ => 0 := rfl
 def Function.one_eq [One β] : (1: ι -> β) = fun _ => 1 := rfl
-def Function.ofNat_eq [OfNat β (n + 2)]: (OfNat.ofNat (n + 2): ι -> β) = fun _ => OfNat.ofNat (n + 2) := rfl
 def Function.natCast_eq [NatCast β] (n: ℕ): (n: ι -> β) = fun _ => (n: β) := rfl
 def Function.intCast_eq [IntCast β] (n: ℤ): (n: ι -> β) = fun _ => (n: β) := rfl
 def Function.add_eq [Add β] (f g: ι -> β): f + g = fun x => f x + g x := rfl
@@ -268,7 +259,6 @@ def Function.inv_eq [Inv β] (f: ι -> β): f⁻¹ = fun x => (f x)⁻¹ := rfl
 
 @[simp] def Function.apply_zero [Zero β] (i: ι) : (0: ι -> β) i = 0 := rfl
 @[simp] def Function.apply_one [One β] (i: ι) : (1: ι -> β) i = 1 := rfl
-@[simp] def Function.apply_ofNat [OfNat β (n + 2)] (i: ι): (OfNat.ofNat (n + 2): ι -> β) i = OfNat.ofNat (n + 2) := rfl
 @[simp] def Function.apply_natCast [NatCast β] (n: ℕ) (i: ι): (n: ι -> β) i = (n: β) := rfl
 @[simp] def Function.apply_intCast [IntCast β] (n: ℤ) (i: ι): (n: ι -> β) i = (n: β) := rfl
 @[simp] def Function.apply_add [Add β] (f g: ι -> β) (i: ι): (f + g) i = f i + g i := rfl

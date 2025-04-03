@@ -10,6 +10,3 @@ instance [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] [IsAddCon C] : IsAddMo
     natCast_succ _ := by
         apply Quotient.sound
         rw [natCast_succ]
-    ofNat_eq_natCast _ := by
-        apply Quotient.sound
-        rw [ofNat_eq_natCast]

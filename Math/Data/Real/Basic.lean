@@ -707,7 +707,6 @@ instance : IsRing ℝ where
     apply CauchySeq.pointwise
     intro n
     apply intCast_negSucc
-  ofNat_eq_natCast _ := rfl
 
 instance : IsCommMagma ℝ where
   mul_comm a b := by

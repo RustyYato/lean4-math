@@ -9,7 +9,6 @@ instance : SemiringOps MaxBool where
   zero := false
   one := true
   natCast n := n != 0
-  ofNat _ := ⟨true⟩
   nsmul n x := and (n != 0) x
   npow
   | _, 0 => true
@@ -30,7 +29,6 @@ instance : IsSemiring MaxBool where
     show true = or _ true
     simp
   mul_assoc := by trivial
-  ofNat_eq_natCast _ := by trivial
   zero_mul := by trivial
   mul_zero := by trivial
   one_mul := by trivial

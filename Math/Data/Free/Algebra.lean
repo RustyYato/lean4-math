@@ -107,7 +107,6 @@ instance [SemiringOps R] : SemiringOps (FreeAlgebra R X) where
   zero := ⟦.scalar 0⟧
   one := ⟦.scalar 1⟧
   natCast n := ⟦.scalar n⟧
-  ofNat n := ⟨⟦.scalar (OfNat.ofNat (n + 2))⟧⟩
   add := by
     apply Quotient.lift₂ (⟦·.add ·⟧)
     intro a b c d ac bd
@@ -245,9 +244,6 @@ instance [SemiringOps R] [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
     show ⟦.scalar _⟧ = ⟦_⟧ + ⟦_⟧
     rw [natCast_succ]
     apply map_add (algebraMap (R := R) (A := FreeAlgebra R X))
-  ofNat_eq_natCast _ := by
-    show ⟦_⟧ = ⟦_⟧
-    rw [ofNat_eq_natCast]
   left_distrib := by
     intro k a b; induction a, b, k
     apply Quotient.sound
@@ -300,7 +296,6 @@ instance [RingOps R] [IsRing R] : IsAddGroup (FreeAlgebra R X) where
 instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_eq_natCast := ofNat_eq_natCast
   intCast_ofNat _ := by
     show ⟦_⟧ = ⟦_⟧
     simp [intCast_ofNat]

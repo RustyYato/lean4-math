@@ -35,7 +35,6 @@ def map_ofScalar [Zero R] [Zero α] [FunLike F R α] [IsZeroHom F R α] (f: F) (
     apply ih
     rw [ih, map_zero]
 
-instance [Zero R] [OfNat R (N + 2)] : OfNat (GA R basis) (N + 2) := ⟨.ofScalar (OfNat.ofNat (N + 2))⟩
 instance [Zero R] : Zero (GA R basis) := ⟨.ofScalar (OfNat.ofNat 0)⟩
 instance [Zero R] [One R] : One (GA R basis) := ⟨.ofScalar (OfNat.ofNat 1)⟩
 instance [Zero R] [NatCast R] : NatCast (GA R basis) := ⟨(.ofScalar (R := R) ·)⟩
@@ -168,10 +167,6 @@ instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] : IsAddGroupWithOne (GA R 
       congr
       apply ih
       symm; apply add_zero
-  ofNat_eq_natCast := by
-    intro n
-    show ofScalar _ = ofScalar _
-    rw [ofNat_eq_natCast]
   intCast_ofNat := by
     intro n
     show ofScalar _ = ofScalar _

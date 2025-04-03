@@ -232,8 +232,6 @@ instance [Zero α] : Zero (IsCon.Quotient c) where
   zero := IsCon.mkQuot _ 0
 instance [One α] : One (IsCon.Quotient c) where
   one := IsCon.mkQuot _ 1
-instance [OfNat α (n + 2)] : OfNat (IsCon.Quotient c) (n + 2) where
-  ofNat := IsCon.mkQuot _ (OfNat.ofNat (n + 2))
 instance [NatCast α] : NatCast (IsCon.Quotient c) where
   natCast n := IsCon.mkQuot _ n
 instance [IntCast α] : IntCast (IsCon.Quotient c) where

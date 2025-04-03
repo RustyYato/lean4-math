@@ -1279,7 +1279,6 @@ instance : IsAddGroupWithOne BitInt where
   sub_eq_add_neg _ _ := rfl
   zsmul_ofNat _ _ := rfl
   zsmul_negSucc _ _ := rfl
-  ofNat_eq_natCast _ := rfl
 
   neg_add_cancel a := by
     induction a with

@@ -383,7 +383,6 @@ instance : IsMonoid Cardinal where
 instance : IsAddMonoidWithOne Cardinal where
   natCast_zero := rfl
   natCast_succ x := OfNat_add x 1
-  ofNat_eq_natCast _ := rfl
 
 instance : IsSemiring Cardinal where
   npow_succ := npow_succ

@@ -55,7 +55,6 @@ def IsNonAssocSemiring.inst
   : IsNonAssocSemiring α where
   natCast_zero := _root_.natCast_zero
   natCast_succ := _root_.natCast_succ
-  ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
 instance (priority := 100) [AddMonoidWithOneOps α] [Mul α] [IsNonAssocSemiring α] : IsNonUnitalNonAssocSemiring α where
 instance (priority := 100) [AddMonoidOps α] [Mul α] [IsNonUnitalSemiring α] : IsNonUnitalNonAssocSemiring α where
@@ -103,10 +102,10 @@ def one_add_mul [Mul α] [Add α] [One α] [IsMulOneClass α] [IsRightDistrib α
 def mul_one_add [Mul α] [Add α] [One α] [IsMulOneClass α] [IsLeftDistrib α] (a b: α) : a * (1 + b) = a + a * b := by rw [mul_add, mul_one]
 
 def two_mul [AddMonoidWithOneOps α] [Mul α] [IsAddMonoidWithOne α] [IsRightDistrib α] [IsMulOneClass α] (a: α) : 2 * a = a + a := by
-  rw [ofNat_eq_natCast, Nat.zero_add, natCast_succ, natCast_succ,
+  rw [ofNat_eq_natCast, natCast_succ, natCast_succ,
     natCast_zero, zero_add, add_mul, one_mul]
 def mul_two [AddMonoidWithOneOps α] [Mul α] [IsAddMonoidWithOne α] [IsLeftDistrib α] [IsMulOneClass α] (a: α) : a * 2 = a + a := by
-  rw [ofNat_eq_natCast, Nat.zero_add, natCast_succ, natCast_succ,
+  rw [ofNat_eq_natCast, natCast_succ, natCast_succ,
     natCast_zero, zero_add, mul_add, mul_one]
 
 def nsmul_eq_natCast_mul [SemiringOps α] [IsSemiring α] (n: ℕ) (x: α) : n • x = n * x := by
@@ -122,7 +121,6 @@ def square_add  [SemiringOps α] [IsSemiring α] [IsCommMagma α] (a b: α) : (a
 instance (priority := 500) [SemiringOps α] [IsSemiring α] : IsNonAssocSemiring α where
   natCast_zero := natCast_zero
   natCast_succ := natCast_succ
-  ofNat_eq_natCast := IsAddMonoidWithOne.ofNat_eq_natCast
 
 instance (priority := 500) [SemiringOps α] [IsSemiring α] : IsNonUnitalNonAssocSemiring α where
 instance (priority := 500) [SemiringOps α] [IsSemiring α] : IsNonUnitalSemiring α where
@@ -136,7 +134,6 @@ instance : IsSemiring Nat where
   add_zero := Nat.add_zero
   natCast_zero := rfl
   natCast_succ _ := rfl
-  ofNat_eq_natCast _ := rfl
   mul_assoc := Nat.mul_assoc
   zero_mul := Nat.zero_mul
   mul_zero := Nat.mul_zero
@@ -160,7 +157,6 @@ instance instSemiringInt : IsSemiring Int where
   add_zero := Int.add_zero
   natCast_zero := rfl
   natCast_succ _ := rfl
-  ofNat_eq_natCast _ := rfl
   mul_assoc := Int.mul_assoc
   zero_mul := Int.zero_mul
   mul_zero := Int.mul_zero

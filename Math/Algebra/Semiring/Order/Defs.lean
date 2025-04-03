@@ -102,7 +102,7 @@ instance instNeZeroOfOrderedSemiring (n: ℕ) : NeZero (OfNat.ofNat (n + 2): α)
   rw [ofNat_eq_natCast]; infer_instance
 
 def two_pos : 0 < (2: α) := by
-  rw [ofNat_eq_natCast (α := α) 0]
+  rw [ofNat_eq_natCast (α := α) 2]
   apply natCast_pos
   apply Nat.zero_lt_succ
 

@@ -13,12 +13,10 @@ class IsAddGroupWithOne (α: Type*) [AddGroupWithOneOps α] : Prop extends IsAdd
   intCast_ofNat (n: ℕ) : ((n: Int): α) = (n: α)
   intCast_negSucc (n: ℕ) : (Int.negSucc n) = -(n.succ: α)
 
-variable [AddGroupWithOneOps α] [IsAddGroupWithOne α]
-
 @[norm_cast]
-def intCast_ofNat (n: ℕ) : ((n: Int): α) = (n: α) := IsAddGroupWithOne.intCast_ofNat _
+def intCast_ofNat [AddGroupWithOneOps α] [IsAddGroupWithOne α] (n: ℕ) : ((n: Int): α) = (n: α) := IsAddGroupWithOne.intCast_ofNat _
 @[norm_cast]
-def intCast_negSucc (n: ℕ) : (Int.negSucc n) = -(n.succ: α) := IsAddGroupWithOne.intCast_negSucc _
+def intCast_negSucc [AddGroupWithOneOps α] [IsAddGroupWithOne α] (n: ℕ) : (Int.negSucc n) = -(n.succ: α) := IsAddGroupWithOne.intCast_negSucc _
 
 instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] : IsAddGroupWithOne αᵃᵒᵖ := {
   inferInstanceAs (IsAddMonoidWithOne αᵃᵒᵖ), inferInstanceAs (IsAddGroup αᵃᵒᵖ) with

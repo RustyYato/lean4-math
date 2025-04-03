@@ -1,4 +1,5 @@
 import Math.Algebra.Notation
+import Math.Data.Nat.Cast
 
 def AddOfMul (α: Sort u) := α
 def AddOfMul.get : AddOfMul α -> α := id
@@ -83,8 +84,6 @@ instance [SMul Int α] : SMul Int αᵃᵒᵖ := ⟨(.mk <| · • ·.get)⟩
 instance [NatCast α] : NatCast αᵃᵒᵖ := ⟨(.mk ·)⟩
 instance [IntCast α] : IntCast αᵃᵒᵖ := ⟨(.mk ·)⟩
 
-instance [OfNat α (n + 2)] : OfNat αᵃᵒᵖ (n + 2) := ⟨(.mk (OfNat.ofNat (n + 2)))⟩
-
 instance [Zero α] : Zero αᵐᵒᵖ where
   zero := (0: α)
 
@@ -118,7 +117,8 @@ instance [SMul Int α] : SMul Int αᵐᵒᵖ := ⟨(.mk <| · • ·.get)⟩
 instance [NatCast α] : NatCast αᵐᵒᵖ := ⟨(.mk ·)⟩
 instance [IntCast α] : IntCast αᵐᵒᵖ := ⟨(.mk ·)⟩
 
-instance [OfNat α (n + 2)] : OfNat αᵐᵒᵖ (n + 2) := ⟨(.mk (OfNat.ofNat (n + 2)))⟩
+-- instance [Nat.AtLeastTwoOfNat α n] : Nat.AtLeastTwoOfNat αᵃᵒᵖ n := ⟨(.mk (OfNat.ofNat n))⟩
+-- instance [Nat.AtLeastTwoOfNat α n] : Nat.AtLeastTwoOfNat αᵐᵒᵖ n := ⟨(.mk (OfNat.ofNat n))⟩
 
 namespace AddOpp
 
@@ -127,14 +127,12 @@ def cases {motive: αᵃᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 
 @[simp] def mk_zero [Zero α] : mk (0: α) = 0 := rfl
 @[simp] def mk_one [One α] : mk (1: α) = 1 := rfl
-@[simp] def mk_ofNat [OfNat α (n + 2)] : mk (OfNat.ofNat (n + 2): α) = OfNat.ofNat (n + 2) := rfl
 @[simp] def mk_add [Add α] (a b: α) : mk (a + b) = mk b + mk a := rfl
 @[simp] def mk_neg [Neg α] (a: α) : mk (-a) = -mk a := rfl
 @[simp] def mk_mul [Mul α] (a b: α) : mk (a * b) = mk a * mk b := rfl
 
 @[simp] def get_zero [Zero α] : get (0: αᵃᵒᵖ) = 0 := rfl
 @[simp] def get_one [One α] : get (1: αᵃᵒᵖ) = 1 := rfl
-@[simp] def get_ofNat [OfNat α (n + 2)] : get (OfNat.ofNat (n + 2): αᵃᵒᵖ) = OfNat.ofNat (n + 2) := rfl
 @[simp] def get_add [Add α] (a b: αᵃᵒᵖ) : get (a + b) = get b + get a := rfl
 @[simp] def get_neg [Neg α] (a: αᵃᵒᵖ) : get (-a) = -get a := rfl
 @[simp] def get_mul [Mul α] (a b: αᵃᵒᵖ) : get (a * b) = get a * get b := rfl
@@ -148,14 +146,12 @@ def cases {motive: αᵐᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 
 @[simp] def mk_zero [Zero α] : mk (0: α) = 0 := rfl
 @[simp] def mk_one [One α] : mk (1: α) = 1 := rfl
-@[simp] def mk_ofNat [OfNat α (n + 2)] : mk (OfNat.ofNat (n + 2): α) = OfNat.ofNat (n + 2) := rfl
 @[simp] def mk_add [Add α] (a b: α) : mk (a + b) = mk a + mk b := rfl
 @[simp] def mk_neg [Neg α] (a: α) : mk (-a) = -mk a := rfl
 @[simp] def mk_mul [Mul α] (a b: α) : mk (a * b) = mk b * mk a := rfl
 
 @[simp] def get_zero [Zero α] : get (0: αᵐᵒᵖ) = 0 := rfl
 @[simp] def get_one [One α] : get (1: αᵐᵒᵖ) = 1 := rfl
-@[simp] def get_ofNat [OfNat α (n + 2)] : get (OfNat.ofNat (n + 2): αᵐᵒᵖ) = OfNat.ofNat (n + 2) := rfl
 @[simp] def get_add [Add α] (a b: αᵐᵒᵖ) : get (a + b) = get a + get b := rfl
 @[simp] def get_neg [Neg α] (a: αᵐᵒᵖ) : get (-a) = -get a := rfl
 @[simp] def get_mul [Mul α] (a b: αᵐᵒᵖ) : get (a * b) = get b * get a := rfl

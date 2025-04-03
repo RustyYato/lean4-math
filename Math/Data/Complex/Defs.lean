@@ -19,11 +19,11 @@ def mag_sq (c: ℂ) : ℝ :=
 instance : Coe ℝ ℂ where
   coe := (Complex.mk · 0)
 
-instance : OfNat ℂ n where
-  ofNat := (OfNat.ofNat n: ℝ)
-
 instance : NatCast ℂ where
   natCast n := (n: ℝ)
+
+instance : OfNat ℂ n where
+  ofNat := n
 
 instance : IntCast ℂ where
   intCast n := (n: ℝ)

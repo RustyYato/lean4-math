@@ -22,8 +22,6 @@ def mem_ofNat (n: ℕ): OfNat.ofNat (n + 2) ∈ s := by
 
 instance : NatCast s where
   natCast n := ⟨n, mem_natCast _ _⟩
-instance : OfNat s (n + 2) where
-  ofNat := ⟨OfNat.ofNat (n + 2), mem_ofNat _ _⟩
 
 instance : IsAddMonoidWithOne s where
   natCast_zero := by
@@ -32,9 +30,6 @@ instance : IsAddMonoidWithOne s where
   natCast_succ _ := by
     apply Subtype.val_inj
     apply natCast_succ
-  ofNat_eq_natCast _ := by
-    apply Subtype.val_inj
-    apply ofNat_eq_natCast
 
 def natRange_sub: ∀s: S, Set.range (fun n: ℕ => (n: α)) ⊆  s := by
   rintro s _ ⟨n, rfl⟩
