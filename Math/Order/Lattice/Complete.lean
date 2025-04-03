@@ -4,6 +4,10 @@ import Math.Data.Set.TopBot
 
 section
 
+class CompleteLatticeOps (α: Type*) extends ConditionallyCompleteLatticeOps α, Top α, Bot α where
+
+instance [LE α] [LT α] [Min α] [Max α] [SupSet α] [InfSet α] [Top α] [Bot α] : CompleteLatticeOps α where
+
 variable (α: Type*) [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α] [Top α] [Bot α]
 variable {α₀: Type*} [Max α₀] [Min α₀] [SupSet α₀] [InfSet α₀] [LE α₀] [LT α₀] [Top α₀] [Bot α₀]
 

@@ -5,6 +5,7 @@ import Math.Data.Real.OrderedAlgebra
 import Math.Topology.Connected.Basic
 import Math.Data.Real.Lattice
 import Math.Topology.Algebra.Ring
+import Math.Topology.Order.Defs
 
 open Topology Classical
 namespace Real
@@ -234,6 +235,75 @@ def ioi_open (a: ℝ) : IsOpen (Set.Ioi a) := by
   rw [Real.sub_lt_iff_lt_add, zero_add] at h
   exact lt_irrefl (lt_trans hx (lt_of_lt_of_le h a_le_y))
 
+def ioo_open (a b: ℝ) : IsOpen (Set.Ioo a b) := by
+  apply IsOpen.inter
+  apply ioi_open
+  apply iio_open
+
+instance : IsOrderTopology ℝ where
+  generated_from_intervals := by
+    ext s
+    apply Iff.intro
+    · intro h
+      rw [IsOpen.eq_sunion_balls h]
+      apply IsOpen.sUnion
+      intro S
+      simp; rintro a b rfl h
+      rcases Or.symm (lt_or_le 0 b) with hb | hb
+      · rw [show Ball a b = ∅ from ?_]
+        apply IsOpen.empty'
+        apply Set.ext_empty
+        intro x hx
+        simp [mem_ball] at hx
+        have := lt_of_le_of_lt (dist_nonneg a x) hx
+        have := not_le_of_lt this; contradiction
+      · rw [show Ball a b = Set.Ioo (a - b) (a + b) from ?_]
+        apply IsOpen.inter
+        apply Generate.IsOpen.of
+        exists a - b
+        left; rfl
+        apply Generate.IsOpen.of
+        exists a + b
+        right; rfl
+        ext x
+        simp [mem_ball]
+        show |_| < _ ↔ _
+        rw [abs_def]
+        apply Iff.intro
+        intro g
+        apply And.intro
+        split at g <;> rename_i g'
+        rwa [sub_lt_iff_lt_add, add_comm, ←sub_lt_iff_lt_add] at g
+        rw [neg_sub, sub_lt_iff_lt_add] at g
+        rw [not_le, sub_lt_iff_lt_add, zero_add] at g'
+        apply lt_of_le_of_lt _ g'
+        rw [sub_le_iff_le_add]
+        apply le_add_right
+        apply le_of_lt
+        assumption
+        split at g <;> rename_i g'
+        rw [le_sub_iff_add_le, zero_add] at g'
+        apply lt_of_le_of_lt
+        assumption
+        rw (occs := [1]) [←add_zero a]
+        apply add_lt_add_left
+        assumption
+        rwa [neg_sub, sub_lt_iff_lt_add, add_comm] at g
+        intro ⟨g₀, g₁⟩
+        split <;> rename_i h
+        rwa [sub_lt_iff_lt_add, add_comm, ←sub_lt_iff_lt_add] at g₀
+        rwa [neg_sub, sub_lt_iff_lt_add, add_comm]
+    · intro h
+      induction h with
+      | univ => apply IsOpen.univ
+      | inter => apply IsOpen.inter <;> assumption
+      | sUnion => apply IsOpen.sUnion <;> assumption
+      | of h =>
+        obtain ⟨x, h⟩ := h
+        rcases h with rfl | rfl
+        exact ioi_open x
+        exact iio_open x
+
 def ici_closed (a: ℝ) : IsClosed (Set.Ici a) := by
   show IsOpen _
   rw [show (Set.Ici a)ᶜ = Set.Iio a from ?_]
@@ -247,11 +317,6 @@ def iic_closed (a: ℝ) : IsClosed (Set.Iic a) := by
   apply ioi_open
   ext x
   simp [Set.mem_compl, not_le]
-
-def ioo_open (a b: ℝ) : IsOpen (Set.Ioo a b) := by
-  apply IsOpen.inter
-  apply ioi_open
-  apply iio_open
 
 def icc_closed (a b: ℝ) : IsClosed (Set.Icc a b) := by
   show IsOpen _
@@ -399,21 +464,15 @@ instance : IsTopologicalRing ℝ where
 instance : IsTopologicalSemiring ℝ where
 instance : IsTopologicalAddGroup ℝ where
 
-def isClosed_le_prod : IsClosed (Set.mk fun p: ℝ × ℝ => p.1 ≤ p.2) := by
-  have :  (Set.mk fun p: ℝ × ℝ => p.fst ≤ p.snd) = Set.preimage (Set.Ici 0) (fun p : ℝ × ℝ => p.snd - p.fst) := by
-    ext
-    simp [Set.mem_preimage, Real.le_sub_iff_add_le]
-  rw [this]
-  apply IsClosed.preimage'
-  show IsContinuous <| (fun x: ℝ × ℝ => x.1 - x.2) ∘ fun _ => (_, _)
-  apply IsContinuous.comp
-  apply ici_closed
-
-def isClosed_le (f g: ℝ -> ℝ) [hf: IsContinuous f] [hg: IsContinuous g] :
-  IsClosed (Set.mk fun x => f x ≤ g x) := by
-  show IsClosed ((Set.mk fun x: ℝ × ℝ =>  x.1 ≤ x.2).preimage (fun x => (f x, g x)))
-  have := IsContinuous.prod_mk hf hg
-  apply IsClosed.preimage
-  apply isClosed_le_prod
+instance : IsOrderClosed ℝ where
+  isClosed_le_prod := by
+    have :  (Set.mk fun p: ℝ × ℝ => p.fst ≤ p.snd) = Set.preimage (Set.Ici 0) (fun p : ℝ × ℝ => p.snd - p.fst) := by
+      ext
+      simp [Set.mem_preimage, Real.le_sub_iff_add_le]
+    rw [this]
+    apply IsClosed.preimage'
+    show IsContinuous <| (fun x: ℝ × ℝ => x.1 - x.2) ∘ fun _ => (_, _)
+    apply IsContinuous.comp
+    apply ici_closed
 
 end Real

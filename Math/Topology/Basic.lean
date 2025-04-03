@@ -87,9 +87,10 @@ def interior_sub (s: Set α) : Interior s ≤ s := by
   apply g
   assumption
 
-def IsOpen.empty : IsOpen (∅: Set α) := by
+def IsOpen.empty' {t: Topology α} : IsOpen[t] (∅: Set α) := by
   rw [←Set.sUnion_empty]
   apply sUnion; intros; contradiction
+def IsOpen.empty : IsOpen (∅: Set α) := IsOpen.empty'
 
 def IsClosed.univ : IsClosed (⊤: Set α) := by
   unfold IsClosed

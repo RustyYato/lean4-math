@@ -5,6 +5,10 @@ open Set hiding Nonempty
 
 section
 
+class ConditionallyCompleteLatticeOps (α: Type*) extends LatticeOps α, SupSet α, InfSet α where
+
+instance [LE α] [LT α] [Min α] [Max α] [SupSet α] [InfSet α] : ConditionallyCompleteLatticeOps α where
+
 variable (α: Type*) [Max α] [Min α] [SupSet α] [InfSet α] [LE α] [LT α]
 
 class IsConditionallyCompleteLattice : Prop extends IsLattice α where

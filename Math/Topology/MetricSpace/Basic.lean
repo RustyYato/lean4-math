@@ -98,7 +98,7 @@ variable [LT β] [LE β] [IsNontrivial β] [RingOps β] [IsOrderedSemiring β]
   [IsRing β] [Dist α β] [IsLinearOrder β]
   [Topology α] [instMetricSpace: IsPseudoMetricSpace α]
 
-def IsOpen.Ball: IsOpen (α := α) (Ball x δ) := by
+protected def IsOpen.Ball: IsOpen (α := α) (Ball x δ) := by
   rw [topology_eq_metric (α := α)]
   intro y hy
   exists δ - dist x y
@@ -115,6 +115,24 @@ def IsOpen.Ball: IsOpen (α := α) (Ball x δ) := by
   apply lt_of_lt_of_le
   exact add_lt_add_of_le_of_lt (dist x y) (dist y z) (dist x y) (δ - dist x y) (le_refl _) hz
   rw [add_comm, sub_add_cancel]
+
+def IsOpen.eq_sunion_balls (hS: IsOpen S) : S = ⋃(Set.mk fun s: Set α => (∃x r, s = Ball x r) ∧ s ⊆ S) := by
+  rw [topology_eq_metric α] at hS
+  ext x
+  simp [Set.mem_sUnion]
+  apply Iff.intro
+  intro hx
+  have ⟨δ, δpos, ball_sub⟩ := hS _ hx
+  exists Ball x δ
+  apply And.intro
+  apply And.intro
+  exists x
+  exists δ
+  assumption
+  rwa [mem_ball, dist_self]
+  intro ⟨_, ⟨⟨x, δ, rfl⟩, ball_sub_s⟩, hx⟩
+  apply ball_sub_s
+  assumption
 
 end
 

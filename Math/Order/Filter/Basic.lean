@@ -118,6 +118,23 @@ def exists_mem_le_iff [LT α] [IsPreOrder α] {f: FilterBase α} : (∃ t ∈ f,
 variable {α : Type u} {β : Type v} {γ : Type w} {δ : Type*} {ι : Sort x}
 variable {α: Type*} [LE α] [LT α] [Min α] [IsSemiLatticeMin α] {f g: FilterBase α} {s t: α}
 
+namespace Order
+
+def orderEmbSetOp : FilterBase α ↪o (Set α)ᵒᵖ where
+  toFun f := f.set
+  inj' := FilterBase.set_inj
+  resp_rel := Iff.rfl
+
+instance : IsPartialOrder (FilterBase α) :=
+  orderEmbSetOp.instIsPartialOrder'
+
+def le_def : (f ≤ g) = ∀x ∈ g, x ∈ f := rfl
+
+def not_le : ¬f ≤ g ↔ ∃s ∈ g, s ∉ f := by
+  simp [le_def, Classical.not_forall]
+
+end Order
+
 section Principal
 
 /-- The principal filter of `s` is the collection of all supersets of `s`. -/
@@ -135,26 +152,16 @@ scoped notation "𝓟" => FilterBase.principal
 
 @[simp] theorem mem_principal {s t : α} : s ∈ 𝓟 t ↔ t ≤ s := Iff.rfl
 
-theorem mem_principal_self (s : α) : s ∈ 𝓟 s := le_refl _
+def mem_principal_self (s : α) : s ∈ 𝓟 s := le_refl _
+
+def principal_le_principal {s t: α} : s ≤ t -> 𝓟 s ≤ 𝓟 t := by
+  intro t_le_s x hx
+  rw [mem_principal] at *
+  apply le_trans
+  assumption
+  assumption
 
 end Principal
-
-namespace Order
-
-def orderEmbSetOp : FilterBase α ↪o (Set α)ᵒᵖ where
-  toFun f := f.set
-  inj' := FilterBase.set_inj
-  resp_rel := Iff.rfl
-
-instance : IsPartialOrder (FilterBase α) :=
-  orderEmbSetOp.instIsPartialOrder'
-
-def le_def : (f ≤ g) = ∀x ∈ g, x ∈ f := rfl
-
-def not_le : ¬f ≤ g ↔ ∃s ∈ g, s ∉ f := by
-  simp [le_def, Classical.not_forall]
-
-end Order
 
 section Generate
 
@@ -473,6 +480,42 @@ instance instCompleteLattice [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSe
 -- a shortcut instance
 instance (priority := 5000) : IsCompleteLattice (Filter α) := inferInstance
 
+def mem_sInf [CompleteLatticeOps α] [IsCompleteLattice α] (f: ι -> FilterBase α) : a ∈ ⨅i, f i ↔ ∃ t, t ⊆ (⨆ (Set.range f).image set) ∧ t.IsFinite ∧ ⨅ t ≤ a := by
+  apply Iff.trans (mem_generate_iff (ne := by exists ⊤; simp))
+  apply flip Iff.intro
+  intro ⟨s, s_sub, sfin, sinf_le⟩
+  refine ⟨s, ?_, sfin, sinf_le⟩
+  apply Set.sub_trans
+  assumption
+  apply Set.sub_union_right
+  intro ⟨s, s_sub, sfin, sinf_le⟩
+  by_cases h₀:∀x ∈ s, x = ⊤
+  rw [sInf_eq_top.mpr] at sinf_le
+  cases le_antisymm sinf_le (le_top _)
+  refine ⟨∅, ?_, ?_, le_top _⟩
+  apply Set.empty_sub
+  infer_instance
+  assumption
+  refine ⟨s \ {⊤}, ?_, ?_, ?_⟩
+  intro x ⟨hx₀, hx₁⟩
+  have := s_sub x hx₀; simp at this
+  rcases this with rfl | this
+  contradiction
+  assumption
+  infer_instance
+  simp at h₀
+  obtain ⟨x, hx⟩ := h₀
+  apply flip le_trans
+  apply sinf_le
+  apply le_sInf
+  intro y hy
+  by_cases y = ⊤
+  subst y; apply le_top
+  apply sInf_le
+  apply And.intro
+  assumption
+  assumption
+
 class NeBot (f: FilterBase α) [Nonempty α] where
   ne : f ≠ ⊥
 
@@ -572,6 +615,46 @@ section Limit
 
 def Eventually (P: α -> Prop) (f: Filter α) : Prop := Set.mk P ∈ f
 def Frequently (P: α -> Prop) (f: Filter α) : Prop := ¬f.Eventually fun x => ¬P x
+
+def Eventually.frequently {f : Filter α} [f.NeBot] {p : α → Prop} (h : Eventually p f) :
+    Frequently p f := by
+  intro g
+  replace h : Set.mk p ∈ f := h
+  replace g : (Set.mk p)ᶜ ∈ f := g
+  rename_i ne_bot
+  apply ne_bot.ne
+  suffices ⊥ ∈ f by
+    ext x
+    apply Iff.intro
+    intro; trivial
+    intro hx
+    apply FilterBase.closed_upward
+    assumption
+    apply bot_le
+  rw [show ⊥ = Set.mk p ∩ (Set.mk p)ᶜ from ?_]
+  apply FilterBase.closed_min
+  assumption
+  assumption
+  ext x
+  simp [Set.not_mem_empty, ←Set.sdiff_eq_inter_compl,
+    Set.sdiff_self]
+  rfl
+
+def Frequently.exists {p : α → Prop} {f : Filter α} (hp : Frequently p f) : ∃ x, p x := by
+  apply Classical.byContradiction
+  rw [not_exists]
+  intro h
+  apply hp
+  unfold Eventually
+  rw [show Set.mk (fun x => ¬p x) = ⊤ from ?_]
+  apply univ_mem
+  apply Set.ext_univ
+  intro x
+  apply h
+
+def Eventually.exists {p : α → Prop} {f : Filter α} [f.NeBot] (hp : Eventually p f) :
+    ∃ x, p x :=
+  hp.frequently.exists
 
 def TendsTo (f : α -> β) (l₁ : Filter α) (l₂ : Filter β) :=
   l₁.map f ≤ l₂

@@ -3,6 +3,13 @@ import Math.Order.Notation
 import Math.Relation.Basic
 import Math.Data.Opposite
 
+class OrderOps (α: Type*) extends LE α, LT α where
+
+class LatticeOps (α: Type*) extends OrderOps α, Min α, Max α where
+
+instance [LE α] [LT α] : OrderOps α where
+instance [LE α] [LT α] [Min α] [Max α] : LatticeOps α where
+
 class IsPreOrder (α: Type*) [LT α] [LE α] : Prop extends IsLawfulLT α where
   le_refl: ∀a: α, a ≤ a
   le_trans: ∀{a b c: α}, a ≤ b -> b ≤ c -> a ≤ c

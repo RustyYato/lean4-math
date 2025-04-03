@@ -25,7 +25,6 @@ class SupSet (α: Type*) where
 
 class InfSet (α: Type*) where
   sInf: Set α -> α
-
 export SupSet (sSup)
 export InfSet (sInf)
 
@@ -1176,3 +1175,6 @@ def invFun_eq'_on {x: α} (hf: InjectiveOn f s) (h: x ∈ s):
   assumption
 
 end Function
+
+instance (priority := 900) [SupSet α] : Nonempty α := ⟨⨆∅⟩
+instance (priority := 900) [InfSet α] : Nonempty α := ⟨⨅∅⟩
