@@ -1,4 +1,4 @@
-import Math.Data.Real.Archimedean
+import Math.Data.Real.Div
 import Math.Data.Nat.Lattice
 import Math.Data.Int.Lattice
 import Math.Algebra.QAlgebra.Basic

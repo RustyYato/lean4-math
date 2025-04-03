@@ -1,7 +1,6 @@
 import Math.Topology.MetricSpace.Abs
 import Math.Topology.MetricSpace.Basic
 import Math.Data.Real.Div
-import Math.Data.Real.OrderedAlgebra
 import Math.Topology.Connected.Basic
 import Math.Data.Real.Lattice
 import Math.Topology.Algebra.Ring
@@ -10,8 +9,8 @@ import Math.Topology.Order.Defs
 open Topology Classical
 namespace Real
 
-instance : Dist ℝ ℝ := Abs.instDist _
-instance : IsMetric ℝ := Abs.instIsMetric _
+instance : Dist ℝ ℝ := Norm.instDist _
+instance : IsMetric ℝ := Norm.instIsMetric _
 instance : Topology ℝ := IsPseudoMetric.toTopology
 instance : IsMetricSpace ℝ := inferInstance
 
@@ -117,9 +116,9 @@ instance : Topology.IsConnected ℝ where
       apply ball
       rw [mem_ball]
       show dist c (min _ _) < δ
-      show |_| < _
+      show ‖_‖ < _
       rw [min_def]; split
-      rw [add_comm, sub_add, sub_self, zero_sub, abs_neg, (Real.abs_of_nonneg _).mp]
+      rw [add_comm, sub_add, sub_self, zero_sub, norm_neg, norm_eq_abs, abs_of_nonneg]
       rw [div?_eq_mul_inv?]; rw (occs := [2]) [←mul_one δ]
       apply mul_lt_mul_of_pos_left
       assumption
@@ -128,7 +127,7 @@ instance : Topology.IsConnected ℝ where
       apply le_of_lt
       apply half_pos
       assumption
-      rw [abs_sub_comm, (Real.abs_of_nonneg _).mp, Real.sub_lt_iff_lt_add, add_comm]
+      rw [norm_sub_comm, norm_eq_abs, abs_of_nonneg, Real.sub_lt_iff_lt_add, add_comm]
       rename_i h; rw [not_le] at h
       apply lt_of_lt_of_le
       assumption
@@ -164,7 +163,7 @@ instance : Topology.IsConnected ℝ where
         intro g
         refine disjoint _ hx.left (ball x ?_)
         rw [mem_ball]
-        show |c - x| < δ
+        show ‖c - x‖ < δ
         have x_le_c : x ≤ c := le_csSup ?_ hx
         replace ⟨g, a_lt_x⟩ := max_lt_iff.mp g
         rw [Real.abs_def, if_pos]
@@ -202,7 +201,7 @@ def iio_open (a: ℝ) : IsOpen (Set.Iio a) := by
   rwa [Real.lt_sub_iff_add_lt, zero_add]
   intro y hy
   rw [Set.mem_Iio]; rw [mem_ball] at hy
-  replace hy : |_| < a - x := hy
+  replace hy : ‖_‖ < a - x := hy
   rw [abs_def] at hy
   split at hy
   rw [←not_le]; intro a_le_y
@@ -222,7 +221,7 @@ def ioi_open (a: ℝ) : IsOpen (Set.Ioi a) := by
   rwa [Real.lt_sub_iff_add_lt, zero_add]
   intro y hy
   rw [Set.mem_Ioi]; rw [mem_ball] at hy
-  replace hy : |_| < x - a := hy
+  replace hy : ‖_‖ < x - a := hy
   rw [abs_def] at hy
   split at hy
   have := add_lt_add_left _ _ (-x) hy
@@ -267,7 +266,7 @@ instance : IsOrderTopology ℝ where
         right; rfl
         ext x
         simp [mem_ball]
-        show |_| < _ ↔ _
+        show ‖_‖ < _ ↔ _
         rw [abs_def]
         apply Iff.intro
         intro g
@@ -350,7 +349,7 @@ instance instContℝneg : Topology.IsContinuous (fun x: ℝ => -x) where
     intro a ha
     rw [mem_ball] at ha
     rw [Set.mem_preimage]
-    replace ha: |_| < δ := ha
+    replace ha: ‖_‖ < δ := ha
     rw [←neg_sub_neg] at ha
     replace ha: dist (-a) _ < δ := ha
     rw [dist_comm] at ha
@@ -366,10 +365,10 @@ instance instContℝadd : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 + x.2)
   intro (a, b) (c, d) h
   replace h : max _ _ < _ := h
   simp at *
-  show |_| < _
+  show ‖_‖ < _
   rw [sub_add, add_sub_assoc, add_comm, add_sub_assoc, add_comm]
   apply lt_of_le_of_lt
-  apply abs_add_le_add_abs
+  apply norm_add_le_add_norm
   apply lt_of_le_of_lt
   apply add_le_add
   apply le_max_left
@@ -389,12 +388,12 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     replace hab : a * b ∈ S := hab
     simp
     have ⟨ε, εpos, ball_sub⟩ := hS _ hab
-    let M := |a| + |b| + 1
+    let M := ‖a‖ + ‖b‖ + 1
     have one_le_M : 1 ≤ M := by
       apply le_add_left
       apply add_nonneg
-      apply abs_nonneg
-      apply abs_nonneg
+      apply norm_nonneg
+      apply norm_nonneg
     have : 0 < M := by
       apply flip lt_of_lt_of_le
       assumption
@@ -410,26 +409,27 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     intro (c, d) hx
     rw [mem_ball] at hx
     rw [Set.mem_preimage]
-    replace hx : max |_| |_| < δ := hx
+    replace hx : max ‖_‖ ‖_‖ < δ := hx
     simp at hx
     rw [max_lt_iff] at hx
     obtain ⟨ha, hb⟩ := hx
     simp
     apply ball_sub
     rw [mem_ball]
-    show |_| < _
+    show ‖_‖ < _
     rw [←add_zero (a * b), ←neg_add_cancel (a * d),
       ←add_assoc, ←sub_eq_add_neg, ←mul_sub, add_sub_assoc, ←sub_mul]
     apply lt_of_le_of_lt
-    apply abs_add_le_add_abs
-    rw [abs_mul, abs_mul]
+    apply norm_add_le_add_norm
+    rw [norm_eq_abs, norm_eq_abs, abs_mul, abs_mul]
+    repeat rw [←norm_eq_abs]
     apply lt_of_le_of_lt
     apply add_le_add
     apply mul_le_mul_of_nonneg_left
-    apply abs_nonneg
+    apply norm_nonneg
     apply le_of_lt; assumption
     apply mul_le_mul_of_nonneg_right
-    apply abs_nonneg
+    apply norm_nonneg
     apply le_of_lt; assumption
     rw [mul_comm _ δ, ←mul_add]
     unfold δ M
@@ -439,15 +439,15 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     rw (occs := [2]) [←mul_one ε]
     apply mul_lt_mul_of_pos_left
     assumption
-    replace hb : |b - d| < 1 := by
+    replace hb : ‖b - d‖ < 1 := by
       apply lt_of_lt_of_le
       assumption
       apply min_le_right
-    have : |d| < |b| + 1 := by
+    have : ‖d‖ < ‖b‖ + 1 := by
       rw [←add_zero d, ←sub_self b, ←add_sub_assoc, add_comm, add_sub_assoc]
       apply lt_of_le_of_lt
-      apply abs_add_le_add_abs
-      rw [abs_sub_comm]
+      apply norm_add_le_add_norm
+      rw [norm_sub_comm]
       apply add_lt_add_left
       assumption
     apply lt_of_lt_of_le
@@ -457,8 +457,8 @@ instance instContℝmul : Topology.IsContinuous (fun x: ℝ × ℝ => x.1 * x.2)
     assumption
     rw [←add_assoc, mul_inv?_cancel]
     apply add_nonneg
-    apply abs_nonneg
-    apply abs_nonneg
+    apply norm_nonneg
+    apply norm_nonneg
 
 instance : IsTopologicalRing ℝ where
 instance : IsTopologicalSemiring ℝ where

@@ -59,9 +59,10 @@ def embedReal_abs (x: ℝ) : embedReal (abs x) = |x| := rfl
 @[simp] def square_zero : square 0 = 0 := rfl
 @[simp] def square_one : square 1 = 1 := rfl
 def square_eq_abs_sq (x: ℝ): square x = (abs x) ^ 2 := by
+  classical
   apply embedReal.inj
   show x ^ 2 = |x| ^ 2
-  rw [Real.abs_def]
+  rw [abs_def]
   split
   rfl
   rw [square_neg]
@@ -82,13 +83,13 @@ def sqrt_square (r: ℝ) : sqrt (square r) = abs r := by
   rcases le_total 0 r with h | h
   rw [show (square r) = (mk r h) ^ 2 from rfl]
   rw [sqrt_of_sq, abs, mk]
-  congr; rw [(Real.abs_of_nonneg _).mp h]
+  congr; rw [abs_of_nonneg _ h]
   rw [←square_neg]; rw [←Real.neg_le_neg_iff] at h
   rw [show (square (-r)) = (mk (-r) h) ^ 2 from rfl]
   rw [sqrt_of_sq]
   unfold abs mk
   congr
-  rw [←abs_neg, (Real.abs_of_nonneg _).mp h]
+  rw [←abs_neg, abs_of_nonneg _ h]
 
 def of_square_eq_zero : square r = 0 -> r = 0 := by
   intro h

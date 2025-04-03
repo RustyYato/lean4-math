@@ -1,7 +1,7 @@
 import Math.Data.Nat.Gcd
 import Math.Data.Int.Basic
 import Math.Ops.Checked
-import Math.Ops.Abs
+import Math.Algebra.Norm.Basic
 import Math.Logic.Nontrivial
 import Math.Relation.Basic
 import Math.Algebra.Field.Basic
@@ -27,25 +27,25 @@ def Fract.den_nz' (a: Fract) : Int.ofNat a.den ≠ 0 := by
   cases h
   contradiction
 
-private def fract_reduce_den {a: Fract} : (|a.num|.gcd a.den: Int) ≠ 0 := by
+private def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: Int) ≠ 0 := by
   intro h
-  have : |a.num|.gcd a.den = 0 := Int.ofNat.inj h
+  have : ‖a.num‖.gcd a.den = 0 := Int.ofNat.inj h
   have h := Nat.eq_zero_of_gcd_eq_zero_right this
-  have := a.den_pos
+  have := Int.ofNat_lt.mpr a.den_pos
   rw [h] at this
   contradiction
 
-def Fract.isReduced (a: Fract) : Prop := |a.num|.gcd a.den = 1
+def Fract.isReduced (a: Fract) : Prop := ‖a.num‖.gcd a.den = 1
 def Fract.reduce (a: Fract) : Fract where
-  num := a.num / |a.num|.gcd a.den
-  den := a.den / |a.num|.gcd a.den
+  num := a.num / ‖a.num‖.gcd a.den
+  den := a.den / ‖a.num‖.gcd a.den
   den_pos := by
     rw [Nat.div_eq, if_pos]
     apply Nat.zero_lt_succ
     apply And.intro
     apply Nat.zero_lt_of_ne_zero
     intro h
-    have h := Nat.eq_zero_of_gcd_eq_zero_right h
+    have h : a.den = 0 := Nat.eq_zero_of_gcd_eq_zero_right h
     have := a.den_pos
     rw [h] at this
     contradiction
@@ -57,7 +57,7 @@ def Fract.reduce.isReduced (a: Fract) : a.reduce.isReduced := by
   unfold reduce Fract.isReduced
   simp
   apply Nat.eq_of_mul_eq_mul_right
-  show 0 < |a.num|.gcd a.den
+  show 0 < ‖a.num‖.gcd a.den
   apply Nat.zero_lt_of_ne_zero
   intro h
   have h := Nat.eq_zero_of_gcd_eq_zero_right h
@@ -68,7 +68,7 @@ def Fract.reduce.isReduced (a: Fract) : a.reduce.isReduced := by
   conv => {
     lhs; lhs
     rhs
-    rw [←Int.natAbs_ofNat (|a.num|.gcd a.den),]
+    rw [←Int.natAbs_ofNat (‖a.num‖.gcd a.den)]
   }
   show (Int.natAbs _ * _).gcd _ = _
   rw [←Int.natAbs_mul, Int.ediv_mul_cancel, Nat.div_mul_cancel, Nat.one_mul]
@@ -112,16 +112,16 @@ def Fract.isReduced.spec (a b: Fract) : a.isReduced -> b.isReduced -> a ≈ b ->
     , Int.sign_ofNat_of_nonzero (Nat.ne_zero_of_lt bdpos), Int.mul_one, Int.mul_one] at sign_eq
   have val_eq : (an * bd).natAbs = (bn * ad).natAbs := by rw [h]
   rw [Int.natAbs_mul, Int.natAbs_mul, Int.natAbs_ofNat, Int.natAbs_ofNat] at val_eq
-  replace val_eq : |an| * bd = |bn| * ad := val_eq
-  have p1 : |bn| ∣ |an| * bd := by exists ad
+  replace val_eq : ‖an‖ * bd = ‖bn‖ * ad := val_eq
+  have p1 : ‖bn‖ ∣ ‖an‖ * bd := by exists ad
   replace p1 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p1 bred
-  have p2 : |an| ∣ |bn| * ad := by exists bd; rw [val_eq]
+  have p2 : ‖an‖ ∣ ‖bn‖ * ad := by exists bd; rw [val_eq]
   replace p2 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p2 ared
   have an_abs_eq_bn_abs : an.natAbs = bn.natAbs := Nat.dvd_antisymm p2 p1
 
-  have p1 : ad ∣ bd * |an| := by exists |bn|; rw [Nat.mul_comm, val_eq, Nat.mul_comm]
+  have p1 : ad ∣ bd * ‖an‖ := by exists ‖bn‖; rw [Nat.mul_comm, val_eq, Nat.mul_comm]
   replace p1 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p1 (Nat.gcd_comm _ _ ▸ ared)
-  have p2 : bd ∣ ad * |bn| := by exists |an|; rw [Nat.mul_comm, ←val_eq, Nat.mul_comm]
+  have p2 : bd ∣ ad * ‖bn‖ := by exists ‖an‖; rw [Nat.mul_comm, ←val_eq, Nat.mul_comm]
   replace p2 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p2 (Nat.gcd_comm _ _ ▸ bred)
   cases Nat.dvd_antisymm p2 p1
 
@@ -346,7 +346,7 @@ def mk_sub (a b: Fract) : ⟦a⟧ - ⟦b⟧ = ⟦a - b⟧ := rfl
 
 def Fract.inv (a: Fract) (h: ¬a ≈ 0) : Fract where
   num := a.num.sign * a.den
-  den := |a.num|
+  den := ‖a.num‖
   den_pos := by
     apply Nat.zero_lt_of_ne_zero
     intro g
@@ -362,7 +362,7 @@ def Fract.inv.spec (a b: Fract) (h₀: ¬a ≈ 0) (h₁: ¬b ≈ 0) : a ≈ b ->
   intro eq
   replace eq : _ * _ = _ * _ := eq
   show _ * _ = _ * _
-  simp [CheckedInvert.checked_invert, Fract.inv, AbsoluteValue.abs]
+  simp [CheckedInvert.checked_invert, Fract.inv, Norm.norm]
   suffices a.num.sign = b.num.sign by
     rw [this, Int.mul_comm b.num.sign, Int.mul_assoc, Int.sign_mul_natAbs b.num]
     rw [←this, Int.mul_comm a.num.sign, Int.mul_assoc, Int.sign_mul_natAbs a.num]

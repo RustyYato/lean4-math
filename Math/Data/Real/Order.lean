@@ -14,7 +14,7 @@ def IsPos.spec (a b: CauchySeq) : a ≈ b -> a.IsPos -> b.IsPos := by
   simp at ab prf
   refine ⟨max K δ, ?_⟩
   intro n Kδ_le_n
-  apply le_trans _ (Rat.sub_abs_self_sub (a n) (b n))
+  apply le_trans _ (sub_abs_self_sub (a n) (b n))
   apply flip le_trans
   apply Rat.sub_le_sub
   apply prf
@@ -34,13 +34,13 @@ def non_zero_of_IsPos (a: CauchySeq) : a.IsPos -> ¬a ≈ 0 := by
   replace ⟨pos, eq_zero⟩ := prf δ δ (le_refl _) (le_refl _)
   clear prf
   erw [sub_zero] at eq_zero
-  rw [Rat.abs_def] at eq_zero
+  rw [abs_def] at eq_zero
   split at eq_zero <;> rename_i h
   exact lt_irrefl <| lt_of_lt_of_le eq_zero pos
   rw [not_le] at h
   exact lt_asymm B_pos (lt_of_le_of_lt pos h)
 
-def abs_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos |f| := by
+def abs_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos ‖f‖ := by
   false_or_by_contra
   rename_i nk
 
@@ -61,23 +61,23 @@ def abs_pos_of_non_zero {f : CauchySeq} (hf : ¬f ≈ 0) : IsPos |f| := by
   have : ∀y, seq 0 y = 0 := fun _ => rfl
   dsimp
   rw [this, sub_zero]
-  have := lt_of_le_of_lt (Rat.abs_add_le_add_abs _ _) (Rat.add_lt_add (hi k j (le_trans ij jk) ij) hj)
+  have := lt_of_le_of_lt (abs_add_le_add_abs _ _) (add_lt_add _ _ _ _ (hi k j (le_trans ij jk) ij) hj)
   rwa [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero,
       ←mul_two, div?_mul_cancel] at this
 
-def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos |f|) : IsPos f ∨ IsPos (-f) := by
+def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos ‖f‖) : IsPos f ∨ IsPos (-f) := by
   obtain ⟨B, B_pos, pos⟩ := hf
   replace ⟨δ, prf⟩ := pos.to₂_right.merge (f.is_cacuhy _ (Rat.half_pos B_pos))
   replace ⟨pos, f_eqv⟩ := prf _ _  (le_refl _) (le_refl _)
   replace pos: B ≤ |f δ| := pos
   clear f_eqv
-  rw [Rat.abs_def] at pos
+  rw [abs_def] at pos
   split at pos <;> rename_i h
   · clear h
     left
     refine ⟨_, Rat.half_pos B_pos, δ, ?_⟩
     intro n δ_n
-    apply le_trans _ <| Rat.sub_abs_self_sub (f δ) (f n)
+    apply le_trans _ <| sub_abs_self_sub (f δ) (f n)
     apply flip le_trans
     apply Rat.sub_le_sub
     assumption
@@ -89,7 +89,7 @@ def pos_or_neg_of_abs_pos {f : CauchySeq} (hf : IsPos |f|) : IsPos f ∨ IsPos (
     right
     refine ⟨_, Rat.half_pos B_pos, δ, ?_⟩
     intro n δ_n
-    apply le_trans _ <| Rat.sub_abs_self_sub (-f δ) (-f n)
+    apply le_trans _ <| sub_abs_self_sub (-f δ) (-f n)
     rw [neg_sub_neg]
     apply flip le_trans
     apply Rat.sub_le_sub
@@ -156,7 +156,7 @@ def non_zero_of_IsPos {a: ℝ} : a.IsPos -> a ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply non_zero_of_IsPos <;> invert_tactic)
 
-def abs_pos_of_non_zero {a: ℝ} : a ≠ 0 -> |a|.IsPos := by
+def abs_pos_of_non_zero {a: ℝ} : a ≠ 0 -> ‖a‖.IsPos := by
   intro h
   induction a using ind with | mk a =>
   apply CauchySeq.abs_pos_of_non_zero
@@ -332,7 +332,7 @@ def mul_neg_of_neg_of_pos (a b: ℝ) : (-a).IsPos -> b.IsPos -> (-(a * b)).IsPos
   have := mul_pos_of_pos_of_pos _ _ apos bpos
   rwa [←neg_mul_left] at this
 
-open Classical in def abs_def (a: ℝ) : |a| = if 0 ≤ a then a else -a := by
+open Classical in def abs_def (a: ℝ) : ‖a‖ = if 0 ≤ a then a else -a := by
   cases a with | mk a =>
   split
   rename_i h
@@ -345,7 +345,7 @@ open Classical in def abs_def (a: ℝ) : |a| = if 0 ≤ a then a else -a := by
   exists k
   intro n k_le_n
   show |_| = _
-  rw [Rat.abs_def, if_pos]
+  rw [_root_.abs_def, if_pos]
   apply flip le_trans
   apply spec
   assumption
@@ -361,7 +361,7 @@ open Classical in def abs_def (a: ℝ) : |a| = if 0 ≤ a then a else -a := by
   exists k
   intro n k_le_n
   show |_| = _
-  rw [Rat.abs_def, if_neg]
+  rw [_root_.abs_def, if_neg]
   rfl
   rw [not_le]
   apply Rat.neg_lt_neg_iff.mpr
@@ -398,7 +398,7 @@ def neg_le_neg_iff (a b: ℝ) : -a ≤ -b ↔ b ≤ a := by
 
 def neg_zero : -(0: ℝ) = 0 := rfl
 
-def abs_sub_comm (a b: ℝ) : |a - b| = |b - a| := by
+protected def norm_sub_comm (a b: ℝ) : ‖a - b‖ = ‖b - a‖ := by
   rw [abs_def, abs_def]
   split <;> rename_i h
   rcases lt_or_eq_of_le h with h | h

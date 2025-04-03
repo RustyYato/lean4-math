@@ -22,7 +22,7 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
     rw [h] at B_le_bm
     exact lt_irrefl (lt_of_le_of_lt B_le_bm B_pos)
   rw [dif_neg, dif_neg]
-  rw [inv_sub_inv, Rat.abs_div?]
+  rw [inv_sub_inv, abs_div?]
   rw [abs_sub_comm]
   by_cases h:a n - b m = 0
   erw [h, div?_eq_mul_inv?, zero_mul]
@@ -33,35 +33,35 @@ def CauchySeq.inv.spec_pos (a b: CauchySeq) (ha: a.IsPos) : a ≈ b ->
   · assumption
   · rw [div?_eq_mul_inv?, mul_assoc]
     apply Rat.pos_mul_lt_of_right_lt_one
-    apply Rat.abs_pos
+    apply abs_pos
     assumption
-    rw [←Rat.abs_inv?, inv?_mul_rev, Rat.abs_mul,
-      ←Rat.abs_of_pos _ (Rat.half_pos A_pos), ←Rat.abs_of_pos _ (Rat.half_pos B_pos)]
+    rw [←abs_inv?, inv?_mul_rev, abs_mul,
+      ←abs_of_pos _ (Rat.half_pos A_pos), ←abs_of_pos _ (Rat.half_pos B_pos)]
     suffices |A/?2| *|(a n)⁻¹?| * (|B/?2| * |(b m)⁻¹?|) < 1 by
       apply lt_of_le_of_lt _ this
       assumption
       assumption
       apply le_of_eq
       ac_rfl
-    rw [←Rat.abs_mul, ←Rat.abs_mul, ←div?_eq_mul_inv?, ←div?_eq_mul_inv?]
+    rw [←abs_mul, ←abs_mul, ←div?_eq_mul_inv?, ←div?_eq_mul_inv?]
     conv => { rhs; rw [←mul_one 1] }
     apply Rat.mul_lt_mul
-    · apply Rat.abs_pos
+    · apply abs_pos
       have : A ≠ 0 := by symm; apply ne_of_lt; assumption
       invert_tactic
-    · apply (Rat.abs_div_lt_one _ _ _).mpr
-      rw [Rat.abs_of_pos, Rat.abs_of_pos]
+    · apply (abs_div?_lt_one _ _ _).mpr
+      rw [abs_of_pos, abs_of_pos]
       apply lt_of_lt_of_le _ A_le_an
       apply Rat.half_lt
       assumption
       apply lt_of_lt_of_le A_pos A_le_an
       apply Rat.half_pos
       assumption
-    · apply Rat.abs_pos
+    · apply abs_pos
       have : B ≠ 0 := by symm; apply ne_of_lt; assumption
       invert_tactic
-    · apply (Rat.abs_div_lt_one _ _ _).mpr
-      rw [Rat.abs_of_pos, Rat.abs_of_pos]
+    · apply (abs_div?_lt_one _ _ _).mpr
+      rw [abs_of_pos, abs_of_pos]
       apply lt_of_lt_of_le _ B_le_bm
       apply Rat.half_lt
       assumption
@@ -126,7 +126,7 @@ def CauchySeq.inv (a: CauchySeq) (ha: ¬a ≈ 0) : CauchySeq where
 instance : CheckedInvert CauchySeq (fun x => ¬x ≈ 0) := ⟨.inv⟩
 
 def CauchySeq.eventually_pointwise_ne_of_ne (a b: CauchySeq) (h: ¬a ≈ b) : Eventually (fun n => a n ≠ b n) := by
-  have : IsPos |a - b| := CauchySeq.abs_pos_of_non_zero (by
+  have : IsPos ‖a - b‖ := CauchySeq.abs_pos_of_non_zero (by
     intro g; apply h
     apply Quotient.exact
     replace g : Real.mk a - Real.mk b = 0 := Quotient.sound g
@@ -174,9 +174,9 @@ instance : CheckedDiv? ℝ where
   checked_div a b h := a * b⁻¹?
 
 instance : Min ℝ where
-  min x y := (x + y - |x - y|) /? 2
+  min x y := (x + y - ‖x - y‖) /? 2
 instance : Max ℝ where
-  max x y := (x + y + |x - y|) /? 2
+  max x y := (x + y + ‖x - y‖) /? 2
 
 def inv_self_mul (a: ℝ) (h: a ≠ 0) : a⁻¹? * a = 1 := by
   induction a using ind with | mk a =>
@@ -314,7 +314,7 @@ instance : SMul ℚ ℝ where
 def ratCast_ne_zero (a: ℚ) (ha: a ≠ 0) : (a: ℝ) ≠ 0 := by
   intro h
   replace h := Quotient.exact h
-  have ⟨k, spec⟩ := h |a| (Rat.abs_pos a ha)
+  have ⟨k, spec⟩ := h |a| (abs_pos a ha)
   have := spec k k (le_refl _) (le_refl _)
   dsimp [CauchySeq.ofRat] at this
   rw [natCast_zero, sub_zero] at this
@@ -367,14 +367,14 @@ def min_eq_neg_max_neg (a b: ℝ) : min a b = -max (-a) (-b) := by
     rhs; rw [div_eq_mul_inv, neg_mul_left]
     simp [neg_add_rev, neg_neg, neg_sub_neg]
   }
-  rw [sub_eq_add_neg, abs_sub_comm, add_comm, add_comm a b]
+  rw [sub_eq_add_neg, Real.norm_sub_comm, add_comm, add_comm a b]
   rfl
 def max_eq_neg_min_neg (a b: ℝ) : max a b = -min (-a) (-b) := by
   rw [min_eq_neg_max_neg, neg_neg, neg_neg, neg_neg]
 
 def min_comm (a b: ℝ) : min a b = min b a := by
   simp [min]
-  rw [add_comm, abs_sub_comm]
+  rw [add_comm, Real.norm_sub_comm]
 def max_comm (a b: ℝ) : max a b = max b a := by
   rw [max_eq_neg_min_neg, min_comm, ←max_eq_neg_min_neg]
 
@@ -431,5 +431,145 @@ instance : IsLinearLattice ℝ := {
     rw [min_def]
     split <;> assumption
 }
+
+instance instOrderedRing : IsStrictOrderedSemiring ℝ where
+  zero_le_one := by
+    left
+    exists 1
+    apply And.intro
+    decide
+    exists 0
+    intro _ _
+    show 1 ≤ 1 - 0
+    rw [sub_zero]
+  add_le_add_left := by
+    intro a b ab k
+    apply Real.le_iff_add_le_add_left.mp
+    assumption
+  mul_le_mul_of_nonneg_left a b h k knonneg := by
+    cases lt_or_eq_of_le knonneg
+    rw [←Real.le_iff_mul_le_mul_of_pos_left]
+    assumption
+    assumption
+    subst k
+    rw [zero_mul, zero_mul]
+  mul_le_mul_of_nonneg_right a b h k knonneg := by
+    cases lt_or_eq_of_le knonneg
+    rw [←Real.le_iff_mul_le_mul_of_pos_right]
+    assumption
+    assumption
+    subst k
+    rw [mul_zero, mul_zero]
+  mul_nonneg a b ha hb := by
+    rcases lt_or_eq_of_le ha  with ha | ha
+    rcases lt_or_eq_of_le hb with hb | hb
+    apply le_of_lt
+    rw [Real.zero_lt_iff_pos]
+    apply Real.mul_pos_of_pos_of_pos
+    <;> (rw [←Real.zero_lt_iff_pos]; assumption)
+    subst b; rw [mul_zero]
+    subst a; rw [zero_mul]
+  mul_pos a b := by
+    intro apos bpos
+    cases a, b with | mk a b =>
+    rw [Real.zero_lt_iff_pos] at apos bpos
+    obtain ⟨A, Apos, Aeven⟩ := apos
+    obtain ⟨B, Bpos, Beven⟩ := bpos
+    have ⟨k, even⟩  := Aeven.merge Beven
+    rw [Real.zero_lt_iff_pos]
+    exists A * B
+    apply And.intro
+    apply Rat.mul_pos <;> assumption
+    exists k
+    intro n hn
+    replace ⟨Aeven, Beven⟩ := even n hn
+    clear even
+    apply Rat.mul_le_mul_nonneg
+    apply le_of_lt; assumption
+    assumption
+    apply le_of_lt; assumption
+    assumption
+
+def abs_mul' (a b: ℝ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
+  cases a, b with | mk a b =>
+  apply Quotient.sound
+  apply CauchySeq.pointwise
+  intro n
+  show |a n * b n| = |a n| * |b n|
+  rw [abs_mul]
+
+def norm_eq_abs (a: ℝ) : ‖a‖ = |a| := by
+  apply le_antisymm
+  apply le_max_iff.mpr
+  rw [abs_def]
+  split
+  left; rfl
+  right; rfl
+  rw [abs_def]
+  split
+  apply max_le
+  rfl
+  apply neg_le_of_nonneg
+  assumption
+  apply max_le
+  apply le_neg_of_nonpos
+  apply le_of_not_le
+  assumption
+  rfl
+
+instance : IsLawfulNorm ℝ where
+  norm_add_le_add_norm := by
+    intro a b
+    cases a, b with | mk a b =>
+    apply CauchySeq.le_pointwise
+    intro n
+    apply abs_add_le_add_abs
+  norm_zero_iff {x} := by
+    rw [Real.abs_def]
+    split
+    rfl
+    rw [←neg_zero]
+    apply Iff.trans neg_inj
+    rfl
+  norm_smul _ _ := by
+    rw [smul_eq_mul, Real.abs_mul']
+    congr
+    rw [Real.norm_eq_abs]
+
+instance : NeZero (2: ℝ) :=  instNeZeroOfOrderedSemiring _
+
+instance : Archimedean ℝ := archimedean_iff_nat_lt.mpr <| by
+  intro x
+  induction x using ind with | mk x =>
+  have ⟨ub, ub_spec⟩ := x.upper_bound
+  have ⟨n, ub_lt_n⟩ := archimedean_iff_nat_lt.mp (inferInstanceAs (Archimedean ℚ)) ub
+  exists n
+  apply flip lt_of_le_of_lt
+  apply ofRat_lt.mpr
+  assumption
+  apply le_of_not_lt
+  intro ⟨B, B_pos, k, spec⟩
+  replace spec : B ≤ x k - ub := spec k (le_refl _)
+  replace spec := lt_of_lt_of_le B_pos spec
+  rw [←Rat.add_lt_iff_lt_sub, zero_add] at spec
+  exact lt_asymm spec (ub_spec _)
+
+def exists_nat_gt (r: ℝ) : ∃n: ℕ, r < n := by
+  have ⟨n, spec⟩ := Archimedean.arch r (y := 1) zero_lt_one
+  rw [←natCast_eq_nsmul_one] at spec
+  exists n + 1
+  rw [natCast_succ]
+  apply lt_of_le_of_lt spec
+  rw (occs := [1]) [←add_zero (n: ℝ)]
+  apply lt_iff_add_lt_add_left.mp
+  apply zero_lt_one
+
+def exists_int_lt (r: ℝ) : ∃n: ℤ, n < r := by
+  rcases lt_or_le 0 r
+  exists 0
+  have ⟨n, spec⟩ := exists_nat_gt (-r)
+  exists -n
+  rw [←intCast_neg, intCast_ofNat, ←neg_lt_neg_iff, neg_neg]
+  assumption
 
 end Real

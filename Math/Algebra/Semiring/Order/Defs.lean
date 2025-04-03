@@ -60,18 +60,66 @@ end
 
 section
 
-variable [SemiringOps α] [LE α] [LT α] [IsStrictOrderedSemiring α]
+variable [SemiringOps α] [LE α] [LT α] [IsOrderedSemiring α]
   [IsNontrivial α]
 
-def two_pos : 0 < (2: α) := by
-  show (0: α) < OfNat.ofNat (0 + 2)
-  have := ofNat_eq_natCast (α := α) 0
-  rw [ofNat_eq_natCast (α := α) 0, Nat.zero_add, show 2 = 1 + 1 by rfl, natCast_add]
+def natCast_nonneg (n: ℕ) : 0 ≤ (n: α) := by
+  induction n with
+  | zero => rw [natCast_zero]
+  | succ n ih =>
+    rw [natCast_succ, ←add_zero 0]
+    apply add_le_add
+    assumption
+    apply zero_le_one
+
+def natCast_monotone : Monotone (Nat.cast (R := α)) := by
+  intro a b h
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le h
+  rw [natCast_add]
+  rw (occs := [1]) [←add_zero (a: α)]
+  apply add_le_add_left
+  apply natCast_nonneg
+
+def natCast_pos (n: ℕ) (h: 0 < n) : 0 < (n: α) := by
+  cases n; contradiction; clear h
+  rename_i n
   apply lt_of_lt_of_le
   apply zero_lt_one
-  rw [←add_zero (1: α), natCast_one]
-  apply add_le_add_left
-  apply zero_le_one
+  rw [←natCast_one]
+  apply natCast_monotone
+  exact Nat.le_add_left 1 n
+
+instance (n: ℕ) [NeZero n] : NeZero (n: α) where
+  out := by
+    intro h
+    have := natCast_pos (α := α) n
+    rw [h] at this
+    simp [lt_irrefl] at this
+    have := NeZero.ne n
+    contradiction
+
+instance instNeZeroOfOrderedSemiring (n: ℕ) : NeZero (OfNat.ofNat (n + 2): α) := by
+  rw [ofNat_eq_natCast]; infer_instance
+
+def two_pos : 0 < (2: α) := by
+  rw [ofNat_eq_natCast (α := α) 0]
+  apply natCast_pos
+  apply Nat.zero_lt_succ
+
+def natCast_strictmonotone [IsAddCancel α] : StrictMonotone (Nat.cast (R := α)) := by
+  intro a b h
+  replace h := (Nat.succ_le_of_lt h)
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le h
+  rw [natCast_add]
+  apply flip lt_of_lt_of_le
+  apply add_le_add
+  rfl
+  apply natCast_nonneg
+  rw [add_zero]
+  clear h k
+  rw [←add_zero (a: α), natCast_succ]
+  apply add_lt_add_left
+  apply zero_lt_one
 
 end
 

@@ -1,16 +1,20 @@
 import Math.Type.Notation
 
-class AbsoluteValue (α: Type*) (β: outParam (Type*)) where
-  abs: α -> β
+class Norm (α: Type*) (β: outParam (Type*)) where
+  norm: α -> β
 
-abbrev abs [AbsoluteValue α β] : α -> β := AbsoluteValue.abs
+export Norm (norm)
 
-macro:max atomic("|" noWs) a:term noWs "|" : term => `(AbsoluteValue.abs $a)
+notation "‖" x "‖" => norm x
 
-instance : AbsoluteValue Int Nat where
-  abs := Int.natAbs
+instance : Norm Int Nat where
+  norm := Int.natAbs
 
-@[app_unexpander AbsoluteValue.abs]
+def abs [Neg α] [Max α] (a: α) := max a (-a)
+
+macro:max atomic("|" noWs) a:term noWs "|" : term => `(abs $a)
+
+@[app_unexpander abs]
 def abs.unexpander : Lean.PrettyPrinter.Unexpander
   | `($_ $a) =>
     match a with

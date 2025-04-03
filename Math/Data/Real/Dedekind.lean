@@ -221,10 +221,10 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
   intro ε εpos
   let x := (b - a) /? ε
   let n := x.ceil
-  exists |n|
+  exists ‖n‖
   have altb : a < b := lower_lt_upper c a b ha hb
   apply lt_of_le_of_lt
-  rw [seq₂_diff_bounds c a b (le_of_lt altb) |n|]
+  rw [seq₂_diff_bounds c a b (le_of_lt altb) ‖n‖]
   clear ha hb c
   have ⟨ceil_pred_lt_x, x_le_ceil⟩ := (Rat.ceil_spec x x.ceil).mp rfl
   replace x_le_ceil : x ≤ n := x_le_ceil
@@ -239,15 +239,23 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
   assumption
   replace hn' : (|n|: ℚ) ≠ 0 := by
     intro g;
-    rw [←natCast_zero] at g
+    rw [←natCast_zero, abs_intCast, abs_eq_natAbs,
+      intCast_ofNat] at g
     have := HasChar.natCast_inj g
     have := Int.natAbs_eq_zero.mp this
+    contradiction
+  have hn'' : 0 < |(n: ℚ)| := by
+    apply abs_pos
+    intro h
+    rw [←intCast_zero] at h
+    have := HasChar.intCast_inj h
     contradiction
   replace := IsOrderedSemiring.mul_le_mul_of_nonneg_right _ _ this (1 /? |n|) ?_
   rw [div?_eq_mul_inv?, one_mul, ←div?_eq_mul_inv?,
     mul_comm _ ε, mul_assoc] at this
   rw (occs := [2]) [←Int.sign_mul_natAbs n] at this
-  erw [←intCast_mul, mul_assoc, intCast_ofNat, mul_inv?_cancel, mul_one] at this
+  erw [←intCast_mul, mul_assoc, ←abs_eq_natAbs,
+    ←abs_intCast, mul_inv?_cancel, mul_one] at this
   rcases Int.sign_trichotomy n with nsign | nsign | nsign
   · rw [nsign, intCast_one, mul_one] at this
     apply flip lt_of_lt_of_le
@@ -257,14 +265,13 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
     apply _root_.mul_lt_mul_of_pos_left
     · rw [inv?_lt_inv?]
       show _ < ((2: ℕ): ℚ) ^ _
-      rw [←natCast_npow, Rat.natCast_lt_natCast]
+      rw [←natCast_npow, abs_intCast, abs_eq_natAbs,
+        intCast_ofNat, Rat.natCast_lt_natCast]
       exact Nat.lt_two_pow_self
       show _ < ((2: ℕ): ℚ) ^ _
       rw [←natCast_npow, ←natCast_zero, Rat.natCast_lt_natCast]
-      exact Nat.two_pow_pos |n|
-      apply lt_of_le_of_ne
-      exact max_eq_right.mp rfl
-      symm; assumption
+      exact Nat.two_pow_pos ‖n‖
+      assumption
     refine Rat.add_lt_iff_lt_sub.mp ?_
     rwa [zero_add]
   · rw [Int.sign_eq_zero_iff_zero] at nsign
@@ -280,15 +287,11 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
     rw [div?_mul_cancel, zero_mul, ←Rat.lt_add_iff_sub_lt, zero_add] at this
     have := lt_asymm this altb
     contradiction
-    apply lt_of_le_of_ne
-    exact max_eq_right.mp rfl
-    symm; assumption
+    assumption
   · apply le_of_lt
     rw [div?_eq_mul_inv?, one_mul]
     apply inv?_pos
-    apply lt_of_le_of_ne
-    exact max_eq_right.mp rfl
-    symm; assumption
+    assumption
 
 def seq₂_fst_nomax (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) (n: ℕ) : ∃m, (c.seq₂ a b n).fst < (c.seq₂ a b m).fst := by
   let a' := (c.seq₂ a b n).fst
@@ -329,7 +332,7 @@ def toReal' (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) 
     have : 0 < b - a := by
       refine Rat.add_lt_iff_lt_sub.mp ?_
       rwa [zero_add]
-    rw [_root_.abs_sub_comm, Rat.abs_of_nonneg _ (by
+    rw [_root_.abs_sub_comm, abs_of_nonneg _ (by
         refine Rat.add_le_iff_le_sub.mp ?_
         rw [zero_add]
         apply seq₂_fst_monotone

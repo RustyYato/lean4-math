@@ -7,18 +7,22 @@ open NNReal Topology
 
 namespace Complex
 
-noncomputable instance : AbsoluteValue ℂ ℝ where
-  abs x := (x.real ^ 2 + x.img ^ 2).sqrt
+noncomputable instance : Norm ℂ ℝ where
+  norm x := (x.real ^ 2 + x.img ^ 2).sqrt
 
-def norm_sq (c: ℂ) : |c| ^ 2 = c.real ^ 2 + c.img ^ 2 := by
+def norm_sq (c: ℂ) : ‖c‖ ^ 2 = c.real ^ 2 + c.img ^ 2 := by
   show (Real.sqrt _) ^ 2 = _
   rw [Real.sqrt_sq]
   apply Real.add_nonneg
   apply Real.square_nonneg
   apply Real.square_nonneg
 
-def Complex.abs_eq (x: ℂ) : NNReal.ofReal |x| = NNReal.sqrt (NNReal.square x.real + NNReal.square x.img) := by
-  simp [AbsoluteValue.abs]
+@[simp]
+def norm_of_real (x: ℝ) : ‖(x: ℂ)‖ = |x| := by
+  simp [Norm.norm]
+
+def Complex.norm_eq (x: ℂ) : NNReal.ofReal ‖x‖ = NNReal.sqrt (NNReal.square x.real + NNReal.square x.img) := by
+  simp [Norm.norm]
   rw [Real.sqrt, embedReal_ofReal]
   congr
   unfold ofReal
@@ -29,13 +33,13 @@ def Complex.abs_eq (x: ℂ) : NNReal.ofReal |x| = NNReal.sqrt (NNReal.square x.r
   apply Real.square_nonneg
   apply Real.square_nonneg
 
-def Complex.abs_mul' (a b: ℂ) : |a * b| = |a| * |b| := by
+def Complex.norm_mul (a b: ℂ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   apply ofReal_injOn
   apply Real.sqrt_nonneg
   apply Real.mul_nonneg
   apply Real.sqrt_nonneg
   apply Real.sqrt_nonneg
-  rw [ofReal_mul, abs_eq, abs_eq, abs_eq]
+  rw [ofReal_mul, norm_eq, norm_eq, norm_eq]
   simp  [sqrt_mul]
   congr
   apply Subtype.val_inj
@@ -59,8 +63,8 @@ def Complex.abs_mul' (a b: ℂ) : |a * b| = |a| * |b| := by
   apply Real.sqrt_nonneg
   apply Real.sqrt_nonneg
 
-instance instLawfulAbs : IsLawfulAbs ℂ where
-  abs_zero_iff := by
+instance instLawfulAbs : IsLawfulNorm ℂ where
+  norm_zero_iff := by
     intro x
     rw [←Real.sqrt_0]
     apply Iff.trans (Real.sqrt_inj _ _)
@@ -87,9 +91,12 @@ instance instLawfulAbs : IsLawfulAbs ℂ where
     apply Real.square_nonneg
     apply Real.square_nonneg
     rfl
-  abs_nonneg _ := by apply Real.sqrt_nonneg
-  abs_mul := Complex.abs_mul'
-  abs_add_le_add_abs a b := by
+  norm_smul b a := by
+    show ‖b * a‖ = _
+    rw [Complex.norm_mul]
+    congr
+    simp
+  norm_add_le_add_norm a b := by
     show NNReal.sqrt _ ≤ NNReal.sqrt _ + NNReal.sqrt _
     iterate 3 rw [ofReal_add]
     any_goals apply Real.square_nonneg
@@ -123,18 +130,9 @@ instance instLawfulAbs : IsLawfulAbs ℂ where
       assumption
     show 0 ≤ NNReal.sqrt _
     apply bot_le
-  abs_neg := by
-    intro a
-    rw [←neg_one_mul, Complex.abs_mul']
-    rw (occs := [2]) [←one_mul |a|]
-    congr
-    show Real.sqrt _ = _
-    simp [_root_.square_neg]
 
-noncomputable instance : Dist ℂ ℝ where
-  dist a b := |a - b|
-
-instance : IsMetric ℂ := Abs.instIsMetric ℂ
+noncomputable instance : Dist ℂ ℝ := Norm.instDist ℂ
+instance : IsMetric ℂ := Norm.instIsMetric ℂ
 instance : Topology ℂ := IsPseudoMetric.toTopology
 instance : IsPseudoMetricSpace ℂ := inferInstance
 instance : IsMetricSpace ℂ := inferInstance
@@ -148,7 +146,7 @@ instance : Topology.IsContinuous Complex.real where
     intro y hy
     apply h
     simp [mem_ball, dist] at *
-    show |_| < ε
+    show ‖_‖ < ε
     apply lt_of_le_of_lt _ hy
     apply flip le_trans
     apply (Real.sqrt_strictMonotoneOn.le_iff_le _ _).mpr
@@ -158,7 +156,7 @@ instance : Topology.IsContinuous Complex.real where
     apply Real.add_nonneg
     apply Real.square_nonneg
     apply Real.square_nonneg
-    rw [Real.sqrt_of_sq]
+    rw [Real.sqrt_of_sq, Real.norm_eq_abs]
     rfl
 
 instance : Topology.IsContinuous Complex.img where
@@ -170,7 +168,7 @@ instance : Topology.IsContinuous Complex.img where
     intro y hy
     apply h
     simp [mem_ball, dist] at *
-    show |_| < ε
+    show ‖_‖ < ε
     apply lt_of_le_of_lt _ hy
     apply flip le_trans
     apply (Real.sqrt_strictMonotoneOn.le_iff_le _ _).mpr
@@ -180,7 +178,7 @@ instance : Topology.IsContinuous Complex.img where
     apply Real.add_nonneg
     apply Real.square_nonneg
     apply Real.square_nonneg
-    rw [Real.sqrt_of_sq]
+    rw [Real.sqrt_of_sq, Real.norm_eq_abs]
     rfl
 
 instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
@@ -207,8 +205,7 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     simp [mem_ball, dist] at *
     replace g := max_lt_iff.mp g
     apply of_ofReal_lt
-    rw [Complex.abs_eq]
-    simp
+    erw [Complex.norm_eq]
     rw [ofReal]; conv in max ε 0 => {
       rw [max_eq_left.mpr (le_of_lt εpos)] }
     apply (NNReal.npowOrderIso 2 (by decide)).resp_lt.mpr
@@ -221,6 +218,7 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     show _ < ε' /? (NNReal.sqrt 2)
     show |a - c| < ε /? _ ~(_)
     apply lt_of_lt_of_eq
+    rw [←Real.norm_eq_abs]
     exact g.left
     congr
     rw [Real.sqrt_def _ (by apply le_of_lt; assumption)]
@@ -229,6 +227,7 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     show _ < ε' /? (NNReal.sqrt 2)
     show |b - d| < ε /? _ ~(_)
     apply lt_of_lt_of_eq
+    rw [←Real.norm_eq_abs]
     exact g.right
     congr
     rw [Real.sqrt_def _ (by apply le_of_lt; assumption)]

@@ -3,6 +3,7 @@ import Math.Order.Linear
 import Math.Algebra.GroupWithZero.Basic
 import Math.Ops.CheckedOrder
 import Math.Algebra.Field.Basic
+import Math.Algebra.Archimedean.Basic
 
 namespace Rat
 
@@ -151,85 +152,6 @@ instance : IsDecidableLinearOrder ℚ := {
   instLatticeOfLe ℚ with
 }
 
-def Fract.abs (f: Fract) : Fract where
-  num := |f.num|
-  den := f.den
-  den_pos := f.den_pos
-
-instance : AbsoluteValue Fract Fract := ⟨.abs⟩
-
-@[simp]
-def Fract.abs_num (a: Fract) : |a|.num = |a.num| := rfl
-@[simp]
-def Fract.abs_den (a: Fract) : |a|.den = a.den := rfl
-
-def Fract.abs.spec (a b: Fract) : a ≈ b -> |a| ≈ |b| := by
-  intro eqv
-  show _ * _ = _ * _
-  have : |a|.num = |a.num| := rfl
-  rw [this]
-  have : |b|.num = |b.num| := rfl
-  rw [this]
-  have : |a|.den = |Int.ofNat a.den| := rfl
-  rw [this]
-  have : |b|.den = |Int.ofNat b.den| := rfl
-  rw [this]
-  rw [Int.ofNat_mul_ofNat, Int.ofNat_mul_ofNat]
-  congr 1
-  show Int.natAbs a.num * Int.natAbs b.den = Int.natAbs b.num * Int.natAbs a.den
-  rw [←Int.natAbs_mul, eqv, ←Int.natAbs_mul]
-
-instance : AbsoluteValue ℚ ℚ where
-  abs := by
-    apply Quotient.lift (⟦|·|⟧)
-    intro a b eq
-    apply sound
-    apply Fract.abs.spec
-    assumption
-
-@[simp]
-def mk_abs (a: Fract) : |⟦a⟧| = ⟦|a|⟧ := rfl
-
-def abs_def (q: ℚ) : |q| = if 0 ≤ q then q else -q := by
-  cases q with | mk q =>
-  simp
-  split <;> (apply sound; show _ = _)
-  congr 1
-  rename_i h
-  rw [le_def, sub_zero] at h
-  exact Int.natAbs_of_nonneg h
-  congr 1
-  rename_i h
-  rw [le_def, sub_zero] at h
-  show q.num.natAbs = (-q.num)
-  rw [←Int.natAbs_neg]
-  apply Int.natAbs_of_nonneg
-  replace h: (-q).isPos := isPos.neg.mp h
-  apply le_of_lt h
-
-def abs_nonzero (a: ℚ) : a ≠ 0 -> |a| ≠ 0 := by
-  cases a with | mk a =>
-  intro ha
-  simp
-  replace ha := exact_ne ha
-  intro h
-  apply ha
-  clear ha
-  replace h: a.abs ≈ 0 := exact h
-  unfold Fract.abs at h
-  simp [AbsoluteValue.abs] at h
-  replace h : _ = _ := h
-  simp at h
-  erw [Int.mul_one, Int.zero_mul] at h
-  show _ = _
-  erw [Int.mul_one, Int.zero_mul]
-  refine Int.natAbs_eq_zero.mp ?_
-  apply Int.ofNat.inj
-  assumption
-
-macro_rules
-| `(tactic|invert_tactic_trivial) => `(tactic|apply abs_nonzero <;> assumption)
-
 def neg_le_neg_iff {a b: ℚ} : a ≤ b ↔ -b ≤ -a := by
   rw [le_def, le_def, neg_sub_neg]
 def neg_lt_neg_iff {a b: ℚ} : a < b ↔ -b < -a := by
@@ -243,23 +165,6 @@ def neg_lt_neg_iff {a b: ℚ} : a < b ↔ -b < -a := by
 -- def neg_iff_sign_neg {a: ℚ} : a < 0 ↔ a.sign < 0 := by sorry
 -- def eq_zero_iff_sign_eq_zero {a: ℚ} : a = 0 ↔ a.sign = 0 := by sorry
 
-def abs_nonneg (a: ℚ) : 0 ≤ |a| := by
-  rw [abs_def]
-  split
-  assumption
-  rename_i h
-  rw [le_def, sub_zero]; rw [le_def, sub_zero] at h
-  apply isNonneg.neg.mp
-  intro g; apply h
-  cases a
-  exact le_of_lt (α := Int) g
-def abs_pos (a: ℚ) : a ≠ 0 -> 0 < |a| := by
-  intro h
-  apply lt_of_le_of_ne
-  apply abs_nonneg
-  intro g
-  have := (abs_nonzero _ h).symm
-  contradiction
 def add_le_add_right {a b k: ℚ} : a ≤ b ↔ a + k ≤ b + k := by
   rw [le_def, le_def, add_sub_assoc, sub_add, sub_self, zero_sub, sub_eq_add_neg]
 def add_le_add_left {a b k: ℚ} : a ≤ b ↔ k + a ≤ k + b := by
@@ -424,49 +329,7 @@ def neg_le_of_nonneg (a: ℚ) : 0 ≤ a -> -a ≤ a := by
   apply le_trans _ h
   rw [neg_le_neg_iff, neg_neg]
   assumption
-def abs_add_le_add_abs.helper (a b: ℚ) : a < 0 -> 0 ≤ b -> |a + b| ≤ -a + b := by
-  intro ha hb
-  rw [abs_def]
-  split
-  apply add_le_add_right.mp
-  apply add_le_add_left.mpr
-  rw [neg_add_cancel]
-  rw [neg_le_neg_iff, neg_add_rev, neg_neg]
-  apply add_nonpos <;> (apply le_of_lt; assumption)
-  rw [neg_add_rev, add_comm]
-  apply add_le_add_left.mp
-  apply add_le_add_right.mpr
-  rw [neg_add_cancel]
-  apply add_nonneg <;> assumption
-def abs_add_le_add_abs (a b: ℚ) : |a + b| ≤ |a| + |b| := by
-  rw [abs_def a, abs_def b]
-  split <;> split
-  · rw [abs_def, if_pos]
-    apply add_nonneg <;> assumption
-  · rw [add_comm a, add_comm a]
-    apply abs_add_le_add_abs.helper
-    rw [not_le] at *; assumption
-    assumption
-  · apply abs_add_le_add_abs.helper
-    rw [not_le] at *; assumption
-    assumption
-  · rename_i h g
-    rw [not_le] at h g
-    rw [abs_def, if_neg, neg_add_rev, add_comm]
-    rw [not_le]
-    rw [←add_zero 0]
-    apply add_lt_add <;> assumption
 
-def sub_abs_self_sub (a b: ℚ) : a - |a - b| ≤ b := by
-  rw [abs_def]; split
-  rw [sub_sub, add_sub_assoc, add_sub_cancel]
-  rw [sub_eq_add_neg, neg_neg]
-  rename_i h; rw [not_le] at h
-  conv => { rhs; rw [←add_zero b] }
-  apply add_le_add
-  rw [←lt_add_iff_sub_lt, zero_add] at h
-  apply le_of_lt; assumption
-  apply le_of_lt; assumption
 def sub_le_sub (a b c d: ℚ) : a ≤ c -> d ≤ b -> a - b ≤ c - d := by
   rw [neg_le_neg_iff (a := d) (b := b), sub_eq_add_neg, sub_eq_add_neg]
   apply add_le_add
@@ -490,12 +353,6 @@ def pos_mul_lt_of_right_lt_one (a b: ℚ) : 0 < a -> b < 1 -> a * b < a := by
   apply (lt_iff_mul_left_pos _).mp
   assumption
   assumption
-def abs_of_nonneg (a: ℚ) : 0 ≤ a -> |a| = a := by
-  intro h
-  rw [abs_def, if_pos h]
-def abs_of_pos (a: ℚ) : 0 < a -> |a| = a := by
-  intro h
-  rw [abs_def, if_pos (le_of_lt h)]
 def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
   conv => { rhs; rw [add_half a] }
   conv => { lhs; rw [←add_zero (_ /? _)] }
@@ -505,48 +362,6 @@ def half_lt (a: ℚ) (h: 0 < a) : a /? 2 < a := by
   apply mul_pos
   assumption
   decide
-def abs_mul (a b: ℚ) : |a * b| = |a| * |b| := by
-  simp [abs_def]
-  rcases lt_trichotomy 0 a with ha | ha | ha
-  <;> rcases lt_trichotomy 0 b with hb | hb | hb
-  any_goals rw [if_pos (le_of_lt ha)]
-  any_goals rw [if_pos (le_of_lt hb)]
-  any_goals rw [←ha]
-  any_goals rw [←hb]
-  repeat any_goals rw [zero_mul]
-  repeat any_goals rw [mul_zero]
-  all_goals repeat rw [if_pos (le_refl _)]
-  repeat any_goals rw [zero_mul]
-  repeat any_goals rw [mul_zero]
-  rw [if_pos]
-  apply le_of_lt; apply mul_pos <;> assumption
-  rw [if_neg (not_le_of_lt hb), if_neg, neg_mul_right]
-  rw [not_le, neg_lt_neg_iff, neg_mul_right]
-  apply mul_pos; assumption
-  rw [neg_lt_neg_iff, neg_neg]; assumption
-  rw [if_neg, if_neg, neg_mul_left]
-  rw [not_le]; assumption
-  rw [not_le, ←neg_neg (_ * _), neg_mul_left, neg_lt_neg_iff, neg_neg];
-  apply mul_pos
-  rw [neg_lt_neg_iff, neg_neg]; assumption
-  assumption
-  rw [if_pos, if_neg, if_neg, ←neg_mul_left, ←neg_mul_right, neg_neg]
-  any_goals
-    rw [not_le]
-    assumption
-  rw [←neg_neg (_ * _), neg_mul_right, neg_mul_left]
-  apply mul_nonneg <;> rw [neg_le_neg_iff, neg_neg]
-  repeat apply le_of_lt; assumption
-def abs_inv? (a: ℚ) (h: a ≠ 0) : |a⁻¹?| = |a|⁻¹? := by
-  refine inv?_eq_of_mul_right |a| |a⁻¹?| ?_
-  rw [←abs_mul, inv?_mul_cancel]
-  rfl
-def abs_div? (a b: ℚ) (h: b ≠ 0) : |a /? b| = |a| /? |b| := by
-  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, abs_mul, abs_inv?]
-def abs_div_lt_one (a b: ℚ) (h: b ≠ 0) : |a /? b| < 1 ↔ |a| < |b| := by
-  rw [lt_iff_mul_right_pos (k := |b|), one_mul, ←abs_mul, div?_eq_mul_inv?,
-    mul_assoc, inv?_mul_cancel, mul_one]
-  exact abs_pos b h
 def le_add_left_nonneg (a b: ℚ) (h: 0 ≤ b) : a ≤ b + a := by
   conv => { lhs; rw [←zero_add a] }
   apply add_le_add_right.mp
@@ -611,15 +426,6 @@ def natCast_lt_natCast {a b: ℕ} : (a: ℚ) < b ↔ a < b := by
   apply lt_iff_of_le_iff
   apply natCast_le_natCast
 
-def eq_zero_iff_abs_eq_zero {a: ℚ} : a = 0 ↔ |a| = 0 := by
-  rw [abs_def]
-  split <;> apply Iff.intro <;> intro h
-  any_goals assumption
-  apply neg_inj.mp; rw [neg_neg]
-  assumption
-  apply neg_inj.mp
-  assumption
-
 def midpoint_of_lt {a b: ℚ} (h: a < b) : a < midpoint a b ∧ midpoint a b < b := by
   rw [midpoint]
   rw [lt_div_iff_mul_lt_of_pos, div_lt_iff_lt_mul_of_pos,
@@ -657,7 +463,7 @@ def Fract.floor.spec (a b: Fract) : a ≈ b -> a.floor = b.floor := by
     apply h.trans
     apply Fract.reduce.spec b
   intro a
-  let g := |a.num|.gcd a.den
+  let g := ‖a.num‖.gcd a.den
   have g_nz : g ≠ 0 := by
     unfold g
     intro h'
@@ -848,3 +654,50 @@ def ceil_le (a: ℚ) : ∀x: ℤ, a.ceil ≤ x ↔ a ≤ x := by
   rw [le_floor, ←intCast_neg, ←neg_le_neg_iff]
 
 end Rat
+
+instance : IsStrictOrderedSemiring ℚ where
+  add_le_add_left := by
+    intro a b h c
+    apply Rat.add_le_add_left.mp
+    assumption
+  zero_le_one := by decide
+  mul_nonneg := by
+    intro a b ha hb
+    cases lt_or_eq_of_le ha
+    cases lt_or_eq_of_le hb
+    apply le_of_lt
+    apply Rat.mul_pos
+    assumption
+    assumption
+    subst b
+    rw [mul_zero]
+    subst a
+    rw [zero_mul]
+  mul_le_mul_of_nonneg_left := by
+    exact fun a b a_1 c a_2 => Rat.mul_le_mul_of_left_nonneg a b c a_2 a_1
+  mul_le_mul_of_nonneg_right := by
+    exact fun a b a_1 c a_2 => Rat.mul_le_mul_of_right_nonneg a b c a_2 a_1
+  mul_pos := by
+    exact fun a b a_1 a_2 => Rat.mul_pos a_1 a_2
+
+instance : Archimedean ℚ := by
+  apply archimedean_iff_nat_lt.mpr
+  intro x
+  exists (x.ceil + 1).natAbs
+  apply flip lt_of_lt_of_le
+  show ((x.ceil + 1: ℤ): ℚ) ≤ _
+  rw [←intCast_ofNat, Rat.intCast_le]
+  apply Int.le_natAbs
+  apply lt_of_le_of_lt
+  apply Rat.self_le_ceil
+  rw [Rat.intCast_lt]
+  exact Int.lt_succ x.ceil
+
+section
+
+open Norm.ofAbs
+
+instance : Norm ℚ ℚ := inferInstance
+instance : IsLawfulNorm ℚ := inferInstance
+
+end

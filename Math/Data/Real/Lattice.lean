@@ -1,6 +1,5 @@
 import Math.Order.Lattice.ConditionallyComplete
 import Math.Data.Real.Div
-import Math.Data.Real.Archimedean
 import Math.Data.Int.Lattice
 import Math.Data.Real.Dedekind
 

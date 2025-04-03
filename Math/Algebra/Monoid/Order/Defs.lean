@@ -66,7 +66,7 @@ def nsmul_le_nsmul (a b: α) (n: ℕ) : a ≤ b -> n • a ≤ n • b := by
     assumption
     assumption
 
-def add_lt_add_left [IsAddLeftCancel α] (a b k: α) : a < b -> k + a < k + b := by
+def add_lt_add_left [IsAddCancel α] (a b k: α) : a < b -> k + a < k + b := by
   intro h
   apply lt_of_le_of_ne
   apply add_le_add_left
@@ -75,7 +75,7 @@ def add_lt_add_left [IsAddLeftCancel α] (a b k: α) : a < b -> k + a < k + b :=
   rw [add_left_cancel g] at h
   exact lt_irrefl h
 
-def add_lt_add_right [IsAddRightCancel α] (a b k: α) : a < b -> a + k < b + k := by
+def add_lt_add_right [IsAddCancel α] (a b k: α) : a < b -> a + k < b + k := by
   intro h
   apply lt_of_le_of_ne
   apply add_le_add_right
@@ -92,7 +92,7 @@ def add_lt_add [IsAddCancel α] (a b c d: α) : a < c -> b < d -> a + b < c + d 
   apply add_lt_add_right
   assumption
 
-def add_lt_add_of_lt_of_le [IsAddLeftCancel α] (a b c d: α) : a < c -> b ≤ d -> a + b < c + d := by
+def add_lt_add_of_lt_of_le [IsAddCancel α] (a b c d: α) : a < c -> b ≤ d -> a + b < c + d := by
   intro ac bd
   apply lt_of_lt_of_le
   apply add_lt_add_right
@@ -100,7 +100,7 @@ def add_lt_add_of_lt_of_le [IsAddLeftCancel α] (a b c d: α) : a < c -> b ≤ d
   apply add_le_add_left
   assumption
 
-def add_lt_add_of_le_of_lt [IsAddRightCancel α] (a b c d: α) : a ≤ c -> b < d -> a + b < c + d := by
+def add_lt_add_of_le_of_lt [IsAddCancel α] (a b c d: α) : a ≤ c -> b < d -> a + b < c + d := by
   intro ac bd
   apply lt_of_le_of_lt
   apply add_le_add_right

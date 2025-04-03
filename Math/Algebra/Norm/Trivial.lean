@@ -1,4 +1,4 @@
-import Math.Algebra.Abs.Defs
+import Math.Algebra.Norm.Defs
 import Math.Algebra.GroupWithZero.Defs
 
 def MaxBool := Bool
@@ -73,42 +73,42 @@ namespace AbsoluteValue.Trivial
 variable [DecidableEq α] [AddGroupOps α] [Mul α]
   [IsNonUnitalNonAssocRing α] [NoZeroDivisors α]
 
-scoped instance : AbsoluteValue α MaxBool where
-  abs a := if a = 0 then 0 else 1
+scoped instance : Norm α MaxBool where
+  norm a := if a = 0 then 0 else 1
 
-scoped instance : IsLawfulAbs α where
-  abs_nonneg := by
-    intro
-    apply bot_le
-  abs_zero_iff := by
-    intro a
-    simp [AbsoluteValue.abs]
-  abs_mul := by
-    intro a b
-    simp [AbsoluteValue.abs]
-    split <;> rename_i h
-    rcases of_mul_eq_zero h with h | h <;> rw [if_pos h]
-    rw [zero_mul]
-    rw [mul_zero]
-    split <;> rename_i ha
-    rw [ha, zero_mul] at h; contradiction
-    split <;> rename_i hb
-    rw [hb, mul_zero] at h; contradiction
-    rfl
-  abs_add_le_add_abs := by
-    intro a b
-    by_cases ha:a = 0
-    simp [AbsoluteValue.abs, ha]
-    simp [AbsoluteValue.abs]
-    split
-    apply bot_le
-    apply le_refl
-  abs_neg a := by
-    simp [AbsoluteValue.abs]
-    split <;> rename_i h
-    rw [←neg_neg a, h, neg_zero, if_pos rfl]
-    rw [if_neg]
-    intro g
-    rw [g, neg_zero] at h; contradiction
+-- scoped instance : IsLawfulNorm α where
+--   abs_nonneg := by
+--     intro
+--     apply bot_le
+--   abs_zero_iff := by
+--     intro a
+--     simp [AbsoluteValue.abs]
+--   abs_mul := by
+--     intro a b
+--     simp [AbsoluteValue.abs]
+--     split <;> rename_i h
+--     rcases of_mul_eq_zero h with h | h <;> rw [if_pos h]
+--     rw [zero_mul]
+--     rw [mul_zero]
+--     split <;> rename_i ha
+--     rw [ha, zero_mul] at h; contradiction
+--     split <;> rename_i hb
+--     rw [hb, mul_zero] at h; contradiction
+--     rfl
+--   abs_add_le_add_abs := by
+--     intro a b
+--     by_cases ha:a = 0
+--     simp [AbsoluteValue.abs, ha]
+--     simp [AbsoluteValue.abs]
+--     split
+--     apply bot_le
+--     apply le_refl
+--   abs_neg a := by
+--     simp [AbsoluteValue.abs]
+--     split <;> rename_i h
+--     rw [←neg_neg a, h, neg_zero, if_pos rfl]
+--     rw [if_neg]
+--     intro g
+--     rw [g, neg_zero] at h; contradiction
 
 end AbsoluteValue.Trivial

@@ -1,4 +1,4 @@
-import Math.Data.Real.OrderedAlgebra
+import Math.Data.Real.Div
 import Math.Order.OrderIso
 import Math.Algebra.Semifield.SetLike.Basic
 

@@ -15,6 +15,7 @@ def sqrt_sq (x: ℝ) (h: 0 ≤ x) : x.sqrt ^ 2 = x := by
   rw [sqrt_def x h]
   rw [←map_npow, NNReal.sqrt_sq]; rfl
 
+@[simp]
 def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = |x| := by
   rw [sqrt_def (x^2) (by
     apply Real.square_nonneg x)]
@@ -23,7 +24,7 @@ def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = |x| := by
   rfl
 
 def sqrt_of_sq_nonneg (x: ℝ) (hx: 0 ≤ x) : (x ^ 2).sqrt = x := by
-  rw [sqrt_of_sq, (abs_of_nonneg _).mp hx]
+  rw [sqrt_of_sq, abs_of_nonneg _ hx]
 
 def sqrt_nonneg (x: ℝ) : 0 ≤ x.sqrt := by apply NNReal.isNonneg
 
@@ -119,7 +120,8 @@ def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (
   apply le_trans _ this
   show _ ≤ |(a * d) * (b * c)|
   rw [show (a * d) * (b * c) = a * b * c * d by ac_rfl]
-  rw [Real.abs_def]
+  classical
+  rw [_root_.abs_def]
   split
   rfl
   rw [not_le] at *

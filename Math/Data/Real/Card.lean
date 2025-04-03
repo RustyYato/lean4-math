@@ -1,4 +1,4 @@
-import Math.Data.Real.OrderedAlgebra
+import Math.Data.Real.Div
 import Math.Data.Cardinal.Order
 import Math.Data.Set.Order.Interval
 

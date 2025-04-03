@@ -1,6 +1,5 @@
 import Math.Function.Basic
-import Math.Data.Rat.OrderedAlgebra
-import Math.Algebra.Abs.Basic
+import Math.Data.Rat.Order
 
 def CauchySeq.Eventually (P: Nat -> Prop) : Prop := ∃k, ∀n, k ≤ n -> P n
 def CauchySeq.Eventually₂ (P: Nat -> Nat -> Prop) : Prop := ∃k, ∀n m, k ≤ n -> k ≤ m -> P n m
@@ -144,17 +143,9 @@ def CauchySeq.upper_bound (c: CauchySeq) : ∃bound: ℚ, ∀n, c n < bound := b
   else
     suffices c δ + |c n - c δ| < max + 1 by
       apply lt_of_le_of_lt _ this
-      rw [Rat.abs_def]
-      split <;> rename_i g
-      rw [add_sub_cancel]
-      apply le_trans
-      show c n ≤ c δ
-      rw [not_le, ←Rat.lt_add_iff_sub_lt, zero_add] at g
-      apply le_of_lt; assumption
-      apply Rat.le_add_right_nonneg
-      rw [not_le] at g
-      rw [Rat.neg_le_neg_iff, neg_neg]
-      apply le_of_lt; assumption
+      rw [add_comm, Rat.le_add_iff_sub_le]
+      apply le_max_iff.mpr
+      left; rfl
     apply Rat.add_lt_add_of_le_of_lt
     apply max_until.spec c δ
     rfl
@@ -200,9 +191,9 @@ def CauchySeq.Equiv.trans {a b c: CauchySeq} : Equiv a b -> Equiv b c -> Equiv a
   apply flip le_trans
   apply Rat.add_le_add
   rfl
-  apply Rat.abs_add_le_add_abs
+  apply abs_add_le_add_abs
   apply flip le_trans
-  apply Rat.abs_add_le_add_abs
+  apply abs_add_le_add_abs
   iterate 4 rw [sub_eq_add_neg]
   have : a n + -b m + (b n + -c m + (b m + -b n)) =
     a n + -c m + (-b m + b m) + (b n + -b n) := by ac_rfl
@@ -290,7 +281,7 @@ def CauchySeq.add.spec (a b c d: CauchySeq) :
   rw [←mul_two, div?_mul_cancel] at this
   apply lt_of_le_of_lt _ this
   rw [←sub_eq_add_neg, ←sub_eq_add_neg]
-  apply Rat.abs_add_le_add_abs
+  apply abs_add_le_add_abs
 
 def CauchySeq.add (a b: CauchySeq) : CauchySeq where
   seq n := a n + b n
@@ -377,20 +368,9 @@ def CauchySeq.abs.proof1 (a b: Rat) :
   intro ha hb habs
   cases lt_or_eq_of_le hb <;> rename_i hb
   · apply lt_of_le_of_lt _ habs
-    rw [Rat.abs_def (a - b)]
-    have : b < a := lt_of_lt_of_le hb ha
-    have : 0 ≤ a - b := by
-      apply Rat.add_le_add_right.mpr
-      rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero, zero_add]
-      apply le_of_lt; assumption
-    rw [if_pos this]
-    rw [Rat.abs_def, sub_eq_add_neg]
-    split
-    apply Rat.add_le_add_left.mp
-    exact Rat.le_neg_of_nonpos b (le_of_lt hb)
-    rw [neg_add_rev, add_comm]
-    apply Rat.add_le_add_right.mp
-    exact Rat.neg_le_of_nonneg a ha
+    apply abs_add_le_abs_sub
+    assumption
+    assumption
   · subst b
     rw [sub_zero] at habs
     rwa [add_zero]
@@ -402,7 +382,7 @@ def CauchySeq.abs.spec (a b: CauchySeq) : a ≈ b ->
   replace ⟨δ, ab⟩ := ab _ (Rat.half_pos ε_pos)
   refine ⟨δ, ?_⟩
   intro n m δ_le_n δ_le_m
-  rw [Rat.abs_def (a n), Rat.abs_def (b m)]
+  rw [abs_def (a n), abs_def (b m)]
   suffices |a.seq n - b.seq m| < ε by
     split <;> split <;> rename_i h g
     · exact this
@@ -438,25 +418,25 @@ def CauchySeq.abs (a: CauchySeq) : CauchySeq where
     apply CauchySeq.abs.spec
     rfl
 
-instance : AbsoluteValue CauchySeq CauchySeq where
-  abs := .abs
+instance : Norm CauchySeq CauchySeq where
+  norm := .abs
 
 def Real.abs : ℝ -> ℝ := by
-  apply Quotient.lift (⟦|·|⟧)
+  apply Quotient.lift (⟦‖·‖⟧)
   intros
   apply Quotient.sound
   apply CauchySeq.abs.spec
   assumption
 
-instance : AbsoluteValue ℝ ℝ where
-  abs := .abs
+instance : Norm ℝ ℝ where
+  norm := .abs
 
 def CauchySeq.mul.spec (a b c d: CauchySeq) : a ≈ c -> b ≈ d ->
   is_cauchy_equiv (fun n => a n * b n) (fun n => c n * d n) := by
   intro ac bd ε ε_pos
   simp
-  have ⟨amax,one_lt_amax,amax_spec⟩ := |a|.upper_bound_with 1
-  have ⟨dmax,one_lt_dmax,dmax_spec⟩ := |d|.upper_bound_with 1
+  have ⟨amax, one_lt_amax, amax_spec⟩ := ‖a‖.upper_bound_with 1
+  have ⟨dmax, one_lt_dmax, dmax_spec⟩ := ‖d‖.upper_bound_with 1
 
   have amax_pos : 0 < amax := lt_of_lt_of_le (by decide) one_lt_amax
   have dmax_pos : 0 < dmax := lt_of_lt_of_le (by decide) one_lt_dmax
@@ -503,20 +483,20 @@ def CauchySeq.mul.spec (a b c d: CauchySeq) : a ≈ c -> b ≈ d ->
   iterate 2 rw [←sub_eq_add_neg]
   rw [←mul_sub, ←sub_mul]
   apply lt_of_le_of_lt
-  apply Rat.abs_add_le_add_abs
-  rw [Rat.abs_mul, Rat.abs_mul]
+  apply abs_add_le_add_abs
+  rw [abs_mul, abs_mul]
   apply lt_of_le_of_lt (b := amax * _ + _ * dmax)
-  apply Rat.add_le_add
-  apply Rat.mul_le_mul_of_right_nonneg
-  apply Rat.abs_nonneg
+  apply add_le_add
+  apply mul_le_mul_of_nonneg_right
   apply le_of_lt
   apply amax_spec
-  apply Rat.mul_le_mul_of_left_nonneg
-  apply Rat.abs_nonneg
+  apply abs_nonneg
+  apply mul_le_mul_of_nonneg_left
   apply le_of_lt
   apply dmax_spec
+  apply abs_nonneg
   apply lt_of_lt_of_le
-  apply Rat.add_lt_add_of_lt_of_le
+  apply add_lt_add_of_lt_of_le
   apply (Rat.lt_iff_mul_left_pos _).mp
   assumption
   apply lt_of_lt_of_le _ one_lt_amax
@@ -756,7 +736,7 @@ def ofRatHom : ℚ ↪+* ℝ where
     intro a b eq h
     have ⟨k, spec⟩ := Quotient.exact eq (b - a) ?_
     have : |a - b| < b - a := spec k k (le_refl _) (le_refl _)
-    rw [Rat.abs_def, if_neg, neg_sub] at this
+    rw [abs_def, if_neg, neg_sub] at this
     exact lt_irrefl this
     rw [not_le, ←Rat.lt_add_iff_sub_lt, zero_add]
     assumption
@@ -783,7 +763,7 @@ def eq_iff_add_right {a b k: ℝ} : a = b ↔ a + k = b + k := by
     ←add_assoc (k n), add_comm (k n), add_assoc, ←add_assoc] at h
   rw [←add_zero (_ - _), ←add_neg_cancel (k n - k m), ←add_assoc]
   apply lt_of_le_of_lt
-  apply Rat.abs_add_le_add_abs
+  apply abs_add_le_add_abs
   rw [←sub_eq_add_neg, ←sub_eq_add_neg] at h
   rw [abs_neg, ←add_half ε]
   apply Rat.add_lt_add
@@ -807,7 +787,7 @@ def non_zero_of_ofNat (n: Nat) : (OfNat.ofNat (α := ℝ) n.succ) ≠ 0 := by
   have ⟨δ, prf⟩ := (Quotient.exact h) (1 /? 2) (by decide)
   have : |(n.succ: ℚ) - 0| < 1 /? 2 := prf _ _ (le_refl _) (le_refl _)
   simp at this
-  rw [Rat.abs_of_nonneg] at this
+  rw [abs_of_nonneg] at this
   have two_eq : (2: ℚ) = (2: ℕ) := rfl
   rw [Rat.lt_div_iff_mul_lt_of_pos, two_eq, ←natCast_mul] at this
   replace this := Rat.natCast_lt_natCast.mp this
