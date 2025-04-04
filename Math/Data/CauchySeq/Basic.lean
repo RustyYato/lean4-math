@@ -79,6 +79,8 @@ local instance : IsMetric α := Norm.instIsMetric α
 local instance : @Std.Commutative α (· + ·) := ⟨add_comm⟩
 local instance :  @Std.Associative α (· + ·) := ⟨add_assoc⟩
 
+section Helpers
+
 instance : FunLike (CauchySeq α) Nat α where
   coe := CauchySeq.seq
   coe_inj := by
@@ -275,6 +277,8 @@ def pointwise (a b: CauchySeq α) :
   exists 0
   intros; apply h
 
+end  Helpers
+
 def const.spec (x: α) : is_cauchy_equiv (fun _ => x) (fun _ => x) := by
   intro ε ε_pos
   exists 0
@@ -287,11 +291,9 @@ def const (x: α) : CauchySeq α where
   seq _ := x
   is_cacuhy := by apply const.spec
 
-instance : Zero (CauchySeq α) := ⟨const 0⟩
+section AddOps
 
--- if a cauchy sequence converges to zero
-def IsLimZero (c: CauchySeq α) : Prop :=
-  ∀ ε > 0, ∃ i, ∀ j ≥ i, ‖c j‖ < ε
+instance : Zero (CauchySeq α) := ⟨const 0⟩
 
 def add.spec (a b c d: CauchySeq α) : a ≈ c -> b ≈ d -> is_cauchy_equiv (fun n => a n + b n) (fun n => c n + d n) := by
   intro ac bd ε ε_pos
@@ -426,6 +428,113 @@ def zsmul (n: ℤ) (a: CauchySeq α) : CauchySeq α where
 instance : SMul ℤ (CauchySeq α) where
   smul := zsmul
 
+end AddOps
+
+-- if a cauchy sequence converges to zero
+def IsLimZero (c: CauchySeq α) : Prop :=
+  ∀ ε > 0, ∃ i, ∀ j ≥ i, ‖c j‖ < ε
+
+def limZero_iff_eqv_zero (c: CauchySeq α) : c.IsLimZero ↔ c ≈ 0 := by
+  apply Iff.intro
+  intro h ε εpos
+  have ⟨i, h⟩ := h ε εpos
+  exists i
+  intro n m hn hm
+  show ‖c n - 0‖ < ε
+  rw [sub_zero]; apply h
+  assumption
+  intro h ε εpos
+  have ⟨i, h⟩ := h ε εpos
+  exists i
+  intro j hj
+  rw [←sub_zero (c j)]
+  apply h
+  assumption
+  assumption
+
+def not_limZero_iff_not_eqv_zero (c: CauchySeq α) : ¬c.IsLimZero ↔ ¬c ≈ 0 := by
+  apply Iff.not_iff_not
+  apply limZero_iff_eqv_zero
+
+def not_limZero_of_eqv (a b: CauchySeq α) (h: a ≈ b) (g: ¬a.IsLimZero) : ¬b.IsLimZero := by
+  intro g₀; apply g
+  rw [limZero_iff_eqv_zero] at *
+  exact trans h g₀
+
+section Order
+
+def Pos (a: CauchySeq γ) : Prop := ∃B, 0 < B ∧ Eventually fun i => B ≤ a i
+
+def Pos.spec (a b: CauchySeq γ) (ab: a ≈ b) (pos: a.Pos) : b.Pos := by
+  replace ⟨B, B_pos, pos⟩ := pos
+  refine ⟨_, half_pos B_pos, ?_⟩
+  obtain ⟨K, prf⟩ := pos
+  replace ⟨δ, ab⟩ := ab _ (half_pos B_pos)
+  simp at ab prf
+  refine ⟨max K δ, ?_⟩
+  intro n Kδ_le_n
+  apply le_trans _ (sub_abs_self_sub (a n) (b n))
+  apply flip le_trans
+  apply sub_le_sub
+  apply prf
+  apply (max_le_iff.mp Kδ_le_n).left
+  apply le_of_lt;
+  apply ab
+  iterate 2 apply (max_le_iff.mp Kδ_le_n).right
+  conv => {
+    rhs; lhs; rw [←mul_div?_cancel B 2 (NeZero.ne 2)]
+  }
+  rw [two_mul, add_sub_assoc, add_sub_cancel]
+
+instance : LT (CauchySeq γ) where
+  lt a b := (b - a).Pos
+
+instance : LE (CauchySeq γ) where
+  le a b := a < b ∨ a ≈ b
+
+end Order
+
+instance (priority := 10000) : OfNat (CauchySeq γ) 0 := Zero.toOfNat0
+
+def non_zero_of_IsPos (a: CauchySeq γ) : a.Pos -> ¬a ≈ 0 := by
+  classical
+  intro pos eq_zero
+  obtain ⟨B, B_pos, pos⟩ := pos
+  replace ⟨δ, prf⟩  := pos.to₂_right.merge (eq_zero _ B_pos)
+  replace ⟨pos, eq_zero⟩ := prf δ δ (le_refl _) (le_refl _)
+  clear prf
+  replace eq_zero : |_ - 0| < B := eq_zero
+  erw [sub_zero, abs_def] at eq_zero
+  split at eq_zero <;> rename_i h
+  exact lt_irrefl <| lt_of_lt_of_le eq_zero pos
+  rw [not_le] at h
+  exact lt_asymm B_pos (lt_of_le_of_lt pos h)
+
+def norm_pos_of_not_limZero (f: CauchySeq γ) (hf: ¬f ≈ 0) : 0 < ‖f‖ := by
+  false_or_by_contra
+  rename_i nk
+
+  refine hf fun ε ε_pos => ?_
+  replace nk : ∀ (x : γ), 0 < x → ∀ (y : Nat), ∃ z, ∃ (_ : y ≤ z), |f z| < x := by
+    intro x hx n
+    have nk := not_exists.mp (not_and.mp (not_exists.mp nk x) hx) n
+    have ⟨m,prf⟩ := Classical.not_forall.mp nk
+    have ⟨hm,prf⟩ := Classical.not_imp.mp prf
+    exists m
+    exists hm
+    apply lt_of_not_le
+    replace prf : ¬ (x ≤ ‖f m‖ - 0) := prf
+    simpa using prf
+
+  have ⟨i,hi⟩ := f.is_cacuhy _ (half_pos ε_pos)
+  rcases nk _ (half_pos ε_pos) i with ⟨j, ij, hj⟩
+  refine ⟨j, fun k _ jk _ => ?_⟩
+  simp
+  erw [sub_zero]
+  have := lt_of_le_of_lt (abs_add_le_add_abs _ _) (add_lt_add _ _ _ _ (hi k j (le_trans ij jk) ij) hj)
+  erw [sub_eq_add_neg, add_assoc, neg_add_cancel] at this
+  rwa [add_zero, ←mul_two, div?_mul_cancel] at this
+
 end CauchySeq
 
 namespace CauchySeq
@@ -549,5 +658,18 @@ def npow (a: CauchySeq α) (n: ℕ) : CauchySeq α where
 
 instance : Pow (CauchySeq α) ℕ where
   pow := npow
+
+variable [DecidableEq α]
+
+def safe_inv (a: CauchySeq α) (i: ℕ): α :=
+  if hb:a i = 0 then 0 else (a i)⁻¹?
+
+def inv.spec (a b: CauchySeq α) :
+  a ≈ b -> ¬a.IsLimZero -> is_cauchy_equiv (safe_inv a) (safe_inv b) := by
+  intro ab ha
+  have hb := not_limZero_of_eqv _ _ ab ha
+  intro ε εpos
+
+  sorry
 
 end CauchySeq

@@ -134,4 +134,12 @@ def neg_le_self [IsLinearOrder α] {a: α} : -a ≤ a ↔ 0 ≤ a := by
 def le_neg_self [IsLinearOrder α] {a: α} : a ≤ -a ↔ a ≤ 0 := by
   rw (occs := [1]) [←neg_neg a, neg_le_self, ←neg_zero, ←neg_le_neg_iff]
 
+def sub_le_sub (a b c d: α) : a ≤ c -> d ≤ b -> a - b ≤ c - d := by
+  intro ac db
+  rw [sub_eq_add_neg, sub_eq_add_neg]
+  apply add_le_add
+  assumption
+  apply neg_le_neg
+  assumption
+
 end
