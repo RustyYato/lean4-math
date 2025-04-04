@@ -274,6 +274,19 @@ instance : IsMulZeroClass (Cauchy α) where
 instance : IsSemiring (Cauchy α) := IsSemiring.inst
 instance : IsRing (Cauchy α) := IsRing.inst
 
+instance : SMul α (Cauchy α) where
+  smul a b := .of a * b
+instance : AlgebraMap α (Cauchy α) where
+  toFun := of
+  map_zero := rfl
+  map_one := rfl
+  map_add := rfl
+  map_mul := rfl
+
+instance : IsAlgebra α (Cauchy α) where
+  commutes _ _ := mul_comm _ _
+  smul_def _ _ := rfl
+
 instance : IsNontrivial (Cauchy α) where
   exists_ne := by
     refine ⟨0, 1, ?_⟩
