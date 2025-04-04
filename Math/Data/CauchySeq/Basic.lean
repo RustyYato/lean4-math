@@ -74,7 +74,6 @@ variable {α: Type*}
 
 open Norm.ofAbs
 
-local instance : IsLinearOrder γ := (inferInstanceAs (IsLinearLattice γ)).toIsLinearOrder
 local instance : Dist α γ := Norm.instDist α
 local instance : IsMetric α := Norm.instIsMetric α
 local instance : @Std.Commutative α (· + ·) := ⟨add_comm⟩
@@ -143,57 +142,6 @@ private def findBound.spec {f g: Nat -> α} {k₀ k₁: Nat} : ∀n m, n ≤ k�
     left
     subst n
     apply this
-
--- def boundedDistBetween {f g: Nat -> α} (c: is_cauchy_equiv f g) : ∃B: γ, ∀n m, dist (g n) (f m) < B := by
---   have ⟨k, kspec⟩ := c 1 zero_lt_one
---   dsimp at kspec
---   have spec := findBound.spec (f := f) (g := g) (k₀ := k) (k₁ := k)
---   exists findBound f g k.succ k.succ + 1
---   intro n m
---   rcases lt_or_le n k with n_lt_k | k_le_n
---   <;> rcases lt_or_le m k with m_lt_k | k_le_m
---   · have := spec n m (le_of_lt n_lt_k) (le_of_lt m_lt_k)
---     apply lt_of_le_of_lt this
---     conv => { lhs; rw [←add_zero (CauchySeq.findBound _ _ _ _)] }
---     apply add_lt_add_of_le_of_lt
---     rfl
---     apply zero_lt_one
---   · show |g n - f m| < _
-
---     rw [←add_zero (g n), ←neg_add_cancel (f n), ←add_assoc,
---       ←sub_eq_add_neg, add_sub_assoc]
---     apply lt_of_le_of_lt
---     apply abs_add_le_add_abs
-
---     -- apply lt_of_le_of_lt
---     -- apply dist_triangle (k := f k)
---     -- apply add_lt_add_of_le_of_lt
---     -- apply findBound.spec
---     -- apply le_of_lt
---     -- assumption
---     -- rfl
---     -- apply kspec
---     -- rfl
---     assumption
---   · rw [dist_comm]
---     apply lt_of_le_of_lt
---     apply dist_triangle (k := f k)
---     apply add_lt_add_of_le_of_lt
---     apply findBound.spec
---     apply le_of_lt
---     assumption
---     rfl
---     apply kspec
---     rfl
---     assumption
---   · apply lt_of_lt_of_le
---     apply kspec
---     assumption
---     assumption
---     conv => { lhs; rw [←zero_add 1] }
---     apply add_le_add
---     apply findBound.nonneg
---     rfl
 
 def boundedDist (c: CauchySeq α) : ∃B: γ, ∀n m, dist (c n) (c m) < B := by
   have ⟨k, kspec⟩ := c.is_cacuhy 1 zero_lt_one
@@ -309,15 +257,17 @@ instance setoid : Setoid (CauchySeq α) where
       assumption
   }
 
+def const.spec (x: α) : is_cauchy_equiv (fun _ => x) (fun _ => x) := by
+  intro ε ε_pos
+  exists 0
+  intros
+  dsimp
+  rw [sub_self, norm_zero]
+  assumption
+
 def const (x: α) : CauchySeq α where
   seq _ := x
-  is_cacuhy := by
-    intro ε ε_pos
-    exists 0
-    intros
-    dsimp
-    rw [sub_self, norm_zero]
-    assumption
+  is_cacuhy := by apply const.spec
 
 instance : Zero (CauchySeq α) := ⟨const 0⟩
 
@@ -409,6 +359,54 @@ def norm (a: CauchySeq α) : CauchySeq γ where
 
 instance : Norm (CauchySeq α) (CauchySeq γ) where
   norm := .norm
+
+def nsmul.spec (a b: CauchySeq α) (n: ℕ) : a ≈ b ->
+  is_cauchy_equiv (fun i => n • a i) (fun i => n • b i) := by
+  intro eq
+  induction n generalizing a b with
+  | zero =>
+    simp
+    apply const.spec
+  | succ n ih =>
+    simp [succ_nsmul]
+    let a' : CauchySeq α := ⟨_, ih a a (by rfl)⟩
+    let b' : CauchySeq α := ⟨_, ih b b (by rfl)⟩
+    apply add.spec a' a b' b
+    apply ih
+    assumption
+    assumption
+
+def nsmul (n: ℕ) (a: CauchySeq α) : CauchySeq α where
+  seq i := n • a i
+  is_cacuhy := by
+    apply nsmul.spec
+    rfl
+
+instance : SMul ℕ (CauchySeq α) where
+  smul := nsmul
+
+def zsmul.spec (a b: CauchySeq α) (n: ℤ) : a ≈ b ->
+  is_cauchy_equiv (fun i => n • a i) (fun i => n • b i) := by
+  intro eq
+  cases n with
+  | ofNat n =>
+    simp [zsmul_ofNat]
+    apply nsmul.spec
+    assumption
+  | negSucc n =>
+    simp [zsmul_negSucc]
+    apply neg.spec ((n + 1) • a) ((n + 1) • b)
+    apply nsmul.spec
+    assumption
+
+def zsmul (n: ℤ) (a: CauchySeq α) : CauchySeq α where
+  seq i := n • a i
+  is_cacuhy := by
+    apply zsmul.spec
+    rfl
+
+instance : SMul ℤ (CauchySeq α) where
+  smul := zsmul
 
 end CauchySeq
 
@@ -508,6 +506,31 @@ def mul (a b: CauchySeq α) : CauchySeq α where
   is_cacuhy := by apply CauchySeq.mul.spec <;> rfl
 
 instance : Mul (CauchySeq α) := ⟨.mul⟩
+
+def npow.spec (a b: CauchySeq α) (n: ℕ) : a ≈ b ->
+  is_cauchy_equiv (fun i => a i ^ n) (fun i => b i ^ n) := by
+  intro eq
+  induction n generalizing a b with
+  | zero =>
+    simp
+    apply const.spec
+  | succ n ih =>
+    simp [npow_succ]
+    let a' : CauchySeq α := ⟨_, ih a a (by rfl)⟩
+    let b' : CauchySeq α := ⟨_, ih b b (by rfl)⟩
+    apply mul.spec a' a b' b
+    apply ih
+    assumption
+    assumption
+
+def npow (a: CauchySeq α) (n: ℕ) : CauchySeq α where
+  seq i := a i ^ n
+  is_cacuhy := by
+    apply npow.spec
+    rfl
+
+instance : Pow (CauchySeq α) ℕ where
+  pow := npow
 
 end CauchySeq
 
