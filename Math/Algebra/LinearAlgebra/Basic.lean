@@ -1,4 +1,4 @@
-import Math.Algebra.LinearMap
+import Math.Algebra.Module.LinearMap.Defs
 import Math.Algebra.Field.Defs
 import Math.Algebra.Group.Action.Basic
 import Math.Data.Set.Basic

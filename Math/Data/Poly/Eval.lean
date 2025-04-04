@@ -1,5 +1,5 @@
 import Math.Data.Poly.Defs
-import Math.Algebra.Basic
+import Math.Algebra.Algebra.Defs
 
 namespace Poly
 

@@ -1,8 +1,8 @@
 import Math.Data.Free.Algebra
 import Math.Algebra.RingQuot.Defs
-import Math.Algebra.LinearMap
+import Math.Algebra.Module.LinearMap.Defs
 import Math.Algebra.Module.Hom
-import Math.Algebra.Hom
+import Math.Algebra.Algebra.Hom
 import Math.Algebra.TrivSqZeroExt
 
 section TensorAlgebra

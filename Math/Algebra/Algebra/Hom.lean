@@ -1,6 +1,6 @@
 import Math.Algebra.Hom.Defs
-import Math.Algebra.LinearMap
-import Math.Algebra.Basic
+import Math.Algebra.Module.LinearMap.Defs
+import Math.Algebra.Algebra.Defs
 import Math.Logic.Equiv.Like
 
 section

@@ -1,5 +1,5 @@
 import Math.Tactics.PPWithUniv
-import Math.Algebra.Ring
+import Math.Algebra.Semiring.Defs
 import Math.Data.Fin.Basic
 import Math.Data.Nat.Pairing
 import Math.Data.Fintype.Card

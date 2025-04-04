@@ -1,6 +1,6 @@
 import Math.Algebra.LinearAlgebra.Basic
 import Math.CategoryTheory.Basic
-import Math.Algebra.LinearMap
+import Math.Algebra.Module.LinearMap.Defs
 
 namespace Category
 

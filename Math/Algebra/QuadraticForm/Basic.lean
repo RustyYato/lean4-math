@@ -1,4 +1,5 @@
-import Math.Algebra.LinearMap
+import Math.Algebra.Module.LinearMap.Defs
+import Math.Algebra.Group.Action.Basic
 import Math.Algebra.Impls.Pi
 
 structure QuadraticMap (R M N: Type*)

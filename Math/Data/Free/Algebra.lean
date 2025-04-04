@@ -1,5 +1,5 @@
 import Math.Algebra.Ring.Defs
-import Math.Algebra.Hom
+import Math.Algebra.Algebra.Hom
 import Math.Algebra.Group.Hom
 
 namespace Free.Algebra

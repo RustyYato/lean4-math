@@ -1,6 +1,6 @@
 import Math.Algebra.Ring.Con
 import Math.Algebra.Algebra.Con
-import Math.Algebra.Hom
+import Math.Algebra.Algebra.Hom
 
 def RingQuot.Con [Add α] [Mul α] (r: α -> α -> Prop) : RingCon α := RingCon.generate r
 

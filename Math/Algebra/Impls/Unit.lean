@@ -1,6 +1,6 @@
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Monoid.Char
-import Math.Algebra.Basic
+import Math.Algebra.Algebra.Defs
 
 instance : RingOps Unit where
   add _ _ := ()

@@ -1,5 +1,5 @@
 import Math.Algebra.Ring.Defs
-import Math.Algebra.LinearMap
+import Math.Algebra.Module.LinearMap.Defs
 import Math.Data.FinSupp.Algebra
 
 def FreeModule (R M: Type*) [SemiringOps R] [IsSemiring R] [DecidableEq M]

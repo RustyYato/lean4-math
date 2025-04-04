@@ -1,4 +1,4 @@
-import Math.Algebra.Basic
+import Math.Algebra.Algebra.Defs
 import Math.Algebra.QAlgebra.Defs
 import Math.Algebra.Field.Hom
 

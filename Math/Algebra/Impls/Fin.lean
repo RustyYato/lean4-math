@@ -1,4 +1,4 @@
-import Math.Algebra.Basic
+import Math.Algebra.Algebra.Defs
 import Math.Algebra.Group.Units.Defs
 import Math.Algebra.Semiring.Char
 import Math.Data.Nat.Gcd

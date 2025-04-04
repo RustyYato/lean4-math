@@ -1,4 +1,5 @@
-import Math.Algebra.Ring
+import Math.Algebra.Ring.Defs
+import Math.Algebra.Module.Defs
 
 section Pi
 

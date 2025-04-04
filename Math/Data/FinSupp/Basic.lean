@@ -1,6 +1,6 @@
 import Math.Data.FinSupp.Defs
 import Math.Algebra.Monoid.Action.Defs
-import Math.Algebra.Basic
+import Math.Algebra.Algebra.Defs
 
 variable [FiniteSupportSet S α]
 

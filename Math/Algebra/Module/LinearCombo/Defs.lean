@@ -1,5 +1,5 @@
 import Math.Data.FinSupp.Algebra
-import Math.Algebra.Hom
+import Math.Algebra.Algebra.Hom
 
 def LinearCombination (R M: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] [DecidableEq M]
   := Finsupp M R (Finset M)
