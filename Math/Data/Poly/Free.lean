@@ -96,10 +96,6 @@ def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit where
     | mul =>
       simp
       rw [map_mul, map_mul, map_mul]; congr
-  map_zero := by
-    simp; rw [←map_zero C, evalHom_C, map_zero]
-  map_one := by
-    simp; rw [←map_one C, evalHom_C, map_one]
   map_add {x y} := by
     simp
     rw [map_add]

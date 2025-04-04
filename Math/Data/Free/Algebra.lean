@@ -425,8 +425,6 @@ def liftAux
       show _ * _ = _ * _
       congr
 
-  map_one := map_one _
-  map_zero := map_zero _
   map_add := by
     intro x y
     induction x, y using ind₂ with | mk x y =>

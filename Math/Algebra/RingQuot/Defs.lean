@@ -106,7 +106,9 @@ variable (S: Type*) [SemiringOps S] [SemiringOps R] [IsSemiring R] [IsSemiring S
    [SemiringOps B] [IsSemiring B] [AlgebraMap S B] [SMul S B] [IsAlgebra S B]
 
 def mkAlgHom (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
-  toRingHom := mk _
+  toFun := mk _
+  map_add := map_add _
+  map_mul := map_mul _
   map_algebraMap _ := rfl
 
 def indAlg {motive: RingQuot r -> Prop} (mk: ∀x, motive (mkAlgHom S r x)) : ∀q, motive q := by
