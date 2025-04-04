@@ -257,6 +257,24 @@ instance setoid : Setoid (CauchySeq α) where
       assumption
   }
 
+def eventually_pointwise (a b: CauchySeq α) :
+  Eventually (fun i => a i = b i) -> a ≈ b := by
+  intro h
+  intro ε εpos
+  have ⟨i, h⟩ := (b.is_cacuhy ε εpos).merge h.to₂_left
+  exists i
+  intro n m hn hm
+  obtain ⟨h, hi⟩ := h n m hn hm
+  rw [hi]
+  apply h
+
+def pointwise (a b: CauchySeq α) :
+  (∀i, a i = b i) -> a ≈ b := by
+  intro h
+  apply eventually_pointwise
+  exists 0
+  intros; apply h
+
 def const.spec (x: α) : is_cauchy_equiv (fun _ => x) (fun _ => x) := by
   intro ε ε_pos
   exists 0
@@ -533,56 +551,3 @@ instance : Pow (CauchySeq α) ℕ where
   pow := npow
 
 end CauchySeq
-
--- section
-
--- variable (α: Type*) {γ: Type*} [AbsoluteValue α γ]
---   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
---   [IsField γ] [IsLinearLattice γ] [IsOrderedSemiring γ]
---   [FieldOps α] [IsField α] [IsLawfulAbs α]
-
--- def Cauchy := Quotient (CauchySeq.setoid (α := α))
-
--- end
-
--- namespace Cauchy
-
--- variable {α: Type*} {γ: Type*} [AbsoluteValue α γ]
---   [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
---   [IsField γ] [IsLinearLattice γ] [IsOrderedRing γ]
---   [FieldOps α] [IsField α] [IsOrderedAbsRing α]
-
--- def mk : CauchySeq α -> Cauchy α := Quotient.mk _
-
--- scoped notation "⟦" x "⟧" => mk x
-
--- def add : Cauchy α -> Cauchy α -> Cauchy α := by
---   apply Quotient.lift₂ (⟦· + ·⟧)
---   intro a b c d ac bd
---   apply Quotient.sound
---   apply CauchySeq.add.spec
---   assumption
---   assumption
-
--- instance : Add (Cauchy α) := ⟨.add⟩
-
--- def neg : Cauchy α -> Cauchy α := by
---   apply Quotient.lift (⟦-·⟧)
---   intro a b ab
---   apply Quotient.sound
---   apply CauchySeq.neg.spec
---   assumption
-
--- instance : Neg (Cauchy α) := ⟨.neg⟩
-
--- def sub : Cauchy α -> Cauchy α -> Cauchy α := by
---   apply Quotient.lift₂ (⟦· - ·⟧)
---   intro a b c d ac bd
---   apply Quotient.sound
---   apply CauchySeq.sub.spec
---   assumption
---   assumption
-
--- instance : Sub (CauchySeq α) := ⟨.sub⟩
-
--- end Cauchy

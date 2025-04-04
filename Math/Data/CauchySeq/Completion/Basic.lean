@@ -1,6 +1,5 @@
 import Math.Data.CauchySeq.Basic
 
-
 section
 
 variable (α: Type*) {γ: Type*}
@@ -80,8 +79,89 @@ instance : SMul ℤ (Cauchy α) where
 
 instance : NatCast (Cauchy α) := ⟨fun n => .of n⟩
 instance : IntCast (Cauchy α) := ⟨fun n => .of n⟩
-instance : Zero (Cauchy α) := ⟨(0: ℕ)⟩
-instance : One (Cauchy α) := ⟨(1: ℕ)⟩
+instance : Zero (Cauchy α) := ⟨.of 0⟩
+instance : One (Cauchy α) := ⟨.of 1⟩
+
+@[induction_eliminator]
+def ind : ∀{motive: Cauchy α -> Prop}, (ofSeq: ∀a, motive (ofSeq a)) -> ∀a, motive a := Quotient.ind
+@[induction_eliminator]
+def ind₂ : ∀{motive: Cauchy α -> Cauchy α -> Prop}, (ofSeq: ∀a b, motive (ofSeq a) (ofSeq b)) -> ∀a b, motive a b := Quotient.ind₂
+@[induction_eliminator]
+def ind₃ : ∀{motive: Cauchy α -> Cauchy α -> Cauchy α -> Prop}, (ofSeq: ∀a b c, motive (ofSeq a) (ofSeq b) (ofSeq c)) -> ∀a b c, motive a b c := by
+  intro _ h a b c
+  induction a, b
+  induction c
+  apply h
+
+instance : IsAddGroupWithOne (Cauchy α) where
+  add_assoc a b c := by
+    induction a, b, c
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply add_assoc
+  zero_add a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply zero_add
+  add_zero a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply add_zero
+  sub_eq_add_neg a b := by
+    induction a, b
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply sub_eq_add_neg
+  zero_nsmul a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply zero_nsmul
+  succ_nsmul _ a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply succ_nsmul
+  zsmul_ofNat _ a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply zsmul_ofNat
+  zsmul_negSucc _ a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply zsmul_negSucc
+  neg_add_cancel a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply neg_add_cancel
+  natCast_zero := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply natCast_zero
+  natCast_succ _ := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply natCast_succ
+  intCast_ofNat _ := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply intCast_ofNat
+  intCast_negSucc _ := by
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply intCast_negSucc
+
+instance : IsAddCommMagma (Cauchy α) where
+  add_comm a b := by
+    induction a, b
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply add_comm
 
 end Cauchy
 
@@ -113,5 +193,61 @@ instance : Mul (Cauchy α) where
   mul := mul
 instance : Pow (Cauchy α) ℕ where
   pow := flip npow
+
+instance : IsCommMagma (Cauchy α) where
+  mul_comm a b := by
+    induction a, b
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply mul_comm
+
+instance : IsLeftDistrib (Cauchy α) where
+  left_distrib k a b := by
+    induction k, a, b
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply mul_add
+
+instance : IsMonoid (Cauchy α) where
+  mul_assoc a b c := by
+    induction a, b, c
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply mul_assoc
+  mul_one a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply mul_one
+  one_mul a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply one_mul
+  npow_zero a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply npow_zero
+  npow_succ _ a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply npow_succ
+
+instance : IsMulZeroClass (Cauchy α) where
+  mul_zero a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply mul_zero
+  zero_mul a := by
+    induction a
+    apply Quotient.sound
+    apply CauchySeq.pointwise
+    intro i; apply zero_mul
+
+instance : IsSemiring (Cauchy α) := IsSemiring.inst
+instance : IsRing (Cauchy α) := IsRing.inst
 
 end Cauchy
