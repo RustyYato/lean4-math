@@ -1,5 +1,5 @@
 import Math.Data.Poly.Defs
-import Math.Algebra.Algebra.Defs
+import Math.Algebra.Algebra.Hom
 
 namespace Poly
 
@@ -116,9 +116,12 @@ variable [SemiringOps P] [IsSemiring P]
   [SMul P M] [AlgebraMap P M] [IsAlgebra P M] [IsCommMagma P]
 
 def eval (x: M) (p: P[X]) : M :=
-  p.evalWith (F := P →+* M) algebraMap x
+  p.evalWith algebraMap x
 
-def evalHom (x: M) : P[X] →+* M := evalWithHom algebraMap x
+def evalHom (x: M) : P[X] →ₐ[P] M := {
+  evalWithHom algebraMap x with
+  map_algebraMap := evalWith_C _ _
+}
 
 def evalHom_C (x: M) (p: P) : evalHom x (C p) = algebraMap p := evalWith_C _ _ _
 def evalHom_X (x: M) : evalHom x (X: P[X]) = x := evalWith_X _ _

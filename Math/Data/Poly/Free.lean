@@ -83,7 +83,7 @@ def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit where
       rw [map_algebraMap]
       simp
       erw [map_algebraMap ((CommFreeAlgebra.lift P (fun x => Poly.X))) r]
-      rw [←C_eq_algebraMap, evalHom_C]
+      rw [map_algebraMap]
       rfl
     | grade1 =>
       simp
@@ -104,4 +104,4 @@ def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit where
     rw [map_mul]
   map_algebraMap r := by
     simp
-    rw [←C_eq_algebraMap, evalHom_C]
+    rw [map_algebraMap]
