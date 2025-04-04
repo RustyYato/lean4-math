@@ -78,6 +78,11 @@ def inv?_lt_inv? [IsCommMagma α] (a b: α) (ha: 0 < a) (hb: 0 < b) : a⁻¹? < 
   apply inv?_pos; assumption
   apply inv?_pos; assumption
 
+def inv?_le_inv? [IsCommMagma α] (a b: α) (ha: 0 < a) (hb: 0 < b) : a⁻¹? ≤ b⁻¹? ↔ b ≤ a := by
+  rw [←not_lt, ←not_lt, inv?_lt_inv?]
+  assumption
+  assumption
+
 def lt_iff_mul_lt_mul_of_pos_right (a b k: α) (h: 0 < k) : a < b ↔ a * k < b * k := by
   revert a b k
   suffices ∀(a b k : α), 0 < k → a < b -> a * k < b * k by

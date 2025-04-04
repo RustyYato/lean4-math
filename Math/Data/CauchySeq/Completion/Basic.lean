@@ -188,11 +188,35 @@ def npow (n: ℕ) : Cauchy α -> Cauchy α := by
   apply Quotient.sound
   apply CauchySeq.npow.spec
   assumption
+def inv [DecidableEq α] : ∀a: Cauchy α, a ≠ 0 -> Cauchy α := by
+  intro a
+  refine Quotient.hrecOn a ?_ ?_
+  all_goals clear a
+  intro a ha
+  have : ¬a ≈ 0 := by intro h; apply ha; apply Quotient.sound h
+  exact ofSeq (a.inv this)
+  intro a b h
+  simp
+  apply Function.hfunext
+  rw [Quotient.sound h]
+  intro h₀ h₁ heq
+  simp
+  apply Quotient.sound
+  apply CauchySeq.inv.spec
+  assumption
+  intro h; apply h₀; apply Quotient.sound h
 
 instance : Mul (Cauchy α) where
   mul := mul
 instance : Pow (Cauchy α) ℕ where
   pow := flip npow
+
+instance [DecidableEq α] : CheckedInv? (Cauchy α) where
+  checked_invert := inv
+instance [DecidableEq α] : CheckedDiv? (Cauchy α) where
+  checked_div a b h := a * b⁻¹?
+instance [DecidableEq α] : CheckedIntPow? (Cauchy α) :=
+  instCheckedIntPow
 
 instance : IsCommMagma (Cauchy α) where
   mul_comm a b := by
@@ -249,5 +273,33 @@ instance : IsMulZeroClass (Cauchy α) where
 
 instance : IsSemiring (Cauchy α) := IsSemiring.inst
 instance : IsRing (Cauchy α) := IsRing.inst
+
+instance : IsNontrivial (Cauchy α) where
+  exists_ne := by
+    refine ⟨0, 1, ?_⟩
+    intro h
+    have ⟨i, h⟩ := Quotient.exact h.symm 1 zero_lt_one
+    have : ‖(1 - 0: α)‖ < 1 := h i i (le_refl _) (le_refl _)
+    simp [norm_one] at this
+    exact lt_irrefl this
+
+instance [DecidableEq α] : IsField (Cauchy α) where
+  div?_eq_mul_inv? _ _ _ := rfl
+  zpow?_ofNat _ _ := rfl
+  zpow?_negSucc _ _ _ := rfl
+  mul_inv?_cancel a h := by
+    induction a with | ofSeq a =>
+    apply Quotient.sound
+    apply CauchySeq.eventually_pointwise
+    have ⟨B, Bpos, i, hi⟩ := CauchySeq.norm_pos_of_not_limZero a (by
+      intro g; apply h; apply Quotient.sound g)
+    exists i
+    intro n hn
+    show a n * a.safe_inv n = 1
+    unfold CauchySeq.safe_inv; rw [dif_neg]
+    rw [mul_inv?_cancel]
+    intro h
+    have : B ≤ ‖a n‖ - 0 := hi n hn
+    simp [h, norm_zero, not_le_of_lt Bpos] at this
 
 end Cauchy

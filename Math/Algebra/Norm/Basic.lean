@@ -232,3 +232,27 @@ def abs_norm_sub_norm_le_norm_sub (a b: α) : |‖a‖ - ‖b‖| ≤ ‖a - b�
   assumption
 
 end
+
+section
+
+variable
+  [Norm α β] [LE β] [LT β] [Min β] [Max β]
+  [FieldOps β] [IsNonCommField β]
+  [FieldOps α] [IsNonCommField α]
+  [SMul β α] [AlgebraMap β α] [IsAlgebra β α]
+  [IsOrderedSemiring β]
+  [IsLinearLattice β] [h: IsAlgebraNorm α]
+
+def norm_one : ‖(1: α)‖ = 1 := by
+  rw [←map_one (algebraMap (R := β)), norm_algebraMap, abs_one]
+
+def norm_div? (a b: α) (h: b ≠ 0) : ‖a /? b‖ = ‖a‖ /? ‖b‖ := by
+  apply mul_right_cancel₀ (k := ‖b‖)
+  invert_tactic
+  rw [div?_mul_cancel, ←norm_mul, div?_mul_cancel]
+
+def norm_inv? (a: α) (h: a ≠ 0) : ‖a⁻¹?‖ = ‖a‖⁻¹? := by
+  apply inv?_eq_of_mul_right
+  rw [←norm_mul, inv?_mul_cancel, norm_one]
+
+end

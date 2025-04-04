@@ -461,6 +461,30 @@ def not_limZero_of_eqv (a b: CauchySeq α) (h: a ≈ b) (g: ¬a.IsLimZero) : ¬b
   rw [limZero_iff_eqv_zero] at *
   exact trans h g₀
 
+instance : NatCast (CauchySeq α) := ⟨fun n => .const n⟩
+instance : IntCast (CauchySeq α) := ⟨fun n => .const n⟩
+
+-- instance : Zero (CauchySeq α) := ⟨.const 0⟩
+instance : One (CauchySeq α) := ⟨.const 1⟩
+
+instance : AddMonoidWithOneOps (CauchySeq α) := _root_.instAddMonoidOpsWithOne
+instance : AddGroupWithOneOps (CauchySeq α) := instAddGroupWithOneOpsOfAddMonoidWithOneOpsOfNegOfSubOfIntCastOfSMulInt
+
+@[ext]
+def ext (a b: CauchySeq α) : (∀i, a i = b i) -> a = b := DFunLike.ext _ _
+
+instance : IsAddGroup (CauchySeq α) where
+  add_assoc _ _ _ := by ext; apply add_assoc
+  zero_add _ := by ext; apply zero_add
+  add_zero _ := by ext; apply add_zero
+  sub_eq_add_neg _ _ := by ext; apply sub_eq_add_neg
+  zero_nsmul _ := by ext; apply zero_nsmul
+  succ_nsmul _ _ := by ext; apply succ_nsmul
+  zsmul_ofNat _ _ := by ext; apply zsmul_ofNat
+  zsmul_negSucc _ _ := by ext; apply zsmul_negSucc
+  neg_add_cancel _ := by ext; apply neg_add_cancel
+
+
 section Order
 
 def Pos (a: CauchySeq γ) : Prop := ∃B, 0 < B ∧ Eventually fun i => B ≤ a i
@@ -510,12 +534,12 @@ def non_zero_of_IsPos (a: CauchySeq γ) : a.Pos -> ¬a ≈ 0 := by
   rw [not_le] at h
   exact lt_asymm B_pos (lt_of_le_of_lt pos h)
 
-def norm_pos_of_not_limZero (f: CauchySeq γ) (hf: ¬f ≈ 0) : 0 < ‖f‖ := by
+def norm_pos_of_not_limZero (f: CauchySeq α) (hf: ¬f ≈ 0) : 0 < ‖f‖ := by
   false_or_by_contra
   rename_i nk
 
   refine hf fun ε ε_pos => ?_
-  replace nk : ∀ (x : γ), 0 < x → ∀ (y : Nat), ∃ z, ∃ (_ : y ≤ z), |f z| < x := by
+  replace nk : ∀ (x : γ), 0 < x → ∀ (y : Nat), ∃ z, ∃ (_ : y ≤ z), ‖f z‖ < x := by
     intro x hx n
     have nk := not_exists.mp (not_and.mp (not_exists.mp nk x) hx) n
     have ⟨m,prf⟩ := Classical.not_forall.mp nk
@@ -531,7 +555,7 @@ def norm_pos_of_not_limZero (f: CauchySeq γ) (hf: ¬f ≈ 0) : 0 < ‖f‖ := b
   refine ⟨j, fun k _ jk _ => ?_⟩
   simp
   erw [sub_zero]
-  have := lt_of_le_of_lt (abs_add_le_add_abs _ _) (add_lt_add _ _ _ _ (hi k j (le_trans ij jk) ij) hj)
+  have := lt_of_le_of_lt (norm_add_le_add_norm _ _) (add_lt_add _ _ _ _ (hi k j (le_trans ij jk) ij) hj)
   erw [sub_eq_add_neg, add_assoc, neg_add_cancel] at this
   rwa [add_zero, ←mul_two, div?_mul_cancel] at this
 
@@ -664,12 +688,78 @@ variable [DecidableEq α]
 def safe_inv (a: CauchySeq α) (i: ℕ): α :=
   if hb:a i = 0 then 0 else (a i)⁻¹?
 
-def inv.spec (a b: CauchySeq α) :
-  a ≈ b -> ¬a.IsLimZero -> is_cauchy_equiv (safe_inv a) (safe_inv b) := by
+def inv.spec (a b: CauchySeq α) : a ≈ b -> ¬a ≈ 0 -> is_cauchy_equiv (safe_inv a) (safe_inv b) := by
   intro ab ha
-  have hb := not_limZero_of_eqv _ _ ab ha
+  have hb := not_limZero_of_eqv _ _ ab ((not_limZero_iff_not_eqv_zero _).mpr ha)
+  rw [not_limZero_iff_not_eqv_zero] at hb
   intro ε εpos
+  have ⟨A, Apos, hA⟩ := norm_pos_of_not_limZero a ha
+  have ⟨B, Bpos, hB⟩ := norm_pos_of_not_limZero b hb
+  simp at hA hB
+  have : 0 < A * B := by
+    apply mul_pos
+    assumption
+    assumption
 
-  sorry
+  have ⟨δ, h⟩ := (ab (ε * (A * B)) (by
+    apply mul_pos
+    exact εpos
+    assumption)).merge (hA.to₂_left.merge hB.to₂_right)
+  exists δ
+  intro n m hn hm
+  have ⟨h, hA, hB⟩ := h _ _ hn hm
+  replace hA : A ≤ ‖a n‖ := hA; replace hB : B ≤ ‖b m‖ := hB
+  have anez : a n ≠ 0 := by
+    intro h; rw [h, norm_zero] at hA
+    have := not_lt_of_le hA; contradiction
+  have bnez : b m ≠ 0 := by
+    intro h; rw [h, norm_zero] at hB
+    have := not_lt_of_le hB; contradiction
+  unfold safe_inv; rw [dif_neg anez, dif_neg bnez]
+  rw [inv_sub_inv, norm_div?, norm_sub_comm]
+  conv => { lhs; arg 2; rw [norm_mul] }
+  rw [div?_eq_mul_inv?]
+  apply lt_of_lt_of_le
+  · show _ < (ε * (A * B)) * (A * B)⁻¹?
+    apply lt_of_lt_of_le
+    apply mul_lt_mul_of_pos_right
+    apply h
+    apply inv?_pos
+    apply mul_pos
+    apply lt_of_lt_of_le _ hA
+    assumption
+    apply lt_of_lt_of_le _ hB
+    assumption
+    apply mul_le_mul_of_nonneg_left
+    apply (inv?_le_inv? _ _ _ _).mpr
+    apply le_trans
+    apply mul_le_mul_of_nonneg_left
+    apply hB
+    apply le_of_lt; assumption
+    apply mul_le_mul_of_nonneg_right
+    apply hA
+    apply norm_nonneg
+    apply mul_pos
+    apply lt_of_lt_of_le _ hA
+    assumption
+    apply lt_of_lt_of_le _ hB
+    assumption
+    apply mul_pos
+    assumption
+    assumption
+    apply le_of_lt
+    apply mul_pos
+    assumption
+    apply mul_pos
+    assumption
+    assumption
+  · rw [mul_assoc, mul_inv?_cancel, mul_one]
+
+def inv (a: CauchySeq α) (h: ¬a ≈ 0) : CauchySeq α where
+  seq := a.safe_inv
+  is_cacuhy := by
+    apply inv.spec
+    rfl
+    assumption
 
 end CauchySeq
