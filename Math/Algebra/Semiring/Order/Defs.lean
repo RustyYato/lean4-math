@@ -108,7 +108,6 @@ instance : NeZero (3: α) := instNeZeroOfOrderedSemiring 3
 instance : NeZero (4: α) := instNeZeroOfOrderedSemiring 4
 
 def two_pos : 0 < (2: α) := by
-  rw [ofNat_eq_natCast (α := α) 2]
   apply natCast_pos
   apply Nat.zero_lt_succ
 

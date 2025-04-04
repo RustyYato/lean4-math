@@ -3,6 +3,9 @@ import Math.Topology.MetricSpace.Defs
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Semiring.Order.Defs
 
+-- FIXME: split out constructions into it's own file or make MetricSpace/Abs only depend on
+-- MetricSpace/Defs
+
 section
 
 variable [LT β] [LE β] [IsNontrivial β] [AddMonoidOps β] [IsOrderedAddCommMonoid β]
