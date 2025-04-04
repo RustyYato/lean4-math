@@ -1,13 +1,12 @@
 import Math.Algebra.Ring.Order.Defs
 import Math.Algebra.Ring.Defs
-import Math.Algebra.Module.Defs
+import Math.Algebra.Algebra.Defs
 import Math.Ops.Abs
 
 class IsLawfulNorm (α: Type*) {β: Type*}
   [Norm α β] [LE β] [LT β] [Min β] [Max β]
-  [AddGroupOps α]
+  [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α]
   [RingOps β] [IsRing β]
-  [IsAddGroup α] [IsAddCommMagma α]
   [SMul β α] [IsModule β α]
   [IsOrderedSemiring β]
   [IsLinearLattice β] where
@@ -15,13 +14,23 @@ class IsLawfulNorm (α: Type*) {β: Type*}
   norm_add_le_add_norm (a b: α): ‖a + b‖ ≤ ‖a‖ + ‖b‖
   norm_smul (b: β) (a: α): ‖b • a‖ = |b| * ‖a‖
 
+class IsAlgebraNorm (α: Type*) {β: Type*}
+  [Norm α β] [LE β] [LT β] [Min β] [Max β]
+  [RingOps α] [IsRing α]
+  [RingOps β] [IsRing β]
+  [SMul β α] [AlgebraMap β α] [IsAlgebra β α]
+  [IsOrderedSemiring β]
+  [IsLinearLattice β] extends IsLawfulNorm α where
+  norm_algebraMap (a: β): ‖(algebraMap a: α)‖ = |a|
+  norm_mul (a b: α) : ‖a * b‖ = ‖a‖ * ‖b‖
+  norm_smul := fun b a => by rw [smul_def, norm_mul, norm_algebraMap]
+
 section
 
 variable
   [Norm α β] [LE β] [LT β] [Min β] [Max β]
-  [AddGroupOps α]
+  [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α]
   [RingOps β] [IsRing β]
-  [IsAddGroup α] [IsAddCommMagma α]
   [SMul β α] [IsModule β α]
   [IsOrderedSemiring β]
   [IsLinearLattice β] [IsLawfulNorm α]
@@ -32,6 +41,21 @@ def norm_smul (b: β) (a: α): ‖b • a‖ = |b| * ‖a‖ := IsLawfulNorm.nor
 
 def norm_zero : ‖(0: α)‖ = 0 := norm_zero_iff.mpr rfl
 def of_norm_eq_zero {x: α} : ‖x‖ = 0 -> x = 0 := norm_zero_iff.mp
+
+end
+
+section
+
+variable
+  [Norm α β] [LE β] [LT β] [Min β] [Max β]
+  [RingOps α] [IsRing α]
+  [RingOps β] [IsRing β]
+  [SMul β α] [AlgebraMap β α] [IsAlgebra β α]
+  [IsOrderedSemiring β]
+  [IsLinearLattice β] [IsAlgebraNorm α]
+
+def norm_algebraMap (a: β): ‖(algebraMap a: α)‖ = |a| := IsAlgebraNorm.norm_algebraMap _
+def norm_mul (a b: α) : ‖a * b‖ = ‖a‖ * ‖b‖ := IsAlgebraNorm.norm_mul _ _
 
 end
 

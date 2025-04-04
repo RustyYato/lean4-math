@@ -33,7 +33,7 @@ def Complex.norm_eq (x: ℂ) : NNReal.ofReal ‖x‖ = NNReal.sqrt (NNReal.squar
   apply Real.square_nonneg
   apply Real.square_nonneg
 
-def Complex.norm_mul (a b: ℂ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
+def Complex.norm_mul' (a b: ℂ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   apply ofReal_injOn
   apply Real.sqrt_nonneg
   apply Real.mul_nonneg
@@ -63,7 +63,7 @@ def Complex.norm_mul (a b: ℂ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   apply Real.sqrt_nonneg
   apply Real.sqrt_nonneg
 
-instance instLawfulAbs : IsLawfulNorm ℂ where
+instance instLawfulAbs : IsAlgebraNorm ℂ where
   norm_zero_iff := by
     intro x
     rw [←Real.sqrt_0]
@@ -91,11 +91,8 @@ instance instLawfulAbs : IsLawfulNorm ℂ where
     apply Real.square_nonneg
     apply Real.square_nonneg
     rfl
-  norm_smul b a := by
-    show ‖b * a‖ = _
-    rw [Complex.norm_mul]
-    congr
-    simp
+  norm_algebraMap := by simp
+  norm_mul := by apply Complex.norm_mul'
   norm_add_le_add_norm a b := by
     show NNReal.sqrt _ ≤ NNReal.sqrt _ + NNReal.sqrt _
     iterate 3 rw [ofReal_add]

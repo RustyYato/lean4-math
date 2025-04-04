@@ -63,6 +63,10 @@ open Norm.ofAbs
 def abs_mul (a b: α) : |a * b| = |a| * |b| := by
   apply norm_smul (α := α)
 
+instance [IsCommMagma α] : IsAlgebraNorm α where
+  norm_algebraMap _ := rfl
+  norm_mul _ _ := by apply abs_mul
+
 def abs_neg (a: α) : |-a| = |a| := by
   rw [←neg_one_mul, abs_mul]; simp
 
@@ -214,5 +218,17 @@ def norm_nonneg (a: α) : 0 ≤ ‖a‖ := by
   have := norm_add_le_add_norm a (-a)
   rw [norm_neg, add_neg_cancel, norm_zero, le_add_iff_sub_le, zero_sub] at this
   rwa [neg_le_self] at this
+
+def abs_norm_sub_norm_le_norm_sub (a b: α) : |‖a‖ - ‖b‖| ≤ ‖a - b‖ := by
+  have v₀ := norm_add_le_add_norm (a - b) b
+  rw [sub_add_cancel, le_add_iff_sub_le] at v₀
+  have v₁ := norm_add_le_add_norm (b - a) a
+  rw [sub_add_cancel, le_add_iff_sub_le, norm_sub_comm] at v₁
+  classical
+  rw [abs_def]
+  split
+  assumption
+  rw [neg_sub]
+  assumption
 
 end

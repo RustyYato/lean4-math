@@ -255,6 +255,20 @@ def upper_bound (c: CauchySeq γ) : ∃B: γ, ∀n, c n < B := by
   apply le_abs_self
   apply le_abs_self
 
+def upper_bound_with (c: CauchySeq γ) (u: γ) : ∃B: γ, u < B ∧ ∀n, c n < B := by
+  have ⟨B, h⟩ := c.upper_bound
+  exists B ⊔ (u + 1)
+  apply And.intro
+  apply flip lt_of_lt_of_le
+  apply le_max_right
+  rw (occs := [1]) [←add_zero u]
+  apply add_lt_add_left
+  apply zero_lt_one
+  intro n
+  apply lt_of_lt_of_le
+  apply h
+  apply le_max_left
+
 instance setoid : Setoid (CauchySeq α) where
   r a b := is_cauchy_equiv a b
   iseqv := {
@@ -373,203 +387,127 @@ def sub (a b: CauchySeq α) : CauchySeq α where
 
 instance : Sub (CauchySeq α) := ⟨.sub⟩
 
--- def abs.proof1 (a b: γ) :
---   0 ≤ a -> b ≤ 0 -> |a - b| < ε -> |a + b| < ε := by
---   intro ha hb habs
---   cases lt_or_eq_of_le hb <;> rename_i hb
---   · apply lt_of_le_of_lt _ habs
---     rw [abs_def (a - b)]
---     have : b < a := lt_of_lt_of_le hb ha
---     have : 0 ≤ a - b := by
---       apply Rat.add_le_add_right.mpr
---       rw [sub_eq_add_neg, add_assoc, neg_add_cancel, add_zero, zero_add]
---       apply le_of_lt; assumption
---     rw [if_pos this]
---     rw [Rat.abs_def, sub_eq_add_neg]
---     split
---     apply Rat.add_le_add_left.mp
---     exact Rat.le_neg_of_nonpos b (le_of_lt hb)
---     rw [neg_add_rev, add_comm]
---     apply Rat.add_le_add_right.mp
---     exact Rat.neg_le_of_nonneg a ha
---   · subst b
---     rw [sub_zero] at habs
---     rwa [add_zero]
+def norm.spec (a b: CauchySeq α) : a ≈ b ->
+  is_cauchy_equiv (fun n => ‖a n‖) (fun n => ‖b n‖) := by
+  intro ab ε ε_pos
+  dsimp
+  replace ⟨δ, ab⟩ := ab _ ε_pos
+  refine ⟨δ, ?_⟩
+  intro n m δ_le_n δ_le_m
+  show |_| < _
+  apply lt_of_le_of_lt
+  apply abs_norm_sub_norm_le_norm_sub
+  apply ab
+  assumption
+  assumption
 
--- def abs.spec (a b: CauchySeq α) : a ≈ b ->
---   is_cauchy_equiv (fun n => |a n|) (fun n => |b n|) := by
---   intro ab ε ε_pos
---   dsimp
---   replace ⟨δ, ab⟩ := ab _ (half_pos ε_pos)
---   refine ⟨δ, ?_⟩
---   intro n m δ_le_n δ_le_m
---   rw [Rat.abs_def (a n), Rat.abs_def (b m)]
---   suffices |a.seq n - b.seq m| < ε by
---     split <;> split <;> rename_i h g
---     · exact this
---     · rw [sub_eq_add_neg, neg_neg]
---       apply CauchySeq.abs.proof1
---       assumption
---       rw [not_le] at g
---       apply le_of_lt; assumption
---       exact this
---     · rw [sub_eq_add_neg]
---       apply CauchySeq.abs.proof1
---       apply Rat.neg_le_neg_iff.mpr
---       rw [neg_neg]
---       rw [not_le] at h
---       apply le_of_lt; assumption
---       apply Rat.neg_le_neg_iff.mpr
---       rw [neg_neg]
---       assumption
---       rw [neg_sub_neg, abs_sub_comm]
---       apply_assumption
---     · rw [neg_sub_neg, abs_sub_comm]
---       assumption
---   replace ab  := ab _ _ δ_le_n δ_le_m
---   apply lt_trans ab
---   apply Rat.add_lt_add_right.mpr
---   rw [add_neg_cancel]
---   rw [←sub_eq_add_neg, Rat.sub_half]
---   exact Rat.half_pos ε_pos
+def norm (a: CauchySeq α) : CauchySeq γ where
+  seq n := ‖a n‖
+  is_cacuhy := by
+    apply CauchySeq.norm.spec
+    rfl
 
--- def abs (a: CauchySeq α) : CauchySeq γ where
---   seq n := |a n|
---   is_cacuhy := by
---     apply CauchySeq.abs.spec
---     rfl
+instance : Norm (CauchySeq α) (CauchySeq γ) where
+  norm := .norm
 
--- instance : AbsoluteValue (CauchySeq α) (CauchySeq γ) where
---   abs := .abs
+end CauchySeq
 
--- def mul.spec (a b c d: CauchySeq α): a ≈ c -> b ≈ d -> is_cauchy_equiv (fun n => a n * b n) (fun n => c n * d n) := by
---   intro ac bd ε ε_pos
---   simp
---   have ⟨amax,one_lt_amax,amax_spec⟩ := |a|.upper_bound_with 1
---   have ⟨dmax,one_lt_dmax,dmax_spec⟩ := |d|.upper_bound_with 1
+namespace CauchySeq
 
---   have amax_pos : 0 < amax := lt_of_lt_of_le (by decide) one_lt_amax
---   have dmax_pos : 0 < dmax := lt_of_lt_of_le (by decide) one_lt_dmax
+variable {α: Type*}
+  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
+  [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
+  [FieldOps α] [IsField α] [Norm α γ]
+  [SMul γ α] [AlgebraMap γ α] [IsAlgebra γ α] [IsAlgebraNorm α]
 
---   have amax_nonzero := (ne_of_lt amax_pos).symm
---   have dmax_nonzero := (ne_of_lt dmax_pos).symm
+open Norm.ofAbs
 
---   let ε₀ := (ε /? 2) /? dmax
---   let ε₁ := (ε /? 2) /? amax
+local instance : IsLinearOrder γ := (inferInstanceAs (IsLinearLattice γ)).toIsLinearOrder
+local instance : Dist α γ := Norm.instDist α
+local instance : IsMetric α := Norm.instIsMetric α
+local instance : @Std.Commutative α (· + ·) := ⟨add_comm⟩
+local instance :  @Std.Associative α (· + ·) := ⟨add_assoc⟩
 
---   have ε₀_pos : 0 < ε₀ := by
---     apply div?_pos
---     apply div?_pos
---     assumption
---     decide
---     assumption
---   have ε₁_pos : 0 < ε₁ := by
---     apply div?_pos
---     apply div?_pos
---     assumption
---     decide
---     assumption
+def mul.spec (a b c d: CauchySeq α) : a ≈ c -> b ≈ d ->
+  is_cauchy_equiv (fun n => a n * b n) (fun n => c n * d n) := by
+  intro ac bd ε ε_pos
+  simp
+  have ⟨amax, one_lt_amax, amax_spec⟩ := ‖a‖.upper_bound_with 1
+  have ⟨dmax, one_lt_dmax, dmax_spec⟩ := ‖d‖.upper_bound_with 1
 
---   -- = |a b - c d + a d - a d|
---   -- = |a b - a d - c d + a d|
---   -- = |a b - a d + a d - c d|
---   -- = |a (b - d) + (a - c) d|
---   -- ≤ |a (b - d)| + |(a - c) d|
---   -- = |a| |(b - d)| + |(a - c)| |d|
---   -- < amax ε/(2 amax) + (ε/(2 dmax)) dmax
---   -- = ε/2 + ε/2
---   -- = ε
+  have amax_pos : 0 < amax := lt_trans zero_lt_one one_lt_amax
+  have dmax_pos : 0 < dmax := lt_trans zero_lt_one one_lt_dmax
 
---   have ⟨δ, prf⟩ := (ac _ ε₀_pos).merge (bd _ ε₁_pos)
---   refine ⟨δ, ?_⟩
---   intro n m δ_le_n δ_le_m
---   replace ⟨ab, bd⟩ := prf _ _ δ_le_n δ_le_m
---   rw [←add_zero (_ - _), ←add_neg_cancel (a n * d m),
---     sub_eq_add_neg]
---   have :
---     a n * b n + -(c m * d m) + (a n * d m + -(a n * d m)) =
---     a n * b n + -(a n * d m) + (a n * d m + -(c m * d m)) := by ac_rfl
---   rw [this]; clear this
---   iterate 2 rw [←sub_eq_add_neg]
---   rw [←mul_sub, ←sub_mul]
---   apply lt_of_le_of_lt
---   apply Rat.abs_add_le_add_abs
---   rw [Rat.abs_mul, Rat.abs_mul]
---   apply lt_of_le_of_lt (b := amax * _ + _ * dmax)
---   apply Rat.add_le_add
---   apply Rat.mul_le_mul_of_right_nonneg
---   apply Rat.abs_nonneg
---   apply le_of_lt
---   apply amax_spec
---   apply Rat.mul_le_mul_of_left_nonneg
---   apply Rat.abs_nonneg
---   apply le_of_lt
---   apply dmax_spec
---   apply lt_of_lt_of_le
---   apply Rat.add_lt_add_of_lt_of_le
---   apply (Rat.lt_iff_mul_left_pos _).mp
---   assumption
---   apply lt_of_lt_of_le _ one_lt_amax
---   decide
---   apply (Rat.le_iff_mul_right_pos _).mp
---   apply le_of_lt
---   assumption
---   assumption
---   rw [div?_mul_cancel, mul_div?_cancel, add_half]
+  have amax_nonzero := (ne_of_lt amax_pos).symm
+  have dmax_nonzero := (ne_of_lt dmax_pos).symm
 
-  -- intro ac bd ε ε_pos
-  -- have ⟨K₁, K₁spec⟩ := a.boundedDist
-  -- have ⟨K₂, K₂spec⟩ := d.boundedDist
-  -- let B := max 1 (max K₁ K₂)
-  -- have bound_pos' : 0 < B := by
-  --   apply lt_of_lt_of_le zero_lt_one
-  --   apply le_max_left
-  -- have bound_pos : 0 < 2 * B := by
-  --   rw [←mul_zero 2]
-  --   apply mul_lt_mul_of_pos_left
-  --   assumption
-  --   apply two_pos
-  -- have : 2 * B ≠ 0 := by
-  --   symm; apply ne_of_lt
-  --   assumption
+  let ε₀ := (ε /? 2) /? dmax
+  let ε₁ := (ε /? 2) /? amax
 
-  -- obtain ⟨δ, spec⟩  := (ac _ (div?_pos _ _ ε_pos bound_pos)).merge (bd _ (div?_pos _ _ ε_pos bound_pos))
-  -- exists δ
-  -- intro n m δn δm
-  -- obtain ⟨ac, bd⟩ := spec _ _ δn δm
-  -- dsimp
-  -- replace ac := mul_lt_mul_of_pos_right _ _ ac _ bound_pos'
-  -- conv at ac => {
-  --   rhs
-  --   rw [div?_eq_mul_inv?, mul_assoc, inv?_mul_rev _ _ (by
-  --     have := two_pos (α := γ)
-  --     invert_tactic), mul_comm _ B, ←mul_assoc B, mul_inv?_cancel _ (by
-  --     invert_tactic), one_mul, ←div?_eq_mul_inv?]
-  -- }
-  -- replace bd := mul_lt_mul_of_pos_right _ _ bd _ bound_pos'
-  -- conv at bd => {
-  --   rhs
-  --   rw [div?_eq_mul_inv?, mul_assoc, inv?_mul_rev _ _ (by
-  --     have := two_pos (α := γ)
-  --     invert_tactic), mul_comm _ B, ←mul_assoc B, mul_inv?_cancel _ (by
-  --     invert_tactic), one_mul, ←div?_eq_mul_inv?]
-  -- }
-  -- rw [←add_half ε]
-  -- apply flip lt_of_le_of_lt
-  -- apply add_lt_add
-  -- exact ac
-  -- exact bd
-  -- rw [←add_mul]
-  -- apply flip le_trans
-  -- apply mul_le_mul_of_nonneg_right
-  -- apply abs_add_le_add_abs
-  -- apply le_of_lt; assumption
-  -- clear ac bd
+  have ε₀_pos : 0 < ε₀ := by
+    apply div?_pos
+    apply div?_pos
+    assumption
+    apply two_pos
+    assumption
+  have ε₁_pos : 0 < ε₁ := by
+    apply div?_pos
+    apply div?_pos
+    assumption
+    apply two_pos
+    assumption
 
+  -- = |a b - c d + a d - a d|
+  -- = |a b - a d - c d + a d|
+  -- = |a b - a d + a d - c d|
+  -- = |a (b - d) + (a - c) d|
+  -- ≤ |a (b - d)| + |(a - c) d|
+  -- = |a| |(b - d)| + |(a - c)| |d|
+  -- < amax ε/(2 amax) + (ε/(2 dmax)) dmax
+  -- = ε/2 + ε/2
+  -- = ε
 
+  have ⟨δ, prf⟩ := (ac _ ε₀_pos).merge (bd _ ε₁_pos)
+  refine ⟨δ, ?_⟩
+  intro n m δ_le_n δ_le_m
+  replace ⟨ab, bd⟩ := prf _ _ δ_le_n δ_le_m
+  rw [←add_zero (_ - _), ←add_neg_cancel (a n * d m),
+    sub_eq_add_neg]
+  have :
+    a n * b n + -(c m * d m) + (a n * d m + -(a n * d m)) =
+    a n * b n + -(a n * d m) + (a n * d m + -(c m * d m)) := by ac_rfl
+  rw [this]; clear this
+  iterate 2 rw [←sub_eq_add_neg]
+  rw [←mul_sub, ←sub_mul]
+  apply lt_of_le_of_lt
+  apply norm_add_le_add_norm
+  rw [norm_mul, norm_mul]
+  apply lt_of_le_of_lt (b := amax * _ + _ * dmax)
+  apply add_le_add
+  apply mul_le_mul_of_nonneg_right
+  apply le_of_lt
+  apply amax_spec
+  apply norm_nonneg
+  apply mul_le_mul_of_nonneg_left
+  apply le_of_lt
+  apply dmax_spec
+  apply norm_nonneg
+  apply lt_of_lt_of_le
+  apply add_lt_add_of_lt_of_le
+  apply (lt_iff_mul_lt_mul_of_pos_left _ _ _ _).mp
+  assumption
+  assumption
+  apply (le_iff_mul_le_mul_of_pos_right _ _ _ _).mp
+  apply le_of_lt
+  assumption
+  assumption
+  rw [div?_mul_cancel, mul_div?_cancel, add_half]
 
+def mul (a b: CauchySeq α) : CauchySeq α where
+  seq n := a n * b n
+  is_cacuhy := by apply CauchySeq.mul.spec <;> rfl
 
-  -- sorry
+instance : Mul (CauchySeq α) := ⟨.mul⟩
 
 end CauchySeq
 
