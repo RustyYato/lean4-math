@@ -484,7 +484,6 @@ instance : IsAddGroup (CauchySeq α) where
   zsmul_negSucc _ _ := by ext; apply zsmul_negSucc
   neg_add_cancel _ := by ext; apply neg_add_cancel
 
-
 section Order
 
 def Pos (a: CauchySeq γ) : Prop := ∃B, 0 < B ∧ Eventually fun i => B ≤ a i

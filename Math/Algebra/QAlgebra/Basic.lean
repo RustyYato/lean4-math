@@ -1,6 +1,7 @@
 import Math.Algebra.Algebra.Defs
 import Math.Algebra.QAlgebra.Defs
 import Math.Algebra.Field.Hom
+import Math.Algebra.AddGroupWithOne.Hom
 
 section
 
@@ -142,3 +143,28 @@ def HasChar.ofQAlgebra [IsNontrivial α] [RingOps α] [IsRing α] [SMul ℚ α] 
   replace this := field_hom_inj (F := ℚ) (R := α) algebraMap this
   rw [natCast_inj this]
   apply Nat.dvd_refl
+
+namespace IsQAlgebra.ofAlgebra
+
+variable [FieldOps α] [IsField α] [SMul ℚ α] [AlgebraMap ℚ α] [IsAlgebra ℚ α]
+
+scoped instance : RatCast α where
+  ratCast := algebraMap
+
+scoped instance [HasChar α 0] : IsQAlgebra α where
+  ratCast_eq_ratCastRec := by
+    intro q
+    induction q using Rat.ind with | mk q =>
+    show algebraMap (Rat.mk q) = (q.num: α) /? q.den ~(_)
+    have : (q.den: ℚ) ≠ 0 := by
+      intro h
+      exact q.den_nz (HasChar.natCast_inj h)
+    have : Rat.mk q = (q.num: ℚ) /? q.den := by apply ratCast_eq_ratCastRec
+    rw [this]
+    rw [map_div?]
+    congr
+    rw [map_intCast]
+    rw [map_natCast]
+  qsmul_eq_ratCast_mul q a := smul_def _ _
+
+end ofAlgebra
