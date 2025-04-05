@@ -31,3 +31,51 @@ def eq_zero_of_square_eq_zero [IsLinearOrder α] {a: α}: a ^ 2 = 0 -> a = 0 := 
   rw [square_neg, g] at this
   exact (lt_irrefl this).elim
   rwa [neg_lt_neg_iff, neg_neg, neg_zero]
+
+open Classical
+
+def intCast_strictmonotone : StrictMonotone (Int.cast (R := α)) := by
+  intro a b h
+  cases a with
+  | ofNat a =>
+    cases b with
+    | ofNat b =>
+      rw [intCast_ofNat, intCast_ofNat]
+      apply natCast_strictmonotone
+      apply Int.ofNat_lt.mp
+      assumption
+    | negSucc b => contradiction
+  | negSucc a =>
+    cases b with
+    | ofNat b =>
+      rw [intCast_negSucc, intCast_ofNat]
+      rw [←zero_add (-_), ←sub_eq_add_neg, sub_lt_iff_lt_add,
+        ←natCast_add, Nat.add_succ, natCast_succ]
+      apply lt_of_lt_of_le
+      apply zero_lt_one
+      rw (occs := [1]) [←zero_add 1]
+      apply add_le_add_right
+      apply natCast_nonneg
+    | negSucc b =>
+      rw [intCast_negSucc,intCast_negSucc, ←neg_lt_neg_iff]
+      apply natCast_strictmonotone
+      omega
+
+def intCast_le {a b: ℤ} : (a: α) ≤ b ↔ a ≤ b :=
+  intCast_strictmonotone.le_iff_le
+
+def abs_intCast_eq_intCast_abs [Max α] [Min α] [IsLinearLattice α] (a: ℤ) : (|a|: ℤ) = (|a|: α) := by
+  unfold abs
+  apply le_antisymm
+  apply le_max_iff.mpr
+  rw [max_def]; split
+  rw [←intCast_neg]
+  right; rfl
+  left ; rfl
+  rw [max_def]
+  split <;> rename_i h
+  rw [intCast_neg]
+  rw [max_def, if_pos]
+  rwa [intCast_neg, intCast_le] at h
+  rw [max_def, if_neg]
+  rwa [intCast_neg, intCast_le] at h

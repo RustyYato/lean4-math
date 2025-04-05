@@ -19,6 +19,20 @@ def neg_smul' [SMul R M] [MonoidOps R] [AddGroupOps M] [IsMonoid R] [IsAddGroup 
   refine neg_eq_of_add_right ?_
   rw [←smul_add, neg_add_cancel, smul_zero]
 
+def nsmul_eq_natCast_smul [SemiringOps R] [AddMonoidOps M] [IsSemiring R] [IsAddMonoid M] [IsAddCommMagma M]
+  [SMul R M] [IsModule R M]
+  (n: ℕ) (m: M) : n • m = (n: R) • m := by
+  induction n with
+  | zero => rw [zero_nsmul, natCast_zero, zero_smul]
+  | succ n ih => rw [succ_nsmul, natCast_succ, add_smul, one_smul, ih]
+
+def zsmul_eq_intCast_smul [RingOps R] [AddGroupOps M] [IsRing R] [IsAddGroup M] [IsAddCommMagma M]
+  [SMul R M] [IsModule R M]
+  (n: ℤ) (m: M) : n • m = (n: R) • m := by
+  cases n with
+  | ofNat n => rw [intCast_ofNat, zsmul_ofNat, nsmul_eq_natCast_smul (R := R)]
+  | negSucc n => rw [intCast_negSucc, zsmul_negSucc, nsmul_eq_natCast_smul (R := R), neg_smul]
+
 instance instDistribMulActionSelf [AddMonoidOps R] [IsAddMonoid R] [MonoidOps R] [IsMonoid R] [IsLeftDistrib R] [IsMulZeroClass R] : IsDistribMulAction R R where
   smul_zero _ := mul_zero _
   smul_add _ _ _ := mul_add _ _ _

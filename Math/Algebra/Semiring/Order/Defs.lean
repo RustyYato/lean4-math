@@ -1,5 +1,6 @@
 import Math.Algebra.Monoid.Order.Defs
 import Math.Algebra.Semiring.Defs
+import Math.Ops.Abs
 
 class IsOrderedNonUnitalNonAssocSemiring (α: Type*)
   [AddMonoidOps α] [Mul α] [LT α] [LE α] extends IsNonUnitalNonAssocSemiring α, IsOrderedAddCommMonoid α where
@@ -49,6 +50,15 @@ def mul_le_mul_of_nonneg_left: ∀a b: α, a ≤ b -> ∀c, 0 ≤ c -> c * a ≤
 def mul_le_mul_of_nonneg_right: ∀a b: α, a ≤ b -> ∀c, 0 ≤ c -> a * c ≤ b * c := IsOrderedNonUnitalNonAssocSemiring.mul_le_mul_of_nonneg_right
 
 end
+
+instance [SemiringOps α] [LT α] [LE α] [IsOrderedSemiring α] [IsLinearOrder α] [NoZeroDivisors α] : IsStrictOrderedSemiring α where
+  mul_pos a b ha hb := by
+    rw [←not_le]
+    intro g
+    have := le_antisymm g <| mul_nonneg _ _ (le_of_lt ha) (le_of_lt hb)
+    rcases of_mul_eq_zero this with rfl | rfl
+    exact lt_irrefl ha
+    exact lt_irrefl hb
 
 section
 
