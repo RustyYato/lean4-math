@@ -151,7 +151,12 @@ variable [FieldOps α] [IsField α] [SMul ℚ α] [AlgebraMap ℚ α] [IsAlgebra
 scoped instance : RatCast α where
   ratCast := algebraMap
 
-scoped instance [HasChar α 0] : IsQAlgebra α where
+scoped instance : HasChar α 0 := HasChar.of_ring_emb {
+  algebraMap (R := ℚ) with
+  inj' := field_hom_inj algebraMap
+}
+
+scoped instance : IsQAlgebra α where
   ratCast_eq_ratCastRec := by
     intro q
     induction q using Rat.ind with | mk q =>

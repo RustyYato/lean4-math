@@ -25,7 +25,7 @@ def ofRatHom : ℚ ↪+* ℝ := {
   inj' := field_hom_inj algebraMap
 }
 
-instance : HasChar ℝ 0 := HasChar.of_ring_emb ofRatHom
+instance : HasChar ℝ 0 := inferInstance
 instance : RatCast ℝ := inferInstance
 instance : IsQAlgebra ℝ := inferInstance
 
