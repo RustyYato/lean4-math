@@ -239,6 +239,19 @@ instance [IsAddCommMagma B] [IsCommMagma R] : IsDistribMulAction R (A →ₗ[R] 
 
 end AddMonoid
 
+section Module
+
+variable
+  [Add A] [AddMonoidOps B] [SemiringOps R]
+  [IsSemiring R] [IsAddMonoid B] [IsAddCommMagma B]
+  [IsCommMagma R] [IsModule R B]
+
+instance : IsModule R (A →ₗ[R] B) where
+  zero_smul f := by ext; apply zero_smul
+  add_smul _ _ _ := by ext; apply add_smul
+
+end Module
+
 section AddGroup
 
 variable
