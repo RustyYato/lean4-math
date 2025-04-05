@@ -1,5 +1,5 @@
 import Math.Data.Real.Order
-import Math.Data.Rsqrtd.Field
+import Math.Data.Rsqrtd.Order
 import Math.Data.Rsqrtd.Algebra
 
 open Rsqrtd
@@ -16,13 +16,6 @@ def toRsqrtd : ℂ -> ℝ[i] := id
 
 def mag_sq (c: ℂ) : ℝ := Rsqrtd.norm c.toRsqrtd
 def conj (c: ℂ) : ℂ := c.toRsqrtd.conj
-
-instance : Fact (Rsqrtd.NoSolution (-1: ℝ)) where
-  proof r h := by
-    have := square_nonneg r
-    rw [h] at this
-    rw [neg_le_neg_iff, neg_neg, neg_zero] at this
-    exact not_lt_of_le this zero_lt_one
 
 instance : FieldOps ℂ := inferInstanceAs (FieldOps (ℝ[i]))
 instance : IsField ℂ := inferInstanceAs (IsField (ℝ[i]))

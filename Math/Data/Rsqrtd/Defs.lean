@@ -5,6 +5,7 @@ import Math.Function.Basic
 structure Rsqrtd (d: α) where
   a: α
   b: α
+deriving DecidableEq
 
 
 namespace Rsqrtd
