@@ -57,6 +57,9 @@ def not_neg_of_pos {f: Cauchy γ} : f.Pos -> ¬(-f).Pos := by
 def add_pos {a b: Cauchy γ} : a.Pos -> b.Pos -> (a + b).Pos := by
   induction a, b
   apply CauchySeq.add_pos
+def mul_pos {a b: Cauchy γ} : a.Pos -> b.Pos -> (a * b).Pos := by
+  induction a, b
+  apply CauchySeq.mul_pos
 
 def pos_or_eq_or_neg (a: Cauchy γ) : a.Pos ∨ a = 0 ∨ (-a).Pos := by
   by_cases h:a = 0
@@ -125,5 +128,55 @@ instance : IsLinearOrder (Cauchy γ) where
     right; left
     show (a - b).Pos
     rwa [←neg_sub]
+
+private def mul_le_mul_of_nonneg_left: ∀a b: Cauchy γ, a ≤ b -> ∀c, 0 ≤ c -> c * a ≤ c * b := by
+  intro a b ab c hc
+  rcases Or.symm hc with rfl | hc
+  simp
+  rcases Or.symm ab with rfl | ab
+  rfl
+  left
+  show (c * b - c * a).Pos
+  rw [←mul_sub]
+  apply mul_pos
+  rwa [←sub_zero c]
+  assumption
+
+instance : IsOrderedSemiring (Cauchy γ) where
+  add_le_add_left := by
+    intro a b ab c
+    rcases Or.symm ab with rfl | h
+    · rfl
+    · induction a, b, c with | ofSeq a b c =>
+      obtain ⟨B, Bpos, i, h⟩ := h
+      left; refine ⟨B, Bpos, i, ?_⟩
+      intro n hn
+      replace h : B ≤ _ := h n hn
+      rwa [sub_add, add_sub_assoc, add_comm, add_sub_assoc,
+        sub_self, add_zero]
+  mul_nonneg a b ha hb := by
+    rcases Or.symm ha with rfl | ha
+    rw [zero_mul]
+    rcases Or.symm hb with rfl | hb
+    rw [mul_zero]
+    left; show (a * _ - 0).Pos
+    simp; apply mul_pos
+    rwa [←sub_zero a]
+    rwa [←sub_zero b]
+  mul_le_mul_of_nonneg_left := by apply mul_le_mul_of_nonneg_left
+  mul_le_mul_of_nonneg_right := by
+    intro a b h c
+    rw [mul_comm _ c, mul_comm _ c]
+    apply mul_le_mul_of_nonneg_left
+    assumption
+  zero_le_one := by
+    left
+    exists 1
+    apply And.intro
+    apply zero_lt_one
+    exists 0
+    intro n hn
+    show 1 ≤ (1 - 0: γ)
+    simp
 
 end Cauchy

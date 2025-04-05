@@ -473,6 +473,9 @@ instance : AddGroupWithOneOps (CauchySeq α) := instAddGroupWithOneOpsOfAddMonoi
 @[ext]
 def ext (a b: CauchySeq α) : (∀i, a i = b i) -> a = b := DFunLike.ext _ _
 
+instance : IsAddCommMagma (CauchySeq α) where
+  add_comm a b := by ext; apply add_comm
+
 instance : IsAddGroup (CauchySeq α) where
   add_assoc _ _ _ := by ext; apply add_assoc
   zero_add _ := by ext; apply zero_add

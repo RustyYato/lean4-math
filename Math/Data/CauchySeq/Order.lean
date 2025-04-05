@@ -57,7 +57,7 @@ def not_neg_of_pos {f: CauchySeq γ} : f.Pos -> ¬(-f).Pos := by
   rw [neg_neg] at this
   exact lt_asymm B_pos this
 
-def add_pos {a b: CauchySeq γ} : a.Pos -> b.Pos -> (a + b).Pos := by
+protected def add_pos {a b: CauchySeq γ} : a.Pos -> b.Pos -> (a + b).Pos := by
   intro apos bpos
   obtain ⟨A, A_pos, apos⟩ := apos
   obtain ⟨B, B_pos, bpos⟩ := bpos
@@ -72,5 +72,27 @@ def add_pos {a b: CauchySeq γ} : a.Pos -> b.Pos -> (a + b).Pos := by
   replace prf := prf _ δn
   obtain ⟨apos, bpos⟩ := prf
   apply add_le_add <;> assumption
+
+protected def mul_pos {a b: CauchySeq γ} : a.Pos -> b.Pos -> (a * b).Pos := by
+  intro apos bpos
+  obtain ⟨A, A_pos, apos⟩ := apos
+  obtain ⟨B, B_pos, bpos⟩ := bpos
+  refine ⟨A * B, ?_, ?_⟩
+  apply mul_pos
+  assumption
+  assumption
+  have ⟨δ, prf⟩ := apos.merge bpos
+  exists δ
+  intro n δn
+  replace prf := prf _ δn
+  obtain ⟨apos, bpos⟩ := prf
+  apply le_trans
+  apply mul_le_mul_of_nonneg_right
+  assumption
+  apply le_of_lt; assumption
+  apply _root_.mul_le_mul_of_nonneg_left
+  assumption
+  apply le_trans _ apos
+  apply le_of_lt; assumption
 
 end CauchySeq
