@@ -12,7 +12,7 @@ variable [Fact (NoSolution d)]
 
 private def getNoSolution : NoSolution d := Fact.proof
 
-def norm_ne_zero (x: R√d) (hx: x ≠ 0) : ‖x‖ ≠ 0 := by
+def norm_ne_zero (x: R√d) (hx: x ≠ 0) : norm x ≠ 0 := by
   by_cases hb:x.b = 0
   · rw [norm_def, hb, mul_zero, sub_zero]
     intro g
@@ -35,16 +35,16 @@ macro_rules
 
 instance : CheckedInv? (R√d) where
   checked_invert x h := {
-    a := x.a /? ‖x‖
-    b := -x.b /? ‖x‖
+    a := x.a /? norm x
+    b := -x.b /? norm x
   }
 
 instance : CheckedDiv? (R√d) where
   checked_div a b h := a * b⁻¹?
 instance : CheckedIntPow? (R√d) := instCheckedIntPow
 
-@[simp] def a_inv (x: R√d) (h: x ≠ 0) : a (x⁻¹?) = (a x) /? ‖x‖ := rfl
-@[simp] def b_inv (x: R√d) (h: x ≠ 0) : b (x⁻¹?) = (-b x) /? ‖x‖ := rfl
+@[simp] def a_inv (x: R√d) (h: x ≠ 0) : a (x⁻¹?) = (a x) /? norm x := rfl
+@[simp] def b_inv (x: R√d) (h: x ≠ 0) : b (x⁻¹?) = (-b x) /? norm x := rfl
 
 instance : IsField (R√d) where
   div?_eq_mul_inv? _ _ _ := rfl

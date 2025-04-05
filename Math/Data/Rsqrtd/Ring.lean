@@ -37,16 +37,13 @@ instance : IsRing (R√d) where
   intCast_ofNat _ := by ext <;> simp [intCast_ofNat]
   intCast_negSucc _ := by ext <;> simp [intCast_negSucc]
 
-private def norm (x: R√d) := x.a * x.a - d * x.b * x.b
+def norm (x: R√d) := x.a * x.a - d * x.b * x.b
 def conj (x: R√d) : R√d := {
   a := x.a
   b := -x.b
 }
 
-instance : Norm (R√d) R where
-  norm := norm
-
-def norm_def (x: R√d) : ‖x‖ = x.a * x.a - d * x.b * x.b := rfl
+def norm_def (x: R√d) : norm x = x.a * x.a - d * x.b * x.b := rfl
 
 def conjHom : (R√d) →+* (R√d) where
   toFun := conj
@@ -65,7 +62,7 @@ def conjHom : (R√d) →+* (R√d) where
 def conj_add (x y: R√d) : conj (x + y) = conj x + conj y := map_add conjHom
 def conj_mul (x y: R√d) : conj (x * y) = conj x * conj y := map_mul conjHom
 
-def norm_eq_mul_conj (x: R√d) : ‖x‖ = x * x.conj := by
+def norm_eq_mul_conj (x: R√d) : norm x = x * x.conj := by
   ext <;> simp [Norm.norm, norm, conj]
   rw [←neg_mul_right, sub_eq_add_neg]
   rw [←neg_mul_right, mul_comm, neg_add_cancel]
@@ -81,8 +78,8 @@ def normHom : (R√d) →* R where
     rw [conj_mul]
     ac_rfl
 
-@[simp] def norm_one : ‖(1: R√d)‖ = 1 := map_one normHom
-def norm_mul (x y: R√d) : ‖x * y‖ = ‖x‖ * ‖y‖ := map_mul normHom
+@[simp] def norm_one : norm (1: R√d) = 1 := map_one normHom
+def norm_mul (x y: R√d) : norm (x * y) = norm x * norm y := map_mul normHom
 
 instance [IsNontrivial R] : IsNontrivial (R√d) where
   exists_ne := ⟨1, ⟨0, 1⟩, by

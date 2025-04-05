@@ -14,7 +14,7 @@ def img : ℂ -> ℝ := Rsqrtd.b
 
 def toRsqrtd : ℂ -> ℝ[i] := id
 
-def mag_sq (c: ℂ) : ℝ := ‖c.toRsqrtd‖
+def mag_sq (c: ℂ) : ℝ := Rsqrtd.norm c.toRsqrtd
 def conj (c: ℂ) : ℂ := c.toRsqrtd.conj
 
 instance : Fact (Rsqrtd.NoSolution (-1: ℝ)) where
@@ -71,8 +71,8 @@ def i : ℂ := ⟨0, 1⟩
 
 @[simp] def real_neg (x: ℂ) : real (-x) = -real x := rfl
 @[simp] def img_neg (x: ℂ) : img (-x) = -img x := rfl
-@[simp] def real_suimg (x y: ℂ) : real (x - y) = real x - real y := rfl
-@[simp] def img_suimg (x y: ℂ) : img (x - y) = img x - img y := rfl
+@[simp] def real_sub (x y: ℂ) : real (x - y) = real x - real y := rfl
+@[simp] def img_sub (x y: ℂ) : img (x - y) = img x - img y := rfl
 @[simp] def real_zsmul (n: ℤ) (x: ℂ) : real (n • x) = n • real x := rfl
 @[simp] def img_zsmul (n: ℤ) (x: ℂ) : img (n • x) = n • img x := rfl
 @[simp] def real_intCast (n: ℤ) : real (n: ℂ) = n := rfl

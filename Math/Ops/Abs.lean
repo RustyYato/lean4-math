@@ -3,9 +3,7 @@ import Math.Type.Notation
 class Norm (α: Type*) (β: outParam (Type*)) where
   norm: α -> β
 
-export Norm (norm)
-
-notation "‖" x "‖" => norm x
+notation "‖" x "‖" => Norm.norm x
 
 instance : Norm Int Nat where
   norm := Int.natAbs
