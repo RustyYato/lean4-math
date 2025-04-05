@@ -517,9 +517,7 @@ instance : LE (CauchySeq γ) where
 
 end Order
 
-instance (priority := 10000) : OfNat (CauchySeq γ) 0 := Zero.toOfNat0
-
-def non_zero_of_IsPos (a: CauchySeq γ) : a.Pos -> ¬a ≈ 0 := by
+def non_zero_of_Pos (a: CauchySeq γ) : a.Pos -> ¬a ≈ 0 := by
   classical
   intro pos eq_zero
   obtain ⟨B, B_pos, pos⟩ := pos
@@ -533,7 +531,7 @@ def non_zero_of_IsPos (a: CauchySeq γ) : a.Pos -> ¬a ≈ 0 := by
   rw [not_le] at h
   exact lt_asymm B_pos (lt_of_le_of_lt pos h)
 
-def norm_pos_of_not_limZero (f: CauchySeq α) (hf: ¬f ≈ 0) : 0 < ‖f‖ := by
+def norm_pos_of_not_zero (f: CauchySeq α) (hf: ¬f ≈ 0) : 0 < ‖f‖ := by
   false_or_by_contra
   rename_i nk
 
@@ -692,8 +690,8 @@ def inv.spec (a b: CauchySeq α) : a ≈ b -> ¬a ≈ 0 -> is_cauchy_equiv (safe
   have hb := not_limZero_of_eqv _ _ ab ((not_limZero_iff_not_eqv_zero _).mpr ha)
   rw [not_limZero_iff_not_eqv_zero] at hb
   intro ε εpos
-  have ⟨A, Apos, hA⟩ := norm_pos_of_not_limZero a ha
-  have ⟨B, Bpos, hB⟩ := norm_pos_of_not_limZero b hb
+  have ⟨A, Apos, hA⟩ := norm_pos_of_not_zero a ha
+  have ⟨B, Bpos, hB⟩ := norm_pos_of_not_zero b hb
   simp at hA hB
   have : 0 < A * B := by
     apply mul_pos

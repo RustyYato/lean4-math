@@ -304,7 +304,7 @@ instance [DecidableEq α] : IsField (Cauchy α) where
     induction a with | ofSeq a =>
     apply Quotient.sound
     apply CauchySeq.eventually_pointwise
-    have ⟨B, Bpos, i, hi⟩ := CauchySeq.norm_pos_of_not_limZero a (by
+    have ⟨B, Bpos, i, hi⟩ := CauchySeq.norm_pos_of_not_zero a (by
       intro g; apply h; apply Quotient.sound g)
     exists i
     intro n hn

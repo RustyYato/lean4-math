@@ -24,6 +24,10 @@ def sub_div?_sub₀ (a b c: α) (hc: c ≠ 0) : a /? c - b /? c = (a - b) /? c :
   simp [div?_eq_mul_inv?]
   rw [sub_mul]
 
+def sub_half [NeZero (2: α)] (a: α) : a - a /? 2 = a /? 2 := by
+  rw (occs := [1]) [←div?_mul_cancel a 2]
+  rw [mul_two, add_sub_cancel']
+
 end
 
 section

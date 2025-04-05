@@ -5,6 +5,8 @@ import Math.Algebra.AddMul
 import Math.Relation.Basic
 import Math.Logic.Nontrivial
 
+instance (priority := 2000) [Zero α] : OfNat α 0 := inferInstance
+
 variable [Add α] [Mul α] [Zero α] [One α]
 
 class IsAddSemigroup (α: Type*) [Add α]: Prop where

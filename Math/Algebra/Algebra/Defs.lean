@@ -17,13 +17,13 @@ class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [Algebra
 
 export IsAlgebra (commutes smul_def)
 
-class Algebra (R A: Type*) [SemiringOps A] [IsSemiring A] extends SemiringOps R, IsSemiring R, SMul R A, AlgebraMap R A where
-  commutes: ∀(r: R) (x: A), algebraMap r * x = x * algebraMap r
-  smul_def: ∀(r: R) (x: A), r • x = algebraMap r * x
+-- class Algebra (R A: Type*) [SemiringOps A] [IsSemiring A] extends SemiringOps R, IsSemiring R, SMul R A, AlgebraMap R A where
+--   commutes: ∀(r: R) (x: A), algebraMap r * x = x * algebraMap r
+--   smul_def: ∀(r: R) (x: A), r • x = algebraMap r * x
 
-instance [SemiringOps A] [IsSemiring A] [a: Algebra R A] : IsAlgebra R A where
-  commutes := a.commutes
-  smul_def := a.smul_def
+-- instance [SemiringOps A] [IsSemiring A] [a: Algebra R A] : IsAlgebra R A where
+--   commutes := a.commutes
+--   smul_def := a.smul_def
 
 variable [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A]
   [IsSemiring R] [IsAlgebra R A]
@@ -45,32 +45,32 @@ variable [IsCommMagma R] [IsSemiring R] [IsSemiring A] [SMul R A]
 -- a shortcut instance
 local instance : IsSemigroup A := inferInstance
 
-abbrev Algebra.ofModule [IsModule R A]
-  (h₁ : ∀ (r : R) (x y : A), r • x * y = r • (x * y))
-  (h₂ : ∀ (r : R) (x y : A), x * r • y = r • (x * y)) : Algebra R A where
-  toFun r := r • (1: A)
-  map_zero := zero_smul _
-  map_one := one_smul _
-  map_add := add_smul _ _ _
-  map_mul := by
-    dsimp
-    intro x y
-    rw [h₁, one_mul, mul_smul]
-  commutes := by
-    intro r x
-    show (r • (1: A)) * x = x * (r • (1: A))
-    rw [h₁, one_mul, h₂, mul_one]
-  smul_def := by
-    intro r x
-    show r • x = (r • (1: A)) * x
-    rw [h₁, one_mul]
+-- abbrev Algebra.ofModule [IsModule R A]
+--   (h₁ : ∀ (r : R) (x y : A), r • x * y = r • (x * y))
+--   (h₂ : ∀ (r : R) (x y : A), x * r • y = r • (x * y)) : Algebra R A where
+--   toFun r := r • (1: A)
+--   map_zero := zero_smul _
+--   map_one := one_smul _
+--   map_add := add_smul _ _ _
+--   map_mul := by
+--     dsimp
+--     intro x y
+--     rw [h₁, one_mul, mul_smul]
+--   commutes := by
+--     intro r x
+--     show (r • (1: A)) * x = x * (r • (1: A))
+--     rw [h₁, one_mul, h₂, mul_one]
+--   smul_def := by
+--     intro r x
+--     show r • x = (r • (1: A)) * x
+--     rw [h₁, one_mul]
 
-def AlgebraMap.toAlgebra [AlgebraMap R A] (h : ∀(c: R) (x: A), algebraMap c * x = x * algebraMap c) : Algebra R A where
-  smul c x := algebraMap c * x
-  commutes := by
-    intro r x
-    rw [h]
-  smul_def _ _ := rfl
+-- def AlgebraMap.toAlgebra [AlgebraMap R A] (h : ∀(c: R) (x: A), algebraMap c * x = x * algebraMap c) : Algebra R A where
+--   smul c x := algebraMap c * x
+--   commutes := by
+--     intro r x
+--     rw [h]
+--   smul_def _ _ := rfl
 
 instance [AlgebraMap R A] [IsAlgebra R A] : IsModule R A where
   one_smul x := by rw [smul_def, map_one, one_mul]
