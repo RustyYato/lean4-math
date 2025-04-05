@@ -1,148 +1,98 @@
 import Math.Data.Real.Order
+import Math.Data.Rsqrtd.Field
+import Math.Data.Rsqrtd.Algebra
 
-@[ext]
-structure Complex where
-  real: ℝ
-  img: ℝ
+open Rsqrtd
 
+def Complex := ℝ[i]
 notation "ℂ" => Complex
 
 namespace Complex
 
-def conj (c: ℂ) : ℂ where
-  real := c.real
-  img := -c.img
+def real : ℂ -> ℝ := Rsqrtd.a
+def img : ℂ -> ℝ := Rsqrtd.b
 
-def mag_sq (c: ℂ) : ℝ :=
-  c.real * c.real + c.img * c.img
+def toRsqrtd : ℂ -> ℝ[i] := id
 
-instance : Coe ℝ ℂ where
-  coe := (Complex.mk · 0)
+def mag_sq (c: ℂ) : ℝ := ‖c.toRsqrtd‖
+def conj (c: ℂ) : ℂ := c.toRsqrtd.conj
 
-instance : NatCast ℂ where
-  natCast n := (n: ℝ)
+instance : Fact (Rsqrtd.NoSolution (-1: ℝ)) where
+  proof r h := by
+    have := square_nonneg r
+    rw [h] at this
+    rw [neg_le_neg_iff, neg_neg, neg_zero] at this
+    exact not_lt_of_le this zero_lt_one
 
-instance : OfNat ℂ n where
-  ofNat := n
-
-instance : IntCast ℂ where
-  intCast n := (n: ℝ)
-
-instance : Nonempty ℂ := ⟨0⟩
+instance : FieldOps ℂ := inferInstanceAs (FieldOps (ℝ√_))
+instance : IsField ℂ := inferInstanceAs (IsField (ℝ√_))
 instance : Inhabited ℂ := ⟨0⟩
 
-@[simp]
-def ofNat_real (n: ℕ) [Nat.AtLeastTwo n] : (OfNat.ofNat (α := ℂ) n).real = OfNat.ofNat n := rfl
-@[simp]
-def ofNat_img (n: ℕ) : (OfNat.ofNat (α := ℂ) n).img = 0 := rfl
+instance : SMul ℝ ℂ := inferInstanceAs (SMul ℝ (ℝ√_))
+instance : AlgebraMap ℝ ℂ := inferInstanceAs (AlgebraMap ℝ (ℝ√_))
+instance : IsAlgebra ℝ ℂ := inferInstanceAs (IsAlgebra ℝ (ℝ√_))
 
-@[simp]
-def zero_real : (Zero.toOfNat0 (α := ℂ).ofNat).real = 0 := rfl
-@[simp]
-def zero_img : (Zero.toOfNat0 (α := ℂ).ofNat).img = 0 := rfl
+def ofRealHom : ℝ ↪+* ℂ := {
+  algebraMap with
+  inj' := field_hom_inj algebraMap
+}
 
-@[simp]
-def one_real : (One.ofNat.ofNat: ℂ).real = 1 := rfl
-@[simp]
-def one_img : (One.ofNat.ofNat: ℂ).img = 0 := rfl
+@[coe]
+protected def ofReal : ℝ -> ℂ := ofRealHom
 
-@[simp]
-def natCast_real (n: ℕ) : (n: ℂ).real = n := rfl
-@[simp]
-def natCast_img (n: ℕ) : (n: ℂ).img = 0 := rfl
+instance : Coe ℝ ℂ := ⟨.ofReal⟩
 
-@[simp]
-def intCast_real (n: ℤ) : (n: ℂ).real = n := rfl
-@[simp]
-def intCast_img (n: ℤ) : (n: ℂ).img = 0 := rfl
+instance : HasChar ℂ 0 := HasChar.of_ring_emb ofRealHom
 
-@[simp]
-def natCast_coe (n: ℕ) : ((n: ℝ): ℂ).real = n := rfl
-
-def mag_sq_nonzero (c: ℂ) (h: c ≠ 0) : c.mag_sq ≠ 0 := by
-  intro g
-  apply h; clear h
-  unfold mag_sq at g
-  rw [←npow_two, ←npow_two] at g
-  replace g := neg_eq_of_add_left g
-  ext
-  have := square_nonneg c.img
-  rw [←g, ←neg_zero, ←neg_le_neg_iff] at this
-  exact eq_zero_of_square_eq_zero <| le_antisymm this (square_nonneg c.real)
-  have := square_nonneg c.real
-  rw [neg_le_neg_iff, g, neg_zero] at this
-  exact eq_zero_of_square_eq_zero <| le_antisymm this (square_nonneg c.img)
+def mag_sq_nonzero : x ≠ 0 -> mag_sq x ≠ 0 := Rsqrtd.norm_ne_zero _
 
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply mag_sq_nonzero; invert_tactic)
 
-instance : Add ℂ where
-  add a b := ⟨a.real + b.real, a.img + b.img⟩
-
-@[simp]
-def add_real (a b: ℂ) : (a + b).real = a.real + b.real := rfl
-@[simp]
-def add_img (a b: ℂ) : (a + b).img = a.img + b.img := rfl
-
-instance : Neg ℂ where
-  neg a := ⟨-a.real, -a.img⟩
-
-@[simp]
-def neg_real (a: ℂ) : (-a).real = -a.real := rfl
-@[simp]
-def neg_img (a: ℂ) : (-a).img = -a.img := rfl
-
-instance : Sub ℂ where
-  sub a b := ⟨a.real - b.real, a.img - b.img⟩
-
-@[simp]
-def sub_real (a b: ℂ) : (a - b).real = a.real - b.real := rfl
-@[simp]
-def sub_img (a b: ℂ) : (a - b).img = a.img - b.img := rfl
-
-instance : Mul ℂ where
-  mul a b := ⟨a.real * b.real - a.img * b.img, a.real * b.img + a.img * b.real⟩
-
-@[simp]
-def mul_real (a b: ℂ) : (a * b).real = a.real * b.real - a.img * b.img := rfl
-@[simp]
-def mul_img (a b: ℂ) : (a * b).img = a.real * b.img + a.img * b.real := rfl
-
-instance : CheckedInv? ℂ where
-  checked_invert a h := {
-    real := a.real /? a.mag_sq
-    img := -a.img /? a.mag_sq
-  }
-
-@[simp]
-def inv_real (a: ℂ) (h: a ≠ 0) : (a⁻¹?).real = a.real /? a.mag_sq := rfl
-@[simp]
-def inv_img (a: ℂ) (h: a ≠ 0) : (a⁻¹?).img = -a.img /? a.mag_sq := rfl
-
 def i : ℂ := ⟨0, 1⟩
 
-@[simp]
-def real_i : real i = 0 := rfl
-@[simp]
-def img_i : img i = 1 := rfl
+@[simp] def real_zero : real (0: ℂ) = 0 := rfl
+@[simp] def img_zero : img (0: ℂ) = 0 := rfl
+@[simp] def real_one : real (1: ℂ) = 1 := rfl
+@[simp] def img_one : img (1: ℂ) = 0 := rfl
+@[simp] def real_natCast (n: ℕ) : real (n: ℂ) = n := rfl
+@[simp] def img_natCast (n: ℕ) : img (n: ℂ) = 0 := rfl
+@[simp] def real_add (x y: ℂ) : real (x + y) = real x + real y := rfl
+@[simp] def img_add (x y: ℂ) : img (x + y) = img x + img y := rfl
+@[simp] def real_nsmul (n: ℕ) (x: ℂ) : real (n • x) = n • real x := rfl
+@[simp] def img_nsmul (n: ℕ) (x: ℂ) : img (n • x) = n • img x := rfl
+@[simp] def real_mul (x y: ℂ) : real (x * y) = x.real * y.real - x.img * y.img := by
+  rw [sub_eq_add_neg]
+  apply Eq.trans
+  apply Rsqrtd.a_mul
+  rw [neg_one_mul, ←neg_mul_left]
+  rfl
+@[simp] def img_mul (x y: ℂ) : img (x * y) = x.real * y.img + x.img * y.real := rfl
 
-instance : CheckedDiv? ℂ where
-  checked_div a b h := a * b⁻¹?
+@[simp] def real_neg (x: ℂ) : real (-x) = -real x := rfl
+@[simp] def img_neg (x: ℂ) : img (-x) = -img x := rfl
+@[simp] def real_suimg (x y: ℂ) : real (x - y) = real x - real y := rfl
+@[simp] def img_suimg (x y: ℂ) : img (x - y) = img x - img y := rfl
+@[simp] def real_zsmul (n: ℤ) (x: ℂ) : real (n • x) = n • real x := rfl
+@[simp] def img_zsmul (n: ℤ) (x: ℂ) : img (n • x) = n • img x := rfl
+@[simp] def real_intCast (n: ℤ) : real (n: ℂ) = n := rfl
+@[simp] def img_intCast (n: ℤ) : img (n: ℂ) = 0 := rfl
 
-instance : SMul ℕ ℂ where
-  smul n a := n * a
+@[simp] def real_inv (x: ℂ) (h: x ≠ 0) : real (x⁻¹?) = (real x) /? x.mag_sq := rfl
+@[simp] def img_inv (x: ℂ) (h: x ≠ 0) : img (x⁻¹?) = (-img x) /? x.mag_sq := rfl
 
-def nsmul_def (n: ℕ) (a: ℂ) : n • a = n * a := rfl
+@[simp] def real_algebraMap (x: ℝ) : real (algebraMap x) = x := rfl
+@[simp] def img_algebraMap (x: ℝ) : img (algebraMap x) = 0 := rfl
 
-instance : SMul ℤ ℂ where
-  smul a b := a * b
+@[simp] def real_i : real i = 0 := rfl
+@[simp] def img_i : img i = 1 := rfl
 
-def zsmul_def (n: ℤ) (a: ℂ) : n • a = n * a := rfl
+@[simp] def real_coe (r: ℝ) : real r = r := rfl
+@[simp] def img_coe (r: ℝ) : img r = 0 := rfl
 
-instance : Pow ℂ ℕ where
-  pow := flip npowRec
+@[ext]
+def ext (a b: ℂ) : a.real = b.real -> a.img = b.img -> a = b := Rsqrtd.ext
 
-instance : CheckedIntPow? ℂ where
-  checked_pow := zpow?Rec (α := ℂ)
+def mk (a b: ℝ) : ℂ := ⟨a, b⟩
 
 end Complex

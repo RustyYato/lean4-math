@@ -1,5 +1,5 @@
 import Math.Data.NNReal.Sqrt
-import Math.Algebra.Impls.Complex
+import Math.Data.Complex.Defs
 import Math.Data.Real.Sqrt
 import Math.Topology.Connected.Basic
 
@@ -91,7 +91,7 @@ instance instLawfulAbs : IsAlgebraNorm ℂ where
     apply square_nonneg
     apply square_nonneg
     rfl
-  norm_algebraMap := by simp
+  norm_algebraMap := by apply norm_of_real
   norm_mul := by apply Complex.norm_mul'
   norm_add_le_add_norm a b := by
     show NNReal.sqrt _ ≤ NNReal.sqrt _ + NNReal.sqrt _
@@ -235,8 +235,8 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     rw [add_half]
 
 def homeoℝxℝ : ℝ × ℝ ≃ₜ ℂ where
-  toFun x := ⟨x.1, x.2⟩
-  invFun x := ⟨x.1, x.2⟩
+  toFun x := .mk x.1 x.2
+  invFun x := ⟨x.real, x.img⟩
   leftInv _ := rfl
   rightInv _ := rfl
 

@@ -6,7 +6,7 @@ namespace Rsqrtd
 
 variable {R: Type*} [FieldOps R] [IsField R] {d: R}
 
-def NoSolution (d: R) : Prop := ∀r: R, r * r ≠ d
+def NoSolution (d: R) : Prop := ∀r: R, r ^ 2 ≠ d
 
 variable [Fact (NoSolution d)]
 
@@ -25,7 +25,7 @@ def norm_ne_zero (x: R√d) (hx: x ≠ 0) : ‖x‖ ≠ 0 := by
   unfold norm at g
   replace g := eq_of_sub_eq_zero g
   have := getNoSolution (d := d) (x.a /? x.b)
-  rw [div?_eq_mul_inv?,
+  rw [div?_eq_mul_inv?, npow_two,
     mul_assoc, mul_left_comm _ x.a, ←mul_assoc, ←inv?_mul_rev,
     g, mul_assoc d, mul_assoc d, mul_inv?_cancel, mul_one] at this
   contradiction

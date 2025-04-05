@@ -1,4 +1,4 @@
-import Math.Algebra.Impls.Complex
+import Math.Data.Complex.Defs
 import Math.Algebra.Ring.Theory.RMod.Poly
 import Math.Algebra.AddGroupWithOne.Hom
 import Math.Data.Poly.Prime
