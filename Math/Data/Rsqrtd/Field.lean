@@ -12,10 +12,9 @@ variable [Fact (NoSolution d)]
 
 private def getNoSolution : NoSolution d := Fact.proof
 
-def norm_ne_zero (x: R√d) (hx: x ≠ 0) : x.norm ≠ 0 := by
+def norm_ne_zero (x: R√d) (hx: x ≠ 0) : ‖x‖ ≠ 0 := by
   by_cases hb:x.b = 0
-  · unfold norm
-    rw [hb, mul_zero, sub_zero]
+  · rw [norm_def, hb, mul_zero, sub_zero]
     intro g
     apply hx
     ext
@@ -36,16 +35,16 @@ macro_rules
 
 instance : CheckedInv? (R√d) where
   checked_invert x h := {
-    a := x.a /? x.norm
-    b := -x.b /? x.norm
+    a := x.a /? ‖x‖
+    b := -x.b /? ‖x‖
   }
 
 instance : CheckedDiv? (R√d) where
   checked_div a b h := a * b⁻¹?
 instance : CheckedIntPow? (R√d) := instCheckedIntPow
 
-@[simp] def a_inv (x: R√d) (h: x ≠ 0) : a (x⁻¹?) = (a x) /? x.norm := rfl
-@[simp] def b_inv (x: R√d) (h: x ≠ 0) : b (x⁻¹?) = (-b x) /? x.norm := rfl
+@[simp] def a_inv (x: R√d) (h: x ≠ 0) : a (x⁻¹?) = (a x) /? ‖x‖ := rfl
+@[simp] def b_inv (x: R√d) (h: x ≠ 0) : b (x⁻¹?) = (-b x) /? ‖x‖ := rfl
 
 instance : IsField (R√d) where
   div?_eq_mul_inv? _ _ _ := rfl
@@ -53,11 +52,10 @@ instance : IsField (R√d) where
   zpow?_negSucc _ _ _ := rfl
   mul_inv?_cancel a h := by
     ext <;> simp
-    unfold norm
     rw [div?_eq_mul_inv?, div?_eq_mul_inv?,
       ←mul_assoc, ←mul_assoc,
       ←neg_mul_right, ←add_mul, ←sub_eq_add_neg,
-      mul_inv?_cancel]
+      ←norm_def, mul_inv?_cancel]
     rw [div?_eq_mul_inv?, div?_eq_mul_inv?, ←mul_assoc,
       ←mul_assoc, ←neg_mul_right, ←neg_mul_left, mul_comm a.a,
       neg_add_cancel]

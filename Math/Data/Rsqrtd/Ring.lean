@@ -46,6 +46,8 @@ def conj (x: R√d) : R√d := {
 instance : Norm (R√d) R where
   norm := norm
 
+def norm_def (x: R√d) : ‖x‖ = x.a * x.a - d * x.b * x.b := rfl
+
 def conjHom : (R√d) →+* (R√d) where
   toFun := conj
   map_zero := by simp [conj]; rfl
