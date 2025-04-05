@@ -38,6 +38,12 @@ instance : Mul (R√d) where
 
 instance : Pow (R√d) ℕ := instNPowrec
 
+instance : SMul R (R√d) where
+  smul r x := {
+    a := r * x.a
+    b := r * x.b
+  }
+
 @[simp] def a_zero : a (0: R√d) = 0 := rfl
 @[simp] def b_zero : b (0: R√d) = 0 := rfl
 @[simp] def a_one : a (1: R√d) = 1 := rfl
@@ -60,6 +66,11 @@ instance : Pow (R√d) ℕ := instNPowrec
 @[norm_cast, simp] def coe_add (a b: R) : ((a + b: R): R√d) = a + b := by ext <;> simp
 @[norm_cast, simp] def coe_mul (a b: R) : ((a * b: R): R√d) = a * b := by ext <;> simp
 @[norm_cast, simp] def coe_nsmul (n: ℕ) (a: R) : ((n • a: R): R√d) = n • (a: R√d) := by ext <;> simp
+
+@[simp] def a_smul (r: R) (x: R√d) : a (r • x) = r • a x := rfl
+@[simp] def b_smul (r: R) (x: R√d) : b (r • x) = r • b x := rfl
+
+def smul_eq_coe_mul (r: R) (x: R√d) : r • x = r * x := by ext <;> (simp; rfl)
 
 def coe_inj : Function.Injective (of (d := d)) := by
   intro x y h
