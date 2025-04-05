@@ -118,6 +118,12 @@ def le_add_right (a b: α) (h: 0 ≤ b) : a ≤ a + b := by
   apply add_le_add_left
   assumption
 
+def add_nonneg (a b: α) (ha: 0 ≤ a) (hb: 0 ≤ b) : 0 ≤ a + b := by
+  rw [←add_zero 0]
+  apply add_le_add
+  assumption
+  assumption
+
 end IsOrderedAddCommMonoid
 
 section IsOrderedCancelAddCommMonoid

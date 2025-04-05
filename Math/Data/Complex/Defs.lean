@@ -1,4 +1,4 @@
-import Math.Data.Real.Div
+import Math.Data.Real.Order
 
 @[ext]
 structure Complex where
@@ -32,7 +32,7 @@ instance : Nonempty ℂ := ⟨0⟩
 instance : Inhabited ℂ := ⟨0⟩
 
 @[simp]
-def ofNat_real (n: ℕ) : (OfNat.ofNat (α := ℂ) n).real = OfNat.ofNat n := rfl
+def ofNat_real (n: ℕ) [Nat.AtLeastTwo n] : (OfNat.ofNat (α := ℂ) n).real = OfNat.ofNat n := rfl
 @[simp]
 def ofNat_img (n: ℕ) : (OfNat.ofNat (α := ℂ) n).img = 0 := rfl
 
@@ -66,12 +66,12 @@ def mag_sq_nonzero (c: ℂ) (h: c ≠ 0) : c.mag_sq ≠ 0 := by
   rw [←npow_two, ←npow_two] at g
   replace g := neg_eq_of_add_left g
   ext
-  have := Real.square_nonneg c.img
-  rw [←g, ←Real.neg_le_neg_iff, neg_neg, neg_zero] at this
-  exact Real.eq_zero_of_square_eq_zero _ <| le_antisymm this (Real.square_nonneg c.real)
-  have := Real.square_nonneg c.real
-  rw [←Real.neg_le_neg_iff, g, neg_zero] at this
-  exact Real.eq_zero_of_square_eq_zero _ <| le_antisymm this (Real.square_nonneg c.img)
+  have := square_nonneg c.img
+  rw [←g, ←neg_zero, ←neg_le_neg_iff] at this
+  exact eq_zero_of_square_eq_zero <| le_antisymm this (square_nonneg c.real)
+  have := square_nonneg c.real
+  rw [neg_le_neg_iff, g, neg_zero] at this
+  exact eq_zero_of_square_eq_zero <| le_antisymm this (square_nonneg c.img)
 
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply mag_sq_nonzero; invert_tactic)

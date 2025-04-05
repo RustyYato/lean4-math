@@ -68,7 +68,7 @@ instance : Topology.T2 ℂ where
         rw [dist_self]
         show 0 < dist a b /? 2
         rw [div?_eq_mul_inv?]
-        apply Real.mul_pos
+        apply mul_pos
         apply dist_pos
         assumption
         apply inv?_pos
@@ -80,7 +80,7 @@ instance : Topology.T2 ℂ where
         rw [dist_self]
         show 0 < dist a b /? 2
         rw [div?_eq_mul_inv?]
-        apply Real.mul_pos
+        apply mul_pos
         apply dist_pos
         assumption
         apply inv?_pos

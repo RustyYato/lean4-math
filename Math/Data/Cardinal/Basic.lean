@@ -320,7 +320,7 @@ instance : IsAddMonoid Cardinal where
     show 0 * _ = 0
     rw [zero_mul x]
   succ_nsmul n a := by
-    show OfNat.ofNat _ * _ = _
+    show OfNat.ofNat (n + 1) * a = _
     erw [OfNat_add, add_mul, one_mul]
     rfl
 

@@ -1,4 +1,4 @@
-import Math.Data.Real.Div
+import Math.Data.Real.Order
 import Math.Order.OrderIso
 import Math.Algebra.Semifield.SetLike.Basic
 
@@ -8,12 +8,12 @@ abbrev Real.nonneg : Subsemifield ℝ where
   mem_one := by apply zero_le_one (α := ℝ)
   mem_add := by
     intro a b ha hb
-    apply Real.add_nonneg
+    apply add_nonneg (α := ℝ)
     assumption
     assumption
   mem_mul := by
     intro a b ha hb
-    apply Real.mul_nonneg
+    apply mul_nonneg (α := ℝ)
     assumption
     assumption
   mem_inv?' := by
@@ -190,7 +190,7 @@ def ofReal_add (x y: ℝ) (hx: 0 ≤ x) (hy: 0 ≤ y) : ofReal (x + y) = ofReal 
   iterate 3 rw [max_eq_left.mpr]
   assumption
   assumption
-  apply Real.add_nonneg
+  apply add_nonneg
   assumption
   assumption
 
@@ -200,7 +200,7 @@ def ofReal_mul (x y: ℝ) (hx: 0 ≤ x) (hy: 0 ≤ y) : ofReal (x * y) = ofReal 
   iterate 3 rw [max_eq_left.mpr]
   assumption
   assumption
-  apply Real.mul_nonneg
+  apply mul_nonneg
   assumption
   assumption
 

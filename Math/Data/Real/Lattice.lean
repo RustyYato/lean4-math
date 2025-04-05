@@ -1,5 +1,5 @@
 import Math.Order.Lattice.ConditionallyComplete
-import Math.Data.Real.Div
+import Math.Data.Real.Order
 import Math.Data.Int.Lattice
 import Math.Data.Real.Dedekind
 
@@ -7,21 +7,17 @@ noncomputable section
 
 open Classical Real
 
-instance : Max ℝ where
-  max := max
-instance : Min ℝ where
-  min := min
-
 def Real.exists_rat_lt (r: ℝ) : ∃q: ℚ, q < r := by
-  induction r using ind with | mk r =>
+  induction r using Cauchy.ind with | ofSeq r =>
   have ⟨q, hq⟩ := (-r).upper_bound
   exists -q - 1
-  rw [sub_eq_add_neg, ←neg_add_rev, add_comm, ←ratCast_neg, ←Real.neg_lt_neg_iff, neg_neg]
+  rw [sub_eq_add_neg, ←neg_add_rev, add_comm, ←ratCast_neg, neg_lt_neg_iff, neg_neg]
   apply flip lt_of_le_of_lt
   show (q: ℝ) < (q + 1)
   rw (occs := [1]) [←add_zero (q: ℝ)]
   apply add_lt_add_left
   apply zero_lt_one
+  apply (Cauchy.mk_le _ _).mpr
   apply CauchySeq.le_pointwise
   intro n
   apply le_of_lt
@@ -30,7 +26,7 @@ def Real.exists_rat_lt (r: ℝ) : ∃q: ℚ, q < r := by
 def Real.exists_rat_gt (r: ℝ) : ∃q: ℚ, r < q := by
   have ⟨q, hq⟩ := (-r).exists_rat_lt
   exists -q
-  rwa [←neg_lt_neg_iff, neg_neg] at hq
+  rwa [neg_lt_neg_iff, neg_neg] at hq
 
 def exists_isLUB {S : Set ℝ} (hne : S.Nonempty) (hbdd : S.BoundedAbove) : ∃ x, S.IsLUB x := by
   let d : DedekindCut := {
@@ -87,14 +83,14 @@ def exists_isGLB {S : Set ℝ} (hne : S.Nonempty) (hbdd : S.BoundedBelow) : ∃ 
   · exists -x
     apply And.intro
     intro r hr
-    rw [←neg_le_neg_iff, neg_neg]
+    rw [neg_le_neg_iff, neg_neg]
     apply hx.left
     rwa [Set.mem_preimage, neg_neg]
     intro r hr
-    rw [←neg_le_neg_iff, neg_neg]
+    rw [neg_le_neg_iff, neg_neg]
     apply hx.right
     intro a ha
-    rw [←neg_le_neg_iff, neg_neg]
+    rw [neg_le_neg_iff, neg_neg]
     apply hr
     assumption
   · obtain ⟨r, hr⟩ := hne
@@ -103,7 +99,7 @@ def exists_isGLB {S : Set ℝ} (hne : S.Nonempty) (hbdd : S.BoundedBelow) : ∃ 
   · obtain ⟨r, hr⟩ := hbdd
     exists -r
     intro a ha
-    rw [←neg_le_neg_iff, neg_neg]
+    rw [neg_le_neg_iff, neg_neg]
     apply hr
     assumption
 
@@ -162,6 +158,8 @@ end
 
 namespace Real
 
+open Classical
+
 def max_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊔ b) * c = (a * c) ⊔ (b * c) := by
   rw [max_def, max_def]
   split <;> rename_i h
@@ -170,7 +168,8 @@ def max_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊔ b) * c = (a * c) ⊔ (b * c) := 
   rcases lt_or_eq_of_le hc with hc | hc
   rw [if_neg]
   intro g
-  have := mul_le_mul_of_nonneg_right (le_of_lt (inv?_pos _ hc)) g
+
+  have := mul_le_mul_of_nonneg_right _ _ g _ (le_of_lt (inv?_pos _ hc))
   rw [mul_assoc, mul_assoc, mul_inv?_cancel, mul_one, mul_one] at this
   contradiction
   rw [←hc]
@@ -184,7 +183,7 @@ def min_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊓ b) * c = (a * c) ⊓ (b * c) := 
   rcases lt_or_eq_of_le hc with hc | hc
   rw [if_neg]
   intro g
-  have := mul_le_mul_of_nonneg_right (le_of_lt (inv?_pos _ hc)) g
+  have := mul_le_mul_of_nonneg_right _ _ g _ (le_of_lt (inv?_pos _ hc))
   rw [mul_assoc, mul_assoc, mul_inv?_cancel, mul_one, mul_one] at this
   contradiction
   rw [←hc]

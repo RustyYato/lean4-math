@@ -63,6 +63,13 @@ section
 variable [SemiringOps α] [LE α] [LT α] [IsOrderedSemiring α]
   [IsNontrivial α]
 
+def square_pos [IsStrictOrderedNonUnitalNonAssocSemiring α]: ∀a: α, 0 < a -> 0 < a ^ 2 := by
+  intro a h
+  rw [npow_two]
+  apply mul_pos
+  assumption
+  assumption
+
 def natCast_nonneg (n: ℕ) : 0 ≤ (n: α) := by
   induction n with
   | zero => rw [natCast_zero]

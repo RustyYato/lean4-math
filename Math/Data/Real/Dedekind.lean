@@ -316,23 +316,31 @@ def seq₂_fst_nomax (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ 
   rw [←Rat.add_lt_iff_lt_sub, zero_add]
   assumption
 
-def toReal' (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : ℝ := Real.mk ({
+instance (c: DedekindCut) (a b ε: ℚ)
+  : Relation.IsSymmetric (fun n m: ℕ => ‖(c.seq₂ a b n).fst - (c.seq₂ a b m).fst‖ < ε) where
+  symm := by
+    intro n m
+    rw [norm_sub_comm]
+    exact id
+
+def toReal' (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : Cauchy ℚ := Cauchy.ofSeq ({
   seq n := (c.seq₂ a b n).fst
   is_cacuhy := by
-    show Rat.is_cauchy _
+    show CauchySeq.is_cauchy_equiv _ _
     intro ε εpos
     have ⟨δ, hδ⟩ := c.seq₂_fst_lim a b ha hb ε εpos
+    simp
     apply CauchySeq.Eventually₂.wlog₀
     exists δ
     intro n m hn hm n_lt_m
-    simp
     apply lt_of_le_of_lt _ hδ
     clear hδ εpos ε
+    show |_| ≤ _
     have : a < b := by exact lower_lt_upper c a b ha hb
     have : 0 < b - a := by
       refine Rat.add_lt_iff_lt_sub.mp ?_
       rwa [zero_add]
-    rw [_root_.abs_sub_comm, abs_of_nonneg _ (by
+    rw [abs_sub_comm, abs_of_nonneg _ (by
         refine Rat.add_le_iff_le_sub.mp ?_
         rw [zero_add]
         apply seq₂_fst_monotone
@@ -355,13 +363,14 @@ def toReal' (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) 
     exact seq₂_snd_mem_upper c a b hb m
 })
 
-def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : c.lower = Set.mk fun x: ℚ => x < c.toReal' a b ha hb := by
+def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.upper) : c.lower = Set.mk fun x: ℚ => (Cauchy.of x: Cauchy ℚ) < c.toReal' a b ha hb := by
   ext x; simp
   apply flip Iff.intro
   · intro ⟨B, Bpos, k, h⟩
-    have := lt_of_lt_of_le Bpos (h k (le_refl _))
+    have   := lt_of_lt_of_le Bpos (h k (le_refl _))
+    replace this : 0 < (c.seq₂ a b k).fst - x := this
     simp at this
-    rw [←Rat.add_lt_iff_lt_sub, zero_add] at this
+    rw [lt_sub_iff_add_lt, zero_add] at this
     apply c.lower_closed_down (c.seq₂ a b k).fst _ x _
     apply seq₂_fst_mem_lower
     assumption
@@ -377,7 +386,6 @@ def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.up
       exists x - a
       apply And.intro
       rwa [←Rat.add_lt_iff_lt_sub, zero_add]
-      simp
       show CauchySeq.Eventually fun n => x - a ≤ (c.seq₂ a b n).fst - a
       exists m
       intro n hn
@@ -392,8 +400,9 @@ def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.up
       apply lt_of_lt_of_le
       apply Real.ofRat_lt.mpr
       assumption
+      apply (Cauchy.mk_le _ _).mpr
       apply CauchySeq.le_eventually_pointwise
-      simp
+      show CauchySeq.Eventually fun n => y ≤ (c.seq₂ a b n).fst
       show CauchySeq.Eventually fun n => y ≤ _
       clear x_lt_y a_lt_x hx x
       have ⟨x, hx, y_lt_x⟩ := c.lower_no_max y hy

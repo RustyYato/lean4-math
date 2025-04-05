@@ -132,6 +132,5 @@ def equivComplex : ℂ ≃+* ℝ[i] where
     rw [add_assoc, add_assoc, ←neg_mul_right, ←neg_mul_right, mul_one]
     rw [add_comm (-_), sub_eq_add_neg]
     ac_nf
-    rw [mul_comm (algebraMap y.real)]
 
 end Complex'

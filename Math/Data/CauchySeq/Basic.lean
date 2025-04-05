@@ -49,6 +49,22 @@ def Eventually₂.merge : Eventually₂ a -> Eventually₂ b -> Eventually₂ fu
   apply le_trans _ hn
   apply le_max_right
 
+def Eventually₂.wlog₀ (P: Nat -> Nat -> Prop) [Relation.IsSymmetric P] :
+  (∃k, ∀n m, k ≤ n -> k ≤ m -> n ≤ m -> P n m) -> Eventually₂ P := by
+  intro ⟨k, h⟩
+  exists k
+  intro n m hk hm
+  rcases Nat.le_total n m with g | g
+  apply h
+  assumption
+  assumption
+  assumption
+  apply Relation.symm
+  apply h
+  assumption
+  assumption
+  assumption
+
 end CauchySeq
 
 section

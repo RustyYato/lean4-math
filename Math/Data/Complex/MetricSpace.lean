@@ -13,9 +13,9 @@ noncomputable instance : Norm ℂ ℝ where
 def norm_sq (c: ℂ) : ‖c‖ ^ 2 = c.real ^ 2 + c.img ^ 2 := by
   show (Real.sqrt _) ^ 2 = _
   rw [Real.sqrt_sq]
-  apply Real.add_nonneg
-  apply Real.square_nonneg
-  apply Real.square_nonneg
+  apply add_nonneg
+  apply square_nonneg
+  apply square_nonneg
 
 @[simp]
 def norm_of_real (x: ℝ) : ‖(x: ℂ)‖ = |x| := by
@@ -29,14 +29,14 @@ def Complex.norm_eq (x: ℂ) : NNReal.ofReal ‖x‖ = NNReal.sqrt (NNReal.squar
   congr
   rw [max_eq_left.mpr]
   rfl
-  apply Real.add_nonneg
-  apply Real.square_nonneg
-  apply Real.square_nonneg
+  apply add_nonneg
+  apply square_nonneg
+  apply square_nonneg
 
 def Complex.norm_mul' (a b: ℂ) : ‖a * b‖ = ‖a‖ * ‖b‖ := by
   apply ofReal_injOn
   apply Real.sqrt_nonneg
-  apply Real.mul_nonneg
+  apply mul_nonneg (α := ℝ)
   apply Real.sqrt_nonneg
   apply Real.sqrt_nonneg
   rw [ofReal_mul, norm_eq, norm_eq, norm_eq]
@@ -71,32 +71,32 @@ instance instLawfulAbs : IsAlgebraNorm ℂ where
     apply Iff.intro
     intro h
     replace h := neg_eq_of_add_right h
-    have h₀: 0 ≤ x.real ^ 2 := by apply Real.square_nonneg
+    have h₀: 0 ≤ x.real ^ 2 := by apply square_nonneg
     have h₁: -x.img ^ 2 ≤ 0 := by
-      rw [←Real.neg_le_neg_iff, neg_neg]
-      apply Real.square_nonneg
+      rw [neg_le_neg_iff, neg_neg]
+      apply square_nonneg
     ext
     rw [←h] at h₁
-    apply Real.eq_zero_of_square_eq_zero
+    apply eq_zero_of_square_eq_zero
     apply le_antisymm
-    assumption; apply Real.square_nonneg
+    assumption; apply square_nonneg
     rw [h] at h₀
-    apply Real.eq_zero_of_square_eq_zero
+    apply eq_zero_of_square_eq_zero
     apply le_antisymm
-    rw [←Real.neg_le_neg_iff, neg_neg] at h₀
-    assumption; apply Real.square_nonneg
+    rw [neg_le_neg_iff, neg_neg] at h₀
+    assumption; apply square_nonneg
     rintro rfl
     rfl
-    apply Real.add_nonneg
-    apply Real.square_nonneg
-    apply Real.square_nonneg
+    apply add_nonneg
+    apply square_nonneg
+    apply square_nonneg
     rfl
   norm_algebraMap := by simp
   norm_mul := by apply Complex.norm_mul'
   norm_add_le_add_norm a b := by
     show NNReal.sqrt _ ≤ NNReal.sqrt _ + NNReal.sqrt _
     iterate 3 rw [ofReal_add]
-    any_goals apply Real.square_nonneg
+    any_goals apply square_nonneg
     simp [ofReal_square]
     apply NNReal.square_strictMonotone.le_iff_le.mp
     rw [NNReal.sqrt_sq]
@@ -111,7 +111,7 @@ instance instLawfulAbs : IsAlgebraNorm ℂ where
     rw [mul_assoc _ (NNReal.sqrt _), sqrt_mul]
     show _ ≤ 2 * _
     rw [mul_assoc, mul_assoc, ←mul_add]
-    apply Real.mul_le_mul_of_nonneg_left (k := 2)
+    apply mul_le_mul_of_nonneg_left (c := 2)
     apply Real.ofRat_le.mpr; decide
     rcases lt_or_le (a.real * b.real + a.img * b.img) 0 with h | h
     apply le_trans
@@ -143,17 +143,17 @@ instance : Topology.IsContinuous Complex.real where
     intro y hy
     apply h
     simp [mem_ball, dist] at *
-    show ‖_‖ < ε
+    show |_| < ε
     apply lt_of_le_of_lt _ hy
     apply flip le_trans
     apply (Real.sqrt_strictMonotoneOn.le_iff_le _ _).mpr
     apply le_add_right
-    apply Real.square_nonneg
-    apply Real.square_nonneg
-    apply Real.add_nonneg
-    apply Real.square_nonneg
-    apply Real.square_nonneg
-    rw [Real.sqrt_of_sq, Real.norm_eq_abs]
+    apply square_nonneg
+    apply square_nonneg (α := ℝ)
+    apply add_nonneg (α := ℝ)
+    apply square_nonneg
+    apply square_nonneg
+    rw [Real.sqrt_of_sq]
     rfl
 
 instance : Topology.IsContinuous Complex.img where
@@ -165,17 +165,17 @@ instance : Topology.IsContinuous Complex.img where
     intro y hy
     apply h
     simp [mem_ball, dist] at *
-    show ‖_‖ < ε
+    show |_| < ε
     apply lt_of_le_of_lt _ hy
     apply flip le_trans
     apply (Real.sqrt_strictMonotoneOn.le_iff_le _ _).mpr
     apply le_add_left
-    apply Real.square_nonneg
-    apply Real.square_nonneg
-    apply Real.add_nonneg
-    apply Real.square_nonneg
-    apply Real.square_nonneg
-    rw [Real.sqrt_of_sq, Real.norm_eq_abs]
+    apply square_nonneg (α := ℝ)
+    apply square_nonneg (α := ℝ)
+    apply add_nonneg (α := ℝ)
+    apply square_nonneg
+    apply square_nonneg
+    rw [Real.sqrt_of_sq]
     rfl
 
 instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
@@ -215,7 +215,6 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     show _ < ε' /? (NNReal.sqrt 2)
     show |a - c| < ε /? _ ~(_)
     apply lt_of_lt_of_eq
-    rw [←Real.norm_eq_abs]
     exact g.left
     congr
     rw [Real.sqrt_def _ (by apply le_of_lt; assumption)]
@@ -224,7 +223,6 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     show _ < ε' /? (NNReal.sqrt 2)
     show |b - d| < ε /? _ ~(_)
     apply lt_of_lt_of_eq
-    rw [←Real.norm_eq_abs]
     exact g.right
     congr
     rw [Real.sqrt_def _ (by apply le_of_lt; assumption)]

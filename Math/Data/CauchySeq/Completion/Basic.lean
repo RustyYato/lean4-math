@@ -296,7 +296,6 @@ instance : IsNontrivial (Cauchy α) where
     simp [norm_one] at this
     exact lt_irrefl this
 
-
 instance (priority := 2000) [DecidableEq α] : FieldOps (Cauchy α) := inferInstance
 
 instance [DecidableEq α] : IsField (Cauchy α) where

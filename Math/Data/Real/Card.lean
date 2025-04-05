@@ -1,4 +1,4 @@
-import Math.Data.Real.Div
+import Math.Data.Real.Order
 import Math.Data.Cardinal.Order
 import Math.Data.Set.Order.Interval
 
@@ -15,7 +15,7 @@ def card_zero_to_one_eq_card_one_lt : #(Set.Ioo (0: ℝ) 1) = #(Set.Ioi (1: ℝ)
   show 1 < x⁻¹?
   replace h : 0 < x := h
   replace g : x < 1 := g
-  have := Real.mul_lt_mul_of_pos_left (inv?_pos _ h) g
+  have := mul_lt_mul_of_pos_left _ _ g _ (inv?_pos _ h)
   rw [inv?_mul_cancel, mul_one] at this
   assumption
   intro ⟨x, h⟩
@@ -25,7 +25,7 @@ def card_zero_to_one_eq_card_one_lt : #(Set.Ioo (0: ℝ) 1) = #(Set.Ioi (1: ℝ)
   apply inv?_pos x
   assumption
   show x⁻¹? < 1
-  have := Real.mul_lt_mul_of_pos_left (inv?_pos _ this) h
+  have := mul_lt_mul_of_pos_left _ _ h _ (inv?_pos _ this)
   rw [mul_one, inv?_mul_cancel] at this
   assumption
   intro ⟨x, _, _⟩

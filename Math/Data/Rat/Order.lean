@@ -432,6 +432,7 @@ def div_lt_iff_lt_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b < c ↔ c * b < a 
   apply le_div_iff_mul_le_of_neg
   assumption
 
+@[norm_cast]
 def intCast_le_intCast {a b: ℤ} : (a: ℚ) ≤ b ↔ a ≤ b := by
   rw [le_def]
   show Fract.isNonneg _ ↔ _
@@ -439,14 +440,17 @@ def intCast_le_intCast {a b: ℤ} : (a: ℚ) ≤ b ↔ a ≤ b := by
   simp
   omega
 
+@[norm_cast]
 def intCast_lt_intCast {a b: ℤ} : (a: ℚ) < b ↔ a < b := by
   apply lt_iff_of_le_iff
   apply intCast_le_intCast
 
+@[norm_cast]
 def natCast_le_natCast {a b: ℕ} : (a: ℚ) ≤ b ↔ a ≤ b := by
   apply (intCast_le_intCast (a := a) (b := b)).trans
   exact Int.ofNat_le
 
+@[norm_cast]
 def natCast_lt_natCast {a b: ℕ} : (a: ℚ) < b ↔ a < b := by
   apply lt_iff_of_le_iff
   apply natCast_le_natCast

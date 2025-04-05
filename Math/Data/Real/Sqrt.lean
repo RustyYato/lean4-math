@@ -18,7 +18,7 @@ def sqrt_sq (x: ℝ) (h: 0 ≤ x) : x.sqrt ^ 2 = x := by
 @[simp]
 def sqrt_of_sq (x: ℝ) : (x ^ 2).sqrt = |x| := by
   rw [sqrt_def (x^2) (by
-    apply Real.square_nonneg x)]
+    apply square_nonneg x)]
   show NNReal.embedReal (NNReal.sqrt (NNReal.square x)) = _
   rw [NNReal.sqrt_square]
   rfl
@@ -111,8 +111,6 @@ def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (
   have := NNReal.geom_mean_le_midpoint (NNReal.square (a * d)) (NNReal.square (b * c))
   rw [←mul_div?_cancel (a := _ + _) (b := 2) (by invert_tactic)]
   apply mul_le_mul_of_nonneg_left
-  apply Real.ofRat_le.mpr
-  decide
   rw [NNReal.square_mul, NNReal.sqrt_square] at this
   rw [←midpoint]
   replace this : NNReal.embedReal (NNReal.abs ((a * d) * (b * c))) ≤
@@ -128,7 +126,11 @@ def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (
   rename_i h
   replace h := le_of_lt h
   apply le_trans h
-  rwa [←Real.neg_le_neg_iff, neg_neg]
+  rwa [neg_le_neg_iff, neg_neg]
+  apply Real.ofRat_le.mpr
+  decide
+
+open Classical
 
 def sqrt_ne_zero (a: ℝ) (h: 0 < a) : a.sqrt ≠ 0 := by
   intro g

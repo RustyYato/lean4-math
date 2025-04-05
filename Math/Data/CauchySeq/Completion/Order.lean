@@ -142,7 +142,7 @@ private def mul_le_mul_of_nonneg_left: ∀a b: Cauchy γ, a ≤ b -> ∀c, 0 ≤
   rwa [←sub_zero c]
   assumption
 
-instance : IsOrderedSemiring (Cauchy γ) where
+instance : IsStrictOrderedSemiring (Cauchy γ) where
   add_le_add_left := by
     intro a b ab c
     rcases Or.symm ab with rfl | h
@@ -178,8 +178,13 @@ instance : IsOrderedSemiring (Cauchy γ) where
     intro n hn
     show 1 ≤ (1 - 0: γ)
     simp
-
--- set_option trace.Meta.synthInstance true
+  mul_pos := by
+    intro a b ha hb
+    replace ha : (a - 0).Pos := ha
+    replace hb : (b - 0).Pos := hb
+    show (a * b - 0).Pos
+    simp at ha hb
+    simp [mul_pos ha hb]
 
 variable [DecidableEq γ]
 
@@ -310,3 +315,38 @@ instance : IsLinearLattice (Cauchy γ) := {
 }
 
 end Cauchy
+
+namespace CauchySeq
+
+variable
+  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
+  [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
+
+open Norm.ofAbs
+
+def le_eventually_pointwise (a b: CauchySeq γ) :
+  (Eventually fun n => a n ≤ b n) ->
+  a ≤ b := by
+  intro h
+  rw [←Cauchy.mk_le, le_iff_not_lt]
+  intro ⟨B, B_pos, spec⟩
+  replace spec := h.merge spec; clear h
+  obtain ⟨k, spec⟩ := spec
+  replace spec := spec k (le_refl _)
+  obtain ⟨h, spec⟩ := spec
+  replace spec: 0 < a _ - b _ := lt_of_lt_of_le B_pos spec
+  replace spec := add_lt_add_of_lt_of_le _ _ _ _ spec (le_refl (b k))
+  rw [zero_add, sub_eq_add_neg, add_assoc, neg_add_cancel,
+    add_zero] at spec
+  exact not_le_of_lt spec h
+
+def le_pointwise (a b: CauchySeq γ) :
+  (∀n, a n ≤ b n) ->
+  a ≤ b := by
+  intro h
+  apply le_eventually_pointwise
+  exists 0
+  intro n g
+  apply h
+
+end CauchySeq

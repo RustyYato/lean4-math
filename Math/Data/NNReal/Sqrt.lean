@@ -52,7 +52,7 @@ def square (r: ℝ) : ℝ≥0 where
   val := r ^ 2
   property := by
     rw [Real.mem_nonneg]
-    exact Real.square_nonneg r
+    exact square_nonneg r
 
 def embedReal_abs (x: ℝ) : embedReal (abs x) = |x| := rfl
 
@@ -84,7 +84,7 @@ def sqrt_square (r: ℝ) : sqrt (square r) = abs r := by
   rw [show (square r) = (mk r h) ^ 2 from rfl]
   rw [sqrt_of_sq, abs, mk]
   congr; rw [abs_of_nonneg _ h]
-  rw [←square_neg]; rw [←Real.neg_le_neg_iff] at h
+  rw [←square_neg]; rw [neg_le_neg_iff] at h
   rw [show (square (-r)) = (mk (-r) h) ^ 2 from rfl]
   rw [sqrt_of_sq]
   unfold abs mk
@@ -105,7 +105,7 @@ def ofReal_square (x: ℝ) : ofReal (x ^ 2) = square x := by
   unfold ofReal
   congr
   rw [max_eq_left.mpr]
-  apply Real.square_nonneg
+  apply square_nonneg
 
 def sqrt_mul (a b: ℝ≥0) : a.sqrt * b.sqrt = (a * b).sqrt := by
   symm; apply map_mul sqrtEquiv
@@ -132,7 +132,7 @@ def geom_mean_le_midpoint (a b: ℝ≥0) : sqrt (a * b) ≤ midpoint a b := by
   apply le_of_add_le_add_right (a := _) (b := _) (c := -(a * b * 2))
   rw [add_neg_cancel, add_comm_right, ←sub_eq_add_neg,
     mul_comm, ←mul_assoc, ←square_sub]
-  apply Real.square_nonneg
+  apply square_nonneg
 
 def sqrt_pos (a: ℝ≥0) (h: 0 < a) : 0 < a.sqrt := by
   rw [←sqrt_0]

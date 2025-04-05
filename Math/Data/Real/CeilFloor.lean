@@ -1,4 +1,4 @@
-import Math.Data.Real.Div
+import Math.Data.Real.Order
 import Math.Data.Nat.Lattice
 import Math.Data.Int.Lattice
 import Math.Algebra.QAlgebra.Basic
@@ -101,11 +101,11 @@ def floor_spec (r: ℝ) (x: Int) : r.floor = x ↔ x ≤ r ∧ r < x + 1 := by
 def ceil_spec (a: ℝ) (x: Int) : a.ceil = x ↔ x - 1 < a ∧ a ≤ x := by
   unfold ceil
   rw (occs := [1]) [←neg_neg x]
-  rw [neg_inj, floor_spec, ←intCast_neg, neg_le_neg_iff]
+  rw [neg_inj, floor_spec, ←intCast_neg, ←neg_le_neg_iff]
   norm_cast
   rw [←neg_neg ((-x + 1: ℤ): ℝ), intCast_neg,
     neg_add_rev, neg_neg, add_comm _ x, ←sub_eq_add_neg,
-    neg_lt_neg_iff]
+    ←neg_lt_neg_iff]
   apply And.comm
 def ceil_eq_neg_floor_neg (a: ℝ) : a.ceil = -(-a).floor := rfl
 def floor_eq_neg_ceil_neg (a: ℝ) : a.floor = -(-a).ceil := by
@@ -137,7 +137,7 @@ def of_lt_ceil (a: ℝ) : ∀x: ℤ, x < a.ceil -> x < a := by
   rw [ceil_eq_neg_floor_neg,
     ←neg_neg x, Int.neg_lt_neg_iff] at hx
   have := of_floor_lt _ _ hx
-  rw [←intCast_neg, neg_lt_neg_iff] at this
+  rw [←intCast_neg, ←neg_lt_neg_iff] at this
   assumption
 def of_le_floor (a: ℝ) : ∀x: ℤ, x ≤ a.floor -> x ≤ a := by
   intro x h
@@ -209,12 +209,13 @@ def le_floor (a: ℝ) : ∀x: ℤ, x ≤ a.floor ↔ x ≤ a := by
 def ceil_le (a: ℝ) : ∀x: ℤ, a.ceil ≤ x ↔ a ≤ x := by
   intro x
   rw [ceil_eq_neg_floor_neg, ←Int.neg_le_neg_iff, neg_neg]
-  rw [le_floor, ←intCast_neg, neg_le_neg_iff]
+  rw [le_floor, ←intCast_neg, ←neg_le_neg_iff]
 
 def exists_rat_between (a b: ℝ) (h: a < b) : ∃r: ℚ, a < r ∧ r < b := by
   classical
+  have : 0 < b - a := by rwa [lt_sub_iff_add_lt, zero_add]
   have ⟨n, hn⟩ := exists_nat_gt (1 /? (b - a))
-  replace hn := mul_lt_mul_of_pos_right (k := (b - a)) ?_ hn
+  replace hn := mul_lt_mul_of_pos_right _ _ hn (b - a) this
   rw [div?_mul_cancel] at hn
   have npos : 0 < n := by
     cases n
@@ -222,22 +223,21 @@ def exists_rat_between (a b: ℝ) (h: a < b) : ∃r: ℚ, a < r ∧ r < b := by
     have := lt_asymm hn zero_lt_one
     contradiction
     apply Nat.zero_lt_succ
-  replace hn := mul_lt_mul_of_pos_left (k := 1 /? n) ?_ hn
+  replace hn := mul_lt_mul_of_pos_left _ _ hn (1 /? (n: ℝ)) ?_
   rw [mul_one, ←mul_assoc, div?_mul_cancel, one_mul] at hn
   let k₀ := (a * n).floor + 1
   exists (k₀: ℚ) /? (n: ℚ)
   apply And.intro
-  show a < (((k₀: ℚ) /? (n: ℚ): ℚ): ℝ)
+  show a < ((k₀ /? n: ℚ): ℝ)
   rw [←ratCast_div?]
-  apply (lt_iff_mul_lt_mul_of_pos_right _ _ (n: ℚ) _).mpr
+  apply (lt_iff_mul_lt_mul_of_pos_right _ _ ((n: ℚ): ℝ) _).mpr
   rw [div?_mul_cancel]; norm_cast
   unfold k₀
   rw [intCast_succ]
-  apply (lt_iff_add_lt_add_right (k := -Real.floor (a * n))).mpr
+  apply lt_of_add_lt_add_right _ _ (-Real.floor (a * n): ℝ)
   rw [←sub_eq_add_neg, add_comm_right, add_neg_cancel, zero_add]
   show Real.fract (a * n) < _
   apply (fract_spec _).right
-  norm_cast
   exact_mod_cast npos
   have : a + 1 /? (n: ℝ) < b := by
     apply lt_of_lt_of_le
@@ -246,7 +246,7 @@ def exists_rat_between (a b: ℝ) (h: a < b) : ∃r: ℚ, a < r ∧ r < b := by
     rw [add_sub_cancel]
   apply lt_of_le_of_lt _ this
   rw [←ratCast_div?]
-  apply (le_iff_mul_le_mul_of_pos_right _ _ (n: ℚ) _).mpr
+  apply (le_iff_mul_le_mul_of_pos_right _ _ ((n: ℚ): ℝ) _).mpr
   norm_cast
   rw [add_mul, div?_mul_cancel, div?_mul_cancel]
   unfold k₀
@@ -254,11 +254,9 @@ def exists_rat_between (a b: ℝ) (h: a < b) : ∃r: ℚ, a < r ∧ r < b := by
   apply add_le_add_right
   apply floor_le_self
   norm_cast
+  apply div?_pos
+  apply zero_lt_one
   exact_mod_cast npos
-  rw [div?_eq_mul_inv?, one_mul]
-  apply inv?_pos
-  exact_mod_cast npos
-  exact zero_lt_iff_pos.mpr h
 
 def le_ext (a b: ℝ) : (∀q: ℚ, q < a -> q < b) -> a ≤ b := by
   intro h
