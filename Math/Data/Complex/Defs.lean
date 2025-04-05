@@ -24,13 +24,13 @@ instance : Fact (Rsqrtd.NoSolution (-1: ℝ)) where
     rw [neg_le_neg_iff, neg_neg, neg_zero] at this
     exact not_lt_of_le this zero_lt_one
 
-instance : FieldOps ℂ := inferInstanceAs (FieldOps (ℝ√_))
-instance : IsField ℂ := inferInstanceAs (IsField (ℝ√_))
+instance : FieldOps ℂ := inferInstanceAs (FieldOps (ℝ[i]))
+instance : IsField ℂ := inferInstanceAs (IsField (ℝ[i]))
 instance : Inhabited ℂ := ⟨0⟩
 
-instance : SMul ℝ ℂ := inferInstanceAs (SMul ℝ (ℝ√_))
-instance : AlgebraMap ℝ ℂ := inferInstanceAs (AlgebraMap ℝ (ℝ√_))
-instance : IsAlgebra ℝ ℂ := inferInstanceAs (IsAlgebra ℝ (ℝ√_))
+instance : SMul ℝ ℂ := inferInstanceAs (SMul ℝ (ℝ[i]))
+instance : AlgebraMap ℝ ℂ := inferInstanceAs (AlgebraMap ℝ (ℝ[i]))
+instance : IsAlgebra ℝ ℂ := inferInstanceAs (IsAlgebra ℝ (ℝ[i]))
 
 def ofRealHom : ℝ ↪+* ℂ := {
   algebraMap with

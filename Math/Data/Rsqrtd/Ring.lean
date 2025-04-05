@@ -7,7 +7,7 @@ namespace Rsqrtd
 
 variable {R: Type*} [RingOps R] [IsRing R] [IsCommMagma R] {d: R}
 
-scoped postfix:100 "[i]" => fun R [RingOps R] [IsRing R] [IsCommMagma R] => @Rsqrtd R (-1)
+scoped notation R:100 "[i]" => @Rsqrtd R (-1)
 
 prefix:100 "ℤ√" => @Rsqrtd ℤ
 
