@@ -1,4 +1,4 @@
-import Math.Data.Rsqrtd.Basic
+import Math.Data.Rsqrtd.Defs
 import Math.Algebra.Ring.Defs
 import Math.Algebra.Hom.Defs
 import Math.Ops.Abs

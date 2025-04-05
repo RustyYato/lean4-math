@@ -1,4 +1,4 @@
-import Math.Data.Rsqrtd.Basic
+import Math.Data.Rsqrtd.Defs
 import Math.Algebra.Algebra.Defs
 
 namespace Rsqrtd
