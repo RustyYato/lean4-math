@@ -144,6 +144,9 @@ def HasChar.ofQAlgebra [IsNontrivial α] [RingOps α] [IsRing α] [SMul ℚ α] 
   rw [natCast_inj this]
   apply Nat.dvd_refl
 
+def Rat.cast.inj [QAlgebraOps α] [IsQAlgebra α] : Function.Injective (Rat.cast (α := α)) :=
+  field_hom_inj algebraMap
+
 namespace IsQAlgebra.ofAlgebra
 
 variable [FieldOps α] [IsField α] [SMul ℚ α] [AlgebraMap ℚ α] [IsAlgebra ℚ α]
