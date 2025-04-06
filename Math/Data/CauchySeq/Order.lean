@@ -3,7 +3,7 @@ import Math.Data.CauchySeq.Basic
 namespace CauchySeq
 
 variable
-  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
+  [FieldOps γ] [LatticeOps γ]
   [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
 
 open Norm.ofAbs

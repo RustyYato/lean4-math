@@ -91,7 +91,13 @@ instance instLawfulAbs : IsAlgebraNorm ℂ where
     apply square_nonneg
     apply square_nonneg
     rfl
-  norm_algebraMap := by apply norm_of_real
+  norm_neg c := by
+    rw [←mul_one ‖-c‖, ←abs_neg_one,
+      ←Complex.norm_of_real,
+      ←Complex.norm_mul', Complex.ofReal,
+      map_neg, map_one, ←neg_mul_right, ←neg_mul_left,
+      mul_one, neg_neg]
+  norm_one := by erw [norm_of_real, abs_one]
   norm_mul := by apply Complex.norm_mul'
   norm_add_le_add_norm a b := by
     show NNReal.sqrt _ ≤ NNReal.sqrt _ + NNReal.sqrt _

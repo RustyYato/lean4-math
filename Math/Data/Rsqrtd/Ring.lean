@@ -37,13 +37,13 @@ instance : IsRing (R√d) where
   intCast_ofNat _ := by ext <;> simp [intCast_ofNat]
   intCast_negSucc _ := by ext <;> simp [intCast_negSucc]
 
-def norm (x: R√d) := x.a * x.a - d * x.b * x.b
+def norm (x: R√d) := x.a ^ 2 - d * x.b ^ 2
 def conj (x: R√d) : R√d := {
   a := x.a
   b := -x.b
 }
 
-def norm_def (x: R√d) : norm x = x.a * x.a - d * x.b * x.b := rfl
+def norm_def (x: R√d) : norm x = x.a ^ 2 - d * x.b ^ 2 := rfl
 
 def conjHom : (R√d) →+* (R√d) where
   toFun := conj
@@ -63,8 +63,8 @@ def conj_add (x y: R√d) : conj (x + y) = conj x + conj y := map_add conjHom
 def conj_mul (x y: R√d) : conj (x * y) = conj x * conj y := map_mul conjHom
 
 def norm_eq_mul_conj (x: R√d) : norm x = x * x.conj := by
-  ext <;> simp [Norm.norm, norm, conj]
-  rw [←neg_mul_right, sub_eq_add_neg]
+  ext <;> simp [Norm.norm, norm, conj, npow_two]
+  rw [←neg_mul_right, sub_eq_add_neg, mul_assoc]
   rw [←neg_mul_right, mul_comm, neg_add_cancel]
 
 def normHom : (R√d) →* R where

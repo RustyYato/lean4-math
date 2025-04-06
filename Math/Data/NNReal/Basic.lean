@@ -159,6 +159,12 @@ def of_add_eq_zero (a b: ℝ≥0) : a + b = 0 -> a = 0 ∧ b = 0 := by
   contradiction
   apply And.intro <;> (symm; assumption)
 
+def add_eq_zero_iff {a b: ℝ≥0} : a + b = 0 ↔ a = 0 ∧ b = 0 := by
+  apply Iff.intro
+  apply of_add_eq_zero
+  rintro ⟨rfl, rfl⟩
+  rfl
+
 def ofReal_injOn : Function.InjectiveOn ofReal (Set.Ici 0) := by
   intro x y hx hy h
   have := Subtype.mk.inj h

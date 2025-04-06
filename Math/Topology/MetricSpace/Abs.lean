@@ -4,11 +4,9 @@ import Math.Algebra.Norm.Basic
 namespace Norm
 
 variable (α: Type*) {γ: Type*}
-  [LatticeOps γ] [IsNontrivial γ] [RingOps γ] [IsRing γ] [IsOrderedSemiring γ]
-  [IsLinearLattice γ]
+  [Norm α γ] [LatticeOps γ] [SemiringOps γ] [IsSemiring γ]
   [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α]
-  [SMul γ α] [IsModule γ α]
-  [Norm α γ] [IsLawfulNorm α]
+  [IsOrderedSemiring γ] [IsLinearLattice γ] [IsNontrivial γ] [IsLawfulNorm α]
 
 scoped instance : Dist α γ where
   dist x y := ‖x - y‖

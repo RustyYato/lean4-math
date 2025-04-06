@@ -54,7 +54,8 @@ def square (r: ℝ) : ℝ≥0 where
     rw [Real.mem_nonneg]
     exact square_nonneg r
 
-def embedReal_abs (x: ℝ) : embedReal (abs x) = |x| := rfl
+@[simp] def embedReal_abs (x: ℝ) : embedReal (abs x) = |x| := rfl
+@[simp] def embedReal_square (x: ℝ) : embedReal (square x) = x ^ 2 := rfl
 
 @[simp] def square_zero : square 0 = 0 := rfl
 @[simp] def square_one : square 1 = 1 := rfl
@@ -149,5 +150,29 @@ def sqrt_ne_zero (a: ℝ≥0) (h: a ≠ 0) : a.sqrt ≠ 0 := by
 
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply sqrt_ne_zero <;> invert_tactic)
+
+def sqrt_eq_zero_iff_eq_zero {a: ℝ≥0} :
+  a.sqrt = 0 ↔ a = 0 := by
+  apply Iff.intro
+  intro h
+  rw [←sqrt_0] at h
+  exact sqrt_inj.mp h
+  rintro rfl
+  simp
+
+def abs_eq_zero_iff_eq_zero {a: ℝ} :
+  abs a = 0 ↔ a = 0 := by
+  apply Iff.intro
+  intro h
+  apply of_abs_eq_zero
+  exact Subtype.mk.inj h
+  rintro rfl
+  unfold abs
+  congr; rw [abs_zero]
+
+def square_eq_zero_iff_eq_zero {a: ℝ} :
+  square a = 0 ↔ a = 0 := by
+  rw [←NNReal.sqrt_eq_zero_iff_eq_zero]
+  rw [sqrt_square, abs_eq_zero_iff_eq_zero]
 
 end NNReal

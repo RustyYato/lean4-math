@@ -702,6 +702,7 @@ section
 open Norm.ofAbs
 
 instance : Norm ℚ ℚ := inferInstance
-instance : IsLawfulNorm ℚ := inferInstance
+instance : IsModuleNorm ℚ ℚ := inferInstance
+instance : IsAlgebraNorm ℚ := inferInstance
 
 end

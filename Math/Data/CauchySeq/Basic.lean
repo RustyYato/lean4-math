@@ -83,10 +83,10 @@ end
 namespace CauchySeq
 
 variable {α: Type*}
-  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
-  [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
-  [FieldOps α] [IsField α] [Norm α γ]
-  [SMul γ α] [IsModule γ α] [IsLawfulNorm α]
+  [Norm α γ] [LatticeOps γ]
+  [FieldOps γ] [IsField γ] [FieldOps α] [IsField α]
+  [IsOrderedSemiring γ] [IsLinearLattice γ] [IsNontrivial γ]
+  [IsLawfulNorm α]
 
 open Norm.ofAbs
 
@@ -580,10 +580,10 @@ end CauchySeq
 namespace CauchySeq
 
 variable {α: Type*}
-  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
-  [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
-  [FieldOps α] [IsField α] [Norm α γ]
-  [SMul γ α] [AlgebraMap γ α] [IsAlgebra γ α] [IsAlgebraNorm α]
+  [Norm α γ] [LatticeOps γ]
+  [FieldOps γ] [IsField γ] [FieldOps α] [IsField α]
+  [IsOrderedSemiring γ] [IsLinearLattice γ]
+  [IsAlgebraNorm α]
 
 open Norm.ofAbs
 

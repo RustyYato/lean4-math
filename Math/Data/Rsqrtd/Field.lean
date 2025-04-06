@@ -14,10 +14,11 @@ private def getNoSolution : NoSolution d := Fact.proof
 
 def norm_ne_zero (x: R√d) (hx: x ≠ 0) : norm x ≠ 0 := by
   by_cases hb:x.b = 0
-  · rw [norm_def, hb, mul_zero, sub_zero]
+  · rw [norm_def, hb, zero_npow_succ, mul_zero, sub_zero]
     intro g
     apply hx
     ext
+    rw [npow_two] at g
     cases of_mul_eq_zero g <;> assumption
     assumption
   intro g
@@ -25,9 +26,10 @@ def norm_ne_zero (x: R√d) (hx: x ≠ 0) : norm x ≠ 0 := by
   unfold norm at g
   replace g := eq_of_sub_eq_zero g
   have := getNoSolution (d := d) (x.a /? x.b)
+  rw [npow_two, npow_two] at g
   rw [div?_eq_mul_inv?, npow_two,
-    mul_assoc, mul_left_comm _ x.a, ←mul_assoc, ←inv?_mul_rev,
-    g, mul_assoc d, mul_assoc d, mul_inv?_cancel, mul_one] at this
+    mul_assoc, mul_left_comm _ x.a, ←mul_assoc, g, mul_assoc,
+    ←inv?_mul_rev, mul_inv?_cancel, mul_one] at this
   contradiction
 
 macro_rules
@@ -55,6 +57,7 @@ instance : IsField (R√d) where
     rw [div?_eq_mul_inv?, div?_eq_mul_inv?,
       ←mul_assoc, ←mul_assoc,
       ←neg_mul_right, ←add_mul, ←sub_eq_add_neg,
+      ←npow_two, mul_assoc, ←npow_two,
       ←norm_def, mul_inv?_cancel]
     rw [div?_eq_mul_inv?, div?_eq_mul_inv?, ←mul_assoc,
       ←mul_assoc, ←neg_mul_right, ←neg_mul_left, mul_comm a.a,

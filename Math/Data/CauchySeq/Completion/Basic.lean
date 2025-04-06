@@ -3,10 +3,10 @@ import Math.Data.CauchySeq.Basic
 section
 
 variable (α: Type*) {γ: Type*}
-  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
-  [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
-  [FieldOps α] [IsField α] [Norm α γ]
-  [SMul γ α] [IsModule γ α] [IsLawfulNorm α]
+  [Norm α γ] [LatticeOps γ]
+  [FieldOps γ] [IsField γ] [FieldOps α] [IsField α]
+  [IsOrderedSemiring γ] [IsLinearLattice γ] [IsNontrivial γ]
+  [IsLawfulNorm α]
 
 def Cauchy := Quotient (CauchySeq.setoid (α := α))
 
@@ -17,10 +17,10 @@ namespace Cauchy
 open Norm.ofAbs
 
 variable {α γ: Type*}
-  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
-  [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
-  [FieldOps α] [IsField α] [Norm α γ]
-  [SMul γ α] [IsModule γ α] [IsLawfulNorm α]
+  [Norm α γ] [LatticeOps γ]
+  [FieldOps γ] [IsField γ] [FieldOps α] [IsField α]
+  [IsOrderedSemiring γ] [IsLinearLattice γ]
+  [IsLawfulNorm α]
 
 def ofSeq : CauchySeq α -> Cauchy α := Quotient.mk _
 def of (a: α) : Cauchy α := .ofSeq (.const a)
@@ -170,10 +170,10 @@ namespace Cauchy
 open Norm.ofAbs
 
 variable {α γ: Type*}
-  [FieldOps γ] [LT γ] [LE γ] [Min γ] [Max γ]
-  [IsField γ] [IsLinearLattice γ] [IsStrictOrderedSemiring γ]
-  [FieldOps α] [IsField α] [Norm α γ]
-  [SMul γ α] [AlgebraMap γ α] [IsAlgebra γ α] [IsAlgebraNorm α]
+  [Norm α γ] [LatticeOps γ]
+  [FieldOps γ] [IsField γ] [FieldOps α] [IsField α]
+  [IsOrderedSemiring γ] [IsLinearLattice γ] [IsNontrivial γ]
+  [IsAlgebraNorm α]
 
 def mul : Cauchy α -> Cauchy α -> Cauchy α := by
   apply Quotient.lift₂ (fun a b => ofSeq (a * b))

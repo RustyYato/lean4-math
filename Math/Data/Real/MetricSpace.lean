@@ -118,11 +118,10 @@ instance : Topology.IsConnected ℝ where
       apply ball
       rw [mem_ball]
       show dist c (min _ _) < δ
-      show ‖_‖ < _
+      show |_| < _
       rw [min_def]; split
-      rw [add_comm, sub_add, sub_self, zero_sub, norm_neg, norm_eq_abs, abs_of_nonneg]
+      rw [add_comm, sub_add, sub_self, zero_sub, abs_neg, abs_of_nonneg]
       rw [div?_eq_mul_inv?]; rw (occs := [2]) [←mul_one δ]
-      rw [mul_assoc]
       apply mul_lt_mul_of_pos_left
       apply Real.ofRat_lt.mpr
       decide
