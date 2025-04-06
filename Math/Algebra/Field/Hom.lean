@@ -1,5 +1,5 @@
 import Math.Algebra.Field.Defs
-import Math.Algebra.GroupWithZero.Basic
+import Math.Algebra.GroupWithZero.Hom
 import Math.Algebra.Group.Hom
 import Math.Logic.Equiv.Like
 
@@ -34,43 +34,5 @@ instance : EmbeddingLike α F R where
 
 def field_hom_inj (f: α) : Function.Injective f :=
   (f: F ↪ R).inj
-
-def map_ne_zero (f: α) : x ≠ 0 -> f x ≠ 0 :=
-  fun g h => g (field_hom_inj f (h.trans (map_zero f).symm))
-
-macro_rules
-| `(tactic|invert_tactic_trivial) => `(tactic|apply map_ne_zero <;> invert_tactic)
-
-def map_ne_zero' (f: α) (n: ℤ) : x ≠ 0 ∨ 0 ≤ n -> f x ≠ 0 ∨ 0 ≤ n := by
-  intro h
-  cases h
-  left
-  invert_tactic
-  right; assumption
-
-macro_rules
-| `(tactic|int_pow_tactic_trivial) => `(tactic|apply map_ne_zero' <;> int_pow_tactic)
-
-end
-
-section
-
-variable [FieldOps α] [FieldOps β] [IsNonCommField α] [IsNonCommField β]
-variable [FunLike F α β] [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] [IsMulHom F α β]
-
-def map_inv? (f: F) (a: α) (h: a ≠ 0) : f a⁻¹? = (f a)⁻¹? := by
-  refine inv?_eq_of_mul_right (f a) (f a⁻¹?) ?_
-  rw [←map_mul, inv?_mul_cancel, map_one]
-
-def map_div? (f: F) (a b: α) (h: b ≠ 0) : f (a /? b) = f a /? f b := by
-  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, map_mul, map_inv?]
-
-def map_zpow? (f: F) (a: α) (n: ℤ) (h: a ≠ 0 ∨ 0 ≤ n) : f (a ^? n) = (f a) ^? n := by
-  cases n using Int.coe_cases with
-  | ofNat n => rw [zpow?_ofNat, zpow?_ofNat, map_npow]
-  | negSucc n =>
-    rw [zpow?_negSucc, zpow?_negSucc, map_npow, map_inv?]
-    apply h.resolve_right
-    intro; contradiction
 
 end

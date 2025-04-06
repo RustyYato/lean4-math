@@ -37,7 +37,8 @@ def Group.toAddAut (G M: Type*) [GroupOps G] [IsGroup G]
     intro m
     show _ = (AddGroupEquiv.trans _ _) _
     unfold AddGroupEquiv.trans Equiv.trans
-    simp [DFunLike.coe, ←mul_smul]
+    simp [DFunLike.coe, EquivLike.coe, ←mul_smul]
+
 
 section
 

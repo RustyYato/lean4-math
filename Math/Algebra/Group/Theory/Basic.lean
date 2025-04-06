@@ -1,4 +1,5 @@
 import Math.Algebra.Group.Defs
+import Math.Logic.Equiv.Basic
 import Math.Algebra.Group.Hom
 
 structure Group (α: Type*) where

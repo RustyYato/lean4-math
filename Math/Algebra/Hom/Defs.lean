@@ -1,4 +1,4 @@
-import Math.Logic.Equiv.Basic
+import Math.Logic.Equiv.Like
 import Math.Algebra.Notation
 import Math.Algebra.AddMul
 
@@ -254,8 +254,8 @@ instance : IsMulHom (RngHom α β) α β where
 
 structure AddGroupEmbedding extends α ↪ β, AddGroupHom α β where
 
-instance : FunLike (AddGroupEmbedding α β) α β where
-  coe f := f.toFun
+instance : EmbeddingLike (AddGroupEmbedding α β) α β where
+  coe f := f.toEmbedding
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr
@@ -268,8 +268,8 @@ instance : IsAddHom (AddGroupEmbedding α β) α β where
 
 structure AddGroupWithOneEmbedding extends α ↪ β, AddGroupWithOneHom α β where
 
-instance : FunLike (AddGroupWithOneEmbedding α β) α β where
-  coe f := f.toFun
+instance : EmbeddingLike (AddGroupWithOneEmbedding α β) α β where
+  coe f := f.toEmbedding
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr
@@ -285,8 +285,8 @@ instance : IsAddHom (AddGroupWithOneEmbedding α β) α β where
 
 structure GroupEmbedding extends α ↪ β, GroupHom α β where
 
-instance : FunLike (GroupEmbedding α β) α β where
-  coe f := f.toFun
+instance : EmbeddingLike (GroupEmbedding α β) α β where
+  coe f := f.toEmbedding
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr
@@ -299,8 +299,8 @@ instance : IsMulHom (GroupEmbedding α β) α β where
 
 structure GroupWithZeroEmbedding extends α ↪ β, GroupWithZeroHom α β where
 
-instance : FunLike (GroupWithZeroEmbedding α β) α β where
-  coe f := f.toFun
+instance : EmbeddingLike (GroupWithZeroEmbedding α β) α β where
+  coe f := f.toEmbedding
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr
@@ -316,8 +316,8 @@ instance : IsMulHom (GroupWithZeroEmbedding α β) α β where
 
 structure RingEmbedding extends α ↪ β, RingHom α β where
 
-instance : FunLike (RingEmbedding α β) α β where
-  coe f := f.toFun
+instance : EmbeddingLike (RingEmbedding α β) α β where
+  coe f := f.toEmbedding
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr
@@ -336,8 +336,8 @@ instance : IsMulHom (RingEmbedding α β) α β where
 
 structure RngEmbedding extends α ↪ β, RngHom α β where
 
-instance : FunLike (RngEmbedding α β) α β where
-  coe f := f.toFun
+instance : EmbeddingLike (RngEmbedding α β) α β where
+  coe f := f.toEmbedding
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr
@@ -353,13 +353,11 @@ instance : IsMulHom (RngEmbedding α β) α β where
 
 structure AddGroupEquiv extends α ≃ β, AddGroupHom α β, ZeroEquiv α β, AddEquiv α β where
 
-instance : FunLike (AddGroupEquiv α β) α β where
-  coe f := f.toFun
+instance : EquivLike (AddGroupEquiv α β) α β where
+  coe f := f.toEquiv
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr 1
-    apply DFunLike.coe_inj
-    assumption
 
 instance : IsZeroHom (AddGroupEquiv α β) α β where
   map_zero f := f.map_zero
@@ -369,13 +367,11 @@ instance : IsAddHom (AddGroupEquiv α β) α β where
 
 structure AddGroupWithOneEquiv extends α ≃ β, AddGroupWithOneHom α β, AddGroupEquiv α β, OneEquiv α β where
 
-instance : FunLike (AddGroupWithOneEquiv α β) α β where
-  coe f := f.toFun
+instance : EquivLike (AddGroupWithOneEquiv α β) α β where
+  coe f := f.toEquiv
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr 1
-    apply DFunLike.coe_inj
-    assumption
 
 instance : IsZeroHom (AddGroupWithOneEquiv α β) α β where
   map_zero f := f.map_zero
@@ -388,13 +384,11 @@ instance : IsAddHom (AddGroupWithOneEquiv α β) α β where
 
 structure GroupEquiv extends α ≃ β, GroupHom α β, OneEquiv α β, MulEquiv α β where
 
-instance : FunLike (GroupEquiv α β) α β where
-  coe f := f.toFun
+instance : EquivLike (GroupEquiv α β) α β where
+  coe f := f.toEquiv
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr 1
-    apply DFunLike.coe_inj
-    assumption
 
 instance : IsOneHom (GroupEquiv α β) α β where
   map_one f := f.map_one
@@ -404,13 +398,11 @@ instance : IsMulHom (GroupEquiv α β) α β where
 
 structure GroupWithZeroEquiv extends α ≃ β, GroupWithZeroHom α β, GroupEquiv α β, ZeroEquiv α β where
 
-instance : FunLike (GroupWithZeroEquiv α β) α β where
-  coe f := f.toFun
+instance : EquivLike (GroupWithZeroEquiv α β) α β where
+  coe f := f.toEquiv
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr 1
-    apply DFunLike.coe_inj
-    assumption
 
 instance : IsZeroHom (GroupWithZeroEquiv α β) α β where
   map_zero f := f.map_zero
@@ -423,13 +415,11 @@ instance : IsMulHom (GroupWithZeroEquiv α β) α β where
 
 structure RingEquiv extends α ≃ β, RingHom α β, AddGroupEquiv α β, GroupEquiv α β where
 
-instance : FunLike (RingEquiv α β) α β where
-  coe f := f.toFun
+instance : EquivLike (RingEquiv α β) α β where
+  coe f := f.toEquiv
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr 1
-    apply DFunLike.coe_inj
-    assumption
 
 instance : IsZeroHom (RingEquiv α β) α β where
   map_zero f := f.map_zero
@@ -445,13 +435,11 @@ instance : IsMulHom (RingEquiv α β) α β where
 
 structure RngEquiv extends α ≃ β, RngHom α β, AddGroupEquiv α β, MulEquiv α β where
 
-instance : FunLike (RngEquiv α β) α β where
-  coe f := f.toFun
+instance : EquivLike (RngEquiv α β) α β where
+  coe f := f.toEquiv
   coe_inj := by
     intro f g _; repeat obtain ⟨f, _⟩ := f
     congr 1
-    apply DFunLike.coe_inj
-    assumption
 
 instance : IsZeroHom (RngEquiv α β) α β where
   map_zero f := f.map_zero

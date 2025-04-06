@@ -25,3 +25,14 @@ instance [EquivLike F α β] : FunLike F α β where
     apply Function.Injective.comp
     apply DFunLike.coe_inj
     apply EquivLike.coe_inj
+
+instance [EquivLike F α β] : EmbeddingLike F α β where
+  coe f := Equiv.toEmbedding f
+  coe_inj := by
+    show Function.Injective (Equiv.toEmbedding ∘ EquivLike.coe)
+    apply Function.Injective.comp
+    · intro a b h
+      ext
+      show a.toEmbedding _ = b.toEmbedding _
+      rw [h]
+    apply EquivLike.coe_inj

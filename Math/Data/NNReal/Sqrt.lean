@@ -111,6 +111,13 @@ def ofReal_square (x: ℝ) : ofReal (x ^ 2) = square x := by
 def sqrt_mul (a b: ℝ≥0) : a.sqrt * b.sqrt = (a * b).sqrt := by
   symm; apply map_mul sqrtEquiv
 
+noncomputable def sqrtHom : ℝ≥0 ↪*₀ ℝ≥0 where
+  toFun := sqrt
+  map_zero := by simp
+  map_one := by simp
+  map_mul := (sqrt_mul _ _).symm
+  inj' := sqrt_strictMonotone.Injective
+
 def geom_mean_le_midpoint (a b: ℝ≥0) : sqrt (a * b) ≤ midpoint a b := by
   apply square_strictMonotone.le_iff_le.mp
   rw [sqrt_sq, midpoint, div?_npow, square_add,
@@ -174,5 +181,10 @@ def square_eq_zero_iff_eq_zero {a: ℝ} :
   square a = 0 ↔ a = 0 := by
   rw [←NNReal.sqrt_eq_zero_iff_eq_zero]
   rw [sqrt_square, abs_eq_zero_iff_eq_zero]
+
+def sqrt_inv? (a: ℝ≥0) (h: a ≠ 0) : (a⁻¹?).sqrt = a.sqrt⁻¹? :=
+  map_inv? sqrtHom _ _
+def sqrt_div? (a b: ℝ≥0) (h: b ≠ 0) : (a /? b).sqrt = a.sqrt /? b.sqrt :=
+  map_div? sqrtHom _ _ _
 
 end NNReal
