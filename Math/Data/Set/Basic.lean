@@ -96,7 +96,7 @@ instance : Top (Set α) where
 instance : Nonempty (Set α) := ⟨∅⟩
 
 def mem_univ : ∀x, x ∈ (⊤: Set α) := fun _ => True.intro
-def not_mem_empty : ∀{x}, ¬x ∈ Set.empty α := False.elim
+def not_mem_empty : ∀{x}, ¬x ∈ (∅: Set α) := False.elim
 
 @[ext]
 def ext (a b: Set α) : (∀x: α, x ∈ a ↔ x ∈ b) -> a = b := by

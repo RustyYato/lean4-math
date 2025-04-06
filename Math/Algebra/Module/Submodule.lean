@@ -122,6 +122,9 @@ instance : SetLike (Basis R M) M where
   coe b := b.carrier
   coe_inj := by intro a b eq; cases a; congr
 
+@[ext]
+def Basis.ext (a b: Basis R M) : (∀{x}, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+
 instance : IsBasis R M (Basis R M) where
   indep b := b.indep
   complete b := b.complete

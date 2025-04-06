@@ -86,6 +86,18 @@ def mem_support_single {r: R} {m x: M} : x ∈ Set.support (single r m) -> r ≠
   trivial
   contradiction
 
+def of_empty_support (a: LinearCombination R M) :
+  Set.support a = ∅ -> a = 0 := by
+  intro supp_eq
+  apply Finsupp.ext
+  intro m
+  apply Classical.byContradiction
+  intro hm
+  suffices m ∈ Set.support a by
+    rw [supp_eq] at this
+    contradiction
+  rwa [Set.mem_support]
+
 @[ext]
 def ext (a b: LinearCombination R M) : (∀m, a m = b m) -> a = b :=
   Finsupp.ext _ _
