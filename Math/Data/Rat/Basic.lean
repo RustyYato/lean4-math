@@ -202,6 +202,25 @@ def Fract.ofInt (n: Int) : Fract where
 def Rat.ofNat (n: Nat) : ℚ := ⟦.ofNat n⟧
 def Rat.ofInt (n: Int) : ℚ := ⟦.ofInt n⟧
 
+def reduce : ℚ -> ℚ := by
+  refine Quotient.lift ?_ ?_
+  intro x; exact ⟦x.reduce⟧
+  intro a b h
+  apply Quotient.sound
+  apply Relation.trans'
+  apply Relation.symm
+  apply Fract.reduce.spec
+  apply flip Relation.trans'
+  apply Fract.reduce.spec
+  assumption
+
+@[simp]
+def reduce_eq (a: ℚ) : a.reduce = a := by
+  induction a using ind
+  apply Quotient.sound
+  apply Relation.symm
+  apply Fract.reduce.spec
+
 attribute [coe] Fract.ofNat Fract.ofInt Rat.ofNat Rat.ofInt
 
 instance : NatCast Fract := ⟨Fract.ofNat⟩
