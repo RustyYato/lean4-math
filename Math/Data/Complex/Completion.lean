@@ -1,19 +1,10 @@
 import Math.Data.Complex.Norm
+import Math.Data.Rsqrtd.Hom
 
 notation "ℚ[i]" => @Rsqrtd ℚ (-1)
 
-private def toℂ : ℚ[i] ↪+* ℂ where
-  toFun x := .mk x.a x.b
-  inj' := by
-    intro x y h
-    simp at h
-    have := Rsqrtd.mk.inj h
-    rw [Rat.cast.inj.eq_iff, Rat.cast.inj.eq_iff] at this
-    ext; exact this.left; exact this.right
-  map_zero := rfl
-  map_one := rfl
-  map_add := rfl
-  map_mul := rfl
+private def toℂ : ℚ[i] ↪+* ℂ :=
+  Rsqrtd.liftEmbedding Rat.castHom
 
 noncomputable instance : Norm ℚ[i] ℝ where
   norm x := ‖toℂ x‖

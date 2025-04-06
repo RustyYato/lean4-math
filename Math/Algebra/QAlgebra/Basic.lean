@@ -147,6 +147,12 @@ def HasChar.ofQAlgebra [IsNontrivial α] [RingOps α] [IsRing α] [SMul ℚ α] 
 def Rat.cast.inj [QAlgebraOps α] [IsQAlgebra α] : Function.Injective (Rat.cast (α := α)) :=
   field_hom_inj algebraMap
 
+def Rat.castHom [QAlgebraOps α] [IsQAlgebra α] : ℚ ↪+* α := {
+  algebraMap with
+  inj' := Rat.cast.inj
+}
+
+
 namespace IsQAlgebra.ofAlgebra
 
 variable [FieldOps α] [IsField α] [SMul ℚ α] [AlgebraMap ℚ α] [IsAlgebra ℚ α]
