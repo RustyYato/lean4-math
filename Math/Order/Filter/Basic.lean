@@ -668,7 +668,7 @@ def Eventually.frequently {f : Filter α} [f.NeBot] {p : α → Prop} (h : Event
   ext x
   simp [Set.not_mem_empty, ←Set.sdiff_eq_inter_compl,
     Set.sdiff_self]
-  rfl
+  intro; contradiction
 
 def Frequently.exists {p : α → Prop} {f : Filter α} (hp : Frequently p f) : ∃ x, p x := by
   apply Classical.byContradiction
