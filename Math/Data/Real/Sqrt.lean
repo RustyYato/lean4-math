@@ -148,3 +148,12 @@ macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply sqrt_ne_zero <;> invert_tactic)
 
 end Real
+
+namespace NNReal
+
+def embedReal_sqrt (x: ℝ≥0) : embedReal (sqrt x) = Real.sqrt (embedReal x) := by
+  unfold Real.sqrt
+  rw [embedReal_ofReal]
+
+
+end NNReal

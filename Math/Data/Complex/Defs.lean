@@ -87,5 +87,7 @@ def i : ℂ := ⟨0, 1⟩
 def ext (a b: ℂ) : a.real = b.real -> a.img = b.img -> a = b := Rsqrtd.ext
 
 def mk (a b: ℝ) : ℂ := ⟨a, b⟩
+@[simp] def mk_real (a b: ℝ) : (mk a b).real = a := rfl
+@[simp] def mk_img (a b: ℝ) : (mk a b).img = b := rfl
 
 end Complex

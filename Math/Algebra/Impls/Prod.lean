@@ -142,6 +142,9 @@ instance [Add α] [Add β] [Mul α] [Mul β] [IsRightDistrib α] [IsRightDistrib
     intro k a b; ext <;>
     apply add_mul
 
+instance [SemiringOps α] [SemiringOps β] : SemiringOps (α × β) := inferInstance
+instance [RingOps α] [RingOps β] : RingOps (α × β) := inferInstance
+
 instance [SemiringOps α] [SemiringOps β] [h: IsSemiring α] [g: IsSemiring β] : IsSemiring (α × β) := IsSemiring.inst
 instance [RingOps α] [RingOps β] [IsRing α] [IsRing β] : IsRing (α × β) := IsRing.inst
 
