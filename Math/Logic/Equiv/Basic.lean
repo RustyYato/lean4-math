@@ -168,7 +168,11 @@ def congrPProd {α₀ α₁ β₀ β₁: Sort*} (a: α₀ ≃ α₁) (b: β₀ �
 def congrProd {α₀ α₁ β₀ β₁: Type*} (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : α₀ × β₀ ≃ α₁ × β₁ :=
   liftProd (congrPProd a b)
 
+@[simp] def apply_congrPProd (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrPProd a b x = ⟨a x.1, b x.2⟩ := rfl
+@[simp] def symm_congrPProd (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : (congrPProd a b).symm = congrPProd a.symm b.symm := rfl
+
 @[simp] def apply_congrProd (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrProd a b x = (a x.1, b x.2) := rfl
+@[simp] def symm_congrProd (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : (congrProd a b).symm = congrProd a.symm b.symm := rfl
 
 def commPProd (α β: Sort*) : α ×' β ≃ β ×' α where
   toFun x := ⟨x.2, x.1⟩
@@ -178,6 +182,12 @@ def commPProd (α β: Sort*) : α ×' β ≃ β ×' α where
 
 def commProd (α β: Type*) : α × β ≃ β × α :=
   liftProd (commPProd _ _)
+
+@[simp] def apply_commPProd : commPProd α β x = ⟨x.2, x.1⟩ := rfl
+@[simp] def symm_commPProd (α β: Type*) : (commPProd α β).symm = commPProd β α := rfl
+
+@[simp] def apply_commProd : commProd α β x = (x.2, x.1) := rfl
+@[simp] def symm_commProd (α β: Type*) : (commProd α β).symm = commProd β α := rfl
 
 def congrOption {α β: Type*} (h: α ≃ β) : Option α ≃ Option β where
   toFun
@@ -196,6 +206,10 @@ def congrOption {α β: Type*} (h: α ≃ β) : Option α ≃ Option β where
     rfl
     dsimp
     rw [symm_coe]
+
+@[simp] def apply_congrOption_some (h: α ≃ β) : congrOption h (.some x) = .some (h x) := rfl
+@[simp] def apply_congrOption_none (h: α ≃ β) : congrOption h .none = .none := rfl
+@[simp] def symm_congrOption (h: α ≃ β) : (congrOption h).symm = congrOption h.symm := rfl
 
 def sum_equiv_psum (α β: Type*) : α ⊕ β ≃ α ⊕' β where
   toFun
@@ -229,8 +243,13 @@ def congrPSum {α₀ α₁ β₀ β₁: Sort*} (a: α₀ ≃ α₁) (b: β₀ �
 def congrSum {α₀ α₁ β₀ β₁: Type*} (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : α₀ ⊕ β₀ ≃ α₁ ⊕ β₁ :=
   liftSum (congrPSum a b)
 
+@[simp] def apply_congrPSum_inl (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrPSum a b (.inl x) = .inl (a x) := rfl
+@[simp] def apply_congrPSum_inr (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrPSum a b (.inr x) = .inr (b x) := rfl
+@[simp] def symm_congrPSum (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : (congrPSum a b).symm = congrPSum a.symm b.symm := rfl
+
 @[simp] def apply_congrSum_inl (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrSum a b (.inl x) = .inl (a x) := rfl
 @[simp] def apply_congrSum_inr (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrSum a b (.inr x) = .inr (b x) := rfl
+@[simp] def symm_congrSum (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : (congrSum a b).symm = congrSum a.symm b.symm := rfl
 
 def assocPSum {α β γ: Sort*} : α ⊕' β ⊕' γ ≃ (α ⊕' β) ⊕' γ where
   toFun
@@ -267,6 +286,13 @@ def assocSum {α β γ: Type*} : α ⊕ β ⊕ γ ≃ (α ⊕ β) ⊕ γ where
   rightInv x := by rcases x with (x | x) | x <;> rfl
 
 def commSum (α β: Type*) : α ⊕ β ≃ β ⊕ α := liftSum (commPSum _ _)
+
+@[simp] def symm_commPSum : (commPSum α β).symm = commPSum β α := by
+  ext x
+  simp [commPSum]
+  cases x <;> rfl
+@[simp] def symm_commSum : (commSum α β).symm = commSum β α := by
+  ext; simp [commSum]
 
 def sigma_equiv_psigma {α: Type*} (β: α -> Type*) : (Σa: α, β a) ≃ (Σ'a: α, β a) where
   toFun x := ⟨x.1, x.2⟩
@@ -521,13 +547,7 @@ def swap_comm [DecidableEq α] (a b: α) : swap a b = swap b a := by
   simp
   split <;> split
   subst a b; rfl
-  subst a; rw [if_pos]; rfl
-  rfl
-  rw [if_pos]; rfl
-  assumption
-  rw [if_neg, if_neg]
-  assumption
-  assumption
+  subst a; repeat rfl
 
 private instance : ∀(x: Option α), Decidable (x = .none)
 | .none => .isTrue rfl
@@ -803,6 +823,10 @@ def splitRange (i j k: Nat): Fin (i + j + k) ≃ Fin i ⊕ Fin j ⊕ Fin k := by
   apply congrSum .rfl
   apply finSum.symm
 
+@[simp] def symm_apply_splitRange₀ : (splitRange i j k).symm (.inl x) = ⟨x.val, by omega⟩ := rfl
+@[simp] def symm_apply_splitRange₁ : (splitRange i j k).symm (.inr (.inl x)) = ⟨i + x.val, by omega⟩ := by rfl
+@[simp] def symm_apply_splitRange₂ : (splitRange i j k).symm (.inr (.inr x)) = ⟨i + (j + x.val), by omega⟩ := by rfl
+
 def apply_splitRange_eq₁ {i j k: Nat} (x: Fin (i + j + k)) (h: x.val < i) :
   splitRange i j k x = .inl ⟨x.val, h⟩ := by
   simp [splitRange]
@@ -859,6 +883,9 @@ def rotate (n k: Nat) : Fin n ≃ Fin n where
     exact x.pos
     apply Nat.le_add_left
 
+@[simp]
+def apply_rotate : rotate n k x = ⟨(x + k) % n, Nat.mod_lt _ x.pos⟩ := rfl
+
 -- rotates all elements in the range i <= x <= j by k
 def rotateRange (i j: Fin n) (offset: Nat) : Fin n ≃ Fin n := by
   exact go (min i.val j.val) (max i.val j.val) (by omega) (by omega)
@@ -891,8 +918,44 @@ def rotateRange_of_le (i j: Fin n) (offset: Nat) (x: Fin n)
   }
   unfold rotateRange.go
   simp [congrEquiv', apply_congrEquiv]
+  rw [apply_splitRange_eq₁]; simp
+  assumption
 
-  sorry
+def rotateRange_of_gt (i j: Fin n) (offset: Nat) (x: Fin n)
+  (h: i ≤ j) (hx: x > j) : rotateRange i j offset x = x := by
+  unfold rotateRange
+  conv => {
+    lhs; arg 1
+    conv => { arg 2; rw [Nat.min_eq_left h] }
+    conv => { arg 3; rw [Nat.max_eq_right h]  }
+  }
+  unfold rotateRange.go
+  simp [congrEquiv', apply_congrEquiv]
+  rw [apply_splitRange_eq₃]; simp
+  congr; omega
+  simp; omega
+
+def rotateRange_of_between (i j: Fin n) (offset: Nat) (x: Fin n)
+  (h: i ≤ j) (i_le_x: i ≤ x) (x_le_j: x ≤ j) :
+  rotateRange i j offset x = ⟨i + (x - i + offset) % (j - i + 1), by
+    apply Nat.lt_of_lt_of_le
+    apply Nat.add_lt_add_left
+    apply Nat.mod_lt
+    apply Nat.zero_lt_succ
+    omega⟩ := by
+  unfold rotateRange
+  conv => {
+    lhs; arg 1
+    conv => { arg 2; rw [Nat.min_eq_left h] }
+    conv => { arg 3; rw [Nat.max_eq_right h]  }
+  }
+  unfold rotateRange.go
+  simp [congrEquiv', apply_congrEquiv]
+  rw [apply_splitRange_eq₂]
+  simp
+  assumption
+  simp
+  omega
 
 end Equiv
 

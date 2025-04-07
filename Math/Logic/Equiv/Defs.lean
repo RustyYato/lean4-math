@@ -160,4 +160,11 @@ protected def Nonempty [g: Nonempty α] (h: α ≃ β) : Nonempty β :=
 
 @[simp] def coe_mk (f: α -> β) (g: β -> α) (hf: Function.IsRightInverse f g) (hg: Function.IsLeftInverse f g) : Equiv.mk f g hf hg = f := rfl
 
+@[simp] def symm_mk (f: α -> β) (g: β -> α) (hf: Function.IsRightInverse f g) (hg: Function.IsLeftInverse f g) : (Equiv.mk f g hf hg).symm = (Equiv.mk g f hg hf) := rfl
+
+@[simp] def symm_trans' : (Equiv.trans h g).symm = Equiv.trans g.symm h.symm := rfl
+
+@[simp] def apply_refl : Equiv.refl _ x = x := rfl
+@[simp] def apply_rfl : Equiv.rfl x = x := rfl
+
 end Equiv
