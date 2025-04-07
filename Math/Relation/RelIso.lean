@@ -96,6 +96,8 @@ instance : IsRelHom (r ≃r s) r s where
 
 namespace RelHom
 
+@[simp] def toFun_eq_coe (h: r →r s) : h.toFun x = h x := rfl
+
 def comp (h: r →r s) (g: s →r t) : r →r t where
   toFun := g ∘ h
   resp_rel := g.resp_rel ∘ h.resp_rel
@@ -123,6 +125,8 @@ end RelHom
 
 namespace RelEmbedding
 
+@[simp] def toEmbedding_eq_coe (h: r ↪r s) : h.toEmbedding x = h x := rfl
+
 def refl : r ↪r r where
   toEmbedding := .rfl
   resp_rel := Iff.rfl
@@ -149,6 +153,8 @@ def wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s where
 end RelEmbedding
 
 namespace RelIso
+
+@[simp] def toEquiv_eq_coe (h: r ≃r s) : h.toEquiv x = h x := rfl
 
 def inv_resp_rel (h: r ≃r s) : _root_.resp_rel s r h.invFun := by
   intro a b

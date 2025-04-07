@@ -1,4 +1,5 @@
 import Math.Function.Basic
+import Math.Logic.Equiv.Defs
 
 def Fin.pair (a: Fin n) (b: Fin m) : Fin (n * m) := by
   apply Fin.mk (a * m + b)
@@ -28,6 +29,7 @@ def Fin.pair_right (x: Fin (n * m)) : Fin m := by
   exact x.elim0
   apply Nat.zero_lt_succ
 
+@[simp]
 def Fin.pair_pair_left (x: Fin n) (y: Fin m) : (pair x y).pair_left = x := by
   unfold pair pair_left
   cases x with | mk x xLt =>
@@ -38,6 +40,7 @@ def Fin.pair_pair_left (x: Fin n) (y: Fin m) : (pair x y).pair_left = x := by
   rw [Nat.succ_mul]
   apply Nat.add_lt_add_left
   assumption
+@[simp]
 def Fin.pair_pair_right (x: Fin n) (y: Fin m) : (pair x y).pair_right = y := by
   unfold pair pair_right
   cases y with | mk y yLt =>
@@ -45,6 +48,7 @@ def Fin.pair_pair_right (x: Fin n) (y: Fin m) : (pair x y).pair_right = y := by
   rw [Nat.mod_eq_of_lt]
   assumption
 
+@[simp]
 def Fin.pair_split_eq_self (x: Fin (n * m)) : pair x.pair_left x.pair_right = x := by
   cases x with | mk x xLt =>
   unfold pair pair_left pair_right
@@ -52,15 +56,21 @@ def Fin.pair_split_eq_self (x: Fin (n * m)) : pair x.pair_left x.pair_right = x 
   congr
   rw [Nat.mul_comm, Nat.div_add_mod]
 
+def Equiv.finProd : Fin n × Fin m ≃ Fin (n * m) where
+  toFun x := x.1.pair x.2
+  invFun x := ⟨x.pair_left, x.pair_right⟩
+  leftInv x := by simp
+  rightInv x := by simp
+
+@[simp] def Equiv.symm_finProd_fst (x: Fin (n * m)) : (Equiv.finProd.symm x).1 = x.pair_left := _root_.rfl
+@[simp] def Equiv.symm_finProd_snd (x: Fin (n * m)) : (Equiv.finProd.symm x).2 = x.pair_right := _root_.rfl
+
 def Fin.pair.inj : Function.Injective₂ (Fin.pair (n := n) (m := m)) := by
-  intro x₀ x₁ y₀ y₁ h
-  have h₀: (pair x₀ x₁).pair_left = x₀ := pair_pair_left _ _
-  have h₁: (pair x₀ x₁).pair_right = x₁ := pair_pair_right _ _
-  rw [h] at h₀ h₁
-  rw [pair_pair_left] at h₀
-  rw [pair_pair_right] at h₁
-  apply And.intro <;> (symm; assumption)
+  intro a b c d h
+  replace h : Equiv.finProd ⟨a, b⟩ = Equiv.finProd ⟨c, d⟩ := h
+  exact Prod.mk.inj (Equiv.finProd.inj h)
 
 def Fin.pair.congr (a b: Fin (n * m)) : pair_left a = pair_left b -> pair_right a = pair_right b -> a = b := by
   intro x y
-  rw [←pair_split_eq_self a, x, y, pair_split_eq_self]
+  apply Equiv.finProd.symm.inj
+  ext; simp [x]; simp [y]

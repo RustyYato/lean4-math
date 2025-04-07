@@ -161,7 +161,7 @@ def lift_lift (a: Cardinal.{u}) : (Cardinal.lift.{max u v, w} (Cardinal.lift.{u,
 
 def ofNat_add (n m: Nat) : ofNat (n + m) = ofNat n + ofNat m := by
   apply sound
-  exact (Fin.equivAdd _ _).symm
+  exact Equiv.finSum.symm
 
 def OfNat_add (n m: Nat) : (OfNat.ofNat (n + m): Cardinal) = OfNat.ofNat n + OfNat.ofNat m := by
   show lift _ = (lift _).add (lift _)
@@ -171,11 +171,11 @@ def OfNat_add (n m: Nat) : (OfNat.ofNat (n + m): Cardinal) = OfNat.ofNat n + OfN
   apply Equiv.ulift
   apply flip Equiv.trans; symm
   apply Equiv.ulift
-  exact (Fin.equivAdd _ _).symm
+  exact Equiv.finSum.symm
 
 def ofNat_mul (n m: Nat) : ofNat (n * m) = ofNat n * ofNat m := by
   apply sound
-  exact (Fin.equivMul _ _).symm
+  exact Equiv.finProd.symm
 
 def OfNat_mul (n m: Nat) : (OfNat.ofNat (n * m): Cardinal) = OfNat.ofNat n * OfNat.ofNat m := by
   show lift _ = (lift _).mul (lift _)
@@ -185,7 +185,7 @@ def OfNat_mul (n m: Nat) : (OfNat.ofNat (n * m): Cardinal) = OfNat.ofNat n * OfN
   apply Equiv.ulift
   apply flip Equiv.trans; symm
   apply Equiv.ulift
-  exact (Fin.equivMul _ _).symm
+  exact Equiv.finProd.symm
 
 def Fin.equivPow (n m: Nat) : Trunc ((Fin m -> Fin n) ≃ Fin (n ^ m)) := by
   apply Fintype.equivOfCardEq

@@ -18,7 +18,7 @@ def DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
   fun a b =>
   match inferInstanceAs (Decidable (emb a = emb b)) with
   | .isTrue h => .isTrue (emb.inj h)
-  | .isFalse h => .isFalse fun g => h (g ▸ _root_.rfl)
+  | .isFalse h => .isFalse fun g => h (g ▸ rfl)
 
 def empty [IsEmpty α] : α ↪ β where
   toFun := elim_empty
@@ -109,10 +109,9 @@ def congrEquiv {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β�
 def congrEquiv' {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) -> (α₁ ≃ β₁) :=
   congrEquiv h g
 
-@[simp]
-def apply_congrEquiv (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) (x: α₀ ≃ β₀) :
+@[simp] def apply_congrEquiv (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) (x: α₀ ≃ β₀) :
   congrEquiv h g x = h.symm.trans (x.trans g) := by rfl
-def symm_congrEquiv (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) :
+@[simp] def symm_congrEquiv (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) :
   (congrEquiv h g).symm = congrEquiv h.symm g.symm := by rfl
 
 def ulift (α: Type*) : ULift α ≃ α where
@@ -127,10 +126,10 @@ def plift (α: Sort*) : PLift α ≃ α where
   leftInv _ := by rfl
   rightInv _ := by rfl
 
-def liftULift : (α ≃ β) ≃ (ULift α ≃ ULift β) :=
+@[simp] def liftULift : (α ≃ β) ≃ (ULift α ≃ ULift β) :=
   (congrEquiv (ulift α) (ulift β)).symm
 
-def liftPLift : (α ≃ β) ≃ (PLift α ≃ PLift β) :=
+@[simp] def liftPLift : (α ≃ β) ≃ (PLift α ≃ PLift β) :=
   (congrEquiv (plift α) (plift β)).symm
 
 def congrULift {α β: Type*} (h: α ≃ β) : ULift α ≃ ULift β :=
@@ -145,7 +144,7 @@ def prod_equiv_pprod (α β: Type*) : α × β ≃ α ×' β where
   leftInv _ := by rfl
   rightInv _ := by rfl
 
-def liftProd : ((α₀ ×' β₀) ≃ (α₁ ×' β₁)) ≃ ((α₀ × β₀) ≃ (α₁ × β₁)) :=
+@[simp] def liftProd : ((α₀ ×' β₀) ≃ (α₁ ×' β₁)) ≃ ((α₀ × β₀) ≃ (α₁ × β₁)) :=
   (congrEquiv (prod_equiv_pprod _ _) (prod_equiv_pprod _ _)).symm
 
 def prod_equiv_sigma (α β: Type*) : α × β ≃ Σ_: α, β where
@@ -168,6 +167,8 @@ def congrPProd {α₀ α₁ β₀ β₁: Sort*} (a: α₀ ≃ α₁) (b: β₀ �
 
 def congrProd {α₀ α₁ β₀ β₁: Type*} (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : α₀ × β₀ ≃ α₁ × β₁ :=
   liftProd (congrPProd a b)
+
+@[simp] def apply_congrProd (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrProd a b x = (a x.1, b x.2) := rfl
 
 def commPProd (α β: Sort*) : α ×' β ≃ β ×' α where
   toFun x := ⟨x.2, x.1⟩
@@ -222,11 +223,26 @@ def congrPSum {α₀ α₁ β₀ β₁: Sort*} (a: α₀ ≃ α₁) (b: β₀ �
     rw [symm_coe]
     rw [symm_coe]
 
-def liftSum {α₀ α₁ β₀ β₁: Type*} : (α₀ ⊕' β₀ ≃ α₁ ⊕' β₁) ≃ (α₀ ⊕ β₀ ≃ α₁ ⊕ β₁) :=
+@[simp] def liftSum {α₀ α₁ β₀ β₁: Type*} : (α₀ ⊕' β₀ ≃ α₁ ⊕' β₁) ≃ (α₀ ⊕ β₀ ≃ α₁ ⊕ β₁) :=
   (congrEquiv (sum_equiv_psum _ _) (sum_equiv_psum _ _)).symm
 
 def congrSum {α₀ α₁ β₀ β₁: Type*} (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : α₀ ⊕ β₀ ≃ α₁ ⊕ β₁ :=
   liftSum (congrPSum a b)
+
+@[simp] def apply_congrSum_inl (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrSum a b (.inl x) = .inl (a x) := rfl
+@[simp] def apply_congrSum_inr (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : congrSum a b (.inr x) = .inr (b x) := rfl
+
+def assocPSum {α β γ: Sort*} : α ⊕' β ⊕' γ ≃ (α ⊕' β) ⊕' γ where
+  toFun
+  | .inl x => .inl (.inl x)
+  | .inr (.inl x) => .inl (.inr x)
+  | .inr (.inr x) => .inr x
+  invFun
+  | .inl (.inl x) => .inl x
+  | .inl (.inr x) => .inr (.inl x)
+  | .inr x => .inr (.inr x)
+  leftInv x := by rcases x with x | x | x <;> rfl
+  rightInv x := by rcases x with (x | x) | x <;> rfl
 
 def commPSum (α β: Sort*) : α ⊕' β ≃ β ⊕' α where
   toFun
@@ -237,6 +253,18 @@ def commPSum (α β: Sort*) : α ⊕' β ≃ β ⊕' α where
   | .inr x => .inl x
   leftInv x := by cases x <;> rfl
   rightInv x := by cases x <;> rfl
+
+def assocSum {α β γ: Type*} : α ⊕ β ⊕ γ ≃ (α ⊕ β) ⊕ γ where
+  toFun
+  | .inl x => .inl (.inl x)
+  | .inr (.inl x) => .inl (.inr x)
+  | .inr (.inr x) => .inr x
+  invFun
+  | .inl (.inl x) => .inl x
+  | .inl (.inr x) => .inr (.inl x)
+  | .inr x => .inr (.inr x)
+  leftInv x := by rcases x with x | x | x <;> rfl
+  rightInv x := by rcases x with (x | x) | x <;> rfl
 
 def commSum (α β: Type*) : α ⊕ β ≃ β ⊕ α := liftSum (commPSum _ _)
 
@@ -266,7 +294,7 @@ def congrPSigma {α₀ α₁: Sort*} {β₀: α₀ -> Sort*} {β₁: α₁ -> So
     rw [(g _).symm_coe]
     apply cast_heq
 
-def liftSigma {α₀ α₁: Type*} {β₀: α₀ -> Type*} {β₁: α₁ -> Type*} :
+@[simp] def liftSigma {α₀ α₁: Type*} {β₀: α₀ -> Type*} {β₁: α₁ -> Type*} :
   ((Σ'a: α₀, β₀ a) ≃ (Σ'a: α₁, β₁ a)) ≃ ((Σa: α₀, β₀ a) ≃ (Σa: α₁, β₁ a)) :=
   (congrEquiv (sigma_equiv_psigma _) (sigma_equiv_psigma _)).symm
 
@@ -298,7 +326,7 @@ def subtype_equiv_psigma {α: Sort*} (P: α -> Prop) : Subtype P ≃ Σ'x, P x w
   leftInv x := by rfl
   rightInv x := by rfl
 
-def liftSubtype {α β: Sort*} {P: α -> Prop} {Q: β -> Prop}: ((Σ'x, P x) ≃ Σ'x, Q x) ≃ (Subtype P ≃ Subtype Q) :=
+@[simp] def liftSubtype {α β: Sort*} {P: α -> Prop} {Q: β -> Prop}: ((Σ'x, P x) ≃ Σ'x, Q x) ≃ (Subtype P ≃ Subtype Q) :=
   (congrEquiv (subtype_equiv_psigma _) (subtype_equiv_psigma _)).symm
 
 def congrSubtype { α β: Sort _ } {P: α -> Prop} {Q: β -> Prop} (h: α ≃ β) (iff: ∀{x}, P x ↔ Q (h.toFun x)) : Subtype P ≃ Subtype Q :=
@@ -309,6 +337,9 @@ def fin {n m: Nat} (h: n = m) : Fin n ≃ Fin m where
   invFun := Fin.cast h.symm
   leftInv x := by rfl
   rightInv x := by rfl
+
+@[simp] def apply_fin (h: n = m) : fin h x = x.cast h := rfl
+@[simp] def symm_fin (h: n = m) : (fin h).symm = fin h.symm := rfl
 
 def fin_equiv_nat_subtype : Fin n ≃ { x: Nat // x < n } where
   toFun x := ⟨x.1, x.2⟩
@@ -340,7 +371,7 @@ def embed_equiv_subtype (α β: Sort*) : (α ↪ β) ≃ { f: α -> β // f.Inje
   leftInv x := by rfl
   rightInv x := by rfl
 
-def liftEmbed {α₀ α₁ β₀ β₁} :
+@[simp] def liftEmbed {α₀ α₁ β₀ β₁} :
   ({ f: α₀ -> β₀ // Function.Injective f } ≃ { f: α₁ -> β₁ // Function.Injective f }) ≃
   ((α₀ ↪ β₀) ≃ (α₁ ↪ β₁)) :=
   (congrEquiv (embed_equiv_subtype _ _) (embed_equiv_subtype _ _)).symm
@@ -376,7 +407,7 @@ def fin_equiv_option (n: Nat) : Fin (n + 1) ≃ Option (Fin n) where
     intro x
     dsimp
     cases x using Fin.lastCases
-    dsimp; rw [dif_pos _root_.rfl]
+    dsimp; rw [dif_pos rfl]
     rw [dif_neg]
     rfl
     rename_i x
@@ -430,7 +461,7 @@ def set (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x, Decidabl
     intro x
     dsimp
     by_cases h₀:x = a
-    rw [if_pos h₀, if_pos _root_.rfl, h₀]
+    rw [if_pos h₀, if_pos rfl, h₀]
     rw [if_neg h₀]
     by_cases h₁:h x = b
     rw [if_pos h₁, if_neg, if_pos, ←h₁, coe_symm]
@@ -443,7 +474,7 @@ def set (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x, Decidabl
     intro x
     dsimp
     by_cases h₀:x = b
-    rw [if_pos h₀, if_pos _root_.rfl, h₀]
+    rw [if_pos h₀, if_pos rfl, h₀]
     rw [if_neg h₀]
     by_cases h₁:h.symm x = a
     rw [if_pos h₁, if_neg, if_pos, ←h₁, symm_coe]
@@ -460,7 +491,7 @@ def swap_symm [DecidableEq α] (a b: α) :
   (Equiv.swap a b).symm = Equiv.swap b a := by
   simp only [swap, symm, set]
   ext x
-  simp [DFunLike.coe, Equiv.refl]
+  simp [Equiv.refl]
   rfl
 
 def apply_set {x a: α} {b: β} [∀x, Decidable (x = a)] [∀x, Decidable (x = b)]  (h: α ≃ β) :
@@ -499,7 +530,7 @@ def swap_comm [DecidableEq α] (a b: α) : swap a b = swap b a := by
   assumption
 
 private instance : ∀(x: Option α), Decidable (x = .none)
-| .none => .isTrue _root_.rfl
+| .none => .isTrue rfl
 | .some _ => .isFalse Option.noConfusion
 
 def of_equiv_option_option {α β: Type*} (h: Option α ≃ Option β) : α ≃ β :=
@@ -655,7 +686,7 @@ def option_perm_equiv_prod_perm [DecidableEq α] : (Option α ≃ Option α) ≃
 def empty_emb_equiv_unit [_root_.IsEmpty α] : (α ↪ β) ≃ Unit where
   toFun _ := ()
   invFun _ := Embedding.empty
-  rightInv _ := _root_.rfl
+  rightInv _ := rfl
   leftInv _ := by
     ext x
     exact elim_empty x
@@ -669,7 +700,7 @@ def empty_sum_eqv [_root_.IsEmpty α] : α ⊕ β ≃ β where
     cases x <;> rename_i x
     exact elim_empty x
     rfl
-  rightInv x := _root_.rfl
+  rightInv x := rfl
 
 def sum_empty_eqv [_root_.IsEmpty β] : α ⊕ β ≃ α :=
   (commSum _ _).trans empty_sum_eqv
@@ -740,52 +771,60 @@ def subsing_prod_right [Subsingleton β] [Inhabited β] : α × β ≃ α where
     intro x
     rfl
 
--- rotates all elements in the range i <= x <= j by k
-def splitRange (i j k: Nat): Fin (i + j + k) ≃ Fin i ⊕ Fin j ⊕ Fin k where
-  toFun x :=
-    if hi:x.val < i then
-      .inl ⟨x.val, hi⟩
-    else if hj:x.val < i + j then
-      .inr <| .inl ⟨x.val - i, by omega⟩
+def finSum : Fin n ⊕ Fin m ≃ Fin (n + m) where
+  toFun
+  | .inl x => x.castAdd _
+  | .inr x => x.natAdd _
+  invFun x := if h:x.val < n then
+      .inl ⟨x.val, h⟩
     else
-      .inr <| .inr ⟨x.val - i - j, by omega⟩
-  invFun
-  | .inl x => ⟨x.val, by omega⟩
-  | .inr (.inl x) => ⟨x.val + i, by omega⟩
-  | .inr (.inr x) => ⟨x.val + i + j, by omega⟩
+      .inr ⟨x.val - n, by omega⟩
   leftInv x := by
+    cases x
     simp
-    by_cases hi:x.val < i
-    simp [hi]
-    by_cases hj:x.val < i + j
-    simp [hi, hj]
-    congr; omega
-    simp [hi, hj]
-    congr; omega
+    simp; rw [dif_neg]; congr; omega
+    omega
   rightInv x := by
-    cases x
-    simp
-    rename_i x
-    cases x
-    simp; rw [dif_neg, dif_pos]
-    omega
-    omega
-    simp; rw [dif_neg, dif_neg]
-    simp; congr
-    omega
-    omega
-    omega
+    by_cases h:x.val < n
+    simp [h]
+    simp [h]
+    congr; omega
+
+@[simp] def apply_finSum_inl (x: Fin n) : finSum (.inl x) = x.castAdd m := rfl
+@[simp] def apply_finSum_inr (x: Fin m) : finSum (.inr x) = x.natAdd n := rfl
+def symm_apply_finSum (x: Fin (n + m)) :
+  finSum.symm x = if h:x.val < n then .inl ⟨x, h⟩ else .inr ⟨x.val - n, by omega⟩ := rfl
+
+def splitRange (i j k: Nat): Fin (i + j + k) ≃ Fin i ⊕ Fin j ⊕ Fin k := by
+  apply Equiv.trans
+  apply fin; rw [Nat.add_assoc]
+  apply Equiv.trans
+  apply finSum.symm
+  apply congrSum .rfl
+  apply finSum.symm
 
 def apply_splitRange_eq₁ {i j k: Nat} (x: Fin (i + j + k)) (h: x.val < i) :
-  splitRange i j k x = .inl ⟨x.val, h⟩ := by simp [splitRange, h]
+  splitRange i j k x = .inl ⟨x.val, h⟩ := by
+  simp [splitRange]
+  rw [symm_apply_finSum, dif_pos]
+  rfl
+
 def apply_splitRange_eq₂ {i j k: Nat} (x: Fin (i + j + k)) (h₀: i ≤ x.val) (h₁: x < i + j):
-  splitRange i j k x = .inr (.inl ⟨x.val - i, by omega⟩) := by simp [splitRange, Nat.not_lt_of_le h₀, h₁]
+  splitRange i j k x = .inr (.inl ⟨x.val - i, by omega⟩) := by
+  simp [splitRange]
+  rw [symm_apply_finSum, dif_neg]
+  simp
+  rw [symm_apply_finSum, dif_pos]
+  simp; omega
+
 def apply_splitRange_eq₃ {i j k: Nat} (x: Fin (i + j + k)) (h₀: i + j ≤ x.val):
   splitRange i j k x = .inr (.inr ⟨x.val - i - j, by omega⟩) := by
-    simp [splitRange]
-    rw [dif_neg, dif_neg]
-    omega
-    omega
+  simp [splitRange]
+  rw [symm_apply_finSum, dif_neg]
+  simp
+  rw [symm_apply_finSum, dif_neg]
+  simp; omega
+  simp; omega
 
 def rotate (n k: Nat) : Fin n ≃ Fin n where
   toFun x := ⟨(x + k) % n, Nat.mod_lt _ x.pos⟩

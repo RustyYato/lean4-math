@@ -23,7 +23,7 @@ def refl (α: Sort*) : α ↪ α where
   toFun := id
   inj' := fun _ _ => id
 
-def rfl {α: Sort*} : α ↪ α := .refl _
+protected def rfl {α: Sort*} : α ↪ α := .refl _
 
 def trans {α β γ: Sort*} (h: α ↪ β) (g: β ↪ γ) : α ↪ γ where
   toFun := g.toFun ∘ h.toFun
@@ -36,6 +36,8 @@ instance : FunLike (Embedding α β) α β where
   coe_inj := by
     intro a b eq
     cases a; cases b; congr
+
+@[simp] def toFun_eq_coe (h: α ↪ β) : h.toFun x = h x := rfl
 
 def inj (h: α ↪ b) : Function.Injective h := h.inj'
 
@@ -56,7 +58,7 @@ def refl (α: Sort*) : α ≃ α where
   leftInv _ := rfl
   rightInv _ := rfl
 
-def rfl {α: Sort*} : α ≃ α := .refl _
+protected def rfl {α: Sort*} : α ≃ α := .refl _
 
 @[symm]
 def symm {α β: Sort*} (h: α ≃ β) : β ≃ α where
@@ -145,7 +147,7 @@ def eq_symm_of_coe_eq (h: α ≃ β) : h x = y -> x = h.symm y := by
   intro g
   rw [←g, coe_symm]
 
-def symm_symm (h: α ≃ β) : h.symm.symm = h := _root_.rfl
+@[simp] def symm_symm (h: α ≃ β) : h.symm.symm = h := rfl
 
 @[simp]
 def mk_apply (f: α -> β) (g: β -> α) (h: Function.IsLeftInverse f g) (h': Function.IsRightInverse f g) (x: α) : Equiv.mk f g h' h x = f x := by rfl
@@ -153,5 +155,9 @@ def mk_apply (f: α -> β) (g: β -> α) (h: Function.IsLeftInverse f g) (h': Fu
 protected def Nonempty [g: Nonempty α] (h: α ≃ β) : Nonempty β :=
   have ⟨x⟩ := g
   ⟨h x⟩
+
+@[simp] def toFun_eq_coe (f: α ≃ β) : f.toFun = f := rfl
+
+@[simp] def coe_mk (f: α -> β) (g: β -> α) (hf: Function.IsRightInverse f g) (hg: Function.IsLeftInverse f g) : Equiv.mk f g hf hg = f := rfl
 
 end Equiv

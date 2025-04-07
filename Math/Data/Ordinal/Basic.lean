@@ -603,9 +603,7 @@ def Pre.mul.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd: b.rel ≃r d.rel) : 
     apply ac.resp_rel.mp; assumption
     apply Prod.Lex.right
     apply bd.resp_rel.mp; assumption
-    unfold Equiv.congrProd Equiv.prod_equiv_pprod Equiv.congrPProd
-      Equiv.trans Equiv.symm at h
-    dsimp at h
+    simp at h
     rename_i a₀ b₀
     generalize ha₁:ac a₀=a₁
     generalize hb₁:bd b₀=b₁
