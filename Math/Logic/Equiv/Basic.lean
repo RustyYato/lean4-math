@@ -14,12 +14,6 @@ def subtypeVal {P: α -> Prop} : Subtype P ↪ α where
   inj' a b eq := by
     cases a; cases b; congr
 
-def DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
-  fun a b =>
-  match inferInstanceAs (Decidable (emb a = emb b)) with
-  | .isTrue h => .isTrue (emb.inj h)
-  | .isFalse h => .isFalse fun g => h (g ▸ rfl)
-
 def empty [IsEmpty α] : α ↪ β where
   toFun := elim_empty
   inj' x := elim_empty x
@@ -84,6 +78,13 @@ def cantor (α β: Sort*) [h: IsNontrivial β] : ((α -> β) ↪ α) -> False :=
   contradiction
   rename_i hx hy
   exact (iff_false_right hy).mpr hx
+
+protected def IsNontrivial [IsNontrivial α] (f: α ↪ β) : IsNontrivial β where
+  exists_ne := by
+    have ⟨a, b, h⟩ := IsNontrivial.exists_ne (α := α)
+    refine ⟨f a, f b, ?_⟩
+    intro g
+    exact h (f.inj g)
 
 end Embedding
 
@@ -953,19 +954,24 @@ def rotateRange_of_between (i j: Fin n) (offset: Nat) (x: Fin n)
   simp
   omega
 
+def symmEquiv : (α ≃ β) ≃ (β ≃ α) where
+  toFun := symm
+  invFun := symm
+  leftInv _ := by simp
+  rightInv _ := by simp
+
 end Equiv
 
 def Fin.embedNat : Fin n ↪ Nat :=
   Equiv.fin_equiv_nat_subtype.toEmbedding.trans Embedding.subtypeVal
 
+def Fin.embedNat_eq_val : (Fin.embedNat: Fin n -> _) = Fin.val := rfl
+
 def Fin.embedFin (h: n ≤ m) : Fin n ↪ Fin m where
   toFun x := ⟨x, Nat.lt_of_lt_of_le x.isLt h⟩
   inj' x y eq := by cases x; cases y; cases eq; rfl
 
-def Nat.not_between_succ (n m: Nat) : n < m -> m < n + 1 -> False := by
-  intro h g
-  replace g := Nat.le_of_lt_succ g
-  exact Nat.lt_irrefl _ (Nat.lt_of_lt_of_le h g)
+def Fin.embedFin_eq_castLE (h: n ≤ m) : Fin.embedFin h = Fin.castLE h := rfl
 
 def Fin.le_of_emebd (h: Fin n ↪ Fin m) : n ≤ m := by
   induction n generalizing m with
@@ -981,7 +987,7 @@ def Fin.le_of_emebd (h: Fin n ↪ Fin m) : n ≤ m := by
       apply Equiv.fin_equiv_option
       apply Equiv.fin_equiv_option
 
-def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
+def Fin.eq_of_embed (h: Fin n ≃ Fin m) : n = m := by
   apply Nat.le_antisymm
   apply Fin.le_of_emebd
   apply h.toEmbedding
@@ -990,18 +996,11 @@ def Fin.eqOfEquiv (h: Fin n ≃ Fin m) : n = m := by
 
 def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj
 
-instance [Subsingleton α] : Subsingleton (α ≃ β) where
-  allEq := by
-    intro a b
-    ext x
-    apply a.symm.inj
-    apply Subsingleton.allEq
-
 instance [Subsingleton β] : Subsingleton (α ≃ β) where
-  allEq := by
-    intro a b
-    ext x
-    apply Subsingleton.allEq
+  allEq a b := by ext x; apply Subsingleton.allEq
+
+instance [Subsingleton α] : Subsingleton (α ≃ β) :=
+  Equiv.symmEquiv.toEmbedding.Subsingleton
 
 def Embedding.option_emb_equiv_prod_emb [_root_.DecidableEq α] [_root_.DecidableEq β] : (Option α ↪ Option β) ≃ Option β × (α ↪ β) where
   toFun f := (f .none, Embedding.of_option_embed_option f)

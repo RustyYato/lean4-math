@@ -47,6 +47,17 @@ def ext (a b: α ↪ β) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
 @[simp]
 def mk_apply (f: α -> β) (h: Function.Injective f) (x: α) : Embedding.mk f h x = f x := by rfl
 
+protected def Subsingleton [Subsingleton β] (f: α ↪ β) : Subsingleton α where
+  allEq a b := by
+    apply f.inj
+    apply Subsingleton.allEq
+
+protected def DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
+  fun a b =>
+  match inferInstanceAs (Decidable (emb a = emb b)) with
+  | .isTrue h => .isTrue (emb.inj h)
+  | .isFalse h => .isFalse fun g => h (g ▸ rfl)
+
 end Embedding
 
 namespace Equiv

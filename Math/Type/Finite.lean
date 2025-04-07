@@ -90,7 +90,7 @@ def IsFinite.toEquiv α [IsFinite α] : α ≃ Fin (card α) :=
 def IsFinite.card_of_equiv (h: Nonempty (α ≃ β)) [IsFinite α] [IsFinite β] : IsFinite.card α = IsFinite.card β := by
   obtain ⟨h⟩ := h
   have := ((toEquiv β).symm.trans <| h.symm.trans (toEquiv α)).symm
-  exact Fin.eqOfEquiv this
+  exact Fin.eq_of_embed this
 
 noncomputable
 def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=

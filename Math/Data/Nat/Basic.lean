@@ -3,6 +3,11 @@ import Math.Function.Basic
 
 namespace Nat
 
+def not_between_succ (n m: Nat) : n < m -> m < n + 1 -> False := by
+  intro h g
+  replace g := Nat.le_of_lt_succ g
+  exact Nat.lt_irrefl _ (Nat.lt_of_lt_of_le h g)
+
 def le_iff_exists_sum (a b: Nat) : a ≤ b ↔ ∃k, b = a + k := by
   apply Iff.intro
   intro h
