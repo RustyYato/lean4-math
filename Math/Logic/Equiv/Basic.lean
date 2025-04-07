@@ -89,6 +89,32 @@ end Embedding
 
 namespace Equiv
 
+def congrEquiv {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) ≃ (α₁ ≃ β₁) where
+  toFun f := h.symm.trans (f.trans g)
+  invFun f := h.trans (f.trans g.symm)
+  leftInv := by
+    intro f
+    dsimp only
+    rw [trans_assoc, trans_assoc, trans_symm,
+      ←trans_assoc, trans_symm]
+    rfl
+  rightInv := by
+    intro f
+    dsimp only
+    rw [trans_assoc, trans_assoc, symm_trans,
+      ←trans_assoc, symm_trans]
+    rfl
+
+@[simp]
+def congrEquiv' {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) -> (α₁ ≃ β₁) :=
+  congrEquiv h g
+
+@[simp]
+def apply_congrEquiv (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) (x: α₀ ≃ β₀) :
+  congrEquiv h g x = h.symm.trans (x.trans g) := by rfl
+def symm_congrEquiv (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) :
+  (congrEquiv h g).symm = congrEquiv h.symm g.symm := by rfl
+
 def ulift (α: Type*) : ULift α ≃ α where
   toFun := ULift.down
   invFun := ULift.up
@@ -101,17 +127,26 @@ def plift (α: Sort*) : PLift α ≃ α where
   leftInv _ := by rfl
   rightInv _ := by rfl
 
+def liftULift : (α ≃ β) ≃ (ULift α ≃ ULift β) :=
+  (congrEquiv (ulift α) (ulift β)).symm
+
+def liftPLift : (α ≃ β) ≃ (PLift α ≃ PLift β) :=
+  (congrEquiv (plift α) (plift β)).symm
+
 def congrULift {α β: Type*} (h: α ≃ β) : ULift α ≃ ULift β :=
-  (ulift α).trans (h.trans (ulift β).symm)
+  liftULift h
 
 def congrPLift {α β: Sort*} (h: α ≃ β) : PLift α ≃ PLift β :=
-  (plift α).trans (h.trans (plift β).symm)
+  liftPLift h
 
 def prod_equiv_pprod (α β: Type*) : α × β ≃ α ×' β where
   toFun x := ⟨x.1, x.2⟩
   invFun x := ⟨x.1, x.2⟩
   leftInv _ := by rfl
   rightInv _ := by rfl
+
+def liftProd : ((α₀ ×' β₀) ≃ (α₁ ×' β₁)) ≃ ((α₀ × β₀) ≃ (α₁ × β₁)) :=
+  (congrEquiv (prod_equiv_pprod _ _) (prod_equiv_pprod _ _)).symm
 
 def prod_equiv_sigma (α β: Type*) : α × β ≃ Σ_: α, β where
   toFun x := ⟨x.1, x.2⟩
@@ -132,7 +167,7 @@ def congrPProd {α₀ α₁ β₀ β₁: Sort*} (a: α₀ ≃ α₁) (b: β₀ �
     rw [symm_coe]
 
 def congrProd {α₀ α₁ β₀ β₁: Type*} (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : α₀ × β₀ ≃ α₁ × β₁ :=
-  trans (prod_equiv_pprod _ _) (trans (congrPProd a b) (prod_equiv_pprod _ _).symm)
+  liftProd (congrPProd a b)
 
 def commPProd (α β: Sort*) : α ×' β ≃ β ×' α where
   toFun x := ⟨x.2, x.1⟩
@@ -141,7 +176,7 @@ def commPProd (α β: Sort*) : α ×' β ≃ β ×' α where
   rightInv x := by rfl
 
 def commProd (α β: Type*) : α × β ≃ β × α :=
-  trans (prod_equiv_pprod _ _) (trans (commPProd _ _) (prod_equiv_pprod _ _).symm)
+  liftProd (commPProd _ _)
 
 def congrOption {α β: Type*} (h: α ≃ β) : Option α ≃ Option β where
   toFun
@@ -187,8 +222,11 @@ def congrPSum {α₀ α₁ β₀ β₁: Sort*} (a: α₀ ≃ α₁) (b: β₀ �
     rw [symm_coe]
     rw [symm_coe]
 
+def liftSum {α₀ α₁ β₀ β₁: Type*} : (α₀ ⊕' β₀ ≃ α₁ ⊕' β₁) ≃ (α₀ ⊕ β₀ ≃ α₁ ⊕ β₁) :=
+  (congrEquiv (sum_equiv_psum _ _) (sum_equiv_psum _ _)).symm
+
 def congrSum {α₀ α₁ β₀ β₁: Type*} (a: α₀ ≃ α₁) (b: β₀ ≃ β₁) : α₀ ⊕ β₀ ≃ α₁ ⊕ β₁ :=
-  trans (sum_equiv_psum _ _) (trans (congrPSum a b) (sum_equiv_psum _ _).symm)
+  liftSum (congrPSum a b)
 
 def commPSum (α β: Sort*) : α ⊕' β ≃ β ⊕' α where
   toFun
@@ -200,8 +238,7 @@ def commPSum (α β: Sort*) : α ⊕' β ≃ β ⊕' α where
   leftInv x := by cases x <;> rfl
   rightInv x := by cases x <;> rfl
 
-def commSum (α β: Type*) : α ⊕ β ≃ β ⊕ α :=
-  trans (sum_equiv_psum _ _) (trans (commPSum _ _) (sum_equiv_psum _ _).symm)
+def commSum (α β: Type*) : α ⊕ β ≃ β ⊕ α := liftSum (commPSum _ _)
 
 def sigma_equiv_psigma {α: Type*} (β: α -> Type*) : (Σa: α, β a) ≃ (Σ'a: α, β a) where
   toFun x := ⟨x.1, x.2⟩
@@ -229,8 +266,12 @@ def congrPSigma {α₀ α₁: Sort*} {β₀: α₀ -> Sort*} {β₁: α₁ -> So
     rw [(g _).symm_coe]
     apply cast_heq
 
+def liftSigma {α₀ α₁: Type*} {β₀: α₀ -> Type*} {β₁: α₁ -> Type*} :
+  ((Σ'a: α₀, β₀ a) ≃ (Σ'a: α₁, β₁ a)) ≃ ((Σa: α₀, β₀ a) ≃ (Σa: α₁, β₁ a)) :=
+  (congrEquiv (sigma_equiv_psigma _) (sigma_equiv_psigma _)).symm
+
 def congrSigma {α₀ α₁: Type*} {β₀: α₀ -> Type*} {β₁: α₁ -> Type*} (h: α₀ ≃ α₁) (g: ∀a: α₀, β₀ a ≃ β₁ (h a)) : (Σa: α₀, β₀ a) ≃ (Σa: α₁, β₁ a) :=
-  trans (sigma_equiv_psigma _) (trans (congrPSigma h g) (sigma_equiv_psigma _).symm)
+  liftSigma (congrPSigma h g)
 
 def congrPi {α₀ α₁: Sort*} {β₀: α₀ -> Sort*} {β₁: α₁ -> Sort*} (h: α₀ ≃ α₁) (g: ∀a: α₀, β₀ a ≃ β₁ (h a)) : (∀a: α₀, β₀ a) ≃ (∀a: α₁, β₁ a) where
   toFun f a := cast (by rw [symm_coe]) (g _ (f (h.symm a)))
@@ -257,10 +298,11 @@ def subtype_equiv_psigma {α: Sort*} (P: α -> Prop) : Subtype P ≃ Σ'x, P x w
   leftInv x := by rfl
   rightInv x := by rfl
 
-def congrSubtype { α β: Sort _ } {P: α -> Prop} {Q: β -> Prop}
-  (h: α ≃ β)
-  (iff: ∀{x}, P x ↔ Q (h.toFun x)) : Subtype P ≃ Subtype Q :=
-  trans (subtype_equiv_psigma _) (trans (congrPSigma h (fun _ => equivIff.symm iff)) (subtype_equiv_psigma _).symm)
+def liftSubtype {α β: Sort*} {P: α -> Prop} {Q: β -> Prop}: ((Σ'x, P x) ≃ Σ'x, Q x) ≃ (Subtype P ≃ Subtype Q) :=
+  (congrEquiv (subtype_equiv_psigma _) (subtype_equiv_psigma _)).symm
+
+def congrSubtype { α β: Sort _ } {P: α -> Prop} {Q: β -> Prop} (h: α ≃ β) (iff: ∀{x}, P x ↔ Q (h.toFun x)) : Subtype P ≃ Subtype Q :=
+  liftSubtype (congrPSigma h (fun _ => equivIff.symm iff))
 
 def fin {n m: Nat} (h: n = m) : Fin n ≃ Fin m where
   toFun := Fin.cast h
@@ -298,8 +340,13 @@ def embed_equiv_subtype (α β: Sort*) : (α ↪ β) ≃ { f: α -> β // f.Inje
   leftInv x := by rfl
   rightInv x := by rfl
 
+def liftEmbed {α₀ α₁ β₀ β₁} :
+  ({ f: α₀ -> β₀ // Function.Injective f } ≃ { f: α₁ -> β₁ // Function.Injective f }) ≃
+  ((α₀ ↪ β₀) ≃ (α₁ ↪ β₁)) :=
+  (congrEquiv (embed_equiv_subtype _ _) (embed_equiv_subtype _ _)).symm
+
 def congrEmbed {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ↪ β₀) ≃ (α₁ ↪ β₁) := by
-  refine trans (embed_equiv_subtype _ _) (trans (congrSubtype (congrFunction h g) ?_) (embed_equiv_subtype _ _).symm)
+  apply liftEmbed (congrSubtype (congrFunction h g) ?_)
   intro f
   unfold congrFunction congrPi
   dsimp
@@ -313,22 +360,6 @@ def congrEmbed {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β�
   intro i x y eq
   rw [←coe_symm h x, ←coe_symm h y] at eq
   exact h.inj (i eq)
-
-def congrEquiv {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) ≃ (α₁ ≃ β₁) where
-  toFun f := h.symm.trans (f.trans g)
-  invFun f := h.trans (f.trans g.symm)
-  leftInv := by
-    intro f
-    dsimp only
-    rw [trans_assoc, trans_assoc, trans_symm,
-      ←trans_assoc, trans_symm]
-    rfl
-  rightInv := by
-    intro f
-    dsimp only
-    rw [trans_assoc, trans_assoc, symm_trans,
-      ←trans_assoc, symm_trans]
-    rfl
 
 def eqv_equiv_subtype (α β: Type*) : (α ≃ β) ≃ { fg: (α -> β) × (β -> α) // Function.IsRightInverse fg.1 fg.2 ∧ Function.IsLeftInverse fg.1 fg.2 } where
   toFun x := ⟨⟨x.1, x.2⟩, x.3, x.4⟩
@@ -708,6 +739,121 @@ def subsing_prod_right [Subsingleton β] [Inhabited β] : α × β ≃ α where
   rightInv := by
     intro x
     rfl
+
+-- rotates all elements in the range i <= x <= j by k
+def splitRange (i j k: Nat): Fin (i + j + k) ≃ Fin i ⊕ Fin j ⊕ Fin k where
+  toFun x :=
+    if hi:x.val < i then
+      .inl ⟨x.val, hi⟩
+    else if hj:x.val < i + j then
+      .inr <| .inl ⟨x.val - i, by omega⟩
+    else
+      .inr <| .inr ⟨x.val - i - j, by omega⟩
+  invFun
+  | .inl x => ⟨x.val, by omega⟩
+  | .inr (.inl x) => ⟨x.val + i, by omega⟩
+  | .inr (.inr x) => ⟨x.val + i + j, by omega⟩
+  leftInv x := by
+    simp
+    by_cases hi:x.val < i
+    simp [hi]
+    by_cases hj:x.val < i + j
+    simp [hi, hj]
+    congr; omega
+    simp [hi, hj]
+    congr; omega
+  rightInv x := by
+    cases x
+    simp
+    rename_i x
+    cases x
+    simp; rw [dif_neg, dif_pos]
+    omega
+    omega
+    simp; rw [dif_neg, dif_neg]
+    simp; congr
+    omega
+    omega
+    omega
+
+def apply_splitRange_eq₁ {i j k: Nat} (x: Fin (i + j + k)) (h: x.val < i) :
+  splitRange i j k x = .inl ⟨x.val, h⟩ := by simp [splitRange, h]
+def apply_splitRange_eq₂ {i j k: Nat} (x: Fin (i + j + k)) (h₀: i ≤ x.val) (h₁: x < i + j):
+  splitRange i j k x = .inr (.inl ⟨x.val - i, by omega⟩) := by simp [splitRange, Nat.not_lt_of_le h₀, h₁]
+def apply_splitRange_eq₃ {i j k: Nat} (x: Fin (i + j + k)) (h₀: i + j ≤ x.val):
+  splitRange i j k x = .inr (.inr ⟨x.val - i - j, by omega⟩) := by
+    simp [splitRange]
+    rw [dif_neg, dif_neg]
+    omega
+    omega
+
+def rotate (n k: Nat) : Fin n ≃ Fin n where
+  toFun x := ⟨(x + k) % n, Nat.mod_lt _ x.pos⟩
+  invFun x := ⟨(x + n - k % n) % n, Nat.mod_lt _ x.pos⟩
+  leftInv x := by
+    simp; congr
+    rw [Nat.add_sub_assoc, Nat.add_mod, Nat.mod_mod, ←Nat.add_mod,
+      Nat.add_assoc, Nat.add_mod, ←Nat.add_sub_assoc,
+        Nat.add_comm k, Nat.add_sub_assoc, Nat.add_mod n,
+        Nat.mod_self, Nat.zero_add, Nat.mod_mod]
+    rw (occs := [1]) [←Nat.div_add_mod k n]
+    rw [Nat.add_sub_cancel, Nat.mul_mod_right, Nat.add_zero,
+      Nat.mod_mod, Nat.mod_eq_of_lt]
+    omega
+    apply Nat.mod_le
+    repeat
+      apply Nat.le_of_lt
+      apply Nat.mod_lt
+      exact x.pos
+  rightInv x := by
+    simp; congr
+    rw [Nat.add_comm, ←Nat.add_sub_assoc, Nat.add_comm k,
+      Nat.add_sub_assoc, Nat.add_mod, Nat.add_mod_right]
+    rw (occs := [1]) [←Nat.div_add_mod k n]
+    rw [Nat.add_sub_cancel, Nat.mul_mod_right, Nat.add_zero,
+      Nat.mod_mod, Nat.mod_eq_of_lt]
+    omega
+    apply Nat.mod_le
+    apply Nat.le_trans
+    apply Nat.le_of_lt
+    apply Nat.mod_lt
+    exact x.pos
+    apply Nat.le_add_left
+
+-- rotates all elements in the range i <= x <= j by k
+def rotateRange (i j: Fin n) (offset: Nat) : Fin n ≃ Fin n := by
+  exact go (min i.val j.val) (max i.val j.val) (by omega) (by omega)
+  where
+  go a c (h: a ≤ c) (g: c < n) := by
+    let i' := a
+    let j' := c - a + 1
+    let k' := n - c - 1
+    have : n = i' + j' + k' := by omega
+    apply (Equiv.congrEquiv' (fin this).symm (fin this).symm)
+    apply (Equiv.congrEquiv' (splitRange _ _ _).symm (splitRange _ _ _).symm)
+    apply Equiv.congrSum .rfl
+    apply Equiv.congrSum _ .rfl
+    apply rotate _ offset
+
+def rotateRange_comm (i j: Fin n) (offset: Nat) :
+  rotateRange i j offset = rotateRange j i offset := by
+  unfold rotateRange
+  congr 1
+  rw [Nat.min_comm]
+  rw [Nat.max_comm]
+
+def rotateRange_of_le (i j: Fin n) (offset: Nat) (x: Fin n)
+  (h: i ≤ j) (hx: x < i) : rotateRange i j offset x = x := by
+  unfold rotateRange
+  conv => {
+    lhs; arg 1
+    conv => { arg 2; rw [Nat.min_eq_left h] }
+    conv => { arg 3; rw [Nat.max_eq_right h]  }
+  }
+  unfold rotateRange.go
+  simp [congrEquiv', apply_congrEquiv]
+
+  sorry
 
 end Equiv
 
