@@ -144,3 +144,7 @@ def HasChar.of_eqv
   apply eqv.inj
   show eqv _ = eqv _
   rw [map_nsmul, h, map_zero]
+
+protected def HasChar.Subsingleton [HasChar α 1] : Subsingleton α where
+  allEq a b := by
+    rw [←one_nsmul a, ←one_nsmul b, char_spec, char_spec]

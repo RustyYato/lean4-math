@@ -61,15 +61,15 @@ def cantor (α β: Sort*) [h: IsNontrivial β] : ((α -> β) ↪ α) -> False :=
   obtain ⟨b₀, b₁, h⟩ := h
   intro g
   apply Embedding.cantorProp α
+  apply Embedding.trans _ g
+  clear g
   refine ⟨?_, ?_⟩
-  intro f
-  refine g ?_
-  intro x
+  intro f x
   exact if f x then b₀ else b₁
   intro x y eq
   dsimp at eq
   ext a
-  have := congrFun (g.inj eq) a
+  have := congrFun eq a
   split at this <;> split at this
   rename_i hx hy
   exact (iff_true_right hy).mpr hx
