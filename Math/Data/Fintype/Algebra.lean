@@ -1,5 +1,6 @@
 import Math.Data.Fintype.Cases
 import Math.Data.Multiset.Algebra
+import Math.Data.Nat.Factorial
 import Init.Notation
 
 variable [Fintype ι] [Fintype ι₀] [Fintype ι₁]
@@ -256,3 +257,8 @@ def sum_add_sum [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f g: ι 
 def sum_sub_sum [AddGroupOps α] [Mul α] [IsAddGroup α] [IsAddCommMagma α] (f g: ι -> α) : (∑i, f i) - (∑i, g i) = ∑i, f i - g i := by
   rw [sub_eq_add_neg, neg_sum, sum_add_sum]
   congr; ext i; rw [sub_eq_add_neg]
+
+def fact_eq_prod (n: ℕ) : n ! = ∏i: Fin n, i.val + 1 := by
+  induction n with
+  | zero => simp [prod_empty]
+  | succ n ih => simp [prod_succ, ih]

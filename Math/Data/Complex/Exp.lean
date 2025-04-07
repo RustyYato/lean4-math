@@ -23,21 +23,104 @@ instance : HasChar ℚ[i] 0 := HasChar.of_ring_emb {
 }
 
 def reduce_grat (x: ℚ[i]) : ℚ[i] := ⟨x.a.reduce, x.b.reduce⟩
+@[simp] def reduce_grat_eq (x: ℚ[i]) : reduce_grat x = x := by simp [reduce_grat]
 
 namespace ℝi
 
 def exp_seq (f: CauchySeq ℚ[i]) (i: ℕ) : ℚ[i] :=
-  reduce_grat <| ∑j: Fin (i + 1), ((f i) ^ j.val /? j.val !)
+  reduce_grat <| ∑j: Fin i, ((f i) ^ j.val /? j.val !)
+
+def fact_gt_pow (a: ℝ): ∃N, ∀n, N < n -> a ^ n ≤ n ! := by
+  let N := a.ceil.natAbs
+  exists 3 * N
+  intro n h
+  rw [fact_eq_prod]
+  let eqv : Fin (n - N) ⊕ Fin N ≃ Fin n := {
+    toFun x := match x with
+      | .inl x => ⟨x.val, sorry⟩
+      | .inr x => ⟨x.val + (n - N), sorry⟩
+    invFun := sorry
+    leftInv := sorry
+    rightInv := sorry
+  }
+  rw [prod_reindex (h := eqv), prod_sumty]
+  simp [eqv]
+  rw [←fact_eq_prod]
+  sorry
+
+
+
+
+  -- have : n = n - N + N := by
+  --   rw [Nat.sub_add_cancel]
+  --   apply Nat.le_trans _ h
+  --   rw (occs := [1]) [←Nat.mul_one N]
+  --   refine if hn:N = 0 then ?_ else ?_
+  --   rw [hn];
+  --   apply Nat.mul_le_mul_left
+  --   omega
+  -- rw (occs := [1]) [this]; rw [npow_add]
+
+  -- induction n with
+  -- | zero => contradiction
+  --   -- have := Nat.eq_zero_of_le_zero h
+  --   -- replace : N = 0 := by cases of_mul_eq_zero this <;> assumption
+  --   -- replace := Int.natAbs_eq_zero.mp this
+  --   -- rw [Real.ceil_spec] at this
+  --   -- rw [intCast_zero, zero_sub] at this
+  --   -- rw [npow_zero]
+  --   -- simp
+  --   -- sorry
+  -- | succ n ih =>
+  --   rw [Nat.lt_succ] at h
+  --   rcases Or.symm (lt_or_eq_of_le h) with rfl | h
+  --   clear h
+  --   simp
+
+  --   sorry
 
 def exp.spec (a b: CauchySeq ℚ[i]) (h: a ≈ b) :
   CauchySeq.is_cauchy_equiv (exp_seq a) (exp_seq b) := by
   intro ε εpos
-  replace ⟨δ, h⟩ := h ε εpos
-  exists δ
-  intro n m hn hm
-  replace h := h n m hn hm
-  simp at h
-  unfold exp_seq
+  simp [exp_seq]
+  let a' := ‖a‖
+  let b' := ‖b‖
+  have ⟨A, hA⟩ := a'.upper_bound
+  have ⟨B, hB⟩ := b'.upper_bound
+  let bound := 0 ⊔ A ⊔ B
+  -- revert a b
+  -- suffices ∀a b: CauchySeq (ℚ[i]), a ≈ b ->
+  --   ∃k: ℕ, ∀n m, k ≤ n -> k ≤ m -> n ≤ m -> ‖exp_seq a n - exp_seq b m‖ < ε by
+  --   intro a b eq
+  --   have ⟨k₀, h₀⟩ := this a b eq
+  --   have ⟨k₁, h₁⟩ := this b a (Relation.symm eq)
+  --   exists k₀ ⊔ k₁
+  --   intro n m hn hm
+  --   rcases le_total n m with g | g
+  --   apply h₀
+  --   apply le_trans _ hn
+  --   apply le_max_left
+  --   apply le_trans _ hm
+  --   apply le_max_left
+  --   assumption
+  --   rw [norm_sub_comm]
+  --   apply h₁
+  --   apply le_trans _ hm
+  --   apply le_max_right
+  --   apply le_trans _ hn
+  --   apply le_max_right
+  --   assumption
+  -- intro a b h
+  -- simp [exp_seq]
+
+
+
+
+
+  -- exists δ
+  -- intro n m hn hm
+  -- replace h := h n m hn hm
+  -- simp at h
   sorry
 
 def exp : ℝi -> ℝi := by
