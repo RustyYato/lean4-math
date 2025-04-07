@@ -123,4 +123,16 @@ def IsLeftInverse.comp_eq_id (h: IsLeftInverse f g) : f ∘ g = id := by
   ext x
   apply h
 
+def IsInvolutive (f: α -> α) := ∀x, f (f x) = x
+
+namespace IsInvolutive
+
+protected def IsLeftInverse {f: α -> α} (hf: f.IsInvolutive) : f.IsLeftInverse f := hf
+protected def IsRightInverse {f: α -> α} (hf: f.IsInvolutive) : f.IsRightInverse f := hf
+protected def Injective {f: α -> α} (hf: f.IsInvolutive) : f.Injective := hf.IsLeftInverse.Injective
+protected def Surjective {f: α -> α} (hf: f.IsInvolutive) : f.Surjective := hf.IsLeftInverse.Surjective
+protected def Bijective {f: α -> α} (hf: f.IsInvolutive) : f.Bijective := ⟨hf.Injective, hf.Surjective⟩
+
+end IsInvolutive
+
 end Function
