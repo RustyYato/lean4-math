@@ -98,3 +98,6 @@ def Equiv.int_equiv_nat_sum_nat : Int ≃ Nat ⊕ Nat where
   | .inr x => .negSucc x
   leftInv x := by cases x <;> rfl
   rightInv x := by cases x <;> rfl
+
+def Equiv.int_equiv_nat : Int ≃ Nat :=
+  Equiv.int_equiv_nat_sum_nat.trans Equiv.nat_equiv_nat_sum_nat.symm

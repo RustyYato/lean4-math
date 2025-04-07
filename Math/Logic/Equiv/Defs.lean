@@ -167,4 +167,11 @@ protected def Nonempty [g: Nonempty α] (h: α ≃ β) : Nonempty β :=
 @[simp] def apply_refl : Equiv.refl _ x = x := rfl
 @[simp] def apply_rfl : Equiv.rfl x = x := rfl
 
+def ofInvolut (f: α -> α) (h: ∀x, f (f x) = x) : α ≃ α where
+  toFun := f
+  invFun := f
+  leftInv := h
+  rightInv := h
+
+
 end Equiv
