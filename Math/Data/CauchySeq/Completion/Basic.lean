@@ -298,7 +298,7 @@ instance : IsNontrivial (Cauchy α) where
 
 instance (priority := 2000) [DecidableEq α] : FieldOps (Cauchy α) := inferInstance
 
-instance [DecidableEq α] : IsField (Cauchy α) where
+instance [DecidableEq α] : IsGroupWithZero (Cauchy α) where
   div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
@@ -316,5 +316,9 @@ instance [DecidableEq α] : IsField (Cauchy α) where
     intro h
     have : B ≤ ‖a n‖ - 0 := hi n hn
     simp [h, norm_zero, not_le_of_lt Bpos] at this
+
+open Classical
+
+instance : IsField (Cauchy α) where
 
 end Cauchy

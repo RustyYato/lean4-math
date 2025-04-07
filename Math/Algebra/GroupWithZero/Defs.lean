@@ -62,13 +62,15 @@ def div?_eq_mul_inv?: ∀(a b: α) (h: b ≠ 0), a /? b = a * b⁻¹? := IsGroup
 def zpow?_ofNat (n: ℕ) (a: α) : a ^? (n: ℤ) = a ^ n := IsGroupWithZero.zpow?_ofNat _ _
 def zpow?_negSucc (n: ℕ) (a: α) (h: a ≠ 0) : a ^? (Int.negSucc n) = (a⁻¹? ^ n.succ) := IsGroupWithZero.zpow?_negSucc _ _ _
 
-instance : NoZeroDivisors α where
+instance [DecidableEq α] : NoZeroDivisors α where
   of_mul_eq_zero {a b} h := by
-    apply Classical.or_iff_not_imp_right.mpr
+    apply Decidable.or_iff_not_imp_right.mpr
     intro g
     have : (a * b) * b⁻¹? = 0 := by rw [h, zero_mul]
     rw [mul_assoc, mul_inv?_cancel, mul_one] at this
     assumption
+
+variable [NoZeroDivisors α]
 
 def npow_ne_zero (a: α) (n: Nat) (h: a ≠ 0) : a ^ n ≠ 0 := by
   intro g

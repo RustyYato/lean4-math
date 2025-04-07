@@ -4,7 +4,7 @@ import Math.Algebra.GroupWithZero.Basic
 
 namespace SubgroupWithZero
 
-variable [GroupWithZeroOps α] [IsGroupWithZero α]
+variable [GroupWithZeroOps α] [IsGroupWithZero α] [NoZeroDivisors α]
 
 private instance builder : SetLike.LatticeBuilder (SubgroupWithZero α) where
   closure := (Set.mk <| Generate ·)

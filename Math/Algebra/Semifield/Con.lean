@@ -5,4 +5,6 @@ import Math.Algebra.Field.Defs
 variable {C α: Type*} [RelLike C α] (c: C)
    [SemifieldOps α] [IsSemifield α] [IsRingCon C]
 
+open Classical
+
 instance [IsNontrivial (IsCon.Quotient c)] : IsSemifield (IsCon.Quotient c) where

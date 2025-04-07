@@ -12,6 +12,8 @@ open IsQAlgebra.ofAlgebra
 
 notation "ℝ" => Real
 
+open Classical
+
 instance : FieldOps ℝ := inferInstanceAs (FieldOps (Cauchy ℚ))
 instance : IsField ℝ := inferInstanceAs (IsField (Cauchy ℚ))
 instance : SMul ℚ ℝ := inferInstanceAs (SMul ℚ (Cauchy ℚ))

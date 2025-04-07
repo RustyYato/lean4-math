@@ -1,4 +1,4 @@
-import Math.Data.Rsqrtd.Field
+import Math.Data.Rsqrtd.GroupWithZero
 import Math.Algebra.Ring.Order.Defs
 
 instance [FieldOps R] [IsField R] [LT R] [LE R]

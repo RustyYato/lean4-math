@@ -71,3 +71,11 @@ instance : IsGroupWithZero s where
 
 instance (s: SubgroupWithZero α) : GroupWithZeroOps s := inferInstance
 instance (s: SubgroupWithZero α) : IsGroupWithZero s := inferInstance
+
+instance [NoZeroDivisors α] : NoZeroDivisors s where
+  of_mul_eq_zero {a b} h := by
+    rcases of_mul_eq_zero (α := α) (a := a.val) (b := b.val) (by
+      show (a * b).val = 0
+      rw [h]; rfl) with h | h
+    left; apply Subtype.val_inj; assumption
+    right; apply Subtype.val_inj; assumption

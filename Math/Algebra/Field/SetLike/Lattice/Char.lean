@@ -1,6 +1,7 @@
 import Math.Algebra.Field.SetLike.Lattice
 import Math.Data.Rat.Basic
 import Math.Algebra.Impls.Fin
+import Math.AxiomBlame
 
 -- TODO: prove that for `HasChar α 0`, `⊥: α ≃+* ℚ`
 -- and for `HasChar α (n + 1)`, `⊥: α ≃+* Fin (n + 1)`
@@ -69,3 +70,5 @@ private def field_char' (F: Type*) [FieldOps F] [IsField F] [HasChar F n] (h: n 
 def field_char (F: Type*) [FieldOps F] [IsField F] [HasChar F n] : n = 0 ∨ Nat.IsPrime n := by
   apply Decidable.or_iff_not_imp_left.mpr
   apply field_char' F
+
+#axiom_blame field_char

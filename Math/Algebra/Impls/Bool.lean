@@ -30,7 +30,31 @@ instance : FieldOps Bool where
 instance : IsCommMagma Bool where
   mul_comm := by decide +kernel
 
-instance : IsField Bool where
+instance Bool.instIsGroupWithZero : IsGroupWithZero Bool where
+  mul_assoc := by decide +kernel
+  zero_mul := by decide +kernel
+  mul_zero := by decide +kernel
+  one_mul := by decide +kernel
+  mul_one := by decide +kernel
+  mul_inv?_cancel := by decide +kernel
+  div?_eq_mul_inv? := by decide +kernel
+  zpow?_ofNat := by
+    intro n x
+    cases n
+    rfl
+    rfl
+  zpow?_negSucc := by
+    intro _ b _; cases b; contradiction; rfl
+  npow_zero := by decide +kernel
+  npow_succ := by
+    intro n a
+    show a = _
+    cases n
+    rfl; symm
+    apply Bool.and_self
+
+instance : IsField Bool := {
+  Bool.instIsGroupWithZero with
   add_comm := by decide +kernel
   add_assoc := by decide +kernel
   zero_add := by decide +kernel
@@ -48,11 +72,6 @@ instance : IsField Bool where
     contradiction
     rw [h, beq_false_of_ne, bne_eq_false_iff_eq]
     decide
-  mul_assoc := by decide +kernel
-  zero_mul := by decide +kernel
-  mul_zero := by decide +kernel
-  one_mul := by decide +kernel
-  mul_one := by decide +kernel
   mul_add := by decide +kernel
   add_mul := by decide +kernel
   sub_eq_add_neg := by decide +kernel
@@ -83,22 +102,6 @@ instance : IsField Bool where
     erw [Int.negSucc_emod, ←Int.ofNat_emod, Nat.succ_eq_add_one, Nat.add_mod]
     cases Nat.mod_two_eq_zero_or_one n <;> (rename_i h; rw [h]; rfl)
     decide
-  mul_inv?_cancel := by decide +kernel
-  div?_eq_mul_inv? := by decide +kernel
-  zpow?_ofNat := by
-    intro n x
-    cases n
-    rfl
-    rfl
-  zpow?_negSucc := by
-    intro _ b _; cases b; contradiction; rfl
-  npow_zero := by decide +kernel
-  npow_succ := by
-    intro n a
-    show a = _
-    cases n
-    rfl; symm
-    apply Bool.and_self
   zero_nsmul := by decide +kernel
   succ_nsmul := by
     intro n a
@@ -109,7 +112,7 @@ instance : IsField Bool where
     rename_i n
     rw [Nat.add_mod]
     cases Nat.mod_two_eq_zero_or_one (n+1) <;> (rename_i h; rw [h]; cases a <;> rfl)
-
+  }
 instance : HasChar Bool 2 := by
   apply HasChar.of_natCast_eq_zero
   rfl

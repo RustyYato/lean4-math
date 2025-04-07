@@ -18,6 +18,7 @@ def mag_sq (c: ℂ) : ℝ := Rsqrtd.norm c.toRsqrtd
 def conj (c: ℂ) : ℂ := c.toRsqrtd.conj
 
 instance : FieldOps ℂ := inferInstanceAs (FieldOps (ℝ[i]))
+open Classical in
 instance : IsField ℂ := inferInstanceAs (IsField (ℝ[i]))
 instance : Inhabited ℂ := ⟨0⟩
 

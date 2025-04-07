@@ -463,7 +463,7 @@ instance : CheckedIntPow? ℚ := instCheckedIntPow
 @[simp] def Fract.ofNat_den (n: Nat) : Fract.den (Fract.ofNat n) = 1 := rfl
 @[simp] def Fract.ofInt_den (n: Int) : Fract.den (Fract.ofInt n) = 1 := rfl
 
-instance : IsField ℚ where
+instance : IsRing ℚ where
   zero_add a := by
     cases a with | mk a =>
     apply sound
@@ -505,11 +505,6 @@ instance : IsField ℚ where
     show _ = _
     simp [Int.mul_add, Int.add_mul]
     ac_rfl
-  mul_comm a b := by
-    cases a, b with | mk a b =>
-    apply sound
-    show _ = _
-    simp [Int.mul_comm]
   mul_assoc a b c := by
     cases a, b, c with | mk a b c =>
     apply sound
@@ -555,13 +550,6 @@ instance : IsField ℚ where
     simp [Int.add_left_neg, ←neg_mul_left]
   intCast_ofNat _ := rfl
   intCast_negSucc _ := rfl
-  mul_inv?_cancel a h := by
-    cases a
-    apply sound
-    show _ = _
-    simp [Fract.inv]
-    rw [←Int.mul_assoc, Int.mul_sign_self, Int.mul_comm]
-    rfl
   zero_nsmul a := by
     cases a
     apply sound
@@ -583,9 +571,25 @@ instance : IsField ℚ where
     apply sound
     show _ = _
     simp [Int.pow_succ, Nat.pow_succ]
+
+instance : IsGroupWithZero ℚ where
+  mul_inv?_cancel a h := by
+    cases a
+    apply sound
+    show _ = _
+    simp [Fract.inv]
+    rw [←Int.mul_assoc, Int.mul_sign_self, Int.mul_comm]
+    rfl
   div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl
+
+instance : IsField ℚ where
+  mul_comm a b := by
+    cases a, b with | mk a b =>
+    apply sound
+    show _ = _
+    simp [Int.mul_comm]
 
 instance : IsNonCommField ℚ := (inferInstanceAs (IsField ℚ)).toIsNonCommField
 instance : IsRing ℚ := (inferInstanceAs (IsField ℚ)).toIsRing

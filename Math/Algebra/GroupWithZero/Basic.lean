@@ -1,7 +1,7 @@
 import Math.Algebra.GroupWithZero.Defs
 import Math.Algebra.Group.Units.Defs
 
-variable [GroupWithZeroOps α] [IsGroupWithZero α]
+variable [GroupWithZeroOps α] [IsGroupWithZero α] [NoZeroDivisors α]
 
 def ne_zero_of_NeZero {a: α} [h: NeZero a] : a ≠ 0 := h.out
 

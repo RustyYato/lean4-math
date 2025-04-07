@@ -48,7 +48,7 @@ instance : CheckedIntPow? (R√d) := instCheckedIntPow
 @[simp] def a_inv (x: R√d) (h: x ≠ 0) : a (x⁻¹?) = (a x) /? norm x := rfl
 @[simp] def b_inv (x: R√d) (h: x ≠ 0) : b (x⁻¹?) = (-b x) /? norm x := rfl
 
-instance : IsField (R√d) where
+instance : IsGroupWithZero (R√d) where
   div?_eq_mul_inv? _ _ _ := rfl
   zpow?_ofNat _ _ := rfl
   zpow?_negSucc _ _ _ := rfl

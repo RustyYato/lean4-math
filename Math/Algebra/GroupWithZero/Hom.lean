@@ -5,6 +5,7 @@ section
 
 variable [GroupWithZeroOps α] [GroupWithZeroOps β] [IsGroupWithZero α] [IsGroupWithZero β]
 variable [EmbeddingLike F α β] [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β]
+  [NoZeroDivisors β]
 
 def map_ne_zero (f: F) : x ≠ 0 -> f x ≠ 0 :=
   fun g h => g ((f: α ↪ β).inj (h.trans (map_zero f).symm))

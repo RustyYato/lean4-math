@@ -13,10 +13,10 @@ def zpow?Rec [SemiringOps α] [CheckedInv? α] (a: α) (n: ℤ) (h: a ≠ 0 ∨ 
     apply Int.not_le.mpr
     apply Int.negSucc_lt_zero)) ^ n.succ
 
-class IsNonCommSemifield (α: Type*) [SemifieldOps α] : Prop extends IsSemiring α, IsGroupWithZero α where
+class IsNonCommSemifield (α: Type*) [SemifieldOps α] : Prop extends IsSemiring α, IsGroupWithZero α, NoZeroDivisors α where
 class IsSemifield (α: Type*) [SemifieldOps α] : Prop extends IsNonCommSemifield α, IsCommMagma α  where
 
-instance [SemifieldOps α] [h: IsSemiring α] [g: IsGroupWithZero α] : IsNonCommSemifield α := { h, g with }
+instance [SemifieldOps α] [h: IsSemiring α] [g: IsGroupWithZero α] [NoZeroDivisors α] : IsNonCommSemifield α := { h, g with }
 instance [SemifieldOps α] [IsNonCommSemifield α] [IsCommMagma α] : IsSemifield α := {  }
 
 def add_div?_add' [SemifieldOps α] [IsNonCommSemifield α] (a b c: α) (h: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by

@@ -8,5 +8,5 @@ instance (priority := 50) [RingOps α] [CheckedIntPow? α] [CheckedInv? α] [Che
 class IsNonCommField (α: Type*) [FieldOps α] : Prop extends IsRing α, IsNonCommSemifield α where
 class IsField (α: Type*) [FieldOps α] : Prop extends IsNonCommField α, IsSemifield α  where
 
-instance [FieldOps α] [h: IsRing α] [g: IsGroupWithZero α] : IsNonCommField α := { h, g with }
+instance [FieldOps α] [h: IsRing α] [g: IsGroupWithZero α] [NoZeroDivisors α] : IsNonCommField α := { h, g with }
 instance [FieldOps α] [IsNonCommField α] [IsCommMagma α] : IsField α := {  }
