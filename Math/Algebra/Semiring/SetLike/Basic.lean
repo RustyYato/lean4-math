@@ -9,10 +9,10 @@ instance : SemiringOps s := inferInstance
 
 instance : IsSemiring s := {
   instIsMonoidElem s with
-  left_distrib k a b := by
+  mul_add k a b := by
     apply Subtype.val_inj
     apply mul_add
-  right_distrib a b k := by
+  add_mul a b k := by
     apply Subtype.val_inj
     apply add_mul
 }

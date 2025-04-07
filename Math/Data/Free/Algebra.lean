@@ -244,11 +244,11 @@ instance [SemiringOps R] [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
     show ⟦.scalar _⟧ = ⟦_⟧ + ⟦_⟧
     rw [natCast_succ]
     apply map_add (algebraMap (R := R) (A := FreeAlgebra R X))
-  left_distrib := by
+  mul_add := by
     intro k a b; induction a, b, k
     apply Quotient.sound
     apply Rel.mul_add
-  right_distrib := by
+  add_mul := by
     intro k a b; induction a, b, k
     apply Quotient.sound
     apply Rel.add_mul

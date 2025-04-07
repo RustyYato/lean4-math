@@ -520,13 +520,13 @@ instance : IsField ℚ where
     apply sound
     show _ = _
     simp
-  left_distrib k a b := by
+  mul_add k a b := by
     cases k, a, b
     apply sound
     show _ = _
     simp [Int.add_mul, Int.mul_add]
     ac_rfl
-  right_distrib a b k := by
+  add_mul a b k := by
     cases k, a, b
     apply sound
     show _ = _

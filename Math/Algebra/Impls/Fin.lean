@@ -148,13 +148,13 @@ instance : IsSemiring (Fin (n + 1)) where
     rw [Nat.mod_eq_of_lt, mul_one]
     apply a.isLt
     omega
-  left_distrib := by
+  mul_add := by
     intro _ _ _
     show Fin.mk _ _ = Fin.mk _ _
     simp only [Nat.add_mod_mod, Nat.mod_add_mod, Fin.mk.injEq]
     rw [Nat.mul_mod, Nat.mod_mod, ←Nat.mul_mod]
     rw [mul_add]
-  right_distrib := by
+  add_mul := by
     intro _ _ _
     show Fin.mk _ _ = Fin.mk _ _
     simp

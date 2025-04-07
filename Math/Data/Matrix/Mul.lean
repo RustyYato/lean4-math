@@ -120,8 +120,8 @@ instance
   [AddMonoidOps α] [Mul α]
   [IsNonUnitalNonAssocSemiring α] [DecidableEq n]
   [Fintype n] : IsNonUnitalNonAssocSemiring (Matrix α n n) where
-  left_distrib _ _ _ := hmul_add _ _ _
-  right_distrib _ _ _ := add_hmul _ _ _
+  mul_add _ _ _ := hmul_add _ _ _
+  add_mul _ _ _ := add_hmul _ _ _
   zero_mul := zero_hmul
   mul_zero := hmul_zero
 

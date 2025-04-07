@@ -53,8 +53,8 @@ instance : IsField Bool where
   mul_zero := by decide +kernel
   one_mul := by decide +kernel
   mul_one := by decide +kernel
-  left_distrib := by decide +kernel
-  right_distrib := by decide +kernel
+  mul_add := by decide +kernel
+  add_mul := by decide +kernel
   sub_eq_add_neg := by decide +kernel
   zsmul_negSucc := by
     intro n a

@@ -269,9 +269,9 @@ instance [RingOps R] [IsRing R] : IsMulOneClass (GA R basis) where
       simp [ih₀]
 
 instance [RingOps R] [IsRing R]  : IsLeftDistrib (GA R basis) where
-  left_distrib := sorry
+  mul_add := sorry
 instance [RingOps R] [IsRing R]  : IsRightDistrib (GA R basis) where
-  right_distrib := sorry
+  add_mul := sorry
 
 def basis_mul_mul [RingOps R] [IsRing R] (a b: GA R basis) : (a * b).basis_mul = a * b := by
   induction basis with

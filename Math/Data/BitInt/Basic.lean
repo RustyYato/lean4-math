@@ -1838,7 +1838,7 @@ instance : IsCommMagma BitInt where
     apply Pre.mul_comm
 
 instance : IsLeftDistrib BitInt where
-  left_distrib k a b := by
+  mul_add k a b := by
     induction k with
     | zero => simp
     | succ k ih =>

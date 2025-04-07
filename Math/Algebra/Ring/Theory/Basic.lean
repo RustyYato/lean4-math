@@ -87,8 +87,8 @@ def ofMinimalAxioms
     have : IsRing α := {
       add_group, monoid with
       add_comm:= add_comm
-      left_distrib := mul_add
-      right_distrib := add_mul
+      mul_add := mul_add
+      add_mul := add_mul
       natCast_zero := rfl
       natCast_succ _ := rfl
       zero_mul a := by

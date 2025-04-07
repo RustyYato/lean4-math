@@ -3,29 +3,29 @@ import Math.Algebra.AddMonoidWithOne.Defs
 section Distrib
 
 class IsLeftDistrib (α: Type*) [Add α] [Mul α]: Prop where
-  left_distrib (k a b: α): k * (a + b) = k * a + k * b
+  mul_add (k a b: α): k * (a + b) = k * a + k * b
 class IsRightDistrib (α: Type*) [Add α] [Mul α]: Prop where
-  right_distrib (a b k: α): (a + b) * k = a * k + b * k
+  add_mul (a b k: α): (a + b) * k = a * k + b * k
 
-def mul_add [Add α] [Mul α] [IsLeftDistrib α] (k a b: α): k * (a + b) = k * a + k * b := IsLeftDistrib.left_distrib k a b
-def add_mul [Add α] [Mul α] [IsRightDistrib α] (a b k: α): (a + b) * k = a * k + b * k := IsRightDistrib.right_distrib a b k
+def mul_add [Add α] [Mul α] [IsLeftDistrib α] (k a b: α): k * (a + b) = k * a + k * b := IsLeftDistrib.mul_add k a b
+def add_mul [Add α] [Mul α] [IsRightDistrib α] (a b k: α): (a + b) * k = a * k + b * k := IsRightDistrib.add_mul a b k
 
 instance [Add α] [Mul α] [IsLeftDistrib α] : IsLeftDistrib αᵃᵒᵖ where
-  left_distrib _ _ _ := mul_add (α := α) _ _ _
+  mul_add _ _ _ := mul_add (α := α) _ _ _
 instance [Add α] [Mul α] [IsRightDistrib α] : IsRightDistrib αᵃᵒᵖ where
-  right_distrib _ _ _ := add_mul (α := α) _ _ _
+  add_mul _ _ _ := add_mul (α := α) _ _ _
 
 instance [Add α] [Mul α] [IsLeftDistrib α] : IsRightDistrib αᵐᵒᵖ where
-  right_distrib _ _ _ := mul_add (α := α) _ _ _
+  add_mul _ _ _ := mul_add (α := α) _ _ _
 instance [Add α] [Mul α] [IsRightDistrib α] : IsLeftDistrib αᵐᵒᵖ where
-  left_distrib _ _ _ := add_mul (α := α) _ _ _
+  mul_add _ _ _ := add_mul (α := α) _ _ _
 
 instance (priority := 100) [Add α] [Mul α] [IsCommMagma α] [IsLeftDistrib α] : IsRightDistrib α where
-  right_distrib a b k := by
+  add_mul a b k := by
     iterate 3 rw [mul_comm _ k]
     rw [mul_add]
 instance (priority := 100) [Add α] [Mul α] [IsCommMagma α] [IsRightDistrib α] : IsLeftDistrib α where
-  left_distrib k a b := by
+  mul_add k a b := by
     iterate 3 rw [mul_comm k]
     rw [add_mul]
 
@@ -139,8 +139,8 @@ instance : IsSemiring Nat where
   mul_zero := Nat.mul_zero
   one_mul := Nat.one_mul
   mul_one := Nat.mul_one
-  left_distrib := Nat.mul_add
-  right_distrib := Nat.add_mul
+  mul_add := Nat.mul_add
+  add_mul := Nat.add_mul
   zero_nsmul := Nat.zero_mul
   succ_nsmul := Nat.succ_mul
 
@@ -162,8 +162,8 @@ instance instSemiringInt : IsSemiring Int where
   mul_zero := Int.mul_zero
   one_mul := Int.one_mul
   mul_one := Int.mul_one
-  left_distrib := Int.mul_add
-  right_distrib := Int.add_mul
+  mul_add := Int.mul_add
+  add_mul := Int.add_mul
   zero_nsmul := Int.zero_mul
   succ_nsmul := by
     intro n a

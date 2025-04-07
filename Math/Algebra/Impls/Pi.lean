@@ -168,12 +168,12 @@ instance [∀i, AddGroupWithOneOps (β i)] [∀i, IsAddGroupWithOne (β i)] : Is
   natCast_succ := natCast_succ
 
 instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsLeftDistrib (β i)] : IsLeftDistrib (∀i, β i) where
-  left_distrib := by
+  mul_add := by
     intro k a b; ext i
     apply mul_add
 
 instance [∀i, Add (β i)] [∀i, Mul (β i)] [∀i, IsRightDistrib (β i)] : IsRightDistrib (∀i, β i) where
-  right_distrib := by
+  add_mul := by
     intro k a b; ext i
     apply add_mul
 

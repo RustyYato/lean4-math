@@ -95,7 +95,7 @@ instance : IsSemiring (R√d) where
   mul_zero a := by ext <;> simp
   one_mul a := by ext <;> simp
   mul_one a := by ext <;> simp
-  left_distrib a b k := by ext <;> (simp [add_mul, mul_add]; ac_rfl)
-  right_distrib a b k := by ext <;> (simp [add_mul, mul_add]; ac_rfl)
+  mul_add a b k := by ext <;> (simp [add_mul, mul_add]; ac_rfl)
+  add_mul a b k := by ext <;> (simp [add_mul, mul_add]; ac_rfl)
 
 end Rsqrtd

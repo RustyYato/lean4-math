@@ -226,7 +226,7 @@ instance : IsCommMagma (Cauchy α) where
     intro i; apply mul_comm
 
 instance : IsLeftDistrib (Cauchy α) where
-  left_distrib k a b := by
+  mul_add k a b := by
     induction k, a, b
     apply Quotient.sound
     apply CauchySeq.pointwise

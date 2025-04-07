@@ -279,7 +279,7 @@ instance : IsMulOneClass Cardinal := by
   rfl
 
 instance : IsLeftDistrib Cardinal where
-  left_distrib k a b := by
+  mul_add k a b := by
     cases a, b, k with | mk A B K =>
     apply sound
     apply Equiv.mk _ _ _ _

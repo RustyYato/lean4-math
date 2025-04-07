@@ -33,8 +33,8 @@ instance : IsSemiring MaxBool where
   mul_zero := by trivial
   one_mul := by trivial
   mul_one := by trivial
-  left_distrib := by trivial
-  right_distrib := by trivial
+  mul_add := by trivial
+  add_mul := by trivial
   zero_nsmul := by trivial
   succ_nsmul n a := by
     show and _ _ = or (and _ _) _

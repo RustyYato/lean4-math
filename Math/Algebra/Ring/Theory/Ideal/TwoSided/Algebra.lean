@@ -250,7 +250,7 @@ instance : IsSemigroup (Ideal α) where
         rfl
 
 instance : IsSemiring (Ideal α) where
-  left_distrib k a b := by
+  mul_add k a b := by
     ext x
     apply Iff.intro
     · rintro ⟨l, rfl⟩
@@ -299,7 +299,7 @@ instance : IsSemiring (Ideal α) where
       dsimp
       rw [List.map_append, List.map_map, List.map_map]
       rfl
-  right_distrib a b k := by
+  add_mul a b k := by
     ext x
     apply Iff.intro
     · rintro ⟨l, rfl⟩

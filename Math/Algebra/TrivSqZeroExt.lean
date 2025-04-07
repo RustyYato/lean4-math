@@ -309,10 +309,10 @@ instance [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddC
     instMulOneClass, instAddMonoidWithOne with
     zero_mul a := by ext <;> simp [zero_mul, zero_smul, smul_zero, add_zero]
     mul_zero a := by ext <;> simp [mul_zero, zero_smul, smul_zero, add_zero]
-    left_distrib k a b := by
+    mul_add k a b := by
       ext <;> simp [mul_add, smul_add, add_smul]
       ac_rfl
-    right_distrib a b k := by
+    add_mul a b k := by
       ext <;> simp [add_mul, smul_add, add_smul]
       ac_rfl
   }
@@ -356,8 +356,8 @@ instance
   mul_assoc a b c := by ext <;> simp [mul_assoc]
   zero_mul a := by ext <;> simp [zero_mul]
   mul_zero a := by ext <;> simp [mul_zero]
-  left_distrib k a b := by ext <;> simp [mul_add]
-  right_distrib a b k := by ext <;> simp [add_mul]
+  mul_add k a b := by ext <;> simp [mul_add]
+  add_mul a b k := by ext <;> simp [add_mul]
 
 instance
   [SemiringOps R] [AddMonoidOps M]

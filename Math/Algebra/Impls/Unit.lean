@@ -30,8 +30,8 @@ instance Unit.instRing : IsRing Unit where
   mul_zero _ := rfl
   one_mul _ := rfl
   mul_one _ := rfl
-  left_distrib _ _ _ := rfl
-  right_distrib _ _ _ := rfl
+  mul_add _ _ _ := rfl
+  add_mul _ _ _ := rfl
   sub_eq_add_neg _ _ := rfl
   zsmul_negSucc _ _ := rfl
   zsmul_ofNat _ _ := rfl

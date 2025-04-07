@@ -4,12 +4,12 @@ import Math.Algebra.Semiring.Defs
 variable {C α: Type*} [RelLike C α] (c: C)
 
 instance [Add α] [Mul α] [IsLeftDistrib α] [IsRingCon C] : IsLeftDistrib (IsCon.Quotient c) where
-  left_distrib k a b := by
+  mul_add k a b := by
     induction a; induction b; induction k
     apply Quotient.sound
     rw [mul_add]
 instance [Add α] [Mul α] [IsRightDistrib α] [IsRingCon C] : IsRightDistrib (IsCon.Quotient c) where
-  right_distrib a b k := by
+  add_mul a b k := by
     induction a; induction b; induction k
     apply Quotient.sound
     rw [add_mul]

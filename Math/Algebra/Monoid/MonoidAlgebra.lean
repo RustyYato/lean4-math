@@ -137,7 +137,7 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAss
     rw [Finsupp.sum_eq_zero]
     intro i
     apply Finsupp.zero_sum
-  left_distrib := by
+  mul_add := by
     intro ⟨k⟩ ⟨a⟩ ⟨b⟩
     simp [mul_def, mul', add_def]
     apply toFinsupp_inj
@@ -149,7 +149,7 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAss
     rw [Finsupp.add_sum]
     intro i b₁ b₂
     rw [mul_add, single_add]
-  right_distrib := by
+  add_mul := by
     intro ⟨a⟩ ⟨b⟩ ⟨k⟩
     simp [mul_def, mul', add_def]
     apply toFinsupp_inj
