@@ -6,7 +6,7 @@ import Math.AxiomBlame
 -- TODO: prove that for `HasChar α 0`, `⊥: α ≃+* ℚ`
 -- and for `HasChar α (n + 1)`, `⊥: α ≃+* Fin (n + 1)`
 
-private def field_char' (F: Type*) [FieldOps F] [IsField F] [HasChar F n] (h: n ≠ 0) : Nat.IsPrime n := by
+private def field_char' (F: Type*) [SemifieldOps F] [IsSemifield F] [HasChar F n] (h: n ≠ 0) : Nat.IsPrime n := by
   apply And.intro
   · rintro rfl
     have := HasChar.Subsingleton F
@@ -67,8 +67,8 @@ private def field_char' (F: Type*) [FieldOps F] [IsField F] [HasChar F n] (h: n 
         match m with
         | 0 => simp at h
 
-def field_char (F: Type*) [FieldOps F] [IsField F] [HasChar F n] : n = 0 ∨ Nat.IsPrime n := by
+-- the characteristic of any semifield is 0 or a prime number
+-- for example, ℚ has characteristic 0, and any finite field has a prime characteristic
+def field_char (F: Type*) [SemifieldOps F] [IsSemifield F] [HasChar F n] : n = 0 ∨ Nat.IsPrime n := by
   apply Decidable.or_iff_not_imp_left.mpr
   apply field_char' F
-
-#axiom_blame field_char

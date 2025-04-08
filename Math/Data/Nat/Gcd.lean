@@ -213,6 +213,38 @@ instance : Subsingleton (Classify n) where
     have := not_prime_and_composite n p c
     contradiction
 
+def Classify.isPrime : Classify n -> Bool
+| Classify.prime _ => true
+| _ => false
+
+def Classify.isComposite : Classify n -> Bool
+| Classify.composite _ => true
+| _ => false
+
+def Classify.isUnit : Classify n -> Bool
+| Classify.unit => true
+| _ => false
+
+instance : Decidable (Nat.IsPrime n) :=
+decidable_of_iff (classify n).isPrime <| by
+  apply Iff.intro
+  · cases n.classify <;> intro h
+    any_goals contradiction
+    assumption
+  · intro h
+    rw [show n.classify = .prime h from Subsingleton.allEq _ _]
+    rfl
+
+instance : Decidable (Nat.IsComposite n) :=
+decidable_of_iff (classify n).isComposite <| by
+  apply Iff.intro
+  · cases n.classify <;> intro h
+    any_goals contradiction
+    assumption
+  · intro h
+    rw [show n.classify = .composite h from Subsingleton.allEq _ _]
+    rfl
+
 def gcd_eq_one_or_dvd_of_prime {p: Nat} (hp: IsPrime p) : ∀n, gcd p n = 1 ∨ p ∣ n := by
   intro n
   apply Decidable.or_iff_not_imp_right.mpr
