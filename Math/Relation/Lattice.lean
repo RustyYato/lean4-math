@@ -1,18 +1,7 @@
 import Math.Order.Lattice.Complete
+import Math.Relation.Order
 
 variable {α: Type*}
-
-instance : LE (α -> α -> Prop) where
-  le a b := ∀{x y}, a x y -> b x y
-
-instance : LT (α -> α -> Prop) where
-  lt a b := a ≤ b ∧ ¬b ≤ a
-
-instance : Max (α -> α -> Prop) where
-  max a b x y := a x y ∨ b x y
-
-instance : Min (α -> α -> Prop) where
-  min a b x y := a x y ∧ b x y
 
 instance : SupSet (α -> α -> Prop) where
   sSup S x y := ∃r ∈ S, r x y
@@ -20,33 +9,7 @@ instance : SupSet (α -> α -> Prop) where
 instance : InfSet (α -> α -> Prop) where
   sInf S x y := ∀r ∈ S, r x y
 
-instance : Top (α -> α -> Prop) where
-  top _ _ := True
-instance : Bot (α -> α -> Prop) where
-  bot _ _ := False
-
 instance : IsCompleteLattice (α -> α -> Prop) where
-  lt_iff_le_and_not_le := Iff.rfl
-  le_refl _ := id
-  le_trans ab bc := bc ∘ ab
-  le_antisymm ab ba := by
-    ext x y; apply Iff.intro
-    apply ab
-    apply ba
-  le_top _ _ _ _ := True.intro
-  bot_le _ _ _ := False.elim
-  le_max_left _ _ := Or.inl
-  le_max_right _ _ := Or.inr
-  min_le_left _ _ := And.left
-  min_le_right _ _ := And.right
-  max_le ak bk := by
-    intro x y h
-    cases h
-    apply ak; assumption
-    apply bk; assumption
-  le_min ak bk := by
-    intro x y h
-    exact ⟨ak h, bk h⟩
   le_sSup := by
     intro S r h _ _ _
     exists r

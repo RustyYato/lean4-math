@@ -2,6 +2,8 @@ import Math.Data.Like.Func
 import Math.Relation.Basic
 import Math.Algebra.Notation
 import Math.Algebra.AddMul
+import Math.Order.OrderIso
+import Math.Relation.Order
 
 section Algebra
 
@@ -82,6 +84,85 @@ instance [Add α] [Mul α] : IsMulCon (RingCon α) where
 
 end Algebra
 
+section Order
+
+namespace AddCon
+
+variable [Add α]
+
+instance : LE (AddCon α) where
+  le a b := a.r ≤ b.r
+instance : LT (AddCon α) where
+  lt a b := a.r < b.r
+
+instance : IsLawfulLT (AddCon α) where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := α -> α -> Prop)
+
+def orderEmbed : AddCon α ↪o (α -> α -> Prop) where
+  toFun a := a.r
+  inj' a b h := by
+    rcases a with ⟨⟨a, _⟩, _⟩
+    rcases b with ⟨⟨b, _⟩, _⟩
+    congr
+  resp_rel := Iff.rfl
+
+instance : IsPartialOrder (AddCon α) :=
+  orderEmbed.instIsPartialOrder'
+
+end AddCon
+
+namespace MulCon
+
+variable [Mul α]
+
+instance : LE (MulCon α) where
+  le a b := a.r ≤ b.r
+instance : LT (MulCon α) where
+  lt a b := a.r < b.r
+
+instance : IsLawfulLT (MulCon α) where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := α -> α -> Prop)
+
+def orderEmbed : MulCon α ↪o (α -> α -> Prop) where
+  toFun a := a.r
+  inj' a b h := by
+    rcases a with ⟨⟨a, _⟩, _⟩
+    rcases b with ⟨⟨b, _⟩, _⟩
+    congr
+  resp_rel := Iff.rfl
+
+instance : IsPartialOrder (MulCon α) :=
+  orderEmbed.instIsPartialOrder'
+
+end MulCon
+
+namespace RingCon
+
+variable [Add α] [Mul α]
+
+instance : LE (RingCon α) where
+  le a b := a.r ≤ b.r
+instance : LT (RingCon α) where
+  lt a b := a.r < b.r
+
+instance : IsLawfulLT (RingCon α) where
+  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := α -> α -> Prop)
+
+def orderEmbed : RingCon α ↪o (α -> α -> Prop) where
+  toFun a := a.r
+  inj' a b h := by
+    rcases a with ⟨⟨⟨a, _⟩, _⟩, _⟩
+    rcases b with ⟨⟨⟨b, _⟩, _⟩, _⟩
+    congr
+  resp_rel := Iff.rfl
+
+instance : IsPartialOrder (RingCon α) :=
+  orderEmbed.instIsPartialOrder'
+
+end RingCon
+
+end Order
+
 section Generator
 
 variable (r: α -> α -> Prop)
@@ -135,6 +216,82 @@ def RingCon.generate [Add α] [Mul α] (r: α -> α -> Prop) : RingCon α where
   }
   resp_add := Generator.add
   resp_mul := Generator.mul
+
+def AddCon.ofGenerate [Add α] [RelLike C α] [IsAddCon C] (r: α -> α -> Prop) (c: C) (h: r ≤ c) : ∀a b, generate r a b -> c a b := by
+  intro a b g
+  induction g
+  apply h; assumption
+  apply (IsCon.toEquivalence c).refl
+  apply (IsCon.toEquivalence c).symm
+  assumption
+  apply (IsCon.toEquivalence c).trans
+  assumption
+  assumption
+  apply IsAddCon.resp_add
+  assumption
+  assumption
+
+def AddCon.le_generate [Add α] (r: α -> α -> Prop) : r ≤ generate r := by
+  intro x y h
+  apply Generator.of
+  assumption
+
+def MulCon.ofGenerate [Mul α] [RelLike C α] [IsMulCon C] (r: α -> α -> Prop) (c: C) (h: r ≤ c) : ∀a b, generate r a b -> c a b := by
+  intro a b g
+  induction g
+  apply h; assumption
+  apply (IsCon.toEquivalence c).refl
+  apply (IsCon.toEquivalence c).symm
+  assumption
+  apply (IsCon.toEquivalence c).trans
+  assumption
+  assumption
+  apply IsMulCon.resp_mul
+  assumption
+  assumption
+
+def MulCon.le_generate [Mul α] (r: α -> α -> Prop) : r ≤ generate r := by
+  intro x y h
+  apply Generator.of
+  assumption
+
+def RingCon.ofGenerate [Add α] [Mul α] [RelLike C α] [IsRingCon C] (r: α -> α -> Prop) (c: C) (h: r ≤ c) : ∀a b, generate r a b -> c a b := by
+  intro a b g
+  induction g
+  apply h; assumption
+  apply (IsCon.toEquivalence c).refl
+  apply (IsCon.toEquivalence c).symm
+  assumption
+  apply (IsCon.toEquivalence c).trans
+  assumption
+  assumption
+  apply IsAddCon.resp_add
+  assumption
+  assumption
+  apply IsMulCon.resp_mul
+  assumption
+  assumption
+
+def RingCon.le_generate [Add α] [Mul α] (r: α -> α -> Prop) : r ≤ generate r := by
+  intro x y h
+  apply Generator.of
+  assumption
+
+def AddCon.copy [Add α] [RelLike C α] [IsAddCon C] (c: C) (r: α -> α -> Prop) (h: r = c) : AddCon α where
+  r := r
+  iseqv := by rw [h]; exact IsCon.toEquivalence c
+  resp_add {_ _ _ _} := by simp [h]; exact IsAddCon.resp_add c
+
+def MulCon.copy [Mul α] [RelLike C α] [IsMulCon C] (c: C) (r: α -> α -> Prop) (h: r = c) : MulCon α where
+  r := r
+  iseqv := by rw [h]; exact IsCon.toEquivalence c
+  resp_mul {_ _ _ _} := by simp [h]; exact IsMulCon.resp_mul c
+
+def RingCon.copy [Add α] [Mul α] [RelLike C α] [IsRingCon C] (c: C) (r: α -> α -> Prop) (h: r = c) : RingCon α where
+  r := r
+  iseqv := by rw [h]; exact IsCon.toEquivalence c
+  resp_add {_ _ _ _} := by simp [h]; exact IsAddCon.resp_add c
+  resp_mul {_ _ _ _} := by simp [h]; exact IsMulCon.resp_mul c
 
 end Generator
 
