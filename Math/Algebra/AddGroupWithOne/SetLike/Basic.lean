@@ -34,3 +34,6 @@ def intRange_sub: ∀s: S, Set.range (fun n: ℤ => (n: α)) ⊆  s := by
   dsimp
   show ↑n ∈ s
   apply mem_intCast
+
+@[simp]
+def intCast_val (n: ℤ) : (n: s).val = n := rfl

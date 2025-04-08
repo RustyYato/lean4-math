@@ -347,3 +347,21 @@ def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) 
     intro a b
     dsimp; congr
     rw [map_add]
+
+@[simp]
+def neg_val (a: s) : (-a).val = -a.val := rfl
+
+@[simp]
+def inv_val (a: s) : (a⁻¹).val = a.val⁻¹ := rfl
+
+@[simp]
+def sub_val (a b: s) : (a - b).val = a.val - b.val := rfl
+
+@[simp]
+def div_val (a b: s) : (a / b).val = a.val / b.val := rfl
+
+@[simp]
+def zsmul_val (n: ℤ) (a: s) : (n • a).val = n • a.val := rfl
+
+@[simp]
+def zpow_val (n: ℤ) (a: s) : (a ^ n).val = a.val ^ n := rfl

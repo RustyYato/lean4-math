@@ -35,3 +35,9 @@ instance [IsCommMagma α] (s: Subsemigroup α) : IsCommMagma s := inferInstance
 
 instance [IsAddSemigroup α] (s: AddSubsemigroup α) : IsAddSemigroup s := inferInstance
 instance [IsAddCommMagma α] (s: AddSubsemigroup α) : IsAddCommMagma s := inferInstance
+
+@[simp]
+def add_val (a b: s) : (a + b).val = a.val + b.val := rfl
+
+@[simp]
+def mul_val (a b: s) : (a * b).val = a.val * b.val := rfl

@@ -32,6 +32,12 @@ instance : One s where
 instance : Zero s where
   zero := ⟨0, mem_zero _⟩
 
+@[simp]
+def zero_val : (0: s).val = 0 := rfl
+
+@[simp]
+def one_val : (1: s).val = 1 := rfl
+
 instance [IsMulOneClass α] : IsMulOneClass s where
   one_mul a := by
     apply Subtype.val_inj
@@ -87,3 +93,9 @@ instance : IsAddMonoid s where
 
 instance (s: Submonoid α) : IsMonoid s := inferInstance
 instance (s: AddSubmonoid α) : IsAddMonoid s := inferInstance
+
+@[simp]
+def nsmul_val (n: ℕ) (a: s) : (n • a).val = n • a.val := rfl
+
+@[simp]
+def npow_val (n: ℕ) (a: s) : (a ^ n).val = a.val ^ n := rfl

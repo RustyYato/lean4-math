@@ -36,3 +36,6 @@ def natRange_sub: ∀s: S, Set.range (fun n: ℕ => (n: α)) ⊆  s := by
   dsimp
   show ↑n ∈ s
   apply mem_natCast
+
+@[simp]
+def natCast_val (n: ℕ) : (n: s).val = n := rfl
