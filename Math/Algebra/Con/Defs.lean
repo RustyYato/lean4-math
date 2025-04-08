@@ -91,7 +91,7 @@ namespace AddCon
 variable [Add α]
 
 instance : LE (AddCon α) where
-  le a b := a.r ≤ b.r
+  le a b := ∀x y, a x y -> b x y
 instance : LT (AddCon α) where
   lt a b := a.r < b.r
 
@@ -116,7 +116,7 @@ namespace MulCon
 variable [Mul α]
 
 instance : LE (MulCon α) where
-  le a b := a.r ≤ b.r
+  le a b := ∀x y, a x y -> b x y
 instance : LT (MulCon α) where
   lt a b := a.r < b.r
 
@@ -141,7 +141,7 @@ namespace RingCon
 variable [Add α] [Mul α]
 
 instance : LE (RingCon α) where
-  le a b := a.r ≤ b.r
+  le a b := ∀x y, a x y -> b x y
 instance : LT (RingCon α) where
   lt a b := a.r < b.r
 
