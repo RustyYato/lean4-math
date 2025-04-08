@@ -72,10 +72,11 @@ def _root_.Localization := IsCon.Quotient (con S)
 
 instance : MonoidOps (Localization S) := inferInstanceAs (MonoidOps (IsCon.Quotient (con S)))
 instance : IsMonoid (Localization S) := inferInstanceAs (IsMonoid (IsCon.Quotient (con S)))
+instance : IsCommMagma (Localization S) := inferInstanceAs (IsCommMagma (IsCon.Quotient (con S)))
 
 def mkHom : (M × S) →* Localization S := IsMulCon.mkQuot (con S)
 def mk (a: M) (b: S) : Localization S := mkHom S (a, b)
-def mk_one : mk S 1 1 = 1 := rfl
+def mk_one : 1 = mk S 1 1 := rfl
 def mk_mul (a₀ a₁: M) (b₀ b₁: S) : mk S a₀ b₀ * mk S a₁ b₁ = mk S (a₀ * a₁) (b₀ * b₁) := rfl
 def mk_npow (a: M) (b: S) (n: ℕ) : (mk S a b) ^ n = mk S (a ^ n) (b ^ n) := rfl
 
@@ -94,6 +95,15 @@ def lift : (f: M -> S -> α) -> (resp: ∀(a₀ a₁: M) (b₀ b₁: S), con  S 
   intro a b g; apply h
   assumption
 
+def lift₂ : (f: M -> S -> M -> S -> α) -> (resp: ∀(a₀ a₁ a₂ a₃: M) (b₀ b₁ b₂ b₃: S), con S (a₀, b₀) (a₁, b₁) -> con S (a₂, b₂) (a₃, b₃) -> f a₀ b₀ a₂ b₂ = f a₁ b₁ a₃ b₃) -> Localization S -> Localization S -> α := by
+  intro f h
+  refine Quotient.lift₂ ?_ ?_
+  intro x y; exact f x.1 x.2 y.1 y.2
+  intros
+  apply h
+  assumption
+  assumption
+
 def sound : con S (a₀, b₀) (a₁, b₁) -> mk S a₀ b₀ = mk S a₁ b₁ := Quotient.sound
 def exact : mk S a₀ b₀ = mk S a₁ b₁ -> con S (a₀, b₀) (a₁, b₁) := Quotient.exact
 def rel_iff : mk S a₀ b₀ = mk S a₁ b₁ ↔ con S (a₀, b₀) (a₁, b₁) := ⟨exact S, sound S⟩
@@ -102,5 +112,10 @@ def mk_self (a: S) : mk S a.val a = 1 := by
   symm; apply sound
   rw [con_iff_exists]
   apply con'_one
+
+def mk_mul_cancel_left (a: M) (b k: S) : mk S (k.val * a) (k * b) = mk S a b := by
+  rw [←mk_mul, mk_self, one_mul]
+def mk_mul_cancel_right (a: M) (b k: S) : mk S (a * k.val) (b * k) = mk S a b := by
+  rw [←mk_mul, mk_self, mul_one]
 
 end Localization
