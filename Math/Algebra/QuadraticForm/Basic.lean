@@ -1,6 +1,6 @@
 import Math.Algebra.Module.LinearMap.Defs
 import Math.Algebra.Group.Action.Basic
-import Math.Algebra.Impls.Pi
+import Math.Algebra.Ring.Impls.Pi
 
 structure QuadraticMap (R M N: Type*)
   [SemiringOps R] [IsSemiring R] [IsCommMagma R]
