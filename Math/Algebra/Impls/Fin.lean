@@ -2,6 +2,8 @@ import Math.Algebra.Algebra.Defs
 import Math.Algebra.Group.Units.Defs
 import Math.Algebra.Semiring.Char
 import Math.Data.Nat.Gcd
+import Math.Algebra.Field.Defs
+import Math.Logic.Fact
 
 instance : One (Fin (n + 1)) := ⟨1⟩
 
@@ -183,7 +185,7 @@ instance : HasChar (Fin (n + 1)) (n + 1) := by
   intro m meq
   exact Nat.dvd_of_mod_eq_zero (Fin.mk.inj meq)
 
-unseal Nat.xgcdAux in def Fin.toUnit (x: Fin (n + 1)) (coprime: Nat.gcd x.val (n+1) = 1 := by decide) : Units (Fin (n + 1)) :=
+unseal Nat.xgcdAux in def Fin.toUnit' (x: Fin (n + 1)) (coprime: Nat.gcd x.val (n+1) = 1 := by decide) : Units (Fin (n + 1)) :=
   have eq_one : 0 < n -> 1 = ↑x.val * x.val.gcdA (n + 1) % (↑n + 1) := by
     intro h
     replace coprime: x.val.gcd (n+1) = 1 := coprime
@@ -235,3 +237,48 @@ unseal Nat.xgcdAux in def Fin.toUnit (x: Fin (n + 1)) (coprime: Nat.gcd x.val (n
       apply Int.emod_nonneg
       omega
   }
+
+unseal Nat.xgcdAux in def Fin.toUnit [h: NeZero n] (x: Fin n) (coprime: Nat.gcd x.val n = 1 := by decide) : Units (Fin n) :=
+  match n, h with
+  | _ + 1, _ => Fin.toUnit' x coprime
+
+variable [Fact (Nat.IsPrime (n + 1))]
+
+private def n_prime : Nat.IsPrime (n + 1) := Fact.proof
+
+private def toUnit_of_prime (a: Fin (n + 1)) (h: a ≠ 0) : Units (Fin (n + 1)) := (Fin.toUnit a <| by
+  rw [Nat.gcd_comm]
+  apply (Nat.gcd_eq_one_or_dvd_of_prime (n_prime (n := n)) a.val).resolve_right
+  intro g
+  have := Nat.dvd_le _ _ g (by
+    apply Nat.zero_lt_of_ne_zero
+    intro g; apply h
+    exact Eq.symm (Fin.eq_of_val_eq (Eq.symm g)))
+  have := Nat.not_le_of_lt a.isLt
+  contradiction)
+
+instance : CheckedInv? (Fin (n + 1)) where
+  checked_invert a h := (toUnit_of_prime a h).inv
+
+instance : CheckedDiv? (Fin (n + 1)) where
+  checked_div a b h := a * b⁻¹?
+
+instance : CheckedIntPow? (Fin (n + 1)) := instCheckedIntPow
+
+instance : IsGroupWithZero (Fin (n + 1)) where
+  exists_ne := by
+    refine ⟨0, 1, ?_⟩
+    intro h
+    replace h := Fin.mk.inj h
+    simp at h
+    have := n_prime (n := n)
+    subst h
+    contradiction
+  mul_inv?_cancel a h := by
+    show (toUnit_of_prime a h).val * (toUnit_of_prime a h).inv = _
+    apply Units.val_mul_inv
+  div?_eq_mul_inv? _ _ _ := rfl
+  zpow?_ofNat _ _ := rfl
+  zpow?_negSucc _ _ _ := rfl
+
+instance : IsField (Fin (n + 1)) where
