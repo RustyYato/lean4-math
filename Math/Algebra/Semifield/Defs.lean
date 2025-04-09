@@ -19,7 +19,7 @@ class IsSemifield (α: Type*) [SemifieldOps α] : Prop extends IsNonCommSemifiel
 instance [SemifieldOps α] [h: IsSemiring α] [g: IsGroupWithZero α] [NoZeroDivisors α] : IsNonCommSemifield α := { h, g with }
 instance [SemifieldOps α] [IsNonCommSemifield α] [IsCommMagma α] : IsSemifield α := {  }
 
-def add_div?_add' [SemifieldOps α] [IsNonCommSemifield α] (a b c: α) (h: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
+def add_div?_add₀ [SemifieldOps α] [IsNonCommSemifield α] (a b c: α) (h: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, div?_eq_mul_inv?, ←add_mul]
 
 instance [SemifieldOps α] [IsNonCommSemifield α] : IsMulCancel₀ α where

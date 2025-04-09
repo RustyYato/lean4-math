@@ -170,11 +170,22 @@ def div?_ne_zero (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : a /? b ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply div?_ne_zero <;> invert_tactic)
 
+def mul_div?_assoc (a b c: α) (hc: c ≠ 0) : a * (b /? c) = (a * b) /? c := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, mul_assoc]
+
+@[simp]
+def inv?_div? (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : (a /? b)⁻¹? = b /? a := by
+  apply inv?_eq_of_mul_left
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, mul_assoc, ←mul_assoc b⁻¹?]
+  simp [inv?_mul_cancel, mul_inv?_cancel]
+
 def div?_div? (a b: α) (hb: b ≠ 0) (hc: c ≠ 0) : a /? (b /? c) =  (a * c) /? b := by
-  rw [div?_eq_mul_inv?, div?_eq_mul_inv? (a * c)]
-  conv => { lhs; rhs; lhs; rw [div?_eq_mul_inv?] }
-  rw [inv?_mul_rev, inv?_inv?, mul_assoc]
+  rw [div?_eq_mul_inv?, inv?_div?, mul_div?_assoc]
 
 @[simp]
 def div?_one (a: α) : a /? 1 =  a := by
   rw [div?_eq_mul_inv?, inv?_one, mul_one]
+
+@[simp]
+def zero_div? (a: α) (ha: a ≠ 0) : 0 /? a = 0 := by
+  rw [div?_eq_mul_inv?, zero_mul]

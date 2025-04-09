@@ -15,10 +15,6 @@ section
 
 variable [SemifieldOps α] [IsNonCommSemifield α]
 
-def add_div?_add₀ (a b c: α) (hc: c ≠ 0) : a /? c + b /? c = (a + b) /? c := by
-  simp [div?_eq_mul_inv?]
-  rw [add_mul]
-
 def midpoint (a b: α) [NeZero (2: α)] : α := (a + b) /? 2
 
 def midpoint_comm (a b: α) [NeZero (2: α)] : midpoint a b = midpoint b a := by
@@ -30,6 +26,12 @@ end
 section
 
 variable [SemifieldOps α] [IsSemifield α]
+
+def add_div?_add (a b c d: α) (hb: b ≠ 0) (hd: d ≠ 0) : a /? b + c /? d = (d * a + b * c) /? (b * d) := by
+  rw [div?_eq_mul_inv?, div?_eq_mul_inv?, div?_eq_mul_inv?,
+    inv?_mul_rev, add_mul,
+    mul_comm d, mul_assoc a, ←mul_assoc d, mul_inv?_cancel, one_mul,
+    mul_comm b, mul_assoc c, mul_left_comm b, mul_inv?_cancel, mul_one]
 
 def mul_div?_mul (a b c d: α) (hb: b ≠ 0) (hd: d ≠ 0) : (a /? b) * (c /? d) = (a * c) /? (b * d) := by
   simp [div?_eq_mul_inv?]
