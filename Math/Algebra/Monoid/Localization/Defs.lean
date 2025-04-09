@@ -1,7 +1,7 @@
 import Math.Algebra.Monoid.Con
 import Math.Algebra.Con.Lattice
 import Math.Algebra.Monoid.SetLike.Basic
-import Math.Algebra.Impls.Prod
+import Math.Algebra.Monoid.Impls.Prod
 
 namespace Localization
 
