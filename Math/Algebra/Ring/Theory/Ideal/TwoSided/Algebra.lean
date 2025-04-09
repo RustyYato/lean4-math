@@ -166,7 +166,6 @@ instance : IsMulZeroClass (Ideal α) where
     rintro rfl
     exists [(0, 0)]
     simp
-    apply mul_zero
   mul_zero a := by
     ext x
     apply Iff.intro
@@ -180,7 +179,6 @@ instance : IsMulZeroClass (Ideal α) where
     rintro rfl
     exists [(0, 0)]
     simp
-    apply mul_zero
 
 instance : IsAddCommMagma (Ideal α) where
   add_comm a b := by

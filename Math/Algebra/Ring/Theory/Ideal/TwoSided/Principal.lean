@@ -127,8 +127,7 @@ def of_dvd (a: α) : Ideal α where
     apply dvd_trans hx
     exact dvd_mul_left x r
 
-def of_dvd_principal (a: α) : IsPrincipal (of_dvd a) := by
-  exists a
+def of_dvd_eq_principal (a: α) : of_dvd a = principal a := by
   rw [principal_eq_generate]
   apply flip le_antisymm
   rintro x h
@@ -143,6 +142,10 @@ def of_dvd_principal (a: α) : IsPrincipal (of_dvd a) := by
   apply mem_mul_right
   apply Generate.of
   rfl
+
+def of_dvd_principal (a: α) : IsPrincipal (of_dvd a) := by
+  exists a
+  apply of_dvd_eq_principal
 
 end Dvd
 

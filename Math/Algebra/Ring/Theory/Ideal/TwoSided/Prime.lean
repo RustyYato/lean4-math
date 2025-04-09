@@ -1,6 +1,4 @@
-import Math.Data.List.Algebra
-import Math.Algebra.Dvd
-import Math.Algebra.Ring.Theory.Ideal.TwoSided.Lattice
+import Math.Algebra.Ring.Theory.Ideal.TwoSided.Principal
 import Math.Algebra.Ring.Theory.Ideal.TwoSided.Quotient
 
 namespace Ideal
@@ -41,7 +39,7 @@ def prime_iff_compl_subsemigroup (i: Ideal R) : i.IsPrime ↔ ∃m: Subsemigroup
     simp [Set.mem_compl] at this
     exact Or.symm ((fun {a b} => Classical.or_iff_not_imp_right.mpr) this)
 
-def prime_iff_compl_sumonoid (i: Ideal R) : i.IsPrime ∧ i < ⊤ ↔ ∃m: Submonoid R, m.carrier = i.carrierᶜ := by
+def prime_iff_compl_submonoid (i: Ideal R) : i.IsPrime ∧ i < ⊤ ↔ ∃m: Submonoid R, m.carrier = i.carrierᶜ := by
   apply Iff.intro
   · intro ⟨h, proper⟩
     refine ⟨{
@@ -76,4 +74,65 @@ def prime_preimage [RingOps S] [IsRing S] (f: R →+* S) (i: Ideal S) : i.IsPrim
   rw [←map_mul]
   assumption
 
+def prime_of_maximal [IsCommMagma R] (m: Ideal R) (hm: m.isMaximal) : m.IsPrime := by
+  open scoped IsLawfulDvd.ofMul in
+  intro a b h
+  apply Classical.or_iff_not_imp_left.mpr
+  intro a_notin_m
+  let i: Ideal R := m + principal a
+  have m_lt_i : m < i := by
+    apply And.intro
+    apply le_max_left
+    intro g
+    have := g a ?_
+    contradiction
+    apply le_max_right (α := Ideal R)
+    show a ∈ principal a
+    rw [principal_eq_generate]
+    apply Generate.of
+    rfl
+  have i_eq_top : i = ⊤ := hm.right i m_lt_i
+  have : 1 ∈ i := by rw [i_eq_top]; trivial
+  obtain ⟨⟨m', r'⟩, hm', hr', g⟩ := this
+  simp at hm' hr' g
+  rw [←of_dvd_eq_principal] at hr'
+  obtain ⟨r, rfl⟩ := hr'
+  have : b = m' * b + r * (a * b) := by
+    rw [←mul_assoc, ←add_mul, mul_comm r, g, one_mul]
+  rw [this]
+  apply mem_add
+  apply mem_mul_right
+  assumption
+  apply mem_mul_left
+  assumption
+
 end Ideal
+
+namespace Submonoid
+
+variable [RingOps R] [IsRing R] [IsCommMagma R]
+
+def ofMaximalIdeal (i: Ideal R) (hi: i.isMaximal) : Submonoid R :=
+  have : ∃s: Submonoid R, s.carrier = i.carrierᶜ  := by
+    rw [←Ideal.prime_iff_compl_submonoid]
+    apply And.intro
+    exact Ideal.prime_of_maximal i hi
+    apply lt_of_le_of_ne
+    apply le_top
+    exact hi.left
+  {
+    carrier := i.carrierᶜ
+    mem_one := by
+      obtain ⟨s, h⟩ := this
+      show 1 ∈ i.carrierᶜ
+      rw [←h]; apply mem_one s
+    mem_mul {a b} ha hb := by
+      obtain ⟨s, h⟩ := this
+      show a * b ∈ i.carrierᶜ
+      rw [←h]; rw [←h] at ha hb
+      apply mem_mul s
+      assumption
+      assumption
+  }
+
+end Submonoid
