@@ -34,7 +34,7 @@ def inv_inj [Inv α] [IsInvolutiveInv α] {a b: α} : a⁻¹ = b⁻¹ ↔ a = b 
 def sub' [Add α] [Neg α] (a b: α) := a + -b
 def div' [Mul α] [Inv α] (a b: α) := a * b⁻¹
 
-def zsmulRec [AddMonoidOps α] [Neg α] : ℤ -> α -> α
+def zsmulRec [SMul ℕ α] [Neg α] : ℤ -> α -> α
 | .ofNat n, a => n • a
 | .negSucc n, a => -((n + 1) • a)
 
