@@ -88,7 +88,7 @@ def ind {motive: Localization S -> Prop} (mk: ∀a b, motive (mk S a b)) : ∀l,
   induction l using Quot.ind
   apply mk
 
-def lift : (f: M -> S -> α) -> (resp: ∀(a₀ a₁: M) (b₀ b₁: S), con  S (a₀, b₀) (a₁, b₁) -> f a₀ b₀ = f a₁ b₁) -> Localization S -> α := by
+def lift : (f: M -> S -> α) -> (resp: ∀(a₀ a₁: M) (b₀ b₁: S), con S (a₀, b₀) (a₁, b₁) -> f a₀ b₀ = f a₁ b₁) -> Localization S -> α := by
   intro f h
   refine Quotient.lift ?_ ?_
   intro x; exact f x.1 x.2
@@ -103,6 +103,14 @@ def lift₂ : (f: M -> S -> M -> S -> α) -> (resp: ∀(a₀ a₁ a₂ a₃: M) 
   apply h
   assumption
   assumption
+
+def hrec {motive: Localization S -> Sort*} (mk: ∀a b, motive (mk S a b)) (resp: ∀(a₀ a₁: M) (b₀ b₁: S), con S (a₀, b₀) (a₁, b₁) -> HEq (mk a₀ b₀) (mk a₁ b₁)) : ∀l, motive l := by
+  intro l
+  refine Quotient.hrecOn (motive := motive) l ?_ ?_
+  intro
+  apply mk
+  intro _ _
+  apply resp
 
 def sound : con S (a₀, b₀) (a₁, b₁) -> mk S a₀ b₀ = mk S a₁ b₁ := Quotient.sound
 def exact : mk S a₀ b₀ = mk S a₁ b₁ -> con S (a₀, b₀) (a₁, b₁) := Quotient.exact
