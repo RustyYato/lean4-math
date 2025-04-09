@@ -23,6 +23,10 @@ def HasChar.char_spec' [h: HasChar α n] (m: ℕ) : ∀a: α, (n * m) • a = 0 
   apply (h.spec _).mpr
   apply Nat.dvd_mul_right
 
+def HasChar.nsmul_eq_zero_of_dvd [h: HasChar α n] (m: ℕ) (hm: n ∣ m) : ∀a: α, m • a = 0 := by
+  obtain ⟨m, rfl⟩ := hm
+  apply char_spec'
+
 def HasChar.eq (h: HasChar α n) (g: HasChar α m) : n = m := by
   apply Nat.dvd_antisymm
   apply h.char_dvd
