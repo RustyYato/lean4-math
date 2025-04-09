@@ -2,7 +2,7 @@ import Math.Algebra.Field.SetLike.Lattice
 import Math.Algebra.Field.SetLike.Basic
 import Math.Algebra.QAlgebra.Basic
 import Math.Data.Rat.Basic
-import Math.Algebra.Impls.Fin
+import Math.Algebra.Field.Impls.Fin
 import Math.AxiomBlame
 
 -- TODO: prove that for `HasChar α 0`, `⊥: α ≃+* ℚ`
@@ -91,7 +91,7 @@ local instance : QAlgebraOps F where
 local instance : IsQAlgebra F where
   ratCast_eq_ratCastRec _ := rfl
 
-noncomputable def has_char_zero_equiv_rat [HasChar F 0] : ℚ ≃+* (⊥: Subfield F) where
+noncomputable def has_char_zero_equiv_rat : ℚ ≃+* (⊥: Subfield F) where
   toFun a := ⟨a, by
     rw [ratCast_eq_ratCastRec]
     induction a using Rat.ind with | mk a =>
@@ -155,5 +155,60 @@ noncomputable def has_char_zero_equiv_rat [HasChar F 0] : ℚ ≃+* (⊥: Subfie
     simp; congr;
     show Rat.castHom _ = Rat.castHom _ * Rat.castHom _
     rw [map_mul]
+
+end
+
+section
+
+variable [HasChar F n] [NeZero n]
+
+private def n_prime : Nat.IsPrime n := by
+  rcases (field_char F) with rfl | h
+  rename_i h; exact (h.out rfl).elim
+  assumption
+
+-- instance : Fact (Nat.IsPrime n) where
+--   proof := n_prime F
+
+def Subfield.ofFinCast : Subfield F :=
+  have : Fact (Nat.IsPrime n) := ⟨n_prime F⟩
+  Subfield.range (α := Fin n) <| {
+    toFun a := a.val
+    map_zero := by apply natCast_zero
+    map_one := by
+      simp
+      rename_i h
+      match n, h with
+      | n + 2, h =>
+      apply natCast_one
+    map_add {a b} := by
+      show (Fin.val (Fin.mk _ _): F) = _
+      simp
+      rw [←natCast_add, ←Nat.div_add_mod (a.val + b.val) n, natCast_add,
+        natCast_mul, HasChar.natCast_eq_zero (n := n)]
+      simp
+    map_mul {a b} := by
+      show (Fin.val (Fin.mk _ _): F) = _
+      simp
+      rw [←natCast_mul, ←Nat.div_add_mod (a.val * b.val) n, natCast_add,
+        natCast_mul, HasChar.natCast_eq_zero (n := n)]
+      simp
+  }
+
+def Subfield.ofFinCast_eq_bot : Subfield.ofFinCast F = ⊥ := by
+  apply flip le_antisymm
+  apply bot_le
+  rintro _ ⟨x, rfl⟩
+  simp
+  show (x.val: F) ∈ ⊥
+  rw [mem_bot_iff]
+  refine ⟨⟨x.val, 1⟩, ?_, ?_⟩
+  simp; rw [natCast_one]; exact (zero_ne_one _).symm
+  simp [natCast_one, intCast_ofNat]
+
+noncomputable def has_char_prime_equiv_fin : Fin n ≃+* (⊥: Subfield F) := by
+  apply RingEquiv.trans _ (Subfield.equiv_of_eq (Subfield.ofFinCast F) ⊥ (Subfield.ofFinCast_eq_bot F))
+  have : Fact (Nat.IsPrime n) := ⟨n_prime F⟩
+  apply Subfield.equiv_range
 
 end

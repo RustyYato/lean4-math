@@ -45,4 +45,13 @@ def generate (U: Set α) : Subfield α where
   mem_one := Generate.one
   mem_zero := Generate.zero
 
+def copy (s: Subfield α) (t: Set α) (h: t = s.carrier) : Subfield α where
+  carrier := t
+  mem_zero := by dsimp; rw [h]; apply mem_zero s
+  mem_one := by dsimp; rw [h]; apply mem_one s
+  mem_add := by rw [h]; intros; apply mem_add s <;> assumption
+  mem_mul := by dsimp; rw [h]; intros; apply mem_mul s <;> assumption
+  mem_neg := by dsimp; rw [h]; intros; apply mem_neg s <;> assumption
+  mem_inv?' := by dsimp; rw [h]; intros; apply mem_inv? s <;> assumption
+
 end Subfield

@@ -1028,6 +1028,10 @@ def image_eq_range (f : α → β) (s : Set α) : s.image f = range fun x : s =>
   apply Set.mem_image'
   assumption
 
+def range_eq_image (f : α → β) : range f = Set.image ⊤ f := by
+  ext x
+  simp [mem_range, mem_image, mem_univ]
+
 def range_comp' (g : α → β) (f : ι → α) : range (g ∘ f) = (range f).image g := by
   ext x
   apply Iff.intro
