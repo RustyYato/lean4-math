@@ -1,4 +1,6 @@
 import Math.Algebra.Field.SetLike.Lattice
+import Math.Algebra.Field.SetLike.Basic
+import Math.Algebra.QAlgebra.Basic
 import Math.Data.Rat.Basic
 import Math.Algebra.Impls.Fin
 import Math.AxiomBlame
@@ -72,3 +74,86 @@ private def field_char' (F: Type*) [SemiringOps F] [IsSemiring F] [IsNontrivial 
 def field_char (F: Type*) [SemiringOps F] [IsSemiring F] [IsNontrivial F] [NoZeroDivisors F] [HasChar F n] : n = 0 ∨ Nat.IsPrime n := by
   apply Decidable.or_iff_not_imp_left.mpr
   apply field_char' F
+
+variable (F: Type*) [FieldOps F] [IsField F]
+
+section
+
+variable [HasChar F 0]
+
+local instance : RatCast F where
+  ratCast := ratCastRec
+
+local instance : SMul ℚ F where
+  smul r x := r * x
+
+local instance : QAlgebraOps F where
+local instance : IsQAlgebra F where
+  ratCast_eq_ratCastRec _ := rfl
+
+noncomputable def has_char_zero_equiv_rat [HasChar F 0] : ℚ ≃+* (⊥: Subfield F) where
+  toFun a := ⟨a, by
+    rw [ratCast_eq_ratCastRec]
+    induction a using Rat.ind with | mk a =>
+    show _ /? _ ~(_) ∈ _
+    rw [div?_eq_mul_inv?]
+    apply mem_mul
+    apply mem_intCast
+    apply mem_inv?
+    apply mem_natCast⟩
+  invFun a := by
+    have := a.property
+    rw [Subfield.mem_bot_iff] at this
+    let x := Classical.choose this
+    have : ¬(x.2: F) = (0: ℕ) := by
+      have ⟨h, _⟩ := Classical.choose_spec this
+      rw [natCast_zero]
+      exact h
+    rw [HasChar.natCast_inj.eq_iff] at this
+    exact Rat.mk (Rat.Fract.mk x.1 x.2 (Nat.pos_of_ne_zero this))
+  leftInv x := by
+    simp
+    induction x  using Rat.ind with | mk x =>
+    replace : ∃ x_1, (fun x_2 :ℤ × ℕ => ∃ h, (Rat.mk x: F) = ↑x_2.fst /? ↑x_2.snd) x_1 := by
+      refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
+      exact x.num
+      exact x.den
+      simp; intro h
+      apply x.den_nz
+      rw [←natCast_zero] at h
+      rw [HasChar.natCast_inj h]
+      simp
+      apply ratCast_eq_ratCastRec
+    let y := Classical.choose this
+    show Rat.mk {
+      num := y.fst
+      den := y.snd
+      den_pos := _
+    } = Rat.mk x
+    have ⟨h, g⟩ := Classical.choose_spec this
+    replace h: (y.snd: F) ≠ 0 := h
+    replace g: (Rat.mk x: F) = (y.fst: F) /? y.snd := g
+    apply Rat.cast.inj (α := F)
+    conv => { rhs; rw [g] }
+    rw [ratCast_eq_ratCastRec]
+    rfl
+  rightInv
+  | ⟨x, hx⟩ => by
+    simp; congr
+    rw [Subfield.mem_bot_iff] at hx
+    have ⟨_, _⟩  := Classical.choose_spec hx
+    symm; assumption
+  map_zero := by
+    simp; congr; rw [ratCast_zero]
+  map_one := by
+    simp; congr; rw [ratCast_one]
+  map_add {_ _} := by
+    simp; congr;
+    show Rat.castHom _ = Rat.castHom _ + Rat.castHom _
+    rw [map_add]
+  map_mul {_ _} := by
+    simp; congr;
+    show Rat.castHom _ = Rat.castHom _ * Rat.castHom _
+    rw [map_mul]
+
+end
