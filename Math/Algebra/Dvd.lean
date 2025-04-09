@@ -2,12 +2,24 @@ import Math.Algebra.Monoid.Units.Defs
 import Math.Algebra.Ring.Defs
 
 class IsLawfulDvd (α: Type*) [Dvd α] [Mul α]: Prop where
-  dvd_iff {a b: α} : (a ∣ b) ↔  ∃k, b = a * k := by intros; rfl
+  dvd_iff {a b: α} : (a ∣ b) ↔ ∃k, b = a * k := by intros; rfl
 
 def dvd_iff [Dvd α] [Mul α] [IsLawfulDvd α] {a b: α} : (a ∣ b) ↔  ∃k, b = a * k := IsLawfulDvd.dvd_iff
 
 instance : IsLawfulDvd Nat where
 instance : IsLawfulDvd Int where
+
+namespace IsLawfulDvd.ofMul
+
+variable [Mul α]
+
+scoped instance : Dvd α where
+  dvd a b := ∃k, b = a * k
+
+scoped instance : IsLawfulDvd α where
+  dvd_iff := Iff.rfl
+
+end IsLawfulDvd.ofMul
 
 variable {α: Type*} [Dvd α]
 
