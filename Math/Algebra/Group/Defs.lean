@@ -7,8 +7,8 @@ class IsInvolutiveNeg (α: Type*) [Neg α]: Prop where
 class IsInvolutiveInv (α: Type*) [Inv α]: Prop where
   inv_inv (a: α): a⁻¹⁻¹ = a
 
-def neg_neg [Neg α] [IsInvolutiveNeg α] (a: α): - -a = a := IsInvolutiveNeg.neg_neg _
-def inv_inv [Inv α] [IsInvolutiveInv α] (a: α): a⁻¹⁻¹ = a := IsInvolutiveInv.inv_inv _
+@[simp] def neg_neg [Neg α] [IsInvolutiveNeg α] (a: α): - -a = a := IsInvolutiveNeg.neg_neg _
+@[simp] def inv_inv [Inv α] [IsInvolutiveInv α] (a: α): a⁻¹⁻¹ = a := IsInvolutiveInv.inv_inv _
 
 instance [Inv α] [IsInvolutiveInv α] : IsInvolutiveNeg (AddOfMul α) where
   neg_neg := inv_inv (α := α)

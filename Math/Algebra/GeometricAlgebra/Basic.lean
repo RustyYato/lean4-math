@@ -5,11 +5,13 @@ inductive BasisVector where
 | zero
 | pos
 | neg
+deriving Repr
 
 -- a binary tree representing the Geometric Algebra G(z, p, n)
 inductive GA (R: Type u) : List BasisVector -> Type u where
 | scalar : R -> GA R []
 | node (b: BasisVector) (rem keep: GA R bs) : GA R (b::bs)
+deriving Repr
 
 namespace GA
 
@@ -48,10 +50,11 @@ def basis_mul [Neg R] : GA R basis -> GA R basis
 | .scalar v => .scalar v
 | .node _ a₀ a₁ => .node _ a₀.basis_mul (-a₁.basis_mul)
 
--- (a₀ + a₁ e) * (b₀ + b₁ e) =
--- (a₀ * (b₀ + b₁ e) + a₁ e * (b₀ + b₁ e)) =
--- a₀ * b₀ + a₀ * b₁ e + a₁ $b₀ e  + a₁ $b₁ e * e =
--- a₀ * b₀ + (a₀ * b₁ + a₁ $b₀) e  + a₁ $b₁ e * e =
+-- (a₀ + a₁ e) (b₀ + b₁ e) =
+-- (a₀ (b₀ + b₁ e) + a₁ e (b₀ + b₁ e)) =
+-- a₀ b₀ + a₀ b₁ e + a₁ e b₀ + a₁ e b₁ e =
+-- a₀ b₀ + a₀ b₁ e + a₁ $b₀ e + a₁ $b₁ e e =
+-- a₀ b₀ + (a₀ b₁ + a₁ $b₀) e + a₁ $b₁ e e =
 def mul [Mul R] [Add R] [Neg R] [Sub R] : GA R basis -> GA R basis -> GA R basis
 | .scalar a, .scalar b => .scalar (a * b)
 -- a₀ * b₀ + (a₀ * b₁ + a₁ $b₀) e  + a₁ $b₁ e * e =
@@ -69,6 +72,34 @@ def mul [Mul R] [Add R] [Neg R] [Sub R] : GA R basis -> GA R basis -> GA R basis
 instance [Mul R] [Add R] [Neg R] [Sub R] : Mul (GA R basis) := ⟨mul⟩
 
 instance [Zero R] [One R] [Mul R] [Add R] [Neg R] [Sub R] : Pow (GA R basis) ℕ := ⟨flip npowRec⟩
+
+@[simp] def add_scalar [Add R] (a b: R) : scalar a + scalar b = scalar (a + b) := rfl
+@[simp] def add_node [Add R] (a b c d: GA R basis) : node v a b + node v c d = node v (a + c) (b + d) := rfl
+
+@[simp] def neg_scalar [Neg R] (a: R) : -scalar a = scalar (-a) := rfl
+@[simp] def neg_node [Neg R] (a b: GA R basis) : -node v a b = node v (-a) (-b) := rfl
+
+@[simp] def basis_mul_scalar [Neg R] (a: R) : (scalar a).basis_mul = scalar a := rfl
+@[simp] def basis_mul_node [Neg R] (a b: GA R basis) : (node v a b).basis_mul = node v a.basis_mul (-b.basis_mul) := rfl
+
+@[local simp] def zero_scalar [Zero R] : 0 = scalar (0: R) := rfl
+@[local simp] def zero_node [Zero R] : 0 = node v 0 (0: GA R basis) := rfl
+@[local simp] def one_scalar [Zero R] [One R] : 1 = scalar (1: R) := rfl
+@[local simp] def one_node [Zero R] [One R] : 1 = node v 1 (0: GA R basis) := rfl
+
+section
+
+variable [Mul R] [Add R] [Neg R] [Sub R]
+
+@[simp] def mul_scalar (a b: R) : scalar a * scalar b = scalar (a * b) := rfl
+@[simp] def mul_node_neg [Neg R] (a b c d: GA R basis) : (node .neg a b) * (node .neg c d) =
+  node _ (a * c - b * d.basis_mul) (a * d + b * c.basis_mul) := rfl
+@[simp] def mul_node_pos [Neg R] (a b c d: GA R basis) : (node .pos a b) * (node .pos c d) =
+  node _ (a * c + b * d.basis_mul) (a * d + b * c.basis_mul) := rfl
+@[simp] def mul_node_zero [Neg R] (a b c d: GA R basis) : (node .zero a b) * (node .zero c d) =
+  node _ (a * c) (a * d + b * c.basis_mul) := rfl
+
+end
 
 instance [AddGroupOps R] [IsAddGroup R] : IsAddGroup (GA R basis) where
   add_assoc a b c := by
@@ -152,6 +183,18 @@ instance [AddGroupOps R] [IsAddGroup R] : IsAddGroup (GA R basis) where
       show node _ _ _ = node _ _ _
       congr 1
 
+instance [Add R] [IsAddCommMagma R] : IsAddCommMagma (GA R basis) where
+  add_comm a b := by
+    induction a with
+    | scalar a =>
+      cases b with | scalar b =>
+      show scalar _ = scalar _
+      congr 1
+      apply add_comm
+    | node v a₀ a₁ ih₀ ih₁ =>
+      cases b with | node _ b₀ b₁ =>
+      simp [ih₀, ih₁]
+
 instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] : IsAddGroupWithOne (GA R basis) where
   natCast_zero := by
     show ofScalar _ = ofScalar _
@@ -181,7 +224,7 @@ instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] : IsAddGroupWithOne (GA R 
     rw [map_ofScalar, intCast_negSucc]
     rfl
 
-def basis_mul_scalar [AddGroupOps R] [IsAddGroup R] (r: R) : basis_mul (basis := basis) (R := R) (ofScalar r) = ofScalar r := by
+@[simp] def basis_mul_ofScalar [AddGroupOps R] [IsAddGroup R] (r: R) : basis_mul (basis := basis) (R := R) (ofScalar r) = ofScalar r := by
   induction basis generalizing r with
   | nil => rfl
   | cons b basis ih =>
@@ -193,10 +236,10 @@ def basis_mul_scalar [AddGroupOps R] [IsAddGroup R] (r: R) : basis_mul (basis :=
     show -(0: GA _ _) = 0
     rw [neg_zero]
 
-def basis_mul_zero [AddGroupOps R] [IsAddGroup R] : basis_mul (basis := basis) (R := R) 0 = 0 :=
-  basis_mul_scalar 0
-def basis_mul_one [AddGroupOps R] [One R] [IsAddGroup R] : basis_mul (basis := basis) (R := R) 1 = 1 :=
-  basis_mul_scalar 1
+@[simp] def basis_mul_zero [AddGroupOps R] [IsAddGroup R] : basis_mul (basis := basis) (R := R) 0 = 0 :=
+  basis_mul_ofScalar 0
+@[simp] def basis_mul_one [AddGroupOps R] [One R] [IsAddGroup R] : basis_mul (basis := basis) (R := R) 1 = 1 :=
+  basis_mul_ofScalar 1
 
 instance [RingOps R] [IsRing R] : IsMulZeroClass (GA R basis) where
   zero_mul a := by
@@ -238,45 +281,95 @@ instance [RingOps R] [IsRing R] : IsMulZeroClass (GA R basis) where
 instance [RingOps R] [IsRing R] : IsMulOneClass (GA R basis) where
   mul_one a := by
     induction a with
-    | scalar a =>
-      show scalar _ = scalar _
-      rw [mul_one]
-    | node b a₀ a₁ ih₀ ih₁  =>
-      show mul _ (node _ _ _) = _
-      cases b <;> unfold mul <;> congr
-      any_goals
-        show a₀ * 0 + a₁ * basis_mul 1 = _
-        rw [basis_mul_one, ih₁]; simp
-      any_goals
-        show a₀ * 1 + a₁ * basis_mul 0 = _
-        simp [ih₀, basis_mul_zero]
-      show a₀ * 1 - a₁ * basis_mul 0 = _
-      simp [ih₀, basis_mul_zero]
+    | scalar a => simp
+    | node v a₀ a₁ ih₀ ih₁ => cases v <;> simp [ih₀, ih₁]
   one_mul a := by
     induction a with
-    | scalar a =>
-      show scalar _ = scalar _
-      rw [one_mul]
-    | node b a₀ a₁ ih₀ ih₁  =>
-      show mul (node _ _ _) _ = _
-      cases b <;> unfold mul <;> congr
-      any_goals
-        show 1 * a₁ + 0 * a₀.basis_mul = _
-        simp [ih₁]
-      show 1 * a₀ + 0 * a₁.basis_mul = _
-      simp [ih₀]
-      show 1 * a₀ - 0 * a₁.basis_mul = _
-      simp [ih₀]
+    | scalar a => simp
+    | node v a₀ a₁ ih₀ ih₁ => cases v <;> simp [ih₀, ih₁]
+
+@[simp] def basis_mul_add [AddGroupOps R] [IsAddGroup R] [IsAddCommMagma R] (a b: GA R basis) : (a + b).basis_mul = a.basis_mul + b.basis_mul := by
+  induction a with
+  | scalar a =>
+    cases b
+    simp
+  | node v a₀ a₁ ih₀ ih₁ =>
+    cases b
+    simp [ih₀, ih₁]
+    rw [neg_add_rev, add_comm]
 
 instance [RingOps R] [IsRing R]  : IsLeftDistrib (GA R basis) where
-  mul_add := sorry
-instance [RingOps R] [IsRing R]  : IsRightDistrib (GA R basis) where
-  add_mul := sorry
+  mul_add k a b := by
+    induction basis with
+    | nil =>
+      cases k with | scalar k =>
+      cases a with | scalar a =>
+      cases b with | scalar b =>
+      simp [mul_add]
+    | cons v vs ih =>
+      cases k with | node _ k₀ k₁ =>
+      cases a with | node _ a₀ a₁ =>
+      cases b with | node _ b₀ b₁ =>
+      cases v <;> simp [ih]
+      ac_nf
+      ac_nf
+      rw [sub_add]
+      repeat rw [sub_eq_add_neg]
+      ac_nf
 
-def basis_mul_mul [RingOps R] [IsRing R] (a b: GA R basis) : (a * b).basis_mul = a * b := by
+instance [RingOps R] [IsRing R]  : IsRightDistrib (GA R basis) where
+  add_mul a b k := by
+    induction basis with
+    | nil =>
+      cases k with | scalar k =>
+      cases a with | scalar a =>
+      cases b with | scalar b =>
+      simp [add_mul]
+    | cons v vs ih =>
+      cases k with | node _ k₀ k₁ =>
+      cases a with | node _ a₀ a₁ =>
+      cases b with | node _ b₀ b₁ =>
+      cases v <;> simp [ih]
+      ac_nf
+      ac_nf
+      rw [sub_add]
+      repeat rw [sub_eq_add_neg]
+      ac_nf
+
+@[simp]
+def basis_mul_neg_neg [Neg R] (a: GA R basis) : (-a).basis_mul = -a.basis_mul := by
+  induction a with
+  | scalar => simp
+  | node v a₀ a₁ ih₀ ih₁ => simp [ih₀, ih₁]
+
+@[simp]
+def basis_mul_basis_mul [RingOps R] [IsRing R] (a: GA R basis) : a.basis_mul.basis_mul = a := by
+  induction a with
+  | scalar => simp
+  | node v a₀ a₁ ih₀ ih₁ => simp [ih₀, ih₁]
+
+@[simp]
+def basis_mul_mul [RingOps R] [IsRing R] (a b: GA R basis) : (a * b).basis_mul = a.basis_mul * b.basis_mul := by
   induction basis with
-  | nil => sorry
-  | cons b basis ih => sorry
+  | nil =>
+    cases a with | scalar a =>
+    cases b with | scalar b =>
+    simp
+  | cons v vs ih =>
+    cases a with | node  a₀ a₁ =>
+    cases b with | node  b₀ b₁ =>
+    cases v <;> simp [ih,neg_add_rev]
+    rw [neg_mul_left, neg_mul_right, add_comm]
+    rw [←neg_mul_left, neg_mul_right]
+    simp only [basis_mul_neg_neg, basis_mul_basis_mul, true_and, neg_neg]
+    rw [←neg_mul_left, ←neg_mul_right, add_comm]
+    rw [←neg_mul_left, neg_mul_right]
+    simp only [basis_mul_neg_neg, basis_mul_basis_mul, neg_neg]
+    rw [←neg_mul_left, ←neg_mul_right, add_comm]
+    apply And.intro _ rfl
+    rw [sub_eq_add_neg]
+    simp only [basis_mul_add, ih]
+    simp [←sub_neg, ih]
 
 instance [RingOps R] [IsRing R] : IsMonoid (GA R basis) where
   mul_assoc := by
@@ -284,16 +377,17 @@ instance [RingOps R] [IsRing R] : IsMonoid (GA R basis) where
     induction basis with
     | nil =>
       cases a; cases b; cases c
-      show scalar _ = scalar _
-      rw [mul_assoc]
-    | cons b basis ih =>
+      simp [mul_assoc]
+    | cons v vs ih =>
       cases a with | node _ a₀ a₁ =>
       cases b with | node _ b₀ b₁ =>
       cases c with | node _ c₀ c₁ =>
-      have mul_eq : ∀a b: GA R basis, a.mul b = a * b := fun _ _ => rfl
-      cases b <;> show node _ _ _ = node _ _ _ <;> congr 1 <;> simp [mul_eq]
-      apply ih
-      simp [ih, add_mul, mul_add]
-      repeat sorry
+      cases v <;> (simp [ih, mul_add, add_mul]; ac_nf)
+      simp [sub_eq_add_neg, ←neg_mul_left, ←neg_mul_right,
+        mul_add, add_mul, ih, neg_add_rev]
+      ac_nf
+
+instance [RingOps R] [IsRing R] : IsSemiring (GA R basis) := IsSemiring.inst
+instance [RingOps R] [IsRing R] : IsRing (GA R basis) := IsRing.inst
 
 end GA
