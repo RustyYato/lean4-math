@@ -39,3 +39,10 @@ def mem_coe {x : α} : x ∈ (p : Set α) ↔ x ∈ p :=
 instance : SetLike (Set α) α where
   coe := id
   coe_inj _ _ := id
+
+instance [DecidableEq α] [SetLike S α] (s: S) : DecidableEq s :=
+  fun a b => decidable_of_iff (a.val = b.val) <| by
+    cases a; cases b;
+    simp; apply Iff.intro
+    rintro rfl; rfl
+    intro h; cases h; rfl

@@ -148,6 +148,10 @@ def comp [Add A] [Add B] [Add C] (f: B →ₗ[R] C) (g: A →ₗ[R] B) : A →�
   map_add { _ _ } := by dsimp; rw [map_add, map_add]
   map_smul { _ _ } := by dsimp; rw [map_smul, map_smul]
 
+def apply_comp [Add A] [Add B] [Add C] (f: B →ₗ[R] C) (g: A →ₗ[R] B) (x: A) :
+  f.comp g x = f (g x) := rfl
+
+
 def id (A: Type*) [Add A] [SMul R A] : A →ₗ[R] A where
   toFun x := x
   map_add := rfl

@@ -1,8 +1,9 @@
-import Math.Data.FinSupp.Algebra
-import Math.Algebra.Algebra.Hom
+-- import Math.Data.FinSupp.Algebra
+-- import Math.Algebra.Algebra.Hom
+import Math.Data.Free.Module
 
 def LinearCombination (R M: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] [DecidableEq M]
-  := Finsupp M R (Finset M)
+  := FreeModule R M
 
 namespace LinearCombination
 
@@ -10,44 +11,22 @@ variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMono
    [DecidableEq M]
 
 instance : Zero (LinearCombination R M) :=
-  inferInstanceAs (Zero (Finsupp _ _ _))
+  inferInstanceAs (Zero (FreeModule _ _))
 instance : Add (LinearCombination R M) :=
-  inferInstanceAs (Add (Finsupp _ _ _))
+  inferInstanceAs (Add (FreeModule _ _))
 instance : SMul ℕ (LinearCombination R M) :=
-  inferInstanceAs (SMul ℕ (Finsupp _ _ _))
+  inferInstanceAs (SMul ℕ (FreeModule _ _))
 instance : SMul R (LinearCombination R M) :=
-  inferInstanceAs (SMul R (Finsupp _ _ _))
+  inferInstanceAs (SMul R (FreeModule _ _))
 
 instance : IsAddMonoid (LinearCombination R M) :=
-  inferInstanceAs (IsAddMonoid (Finsupp _ _ _))
+  inferInstanceAs (IsAddMonoid (FreeModule _ _))
 instance : IsAddCommMagma (LinearCombination R M) :=
-  inferInstanceAs (IsAddCommMagma (Finsupp _ _ _))
+  inferInstanceAs (IsAddCommMagma (FreeModule _ _))
 instance : IsModule R (LinearCombination R M) :=
-  inferInstanceAs (IsModule R (Finsupp _ _ _))
+  inferInstanceAs (IsModule R (FreeModule _ _))
 
-def valHom : LinearCombination R M →ₗ[R] M where
-  toFun f := f.sum (fun v r => r • v) (fun v h => by simp [h])
-  map_add := by
-    intro a b
-    dsimp
-    rw [Finsupp.add_sum]
-    intro v a b
-    rw [add_smul]
-  map_smul := by
-    intro r a
-    dsimp
-    let g : M →+ M := {
-      toFun x := r • x
-      map_zero := by simp
-      map_add {x y} := smul_add _ _ _
-    }
-    show _ = g (a.sum _ _)
-    rw [Finsupp.map_sum]
-    apply Finsupp.sum_eq_pairwise
-    intro i
-    show _ =  r • _
-    rw [←mul_smul]
-    rfl
+def valHom : LinearCombination R M →ₗ[R] M := FreeModule.lift id
 
 @[coe]
 abbrev val (f: LinearCombination R M) := valHom f
@@ -65,7 +44,7 @@ def single (r: R) (m: M) : LinearCombination R M := Finsupp.single m r
 
 @[simp]
 def single_valHom (r: R) (m: M) : valHom (single r m) = r • m := by
-  simp [valHom, single, DFunLike.coe, Finsupp.single_sum]
+  apply FreeModule.apply_lift_single
 
 @[simp]
 def single_val (r: R) (m: M) : (single r m).val = r • m := single_valHom _ _
@@ -167,13 +146,13 @@ variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsA
    [DecidableEq M]
 
 instance : Neg (LinearCombination R M) :=
-  inferInstanceAs (Neg (Finsupp _ _ _))
+  inferInstanceAs (Neg (FreeModule _ _))
 instance : Sub (LinearCombination R M) :=
-  inferInstanceAs (Sub (Finsupp _ _ _))
+  inferInstanceAs (Sub (FreeModule _ _))
 instance : SMul ℤ (LinearCombination R M) :=
-  inferInstanceAs (SMul ℤ (Finsupp _ _ _))
+  inferInstanceAs (SMul ℤ (FreeModule _ _))
 instance : IsAddGroup (LinearCombination R M) :=
-  inferInstanceAs (IsAddGroup (Finsupp _ _ _))
+  inferInstanceAs (IsAddGroup (FreeModule _ _))
 
 @[simp] def apply_sub (a b: LinearCombination R M) (m: M) : (a - b) m = a m - b m := rfl
 @[simp] def apply_neg (a: LinearCombination R M) (m: M) : (-a) m = -a m := rfl

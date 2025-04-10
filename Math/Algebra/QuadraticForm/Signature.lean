@@ -1,5 +1,6 @@
 import Math.Algebra.QuadraticForm.Basic
 import Math.Data.Fintype.Algebra
+import Math.Algebra.Module.Impls.Pi
 
 namespace QuadraticForm
 
