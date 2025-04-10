@@ -1,4 +1,5 @@
 import Math.Algebra.Ring.Defs
+import Math.Algebra.Algebra.Defs
 import Math.Algebra.Hom.Defs
 
 inductive BasisVector where
@@ -78,6 +79,9 @@ instance [Zero R] [One R] [Mul R] [Add R] [Neg R] [Sub R] : Pow (GA R basis) ℕ
 
 @[simp] def neg_scalar [Neg R] (a: R) : -scalar a = scalar (-a) := rfl
 @[simp] def neg_node [Neg R] (a b: GA R basis) : -node v a b = node v (-a) (-b) := rfl
+
+@[simp] def smul_scalar [SMul S R] (s: S) (a: R) : s • scalar a = scalar (s • a) := rfl
+@[simp] def smul_node [SMul S R] (s: S) (a b: GA R basis) : s • node v a b = node v (s • a) (s • b) := rfl
 
 @[simp] def basis_mul_scalar [Neg R] (a: R) : (scalar a).basis_mul = scalar a := rfl
 @[simp] def basis_mul_node [Neg R] (a b: GA R basis) : (node v a b).basis_mul = node v a.basis_mul (-b.basis_mul) := rfl
@@ -389,5 +393,87 @@ instance [RingOps R] [IsRing R] : IsMonoid (GA R basis) where
 
 instance [RingOps R] [IsRing R] : IsSemiring (GA R basis) := IsSemiring.inst
 instance [RingOps R] [IsRing R] : IsRing (GA R basis) := IsRing.inst
+
+instance [RingOps R] [IsRing R] : AlgebraMap R (GA R basis) where
+  toFun r := ofScalar r
+  map_zero := by
+    simp
+    rfl
+  map_one := by
+    simp
+    rfl
+  map_add {x y} := by
+    simp
+    induction basis with
+    | nil => rfl
+    | cons v vs ih =>
+      simp [ofScalar, ih]
+      symm; apply add_zero
+  map_mul {x y} := by
+    simp
+    induction basis with
+    | nil => rfl
+    | cons v vs ih =>
+      cases v <;> simp [ofScalar, ih, show ofScalar (0: R) = (0: GA R vs) from rfl]
+
+@[local simp] def algebraMap_scalar [RingOps R] [IsRing R] (r: R) : (algebraMap r: GA R []) = scalar r := rfl
+@[local simp] def algebraMap_node [RingOps R] [IsRing R] (r: R) : (algebraMap r: GA R (v::vs)) = node _ (algebraMap r: GA R vs) 0 := rfl
+
+@[local simp] def basis_mul_algebraMap [RingOps R] [IsRing R] (r: R) : (algebraMap r: GA R basis).basis_mul = algebraMap r := by
+  induction basis with
+  | nil => rfl
+  | cons v vs ih => simp [ih]
+
+instance [RingOps R] [IsRing R] [IsCommMagma R] : IsAlgebra R (GA R basis) where
+  commutes r c := by
+    induction basis with
+    | nil =>
+      cases c
+      simp [mul_comm]
+    | cons v vs ih  =>
+      cases c
+      cases v <;> simp [ih]
+  smul_def r x := by
+    induction basis with
+    | nil => cases x; rfl
+    | cons v vs ih =>
+      cases x
+      cases v <;> simp [ih]
+
+instance [RingOps R] [IsRing R] : IsModule R (GA R basis) where
+  one_smul x := by
+    induction basis with
+    | nil => cases x; simp
+    | cons v vs ih =>
+      cases x
+      cases v <;> simp [ih]
+  mul_smul r s x := by
+    induction basis with
+    | nil => cases x; simp [mul_assoc]
+    | cons v vs ih =>
+      cases x
+      cases v <;> simp [ih]
+  smul_zero r := by
+    induction basis with
+    | nil => simp
+    | cons v vs ih => cases v <;> simp [ih]
+  smul_add r a b := by
+    induction basis with
+    | nil => cases a; cases b; simp [mul_add]
+    | cons v vs ih =>
+      cases a; cases b
+      cases v <;> simp [ih]
+  add_smul r s a := by
+    induction basis with
+    | nil => cases a; simp [add_mul]
+    | cons v vs ih =>
+      cases a
+      cases v <;> simp [ih]
+  zero_smul x := by
+    induction basis with
+    | nil => cases x; simp
+    | cons v vs ih =>
+      cases x
+      cases v <;> simp [ih]
 
 end GA
