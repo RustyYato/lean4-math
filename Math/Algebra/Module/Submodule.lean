@@ -143,11 +143,15 @@ variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMono
 @[ext]
 def Basis.ext (a b: Basis R M) : (∀{x}, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
-def Basis.toEquiv (b: Basis R M) : M ≃ LinearCombo R (b: Set M) where
-  toFun := b.decode
-  invFun m := m
-  leftInv := b.decode_coe
-  rightInv := b.coe_decode
+def Basis.toEquiv (b: Basis R M) : M ≃ₗ[R] LinearCombo R (b: Set M) :=
+  LinearEquiv.symm {
+    LinearCombo.valHom with
+    invFun := b.decode
+    leftInv := b.coe_decode
+    rightInv := b.decode_coe
+  }
+
+def Basis.symm_apply_toEquiv {b: Basis R M} : b.toEquiv.symm.toLinearMap = LinearCombo.valHom := rfl
 
 noncomputable def Basis.ofSet (s: Set M) (h: IsLinindep R s) (g: ∀m: M, m ∈ span R s) : Basis R M where
   carrier := s
