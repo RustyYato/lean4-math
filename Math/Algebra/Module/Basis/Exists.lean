@@ -31,16 +31,12 @@ def existsBasis : Nonempty (Submodule.Basis R M) := by
         obtain ⟨s, hs, supp⟩ := this
         have s_linindep : Submodule.IsLinindep R s := memS s hs
         rw [Submodule.is_linindep_iff_kernel_zero] at s_linindep
+        have ⟨S', hS', gS'⟩ := LinearCombo.exists_superset_of_support C supp
         ext x
         apply Classical.byContradiction
         intro g
-        have : x ∈ Set.support C := by assumption
-        replace : x.val ∈ s := supp _ this
-        replace g : C x ≠ 0 := g
-        have ⟨S', hS', gS'⟩ := LinearCombo.exists_superset_of_support C supp
         rw [hC] at hS'
-        have := gS' x.val x.property (by assumption)
-        rw [this, s_linindep _ hS'.symm] at g
+        rw [gS' x.val x.property (supp _ g), s_linindep _ hS'.symm] at g
         contradiction
       clear hC
       induction C with
