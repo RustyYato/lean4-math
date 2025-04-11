@@ -1117,6 +1117,18 @@ def compl_union (s t: Set α) : (s ∪ t)ᶜ = sᶜ ∩ tᶜ := by
   ext
   simp [mem_inter, mem_compl, mem_union]
 
+def insert_sdiff (a: Set α) (x: α) (hx: x ∉ a) : (insert x a) \ {x} = a := by
+  ext y
+  simp [mem_insert, mem_sdiff]
+  apply Iff.intro
+  intro ⟨h, g⟩
+  exact h.resolve_left g
+  intro
+  apply And.intro
+  right; assumption
+  rintro rfl
+  contradiction
+
 section min_elem
 
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]

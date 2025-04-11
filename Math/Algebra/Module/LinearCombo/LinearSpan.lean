@@ -1,13 +1,13 @@
-import Math.Algebra.Module.LinearCombo.Defs
+import Math.Data.Free.Module
 import Math.Data.Set.Like
 
-def LinearSpan (R M: Type*) (s: S) [SetLike S M] [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] [DecidableEq M] :=
+def LinearSpan (R M: Type*) (s: Set M) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] [DecidableEq M] :=
   FreeModule R s
 
 namespace LinearSpan
 
-variable {R M S: Type*} [SetLike S M] [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
-   [DecidableEq M] {s: S}
+variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+   [DecidableEq M] {s: Set M}
 
 instance : Zero (LinearSpan R M s) :=
   inferInstanceAs (Zero (FreeModule _ _))
@@ -31,7 +31,8 @@ def valHom : LinearSpan R M s →ₗ[R] M := FreeModule.lift Subtype.val
 abbrev val (f: LinearSpan R M s) := valHom f
 
 @[simp]
-def zero_val : (0 : LinearSpan R M s).val = 0 := rfl
+def zero_val : (0 : LinearSpan R M s).val = 0 := by
+  rw [val, map_zero]
 
 @[simp]
 def add_val (a b: LinearSpan R M s) : (a + b).val = a.val + b.val := map_add _
@@ -113,7 +114,7 @@ def induction {motive: LinearSpan R M s -> Prop}
     apply h
     intro ⟨h, g⟩
     show a m + b m = 0
-    simp [h, g]
+    erw [h, g, add_zero]
     intro g
     apply And.intro
     ext m
@@ -138,16 +139,83 @@ def support_single (r: R) (m: M) (hm: m ∈ s) : Set.support (single r m hm) = �
   simp [Set.mem_support, apply_single]
   intro; assumption
 
-def equivLinearCombo: LinearSpan R M (⊤: Set M) ≃ₗ[R] LinearCombination R M := by
-  apply FreeModule.lin_equiv_of_equiv
-  exact ⟨Subtype.val, fun x => ⟨x, True.intro⟩, fun _ => rfl, fun _ => rfl⟩
+def castSuperset (s t: Set M) (h: s ⊆ t) (f: LinearSpan R M s) : LinearSpan R M t := by
+  apply FreeModule.lift (fun x => ?_) f
+  apply LinearSpan.single 1 x.val
+  apply h
+  apply x.property
+
+def castSuperset_val (s t: Set M) (h: s ⊆ t) (f: LinearSpan R M s) : (castSuperset s t h f).val = f.val := by
+  unfold val
+  unfold valHom
+  unfold castSuperset
+  erw [←LinearMap.apply_comp, FreeModule.lift_lift]
+  induction f with
+  | zero => rfl
+  | single r m hm hr => erw [FreeModule.apply_lift_single]
+  | add a b iha ihb h g => simp; rw [map_add, map_add, iha, ihb]
+
+def erase {s: Set M} (f: LinearSpan R M s) (m: M) : LinearSpan R M (s \ {m}: Set M) := by
+  apply FreeModule.lift (fun x => ?_) f
+  refine if hx:x.val = m then ?_ else ?_
+  exact 0
+  apply LinearSpan.single 1 x.val
+  apply And.intro
+  apply x.property
+  assumption
+
+def erase_val {s: Set M} (f: LinearSpan R M s) (m: M) (hm: m ∈ s) : (erase f m: M) + f ⟨m, hm⟩ • m = f := by
+  induction f with
+  | zero =>
+    unfold valHom erase
+    show _ + 0  • m = _
+    simp
+    repeat rw [map_zero]
+  | single r v hv hr =>
+    simp [single_valHom, apply_single]
+    unfold valHom erase
+    erw [FreeModule.apply_lift_single]
+    split
+    simp
+    rw [if_pos]
+    simp [map_zero]
+    subst m; rfl
+    symm; assumption
+    simp
+    erw [map_smul, FreeModule.apply_lift_single]
+    rw [if_neg]
+    simp
+    apply Ne.symm
+    assumption
+  | add a b iha ihb h g =>
+    rw [map_add]
+    unfold valHom erase
+    repeat rw [map_add]
+    rw [Finsupp.apply_add, add_smul]
+    rw [add_assoc, add_left_comm _ (a _ • m), ←add_assoc]
+    erw [iha, ihb]
+    rfl
+
+def apply_erase_mem {s: Set M} (f: LinearSpan R M s) {m: M} (x: M) (hx: x ∈ s \ {m}) : (f.erase m) ⟨x, hx⟩ = f ⟨x, hx.left⟩ := by
+  unfold erase
+
+  sorry
+
+def cast {s t: Set M} (h: s = t) (f: LinearSpan R M s) : LinearSpan R M t := h ▸ f
+def cast_val {s t: Set M} (h: s = t) (f: LinearSpan R M s) : (f.cast h: M) = f := by
+  cases h
+  rfl
+
+def apply_cast_mem {s t: Set M} (h: s = t) (f: LinearSpan R M s) (x: M) (hx: x ∈ s) : (f.cast h) ⟨x, h ▸ hx⟩ = f ⟨x, hx⟩ := by
+  cases h
+  rfl
 
 end LinearSpan
 
 namespace LinearSpan
 
-variable {R M S: Type*} [SetLike S M] [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
-   [DecidableEq M] {s: S}
+variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+   [DecidableEq M] {s: Set M}
 
 instance : Neg (LinearSpan R M s) :=
   inferInstanceAs (Neg (FreeModule _ _))

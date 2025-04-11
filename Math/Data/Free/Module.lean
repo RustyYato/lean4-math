@@ -99,4 +99,6 @@ def lin_equiv_of_equiv [DecidableEq α] [DecidableEq β] (h: α ≃ β) : FreeMo
     simp [apply_lift_single']
 }
 
+attribute [irreducible] lift
+
 end FreeModule

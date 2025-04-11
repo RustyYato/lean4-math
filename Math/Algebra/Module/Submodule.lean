@@ -1,5 +1,6 @@
 import Math.Algebra.Module.SetLike.Lattice
 import Math.Algebra.Field.Defs
+import Math.Algebra.Group.SetLike.Defs
 import Math.Algebra.Group.Action.Basic
 import Math.Algebra.Module.LinearCombo.LinearSpan
 import Math.Logic.Fact
@@ -16,51 +17,43 @@ variable {M: Type*} (R: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [
 -- the span of a set is the set of all vectors that are made from
 -- linear combinations of members of the set
 def span (U: Set M) : Submodule R M where
-  carrier := Set.mk fun v => ∃f: LinearCombination R M, Set.support f ⊆ U ∧ v = f
-  mem_zero := ⟨0, by
-    intro v h
-    rw [Set.mem_support] at h
-    contradiction , rfl⟩
+  carrier := Set.mk fun v => ∃f: LinearSpan R M U, v = f
+  mem_zero := ⟨0, (map_zero _).symm⟩
   mem_add := by
     rintro a b ⟨fa, ha, rfl⟩ ⟨fb, hb, rfl⟩
     exists fa + fb
-    apply And.intro
-    · intro v h
-      rw [Set.mem_support] at h
-      replace h : fa v + fb v ≠ 0 := h
-      by_cases g:fa v = 0
-      rw [g] at h
-      simp at h
-      apply hb v
-      rw [Set.mem_support]
-      assumption
-      apply ha v
-      rw [Set.mem_support]
-      assumption
-    · rw [map_add]
+    rw [map_add]
   mem_smul' := by
     rintro r _ ⟨f, hf, rfl⟩
     exists r • f
-    apply And.intro
-    · intro v h
-      rw [Set.mem_support] at h
-      replace h : r • f v ≠ 0 := h
-      by_cases g:f v = 0
-      rw [g] at h
-      simp at h
-      apply hf
-      rw [Set.mem_support]
-      assumption
-    · rw [map_smul]
+    rw [map_smul]
 
 def mem_span_of (U: Set M) : ∀x ∈ U, x ∈ span R U := by
   intro x h
-  exists LinearCombination.single 1 x
-  apply And.intro
-  intro y hy
-  cases (LinearCombination.mem_support_single hy).right
-  assumption
+  exists LinearSpan.single 1 x h
   simp
+
+def mem_span_of_linear_combo_sub {U s: Set M} (h: s ⊆ U) : ∀x: LinearSpan R M s, (x: M) ∈ span R U := by
+  intro x
+  induction x with
+  | zero =>
+    rw [map_zero]
+    apply mem_zero
+  | single =>
+    rw [LinearSpan.single_valHom]
+    apply mem_smul
+    apply mem_span_of
+    apply h
+    assumption
+  | add =>
+    rw [map_add]
+    apply mem_add
+    assumption
+    assumption
+
+def mem_span_of_linear_combo (U: Set M) : ∀x: LinearSpan R M U, (x: M) ∈ span R U := by
+  apply mem_span_of_linear_combo_sub
+  rfl
 
 def span_eq_generate (U: Set M) : span R U = generate U := by
   ext x
@@ -68,26 +61,18 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
   · rintro ⟨f, h, rfl⟩
     induction f with
     | zero =>
+      rw [map_zero]
       apply mem_zero
     | add f₀ f₁ h₀ h₁ g =>
-      rw [g] at h
       rw [map_add]
       apply mem_add
-      · apply h₀
-        intro x hx
-        apply h
-        left; assumption
-      · apply h₁
-        intro x hx
-        apply h
-        right; assumption
+      assumption
+      assumption
     | single r m =>
-      show LinearCombination.val (LinearCombination.single _ _) ∈ _
-      rw [LinearCombination.single_val]
+      show LinearSpan.val (LinearSpan.single _ _ _) ∈ _
+      rw [LinearSpan.single_val]
       apply mem_smul
       apply Generate.of
-      apply h m
-      rw [Set.mem_support, LinearCombination.apply_single, if_pos rfl]
       assumption
   · intro h
     apply of_mem_generate _ _ _ _ h
@@ -96,8 +81,7 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
     assumption
 
 -- a set is linearly independent if every non-trivial linear combination is non-zero
-def IsLinindep (U: Set M) := ∀f: LinearCombination R M,
-  Set.support f ⊆ U -> (f: M) = 0 -> f = 0
+def IsLinindep (U: Set M) := Function.Injective (fun l: LinearSpan R M U => (l: M))
 
 end Defs
 
@@ -143,50 +127,80 @@ end
 
 section
 
+variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
+
+instance : IsNegMem (Submodule R M) where
+  mem_neg s {a} h := by
+    rw [←one_smul (R := R) a, ←neg_smul]
+    apply mem_smul
+    assumption
+
+def is_linindep_iff_kernel_zero (U: Set M) : IsLinindep R U ↔ ∀f: LinearSpan R M U, (f: M) = 0 -> f = 0 := by
+  apply Iff.intro
+  · intro h f g
+    apply h
+    simp
+    assumption
+  · intro h x y g
+    apply eq_of_sub_eq_zero
+    apply h
+    rw [map_sub]
+    simp at g
+    rw [g, sub_self]
+
+end
+
+section
+
 variable {R M: Type*} [FieldOps R] [IsField R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
   [DecidableEq M]
 
 def insertLinindep (S: Set M) (hS: Submodule.IsLinindep R S) (m: M) (hm: m ∉ Submodule.span R S) : Submodule.IsLinindep R (insert m S) := by
   classical
-  intro C sub eq
-  rw [←add_zero C, ←sub_self (LinearCombination.single (C m) m),
-    sub_eq_add_neg, add_left_comm, ←sub_eq_add_neg,
-    add_comm, map_add,
-    LinearCombination.single_valHom] at eq
-  by_cases hc:C m = 0
-  simp [hc, map_sub] at eq
-  apply hS C _ eq
-  intro x hx
-  cases sub x hx
-  subst x
-  contradiction
-  assumption
-  replace eq := (neg_eq_of_add_left eq).symm
-  replace eq : (C m)⁻¹? • (C m • m) = (C m)⁻¹? • (-LinearCombination.valHom (C - LinearCombination.single (C m) m)) := by
-    rw [eq]
-  rw [←mul_smul, inv?_mul_cancel, one_smul, ←map_neg, ←map_smul] at eq
-  exfalso; apply hm
-  refine ⟨_, ?_, eq⟩
-  have : Set.support (((C m)⁻¹? • -(C - LinearCombination.single (C m) m)): LinearCombination R M) ⊆ Set.support C := by
-    intro v h
-    simp [Set.mem_support, neg_sub, mul_sub] at h
-    intro g
-    rw [g, mul_zero, sub_zero, LinearCombination.apply_single] at h
-    split at h
+  rw [is_linindep_iff_kernel_zero] at *
+  intro C eq
+  let C' := (C.erase m).cast (by
+      rw [Set.insert_sdiff]
+      intro h; apply hm
+      rw [span_eq_generate]
+      apply Generate.of
+      assumption)
+  by_cases hc:C ⟨m, by simp⟩ = 0
+  · rw [←LinearSpan.erase_val (m := m), hc] at eq
+    simp at eq
+    have := hS C' (by rwa [LinearSpan.cast_val])
+    ext ⟨v, hv⟩
+    simp at hv
+    by_cases v_eq_m:v = m
     subst v
-    contradiction
-    simp at h
-  intro v h
-  have h' := this v h
-  have := sub _ h'
-  simp at this
-  cases this
-  · subst v
-    rw [Set.mem_support] at h h'
-    exfalso
+    assumption
+    have : C' ⟨v, by
+      apply hv.resolve_left
+      assumption⟩ = 0 := by rw [this]; rfl
+    show _ = 0
+    unfold C' at this
+    rwa [LinearSpan.apply_cast_mem (hx := ?_), LinearSpan.apply_erase_mem] at this
+    simp [Set.mem_insert, Set.mem_sdiff]
+    apply And.intro
+    right
+    apply hv.resolve_left
+    assumption
+    assumption
+  · exfalso
+    have : m = (C ⟨m, by simp⟩)⁻¹? • -C' := by
+      unfold C'
+      rw [map_smul, map_neg, LinearSpan.cast_val]
+      have := LinearSpan.erase_val C (m := m) (by simp)
+      rw [add_eq_iff_eq_sub] at this
+      rw [this, neg_sub, smul_sub, ←mul_smul, inv?_mul_cancel,
+        one_smul, eq, smul_zero, sub_zero]
+    rw [map_smul, map_neg] at this
     apply hm
-    simp [neg_sub, mul_sub, inv?_mul_cancel, LinearCombination.apply_single] at h
-  · assumption
+    rw [this]; clear this
+    apply mem_smul
+    apply mem_neg
+    apply mem_span_of_linear_combo
 
 end
 
@@ -199,16 +213,7 @@ variable {R M: Type*} {s: S} [SetLike S M] [RingOps R] [IsRing R] [AddGroupOps M
 
 def valEmb [Fact (Submodule.IsLinindep R (s: Set M))] : LinearSpan R M s ↪ₗ[R] M := {
   LinearSpan.valHom with
-  inj' := by
-    intro x y eq
-    replace eq : valHom x = valHom y := eq
-    have linindep := of_fact (Submodule.IsLinindep R (s: Set M))
-    have : valHom (x - y) = 0 → toLinearCombo (x - y) = 0 := Submodule.is_linear_indep R _ (x - y).toCombo (x - y).subS
-    rw [map_sub, map_sub, eq, sub_self] at this
-    replace this := this rfl
-    apply eq_of_sub_eq_zero
-    apply toLinearCombo.inj
-    assumption
+  inj' := of_fact (Submodule.IsLinindep R (s: Set M))
 }
 
 end LinearSpan
