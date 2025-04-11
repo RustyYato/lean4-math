@@ -86,6 +86,8 @@ def induction {motive: LinearSpan R M s -> Prop}
   (add: ∀a b,
     motive a ->
     motive b ->
+    (∀x, a x + b x = 0 -> a x = 0 ∧ b x = 0) ->
+    Set.support a ∩ Set.support b = ∅ ->
     motive (a + b)):
     ∀l, motive l := by
     intro l
@@ -155,6 +157,52 @@ def castSuperset_val (s t: Set M) (h: s ⊆ t) (f: LinearSpan R M s) : (castSupe
   }
   simp
   rfl
+
+def exists_subset_of_support [IsNontrivial R] [NoZeroDivisors R] (C: LinearSpan R M s) (h: Set.support ⇑C ⊆ t.preimage Subtype.val) :
+  ∃S: LinearSpan R M t, (C: M) = S ∧ ∀(m: M) (hs: m ∈ s) (ht: m ∈ t), C ⟨m, hs⟩ = S ⟨m, ht⟩ := by
+  induction C with
+  | zero =>
+    exists 0
+    apply And.intro
+    rw [map_zero, map_zero]
+    intros; rfl
+  | smul r a hr ih =>
+    obtain ⟨S, hS, gS⟩ := ih (Set.sub_trans (by
+      intro x hx g
+      cases of_mul_eq_zero g
+      contradiction
+      contradiction) h)
+    exists r • S
+    apply And.intro
+    rw [map_smul, map_smul, hS]
+    intro m hs ht
+    show r * _ = r * _
+    rw [gS]
+  | add a b iha ihb hadd hinter =>
+    obtain ⟨Sa, hSa, gSa⟩ := iha (Set.sub_trans (by
+      intro x hx g
+      cases hadd _ g
+      contradiction) h)
+    obtain ⟨Sb, hSb, gSb⟩ := ihb (Set.sub_trans (by
+      intro x hx g
+      cases hadd _ g
+      contradiction) h)
+    exists Sa + Sb
+    apply And.intro
+    rw [map_add, map_add, hSa, hSb]
+    intro m hs ht
+    rw [apply_add, apply_add, gSa, gSb]
+  | ι m hm =>
+    have := h ⟨m, hm⟩
+    rw [Set.mem_support, apply_ι] at this
+    simp at this
+    have : m ∈ t := this (zero_ne_one _).symm
+    exists ι R m this
+    apply And.intro
+    rw [valHom_ι, valHom_ι]
+    intro v hs ht
+    rw [apply_ι, apply_ι]
+    simp
 
 def eraseHom {s: Set M} (m: M) : LinearSpan R M s →ₗ[R] LinearSpan R M (s \ {m}: Set M) := by
   apply FreeModule.lift (fun x => ?_)
@@ -264,5 +312,10 @@ instance : IsAddGroup (LinearSpan R M s) :=
 @[simp] def apply_sub (a b: LinearSpan R M s) (m: s) : (a - b) m = a m - b m := rfl
 @[simp] def apply_neg (a: LinearSpan R M s) (m: s) : (-a) m = -a m := rfl
 @[simp] def apply_zsmul (a: LinearSpan R M s) (n: ℤ) (m: s) : (n • a) m = n • a m := rfl
+
+instance : Subsingleton (LinearSpan R M ∅) where
+  allEq a b := by
+    ext m; have := m.property
+    contradiction
 
 end LinearSpan

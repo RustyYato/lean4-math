@@ -12,95 +12,97 @@ def existsBasis : Nonempty (Submodule.Basis R M) := by
     apply Classical.byContradiction
     intro h
     simp at h
-    obtain ⟨m, m_not_in_span⟩ := h
-    suffices Submodule.IsLinindep R (insert m S) by
-      have := spec (insert m S) this ?_
-      have : m ∈ S := by
-        rw [←this]
-        simp
-      have := Submodule.mem_span_of R _ _ this
-      contradiction
-      apply Set.sub_insert
-    · apply Submodule.insertLinindep
-      assumption
-      assumption
-  · intro S mem_S_linear_indep Schain
+    obtain ⟨v, hv⟩ := h
+    have := spec (insert v S) (Submodule.insertLinindep _ linear_indep v hv) Set.sub_insert
+    apply hv
+    rw [←this]
+    apply Submodule.mem_span_of
+    simp
+  · intro S memS Schain
     refine ⟨⋃S, ?_, fun _ => Set.sub_sUnion _ _⟩
-    rcases S.empty_or_nonempty with rfl | ⟨s, hS⟩
-    · intro C suppC eq_zero
-      rw [Set.sUnion_empty] at suppC
-      ext m
-      apply Classical.byContradiction
-      intro h
-      replace h : m ∈ Set.support C := h
-      rw [Set.of_sub_empty _ suppC] at h
-      contradiction
-    · intro C suppC eq_zero
-      suffices ∃s ∈ S, Set.support C ⊆ s ∧ Submodule.IsLinindep R s by
-        obtain ⟨s, _, supp_s, linindep⟩ := this
-        exact linindep C supp_s eq_zero
-      clear eq_zero
-      induction C with
-      | zero =>
-        exists s
-        apply And.intro
-        assumption
-        apply And.intro
-        intro x h; contradiction
-        apply mem_S_linear_indep
-        assumption
-      | add a b ha hb h g =>
-        rw [h] at suppC
-        clear g
-        replace ⟨sa, sa_mem, supp_sa, ha⟩ := ha (Set.sub_trans (Set.sub_union_left _ _) suppC)
-        replace ⟨sb, sb_mem, supp_sb, hb⟩ := hb (Set.sub_trans (Set.sub_union_right _ _) suppC)
-        exists sa ∪ sb
-        have : sa ∪ sb = if sa ⊆ sb then sb else sa := ?_
-        apply And.intro
-        rw [this]
-        split <;> assumption
-        rw [h]
-        apply And.intro
-        intro m hm
-        rcases hm with hm | hm
-        left; apply supp_sa; assumption
-        right; apply supp_sb; assumption
-        rw [show sa ∪ sb = if sa ⊆ sb then sb else sa from ?_]
-        split <;> assumption
-        assumption
-        have : sa ⊆ sb ∨ _ ∨ sb ⊆ sa := Schain.tri ⟨sa, sa_mem⟩ ⟨sb, sb_mem⟩
-        rcases this with h | h | h
-        rw [Set.union_of_sub_left h]
-        rw [if_pos h]
-        cases h
-        rw [Set.union_self]
-        split <;> rfl
-        rw [Set.union_of_sub_right h]
-        split
-        apply Set.sub_antisymm
-        assumption
-        assumption
-        rfl
-      | single r m hr =>
-        rcases LinearCombination.support_single r m with h | h
-        rw [h] at *
-        exists s
-        apply And.intro
-        assumption
-        apply And.intro
-        apply Set.empty_sub
-        apply mem_S_linear_indep
-        assumption
-        rw [h] at suppC; rw [h]
-        clear h
-        have ⟨s', s'_mem, h⟩ := suppC m (by simp)
-        exists s'
-        apply And.intro
-        assumption
-        apply And.intro
-        rintro _ rfl
-        assumption
-        apply mem_S_linear_indep
-        assumption
+    show Submodule.IsLinindep _ _
+    rw [Submodule.is_linindep_iff_kernel_zero]
+    rcases S.empty_or_nonempty with rfl | ⟨s, hs⟩
+    · rw [Set.sUnion_empty]
+      intro f h
+      apply Subsingleton.allEq
+    · intro C hC
+      suffices ∃s ∈ S, Set.support C ⊆ s.preimage Subtype.val by
+        obtain ⟨s, hs, supp⟩ := this
+        have s_linindep : Submodule.IsLinindep R s := memS s hs
+        rw [Submodule.is_linindep_iff_kernel_zero] at s_linindep
+        ext x
+        apply Classical.byContradiction
+        intro g
+        have : x ∈ Set.support C := by assumption
+        replace : x.val ∈ s := supp _ this
+        replace g : C x ≠ 0 := g
+        have ⟨S', hS', gS'⟩ := LinearSpan.exists_subset_of_support C supp
+        rw [hC] at hS'
+        have := gS' x.val x.property (by assumption)
+        rw [this, s_linindep _ hS'.symm] at g
+        contradiction
+      · clear hC
+        induction C with
+        | zero =>
+          exists s
+          apply And.intro
+          assumption
+          erw [Set.support_const_zero]
+          apply Set.empty_sub
+        | smul r a hr ih  =>
+          obtain ⟨s, hs, gs⟩ := ih
+          exists s
+          apply And.intro
+          assumption
+          apply Set.sub_trans _ gs
+          intro x hx h; apply hx
+          show r * a x = 0
+          rw [h, mul_zero]
+        | add a b iha ihb hadd hinter =>
+          have : Set.support (a + b) = Set.support a ∪ Set.support b := by
+            ext x
+            simp [Set.mem_support, Set.mem_union]
+            apply Iff.intro
+            intro h
+            apply Classical.or_iff_not_imp_left.mpr
+            simp; intro g; rwa [g, zero_add] at h
+            intro h g
+            cases hadd _ g
+            rcases h with h | h <;> contradiction
+          obtain ⟨sa , hsa, gsa⟩ := iha
+          obtain ⟨sb , hsb, gsb⟩ := ihb
+          rw [this]
+          rcases Relation.total (Set.Induced (· ⊆ (·: Set M)) S) ⟨sa, hsa⟩ ⟨sb, hsb⟩ with h | h
+          replace h : sa ⊆ sb := h
+          exists sb
+          apply And.intro
+          assumption
+          rw [←Set.union_sub]
+          apply And.intro
+          apply Set.sub_trans
+          assumption
+          intro x; apply h
+          assumption
+          replace h : sb ⊆ sa := h
+          exists sa
+          apply And.intro
+          assumption
+          rw [←Set.union_sub]
+          apply And.intro
+          assumption
+          apply Set.sub_trans
+          assumption
+          intro x; apply h
+        | ι m hm =>
+          obtain ⟨t, ht, hm⟩ := hm
+          exists t
+          apply And.intro
+          assumption
+          intro x hx
+          rw [Set.mem_support, LinearSpan.apply_ι] at hx
+          simp at hx
+          cases hx.left
+          assumption
 
 noncomputable def basis : Submodule.Basis R M := Classical.choice (existsBasis R M)

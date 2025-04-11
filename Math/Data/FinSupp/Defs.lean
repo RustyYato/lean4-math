@@ -494,6 +494,7 @@ def induction [Zero β] [Add β] [IsAddZeroClass β] [DecidableEq α]
     motive a ->
     motive b ->
     (∀x, a x + b x = 0 -> a x = 0 ∧ b x = 0) ->
+    (Set.support a ∩ Set.support b = ∅) ->
     motive (a + b)):
   ∀f, motive f := by
   intro f
@@ -531,6 +532,13 @@ def induction [Zero β] [Add β] [IsAddZeroClass β] [DecidableEq α]
       rw [if_neg g, if_neg g]
       simp at h
       trivial
+    · apply Set.ext_empty
+      intro x hx
+      simp [Set.mem_support, Set.mem_inter] at hx
+      rw [apply_erase, apply_single] at hx
+      split at hx
+      exact hx.right rfl
+      exact hx.left rfl
     · ext x
       simp [apply_erase, apply_single]
       split

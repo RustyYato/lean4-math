@@ -129,6 +129,9 @@ def sub_trans {a b c: Set α} (x: a ⊆ b) (y: b ⊆ c) : a ⊆ c := by
   apply x
   assumption
 
+instance : Relation.IsRefl (· ⊆ (·: Set α)) := ⟨sub_refl⟩
+instance : Relation.IsTrans (· ⊆ (·: Set α)) := ⟨sub_trans⟩
+
 def sub_antisymm {a b: Set α} : a ⊆ b -> b ⊆ a -> a = b := by
   intro ab ba
   ext x

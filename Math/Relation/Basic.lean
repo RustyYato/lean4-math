@@ -75,6 +75,13 @@ class IsTrichotomous: Prop where
   tri: ∀a b, rel a b ∨ a = b ∨ rel b a
 def trichotomous [IsTrichotomous rel] : ∀(a b: α), rel a b ∨ a = b ∨ rel b a := IsTrichotomous.tri
 
+def IsTrichotomous.toTotal (h: IsTrichotomous r) [IsRefl r] : IsTotal r where
+  total a b := by
+    rcases trichotomous r a b with h | rfl | h
+    left; assumption
+    left; rfl
+    right; assumption
+
 def eq_of_not_lt_or_gt [IsTrichotomous rel] : ∀a b, ¬rel a b -> ¬rel b a -> a = b := by
   intro a b nab nba
   rcases trichotomous rel a b with h | h | h
@@ -272,12 +279,8 @@ def not_lt_argMin (a : α) (f: α -> β) {r: β -> β -> Prop} [IsWellFounded r]
     have := spec _ h
     contradiction
 
-instance [IsTrichotomous rel] [IsRefl rel] : IsTotal rel where
-  total a b := by
-    rcases trichotomous rel a b with ab | eq | ba
-    left; assumption
-    left; rw [eq]
-    right; assumption
+instance [IsTrichotomous rel] [IsRefl rel] : IsTotal rel :=
+  IsTrichotomous.toTotal inferInstance
 
 instance [IsTotal rel] : IsTrichotomous rel where
   tri a b := by

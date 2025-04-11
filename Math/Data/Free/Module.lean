@@ -96,12 +96,16 @@ def induction {motive: FreeModule R M -> Prop}
   (zero: motive 0)
   (ι: ∀m, motive (ι R m))
   (smul: ∀(r: R) (a: FreeModule R M), r ≠ 0 -> motive a -> motive (r • a))
-  (add: ∀(a b: FreeModule R M), motive a -> motive b -> motive (a + b)):
+  (add: ∀(a b: FreeModule R M), motive a -> motive b ->
+    (∀x, a x + b x = 0 -> a x = 0 ∧ b x = 0) ->
+    Set.support a ∩ Set.support b = ∅ ->
+    motive (a + b)):
   ∀a, motive a := by
   classical
   intro a
   induction a using Finsupp.induction with
   | zero => apply zero
+  | add => apply add <;> assumption
   | single m r =>
     by_cases hr:r = 0
     subst r
@@ -113,10 +117,6 @@ def induction {motive: FreeModule R M -> Prop}
     apply smul
     assumption
     apply ι
-  | add =>
-    apply add
-    assumption
-    assumption
 
 def lift_ι : lift (M := M) (ι R) x = x := by
   induction x with
