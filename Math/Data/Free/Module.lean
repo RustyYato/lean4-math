@@ -42,6 +42,10 @@ private def toFreeModuleHom (f: M -> N) (a: FreeModule R M) : N :=
 
 def single (m: M) (r: R) : FreeModule R M := Finsupp.single m r
 
+def ι (R: Type*) [Zero R] [One R] (m: M) : FreeModule R M := Finsupp.single m 1
+
+def apply_ι (m v: M) : ι R m v = if v = m then 1 else 0 := Finsupp.apply_single _
+
 private def preLift (f: M -> N) : FreeModule R M →ₗ[R] N where
   toFun := toFreeModuleHom f
   map_add {x y} := by
@@ -57,7 +61,7 @@ private def preLift (f: M -> N) : FreeModule R M →ₗ[R] N where
 
 def lift : (M -> N) ≃ (FreeModule R M →ₗ[R] N) where
   toFun := preLift
-  invFun f m := f (Finsupp.single m 1)
+  invFun f m := f (ι R m)
   leftInv := by
     intro f
     simp; ext m
@@ -71,14 +75,13 @@ def lift : (M -> N) ≃ (FreeModule R M →ₗ[R] N) where
     show toFreeModuleHom _ _ = f a
     unfold FreeModule.toFreeModuleHom
     simp
+    unfold ι
     conv => {
       lhs; arg 2; intro m r
       rw [←map_smul, Finsupp.smul_single, mul_one]
     }
     show a.sum (fun m r => f (Finsupp.single m r)) _ = f a
     rw [←Finsupp.map_sum, Finsupp.sum_single]
-
-def ι (R: Type*) [Zero R] [One R] (m: M) : FreeModule R M := Finsupp.single m 1
 
 private def apply_lift (f: M -> N) : lift (R := R) f x = toFreeModuleHom f x := by
   rfl
@@ -144,8 +147,6 @@ def lin_equiv_of_equiv [DecidableEq α] [DecidableEq β] (h: α ≃ β) : FreeMo
     rw [←LinearMap.apply_comp]
     simp [map_comp_lift, apply_lift_ι, lift_ι, Function.comp_def]
 }
-
-def apply_ι (m v: M) : ι R m v = if v = m then 1 else 0 := Finsupp.apply_single _
 
 def ι_inj [IsNontrivial R] : Function.Injective (ι R (M := M)) := by
   intro x y h
