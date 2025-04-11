@@ -1,8 +1,29 @@
 import Math.Algebra.Module.LinearMap.Defs
 import Math.Data.FinSupp.Algebra
 
-abbrev FreeModule (R M: Type*) [Zero R] [DecidableEq M]
+def FreeModule (R M: Type*) [Zero R] [DecidableEq M]
   := Finsupp M R (Finset M)
+
+namespace FreeModule
+
+variable {R M: Type*} [SemiringOps R] [IsSemiring R] [DecidableEq M]
+
+instance : AddMonoidOps (FreeModule R M) := inferInstanceAs (AddMonoidOps (Finsupp _ _ _))
+instance : IsAddMonoid (FreeModule R M) := inferInstanceAs (IsAddMonoid (Finsupp _ _ _))
+instance : IsAddCommMagma (FreeModule R M) := inferInstanceAs (IsAddCommMagma (Finsupp _ _ _))
+instance : SMul R (FreeModule R M) := inferInstanceAs (SMul R (Finsupp _ _ _))
+instance : IsModule R (FreeModule R M) := inferInstanceAs (IsModule R (Finsupp _ _ _))
+
+end FreeModule
+
+namespace FreeModule
+
+variable {R M: Type*} [RingOps R] [IsRing R] [DecidableEq M]
+
+instance : AddGroupOps (FreeModule R M) := inferInstanceAs (AddGroupOps (Finsupp _ _ _))
+instance : IsAddGroup (FreeModule R M) := inferInstanceAs (IsAddGroup (Finsupp _ _ _))
+
+end FreeModule
 
 namespace FreeModule
 
@@ -11,7 +32,8 @@ variable {R M: Type*} [SemiringOps R] [IsSemiring R] [DecidableEq M]
 instance : FunLike (FreeModule R M) M R :=
   inferInstanceAs (FunLike (Finsupp M R (Finset M)) M R)
 
-variable {N: Type*} [AddMonoidOps N] [IsAddMonoid N] [IsAddCommMagma N] [SMul R N] [IsModule R N]
+variable {α N: Type*} [AddMonoidOps N] [IsAddMonoid N] [IsAddCommMagma N] [SMul R N] [IsModule R N]
+   [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [SMul R α] [IsModule R α]
 
 private def toFreeModuleHom (f: M -> N) (a: FreeModule R M) : N :=
  a.sum (fun m r => r • f m) <| by
@@ -56,47 +78,71 @@ def lift : (M -> N) ≃ (FreeModule R M →ₗ[R] N) where
     show a.sum (fun m r => f (Finsupp.single m r)) _ = f a
     rw [←Finsupp.map_sum, Finsupp.sum_single]
 
+def ι (R: Type*) [Zero R] [One R] (m: M) : FreeModule R M := Finsupp.single m 1
+
 private def apply_lift (f: M -> N) : lift (R := R) f x = toFreeModuleHom f x := by
   rfl
 
-def apply_lift_single (r: R) (f: M -> N) : lift f (single m r) = r • f m := by
-  rw [apply_lift]
-  apply Finsupp.single_sum
-
-def apply_lift_single' (x: FreeModule R M) : lift (fun x => single x 1) x = x := by
+def apply_lift_ι (f: M -> N) : lift f (ι R m) = f m := by
   rw [apply_lift]
   unfold toFreeModuleHom
-  classical
-  simp [single, Finsupp.smul_single]
-  rw [Finsupp.sum_single]
+  rw [ι, Finsupp.single_sum, one_smul]
 
-def lift_lift [DecidableEq α] (f: M -> α) (g: α -> N) :
-  (lift (R := R) g).comp (lift (fun x => single (f x) (1: R))) = (lift (R := R) (fun x => g (f x))) := by
-  ext m
-  rw [LinearMap.apply_comp]
-  induction m using Finsupp.induction with
+@[induction_eliminator]
+def induction {motive: FreeModule R M -> Prop}
+  (zero: motive 0)
+  (ι: ∀m, motive (ι R m))
+  (smul: ∀(r: R) (a: FreeModule R M), r ≠ 0 -> motive a -> motive (r • a))
+  (add: ∀(a b: FreeModule R M), motive a -> motive b -> motive (a + b)):
+  ∀a, motive a := by
+  classical
+  intro a
+  induction a using Finsupp.induction with
+  | zero => apply zero
+  | single m r =>
+    by_cases hr:r = 0
+    subst r
+    rw [show Finsupp.single m (0: R) = 0 from ?_]
+    apply zero
+    ext v; rw [Finsupp.apply_single]
+    split <;> rfl
+    rw [←mul_one r, ←Finsupp.smul_single]
+    apply smul
+    assumption
+    apply ι
+  | add =>
+    apply add
+    assumption
+    assumption
+
+def lift_ι : lift (M := M) (ι R) x = x := by
+  induction x with
   | zero => rfl
-  | single =>
-    repeat erw [apply_lift_single]
-    classical
-    erw [Finsupp.smul_single]
-    simp [apply_lift_single']
-    rw [apply_lift]
-    unfold toFreeModuleHom
-    rw [Finsupp.single_sum]
-  | add a b iha ihb h =>
-    rw [map_add,map_add, map_add, iha, ihb]
+  | ι => rw [apply_lift_ι]
+  | smul _ _ _ ih => rw [map_smul, ih]
+  | add _ _ iha ihb => rw [map_add, iha, ihb]
+
+def map_comp_lift (f: M -> α) (g: α →ₗ[R] N) :
+  g.comp (lift (R := R) f) = lift (g ∘ f) := by
+  ext x
+  induction x with
+  | zero => rw [map_zero, map_zero]
+  | ι =>
+    rw [LinearMap.apply_comp, apply_lift_ι, apply_lift_ι, ]
+    rfl
+  | smul r x hr ih => rw [map_smul, map_smul, ih]
+  | add a b iha ihb => rw [map_add, map_add, iha, ihb]
 
 def lin_equiv_of_equiv [DecidableEq α] [DecidableEq β] (h: α ≃ β) : FreeModule R α ≃ₗ[R] FreeModule R β := {
   lift (fun x => single (h x) 1) with
-  toFun := lift (fun x => single (h x) 1)
-  invFun := lift (fun x => single (h.symm x) 1)
+  toFun := lift (fun x => ι R (h x))
+  invFun := lift (fun x => ι R (h.symm x))
   leftInv x := by
-    rw [←LinearMap.apply_comp, lift_lift]
-    simp [apply_lift_single']
+    rw [←LinearMap.apply_comp]
+    simp [map_comp_lift, apply_lift_ι, lift_ι, Function.comp_def]
   rightInv x := by
-    rw [←LinearMap.apply_comp, lift_lift]
-    simp [apply_lift_single']
+    rw [←LinearMap.apply_comp]
+    simp [map_comp_lift, apply_lift_ι, lift_ι, Function.comp_def]
 }
 
 attribute [irreducible] lift
