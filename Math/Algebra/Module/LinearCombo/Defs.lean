@@ -115,7 +115,7 @@ def castSuperset_val (s t: Set M) (h: s ⊆ t) (f: LinearCombo R s) : (castSuper
   simp
   rfl
 
-def exists_subset_of_support [IsNontrivial R] [NoZeroDivisors R] (C: LinearCombo R s) (h: Set.support ⇑C ⊆ t.preimage Subtype.val) :
+def exists_superset_of_support [IsNontrivial R] [NoZeroDivisors R] (C: LinearCombo R s) (h: Set.support ⇑C ⊆ t.preimage Subtype.val) :
   ∃S: LinearCombo R t, (C: M) = S ∧ ∀(m: M) (hs: m ∈ s) (ht: m ∈ t), C ⟨m, hs⟩ = S ⟨m, ht⟩ := by
   induction C with
   | zero =>
