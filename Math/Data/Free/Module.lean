@@ -145,6 +145,16 @@ def lin_equiv_of_equiv [DecidableEq α] [DecidableEq β] (h: α ≃ β) : FreeMo
     simp [map_comp_lift, apply_lift_ι, lift_ι, Function.comp_def]
 }
 
+def apply_ι (m v: M) : ι R m v = if v = m then 1 else 0 := Finsupp.apply_single _
+
+def ι_inj [IsNontrivial R] : Function.Injective (ι R (M := M)) := by
+  intro x y h
+  have : ι R y x = ι R x x := by rw [h]
+  rw [apply_ι, apply_ι, if_pos rfl] at this
+  split at this
+  assumption
+  exact (zero_ne_one R this).elim
+
 attribute [irreducible] lift
 
 end FreeModule

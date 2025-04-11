@@ -40,7 +40,7 @@ def mem_span_of_linear_combo_sub {U s: Set M} (h: s ⊆ U) : ∀x: LinearSpan R 
     rw [map_zero]
     apply mem_zero
   | single =>
-    rw [LinearSpan.single_valHom]
+    rw [apply_valHom_single]
     apply mem_smul
     apply mem_span_of
     apply h
