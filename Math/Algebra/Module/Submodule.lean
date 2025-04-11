@@ -39,11 +39,14 @@ def mem_span_of_linear_combo_sub {U s: Set M} (h: s ⊆ U) : ∀x: LinearSpan R 
   | zero =>
     rw [map_zero]
     apply mem_zero
-  | single =>
-    rw [apply_valHom_single]
-    apply mem_smul
+  | ι =>
+    rw [LinearSpan.valHom_ι]
     apply mem_span_of
     apply h
+    assumption
+  | smul r x hx ih =>
+    rw [map_smul]
+    apply mem_smul
     assumption
   | add =>
     rw [map_add]
@@ -63,16 +66,18 @@ def span_eq_generate (U: Set M) : span R U = generate U := by
     | zero =>
       rw [map_zero]
       apply mem_zero
-    | add f₀ f₁ h₀ h₁ g =>
+    | add f₀ f₁ h₀ h₁ =>
       rw [map_add]
       apply mem_add
       assumption
       assumption
-    | single r m =>
-      show LinearSpan.val (LinearSpan.single _ _ _) ∈ _
-      rw [LinearSpan.single_val]
-      apply mem_smul
+    | ι m hm =>
       apply Generate.of
+      rw [LinearSpan.valHom_ι]
+      assumption
+    | smul r x hr ih =>
+      rw [map_smul]
+      apply mem_smul
       assumption
   · intro h
     apply of_mem_generate _ _ _ _ h
