@@ -104,19 +104,60 @@ instance [SetLike S M] [b: IsBasis R M S] (U: S) : Fact (IsLinindep R (U: Set M)
 
 structure Basis where
   carrier: Set M
-  indep: IsLinindep R (carrier: Set M)
-  complete: ∀m, m ∈ span R (carrier: Set M)
+  protected decode: M -> LinearCombo R carrier
+  coe_decode: Function.IsLeftInverse decode (fun m => m)
+  decode_coe: Function.IsRightInverse decode (fun m => m)
 
 instance : SetLike (Basis R M) M where
   coe b := b.carrier
-  coe_inj := by intro a b eq; cases a; congr
+  coe_inj := by
+    intro a b
+    simp
+    intro h
+    suffices HEq a.decode b.decode by
+      cases a; cases b;
+      congr
+      simp at this
+      apply proof_irrel_heq
+      apply proof_irrel_heq
+    obtain ⟨a, deca, a₀, a₁⟩ := a
+    obtain ⟨b, decb, b₀, b₁⟩ := b
+    cases h
+    simp
+    apply Function.eq_of_inverses <;> assumption
+
+end
+
+section
+
+variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
 
 @[ext]
 def Basis.ext (a b: Basis R M) : (∀{x}, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
+def Basis.toEquiv (b: Basis R M) : M ≃ LinearCombo R (b: Set M) where
+  toFun := b.decode
+  invFun m := m
+  leftInv := b.decode_coe
+  rightInv := b.coe_decode
+
+noncomputable def Basis.ofSet (s: Set M) (h: IsLinindep R s) (g: ∀m: M, m ∈ span R s) : Basis R M where
+  carrier := s
+  decode m := Classical.choose (g m)
+  coe_decode x := by apply h; symm; exact Classical.choose_spec (g x)
+  decode_coe x := by symm; exact Classical.choose_spec (g x)
+
 instance : IsBasis R M (Basis R M) where
-  indep b := b.indep
-  complete b := b.complete
+  indep b := by
+    intro x y h
+    simp at h
+    apply b.toEquiv.symm.inj
+    assumption
+  complete b v := by
+    rw [←b.decode_coe v]
+    simp
+    apply mem_span_of_linear_combo
 
 end
 

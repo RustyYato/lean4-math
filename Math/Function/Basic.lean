@@ -93,6 +93,14 @@ def hfunext {α α' : Sort u} {β : α → Sort v} {β' : α' → Sort v} {f : �
   funext a
   exact eq_of_heq (this a)
 
+def eq_of_inverses (f₀ f₁: α -> β) (g: β -> α)
+  (h₀: Function.IsLeftInverse f₀ g)
+  (h₂: Function.IsRightInverse f₀ g)
+  (h₃: Function.IsRightInverse f₁ g) : f₀ = f₁ := by
+  ext x
+  apply h₀.Injective
+  rw [h₂, h₃]
+
 open Classical in
 noncomputable def invFun {α : Sort u} {β} [Nonempty α] (f : α → β) : β → α :=
   fun y => Classical.epsilon (fun x => f x = y)
