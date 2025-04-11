@@ -135,15 +135,15 @@ instance : SetLike (Basis R M) M where
 
 end BasisDef
 
-section Basis
+namespace Basis
 
 variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
   [DecidableEq M]
 
 @[ext]
-def Basis.ext (a b: Basis R M) : (∀{x}, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def ext (a b: Basis R M) : (∀{x}, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
-def Basis.toEquiv (b: Basis R M) : M ≃ₗ[R] LinearCombo R (b: Set M) :=
+def toEquiv (b: Basis R M) : M ≃ₗ[R] LinearCombo R (b: Set M) :=
   LinearEquiv.symm {
     LinearCombo.valHom with
     invFun := b.decode
@@ -151,9 +151,31 @@ def Basis.toEquiv (b: Basis R M) : M ≃ₗ[R] LinearCombo R (b: Set M) :=
     rightInv := b.decode_coe
   }
 
-def Basis.symm_apply_toEquiv {b: Basis R M} : b.toEquiv.symm.toLinearMap = LinearCombo.valHom := rfl
+def coords (b: Basis R M) : M →ₗ[R] LinearCombo R (b: Set M) :=
+  b.toEquiv.toLinearMap
 
-noncomputable def Basis.ofSet (s: Set M) (h: IsLinindep R s) (g: ∀m: M, m ∈ span R s) : Basis R M where
+def apply_toEquiv {b: Basis R M} : b.toEquiv.toLinearMap = b.coords := rfl
+def symm_apply_toEquiv {b: Basis R M} : b.toEquiv.symm.toLinearMap = LinearCombo.valHom := rfl
+
+def apply_coords_valHom (b: Basis R M) (x: LinearCombo R (b: Set M)) : b.coords x = x := by
+  apply b.coe_decode
+
+def apply_valHom_coords (b: Basis R M) (x: M) : LinearCombo.valHom (b.coords x) = x := by
+  apply b.decode_coe
+
+def coords_comp_valHom (b: Basis R M) : b.coords.comp LinearCombo.valHom = .id _ := by
+  apply LinearMap.ext
+  intro x
+  rw [LinearMap.apply_comp]
+  apply b.apply_coords_valHom
+
+def valHom_comp_coords (b: Basis R M) : LinearCombo.valHom.comp b.coords = .id _ := by
+  apply LinearMap.ext
+  intro x
+  rw [LinearMap.apply_comp]
+  apply b.apply_valHom_coords
+
+noncomputable def ofSet (s: Set M) (h: IsLinindep R s) (g: ∀m: M, m ∈ span R s) : Basis R M where
   carrier := s
   decode m := Classical.choose (g m)
   coe_decode x := by apply h; symm; exact Classical.choose_spec (g x)
@@ -170,10 +192,18 @@ instance : IsBasis R M (Basis R M) where
     simp
     apply mem_span_of_linear_combo
 
+end Basis
+
+section IsBasis
+
+variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
+  [DecidableEq M]
+
+
 def is_linear_indep (U: Set M) [Fact (IsLinindep R U)] : IsLinindep R U := of_fact _
 def is_complete [SetLike S M] [b: IsBasis R M S] (U: S) : ∀m, m ∈ span R (U: Set M) := b.complete _
 
-end Basis
+end IsBasis
 
 section LinindepRing
 
