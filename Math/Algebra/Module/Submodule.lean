@@ -90,7 +90,7 @@ def IsLinindep (U: Set M) := Function.Injective (fun l: LinearCombo R U => (l: M
 
 end Defs
 
-section
+section BasisDef
 
 variable (R M: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
   [DecidableEq M]
@@ -103,8 +103,15 @@ instance [SetLike S M] [b: IsBasis R M S] (U: S) : Fact (IsLinindep R (U: Set M)
   proof := b.indep _
 
 structure Basis where
+  -- the set of basis vectors
   carrier: Set M
+  -- require that a set of basis vectors
+  -- must be able to fully and faithfully represent any vector in the module
   protected decode: M -> LinearCombo R carrier
+  -- by enforcing that decode is the left and right inverse of the canonical
+  -- mapping of formal linear combinations of vectors to vectors
+  -- we can show that the decoding is unique, and that it represents
+  -- an equivalence between formal linear combinations and vectors
   coe_decode: Function.IsLeftInverse decode (fun m => m)
   decode_coe: Function.IsRightInverse decode (fun m => m)
 
@@ -126,9 +133,9 @@ instance : SetLike (Basis R M) M where
     simp
     apply Function.eq_of_inverses <;> assumption
 
-end
+end BasisDef
 
-section
+section Basis
 
 variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
   [DecidableEq M]
@@ -159,19 +166,12 @@ instance : IsBasis R M (Basis R M) where
     simp
     apply mem_span_of_linear_combo
 
-end
-
-section
-
-variable {M: Type*} (R: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
-  [DecidableEq M]
-
 def is_linear_indep (U: Set M) [Fact (IsLinindep R U)] : IsLinindep R U := of_fact _
 def is_complete [SetLike S M] [b: IsBasis R M S] (U: S) : ∀m, m ∈ span R (U: Set M) := b.complete _
 
-end
+end Basis
 
-section
+section LinindepRing
 
 variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
   [DecidableEq M]
@@ -195,9 +195,9 @@ def is_linindep_iff_kernel_zero (U: Set M) : IsLinindep R U ↔ ∀f: LinearComb
     simp at g
     rw [g, sub_self]
 
-end
+end LinindepRing
 
-section
+section LinindepField
 
 variable {R M: Type*} [FieldOps R] [IsField R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
   [DecidableEq M]
@@ -248,7 +248,7 @@ def insertLinindep (S: Set M) (hS: Submodule.IsLinindep R S) (m: M) (hm: m ∉ S
     apply mem_neg
     apply mem_span_of_linear_combo
 
-end
+end LinindepField
 
 end Submodule
 
