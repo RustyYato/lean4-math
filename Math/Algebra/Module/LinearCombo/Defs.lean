@@ -1,50 +1,50 @@
 import Math.Data.Free.Module
 import Math.Data.Set.Like
 
-def LinearSpan (R M: Type*) (s: Set M) [Zero R] [DecidableEq M] :=
+def LinearCombo (R: Type*) {M: Type*} (s: Set M) [Zero R] [DecidableEq M] :=
   FreeModule R s
 
-namespace LinearSpan
+namespace LinearCombo
 
 variable {R M: Type*} [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
    [DecidableEq M] {s: Set M}
 
-instance : Zero (LinearSpan R M s) :=
+instance : Zero (LinearCombo R s) :=
   inferInstanceAs (Zero (FreeModule _ _))
-instance : Add (LinearSpan R M s) :=
+instance : Add (LinearCombo R s) :=
   inferInstanceAs (Add (FreeModule _ _))
-instance : SMul ℕ (LinearSpan R M s) :=
+instance : SMul ℕ (LinearCombo R s) :=
   inferInstanceAs (SMul ℕ (FreeModule _ _))
-instance : SMul R (LinearSpan R M s) :=
+instance : SMul R (LinearCombo R s) :=
   inferInstanceAs (SMul R (FreeModule _ _))
 
-instance : IsAddMonoid (LinearSpan R M s) :=
+instance : IsAddMonoid (LinearCombo R s) :=
   inferInstanceAs (IsAddMonoid (FreeModule _ _))
-instance : IsAddCommMagma (LinearSpan R M s) :=
+instance : IsAddCommMagma (LinearCombo R s) :=
   inferInstanceAs (IsAddCommMagma (FreeModule _ _))
-instance : IsModule R (LinearSpan R M s) :=
+instance : IsModule R (LinearCombo R s) :=
   inferInstanceAs (IsModule R (FreeModule _ _))
 
-instance : FunLike (LinearSpan R M s) s R := inferInstanceAs (FunLike (Finsupp s R _) s R)
+instance : FunLike (LinearCombo R s) s R := inferInstanceAs (FunLike (Finsupp s R _) s R)
 
-def valHom : LinearSpan R M s →ₗ[R] M := FreeModule.lift Subtype.val
+def valHom : LinearCombo R s →ₗ[R] M := FreeModule.lift Subtype.val
 
 @[coe]
-abbrev val (f: LinearSpan R M s) := valHom f
+abbrev val (f: LinearCombo R s) := valHom f
 
 @[simp]
-def zero_val : (0 : LinearSpan R M s).val = 0 := by
+def zero_val : (0 : LinearCombo R s).val = 0 := by
   rw [val, map_zero]
 
 @[simp]
-def add_val (a b: LinearSpan R M s) : (a + b).val = a.val + b.val := map_add _
+def add_val (a b: LinearCombo R s) : (a + b).val = a.val + b.val := map_add _
 
 @[simp]
-def smul_val (r: R) (a: LinearSpan R M s) : (r • a).val = r • a.val := map_smul _
+def smul_val (r: R) (a: LinearCombo R s) : (r • a).val = r • a.val := map_smul _
 
-def ι (R: Type*) [SemiringOps R] [IsSemiring R] (m: M) (hm: m ∈ s) : LinearSpan R M s := FreeModule.ι R ⟨m, hm⟩
+def ι (R: Type*) [SemiringOps R] [IsSemiring R] (m: M) (hm: m ∈ s) : LinearCombo R s := FreeModule.ι R ⟨m, hm⟩
 
-def single (r: R) (m: M) (hm: m ∈ s) : LinearSpan R M s :=
+def single (r: R) (m: M) (hm: m ∈ s) : LinearCombo R s :=
   r • ι R m hm
 
 def apply_ι {m: M} {hm: m ∈ s} {v: s} : ι R m hm v = if v = ⟨m, hm⟩ then 1 else 0 := rfl
@@ -68,18 +68,18 @@ def apply_valHom_single (r: R) (m: M) (hm: m ∈ s) : valHom (single r m hm) = r
 @[simp]
 def single_val (r: R) (m: M) (hm: m ∈ s) : (single r m hm).val = r • m := apply_valHom_single _ _ hm
 
-instance : CoeTC (LinearSpan R M s) M := ⟨valHom⟩
+instance : CoeTC (LinearCombo R s) M := ⟨valHom⟩
 
-@[simp] def apply_add (a b: LinearSpan R M s) (m: s) : (a + b) m = a m + b m := rfl
-@[simp] def apply_nsmul (a: LinearSpan R M s) (n: ℕ) (m: s) : (n • a) m = n • a m := rfl
-@[simp] def apply_smul (a: LinearSpan R M s) (n: R) (m: s) : (n • a) m = n • a m := rfl
+@[simp] def apply_add (a b: LinearCombo R s) (m: s) : (a + b) m = a m + b m := rfl
+@[simp] def apply_nsmul (a: LinearCombo R s) (n: ℕ) (m: s) : (n • a) m = n • a m := rfl
+@[simp] def apply_smul (a: LinearCombo R s) (n: R) (m: s) : (n • a) m = n • a m := rfl
 
 @[ext]
-def ext (a b: LinearSpan R M s) : (∀m, a m = b m) -> a = b :=
+def ext (a b: LinearCombo R s) : (∀m, a m = b m) -> a = b :=
   Finsupp.ext _ _
 
 @[induction_eliminator]
-def induction {motive: LinearSpan R M s -> Prop}
+def induction {motive: LinearCombo R s -> Prop}
   (zero: motive 0)
   (ι: ∀m hm, motive (ι R m hm))
   (smul: ∀(r: R) a, r ≠ 0 -> motive a -> motive (r • a))
@@ -97,56 +97,13 @@ def induction {motive: LinearSpan R M s -> Prop}
     | smul => apply smul <;> assumption
     | add => apply add <;> assumption
 
--- @[induction_eliminator]
--- def induction {motive: LinearSpan R M s -> Prop}
---   (zero: motive 0)
---   (single: ∀r m hm, r ≠ 0 -> motive (single r m hm))
---   (add: ∀a b,
---     motive a ->
---     motive b ->
---     Set.support (a + b) = Set.support a ∪ Set.support b ->
---     (a + b = 0 -> a = 0 ∧ b = 0) ->
---     motive (a + b)):
---     ∀l, motive l := by
---     apply Finsupp.induction zero
---     intros m r
---     by_cases hr:r = 0
---     show motive (LinearSpan.single _ _ _)
---     rw [hr, show LinearSpan.single (0: R) m.val _ = 0 from ?_]
---     apply zero
---     ext; rw [apply_single]; split <;> rfl
---     apply single
---     assumption
---     intro a b ha hb h
---     apply add
---     assumption
---     assumption
---     ext m
---     simp [Set.mem_support, Set.mem_union]
---     rw [Classical.not_iff_not, not_or, Classical.not_not, Classical.not_not, Classical.not_not]
---     apply Iff.intro
---     apply h
---     intro ⟨h, g⟩
---     show a m + b m = 0
---     erw [h, g, add_zero]
---     intro g
---     apply And.intro
---     ext m
---     exact (h m (by
---       show (a + b) m = 0
---       rw [g]; rfl)).left
---     ext m
---     exact (h m (by
---       show (a + b) m = 0
---       rw [g]; rfl)).right
-
-def castSuperset (s t: Set M) (h: s ⊆ t) (f: LinearSpan R M s) : LinearSpan R M t := by
+def castSuperset (s t: Set M) (h: s ⊆ t) (f: LinearCombo R s) : LinearCombo R t := by
   apply FreeModule.lift (fun x => ?_) f
   apply ι R x.val
   apply h
   apply x.property
 
-def castSuperset_val (s t: Set M) (h: s ⊆ t) (f: LinearSpan R M s) : (castSuperset s t h f).val = f.val := by
+def castSuperset_val (s t: Set M) (h: s ⊆ t) (f: LinearCombo R s) : (castSuperset s t h f).val = f.val := by
   unfold val
   unfold valHom
   unfold castSuperset
@@ -158,8 +115,8 @@ def castSuperset_val (s t: Set M) (h: s ⊆ t) (f: LinearSpan R M s) : (castSupe
   simp
   rfl
 
-def exists_subset_of_support [IsNontrivial R] [NoZeroDivisors R] (C: LinearSpan R M s) (h: Set.support ⇑C ⊆ t.preimage Subtype.val) :
-  ∃S: LinearSpan R M t, (C: M) = S ∧ ∀(m: M) (hs: m ∈ s) (ht: m ∈ t), C ⟨m, hs⟩ = S ⟨m, ht⟩ := by
+def exists_subset_of_support [IsNontrivial R] [NoZeroDivisors R] (C: LinearCombo R s) (h: Set.support ⇑C ⊆ t.preimage Subtype.val) :
+  ∃S: LinearCombo R t, (C: M) = S ∧ ∀(m: M) (hs: m ∈ s) (ht: m ∈ t), C ⟨m, hs⟩ = S ⟨m, ht⟩ := by
   induction C with
   | zero =>
     exists 0
@@ -204,7 +161,7 @@ def exists_subset_of_support [IsNontrivial R] [NoZeroDivisors R] (C: LinearSpan 
     rw [apply_ι, apply_ι]
     simp
 
-def eraseHom {s: Set M} (m: M) : LinearSpan R M s →ₗ[R] LinearSpan R M (s \ {m}: Set M) := by
+def eraseHom {s: Set M} (m: M) : LinearCombo R s →ₗ[R] LinearCombo R (s \ {m}: Set M) := by
   apply FreeModule.lift (fun x => ?_)
   refine if hx:x.val = m then ?_ else ?_
   exact 0
@@ -220,14 +177,14 @@ def eraseHom_ι {s: Set M} (m v: M) (hm: m ∈ s) : eraseHom v (ι R m hm) = if 
   unfold eraseHom ι
   erw [FreeModule.apply_lift_ι]
 
-def erase {s: Set M} (f: LinearSpan R M s) (m: M) : LinearSpan R M (s \ {m}: Set M) :=
+def erase {s: Set M} (f: LinearCombo R s) (m: M) : LinearCombo R (s \ {m}: Set M) :=
   eraseHom m f
 
 def erase_zero {s: Set M} : erase (R := R) (s := s) 0 m = 0 :=
   map_zero (eraseHom m)
-def erase_smul {s: Set M} (r: R) (a: LinearSpan R M s) : erase (r • a) m = r • erase a m :=
+def erase_smul {s: Set M} (r: R) (a: LinearCombo R s) : erase (r • a) m = r • erase a m :=
   map_smul (eraseHom m)
-def erase_add {s: Set M} (a b: LinearSpan R M s) : erase (a + b) m = erase a m + erase b m :=
+def erase_add {s: Set M} (a b: LinearCombo R s) : erase (a + b) m = erase a m + erase b m :=
   map_add (eraseHom m)
 def erase_ι {s: Set M} (m v: M) (hm: m ∈ s) : erase (ι R m hm) v = if hv:m = v then 0 else ι R m (by
   apply And.intro
@@ -235,7 +192,7 @@ def erase_ι {s: Set M} (m v: M) (hm: m ∈ s) : erase (ι R m hm) v = if hv:m =
   assumption) := by
   apply eraseHom_ι
 
-def erase_val {s: Set M} (f: LinearSpan R M s) (m: M) (hm: m ∈ s) : (erase f m: M) + f ⟨m, hm⟩ • m = f := by
+def erase_val {s: Set M} (f: LinearCombo R s) (m: M) (hm: m ∈ s) : (erase f m: M) + f ⟨m, hm⟩ • m = f := by
   unfold erase
   induction f with
   | zero =>
@@ -258,7 +215,7 @@ def erase_val {s: Set M} (f: LinearSpan R M s) (m: M) (hm: m ∈ s) : (erase f m
     rw [add_assoc, add_left_comm _ (a ⟨m, hm⟩ • m),
       ←add_assoc, iha, ihb]
 
-def apply_erase_mem {s: Set M} (f: LinearSpan R M s) {m: M} (x: M) (hx: x ∈ s \ {m}) : (f.erase m) ⟨x, hx⟩ = f ⟨x, hx.left⟩ := by
+def apply_erase_mem {s: Set M} (f: LinearCombo R s) {m: M} (x: M) (hx: x ∈ s \ {m}) : (f.erase m) ⟨x, hx⟩ = f ⟨x, hx.left⟩ := by
   induction f with
   | zero =>
     rw [erase_zero]
@@ -284,38 +241,38 @@ def apply_erase_mem {s: Set M} (f: LinearSpan R M s) {m: M} (x: M) (hx: x ∈ s 
     rw [erase_add, apply_add, iha, ihb]
     rfl
 
-def cast {s t: Set M} (h: s = t) (f: LinearSpan R M s) : LinearSpan R M t := h ▸ f
-def cast_val {s t: Set M} (h: s = t) (f: LinearSpan R M s) : (f.cast h: M) = f := by
+def cast {s t: Set M} (h: s = t) (f: LinearCombo R s) : LinearCombo R t := h ▸ f
+def cast_val {s t: Set M} (h: s = t) (f: LinearCombo R s) : (f.cast h: M) = f := by
   cases h
   rfl
 
-def apply_cast_mem {s t: Set M} (h: s = t) (f: LinearSpan R M s) (x: M) (hx: x ∈ s) : (f.cast h) ⟨x, h ▸ hx⟩ = f ⟨x, hx⟩ := by
+def apply_cast_mem {s t: Set M} (h: s = t) (f: LinearCombo R s) (x: M) (hx: x ∈ s) : (f.cast h) ⟨x, h ▸ hx⟩ = f ⟨x, hx⟩ := by
   cases h
   rfl
 
-end LinearSpan
+end LinearCombo
 
-namespace LinearSpan
+namespace LinearCombo
 
 variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
    [DecidableEq M] {s: Set M}
 
-instance : Neg (LinearSpan R M s) :=
+instance : Neg (LinearCombo R s) :=
   inferInstanceAs (Neg (FreeModule _ _))
-instance : Sub (LinearSpan R M s) :=
+instance : Sub (LinearCombo R s) :=
   inferInstanceAs (Sub (FreeModule _ _))
-instance : SMul ℤ (LinearSpan R M s) :=
+instance : SMul ℤ (LinearCombo R s) :=
   inferInstanceAs (SMul ℤ (FreeModule _ _))
-instance : IsAddGroup (LinearSpan R M s) :=
+instance : IsAddGroup (LinearCombo R s) :=
   inferInstanceAs (IsAddGroup (FreeModule _ _))
 
-@[simp] def apply_sub (a b: LinearSpan R M s) (m: s) : (a - b) m = a m - b m := rfl
-@[simp] def apply_neg (a: LinearSpan R M s) (m: s) : (-a) m = -a m := rfl
-@[simp] def apply_zsmul (a: LinearSpan R M s) (n: ℤ) (m: s) : (n • a) m = n • a m := rfl
+@[simp] def apply_sub (a b: LinearCombo R s) (m: s) : (a - b) m = a m - b m := rfl
+@[simp] def apply_neg (a: LinearCombo R s) (m: s) : (-a) m = -a m := rfl
+@[simp] def apply_zsmul (a: LinearCombo R s) (n: ℤ) (m: s) : (n • a) m = n • a m := rfl
 
-instance : Subsingleton (LinearSpan R M ∅) where
+instance : Subsingleton (LinearCombo R (∅: Set M)) where
   allEq a b := by
     ext m; have := m.property
     contradiction
 
-end LinearSpan
+end LinearCombo

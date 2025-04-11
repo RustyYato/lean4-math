@@ -37,7 +37,7 @@ def existsBasis : Nonempty (Submodule.Basis R M) := by
         have : x ∈ Set.support C := by assumption
         replace : x.val ∈ s := supp _ this
         replace g : C x ≠ 0 := g
-        have ⟨S', hS', gS'⟩ := LinearSpan.exists_subset_of_support C supp
+        have ⟨S', hS', gS'⟩ := LinearCombo.exists_subset_of_support C supp
         rw [hC] at hS'
         have := gS' x.val x.property (by assumption)
         rw [this, s_linindep _ hS'.symm] at g
@@ -100,7 +100,7 @@ def existsBasis : Nonempty (Submodule.Basis R M) := by
           apply And.intro
           assumption
           intro x hx
-          rw [Set.mem_support, LinearSpan.apply_ι] at hx
+          rw [Set.mem_support, LinearCombo.apply_ι] at hx
           simp at hx
           cases hx.left
           assumption
