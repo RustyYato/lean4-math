@@ -554,7 +554,7 @@ def FreeSemiring.Nat : FreeSemiring Empty ≃ₐ[ℕ] ℕ := {
 }
 
 -- the integers are the free ring over 0 generators
-def FreeSemiring.Int : FreeRing Empty ≃ₐ[ℤ] ℤ := {
+def FreeRing.Int : FreeRing Empty ≃ₐ[ℤ] ℤ := {
   FreeAlgebra.lift ℤ Empty.elim with
   invFun n := algebraMap n
   leftInv x := by
