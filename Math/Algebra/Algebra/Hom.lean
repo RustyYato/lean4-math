@@ -131,6 +131,8 @@ def toAlgHom' (f: F) : A →ₐ[R] B := {
   toAddHom f, toMulHom f, toAlgebraMapHom f with
 }
 
+@[simp] def AlgHom.toAddHom_eq_coe (f: A →ₐ[R] B) : (f.toAddHom: A -> B) = f := rfl
+
 instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsSemiring R] [IsAlgebra R A] [IsAlgebra R B]: IsSMulHom F R A B where
   map_smul := by
     intro f r x

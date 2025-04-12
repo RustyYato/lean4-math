@@ -64,10 +64,10 @@ def CommFreeAlgebra.lift_ι_apply
   apply FreeAlgebra.lift_ι_apply
 
 -- Polynomials are algebraically equivalent to the commutative free algebra
-def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit where
-  toFun := evalHom (CommFreeAlgebra.ι P ())
-  invFun a := CommFreeAlgebra.lift P (fun x => Poly.X) a
-  leftInv := by
+def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit := AlgEquiv.symm {
+  CommFreeAlgebra.lift P (fun x => Poly.X) with
+  invFun := evalHom (CommFreeAlgebra.ι P ())
+  rightInv := by
     intro p
     simp
     induction p using Poly.alg_induction with
@@ -75,33 +75,20 @@ def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit where
     | X => rw [evalHom_X, CommFreeAlgebra.lift_ι_apply]
     | add => rw [map_add, map_add]; congr
     | mul => rw [map_mul, map_mul]; congr
-  rightInv := by
+  leftInv := by
     intro p
     obtain ⟨p, rfl⟩ := RingQuot.mkAlgHom_surj P _ p
+    simp
     induction p with
     | grade0 r =>
       rw [map_algebraMap]
-      simp
       erw [map_algebraMap ((CommFreeAlgebra.lift P (fun x => Poly.X))) r]
       rw [map_algebraMap]
       rfl
     | grade1 =>
-      simp
       erw [RingQuot.liftAlgHom_mkAlgHom_apply,
         FreeAlgebra.lift_ι_apply, evalHom_X]
       rfl
-    | add _ _ =>
-      simp
-      rw [map_add, map_add, map_add]; congr
-    | mul =>
-      simp
-      rw [map_mul, map_mul, map_mul]; congr
-  map_add {x y} := by
-    simp
-    rw [map_add]
-  map_mul {x y} := by
-    simp
-    rw [map_mul]
-  map_algebraMap r := by
-    simp
-    rw [map_algebraMap]
+    | add _ _ => rw [map_add, map_add, map_add]; congr
+    | mul => rw [map_mul, map_mul, map_mul]; congr
+}

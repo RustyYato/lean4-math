@@ -559,7 +559,6 @@ def FreeSemiring.Int : FreeRing Empty ≃ₐ[ℤ] ℤ := {
   invFun n := algebraMap n
   leftInv x := by
     simp
-    show algebraMap (FreeAlgebra.lift ℤ Empty.elim x) = x
     induction x using FreeAlgebra.induction with
     | grade0 r =>
       rw [map_algebraMap]
@@ -568,7 +567,6 @@ def FreeSemiring.Int : FreeRing Empty ≃ₐ[ℤ] ℤ := {
     | add a b iha ihb => rw [map_add, map_add, iha, ihb]
     | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
   rightInv x := by
-    show FreeAlgebra.lift ℤ Empty.elim _ = _
     simp
     rw [map_algebraMap]
     rfl

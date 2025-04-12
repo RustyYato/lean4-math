@@ -1025,3 +1025,13 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 
 def AddGroupHom.apply_comp (f: β →+ γ) (g: α →+ β) : (f.comp g) x = f (g x) := rfl
 def GroupHom.apply_comp (f: β →* γ) (g: α →* β) : (f.comp g) x = f (g x) := rfl
+
+@[simp] def ZeroHom.toFun_eq_coe (f: ZeroHom α β) : f.toFun = f := rfl
+@[simp] def OneHom.toFun_eq_coe (f: OneHom α β) : f.toFun = f := rfl
+@[simp] def AddHom.toFun_eq_coe (f: AddHom α β) : f.toFun = f := rfl
+@[simp] def MulHom.toFun_eq_coe (f: MulHom α β) : f.toFun = f := rfl
+
+@[simp] def AddMonoidHom.toFun_eq_coe (f: α →+ β) : f.toFun = f := rfl
+@[simp] def MonoidHom.toFun_eq_coe (f: α →* β) : f.toFun = f := rfl
+@[simp] def AddMonoidWithZeroHom.toFun_eq_coe (f: α →+₁ β) : f.toFun = f := rfl
+@[simp] def MonoidWithOneHom.toFun_eq_coe (f: α →*₀ β) : f.toFun = f := rfl
