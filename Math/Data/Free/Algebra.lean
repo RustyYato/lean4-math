@@ -530,3 +530,4 @@ instance [Subsingleton R] : Subsingleton (FreeAlgebra R X) :=
 end FreeAlgebra
 
 abbrev FreeRing (α: Type*) : Type _ := FreeAlgebra ℤ α
+abbrev FreeSemiring (α: Type*) : Type _ := FreeAlgebra ℕ α
