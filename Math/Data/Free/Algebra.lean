@@ -29,8 +29,7 @@ local instance : Pow (Algebra.Pre R X) ℕ := ⟨.npow⟩
 local instance [Zero R] : Zero (Algebra.Pre R X) := ⟨.scalar 0⟩
 local instance [One R] : One (Algebra.Pre R X) := ⟨.scalar 1⟩
 
-variable (R X: Type*) [Zero R] [One R] [Add R] [Mul R] [Pow R ℕ] [SMul ℕ R] [NatCast R] [∀n, OfNat R (n + 2)]
-  [IsCommMagma R] [IsSemiring R]
+variable (R X: Type*) [Zero R] [One R] [Add R] [Mul R]
 
 inductive Rel: Pre R X -> Pre R X -> Prop where
 | refl : Rel x x
@@ -307,7 +306,7 @@ instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
 
 instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) := IsRing.inst
 
-instance [h: Zero R] [One R] [Add R] [Mul R] : Inhabited (FreeAlgebra R X) := ⟨Quot.mk _ (.scalar 0)⟩
+instance [Zero R] [One R] [Add R] [Mul R] : Inhabited (FreeAlgebra R X) := ⟨Quot.mk _ (.scalar 0)⟩
 
 end FreeAlgebra
 
