@@ -1,4 +1,5 @@
 import Math.Order.Lattice.Basic
+import Math.Order.Hom.Defs
 
 section
 
@@ -8,19 +9,6 @@ inductive FreeLattice.Pre (α: Type*) where
 | min (a b: Pre α)
 
 variable {α: Type*}
-
-protected inductive FreeLattice.Pre.LE : Pre α -> Pre α -> Prop where
-| refl (a: Pre α): Pre.LE a a
-| trans: Pre.LE a b -> Pre.LE b c -> Pre.LE a c
-
-| le_max_left : Pre.LE a (max a b)
-| le_max_right : Pre.LE b (max a b)
-
-| min_le_left : Pre.LE (min a b) a
-| min_le_right : Pre.LE (min a b) b
-
-| max_le : Pre.LE a k -> Pre.LE b k -> Pre.LE (max a b) k
-| le_min : Pre.LE k a -> Pre.LE k b -> Pre.LE k (min a b)
 
 inductive FreeLattice.Pre.Equiv : Pre α -> Pre α -> Prop where
 | refl (a: Pre α): Equiv a a
@@ -177,22 +165,6 @@ def le_min: k ≤ a -> k ≤ b -> k ≤ (min a b) := by
   assumption
   assumption
 
-def prele_of_eqv : a ≈ b -> Pre.LE a b ∧ Pre.LE b a := by
-  intro h
-  induction h with
-  | refl => apply And.intro <;> apply Pre.LE.refl
-  | symm => apply And.symm; assumption
-  | trans _ _ ih₀ ih₁ =>
-    sorry
-  | max_comm => sorry
-  | max_assoc => sorry
-  | min_comm => sorry
-  | min_assoc => sorry
-  | max_min => sorry
-  | min_max => sorry
-  | min_congr => sorry
-  | max_congr => sorry
-
 end FreeLattice.Pre
 
 def FreeLattice (α: Type*) := Quotient (FreeLattice.setoid (α := α))
@@ -305,50 +277,66 @@ instance : IsLattice (FreeLattice α) where
 
 def ι :  α -> FreeLattice α := (⟦.of ·⟧)
 
-private def Pre.preLift [LatticeOps L] [IsLattice L] (f: α -> L) : Pre α -> L
+private def Pre.lift [LatticeOps L] [IsLattice L] (f: α -> L) : Pre α -> L
 | .of a => f a
-| .min a b => preLift f a ⊓ preLift f b
-| .max a b => preLift f a ⊔ preLift f b
+| .min a b => lift f a ⊓ lift f b
+| .max a b => lift f a ⊔ lift f b
 
-private def Pre.lift [LatticeOps L] [IsLattice L] (f: α -> L) : Pre α →o L where
-  toFun := Pre.preLift f
-  resp_rel {a b} h := by
+private def preLift [LatticeOps L] [IsLattice L] (f: α -> L) : FreeLattice α -> L := by
+  refine Quotient.lift (Pre.lift f) ?_
+  intro a b h
+  induction h with
+  | refl => rfl
+  | symm => symm; assumption
+  | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
+  | max_comm => apply max_comm
+  | min_comm => apply min_comm
+  | max_assoc => apply max_assoc
+  | min_assoc => apply min_assoc
+  | max_min => apply max_min_self
+  | min_max => apply min_max_self
+  | min_congr =>
+    show _ ⊓ _ = _ ⊓ _
+    congr
+  | max_congr =>
+    show _ ⊔ _ = _ ⊔ _
+    congr
 
-    sorry
-    -- induction h with
-    -- | refl => rfl
-    -- | trans =>
-    --   apply le_trans
-    --   assumption
-    --   assumption
-    -- | le_max_left => apply le_max_left
-    -- | le_max_right => apply le_max_right
-    -- | max_le => apply max_le <;> assumption
-    -- | min_le_left => apply min_le_left
-    -- | min_le_right => apply min_le_right
-    -- | le_min => apply le_min <;> assumption
-
-private def preLift [LatticeOps L] [IsLattice L] (f: α -> L) : FreeLattice α →o L where
-  toFun := by
-    refine Quotient.lift (Pre.lift f) ?_
-    sorry
-  resp_rel := by
-    intro a b h
-    induction a, b using Quotient.ind₂
-    apply (Pre.lift _).resp_rel
-    assumption
-
-def lift [LatticeOps L] [IsLattice L] : (α -> L) ≃ (FreeLattice α →o L) where
-  toFun := sorry
+def lift [LatticeOps L] [IsLattice L] : (α -> L) ≃ (FreeLattice α →⊓⊔ L) where
+  toFun f := {
+    toFun := preLift f
+    map_min a b := by
+      induction a, b using Quotient.ind₂
+      rfl
+    map_max a b := by
+      induction a, b using Quotient.ind₂
+      rfl
+  }
   invFun f := f ∘ ι
-  leftInv := sorry
-  rightInv := sorry
+  leftInv x := rfl
+  rightInv f := by
+    apply DFunLike.ext
+    intro x
+    induction x using Quotient.ind with | _ x =>
+    show FreeLattice.Pre.lift (f ∘ ι) x = f ⟦x⟧
+    induction x with
+    | of => rfl
+    | max _ _ ih₀ ih₁ =>
+      show Pre.lift _ _ ⊔ Pre.lift _ _ = f (⟦_⟧ ⊔ ⟦_⟧)
+      rw [ih₀, ih₁, map_max]
+    | min _ _ ih₀ ih₁ =>
+      show Pre.lift _ _ ⊓ Pre.lift _ _ = f (⟦_⟧ ⊓ ⟦_⟧)
+      rw [ih₀, ih₁, map_min]
+
+def apply_lift_ι [LatticeOps L] [IsLattice L] (f: α -> L) : lift f (ι a) = f a := rfl
 
 def ι_inj : Function.Injective (ι (α := α)) := by
   intro x y h
-  -- have ⟨h, g⟩ := Quotient.exact h
-  -- cases h
-  -- rfl
-  sorry
+  classical
+  let f := lift (fun z => if x = z then 0 else 1)
+  have : f (ι x) = 0 := by rw [apply_lift_ι, if_pos rfl]
+  rw [h, apply_lift_ι] at this
+  split at this; assumption
+  contradiction
 
 end FreeLattice
