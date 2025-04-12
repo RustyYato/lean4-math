@@ -531,3 +531,45 @@ end FreeAlgebra
 
 abbrev FreeRing (α: Type*) : Type _ := FreeAlgebra ℤ α
 abbrev FreeSemiring (α: Type*) : Type _ := FreeAlgebra ℕ α
+
+-- the naturals are the free semiring over 0 generators
+def FreeSemiring.Nat : FreeSemiring Empty ≃ₐ[ℕ] ℕ := {
+  FreeAlgebra.lift ℕ Empty.elim with
+  invFun n := algebraMap n
+  leftInv x := by
+    simp
+    show algebraMap (FreeAlgebra.lift ℕ Empty.elim x) = x
+    induction x using FreeAlgebra.induction with
+    | grade0 r =>
+      rw [map_algebraMap]
+      rfl
+    | grade1 => contradiction
+    | add a b iha ihb => rw [map_add, map_add, iha, ihb]
+    | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
+  rightInv x := by
+    show FreeAlgebra.lift ℕ Empty.elim _ = _
+    simp
+    rw [map_algebraMap]
+    rfl
+}
+
+-- the integers are the free ring over 0 generators
+def FreeSemiring.Int : FreeRing Empty ≃ₐ[ℤ] ℤ := {
+  FreeAlgebra.lift ℤ Empty.elim with
+  invFun n := algebraMap n
+  leftInv x := by
+    simp
+    show algebraMap (FreeAlgebra.lift ℤ Empty.elim x) = x
+    induction x using FreeAlgebra.induction with
+    | grade0 r =>
+      rw [map_algebraMap]
+      rfl
+    | grade1 => contradiction
+    | add a b iha ihb => rw [map_add, map_add, iha, ihb]
+    | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
+  rightInv x := by
+    show FreeAlgebra.lift ℤ Empty.elim _ = _
+    simp
+    rw [map_algebraMap]
+    rfl
+}
