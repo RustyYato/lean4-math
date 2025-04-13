@@ -1,5 +1,6 @@
 import Math.Order.Lattice.Basic
 import Math.Order.Hom.Defs
+import Math.Order.Monotone.Defs
 
 section
 
@@ -338,5 +339,84 @@ def ι_inj : Function.Injective (ι (α := α)) := by
   rw [h, apply_lift_ι] at this
   split at this; assumption
   contradiction
+
+-- private def IsInfinite.gen (a b c: α) : Nat -> FreeLattice α
+-- | 0 => ι a
+-- | n + 1 => ι a ⊔ (ι b ⊓ (ι c ⊔ (ι a ⊓ (ι b ⊔ (ι c ⊓ (gen a b c n))))))
+
+-- def IsInfinite.lt_succ
+--    (x y z: α) (xy: x ≠ y) (yz: y ≠ z) (xz: x ≠ z) (n: Nat) :
+--   gen x y z n < gen x y z (n + 1) := by
+--   rw [FreeLattice.IsInfinite.gen]
+--   generalize FreeLattice.IsInfinite.gen x y z n = p
+
+--   clear n
+--   apply lt_of_le_of_ne
+--   · let a := ι z ⊓ p
+--     let b := ι y ⊔ a
+--     let c := ι x ⊓ b
+--     let d := ι z ⊔ c
+--     let e := ι y ⊓ d
+--     let f := ι x ⊔ e
+--     show p ≤ f
+--     have a_le_p : a ≤ p := by apply min_le_right
+--     have : p ≤ b := by
+--       show p ≤ _ ⊔ a
+--       apply flip le_trans
+--       apply le_max_right
+
+
+
+
+--       sorry
+
+--     sorry
+
+
+
+--   repeat sorry
+
+
+-- protected def IsInfinite.Monotone (a b c: α) (ab: a ≠ b) (bc: b ≠ c) (ac: a ≠ c) : Monotone (IsInfinite.gen a b c) := by
+--   intro n m h
+--   induction n generalizing m with
+--   | zero =>
+--     clear h
+--     induction m with
+--     | zero => rfl
+--     | succ m ih =>
+--       apply le_trans
+--       assumption
+--       apply le_of_lt
+--       apply IsInfinite.lt_succ <;> assumption
+--   | succ n ih =>
+--     cases m with
+--     | zero => contradiction
+--     | succ m =>
+--     unfold gen
+--     repeat first|apply max_le_max_left|apply min_le_min_left
+--     apply ih
+--     apply Nat.le_of_succ_le_succ
+--     assumption
+
+-- protected def IsInfinite.StrictMonotone (a b c: α) (ab: a ≠ b) (bc: b ≠ c) (ac: a ≠ c) : StrictMonotone (IsInfinite.gen a b c) := by
+--   intro n m h
+--   rw [←Nat.succ_le] at h
+--   cases h
+--   apply IsInfinite.lt_succ <;> assumption
+--   apply lt_of_lt_of_le
+--   apply IsInfinite.lt_succ <;> assumption
+--   apply IsInfinite.Monotone
+--   assumption
+--   assumption
+--   assumption
+--   apply le_trans
+--   assumption
+--   apply Nat.le_succ
+
+-- def IsInfinite (a b c: α) (ab: a ≠ b) (bc: b ≠ c) (ac: a ≠ c) : (Fin n ≃ FreeLattice α) -> False := by
+--   intro h
+
+--   sorry
 
 end FreeLattice

@@ -398,6 +398,16 @@ def max_self (a: α) : a ⊔ a = a := by
   rw [max_le_iff]; trivial
   apply le_max_left
 
+def max_le_max_left (k a b: α) : a ≤ b -> k ⊔ a ≤ k ⊔ b := by
+  intro h
+  apply max_le_max
+  rfl; assumption
+
+def max_le_max_right (k a b: α) : a ≤ b -> a ⊔ k ≤ b ⊔ k := by
+  intro h
+  apply max_le_max
+  assumption; rfl
+
 variable [Top α] [Bot α] [IsLawfulBot α] [IsLawfulTop α]
 variable {a: α}
 
@@ -468,6 +478,16 @@ def min_le_min {a b c d: α} :
 
 def min_self (a: α) : a ⊓ a = a :=
   max_self (α := Opposite α) _
+
+def min_le_min_left (k a b: α) : a ≤ b -> k ⊓ a ≤ k ⊓ b := by
+  intro h
+  apply min_le_min
+  rfl; assumption
+
+def min_le_min_right (k a b: α) : a ≤ b -> a ⊓ k ≤ b ⊓ k := by
+  intro h
+  apply min_le_min
+  assumption; rfl
 
 variable [Top α] [Bot α] [IsLawfulBot α] [IsLawfulTop α]
 variable {a: α}

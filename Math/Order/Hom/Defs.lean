@@ -10,6 +10,12 @@ class IsMinHom (F α β: Type*) [FunLike F α β] [Min α] [Min β] where
 class IsMaxHom (F α β: Type*) [FunLike F α β] [Max α] [Max β] where
   protected map_max (f: F) (a b: α) : f (a ⊔ b) = f a ⊔ f b
 
+class IsTopHom (F α β: Type*) [FunLike F α β] [Top α] [Top β] where
+  protected map_top (f: F) : f ⊤ = ⊤
+
+class IsBotHom (F α β: Type*) [FunLike F α β] [Bot α] [Bot β] where
+  protected map_max (f: F) : f ⊥ = ⊥
+
 def map_min [FunLike F α β] [Min α] [Min β] [IsMinHom F α β] (f: F) (a b: α) : f (a ⊓ b) = f a ⊓ f b := IsMinHom.map_min _ _ _
 def map_max [FunLike F α β] [Max α] [Max β] [IsMaxHom F α β] (f: F) (a b: α) : f (a ⊔ b) = f a ⊔ f b := IsMaxHom.map_max _ _ _
 
