@@ -84,6 +84,47 @@ instance : CompleteLattice (MulCon α) := {
 
 end MulCon
 
+namespace SMulCon
+
+variable [SMul R α]
+
+def giConnection : @GaloisInsertion (α -> α -> Prop) (SMulCon R α) _ _ (fun r => generate R r) (fun r => r.r) where
+  gc a b := by
+    apply Iff.intro
+    intro h
+    apply le_trans
+    apply le_generate R
+    assumption
+    intro h
+    apply ofGenerate R a b
+    assumption
+  le_l_u a := by apply le_generate
+  choice r h := copy R (generate R r) r <| by
+    apply le_antisymm
+    apply le_generate
+    assumption
+  choice_eq r h := by
+    simp
+    apply le_antisymm
+    apply le_generate
+    assumption
+
+instance : CompleteLattice (SMulCon R α) := {
+  giConnection.liftCompleteLattice with
+  bot := {
+    r := (· = ·)
+    iseqv := Relation.equiv _
+    resp_smul := by
+      rintro _ _ _ rfl
+      rfl
+  }
+  bot_le r a b := by
+    rintro rfl
+    rfl
+}
+
+end SMulCon
+
 namespace RingCon
 
 variable [Add α] [Mul α]
@@ -127,3 +168,47 @@ instance : CompleteLattice (RingCon α) := {
 }
 
 end RingCon
+
+namespace LinearCon
+
+variable [Add α] [SMul R α]
+
+def giConnection : @GaloisInsertion (α -> α -> Prop) (LinearCon R α) _ _ (fun r => generate R r) (fun r => r.r) where
+  gc a b := by
+    apply Iff.intro
+    intro h
+    apply le_trans
+    apply le_generate R
+    assumption
+    intro h
+    apply ofGenerate R a b
+    assumption
+  le_l_u a := by apply le_generate
+  choice r h := copy R (generate R r) r <| by
+    apply le_antisymm
+    apply le_generate
+    assumption
+  choice_eq r h := by
+    simp
+    apply le_antisymm
+    apply le_generate
+    assumption
+
+instance : CompleteLattice (LinearCon R α) := {
+  giConnection.liftCompleteLattice with
+  bot := {
+    r := (· = ·)
+    iseqv := Relation.equiv _
+    resp_add := by
+      rintro _ _ _ _ rfl rfl
+      rfl
+    resp_smul := by
+      rintro _ _ _ rfl
+      rfl
+  }
+  bot_le r a b := by
+    rintro rfl
+    rfl
+}
+
+end LinearCon
