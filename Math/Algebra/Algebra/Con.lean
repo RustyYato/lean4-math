@@ -7,20 +7,11 @@ variable {C R: Type*} [RelLike C R]
   [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
   (c: C)
 
-def resp_smul (c: C) (n: S) {a b: R} (h: c a b) : c (n • a) (n • b) := by
-  rw [smul_def, smul_def]
-  apply resp_mul
-  rfl
-  assumption
-
-instance (priority := 900) : SMul S (IsCon.Quotient c) where
-  smul s := by
-    refine Quotient.lift ?_ ?_
-    intro r
-    exact IsCon.mkQuot c (s • r)
-    intro a b h
-    apply Quotient.sound
-    apply resp_smul
+instance : IsSMulCon C S where
+  resp_smul c s {a b} h := by
+    rw [smul_def, smul_def]
+    apply resp_mul
+    rfl
     assumption
 
 instance (priority := 900) : AlgebraMap S (IsCon.Quotient c) :=

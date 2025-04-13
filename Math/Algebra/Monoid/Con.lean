@@ -16,13 +16,10 @@ def resp_nsmul [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] (c: C) (n: ℕ) {
 def resp_npow [MonoidOps α] [IsMonoid α] [IsMulCon C] (c: C) (n: ℕ) {a b: α} (h: c a b) : c (a ^ n) (b ^ n) :=
   resp_nsmul (C := AddOfMul C) c n h
 
-instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : SMul ℕ (IsCon.Quotient c) where
-  smul n := by
-    apply Quotient.lift (fun a => IsCon.mkQuot c (n • a))
-    intro a b h
-    apply Quotient.sound
-    apply resp_nsmul
-    assumption
+instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : IsSMulCon C ℕ where
+  resp_smul := resp_nsmul
+
+instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : SMul ℕ (IsCon.Quotient c) := inferInstance
 instance [MonoidOps α] [IsMonoid α] [IsMulCon C] : Pow (IsCon.Quotient c) ℕ where
   pow := flip <| by
     intro n

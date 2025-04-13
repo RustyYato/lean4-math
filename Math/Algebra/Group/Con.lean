@@ -41,6 +41,9 @@ def resp_zpow [GroupOps α] [IsGroup α] [IsMulCon C] (c: C) (n: ℤ) {a b: α} 
 def resp_div [GroupOps α] [IsGroup α] [IsMulCon C] (c: C) {w x y z: α} (h: c w y) (g: c x z) : c (w / x) (y / z) :=
   resp_sub (C := AddOfMul C) c h g
 
+instance [AddGroupOps α] [IsAddGroup α] [IsAddCon C] : IsSMulCon C ℤ where
+  resp_smul := resp_zsmul
+
 instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Neg (IsCon.Quotient c) where
   neg := by
     apply Quotient.lift (fun a => IsCon.mkQuot c (-a))
@@ -49,13 +52,7 @@ instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Neg (IsCon.Quotient c) 
     apply resp_neg
     assumption
 
-instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : SMul ℤ (IsCon.Quotient c) where
-  smul n := by
-    apply Quotient.lift (fun a => IsCon.mkQuot c (n • a))
-    intro a b h
-    apply Quotient.sound
-    apply resp_zsmul
-    assumption
+instance [AddGroupOps α] [IsAddGroup α] [IsAddCon C] : SMul ℤ (IsCon.Quotient c) := inferInstance
 
 instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Sub (IsCon.Quotient c) where
   sub := by
