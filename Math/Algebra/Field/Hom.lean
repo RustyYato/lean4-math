@@ -6,7 +6,7 @@ import Math.Logic.Equiv.Like
 section
 
 variable [FieldOps F] [IsNonCommField F] [RingOps R] [IsRing R] [IsNontrivial R]
-variable [FunLike α F R] [IsZeroHom α F R] [IsOneHom α F R] [IsAddHom α F R] [IsMulHom α F R]
+variable [FunLike α F R] [IsRingHom α F R]
 
 instance : EmbeddingLike α F R where
   coe f := {

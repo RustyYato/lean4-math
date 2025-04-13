@@ -4,7 +4,7 @@ import Math.Algebra.GroupWithZero.Basic
 section
 
 variable [GroupWithZeroOps α] [GroupWithZeroOps β] [IsGroupWithZero α] [IsGroupWithZero β]
-variable [EmbeddingLike F α β] [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β]
+variable [EmbeddingLike F α β] [IsGroupWithZeroHom F α β]
   [NoZeroDivisors β]
 
 def map_ne_zero (f: F) : x ≠ 0 -> f x ≠ 0 :=

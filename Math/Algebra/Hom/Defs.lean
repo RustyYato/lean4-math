@@ -4,451 +4,196 @@ import Math.Algebra.AddMul
 
 section
 
-variable (R α β: Type*)
+variable (F R: Type*) (α β: outParam Type*) [FunLike F α β]
 variable [Zero α] [One α] [Add α] [Mul α] [Neg α] [Inv α] [SMul R α]
 variable [Zero β] [One β] [Add β] [Mul β] [Neg β] [Inv β] [SMul R β]
 
-class IsZeroHom (F: Type*) (α β: outParam Type*) [Zero α] [Zero β] [FunLike F α β]: Prop where
-  protected map_zero: ∀f: F, f 0 = 0
+class IsZeroHom: Prop where
+  protected map_zero: ∀f: F, f 0 = 0 := by intro f; exact f.map_zero
 
-def map_zero {F α β: Type*} [Zero α] [Zero β] [FunLike F α β] [IsZeroHom F α β] : ∀f: F, f 0 = 0 := IsZeroHom.map_zero
+class IsOneHom: Prop where
+  protected map_one: ∀f: F, f 1 = 1 := by intro f; exact f.map_one
 
-class IsOneHom (F: Type*) (α β: outParam Type*) [One α] [One β] [FunLike F α β]: Prop where
-  protected map_one: ∀f: F, f 1 = 1
+class IsAddHom: Prop where
+  protected map_add: ∀f: F, ∀{x y}, f (x + y) = f x + f y := by intro f; exact f.map_add
 
-def map_one {F α β: Type*} [One α] [One β] [FunLike F α β] [IsOneHom F α β] : ∀f: F, f 1 = 1 := IsOneHom.map_one
+class IsMulHom: Prop where
+  protected map_mul: ∀f: F, ∀{x y}, f (x * y) = f x * f y := by intro f; exact f.map_mul
 
-class IsAddHom (F: Type*) (α β: outParam Type*) [Add α] [Add β] [FunLike F α β]: Prop where
-  protected map_add: ∀f: F, ∀{x y}, f (x + y) = f x + f y
+class IsSMulHom: Prop where
+  protected map_smul (f: F): ∀{r: R} {x: α}, f (r • x) = r • f x := by intro f; exact f.map_smul
 
-def map_add {F α β: Type*} [Add α] [Add β] [FunLike F α β] [IsAddHom F α β] : ∀f: F, ∀{x y: α}, f (x + y) = f x + f y := IsAddHom.map_add
+class IsAddGroupHom: Prop extends IsZeroHom F α β, IsAddHom F α β where
+class IsGroupHom: Prop extends IsOneHom F α β, IsMulHom F α β where
+class IsAddGroupWithOneHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsAddHom F α β where
+class IsGroupWithZeroHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsMulHom F α β where
+class IsRngHom: Prop extends IsZeroHom F α β, IsAddHom F α β, IsMulHom F α β where
+class IsRingHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsAddHom F α β, IsMulHom F α β where
 
-class IsMulHom (F: Type*) (α β: outParam Type*) [Mul α] [Mul β] [FunLike F α β]: Prop where
-  protected map_mul: ∀f: F, ∀{x y}, f (x * y) = f x * f y
+instance (priority := 900) [IsZeroHom F α β] [IsAddHom F α β] : IsAddGroupHom F α β where
+instance (priority := 900) [IsOneHom F α β ] [IsMulHom F α β] : IsGroupHom F α β where
+instance (priority := 900) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] : IsAddGroupWithOneHom F α β where
+instance (priority := 900) [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β] : IsGroupWithZeroHom F α β where
+instance (priority := 900) [IsZeroHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRngHom F α β where
+instance (priority := 900) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRingHom F α β where
 
-def map_mul {F α β: Type*} [Mul α] [Mul β] [FunLike F α β] [IsMulHom F α β] : ∀f: F, ∀{x y: α}, f (x * y) = f x * f y := IsMulHom.map_mul
+end
 
-class IsSMulHom (F R: Type*) (A B: outParam Type*) [FunLike F A B] [SMul R A] [SMul R B]: Prop where
-  protected map_smul (f: F): ∀{r: R} {x: A}, f (r • x) = r • f x
+section
 
-def map_smul {F R α β: Type*} [FunLike F α β] [SMul R α] [SMul R β] [IsSMulHom F R α β] (f: F): ∀{r: R} {x: α}, f (r • x) = r • f x := IsSMulHom.map_smul f
+variable (R α β: Type*)
+variable [Zero α] [One α] [Add α] [Mul α] [Neg α] [Inv α] [SMul R α]
+variable [Zero β] [One β] [Add β] [Mul β] [Neg β] [Inv β] [SMul R β]
 
 structure ZeroHom where
   toFun: α -> β
   protected map_zero: toFun (0: α) = (0: β)
 
 instance : FunLike (ZeroHom α β) α β where
-  coe := ZeroHom.toFun
-  coe_inj := by
-    intro ⟨_, _⟩ ⟨_, _⟩ _
-    congr
-
-instance : IsZeroHom (ZeroHom α β) α β := ⟨ZeroHom.map_zero⟩
+instance : IsZeroHom (ZeroHom α β) α β where
 
 structure OneHom where
   toFun: α -> β
   protected map_one: toFun (1: α) = (1: β)
 
 instance : FunLike (OneHom α β) α β where
-  coe := OneHom.toFun
-  coe_inj := by
-    intro ⟨_, _⟩ ⟨_, _⟩ _
-    congr
-
-instance : IsOneHom (OneHom α β) α β := ⟨OneHom.map_one⟩
+instance : IsOneHom (OneHom α β) α β where
 
 structure AddHom where
   toFun: α -> β
   protected map_add: ∀{x y: α}, toFun (x + y) = toFun x + toFun y
 
 instance : FunLike (AddHom α β) α β where
-  coe := AddHom.toFun
-  coe_inj := by
-    intro ⟨_, _⟩ ⟨_, _⟩ _
-    congr
-
-instance : IsAddHom (AddHom α β) α β := ⟨AddHom.map_add⟩
+instance : IsAddHom (AddHom α β) α β where
 
 structure MulHom where
   toFun: α -> β
   protected map_mul: ∀{x y: α}, toFun (x * y) = toFun x * toFun y
 
 instance : FunLike (MulHom α β) α β where
-  coe := MulHom.toFun
-  coe_inj := by
-    intro ⟨_, _⟩ ⟨_, _⟩ _
-    congr
-
-instance : IsMulHom (MulHom α β) α β := ⟨MulHom.map_mul⟩
+instance : IsMulHom (MulHom α β) α β where
 
 structure SMulHom (R A B: Type*) [SMul R A] [SMul R B] where
   toFun: A -> B
   protected map_smul: ∀{r: R} {x: A}, toFun (r • x) = r • toFun x
 
 instance [SMul R A] [SMul R B] : FunLike (SMulHom R A B) A B where
-  coe := SMulHom.toFun
-  coe_inj := by
-    intro f g eq; cases f; congr
-
 instance [SMul R A] [SMul R B] : IsSMulHom (SMulHom R A B) R A B where
-  map_smul := SMulHom.map_smul
 
 structure ZeroEquiv extends α ≃ β, ZeroHom α β where
 
-instance : FunLike (ZeroEquiv α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-    apply DFunLike.coe_inj
-    assumption
-
-instance : IsZeroHom (ZeroEquiv α β) α β := ⟨ZeroEquiv.map_zero⟩
+instance : EquivLike (ZeroEquiv α β) α β where
+instance : IsZeroHom (ZeroEquiv α β) α β where
 
 structure OneEquiv extends α ≃ β, OneHom α β where
 
-instance : FunLike (OneEquiv α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-    apply DFunLike.coe_inj
-    assumption
-
-instance : IsOneHom (OneEquiv α β) α β := ⟨OneEquiv.map_one⟩
+instance : EquivLike (OneEquiv α β) α β where
+instance : IsOneHom (OneEquiv α β) α β where
 
 structure AddEquiv extends α ≃ β, AddHom α β where
 
-instance : FunLike (AddEquiv α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-    apply DFunLike.coe_inj
-    assumption
-
-instance : IsAddHom (AddEquiv α β) α β := ⟨AddEquiv.map_add⟩
+instance : EquivLike (AddEquiv α β) α β where
+instance : IsAddHom (AddEquiv α β) α β where
 
 structure MulEquiv extends α ≃ β, MulHom α β where
 
-instance : FunLike (MulEquiv α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-    apply DFunLike.coe_inj
-    assumption
-
-instance : IsMulHom (MulEquiv α β) α β := ⟨MulEquiv.map_mul⟩
+instance : EquivLike (MulEquiv α β) α β where
+instance : IsMulHom (MulEquiv α β) α β where
 
 structure SMulEquiv extends α ≃ β, SMulHom R α β where
 
-instance : FunLike (SMulEquiv R α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-    apply DFunLike.coe_inj
-    assumption
-
-instance : IsSMulHom (SMulEquiv R α β) R α β := ⟨SMulEquiv.map_smul⟩
+instance : EquivLike (SMulEquiv R α β) α β where
+instance : IsSMulHom (SMulEquiv R α β) R α β where
 
 structure AddGroupHom extends ZeroHom α β, AddHom α β where
 
 instance : FunLike (AddGroupHom α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (AddGroupHom α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (AddGroupHom α β) α β where
-  map_add f := f.map_add
+instance : IsAddGroupHom (AddGroupHom α β) α β where
 
 structure AddGroupWithOneHom extends AddGroupHom α β, OneHom α β where
 
 instance : FunLike (AddGroupWithOneHom α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (AddGroupWithOneHom α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsOneHom (AddGroupWithOneHom α β) α β where
-  map_one f := f.map_one
-
-instance : IsAddHom (AddGroupWithOneHom α β) α β where
-  map_add f := f.map_add
+instance : IsAddGroupWithOneHom (AddGroupWithOneHom α β) α β where
 
 structure GroupHom extends OneHom α β, MulHom α β where
 
 instance : FunLike (GroupHom α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsOneHom (GroupHom α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (GroupHom α β) α β where
-  map_mul f := f.map_mul
+instance : IsGroupHom (GroupHom α β) α β where
 
 structure GroupWithZeroHom extends GroupHom α β, ZeroHom α β where
 
 instance : FunLike (GroupWithZeroHom α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (GroupWithZeroHom α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsOneHom (GroupWithZeroHom α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (GroupWithZeroHom α β) α β where
-  map_mul f := f.map_mul
+instance : IsGroupWithZeroHom (GroupWithZeroHom α β) α β where
 
 structure RingHom extends AddGroupWithOneHom α β, GroupWithZeroHom α β where
 
 instance : FunLike (RingHom α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (RingHom α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (RingHom α β) α β where
-  map_add f := f.map_add
-
-instance : IsOneHom (RingHom α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (RingHom α β) α β where
-  map_mul f := f.map_mul
+instance : IsRingHom (RingHom α β) α β where
 
 structure RngHom extends AddGroupHom α β, MulHom α β where
 
 instance : FunLike (RngHom α β) α β where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (RngHom α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (RngHom α β) α β where
-  map_add f := f.map_add
-
-instance : IsMulHom (RngHom α β) α β where
-  map_mul f := f.map_mul
+instance : IsRngHom (RngHom α β) α β where
 
 structure AddGroupEmbedding extends α ↪ β, AddGroupHom α β where
 
 instance : EmbeddingLike (AddGroupEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (AddGroupEmbedding α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (AddGroupEmbedding α β) α β where
-  map_add f := f.map_add
+instance : IsAddGroupHom (AddGroupEmbedding α β) α β where
 
 structure AddGroupWithOneEmbedding extends α ↪ β, AddGroupWithOneHom α β where
 
 instance : EmbeddingLike (AddGroupWithOneEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (AddGroupWithOneEmbedding α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsOneHom (AddGroupWithOneEmbedding α β) α β where
-  map_one f := f.map_one
-
-instance : IsAddHom (AddGroupWithOneEmbedding α β) α β where
-  map_add f := f.map_add
+instance : IsAddGroupWithOneHom (AddGroupWithOneEmbedding α β) α β where
 
 structure GroupEmbedding extends α ↪ β, GroupHom α β where
 
 instance : EmbeddingLike (GroupEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsOneHom (GroupEmbedding α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (GroupEmbedding α β) α β where
-  map_mul f := f.map_mul
+instance : IsGroupHom (GroupEmbedding α β) α β where
 
 structure GroupWithZeroEmbedding extends α ↪ β, GroupWithZeroHom α β where
 
 instance : EmbeddingLike (GroupWithZeroEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (GroupWithZeroEmbedding α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsOneHom (GroupWithZeroEmbedding α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (GroupWithZeroEmbedding α β) α β where
-  map_mul f := f.map_mul
+instance : IsGroupWithZeroHom (GroupWithZeroEmbedding α β) α β where
 
 structure RingEmbedding extends α ↪ β, RingHom α β where
 
 instance : EmbeddingLike (RingEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (RingEmbedding α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (RingEmbedding α β) α β where
-  map_add f := f.map_add
-
-instance : IsOneHom (RingEmbedding α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (RingEmbedding α β) α β where
-  map_mul f := f.map_mul
+instance : IsRingHom (RingEmbedding α β) α β where
 
 structure RngEmbedding extends α ↪ β, RngHom α β where
 
 instance : EmbeddingLike (RngEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr
-
-instance : IsZeroHom (RngEmbedding α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (RngEmbedding α β) α β where
-  map_add f := f.map_add
-
-instance : IsMulHom (RngEmbedding α β) α β where
-  map_mul f := f.map_mul
+instance : IsRngHom (RngEmbedding α β) α β where
 
 structure AddGroupEquiv extends α ≃ β, AddGroupHom α β, ZeroEquiv α β, AddEquiv α β where
 
 instance : EquivLike (AddGroupEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-
-instance : IsZeroHom (AddGroupEquiv α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (AddGroupEquiv α β) α β where
-  map_add f := f.map_add
+instance : IsAddGroupHom (AddGroupEquiv α β) α β where
 
 structure AddGroupWithOneEquiv extends α ≃ β, AddGroupWithOneHom α β, AddGroupEquiv α β, OneEquiv α β where
 
 instance : EquivLike (AddGroupWithOneEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-
-instance : IsZeroHom (AddGroupWithOneEquiv α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsOneHom (AddGroupWithOneEquiv α β) α β where
-  map_one f := f.map_one
-
-instance : IsAddHom (AddGroupWithOneEquiv α β) α β where
-  map_add f := f.map_add
+instance : IsAddGroupWithOneHom (AddGroupWithOneEquiv α β) α β where
 
 structure GroupEquiv extends α ≃ β, GroupHom α β, OneEquiv α β, MulEquiv α β where
 
 instance : EquivLike (GroupEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-
-instance : IsOneHom (GroupEquiv α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (GroupEquiv α β) α β where
-  map_mul f := f.map_mul
+instance : IsGroupHom (GroupEquiv α β) α β where
 
 structure GroupWithZeroEquiv extends α ≃ β, GroupWithZeroHom α β, GroupEquiv α β, ZeroEquiv α β where
 
 instance : EquivLike (GroupWithZeroEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-
-instance : IsZeroHom (GroupWithZeroEquiv α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsOneHom (GroupWithZeroEquiv α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (GroupWithZeroEquiv α β) α β where
-  map_mul f := f.map_mul
+instance : IsGroupWithZeroHom (GroupWithZeroEquiv α β) α β where
 
 structure RingEquiv extends α ≃ β, RingHom α β, AddGroupEquiv α β, GroupEquiv α β where
 
 instance : EquivLike (RingEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-
-instance : IsZeroHom (RingEquiv α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (RingEquiv α β) α β where
-  map_add f := f.map_add
-
-instance : IsOneHom (RingEquiv α β) α β where
-  map_one f := f.map_one
-
-instance : IsMulHom (RingEquiv α β) α β where
-  map_mul f := f.map_mul
+instance : IsRingHom (RingEquiv α β) α β where
 
 structure RngEquiv extends α ≃ β, RngHom α β, AddGroupEquiv α β, MulEquiv α β where
 
 instance : EquivLike (RngEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj := by
-    intro f g _; repeat obtain ⟨f, _⟩ := f
-    congr 1
-
-instance : IsZeroHom (RngEquiv α β) α β where
-  map_zero f := f.map_zero
-
-instance : IsAddHom (RngEquiv α β) α β where
-  map_add f := f.map_add
-
-instance : IsMulHom (RngEquiv α β) α β where
-  map_mul f := f.map_mul
+instance : IsRngHom (RngEquiv α β) α β where
 
 infixr:25 " →+ " => AddGroupHom
 infixr:25 " →+₁ " => AddGroupWithOneHom
@@ -478,9 +223,19 @@ end
 
 section
 
-variable {F α β: Type*} [FunLike F α β]
-variable [Zero α] [One α] [Add α] [Mul α] [Neg α] [Inv α]
-variable [Zero β] [One β] [Add β] [Mul β] [Neg β] [Inv β]
+variable {F R α β: Type*} [FunLike F α β]
+variable [Zero α] [One α] [Add α] [Mul α] [Neg α] [Inv α] [SMul R α]
+variable [Zero β] [One β] [Add β] [Mul β] [Neg β] [Inv β] [SMul R β]
+
+def map_zero [IsZeroHom F α β] : ∀f: F, f 0 = 0 := IsZeroHom.map_zero
+
+def map_one [IsOneHom F α β] : ∀f: F, f 1 = 1 := IsOneHom.map_one
+
+def map_add [IsAddHom F α β] : ∀f: F, ∀{x y: α}, f (x + y) = f x + f y := IsAddHom.map_add
+
+def map_mul [IsMulHom F α β] : ∀f: F, ∀{x y: α}, f (x * y) = f x * f y := IsMulHom.map_mul
+
+def map_smul [IsSMulHom F R α β] (f: F): ∀{r: R} {x: α}, f (r • x) = r • f x := IsSMulHom.map_smul f
 
 @[coe]
 def toZeroHom [Zero α] [Zero β] [IsZeroHom F α β] (f: F): ZeroHom α β where
@@ -1035,3 +790,22 @@ def GroupHom.apply_comp (f: β →* γ) (g: α →* β) : (f.comp g) x = f (g x)
 @[simp] def MonoidHom.toFun_eq_coe (f: α →* β) : f.toFun = f := rfl
 @[simp] def AddMonoidWithZeroHom.toFun_eq_coe (f: α →+₁ β) : f.toFun = f := rfl
 @[simp] def MonoidWithOneHom.toFun_eq_coe (f: α →*₀ β) : f.toFun = f := rfl
+
+variable [FunLike F α β]
+
+instance (priority := 1100) [f: IsAddGroupWithOneHom F α β] : IsZeroHom F α β := f.toIsZeroHom
+instance (priority := 1100) [f: IsAddGroupWithOneHom F α β] : IsOneHom F α β := f.toIsOneHom
+instance (priority := 1100) [f: IsAddGroupWithOneHom F α β] : IsAddHom F α β := f.toIsAddHom
+
+instance (priority := 1100) [f: IsGroupWithZeroHom F α β] : IsZeroHom F α β := f.toIsZeroHom
+instance (priority := 1100) [f: IsGroupWithZeroHom F α β] : IsOneHom F α β := f.toIsOneHom
+instance (priority := 1100) [f: IsGroupWithZeroHom F α β] : IsMulHom F α β := f.toIsMulHom
+
+instance (priority := 1100) [f: IsRngHom F α β] : IsZeroHom F α β := f.toIsZeroHom
+instance (priority := 1100) [f: IsRngHom F α β] : IsAddHom F α β := f.toIsAddHom
+instance (priority := 1100) [f: IsRngHom F α β] : IsMulHom F α β := f.toIsMulHom
+
+instance (priority := 1100) [f: IsRingHom F α β] : IsZeroHom F α β := f.toIsZeroHom
+instance (priority := 1100) [f: IsRingHom F α β] : IsOneHom F α β := f.toIsOneHom
+instance (priority := 1100) [f: IsRingHom F α β] : IsAddHom F α β := f.toIsAddHom
+instance (priority := 1100) [f: IsRingHom F α β] : IsMulHom F α β := f.toIsMulHom
