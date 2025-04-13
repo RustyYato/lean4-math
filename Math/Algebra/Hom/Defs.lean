@@ -387,6 +387,82 @@ instance : Coe (α →*₀ β) (ZeroHom α β) where
 instance : Coe (α →ₗ[R] β) (SMulHom R α β) where
   coe h := { h with }
 
+def ZeroHom.copy (f: ZeroHom α β) (g: α -> β) (h: f = g) : ZeroHom α β where
+  toFun := g
+  map_zero := h ▸ map_zero f
+
+def OneHom.copy (f: OneHom α β) (g: α -> β) (h: f = g) : OneHom α β where
+  toFun := g
+  map_one := h ▸ map_one f
+
+def AddHom.copy (f: AddHom α β) (g: α -> β) (h: f = g) : AddHom α β where
+  toFun := g
+  map_add := h ▸ map_add f
+
+def MulHom.copy (f: MulHom α β) (g: α -> β) (h: f = g) : MulHom α β where
+  toFun := g
+  map_mul := h ▸ map_mul f
+
+def SMulHom.copy (f: SMulHom R α β) (g: α -> β) (h: f = g) : SMulHom R α β where
+  toFun := g
+  map_smul := h ▸ map_smul f
+
+def AddGroupHom.copy (f: α →+ β) (g: α -> β) (h: f = g) : α →+ β := {
+  f.toZeroHom.copy g h, f.toAddHom.copy g h with
+}
+
+def AddGroupWithOneHom.copy (f: α →+₁ β) (g: α -> β) (h: f = g) : α →+₁ β := {
+  f.toZeroHom.copy g h, f.toOneHom.copy g h, f.toAddHom.copy g h with
+}
+
+def GroupHom.copy (f: α →* β) (g: α -> β) (h: f = g) : α →* β := {
+  f.toOneHom.copy g h, f.toMulHom.copy g h with
+}
+
+def GroupWithZeroHom.copy (f: α →*₀ β) (g: α -> β) (h: f = g) : α →*₀ β := {
+  f.toZeroHom.copy g h, f.toOneHom.copy g h, f.toMulHom.copy g h with
+}
+
+def RngHom.copy (f: α →+*₀ β) (g: α -> β) (h: f = g) : α →+*₀ β := {
+  f.toZeroHom.copy g h, f.toAddHom.copy g h, f.toMulHom.copy g h with
+}
+
+def RingHom.copy (f: α →+* β) (g: α -> β) (h: f = g) : α →+* β := {
+  f.toZeroHom.copy g h, f.toOneHom.copy g h, f.toAddHom.copy g h, f.toMulHom.copy g h with
+}
+
+def LinearMap.copy (f: α →ₗ[R] β) (g: α -> β) (h: f = g) : α →ₗ[R] β := {
+  f.toAddHom.copy g h, f.toSMulHom.copy g h with
+}
+
+def AddGroupEmbedding.copy (f: α ↪+ β) (g: α -> β) (h: f = g) : α ↪+ β := {
+  f.toEmbedding.copy g h, f.toZeroHom.copy g h, f.toAddHom.copy g h with
+}
+
+def AddGroupWithOneEmbedding.copy (f: α ↪+₁ β) (g: α -> β) (h: f = g) : α ↪+₁ β := {
+  f.toEmbedding.copy g h, f.toZeroHom.copy g h, f.toOneHom.copy g h, f.toAddHom.copy g h with
+}
+
+def GroupEmbedding.copy (f: α ↪* β) (g: α -> β) (h: f = g) : α ↪* β := {
+  f.toEmbedding.copy g h, f.toOneHom.copy g h, f.toMulHom.copy g h with
+}
+
+def GroupWithZeroEmbedding.copy (f: α ↪*₀ β) (g: α -> β) (h: f = g) : α ↪*₀ β := {
+  f.toEmbedding.copy g h, f.toZeroHom.copy g h, f.toOneHom.copy g h, f.toMulHom.copy g h with
+}
+
+def RngEmbedding.copy (f: α ↪+*₀ β) (g: α -> β) (h: f = g) : α ↪+*₀ β := {
+  f.toEmbedding.copy g h, f.toZeroHom.copy g h, f.toAddHom.copy g h, f.toMulHom.copy g h with
+}
+
+def RingEmbedding.copy (f: α ↪+* β) (g: α -> β) (h: f = g) : α ↪+* β := {
+  f.toEmbedding.copy g h, f.toZeroHom.copy g h, f.toOneHom.copy g h, f.toAddHom.copy g h, f.toMulHom.copy g h with
+}
+
+def LinearEmbedding.copy (f: α ↪ₗ[R] β) (g: α -> β) (h: f = g) : α ↪ₗ[R] β := {
+  f.toEmbedding.copy g h, f.toAddHom.copy g h, f.toSMulHom.copy g h with
+}
+
 def ZeroHom.id (α: Type*) [Zero α] : ZeroHom α α where
   toFun := _root_.id
   map_zero := rfl
@@ -483,6 +559,14 @@ def LinearMap.comp (a: β →ₗ[R] γ) (b: α →ₗ[R] β) : α →ₗ[R] γ :
   a.toAddHom.comp b.toAddHom, a.toSMulHom.comp b.toSMulHom with
 }
 
+@[simp] def AddGroupHom.apply_comp (a: β →+ γ) (b: α →+ β) : a.comp b x = a (b x) := rfl
+@[simp] def AddGroupWithOneHom.apply_comp (a: β →+₁ γ) (b: α →+₁ β) : a.comp b x = a (b x) := rfl
+@[simp] def GroupHom.apply_comp (a: β →* γ) (b: α →* β) : a.comp b x = a (b x) := rfl
+@[simp] def GroupWithZeroHom.apply_comp (a: β →*₀ γ) (b: α →*₀ β) : a.comp b x = a (b x) := rfl
+@[simp] def RngHom.apply_comp (a: β →+*₀ γ) (b: α →+*₀ β) : a.comp b x = a (b x) := rfl
+@[simp] def RingHom.apply_comp (a: β →+* γ) (b: α →+* β) : a.comp b x = a (b x) := rfl
+@[simp] def LinearMap.apply_comp (a: β →ₗ[R] γ) (b: α →ₗ[R] β) : a.comp b x = a (b x) := rfl
+
 def AddGroupEmbedding.refl : α ↪+ α := {
   Embedding.rfl, AddGroupHom.id _ with
 }
@@ -539,6 +623,14 @@ def LinearEquiv.refl : α ≃ₗ[R] α := {
   Equiv.rfl, LinearMap.id _ with
 }
 
+@[simp] def AddGroupEmbedding.apply_refl (x: α): AddGroupEmbedding.refl x = x := rfl
+@[simp] def AddGroupWithOneEmbedding.apply_refl (x: α): AddGroupWithOneEmbedding.refl x = x := rfl
+@[simp] def GroupEmbedding.apply_refl (x: α): GroupEmbedding.refl x = x := rfl
+@[simp] def GroupWithZeroEmbedding.apply_refl (x: α): GroupWithZeroEmbedding.refl x = x := rfl
+@[simp] def RngEmbedding.apply_refl (x: α): RngEmbedding.refl x = x := rfl
+@[simp] def RingEmbedding.apply_refl (x: α): RingEmbedding.refl x = x := rfl
+@[simp] def LinearEmbedding.apply_refl (x: α): LinearEmbedding.refl (R := R) x = x := rfl
+
 def AddGroupEmbedding.trans (h: α ↪+ β) (g: β ↪+ γ) : α ↪+ γ := {
   h.toEmbedding.trans g.toEmbedding, g.toAddGroupHom.comp h.toAddGroupHom with
 }
@@ -567,6 +659,14 @@ def LinearEmbedding.trans (h: α ↪ₗ[R] β) (g: β ↪ₗ[R] γ) : α ↪ₗ[
   h.toEmbedding.trans g.toEmbedding, g.toLinearMap.comp h.toLinearMap with
 }
 
+@[simp] def AddGroupEmbedding.apply_trans (a: β ↪+ γ) (b: α ↪+ β) : b.trans a x = a (b x) := rfl
+@[simp] def AddGroupWithOneEmbedding.apply_trans (a: β ↪+₁ γ) (b: α ↪+₁ β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupEmbedding.apply_trans (a: β ↪* γ) (b: α ↪* β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupWithZeroEmbedding.apply_trans (a: β ↪*₀ γ) (b: α ↪*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RngEmbedding.apply_trans (a: β ↪+*₀ γ) (b: α ↪+*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RingEmbedding.apply_trans (a: β ↪+* γ) (b: α ↪+* β) : b.trans a x = a (b x) := rfl
+@[simp] def LinearEmbedding.apply_trans (a: β ↪ₗ[R] γ) (b: α ↪ₗ[R] β) : b.trans a x = a (b x) := rfl
+
 def AddGroupEquiv.trans (h: α ≃+ β) (g: β ≃+ γ) : α ≃+ γ := {
   h.toEquiv.trans g.toEquiv, g.toAddGroupHom.comp h.toAddGroupHom with
 }
@@ -594,6 +694,14 @@ def RingEquiv.trans (h: α ≃+* β) (g: β ≃+* γ) : α ≃+* γ := {
 def LinearEquiv.trans (h: α ≃ₗ[R] β) (g: β ≃ₗ[R] γ) : α ≃ₗ[R] γ := {
   h.toEquiv.trans g.toEquiv, g.toLinearMap.comp h.toLinearMap with
 }
+
+@[simp] def AddGroupEquiv.apply_trans (a: β ≃+ γ) (b: α ≃+ β) : b.trans a x = a (b x) := rfl
+@[simp] def AddGroupWithOneEquiv.apply_trans (a: β ≃+₁ γ) (b: α ≃+₁ β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupEquiv.apply_trans (a: β ≃* γ) (b: α ≃* β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupWithZeroEquiv.apply_trans (a: β ≃*₀ γ) (b: α ≃*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RngEquiv.apply_trans (a: β ≃+*₀ γ) (b: α ≃+*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RingEquiv.apply_trans (a: β ≃+* γ) (b: α ≃+* β) : b.trans a x = a (b x) := rfl
+@[simp] def LinearEquiv.apply_trans (a: β ≃ₗ[R] γ) (b: α ≃ₗ[R] β) : b.trans a x = a (b x) := rfl
 
 def ZeroEquiv.symm (h: ZeroEquiv α β) : ZeroEquiv β α where
   toEquiv := h.toEquiv.symm
@@ -658,6 +766,14 @@ def LinearEquiv.symm (h: α ≃ₗ[R] β) : β ≃ₗ[R] α := {
   h.toAddEquiv.symm,  h.toSMulEquiv.symm with
 }
 
+@[simp] def AddGroupEquiv.symm_symm (a: α ≃+ β) : a.symm.symm = a := rfl
+@[simp] def AddGroupWithOneEquiv.symm_symm (a: α ≃+₁ β) : a.symm.symm = a := rfl
+@[simp] def GroupEquiv.symm_symm (a: α ≃* β) : a.symm.symm = a := rfl
+@[simp] def GroupWithZeroEquiv.symm_symm (a: α ≃*₀ β) : a.symm.symm = a := rfl
+@[simp] def RngEquiv.symm_symm (a: α ≃+*₀ β) : a.symm.symm = a := rfl
+@[simp] def RingEquiv.symm_symm (a: α ≃+* β) : a.symm.symm = a := rfl
+@[simp] def LinearEquiv.symm_symm (a: α ≃ₗ[R] β) : a.symm.symm = a := rfl
+
 def AddGroupEmbedding.toHom (h: α ↪+ β) : α →+ β := h
 def AddGroupWithOneEmbedding.toHom (h: α ↪+₁ β) : α →+₁ β := h
 def GroupEmbedding.toHom (h: α ↪* β) : α →* β := h
@@ -681,80 +797,37 @@ def RingEquiv.toHom (h: α ≃+* β) : α →+* β := h
 def RngEquiv.toHom (h: α ≃+*₀ β) : α →+*₀ β := h
 def LinearEquiv.toHom (h: α ≃ₗ[R] β) : α →ₗ[R] β := h
 
-def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-
-def AddGroupWithOneEquiv.coe_symm (h: α ≃+₁ β) (x: α) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def AddGroupWithOneEquiv.symm_coe (h: α ≃+₁ β) (x: β) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-
-def GroupEquiv.coe_symm (h: α ≃* β) (x: α) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def GroupEquiv.symm_coe (h: α ≃* β) (x: β) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-
-def GroupWithZeroEquiv.coe_symm (h: α ≃*₀ β) (x: α) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def GroupWithZeroEquiv.symm_coe (h: α ≃*₀ β) (x: β) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-
-def RingEquiv.coe_symm (h: α ≃+* β) (x: α) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def RingEquiv.symm_coe (h: α ≃+* β) (x: β) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-
-def RngEquiv.coe_symm (h: α ≃+*₀ β) (x: α) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def RngEquiv.symm_coe (h: α ≃+*₀ β) (x: β) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-
-def LinearEquiv.coe_symm (h: α ≃ₗ[R] β) (x: α) :
-  h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-def LinearEquiv.symm_coe (h: α ≃ₗ[R] β) (x: β) :
-  h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+@[simp] def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def AddGroupWithOneEquiv.coe_symm (h: α ≃+₁ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+@[simp] def AddGroupWithOneEquiv.symm_coe (h: α ≃+₁ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def GroupEquiv.coe_symm (h: α ≃* β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+@[simp] def GroupEquiv.symm_coe (h: α ≃* β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def GroupWithZeroEquiv.coe_symm (h: α ≃*₀ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+@[simp] def GroupWithZeroEquiv.symm_coe (h: α ≃*₀ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def RingEquiv.coe_symm (h: α ≃+* β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+@[simp] def RingEquiv.symm_coe (h: α ≃+* β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def RngEquiv.coe_symm (h: α ≃+*₀ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+@[simp] def RngEquiv.symm_coe (h: α ≃+*₀ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def LinearEquiv.coe_symm (h: α ≃ₗ[R] β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
+@[simp] def LinearEquiv.symm_coe (h: α ≃ₗ[R] β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
 
 syntax "hom_equiv_trans_symm_impl" ident : tactic
 macro_rules
 | `(tactic|hom_equiv_trans_symm_impl $e) => `(tactic|apply DFunLike.ext; first|apply ($e).coe_symm|(apply ($e).symm_coe))
 
-def AddGroupEquiv.trans_symm (h: α ≃+ β) :
-  h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
-
-def AddGroupEquiv.symm_trans (h: α ≃+ β) :
-  h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
-
-def AddGroupWithOneEquiv.trans_symm (h: α ≃+₁ β) :
-  h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
-
-def AddGroupWithOneEquiv.symm_trans (h: α ≃+₁ β) :
-  h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
-
-def GroupEquiv.trans_symm (h: α ≃* β) :
-  h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
-
-def GroupEquiv.symm_trans (h: α ≃* β) :
-  h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
-
-def GroupWithZeroEquiv.trans_symm (h: α ≃*₀ β) :
-  h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
-
-def GroupWithZeroEquiv.symm_trans (h: α ≃*₀ β) :
-  h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
-
-def RingEquiv.trans_symm (h: α ≃+* β) :
-  h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
-
-def RingEquiv.symm_trans (h: α ≃+* β) :
-  h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
-
-def RngEquiv.symm_trans (h: α ≃+*₀ β) :
-  h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
-
-def LinearEquiv.symm_trans (h: α ≃ₗ[R] β) :
-  h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def AddGroupEquiv.trans_symm (h: α ≃+ β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def AddGroupEquiv.symm_trans (h: α ≃+ β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def AddGroupWithOneEquiv.trans_symm (h: α ≃+₁ β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def AddGroupWithOneEquiv.symm_trans (h: α ≃+₁ β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def GroupEquiv.trans_symm (h: α ≃* β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def GroupEquiv.symm_trans (h: α ≃* β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def GroupWithZeroEquiv.trans_symm (h: α ≃*₀ β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def GroupWithZeroEquiv.symm_trans (h: α ≃*₀ β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def RingEquiv.trans_symm (h: α ≃+* β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def RingEquiv.symm_trans (h: α ≃+* β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def RngEquiv.symm_trans (h: α ≃+*₀ β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def LinearEquiv.symm_trans (h: α ≃ₗ[R] β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
 
 def AddHom.toAddOpp (f: AddHom α β) (f_img_comm: ∀a b, f a + f b = f b + f a) : AddHom αᵃᵒᵖ β where
   toFun x := f x.get
@@ -868,9 +941,6 @@ def GroupHom.congrMulOpp : (α →* β) ≃ (αᵐᵒᵖ →* βᵐᵒᵖ) where
 
 def AddGroupHom.apply_congrMulOpp (f: α →+ β) : AddGroupHom.congrAddOpp f a = .mk (f a.get) := rfl
 def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk (f a.get) := rfl
-
-def AddGroupHom.apply_comp (f: β →+ γ) (g: α →+ β) : (f.comp g) x = f (g x) := rfl
-def GroupHom.apply_comp (f: β →* γ) (g: α →* β) : (f.comp g) x = f (g x) := rfl
 
 @[simp] def ZeroHom.toFun_eq_coe (f: ZeroHom α β) : f.toFun = f := rfl
 @[simp] def OneHom.toFun_eq_coe (f: OneHom α β) : f.toFun = f := rfl

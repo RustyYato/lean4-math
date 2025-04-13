@@ -5,14 +5,6 @@ variable [SMul R A] [SMul R B] [SMul R C]
 
 namespace LinearMap
 
-def apply_comp [Add A] [Add B] [Add C] (f: B →ₗ[R] C) (g: A →ₗ[R] B) (x: A) :
-  f.comp g x = f (g x) := rfl
-
-def copy [Add A] [Add B] (f: A →ₗ[R] B) (g: A -> B) (h: ∀x, f x = g x) : A →ₗ[R] B where
-  toFun := g
-  map_add {x y} := by simp only [←h, map_add]
-  map_smul {r x} := by simp only [←h, map_smul]
-
 section
 
 variable
@@ -142,7 +134,7 @@ instance instNeg [IsAddCommMagma B] : Neg (A →ₗ[R] B) where
 
 instance instSub [IsAddCommMagma B] : Sub (A →ₗ[R] B) where
   sub f g := (f + -g).copy (fun x => f x - g x) <| by
-    intro x
+    ext x
     simp
     rw [sub_eq_add_neg]; rfl
 
@@ -150,7 +142,7 @@ instance instNZMul [IsAddCommMagma B]: SMul ℤ (A →ₗ[R] B) where
   smul n f := (match n with
     | .ofNat n => n • f
     | .negSucc n => -((n + 1) • f)).copy (fun x => n • f x) <| by
-      intro a
+      ext a
       cases n <;> simp
       rw [zsmul_ofNat]
       rw [zsmul_negSucc]

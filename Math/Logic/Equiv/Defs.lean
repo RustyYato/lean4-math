@@ -58,6 +58,10 @@ protected def DecidableEq (emb: α ↪ β) [DecidableEq β] : DecidableEq α :=
   | .isTrue h => .isTrue (emb.inj h)
   | .isFalse h => .isFalse fun g => h (g ▸ rfl)
 
+def copy (f: α ↪ β) (g: α -> β) (h: f = g) : α ↪ β where
+  toFun := g
+  inj' := h ▸ f.inj
+
 end Embedding
 
 namespace Equiv
@@ -103,6 +107,12 @@ def inj (h: α ≃ b) : Function.Injective h := h.leftInv.Injective
 def toEmbedding (h: α ≃ β) : α ↪ β where
   toFun := h
   inj' := inj h
+
+def copy (f: α ≃ β) (g₀: α -> β) (g₁: β -> α) (h₀: f = g₀) (h₁: f.symm = g₁) : α ≃ β where
+  toFun := g₀
+  invFun := g₁
+  leftInv := h₀ ▸ h₁ ▸ f.leftInv
+  rightInv := h₀ ▸ h₁ ▸ f.rightInv
 
 @[ext]
 def ext (a b: α ≃ β) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
