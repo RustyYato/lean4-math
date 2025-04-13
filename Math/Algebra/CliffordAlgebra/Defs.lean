@@ -75,9 +75,8 @@ private def algmap_coe_eq
 @[simp]
 def ι_sq_scalar (v: V) : ι Q v * ι Q v = algebraMap (Q v) := by
   rw [ι]
-  dsimp [LinearMap.comp, DFunLike.coe, AlgHom.toLinearMap]
-  rw [algmap_coe_eq, ←map_mul (f := ofTensorAlgebra Q)]
-  show _ = algebraMap _
+  show ofTensorAlgebra Q (TensorAlgebra.ι R v) * ofTensorAlgebra Q (TensorAlgebra.ι R v) = _
+  rw [←map_mul (f := ofTensorAlgebra Q)]
   apply (RingQuot.mkAlgHom_rel R (CliffordAlgebra.Rel.intro v)).trans
   apply map_algebraMap
 

@@ -3,167 +3,34 @@ import Math.Algebra.Module.Defs
 
 variable [SMul R A] [SMul R B] [SMul R C]
 
-structure LinearMap (R A B: Type*) [Add A] [Add B] [SMul R A] [SMul R B] extends AddHom A B, SMulHom R A B where
-
-notation:25 A " →ₗ[" R "] " B => LinearMap R A B
-
-structure LinearEmbedding (R A B: Type*) [Add A] [Add B] [SMul R A] [SMul R B] extends A ↪ B, A →ₗ[R] B where
-
-notation:25 A " ↪ₗ[" R "] " B => LinearEmbedding R A B
-
-structure LinearEquiv (R A B: Type*) [Add A] [Add B] [SMul R A] [SMul R B] extends A ≃ B, A →ₗ[R] B where
-
-notation:25 A " ≃ₗ[" R "] " B => LinearEquiv R A B
-
-instance [Add A] [Add B] : FunLike (A →ₗ[R] B) A B where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g eq; cases f; cases g; congr
-    apply DFunLike.coe_inj
-    assumption
-
-instance [Add A] [Add B] : IsAddHom (A →ₗ[R] B) A B where
-  map_add f := f.map_add
-instance [Add A] [Add B] : IsSMulHom (A →ₗ[R] B) R A B where
-  map_smul f := f.map_smul
-instance
-  [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
-  [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
-  [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A →ₗ[R] B) A B where
-  map_zero := by
-    intro f
-    rw [←smul_zero (0: R), map_smul, zero_smul]
-
-instance [Add A] [Add B] : FunLike (A ↪ₗ[R] B) A B where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g eq; cases f; cases g; congr
-    apply DFunLike.coe_inj
-    assumption
-
-instance [Add A] [Add B] : IsAddHom (A ↪ₗ[R] B) A B where
-  map_add f := f.map_add
-instance [Add A] [Add B] : IsSMulHom (A ↪ₗ[R] B) R A B where
-  map_smul f := f.map_smul
-instance
-  [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
-  [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
-  [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A ↪ₗ[R] B) A B where
-  map_zero := by
-    intro f
-    rw [←smul_zero (0: R), map_smul, zero_smul]
-
-def LinearEmbedding.refl (R A: Type*) [Add A] [SMul R A] : A ↪ₗ[R] A where
-  toEmbedding := .rfl
-  map_add := rfl
-  map_smul := rfl
-
-def LinearEmbedding.trans {R A B C: Type*} [Add A] [Add B] [Add C] [SMul R A] [SMul R B] [SMul R C] (h: A ↪ₗ[R] B) (g: B ↪ₗ[R] C) : A ↪ₗ[R] C where
-  toEmbedding := h.toEmbedding.trans g.toEmbedding
-  map_add := by
-    intro a b
-    apply flip Eq.trans
-    apply g.map_add
-    show g _ = g _
-    congr
-    apply h.map_add
-  map_smul := by
-    intro a b
-    apply flip Eq.trans
-    apply map_smul g
-    show g _ = g _
-    congr
-    apply map_smul h
-
-instance [Add A] [Add B] : FunLike (A ≃ₗ[R] B) A B where
-  coe f := f.toFun
-  coe_inj := by
-    intro f g eq; cases f; cases g; congr
-    apply DFunLike.coe_inj
-    assumption
-
-instance [Add A] [Add B] : IsAddHom (A ≃ₗ[R] B) A B where
-  map_add f := f.map_add
-instance [Add A] [Add B] : IsSMulHom (A ≃ₗ[R] B) R A B where
-  map_smul f := f.map_smul
-instance
-  [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
-  [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
-  [IsDistribMulAction R A] [IsModule R B] : IsZeroHom (A ≃ₗ[R] B) A B where
-  map_zero := by
-    intro f
-    rw [←smul_zero (0: R), map_smul, zero_smul]
-
-def LinearEquiv.refl (R A: Type*) [Add A] [SMul R A] : A ≃ₗ[R] A where
-  toEquiv := .rfl
-  map_add := rfl
-  map_smul := rfl
-
-def LinearEquiv.symm {R A B: Type*} [Add A] [Add B] [SMul R A] [SMul R B] (h: A ≃ₗ[R] B) : B ≃ₗ[R] A where
-  toEquiv := h.toEquiv.symm
-  map_add := by
-    intro a b
-    rw [←h.coe_symm (_ + _)]
-    congr
-    show _ = h (h.toEquiv.symm _ + h.toEquiv.symm _)
-    rw [map_add]
-    congr
-    apply (h.symm_coe _).symm
-    apply (h.symm_coe _).symm
-  map_smul := by
-    intro r x
-    apply h.inj
-    show h.toEquiv (h.toEquiv.symm _) = h (_ • h.toEquiv.symm _)
-    rw [h.symm_coe, map_smul h]
-    congr; symm; apply Equiv.symm_coe
-
-def LinearEquiv.trans {R A B C: Type*} [Add A] [Add B] [Add C] [SMul R A] [SMul R B] [SMul R C] (h: A ≃ₗ[R] B) (g: B ≃ₗ[R] C) : A ≃ₗ[R] C where
-  toEquiv := h.toEquiv.trans g.toEquiv
-  map_add := by
-    intro a b
-    apply flip Eq.trans
-    apply g.map_add
-    show g _ = g _
-    congr
-    apply h.map_add
-  map_smul := by
-    intro a b
-    apply flip Eq.trans
-    apply map_smul g
-    show g _ = g _
-    congr
-    apply map_smul h
-
-def toLinearMap
-  [FunLike F A B] [SMul R A] [SMul R B] [Add A] [Add B]
-  [IsAddHom F A B] [IsSMulHom F R A B] (f: F) : LinearMap R A B where
-  toFun := f
-  map_add := map_add _
-  map_smul := map_smul _
-
 namespace LinearMap
-
-def comp [Add A] [Add B] [Add C] (f: B →ₗ[R] C) (g: A →ₗ[R] B) : A →ₗ[R] C where
-  toFun := f ∘ g
-  map_add { _ _ } := by dsimp; rw [map_add, map_add]
-  map_smul { _ _ } := by dsimp; rw [map_smul, map_smul]
 
 def apply_comp [Add A] [Add B] [Add C] (f: B →ₗ[R] C) (g: A →ₗ[R] B) (x: A) :
   f.comp g x = f (g x) := rfl
-
-
-def id (A: Type*) [Add A] [SMul R A] : A →ₗ[R] A where
-  toFun x := x
-  map_add := rfl
-  map_smul := rfl
-
-@[ext]
-def ext [Add A] [Add B] (a b: A →ₗ[R] B) : (∀x, a x = b x) -> a = b := DFunLike.ext _ _
 
 def copy [Add A] [Add B] (f: A →ₗ[R] B) (g: A -> B) (h: ∀x, f x = g x) : A →ₗ[R] B where
   toFun := g
   map_add {x y} := by simp only [←h, map_add]
   map_smul {r x} := by simp only [←h, map_smul]
+
+section
+
+variable
+  (R: Type*) [SMul R A] [SMul R B]
+  [AddMonoidOps A] [AddMonoidOps B] [SemiringOps R]
+  [IsAddMonoid A] [IsAddMonoid B] [IsAddCommMagma B] [IsSemiring R]
+  [IsDistribMulAction R A] [IsModule R B]
+
+def IsZeroHom.ofIsLinearHom [FunLike F A B] [IsSMulHom F R A B] : IsZeroHom F A B where
+  map_zero := by
+    intro f
+    rw [←smul_zero (0: R), map_smul, zero_smul]
+
+instance : IsZeroHom (A →ₗ[R] B) A B := IsZeroHom.ofIsLinearHom R
+instance : IsZeroHom (A ↪ₗ[R] B) A B := IsZeroHom.ofIsLinearHom R
+instance : IsZeroHom (A ≃ₗ[R] B) A B := IsZeroHom.ofIsLinearHom R
+
+end
 
 section AddMonoid
 
