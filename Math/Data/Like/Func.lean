@@ -4,8 +4,8 @@ import Math.Type.Notation
 import Lean.Elab.Command
 
 class DFunLike (F: Sort*) (α: outParam Sort*) (β: outParam (α -> Sort*)) where
-  coe: F -> ∀x, β x
-  coe_inj: Function.Injective coe
+  coe: F -> ∀x, β x := by intro f; exact f.toFun
+  coe_inj: Function.Injective coe := by intro a b h; cases a; cases b; congr; try (apply DFunLike.coe_inj; assumption)
 
 abbrev FunLike (F: Sort*) (α β: outParam <| Sort*) := DFunLike F α (fun _ => β)
 abbrev RelLike (F: Sort*) (α: outParam Sort*) := FunLike F α (α -> Prop)

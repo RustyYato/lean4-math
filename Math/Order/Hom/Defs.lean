@@ -1,117 +1,89 @@
 import Math.Logic.Equiv.Like
 import Math.Data.Like.Func
 import Math.Order.Defs
+import Math.Order.Monotone.Defs
 
-variable {F α β γ} [Min α] [Min β] [Min γ] [Max α] [Max β] [Max γ]
+variable {F α β γ}
+  [LE α] [LE β] [LE γ] [LT α] [LT β] [LT γ]
+  [Top α] [Top β] [Top γ] [Bot α] [Bot β] [Bot γ]
+  [Min α] [Min β] [Min γ] [Max α] [Max β] [Max γ]
 
 class IsMinHom (F α β: Type*) [FunLike F α β] [Min α] [Min β] where
-  protected map_min (f: F) (a b: α) : f (a ⊓ b) = f a ⊓ f b
+  protected map_min (f: F) (a b: α) : f (a ⊓ b) = f a ⊓ f b := by intro f; exact f.map_min
 
 class IsMaxHom (F α β: Type*) [FunLike F α β] [Max α] [Max β] where
-  protected map_max (f: F) (a b: α) : f (a ⊔ b) = f a ⊔ f b
+  protected map_max (f: F) (a b: α) : f (a ⊔ b) = f a ⊔ f b := by intro f; exact f.map_max
 
 class IsTopHom (F α β: Type*) [FunLike F α β] [Top α] [Top β] where
   protected map_top (f: F) : f ⊤ = ⊤
 
 class IsBotHom (F α β: Type*) [FunLike F α β] [Bot α] [Bot β] where
-  protected map_max (f: F) : f ⊥ = ⊥
+  protected map_bot (f: F) : f ⊥ = ⊥
 
-def map_min [FunLike F α β] [Min α] [Min β] [IsMinHom F α β] (f: F) (a b: α) : f (a ⊓ b) = f a ⊓ f b := IsMinHom.map_min _ _ _
-def map_max [FunLike F α β] [Max α] [Max β] [IsMaxHom F α β] (f: F) (a b: α) : f (a ⊔ b) = f a ⊔ f b := IsMaxHom.map_max _ _ _
+def map_min [FunLike F α β] [IsMinHom F α β] (f: F) (a b: α) : f (a ⊓ b) = f a ⊓ f b := IsMinHom.map_min _ _ _
+def map_max [FunLike F α β] [IsMaxHom F α β] (f: F) (a b: α) : f (a ⊔ b) = f a ⊔ f b := IsMaxHom.map_max _ _ _
+
+def map_top [FunLike F α β] [IsTopHom F α β] (f: F) : f ⊤ = ⊤ := IsTopHom.map_top _
+def map_bot [FunLike F α β] [IsBotHom F α β] (f: F) : f ⊥ = ⊥ := IsBotHom.map_bot _
 
 structure MinHom (α β: Type*) [Min α] [Min β] where
   toFun: α -> β
   protected map_min (a b: α) : toFun (a ⊓ b) = toFun a ⊓ toFun b
 
 instance : FunLike (MinHom α β) α β where
-  coe f := f.toFun
-  coe_inj {a b} h := by cases a; cases b; congr
-
 instance : IsMinHom (MinHom α β) α β where
-  map_min f := f.map_min
 
 structure MaxHom (α β: Type*) [Max α] [Max β] where
   toFun: α -> β
   protected map_max (a b: α) : toFun (a ⊔ b) = toFun a ⊔ toFun b
 
 instance : FunLike (MaxHom α β) α β where
-  coe f := f.toFun
-  coe_inj {a b} h := by cases a; cases b; congr
-
 instance : IsMaxHom (MaxHom α β) α β where
-  map_max f := f.map_max
 
 structure MinEmbedding (α β: Type*) [Min α] [Min β] extends α ↪ β, MinHom α β where
 
 instance : EmbeddingLike (MinEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj {a b} h := by cases a; cases b; congr
-
 instance : IsMinHom (MinEmbedding α β) α β where
-  map_min f := f.map_min
 
 structure MaxEmbedding (α β: Type*) [Max α] [Max β] extends α ↪ β, MaxHom α β where
 
 instance : EmbeddingLike (MaxEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj {a b} h := by cases a; cases b; congr
-
 instance : IsMaxHom (MaxEmbedding α β) α β where
-  map_max f := f.map_max
 
 structure MinEquiv (α β: Type*) [Min α] [Min β] extends α ≃ β, MinHom α β where
 
 instance : EquivLike (MinEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj {a b} h := by cases a; cases b; congr
-
 instance : IsMinHom (MinEquiv α β) α β where
-  map_min f := f.map_min
 
 structure MaxEquiv (α β: Type*) [Max α] [Max β] extends α ≃ β, MaxHom α β where
 
 instance : EquivLike (MaxEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj {a b} h := by cases a; cases b; congr
-
 instance : IsMaxHom (MaxEquiv α β) α β where
-  map_max f := f.map_max
 
 structure LatticeHom (α β: Type*) [Min α] [Min β] [Max α] [Max β] extends MinHom α β, MaxHom α β where
 
 instance : FunLike (LatticeHom α β) α β where
-  coe f := f.toFun
-  coe_inj {a b} h := by cases a; cases b; congr; apply DFunLike.coe_inj; assumption
 
 instance : IsMinHom (LatticeHom α β) α β where
-  map_min f := f.map_min
-
 instance : IsMaxHom (LatticeHom α β) α β where
-  map_max f := f.map_max
 
 structure LatticeEmbedding (α β: Type*) [Min α] [Min β] [Max α] [Max β] extends α ↪ β, MinEmbedding α β, MaxEmbedding α β where
 
 instance : EmbeddingLike (LatticeEmbedding α β) α β where
-  coe f := f.toEmbedding
-  coe_inj {a b} h := by cases a; cases b; congr
 
 instance : IsMinHom (LatticeEmbedding α β) α β where
-  map_min f := f.map_min
-
 instance : IsMaxHom (LatticeEmbedding α β) α β where
-  map_max f := f.map_max
 
 structure LatticeEquiv (α β: Type*) [Min α] [Min β] [Max α] [Max β] extends α ≃ β, MinEquiv α β, MaxEquiv α β where
 
 instance : EquivLike (LatticeEquiv α β) α β where
-  coe f := f.toEquiv
-  coe_inj {a b} h := by cases a; cases b; congr
 
 instance : IsMinHom (LatticeEquiv α β) α β where
-  map_min f := f.map_min
-
 instance : IsMaxHom (LatticeEquiv α β) α β where
-  map_max f := f.map_max
+
+infixr:25 " →≤ " => MinHom
+infixr:25 " ↪≤ " => MinEmbedding
+infixr:25 " ≃≤ " => MinEquiv
 
 infixr:25 " →⊓ " => MinHom
 infixr:25 " ↪⊓ " => MinEmbedding
