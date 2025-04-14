@@ -21,12 +21,11 @@ private def inv : FreeGroup α →* (FreeGroup α)ᵐᵒᵖ := by
   refine GroupQuot.lift ⟨?_, ?_⟩
   apply GroupHom.comp ?_ FreeMonoid.reverseEquiv.toHom
   apply GroupHom.congrMulOpp _
-  apply (MulCon.mkQuot _).comp
+  apply (GroupQuot.mk _).comp
   apply FreeGroup.flip
   intro x y h
   simp [GroupHom.apply_comp, GroupHom.apply_congrMulOpp]
   congr 1
-  rw [GroupQuot.mkQuot_eq_mk]
   show GroupQuot.mk _ (flip x.reverse) = GroupQuot.mk _ (flip y.reverse)
   cases h
   simp [FreeMonoid.reverse_mul]
@@ -37,10 +36,7 @@ private def inv : FreeGroup α →* (FreeGroup α)ᵐᵒᵖ := by
 
 @[simp]
 private def inv_mk (a: FreeMonoid (Bool × α)) : (inv (GroupQuot.mk _ a)).get = GroupQuot.mk _ (flip a.reverse) := by
-  unfold FreeGroup.inv
-  erw [GroupQuot.lift_mk_apply]
-  rw [GroupQuot.mkQuot_eq_mk]
-  rfl
+  erw [GroupQuot.lift_mk_apply]; rfl
 
 @[simp]
 def flip_one : flip (1: FreeMonoid (Bool × α)) = 1 := rfl
@@ -87,10 +83,7 @@ def of (a: α) : FreeGroup α := GroupQuot.mk _ (FreeMonoid.of (false, a))
 
 def of_inv (a: α) : (of a)⁻¹ = GroupQuot.mk _ (FreeMonoid.of (true, a)) := by
   show inv _ = _
-  unfold FreeGroup.inv
-  erw [GroupQuot.lift_mk_apply]
-  rw [GroupQuot.mkQuot_eq_mk]
-  rfl
+  apply GroupQuot.lift_mk_apply
 
 private def preLift [GroupOps G] [IsGroup G] (f: α -> G) : FreeGroup α →* G := by
   apply GroupQuot.lift ⟨?_, ?_⟩
@@ -127,9 +120,7 @@ def lift [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeGroup α →* G) where
 
 @[simp]
 def lift_of [GroupOps G] [IsGroup G] (f: α -> G) : lift f (of a) = f a := by
-  show GroupQuot.lift _ (GroupQuot.mk _ _) = _
-  rw [GroupQuot.lift_mk_apply]
-  apply mul_one
+  erw [GroupQuot.lift_mk_apply, FreeMonoid.lift_of]
 
 private def Indicator := Bool
 
@@ -175,7 +166,7 @@ def one_ne_of (a: α) : 1 ≠ of a := by
 def induction {motive: FreeGroup α -> Prop}
   (one: motive 1)
   (of: ∀a, motive (.of a))
-  (inv: ∀a, motive (.of a)⁻¹)
+  (inv: ∀a, motive (.of a) -> motive (.of a)⁻¹)
   (mul: ∀a b, motive a -> motive b -> motive (a * b)) :
   ∀a, motive a := by
   intro a
@@ -190,6 +181,7 @@ def induction {motive: FreeGroup α -> Prop}
     apply of
     rw [←of_inv]
     apply inv
+    apply of
 
 instance : Inhabited (FreeGroup α) := ⟨1⟩
 instance : Nonempty (FreeGroup α) := inferInstance
