@@ -5,6 +5,130 @@ import Math.Order.Hom.Defs
 
 variable {α β: Type*} [LE α] [LT α] [LE β] [LT β]
 
+section
+
+def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
+  [IsPreOrder β] [IsLawfulLT α]
+  [EmbeddingLike F α β] [IsOrderHom F α β]
+  (h: F)
+  : IsPreOrder α where
+  le_refl x := (map_le h).mpr (le_refl _)
+  le_trans := by
+    intro a b c
+    iterate 3 rw [map_le h]
+    exact le_trans
+
+def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
+  [IsPartialOrder β] [_root_.IsPreOrder α]
+  [EmbeddingLike F α β] [IsOrderHom F α β]
+  (h: F)
+  : IsPartialOrder α where
+  le_antisymm := by
+    intro a b
+    iterate 2 rw [map_le h]
+    intro ab ba
+    have := le_antisymm ab ba
+    exact (h: α ↪ β).inj this
+
+def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
+  [_root_.IsPartialOrder β] [IsLawfulLT α]
+  [EmbeddingLike F α β] [IsOrderHom F α β]
+  (h: F)
+  : _root_.IsPartialOrder α where
+  toIsPreOrder := instIsPreOrder h
+  le_antisymm := by
+    intro a b
+    rw [map_le h, map_le h]
+    intro ab ba
+    exact (h: α ↪ β).inj (le_antisymm ab ba)
+
+def instIsLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
+  [_root_.IsLinearOrder β] [IsLawfulLT α]
+  [EmbeddingLike F α β] [IsOrderHom F α β]
+  (h: F)
+  : _root_.IsLinearOrder α :=
+  have := instIsPartialOrder' h
+  {
+    le_antisymm := le_antisymm
+    le_trans := le_trans
+    lt_or_le := by
+      intro a b
+      rcases lt_or_le (h a) (h b) with g | g
+      exact .inl ((map_lt h).mpr g)
+      exact .inr ((map_le h).mpr g)
+  }
+
+def instIsSemiLatticeMax
+  [LE α] [LT α] [Max α]
+  [LE β] [LT β] [Max β]
+  [IsSemiLatticeMax α] [_root_.IsPartialOrder β]
+  [EmbeddingLike F β α] [IsOrderHom F β α] [IsMaxHom F β α]
+  (h: F): IsSemiLatticeMax β where
+  le_max_left := by
+    intro a b
+    have : h a ≤ h a ⊔ h b := le_max_left _ _
+    rw [←map_max] at this
+    exact (map_le h).mpr this
+  le_max_right := by
+    intro a b
+    have : h b ≤ h a ⊔ h b := le_max_right _ _
+    rw [←map_max] at this
+    exact (map_le h).mpr this
+  max_le := by
+    intro a b k ak bk
+    replace ak := (map_le h).mp ak
+    replace bk := (map_le h).mp bk
+    have := max_le ak bk
+    rw [←map_max] at this
+    exact (map_le h).mpr this
+
+def instIsSemiLatticeMin
+  {α}
+  [LE α] [LT α] [Min α]
+  [LE β] [LT β] [Min β]
+  [IsSemiLatticeMin α] [_root_.IsPartialOrder β]
+  [EmbeddingLike F β α] [IsOrderHom F β α] [IsMinHom F β α]
+  (h: F): IsSemiLatticeMin β where
+  min_le_left := by
+    intro a b
+    have : h a ⊓ h b ≤ h a := min_le_left _ _
+    rw [←map_min] at this
+    exact (map_le h).mpr this
+  min_le_right := by
+    intro a b
+    have : h a ⊓ h b ≤ h b := min_le_right _ _
+    rw [←map_min] at this
+    exact (map_le h).mpr this
+  le_min := by
+    intro a b k ak bk
+    replace ak := (map_le h).mp ak
+    replace bk := (map_le h).mp bk
+    have := le_min ak bk
+    rw [←map_min] at this
+    exact (map_le h).mpr this
+
+def instIsLattice {_: LE α} [LT α] {_: LE β} [LT β]
+  [Min α] [Min β] [Max α] [Max β]
+  [IsLattice β]
+  [IsLawfulLT α]
+  [EmbeddingLike F α β] [IsOrderHom F α β] [IsMinHom F α β] [IsMaxHom F α β]
+  (h: F)
+  : IsLattice α :=
+  have := instIsPartialOrder' h
+  {
+    instIsSemiLatticeMax h, instIsSemiLatticeMin h with
+  }
+
+def instIsLinearLattice {_: LE α} [LT α] {_: LE β} [LT β]
+  [Min α] [Min β] [Max α] [Max β]
+  [IsLinearLattice β]
+  [IsLawfulLT α]
+  [EmbeddingLike F α β] [IsOrderHom F α β] [IsMinHom F α β] [IsMaxHom F α β]
+  (h: F)
+  : IsLinearLattice α := { instIsLinearOrder h, instIsLattice h with }
+
+end
+
 namespace OrderEmbedding
 
 def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]

@@ -191,26 +191,29 @@ structure OrderEquiv (α β: Type*) [LE α] [LE β] extends α ≃ β, OrderHom 
 instance : EquivLike (OrderEquiv α β) α β where
 instance : IsOrderHom (OrderEquiv α β) α β where
 
-structure LatticeHom (α β: Type*) [Min α] [Min β] [Max α] [Max β] extends MinHom α β, MaxHom α β where
+structure LatticeHom (α β: Type*) [Min α] [Min β] [Max α] [Max β] [LE α] [LE β] extends MinHom α β, MaxHom α β, OrderHom α β where
 
 instance : FunLike (LatticeHom α β) α β where
 
 instance : IsMinHom (LatticeHom α β) α β where
 instance : IsMaxHom (LatticeHom α β) α β where
+instance : IsOrderHom (LatticeHom α β) α β where
 
-structure LatticeEmbedding (α β: Type*) [Min α] [Min β] [Max α] [Max β] extends α ↪ β, MinEmbedding α β, MaxEmbedding α β where
+structure LatticeEmbedding (α β: Type*) [Min α] [Min β] [Max α] [Max β] [LE α] [LE β] extends α ↪ β, MinEmbedding α β, MaxEmbedding α β, OrderEmbedding α β where
 
 instance : EmbeddingLike (LatticeEmbedding α β) α β where
 
 instance : IsMinHom (LatticeEmbedding α β) α β where
 instance : IsMaxHom (LatticeEmbedding α β) α β where
+instance : IsOrderHom (LatticeEmbedding α β) α β where
 
-structure LatticeEquiv (α β: Type*) [Min α] [Min β] [Max α] [Max β] extends α ≃ β, MinEquiv α β, MaxEquiv α β where
+structure LatticeEquiv (α β: Type*) [Min α] [Min β] [Max α] [Max β] [LE α] [LE β] extends α ≃ β, MinEquiv α β, MaxEquiv α β, OrderEquiv α β where
 
 instance : EquivLike (LatticeEquiv α β) α β where
 
 instance : IsMinHom (LatticeEquiv α β) α β where
 instance : IsMaxHom (LatticeEquiv α β) α β where
+instance : IsOrderHom (LatticeEquiv α β) α β where
 
 infixr:25 " →≤ " => MonotoneHom
 infixr:25 " →< " => StrictMonotoneHom
@@ -239,9 +242,6 @@ end
 @[refl] protected def MaxHom.id (α: Type*) [Max α] : α →⊔ α where
   toFun := id
   map_max _ _ := rfl
-@[refl] protected def LatticeHom.id (α: Type*) [Min α] [Max α] : α →⊓⊔ α := {
-  MinHom.id α, MaxHom.id α with
-}
 @[refl] protected def MonotoneHom.id (α: Type*) [LE α] : α →≤ α where
   toFun := id
   monotone := Monotone.id
@@ -251,6 +251,9 @@ end
 @[refl] protected def OrderHom.id (α: Type*) [LE α] : α →o α where
   toFun := id
   map_le _ _ := Iff.rfl
+@[refl] protected def LatticeHom.id (α: Type*) [Min α] [Max α] [LE α] : α →⊓⊔ α := {
+  MinHom.id α, MaxHom.id α, OrderHom.id _ with
+}
 
 @[refl] protected def MinEmbedding.refl (α: Type*) [Min α] : α ↪⊓ α where
   toEmbedding := .refl _
@@ -258,25 +261,24 @@ end
 @[refl] protected def MaxEmbedding.refl (α: Type*) [Max α] : α ↪⊔ α where
   toEmbedding := .refl _
   map_max _ _ := rfl
-@[refl] protected def LatticeEmbedding.refl (α: Type*) [Min α] [Max α] : α ↪⊓⊔ α := {
-  MinEmbedding.refl α, MaxEmbedding.refl α with
-}
 @[refl] protected def OrderEmbedding.refl (α: Type*) [LE α] : α ↪o α where
   toEmbedding := .refl _
   map_le _ _ := Iff.rfl
+@[refl] protected def LatticeEmbedding.refl (α: Type*) [Min α] [Max α] [LE α] : α ↪⊓⊔ α := {
+  MinEmbedding.refl α, MaxEmbedding.refl α, OrderEmbedding.refl α with
+}
 @[refl] protected def MinEquiv.refl (α: Type*) [Min α] : α ≃⊓ α where
   toEquiv := .refl _
   map_min _ _ := rfl
 @[refl] protected def MaxEquiv.refl (α: Type*) [Max α] : α ≃⊔ α where
   toEquiv := .refl _
   map_max _ _ := rfl
-@[refl] protected def LatticeEquiv.refl (α: Type*) [Min α] [Max α] : α ≃⊓⊔ α := {
-  MinEquiv.refl α, MaxEquiv.refl α with
-}
 @[refl] protected def OrderEquiv.refl (α: Type*) [LE α] : α ≃o α where
   toEquiv := .refl _
   map_le _ _ := Iff.rfl
-
+@[refl] protected def LatticeEquiv.refl (α: Type*) [Min α] [Max α] [LE α] : α ≃⊓⊔ α := {
+  MinEquiv.refl α, MaxEquiv.refl α, OrderEquiv.refl α with
+}
 
 variable {F α β γ}
   {_: LE α} {_: LE β} {_: LE γ} {_: LT α} {_: LT β} {_: LT γ}
@@ -293,9 +295,6 @@ def MaxHom.comp (f: β →⊔ γ) (g: α →⊔ β) : α →⊔ γ where
   map_max a b := by
     dsimp [Function.comp_def]
     rw [map_max, map_max]
-def LatticeHom.comp (f: β →⊓⊔ γ) (g: α →⊓⊔ β) : α →⊓⊔ γ := {
-  f.toMinHom.comp g.toMinHom, f.toMaxHom.comp g.toMaxHom with
-}
 def MonotoneHom.comp (f: β →≤ γ) (g: α →≤ β) : α →≤ γ where
   toFun := f ∘ g
   monotone := Monotone.comp f.monotone g.monotone
@@ -305,6 +304,9 @@ def StrictMonotoneHom.comp (f: β →< γ) (g: α →< β) : α →< γ where
 def OrderHom.comp (f: β →o γ) (g: α →o β) : α →o γ where
   toFun := f ∘ g
   map_le _ _ := Iff.trans (g.map_le  _ _) (f.map_le  _ _)
+def LatticeHom.comp (f: β →⊓⊔ γ) (g: α →⊓⊔ β) : α →⊓⊔ γ := {
+  f.toMinHom.comp g.toMinHom, f.toMaxHom.comp g.toMaxHom, f.toOrderHom.comp g.toOrderHom with
+}
 
 def MinEmbedding.trans (f: α ↪⊓ β) (g: β ↪⊓ γ) : α ↪⊓ γ := {
   g.toMinHom.comp f.toMinHom, f.toEmbedding.trans g.toEmbedding with
@@ -312,11 +314,12 @@ def MinEmbedding.trans (f: α ↪⊓ β) (g: β ↪⊓ γ) : α ↪⊓ γ := {
 def MaxEmbedding.trans (f: α ↪⊔ β) (g: β ↪⊔ γ) : α ↪⊔ γ := {
   g.toMaxHom.comp f.toMaxHom, f.toEmbedding.trans g.toEmbedding with
 }
-def LatticeEmbedding.trans (f: α ↪⊓⊔ β) (g: β ↪⊓⊔ γ) : α ↪⊓⊔ γ := {
-  f.toMinEmbedding.trans g.toMinEmbedding, f.toMaxEmbedding.trans g.toMaxEmbedding with
-}
 def OrderEmbedding.trans (f: α ↪o β) (g: β ↪o γ) : α ↪o γ := {
   f.toEmbedding.trans g.toEmbedding, g.toOrderHom.comp f.toOrderHom with
+}
+def LatticeEmbedding.trans (f: α ↪⊓⊔ β) (g: β ↪⊓⊔ γ) : α ↪⊓⊔ γ := {
+  f.toMinEmbedding.trans g.toMinEmbedding, f.toMaxEmbedding.trans g.toMaxEmbedding,
+    f.toOrderEmbedding.trans g.toOrderEmbedding with
 }
 
 def MinEquiv.trans (f: α ≃⊓ β) (g: β ≃⊓ γ) : α ≃⊓ γ := {
@@ -325,11 +328,12 @@ def MinEquiv.trans (f: α ≃⊓ β) (g: β ≃⊓ γ) : α ≃⊓ γ := {
 def MaxEquiv.trans (f: α ≃⊔ β) (g: β ≃⊔ γ) : α ≃⊔ γ := {
   g.toMaxHom.comp f.toMaxHom, f.toEquiv.trans g.toEquiv with
 }
-def LatticeEquiv.trans (f: α ≃⊓⊔ β) (g: β ≃⊓⊔ γ) : α ≃⊓⊔ γ := {
-  f.toMinEquiv.trans g.toMinEquiv, f.toMaxEquiv.trans g.toMaxEquiv with
-}
 def OrderEquiv.trans (f: α ≃o β) (g: β ≃o γ) : α ≃o γ := {
   f.toEquiv.trans g.toEquiv, g.toOrderHom.comp f.toOrderHom with
+}
+def LatticeEquiv.trans (f: α ≃⊓⊔ β) (g: β ≃⊓⊔ γ) : α ≃⊓⊔ γ := {
+  f.toMinEquiv.trans g.toMinEquiv, f.toMaxEquiv.trans g.toMaxEquiv,
+    f.toOrderEquiv.trans g.toOrderEquiv with
 }
 
 @[symm] def MinEquiv.symm (f: α ≃⊓ β) : β ≃⊓ α := {
@@ -350,14 +354,14 @@ def OrderEquiv.trans (f: α ≃o β) (g: β ≃o γ) : α ≃o γ := {
     rw [map_max f, f.symm_coe]
     symm; congr <;> apply Equiv.symm_coe
 }
-@[symm] def LatticeEquiv.symm (f: α ≃⊓⊔ β) : β ≃⊓⊔ α := {
-  f.toMinEquiv.symm, f.toMaxEquiv.symm with
-}
 @[symm] def OrderEquiv.symm (f: α ≃o β) : β ≃o α := {
   f.toEquiv.symm with
   map_le a b := by
     simp; apply Iff.trans _ (f.map_le _ _).symm
     simp
+}
+@[symm] def LatticeEquiv.symm (f: α ≃⊓⊔ β) : β ≃⊓⊔ α := {
+  f.toMinEquiv.symm, f.toMaxEquiv.symm, f.toOrderEquiv.symm with
 }
 
 def MinEmbedding.toHom (f: α ↪⊓ β) : α →⊓ β := { f with }

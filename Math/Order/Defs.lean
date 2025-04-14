@@ -838,6 +838,23 @@ instance : IsDecidableLinearOrder (Fin n) := {
 instance : IsPartialOrder (Fin n) := inferInstance
 instance : IsLattice (Fin n) := inferInstance
 
+@[simp]
+def Fin.min_val (a b: Fin n) : (min a b).val = min a.val b.val := by
+  show Fin.val (if _ then _ else _) = (if _ then _ else _)
+  split
+  rw [if_pos]
+  assumption
+  rw [if_neg]
+  assumption
+@[simp]
+def Fin.max_val (a b: Fin n) : (max a b).val = max a.val b.val := by
+  show Fin.val (if _ then _ else _) = (if _ then _ else _)
+  split
+  rw [if_pos]
+  assumption
+  rw [if_neg]
+  assumption
+
 instance : Bot Bool where
   bot := false
 instance : IsLawfulBot Bool where
