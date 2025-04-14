@@ -3,8 +3,18 @@ namespace Nat
 class AtLeastTwo (n: Nat) where
   prop: 2 ≤ n
 
+class NeOne (n: Nat) where
+  prop: n ≠ 1
+
 instance instAtLeastTwo : AtLeastTwo (n + 2) where
   prop := Nat.le_add_left _ _
+
+instance instNeOneZero : NeOne 0 where
+  prop := by omega
+instance instNeOneAtLeastTwo [h: AtLeastTwo n] : NeOne n where
+  prop := by
+    have := h.prop
+    omega
 
 instance instOfNatOfNatCast [NatCast α] [AtLeastTwo n] : OfNat α n where
   ofNat := n

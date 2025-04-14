@@ -56,6 +56,14 @@ instance : DecidableEq (ZMod n) := infer_zmod_instnace n DecidableEq
 instance : Repr (ZMod n) := infer_zmod_instnace n Repr
 
 instance : Subsingleton (ZMod 1) := inferInstanceAs (Subsingleton (Fin 1))
+instance [h: Nat.NeOne n] : IsNontrivial (ZMod n) := match n, h with
+  | 0, _ => inferInstanceAs (IsNontrivial ℤ)
+  | n + 2, _ => ⟨0, 1, by
+    show Fin.mk 0 _ ≠ Fin.mk 1 _
+    intro h
+    have := Fin.mk.inj h
+    contradiction⟩
+
 instance : Inhabited (ZMod n) := ⟨0⟩
 
 instance [h: Fact (Nat.IsPrime n)] : FieldOps (ZMod n) := match n, h with
