@@ -17,7 +17,7 @@ private instance : IsLawfulLT (ProperIdeal i) where
 private def ProperIdeal.oemb (i: Ideal R) : ProperIdeal i ↪o Ideal R where
   toFun x := x.val
   inj' := Subtype.val_inj
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 private instance : IsPartialOrder (ProperIdeal i) := (ProperIdeal.oemb _).instIsPartialOrder'
 

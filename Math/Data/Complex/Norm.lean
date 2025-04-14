@@ -46,10 +46,10 @@ instance : IsAlgebraNorm ℂ where
     simp only [norm_def]
     rw [←map_add NNReal.embedReal]
     show NNReal.orderEmbedReal _ ≤ NNReal.orderEmbedReal _
-    apply NNReal.orderEmbedReal.resp_le.mp
+    apply (map_le NNReal.orderEmbedReal).mp
     apply NNReal.square_strictMonotone.le_iff_le.mp
     simp [NNReal.sqrt_sq, square_add]
-    apply NNReal.orderEmbedReal.resp_le.mpr
+    apply (map_le NNReal.orderEmbedReal).mpr
     show NNReal.embedReal _ ≤ NNReal.embedReal _
     simp [map_add]
     generalize hk:NNReal.embedReal (2 * (NNReal.square a.real + NNReal.square a.img).sqrt * (NNReal.square b.real + NNReal.square b.img).sqrt) = k
@@ -65,7 +65,7 @@ instance : IsAlgebraNorm ℂ where
     apply le_trans
     apply le_of_lt; assumption
     rw [←map_zero NNReal.embedReal]
-    apply NNReal.orderEmbedReal.resp_le.mp
+    apply (map_le NNReal.orderEmbedReal).mp
     apply bot_le
     apply (Real.square_strictMonotoneOn.le_iff_le _ _).mp
     rw [←map_npow, mul_npow, NNReal.sqrt_sq, NNReal.sqrt_sq]
@@ -75,7 +75,7 @@ instance : IsAlgebraNorm ℂ where
     assumption
     show 0 ≤ NNReal.embedReal _
     rw [←map_zero NNReal.embedReal]
-    apply NNReal.orderEmbedReal.resp_le.mp
+    apply (map_le NNReal.orderEmbedReal).mp
     apply bot_le
     apply natCast_nonneg
     rfl

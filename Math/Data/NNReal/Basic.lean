@@ -72,7 +72,7 @@ instance : IsLawfulBot ℝ≥0 where
 
 def orderEmbedReal : ℝ≥0 ↪o ℝ where
   toEmbedding := Embedding.subtypeVal
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance : Min ℝ≥0 where
   min a b := ⟨min a.val b.val, by

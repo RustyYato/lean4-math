@@ -47,3 +47,7 @@ instance [EquivLike F α β] : IsSurjective F α β where
     let f' := (f: α ≃ β)
     exists f'.symm x
     symm; apply f'.symm_coe
+
+syntax "hom_equiv_trans_symm_impl" ident : tactic
+macro_rules
+| `(tactic|hom_equiv_trans_symm_impl $e) => `(tactic|apply DFunLike.ext; first|apply ($e).coe_symm|(apply ($e).symm_coe))

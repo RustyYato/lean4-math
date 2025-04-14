@@ -97,7 +97,7 @@ def orderEmbed : AddCon α ↪o (α -> α -> Prop) where
     rcases a with ⟨⟨a, _⟩, _⟩
     rcases b with ⟨⟨b, _⟩, _⟩
     congr
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance : IsPartialOrder (AddCon α) :=
   orderEmbed.instIsPartialOrder'
@@ -122,7 +122,7 @@ def orderEmbed : MulCon α ↪o (α -> α -> Prop) where
     rcases a with ⟨⟨a, _⟩, _⟩
     rcases b with ⟨⟨b, _⟩, _⟩
     congr
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance : IsPartialOrder (MulCon α) :=
   orderEmbed.instIsPartialOrder'
@@ -147,7 +147,7 @@ def orderEmbed : SMulCon R α ↪o (α -> α -> Prop) where
     rcases a with ⟨⟨a, _⟩, _⟩
     rcases b with ⟨⟨b, _⟩, _⟩
     congr
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance : IsPartialOrder (SMulCon R α) :=
   orderEmbed.instIsPartialOrder'
@@ -172,7 +172,7 @@ def orderEmbed : RingCon α ↪o (α -> α -> Prop) where
     rcases a with ⟨⟨⟨a, _⟩, _⟩, _⟩
     rcases b with ⟨⟨⟨b, _⟩, _⟩, _⟩
     congr
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance : IsPartialOrder (RingCon α) :=
   orderEmbed.instIsPartialOrder'
@@ -197,7 +197,7 @@ def orderEmbed : LinearCon R α ↪o (α -> α -> Prop) where
     rcases a with ⟨⟨⟨a, _⟩, _⟩, _⟩
     rcases b with ⟨⟨⟨b, _⟩, _⟩, _⟩
     congr
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance : IsPartialOrder (LinearCon R α) :=
   orderEmbed.instIsPartialOrder'

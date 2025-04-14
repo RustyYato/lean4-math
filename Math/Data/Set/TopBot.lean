@@ -2,7 +2,7 @@ import Math.Order.TopBot
 import Math.Data.Set.Order.Bounds
 import Math.Order.OrderIso.Set
 
-namespace OrderIso
+namespace OrderEquiv
 
 def instSupSet [SupSet α] [LE α] [LE β] (h: β ≃o α) : SupSet β where
   sSup s := h.symm (⨆ (s.preimage h.symm))
@@ -10,7 +10,7 @@ def instSupSet [SupSet α] [LE α] [LE β] (h: β ≃o α) : SupSet β where
 def instInfSet [InfSet α] [LE α] [LE β] (h: β ≃o α) : InfSet β where
   sInf s := h.symm (⨅ (s.preimage h.symm))
 
-end OrderIso
+end OrderEquiv
 
 noncomputable section
 

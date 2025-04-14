@@ -19,10 +19,10 @@ instance : IsLawfulTop (Topology α) where
     apply IsOpen.empty
     apply IsOpen.univ
 
-def orderEmbedSet : OrderEmbedding (Topology α) (Opposite (Set (Set α))) where
+def orderEmbedSet : Topology α ↪o Opposite (Set (Set α)) where
   toFun t := t.OpenSets
   inj' := Topology.OpenSets.inj
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance : IsLawfulLT (Topology α) where
   lt_iff_le_and_not_le := Iff.rfl

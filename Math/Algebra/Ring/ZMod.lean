@@ -159,11 +159,11 @@ instance : LT (ZMod n) where
 
 def zmod_zero_oeqv_int : ZMod 0 ≃o Int where
   toEquiv := zmod_zero_eqv_int.toEquiv
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 def zmod_succ_oeqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃o Fin n where
   toEquiv := (zmod_succ_eqv_fin n).toEquiv
-  resp_rel := match n, h with
+  map_le _ _ := match n, h with
     | _ + 1, _ => Iff.rfl
 
 instance : Max (ZMod n) :=

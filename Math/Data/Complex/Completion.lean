@@ -64,7 +64,7 @@ def real.spec (x y: CauchySeq ℚ[i]) (h: x ≈ y) :
   show (|(x n).a - (y m).a|: ℚ) ≤ ‖x n - y m‖
   rw [norm_def, map_sub, Complex.norm_def]
   apply flip le_trans
-  apply NNReal.orderEmbedReal.resp_le.mp
+  apply (map_le NNReal.orderEmbedReal).mp
   apply NNReal.sqrt_strictMonotone.le_iff_le.mpr
   apply le_add_right
   apply bot_le
@@ -89,7 +89,7 @@ def img.spec (x y: CauchySeq ℚ[i]) (h: x ≈ y) :
   show (|(x n).b - (y m).b|: ℚ) ≤ ‖x n - y m‖
   rw [norm_def, map_sub, Complex.norm_def]
   apply flip le_trans
-  apply NNReal.orderEmbedReal.resp_le.mp
+  apply (map_le NNReal.orderEmbedReal).mp
   apply NNReal.sqrt_strictMonotone.le_iff_le.mpr
   apply le_add_left
   apply bot_le

@@ -21,7 +21,7 @@ def sqrt_surj {x: ℝ≥0} : ∃y: ℝ≥0, y.sqrt = x := by
 
 def sqrt_strictMonotone : StrictMonotone sqrt := by
   intro x y h
-  apply (NNReal.npowOrderIso 2 (by decide)).symm.resp_lt.mp
+  apply (map_lt (NNReal.npowOrderIso 2 (by decide)).symm).mp
   assumption
 
 @[simp]

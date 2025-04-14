@@ -31,7 +31,7 @@ def sqrt_nonneg (x: ℝ) : 0 ≤ x.sqrt := by apply NNReal.isNonneg
 def sqrt_inj {x y: ℝ} (hx: 0 ≤ x) (hy: 0 ≤ y) : x.sqrt = y.sqrt ↔ x = y := by
   unfold sqrt
   apply Iff.trans NNReal.embedReal.inj.eq_iff
-  apply Iff.trans (OrderIso.inj _).eq_iff
+  apply Iff.trans (OrderEquiv.inj _).eq_iff
   unfold NNReal.ofReal
   apply Iff.intro
   intro h
@@ -49,8 +49,8 @@ def sqrt_surj {x: ℝ} (hx: 0 ≤ x) : ∃y: ℝ, y.sqrt = x := by
 def sqrt_monotone : Monotone sqrt := by
   intro x y h
   show NNReal.orderEmbedReal _ ≤ NNReal.orderEmbedReal _
-  apply (OrderEmbedding.resp_le _).mp
-  apply (OrderIso.resp_le _).mp
+  apply (map_le _).mp
+  apply (map_le _).mp
   unfold NNReal.ofReal
   show max x 0 ≤ max y 0
   rw [le_max_iff, max_le_iff, max_le_iff]
@@ -67,8 +67,8 @@ def sqrt_strictMonotoneOn : StrictMonotoneOn sqrt (Set.Ici 0) := by
   intro x y hx hy h
   rw [Set.mem_Ici] at hx hy
   show NNReal.orderEmbedReal _ < NNReal.orderEmbedReal _
-  apply (OrderEmbedding.resp_lt _).mp
-  apply (OrderIso.resp_lt _).mp
+  apply (map_lt _).mp
+  apply (map_lt _).mp
   unfold NNReal.ofReal
   show max x 0 < max y 0
   rwa [max_eq_left.mpr hx, max_eq_left.mpr hy]

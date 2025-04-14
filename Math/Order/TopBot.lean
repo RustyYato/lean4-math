@@ -96,7 +96,7 @@ def WithTop.orderIsoWithBot [_root_.LE α] : WithTop α ≃o Opposite (WithBot (
   rightInv
   | .mk ⊥
   | .mk (.of (.mk x)) => rfl
-  resp_rel := by
+  map_le := by
     intro a b
     dsimp
     apply Iff.intro
@@ -130,14 +130,14 @@ def WithTop.orderIsoCongr [_root_.LE α] [_root_.LE β] (h: α ≃o β) : WithTo
   | .of x =>  by
     dsimp
     rw [h.symm_coe]
-  resp_rel := by
+  map_le := by
     intro a b
     dsimp
     apply Iff.intro
     intro h
     cases h with
     | top => exact WithTop.LE.top _
-    | of r => exact WithTop.LE.of (h.resp_rel.mp r)
+    | of r => exact WithTop.LE.of ((map_le h).mp r)
     intro h
     cases b
     apply WithTop.LE.top
@@ -145,21 +145,21 @@ def WithTop.orderIsoCongr [_root_.LE α] [_root_.LE β] (h: α ≃o β) : WithTo
     contradiction
     apply WithTop.LE.of
     cases h; rename_i r
-    exact h.resp_rel.mpr r
+    exact (map_le h).mpr r
 
 def WithBot.orderIsoCongr [_root_.LE α] [_root_.LE β] (h: α ≃o β) : WithBot α ≃o WithBot β := by
   show (Opposite (Opposite (WithBot (Opposite (Opposite α))))) ≃o (Opposite (Opposite (WithBot (Opposite (Opposite β)))))
   apply Opposite.orderIsoCongr
-  apply OrderIso.trans
+  apply OrderEquiv.trans
   apply WithTop.orderIsoWithBot.symm
-  apply flip OrderIso.trans
+  apply flip OrderEquiv.trans
   apply WithTop.orderIsoWithBot
   apply WithTop.orderIsoCongr
   apply Opposite.orderIsoCongr
   assumption
 
 def WithBot.orderIsoWithTop [_root_.LE α] : WithBot α ≃o Opposite (WithTop (Opposite α)) := by
-  apply flip OrderIso.trans
+  apply flip OrderEquiv.trans
   apply Opposite.orderIsoCongr
   symm
   apply WithTop.orderIsoWithBot

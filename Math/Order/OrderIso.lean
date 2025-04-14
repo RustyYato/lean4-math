@@ -1,60 +1,21 @@
 import Math.Relation.RelIso
 import Math.Logic.Equiv.Like
 import Math.Order.Defs
+import Math.Order.Hom.Defs
 
 variable {α β: Type*} [LE α] [LT α] [LE β] [LT β]
 
-def OrderHom (α β: Type*) [LE α] [LE β] :=
-  @RelHom α β (· ≤ ·) (· ≤ ·)
-
-def OrderEmbedding (α β: Type*) [LE α] [LE β] :=
-  @RelEmbedding α β (· ≤ ·) (· ≤ ·)
-
-def OrderIso (α β: Type*) [LE α] [LE β] :=
-  @RelIso α β (· ≤ ·) (· ≤ ·)
-
-infixl:25 " →o " => OrderHom
-infixl:25 " ↪o " => OrderEmbedding
-infixl:25 " ≃o " => OrderIso
-
 namespace OrderEmbedding
-
-instance : FunLike (α ↪o β) α β where
-  coe e := e.toFun
-  coe_inj := by
-    intro ⟨⟨_, _⟩, _⟩ ⟨⟨_, _⟩, _⟩ eq
-    congr
-
-instance : EmbeddingLike (α ↪o β) α β where
-  coe e := e.toEmbedding
-  coe_inj := by intro a b eq; cases a; cases b; congr
-
-@[refl]
-def refl [LE α] : α ↪o α where
-  toEmbedding := .rfl
-  resp_rel := Iff.rfl
-
-def trans {_: LE α} {_: LE β} {_: LE γ} (h: α ↪o β) (g: β ↪o γ) : α ↪o γ where
-  toEmbedding := .trans h.toEmbedding g.toEmbedding
-  resp_rel := h.resp_rel.trans g.resp_rel
-
-def resp_le {_: LE α} {_: LE β} (h: α ↪o β) : ∀{a b: α}, a ≤ b ↔ h a ≤ h b := h.resp_rel
-
-def resp_lt {_: LE α} {_: LE β} {_: LT α} {_: LT β} [IsLawfulLT α] [IsLawfulLT β] (h: α ↪o β) : ∀{a b: α}, a < b ↔ h a < h b := by
-  intro a b
-  rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, h.resp_le, h.resp_le]
-
-def inj (h: α ↪o β) : Function.Injective h := Embedding.inj h.toEmbedding
 
 def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder β]
   [IsLawfulLT α]
   (h: α ↪o β)
   : IsPreOrder α where
-  le_refl _ := h.resp_le.mpr (le_refl _)
+  le_refl x := (map_le h).mpr (le_refl _)
   le_trans := by
     intro a b c
-    iterate 3 rw [h.resp_le]
+    iterate 3 rw [map_le h]
     exact le_trans
 
 def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
@@ -64,7 +25,7 @@ def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
   : IsPartialOrder α where
   le_antisymm := by
     intro a b
-    iterate 2 rw [h.resp_le]
+    iterate 2 rw [map_le h]
     intro ab ba
     have := le_antisymm ab ba
     exact h.inj this
@@ -77,7 +38,7 @@ def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   toIsPreOrder := h.instIsPreOrder
   le_antisymm := by
     intro a b
-    rw [h.resp_le, h.resp_le]
+    rw [map_le h, map_le h]
     intro ab ba
     exact h.inj (le_antisymm ab ba)
 
@@ -93,8 +54,8 @@ def instIsLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
     lt_or_le := by
       intro a b
       rcases lt_or_le (h a) (h b) with g | g
-      exact .inl (h.resp_lt.mpr g)
-      exact .inr (h.resp_le.mpr g)
+      exact .inl ((map_lt h).mpr g)
+      exact .inr ((map_le h).mpr g)
   }
 
 def instIsLawfulTop {_: LE α} [LT α] {_: LE β} [LT β]
@@ -103,7 +64,7 @@ def instIsLawfulTop {_: LE α} [LT α] {_: LE β} [LT β]
   (h: α ↪o β) (map_top: h ⊤ = ⊤) : IsLawfulTop α where
   le_top := by
     intro x
-    apply h.resp_le.mpr
+    apply (map_le h).mpr
     rw [map_top]
     apply le_top
 
@@ -113,7 +74,7 @@ def instIsLawfulBot {_: LE α} [LT α] {_: LE β} [LT β]
   (h: α ↪o β) (map_bot: h ⊥ = ⊥) : IsLawfulBot α where
   bot_le := by
     intro x
-    apply h.resp_le.mpr
+    apply (map_le h).mpr
     rw [map_bot]
     apply bot_le
 
@@ -129,19 +90,19 @@ def instIsSemiLatticeMax
     intro a b
     have : h a ≤ h a ⊔ h b := le_max_left _ _
     rw [←hs] at this
-    exact h.resp_le.mpr this
+    exact (map_le h).mpr this
   le_max_right := by
     intro a b
     have : h b ≤ h a ⊔ h b := le_max_right _ _
     rw [←hs] at this
-    exact h.resp_le.mpr this
+    exact (map_le h).mpr this
   max_le := by
     intro a b k ak bk
-    replace ak := h.resp_le.mp ak
-    replace bk := h.resp_le.mp bk
+    replace ak := (map_le h).mp ak
+    replace bk := (map_le h).mp bk
     have := max_le ak bk
     rw [←hs] at this
-    exact h.resp_le.mpr this
+    exact (map_le h).mpr this
 
 def instIsSemiLatticeMin
   {α}
@@ -155,19 +116,19 @@ def instIsSemiLatticeMin
     intro a b
     have : h a ⊓ h b ≤ h a := min_le_left _ _
     rw [←hs] at this
-    exact h.resp_le.mpr this
+    exact (map_le h).mpr this
   min_le_right := by
     intro a b
     have : h a ⊓ h b ≤ h b := min_le_right _ _
     rw [←hs] at this
-    exact h.resp_le.mpr this
+    exact (map_le h).mpr this
   le_min := by
     intro a b k ak bk
-    replace ak := h.resp_le.mp ak
-    replace bk := h.resp_le.mp bk
+    replace ak := (map_le h).mp ak
+    replace bk := (map_le h).mp bk
     have := le_min ak bk
     rw [←hs] at this
-    exact h.resp_le.mpr this
+    exact (map_le h).mpr this
 
 def instIsLinearLattice {_: LE α} [LT α] {_: LE β} [LT β]
   [Min α] [Min β] [Max α] [Max β]
@@ -184,69 +145,25 @@ def instIsLinearLattice {_: LE α} [LT α] {_: LE β} [LT β]
 
 end OrderEmbedding
 
-namespace OrderIso
-
-@[refl]
-def refl [LE α] : α ≃o α where
-  toEquiv := .rfl
-  resp_rel := Iff.rfl
-
-@[symm]
-def symm {_: LE α} {_: LE β} (h: α ≃o β) : β ≃o α where
-  toEquiv := .symm h.toEquiv
-  resp_rel := h.inv_resp_rel
-
-def trans {_: LE α} {_: LE β} {_: LE γ} (h: α ≃o β) (g: β ≃o γ) : α ≃o γ where
-  toEquiv := .trans h.toEquiv g.toEquiv
-  resp_rel := h.resp_rel.trans g.resp_rel
-
-instance : Coe (α ≃o β) (α ↪o β) where
-  coe h := {
-    toEmbedding := h.toEmbedding
-    resp_rel := h.resp_rel
-  }
-
-def toEmbedding (h: α ≃o β) : α ↪o β := h
-
-instance : EquivLike (α ≃o β) α β where
-  coe e := e.toEquiv
-  coe_inj := by intro a b eq; cases a; cases b; congr
-
-instance : FunLike (α →o β) α β where
-  coe e := e.toFun
-  coe_inj := by
-    intro ⟨_, _⟩ ⟨_, _⟩ eq
-    congr
-
-def coe_symm (h: α ≃o β) (x: α) : h.symm (h x) = x := h.leftInv _
-def symm_coe (h: α ≃o β) (x: β) : h (h.symm x) = x := h.rightInv _
-
-def resp_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: α}, a ≤ b ↔ h a ≤ h b := h.resp_rel
-def symm_map_le {_: LE α} {_: LE β} (h: α ≃o β) : ∀{a b: β}, a ≤ b ↔ h.symm a ≤ h.symm b := h.symm.resp_rel
-
-def resp_lt {_: LE α} {_: LE β} {_: LT α} {_: LT β} [IsLawfulLT α] [IsLawfulLT β] (h: α ≃o β) : ∀{a b: α}, a < b ↔ h a < h b := by
-  intro a b
-  rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, h.resp_le, h.resp_le]
-
-def inj (h: α ≃o β) : Function.Injective h := Equiv.inj h.toEquiv
+namespace OrderEquiv
 
 def instIsPreOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPreOrder α]
   [IsLawfulLT β]
   (h: α ≃o β): IsPreOrder β :=
-  OrderEmbedding.instIsPreOrder (α := β) (β := α) h.symm
+  OrderEmbedding.instIsPreOrder (α := β) (β := α) h.symm.toEmbedding
 
 def instIsPartialOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [IsPartialOrder α]
   [_root_.IsPreOrder β]
   (h: α ≃o β): IsPartialOrder β :=
-  OrderEmbedding.instIsPartialOrder (α := β) (β := α) h.symm
+  OrderEmbedding.instIsPartialOrder (α := β) (β := α) h.symm.toEmbedding
 
 def instIsPartialOrder' {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsPartialOrder α]
   [IsLawfulLT β]
   (h: α ≃o β): _root_.IsPartialOrder β :=
-  OrderEmbedding.instIsPartialOrder' (α := β) (β := α) h.symm
+  OrderEmbedding.instIsPartialOrder' (α := β) (β := α) h.symm.toEmbedding
 
 def instIsLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
   [_root_.IsLinearOrder β]
@@ -306,19 +223,19 @@ def instIsDecidableLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
       intro a b
       rw [min_eq, min_def]
       split
-      rw [←h.resp_le] at *
+      rw [←(map_le h)] at *
       rw [if_pos, h.coe_symm]; assumption
-      rw [←h.resp_le] at *
+      rw [←(map_le h)] at *
       rw [if_neg, h.coe_symm]; assumption
     max_def := by
       intro a b
       rw [max_eq, max_def]
       split
-      rw [←h.resp_le] at *
+      rw [←(map_le h)] at *
       rw [if_pos, h.coe_symm]; assumption
-      rw [←h.resp_le] at *
+      rw [←(map_le h)] at *
       rw [if_neg, h.coe_symm]; assumption
-    decLE a b := decidable_of_iff (h a ≤ h b) h.resp_le.symm
+    decLE a b := decidable_of_iff (h a ≤ h b) (map_le h).symm
   }
 
 def instMin [Min β] (h: α ≃o β) : Min α where
@@ -326,7 +243,7 @@ def instMin [Min β] (h: α ≃o β) : Min α where
 def instMax [Max β] (h: α ≃o β) : Max α where
   max a b := h.symm (max (h a) (h b))
 
-end OrderIso
+end OrderEquiv
 
 namespace Opposite
 
@@ -335,12 +252,12 @@ def orderIsoCongr {_: LE α} {_: LE β} (h: α ≃o β) : Opposite α ≃o Oppos
   invFun := h.symm
   leftInv := h.leftInv
   rightInv := h.rightInv
-  resp_rel := h.resp_rel
+  map_le _ _ := h.map_le _ _
 
 def orderEmbeddingCongr {_: LE α} {_: LE β} (h: α ↪o β) : Opposite α ↪o Opposite β where
   toFun := h
   inj' := h.inj
-  resp_rel := h.resp_rel
+  map_le _ _ := h.map_le _ _
 
 end Opposite
 
@@ -362,10 +279,17 @@ instance [LE β] : LE (α →o β) where
 instance [LE β] : LT (α →o β) where
   lt f g := f.toFun < g.toFun
 
-def Embedding.oemb_fun : (α ↪ β) ↪o (α -> β) where
-  toFun := Embedding.toFun
-  inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
-  resp_rel := Iff.rfl
+instance [LE β] : LE (α →≤ β) where
+  le f g := f.toFun ≤ g.toFun
+
+instance [LE β] : LT (α →≤ β) where
+  lt f g := f.toFun < g.toFun
+
+instance [LE β] : LE (α →< β) where
+  le f g := f.toFun ≤ g.toFun
+
+instance [LE β] : LT (α →< β) where
+  lt f g := f.toFun < g.toFun
 
 instance : IsLawfulLT (α ↪ β) where
   lt_iff_le_and_not_le := Iff.rfl
@@ -373,6 +297,15 @@ instance : IsLawfulLT (α ↪o β) where
   lt_iff_le_and_not_le := Iff.rfl
 instance : IsLawfulLT (α →o β) where
   lt_iff_le_and_not_le := Iff.rfl
+instance : IsLawfulLT (α →≤ β) where
+  lt_iff_le_and_not_le := Iff.rfl
+instance : IsLawfulLT (α →< β) where
+  lt_iff_le_and_not_le := Iff.rfl
+
+def Embedding.oemb_fun : (α ↪ β) ↪o (α -> β) where
+  toFun f := f
+  inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  map_le _ _ := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α ↪ β) :=
   Embedding.oemb_fun.instIsPreOrder
@@ -380,10 +313,32 @@ instance [IsPreOrder β] : IsPreOrder (α ↪ β) :=
 instance [IsPartialOrder β] : IsPartialOrder (α ↪ β) :=
   Embedding.oemb_fun.instIsPartialOrder
 
-def OrderHom.oemb_fun : (α →o β) ↪o (α -> β) where
-  toFun := RelHom.toFun
+def MonotoneHom.oemb_fun : (α →≤ β) ↪o (α -> β) where
+  toFun f := f
   inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
+
+instance [IsPreOrder β] : IsPreOrder (α →≤ β) :=
+  MonotoneHom.oemb_fun.instIsPreOrder
+
+instance [IsPartialOrder β] : IsPartialOrder (α →≤ β) :=
+  MonotoneHom.oemb_fun.instIsPartialOrder
+
+def StrictMonotoneHom.oemb_fun : (α →< β) ↪o (α -> β) where
+  toFun f := f
+  inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  map_le _ _ := Iff.rfl
+
+instance [IsPreOrder β] : IsPreOrder (α →< β) :=
+  StrictMonotoneHom.oemb_fun.instIsPreOrder
+
+instance [IsPartialOrder β] : IsPartialOrder (α →< β) :=
+  StrictMonotoneHom.oemb_fun.instIsPartialOrder
+
+def OrderHom.oemb_fun : (α →o β) ↪o (α -> β) where
+  toFun f := f
+  inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
+  map_le _ _ := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α →o β) :=
   OrderHom.oemb_fun.instIsPreOrder
@@ -392,9 +347,9 @@ instance [IsPartialOrder β] : IsPartialOrder (α →o β) :=
   OrderHom.oemb_fun.instIsPartialOrder
 
 def OrderEmbedding.oemb_fun : (α ↪o β) ↪o (α ↪ β) where
-  toFun := RelEmbedding.toEmbedding
+  toFun f := f
   inj' :=  by intro ⟨x, _⟩ ⟨y, _⟩ eq; congr
-  resp_rel := Iff.rfl
+  map_le _ _ := Iff.rfl
 
 instance [IsPreOrder β] : IsPreOrder (α ↪o β) :=
   OrderEmbedding.oemb_fun.instIsPreOrder
@@ -409,4 +364,4 @@ def OrderEmbedding.toLtRelEmbedding
   inj' := h.inj
   resp_rel := by
     intro x y; dsimp
-    rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, h.resp_le, h.resp_le]
+    rw [lt_iff_le_and_not_le, lt_iff_le_and_not_le, (map_le h), (map_le h)]

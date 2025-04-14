@@ -155,10 +155,10 @@ def ord_is_min' (c: Cardinal) : ∀o < c.ord, o.card < c := by
   refine ⟨?_⟩
   exact h.toEmbedding
 
-noncomputable def oemb_ord : OrderEmbedding Cardinal Ordinal where
+noncomputable def oemb_ord : Cardinal ↪o Ordinal where
   toFun := ord
   inj' _ _ h := ord_inj h
-  resp_rel := by
+  map_le := by
     intro a b; dsimp
     suffices a < b -> a.ord < b.ord by
       apply Iff.intro
@@ -189,8 +189,7 @@ noncomputable def oemb_ord : OrderEmbedding Cardinal Ordinal where
 noncomputable def remb_ord_lt : @RelEmbedding Cardinal Ordinal (· < ·) (· < ·) :=
   oemb_ord.toLtRelEmbedding
 
-instance : @Relation.IsTrichotomous Cardinal (· ≤ ·) := oemb_ord.tri
-instance : IsLinearOrder Cardinal := instLOofPOofLEtri
+instance : IsLinearOrder Cardinal := oemb_ord.instIsLinearOrder
 
 instance : @Relation.IsWellOrder Cardinal (· < ·) := remb_ord_lt.wo
 

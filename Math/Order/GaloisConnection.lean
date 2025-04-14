@@ -7,18 +7,16 @@ variable {α β : Type*} [LT α] [LE α] [LT β] [LE β]
 def GaloisConnection (l: α -> β) (u: β -> α) :=
   ∀a b, l a ≤ b ↔ a ≤ u b
 
-def OrderIso.toGaloisConnection (h: α ≃o β): GaloisConnection h.toFun h.invFun := by
+def OrderEquiv.toGaloisConnection (h: α ≃o β): GaloisConnection h h.symm := by
   intro a b
   apply Iff.intro
   intro g
-  rw [←h.leftInv a]
-  apply h.resp_rel.mpr
-  rw [h.rightInv, h.rightInv]
-  assumption
+  rw [←h.coe_symm a]
+  apply (map_le h).mpr
+  simpa using g
   intro g
-  rw [←h.rightInv b]
-  apply h.resp_rel.mp
-  assumption
+  rw [←h.symm_coe b]
+  exact (map_le h).mp g
 
 namespace GaloisConnection
 

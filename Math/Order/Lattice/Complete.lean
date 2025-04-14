@@ -309,18 +309,18 @@ def instIsCompleteSemiLatticeSup
   : IsCompleteSemiLatticeSup β where
   le_sSup := by
     intro s x mem
-    apply h.resp_le.mpr
+    apply (map_le h).mpr
     rw [hs]
     apply le_sSup
     apply Set.mem_image'
     assumption
   sSup_le := by
     intro k s g
-    apply h.resp_le.mpr
+    apply (map_le h).mpr
     rw [hs]
     apply sSup_le
     intro x ⟨x, _, eq⟩; subst eq
-    apply h.resp_le.mp
+    apply (map_le h).mp
     apply g
     assumption
 
@@ -341,7 +341,7 @@ def instIsCompleteSemiLatticeMin
 
 end OrderEmbedding
 
-namespace OrderIso
+namespace OrderEquiv
 
 def instIsCompleteSemiLatticeSup
   {α}
@@ -377,7 +377,7 @@ def instIsCompleteSemiLatticeMin
     IsCompleteSemiLatticeMin (Opposite (Opposite β))
   )
 
-end OrderIso
+end OrderEquiv
 
 instance
   {α} [LE α] [LT α] [SupSet α] [Max α] [IsCompleteSemiLatticeSup α] : IsCompleteSemiLatticeSup (WithTop α) where

@@ -23,7 +23,7 @@ instance : Topology.IsContinuous Complex.real where
     show |_| < ε
     apply lt_of_le_of_lt _ hy
     show NNReal.embedReal (NNReal.abs _) ≤ _
-    apply NNReal.orderEmbedReal.resp_le.mp
+    apply (map_le NNReal.orderEmbedReal).mp
     simp
     apply NNReal.square_strictMonotone.le_iff_le.mp
     rw [NNReal.sqrt_sq, ←NNReal.square_eq_abs_sq]
@@ -42,7 +42,7 @@ instance : Topology.IsContinuous Complex.img where
     show |_| < ε
     apply lt_of_le_of_lt _ hy
     show NNReal.embedReal (NNReal.abs _) ≤ _
-    apply NNReal.orderEmbedReal.resp_le.mp
+    apply (map_le NNReal.orderEmbedReal).mp
     simp
     apply NNReal.square_strictMonotone.le_iff_le.mp
     rw [NNReal.sqrt_sq, ←NNReal.square_eq_abs_sq]
@@ -75,7 +75,7 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     show ‖mk (a - c) (b - d)‖ < _
     simp [Complex.norm_def]
     show _ < NNReal.embedReal ε'
-    apply NNReal.orderEmbedReal.resp_lt.mp
+    apply (map_lt NNReal.orderEmbedReal).mp
     rw [←lt_iff_of_le_iff NNReal.square_strictMonotone.le_iff_le,
       NNReal.sqrt_sq]
     apply lt_of_lt_of_le
@@ -84,7 +84,7 @@ instance : Topology.IsContinuous (fun (x, y) => Complex.mk x y) where
     any_goals
       rw [←lt_iff_of_le_iff NNReal.sqrt_strictMonotone.le_iff_le]
       rw [NNReal.sqrt_div?, NNReal.sqrt_of_sq, NNReal.sqrt_square]
-      apply NNReal.orderEmbedReal.resp_lt.mpr
+      apply (map_lt NNReal.orderEmbedReal).mpr
       show NNReal.embedReal _ < NNReal.embedReal _
       simp [map_div?, embedReal_sqrt]
     exact g.left

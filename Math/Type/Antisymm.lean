@@ -16,9 +16,9 @@ theorem schroeder_bernstein
   · have : IsEmpty α := Function.isEmpty f
     exact ⟨Function.empty, Function.empty_bij⟩
 
-  let F : Set α →o Set α :=
+  let F : Set α →≤ Set α :=
     { toFun := fun s => ((s.image f)ᶜ.image g)ᶜ
-      resp_rel := by
+      monotone := by
         intro s t hst
         dsimp
         apply Set.compl_subset_compl.mpr
@@ -28,7 +28,7 @@ theorem schroeder_bernstein
         assumption}
 
   -- set S is all the fixed points of F
-  let s : Set α := OrderHom.lfp F
+  let s : Set α := MonotoneHom.lfp F
 
   have hs : ((s.image f)ᶜ.image g)ᶜ = s := F.map_lfp
   have hns : (s.image f)ᶜ.image g = sᶜ := Set.compl_injective (by simp [hs, Set.compl_compl])

@@ -812,10 +812,6 @@ def LinearEquiv.toHom (h: α ≃ₗ[R] β) : α →ₗ[R] β := h
 @[simp] def LinearEquiv.coe_symm (h: α ≃ₗ[R] β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
 @[simp] def LinearEquiv.symm_coe (h: α ≃ₗ[R] β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
 
-syntax "hom_equiv_trans_symm_impl" ident : tactic
-macro_rules
-| `(tactic|hom_equiv_trans_symm_impl $e) => `(tactic|apply DFunLike.ext; first|apply ($e).coe_symm|(apply ($e).symm_coe))
-
 @[simp] def AddGroupEquiv.trans_symm (h: α ≃+ β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
 @[simp] def AddGroupEquiv.symm_trans (h: α ≃+ β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
 @[simp] def AddGroupWithOneEquiv.trans_symm (h: α ≃+₁ β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h

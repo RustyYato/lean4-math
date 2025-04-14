@@ -118,7 +118,7 @@ noncomputable def npowOrderIso (n: ℕ) (h: 0 < n) : ℝ≥0 ≃o ℝ≥0 :=
     invFun := eq.invFun
     leftInv := by rw [←eq_spec]; exact eq.leftInv
     rightInv := by rw [←eq_spec]; exact eq.rightInv
-    resp_rel := (npowStrictMono n h).le_iff_le.symm
+    map_le _ _ := (npowStrictMono n h).le_iff_le.symm
   }
 
 end NNReal
