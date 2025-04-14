@@ -25,7 +25,7 @@ end
 variable {r: G -> G -> Prop}
 
 def mk [MonoidOps G] [IsMonoid G] (r: G -> G -> Prop) : G →* GroupQuot r :=
-  IsMulCon.mkQuot _
+  MulCon.mkQuot _
 
 @[induction_eliminator]
 def ind [MonoidOps G] [IsMonoid G] {motive: GroupQuot r -> Prop} (mk: ∀x, motive (mk r x)) : ∀q, motive q := by
@@ -79,7 +79,7 @@ def lift [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T]: {f: G →* T // 
 def lift_mk_apply [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T] (f : G →* T) {r : G → G → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
     lift ⟨f, w⟩ (mk r x) = f x := rfl
 
-def mkQuot_eq_mk [MonoidOps G] [IsMonoid G] : IsMulCon.mkQuot (GroupQuot.Con r) = GroupQuot.mk r := rfl
+def mkQuot_eq_mk [MonoidOps G] [IsMonoid G] : MulCon.mkQuot (GroupQuot.Con r) = GroupQuot.mk r := rfl
 
 attribute [irreducible] instMonoidOps instGroupOps mk lift
 

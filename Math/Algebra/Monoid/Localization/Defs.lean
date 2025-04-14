@@ -74,7 +74,7 @@ instance : MonoidOps (Localization S) := inferInstanceAs (MonoidOps (IsCon.Quoti
 instance : IsMonoid (Localization S) := inferInstanceAs (IsMonoid (IsCon.Quotient (con S)))
 instance : IsCommMagma (Localization S) := inferInstanceAs (IsCommMagma (IsCon.Quotient (con S)))
 
-def mkHom : (M × S) →* Localization S := IsMulCon.mkQuot (con S)
+def mkHom : (M × S) →* Localization S := MulCon.mkQuot (con S)
 def mk (a: M) (b: S) : Localization S := mkHom S (a, b)
 def mk_one : 1 = mk S 1 1 := rfl
 def mk_mul (a₀ a₁: M) (b₀ b₁: S) : mk S a₀ b₀ * mk S a₁ b₁ = mk S (a₀ * a₁) (b₀ * b₁) := rfl

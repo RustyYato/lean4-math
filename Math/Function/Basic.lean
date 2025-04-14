@@ -144,3 +144,11 @@ protected def Bijective {f: α -> α} (hf: f.IsInvolutive) : f.Bijective := ⟨h
 end IsInvolutive
 
 end Function
+
+ def Quot.mkSurj : Function.Surjective (Quot.mk r) := by
+  intro q; induction q using Quot.ind with | _ x =>
+  exists x
+
+ def Quotient.mkSurj : Function.Surjective (Quotient.mk s) := by
+  intro q; induction q using Quotient.ind with | _ x =>
+  exists x

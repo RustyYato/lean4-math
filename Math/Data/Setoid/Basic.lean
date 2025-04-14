@@ -11,6 +11,14 @@ def kernel (f: α -> β) : Setoid α where
     trans := Eq.trans
   }
 
+def comap (f: α -> β) (s: Setoid β) : Setoid α where
+  r a b := s.r (f a) (f b)
+  iseqv := {
+    refl _ := s.iseqv.refl _
+    symm := s.iseqv.symm
+    trans := s.iseqv.trans
+  }
+
 def forallSetoid {ι: Sort _} (α: ι -> Sort _) [∀i: ι, Setoid (α i)] : Setoid (∀i, α i) where
   r f g:= ∀i, f i ≈ g i
   iseqv := {

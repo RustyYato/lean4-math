@@ -21,7 +21,7 @@ private def inv : FreeGroup α →* (FreeGroup α)ᵐᵒᵖ := by
   refine GroupQuot.lift ⟨?_, ?_⟩
   apply GroupHom.comp ?_ FreeMonoid.reverseEquiv.toHom
   apply GroupHom.congrMulOpp _
-  apply (IsMulCon.mkQuot _).comp
+  apply (MulCon.mkQuot _).comp
   apply FreeGroup.flip
   intro x y h
   simp [GroupHom.apply_comp, GroupHom.apply_congrMulOpp]

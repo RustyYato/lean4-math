@@ -15,17 +15,3 @@ instance [Add α] [Mul α] [IsRightDistrib α] [IsRingCon C] : IsRightDistrib (I
     rw [add_mul]
 
 instance [SemiringOps α] [IsSemiring α] [IsRingCon C] : IsSemiring (IsCon.Quotient c) := IsSemiring.inst
-
-def IsRingCon.mkQuot [SemiringOps α] [IsSemiring α] [IsRingCon C] : α →+* IsCon.Quotient c where
-  toFun a := IsCon.mkQuot c a
-  map_zero := rfl
-  map_one := rfl
-  map_add := rfl
-  map_mul := rfl
-
-def RingCon.mkQuot_kernel [SemiringOps α] [IsSemiring α] (c: RingCon α) : RingCon.kernel (IsRingCon.mkQuot c) = c := by
-  apply le_antisymm
-  · intro x y h
-    exact Quotient.exact h
-  · intro x y h
-    exact Quotient.sound h

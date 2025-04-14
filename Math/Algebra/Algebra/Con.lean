@@ -15,7 +15,7 @@ instance : IsSMulCon C S where
     assumption
 
 instance (priority := 900) : AlgebraMap S (IsCon.Quotient c) :=
-  AlgebraMap.ofHom <| (IsRingCon.mkQuot c).comp algebraMap
+  AlgebraMap.ofHom <| (RingCon.mkQuot c).comp algebraMap
 
 instance (priority := 900) : IsAlgebra S (IsCon.Quotient c) where
   commutes s a := by
