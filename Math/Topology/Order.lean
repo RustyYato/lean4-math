@@ -35,7 +35,6 @@ instance : IsPartialOrder (Topology α) :=
 def sSup' (Ts: Set (Topology α)) : Topology α where
   IsOpen x := x ∈ ⨅ (Ts.image Topology.OpenSets)
   univ_open := by
-    dsimp
     apply Set.mem_sInter.mpr
     intro x h
     rw [Set.mem_image] at h
@@ -53,7 +52,6 @@ def sSup' (Ts: Set (Topology α)) : Topology α where
     exact hb T.OpenSets (Set.mem_image' T_in_Ts)
   sUnion_open := by
     intro s h
-    dsimp at h
     erw [Set.mem_sInter]
     intro x ⟨T, T_in_Ts, _⟩
     subst x
@@ -66,7 +64,6 @@ def sSup' (Ts: Set (Topology α)) : Topology α where
 def max' (ta: Topology α) (tb: Topology α) : Topology α where
   IsOpen x := IsOpen[ta] x ∧ IsOpen[tb] x
   univ_open := by
-    dsimp
     apply And.intro
     apply IsOpen.univ
     apply IsOpen.univ

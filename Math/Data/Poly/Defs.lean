@@ -73,9 +73,7 @@ def C [SemiringOps P] [IsSemiring P] : P ↪+* P[X] where
   map_zero := AddMonoidAlgebra.single_zero _
   map_add := (AddMonoidAlgebra.single_add _ _ _).symm
   map_one := rfl
-  map_mul {x y} := by
-    dsimp
-    rw [AddMonoidAlgebra.single_mul, add_zero]
+  map_mul {x y} := by rw [AddMonoidAlgebra.single_mul, add_zero]
 
 def monomial [Zero P] [One P] : ℕ -> P[X] :=
   (AddMonoidAlgebra.single · 1)

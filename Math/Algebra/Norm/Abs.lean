@@ -233,9 +233,10 @@ def abs_intCast (n: ℤ) : |(n: α)| = |n| := by
     rw [intCast_ofNat, abs_eq_natAbs, Int.natAbs_ofNat,
       abs_natCast, intCast_ofNat]
   | negSucc n =>
-    rw [Int.negSucc_coe, ←intCast_neg, abs_neg,
-      intCast_ofNat, abs_natCast, abs_neg,
-      abs_eq_natAbs, intCast_ofNat, Int.natAbs_ofNat]
+    rw [Int.negSucc_eq, ←intCast_neg, abs_neg,
+      ←natCast_one, ←Int.ofNat_add, intCast_ofNat,
+      abs_neg, abs_natCast, abs_eq_natAbs,
+      intCast_ofNat, Int.natAbs_ofNat]
 
 end
 

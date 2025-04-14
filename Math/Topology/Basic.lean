@@ -176,15 +176,15 @@ instance IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
     intro
     assumption
 
-instance IsContinuous.id : IsContinuous (@id α) where
+protected instance IsContinuous.id : IsContinuous (@id α) where
   isOpen_preimage s sopen := by
-    suffices s.preimage (_root_.id ) = s by
+    suffices s.preimage id = s by
       rw [this]; assumption
     ext x
     apply Iff.trans Set.mem_preimage
     apply Iff.intro
-    exact _root_.id
-    exact _root_.id
+    exact id
+    exact id
 
 instance IsContinuous.id' : IsContinuous (fun x: α => x) :=
   IsContinuous.id
@@ -331,7 +331,6 @@ instance : Discrete Int := ⟨rfl⟩
 def induced (f: α -> β) (t: Topology β) : Topology α where
   IsOpen s := ∃ t, IsOpen t ∧ t.preimage f = s
   univ_open := by
-    dsimp
     exists ⊤
     apply And.intro IsOpen.univ
     rfl
@@ -344,7 +343,6 @@ def induced (f: α -> β) (t: Topology β) : Topology α where
     congr
   sUnion_open := by
     intro S h
-    dsimp at h
     let g := fun x (hx: x ∈ S) => Classical.choose (h x hx)
     exists ⋃S.attach.image fun x => g x.val x.property
     apply And.intro

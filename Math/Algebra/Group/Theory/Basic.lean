@@ -103,11 +103,9 @@ def conj [GroupOps α] [IsGroup α] (x: α) : α ≃* α where
     dsimp
     rw [←mul_assoc, mul_assoc, inv_mul_cancel, mul_one,
       ←mul_assoc, inv_mul_cancel, one_mul]
-  map_one := by
-    dsimp
-    rw [mul_one, inv_mul_cancel]
+  map_one := by rw [mul_one, inv_mul_cancel]
   map_mul := by
-    intro a b; dsimp
+    intro a b
     rw [mul_assoc (_ * _), ←mul_assoc x (x⁻¹ * _), ←mul_assoc x x⁻¹,
       mul_inv_cancel, one_mul]
     ac_nf

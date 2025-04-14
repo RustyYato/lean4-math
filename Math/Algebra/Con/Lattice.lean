@@ -22,7 +22,6 @@ def giConnection : @GaloisInsertion (α -> α -> Prop) (AddCon α) _ _ (fun r =>
     apply le_generate
     assumption
   choice_eq r h := by
-    simp
     apply le_antisymm
     apply le_generate
     assumption
@@ -63,7 +62,6 @@ def giConnection : @GaloisInsertion (α -> α -> Prop) (MulCon α) _ _ (fun r =>
     apply le_generate
     assumption
   choice_eq r h := by
-    simp
     apply le_antisymm
     apply le_generate
     assumption
@@ -104,7 +102,6 @@ def giConnection : @GaloisInsertion (α -> α -> Prop) (SMulCon R α) _ _ (fun r
     apply le_generate
     assumption
   choice_eq r h := by
-    simp
     apply le_antisymm
     apply le_generate
     assumption
@@ -145,7 +142,6 @@ def giConnection : @GaloisInsertion (α -> α -> Prop) (RingCon α) _ _ (fun r =
     apply le_generate
     assumption
   choice_eq r h := by
-    simp
     apply le_antisymm
     apply le_generate
     assumption
@@ -189,7 +185,6 @@ def giConnection : @GaloisInsertion (α -> α -> Prop) (LinearCon R α) _ _ (fun
     apply le_generate
     assumption
   choice_eq r h := by
-    simp
     apply le_antisymm
     apply le_generate
     assumption

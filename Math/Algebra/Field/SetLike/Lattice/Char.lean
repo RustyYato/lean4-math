@@ -144,15 +144,15 @@ noncomputable def has_char_zero_equiv_rat : ℚ ≃+* (⊥: Subfield F) where
     have ⟨_, _⟩  := Classical.choose_spec hx
     symm; assumption
   map_zero := by
-    simp; congr; rw [ratCast_zero]
+    congr; rw [ratCast_zero]
   map_one := by
-    simp; congr; rw [ratCast_one]
+    congr; rw [ratCast_one]
   map_add {_ _} := by
-    simp; congr;
+    congr
     show Rat.castHom _ = Rat.castHom _ + Rat.castHom _
     rw [map_add]
   map_mul {_ _} := by
-    simp; congr;
+    congr
     show Rat.castHom _ = Rat.castHom _ * Rat.castHom _
     rw [map_mul]
 
@@ -176,7 +176,6 @@ def Subfield.ofFinCast : Subfield F :=
     toFun a := a.val
     map_zero := by apply natCast_zero
     map_one := by
-      simp
       rename_i h
       match n, h with
       | n + 2, h =>

@@ -66,7 +66,6 @@ def encodable (α: Type*) [IsCountable α] : Encodable α where
     | .none => .none
   spec := by
     intro x
-    dsimp
     rw [decode_spec]
 
 example : ¬IsCountable (Nat -> Bool) := by

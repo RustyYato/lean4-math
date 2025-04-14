@@ -93,14 +93,14 @@ def of_map (a: α) (f: α -> β) : map (.of a) f  = .of (f a) := rfl
 
 @[simp]
 def mul_map (a b: FreeMonoid α) (f: α -> β) : (a * b).map f = (a.map f) * (b.map f) :=
-  List.map_append _ _ _
+  List.map_append
 
 def length (a: FreeMonoid α) : Nat :=
   a.toList.length
 
 @[simp] def one_length : length (1: FreeMonoid α) = 0 := rfl
 @[simp] def of_length : length (of a) = 1 := rfl
-@[simp] def mul_length : length (a * b) = a.length + b.length := List.length_append _ _
+@[simp] def mul_length : length (a * b) = a.length + b.length := List.length_append
 
 -- lift any assignment of variables to a monoid into a group homomorphism from the
 -- free monoid to the given monoid

@@ -132,7 +132,6 @@ noncomputable def image_equiv (f: α →* β) : (kernel f).Quotient ≃* Subgrou
     show f (Classical.choose _) = x.val
     symm; exact Classical.choose_spec x.property
   map_one := by
-    simp
     apply Subtype.val_inj
     apply map_one f
   map_mul := by

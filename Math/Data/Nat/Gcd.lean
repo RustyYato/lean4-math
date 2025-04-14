@@ -9,9 +9,9 @@ def dvd_left_of_dvd_of_gcd_eq_one (a b c: Nat) : a ∣ b * c -> a.gcd c = 1 -> a
   rw [gcd_eq, Nat.mul_one] at p1
   have p2 : a.gcd b ∣ a.gcd (b * c) := gcd_dvd_gcd_mul_right_right a b c
   have := Nat.dvd_antisymm p1 p2
-  refine gcd_eq_left_iff_dvd.mpr ?_
-  rw [←this]
   refine gcd_eq_left_iff_dvd.mp ?_
+  rw [←this]
+  refine gcd_eq_left_iff_dvd.mpr ?_
   assumption
 
 -- a number is atomic if it is irreducible or a unit
@@ -330,33 +330,6 @@ def prime_dvd_of_dvd_pow (p a n: Nat) (h: IsPrime p) : p ∣ a ^ n -> p ∣ a :=
     cases gcd_eq_one_or_dvd_of_prime h a <;> rename_i h'
     exact ih <| Nat.dvd_left_of_dvd_of_gcd_eq_one p (a^n) a g h'
     assumption
-
-def pow_gcd_pow (a b n: Nat) : (a ^ n).gcd (b ^ n) = (a.gcd b) ^ n := by
-  by_cases h:0 < a
-  have ⟨a₀, ha⟩ := Nat.gcd_dvd_left a b
-  have ⟨b₀, hb⟩ := Nat.gcd_dvd_right a b
-  have gcd_pos := Nat.gcd_pos_of_pos_left b h
-  have : gcd a₀ b₀ = 1 := by
-    apply Nat.mul_left_cancel gcd_pos
-    rw [←Nat.gcd_mul_left, ←ha, ←hb, Nat.mul_one]
-  conv => { lhs; rw [ha]; rhs; rw [hb] }
-  rw [Nat.mul_pow, Nat.mul_pow, Nat.gcd_mul_left]
-  suffices (a₀^n).gcd (b₀^n) = 1 by rw [this, Nat.mul_one]
-  · rw [gcd_eq_one_iff_no_common_prime_factor]
-    intro k k_prime k_dvd_apow k_dvd_bpow
-    have k_dvd_a := prime_dvd_of_dvd_pow _ _ _ k_prime k_dvd_apow
-    have k_dvd_b := prime_dvd_of_dvd_pow _ _ _ k_prime k_dvd_bpow
-    apply (gcd_eq_one_iff_no_common_prime_factor _ _).mp this
-    exact k_prime
-    assumption
-    assumption
-  by_cases hn:0 = n
-  subst n
-  rw [Nat.pow_zero, Nat.pow_zero, Nat.pow_zero]
-  rfl
-  cases Nat.le_zero.mp (Nat.le_of_not_lt h)
-  rw [Nat.zero_pow, Nat.gcd_zero_left, Nat.gcd_zero_left]
-  apply Nat.zero_lt_of_ne_zero; symm; assumption
 
 def xgcdAux (r oldr: Nat) (s olds t oldt: Int): Int × Int × Nat :=
   if r = 0 then

@@ -17,9 +17,9 @@ def monotone_comp_ofDual_iff : Monotone (Opposite.mk ∘ f) ↔ Antitone f := If
 @[simp]
 def antitone_comp_ofDual_iff : Antitone (Opposite.mk ∘ f) ↔ Monotone f := Iff.rfl
 
-def Monotone.id : Monotone (fun x: α => x) := fun _ _ => _root_.id
+protected def Monotone.id : Monotone (fun x: α => x) := fun _ _ => id
 
-def StrictMonotone.id : StrictMonotone (fun x: α => x) := fun _ _ => _root_.id
+protected def StrictMonotone.id : StrictMonotone (fun x: α => x) := fun _ _ => id
 
 def StrictMonotone.comp (mf: StrictMonotone f) (mg: StrictMonotone g) : StrictMonotone (g ∘ f) := fun _ _ h => mg (mf h)
 

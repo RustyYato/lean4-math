@@ -1,11 +1,5 @@
 import Math.Order.Linear
 
-def Fin.lt_or_eq_of_le {a b: Fin n} : a ≤ b -> a < b ∨ a = b := by
-  intro h
-  cases Nat.lt_or_eq_of_le (Fin.le_def.mp h)
-  left; apply Fin.lt_def.mpr; assumption
-  right; rename_i h; rw [Fin.val_inj.mp h]
-
 instance : IsLinearOrder (Fin n) where
   lt_iff_le_and_not_le := by
     intro a b

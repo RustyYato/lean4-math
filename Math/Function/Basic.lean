@@ -152,3 +152,5 @@ end Function
  def Quotient.mkSurj : Function.Surjective (Quotient.mk s) := by
   intro q; induction q using Quotient.ind with | _ x =>
   exists x
+
+attribute [simp] Function.comp_def

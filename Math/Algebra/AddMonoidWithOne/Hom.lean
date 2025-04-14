@@ -25,6 +25,5 @@ def natCast_AddGroupHom
   toFun n := n
   map_zero := natCast_zero
   map_add := by
-    dsimp
     intro x y
     rw [natCast_add]

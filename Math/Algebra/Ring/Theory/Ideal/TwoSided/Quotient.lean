@@ -152,7 +152,6 @@ def toRing_eqv_toRing_of_eq {i j: Ideal R} (h: i = j) : i.toRing ≃+* j.toRing 
     intro a b
     cases a using Quot.ind
     cases b using Quot.ind
-    simp
     apply map_add (mkQuot j)
   map_mul := by
     intro a b

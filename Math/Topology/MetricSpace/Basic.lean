@@ -36,7 +36,6 @@ def toTopology : Topology α where
   -- that is contained in the set
   IsOpen s := ∀x ∈ s, ∃δ > 0, Ball x δ ⊆ s
   univ_open := by
-    dsimp
     intro x mem
     exists 1
     apply And.intro

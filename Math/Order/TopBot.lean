@@ -98,7 +98,6 @@ def WithTop.orderIsoWithBot [_root_.LE α] : WithTop α ≃o Opposite (WithBot (
   | .mk (.of (.mk x)) => rfl
   map_le := by
     intro a b
-    dsimp
     apply Iff.intro
     intro h
     cases h with
@@ -132,7 +131,6 @@ def WithTop.orderIsoCongr [_root_.LE α] [_root_.LE β] (h: α ≃o β) : WithTo
     rw [h.symm_coe]
   map_le := by
     intro a b
-    dsimp
     apply Iff.intro
     intro h
     cases h with

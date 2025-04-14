@@ -159,7 +159,7 @@ noncomputable def oemb_ord : Cardinal ↪o Ordinal where
   toFun := ord
   inj' _ _ h := ord_inj h
   map_le := by
-    intro a b; dsimp
+    intro a b
     suffices a < b -> a.ord < b.ord by
       apply Iff.intro
       · intro h

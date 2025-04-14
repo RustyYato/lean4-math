@@ -16,7 +16,6 @@ globs = [
     "Math.Tactics.+",
     "Math.Topology.+",
     "Math.Type.+",
-    "Math.Polyfill",
     "Math.AxiomBlame",
 ]
 

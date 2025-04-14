@@ -9,7 +9,6 @@ def Fintype.toEncodable (α: Type*) [f: Fintype α] [DecidableEq α] : Trunc (En
     encode a := all.idxOf a
     decode' i := all[i]?
     spec x := by
-      simp
       rw [@List.getElem?_eq_some_iff]
       refine ⟨?_, ?_⟩
       exact List.idxOf_lt_length (complete x)

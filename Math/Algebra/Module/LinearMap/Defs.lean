@@ -42,12 +42,10 @@ instance instAdd [IsAddCommMagma B] : Add (A →ₗ[R] B) where
     toFun x := f x + g x
     map_add := by
       intro x y
-      dsimp
       rw [map_add, map_add]
       rw [add_assoc, add_left_comm (f y), ←add_assoc]
     map_smul := by
       intro r x
-      dsimp
       rw [map_smul, map_smul, smul_add]
   }
 
@@ -67,11 +65,10 @@ instance instSMul [IsCommMagma R]: SMul R (A →ₗ[R] B) where
   smul r f := {
     toFun x := r • f x
     map_add := by
-      intro x y; dsimp
+      intro x y
       rw [map_add, smul_add]
     map_smul := by
       intro r x
-      dsimp
       rw [map_smul, smul_comm]
   }
 
@@ -128,7 +125,6 @@ instance instNeg [IsAddCommMagma B] : Neg (A →ₗ[R] B) where
       simp [map_add, neg_add_rev]
       rw [add_comm]
     map_smul {r m} := by
-      simp
       rw [neg_smul', map_smul]
   }
 

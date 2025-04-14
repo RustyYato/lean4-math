@@ -90,7 +90,6 @@ instance {P: α -> Prop} [DecidablePred P] [Encodable α] : Encodable (Subtype P
     else
       .none
   spec x := by
-    dsimp
     split
     rename_i h
     erw [decode'_spec] at h

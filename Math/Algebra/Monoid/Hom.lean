@@ -24,7 +24,6 @@ def nsmulHom [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (n: ℕ) : �
   map_zero := by simp
   map_add := by
     intro x y
-    simp
     rw [nsmul_add]
 
 def npowHom [MonoidOps α] [IsMonoid α] [IsCommMagma α] (n: ℕ) : α →* α where
@@ -32,7 +31,6 @@ def npowHom [MonoidOps α] [IsMonoid α] [IsCommMagma α] (n: ℕ) : α →* α 
   map_one := by simp
   map_mul := by
     intro x y
-    simp
     rw [mul_npow]
 
 def npowHom₀ [MonoidOps α] [Zero α] [IsMonoid α] [IsCommMagma α] [IsMulZeroClass α] (n: ℕ) (h: 0 < n) : α →*₀ α := {

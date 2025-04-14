@@ -463,51 +463,51 @@ def LinearEmbedding.copy (f: α ↪ₗ[R] β) (g: α -> β) (h: f = g) : α ↪�
   f.toEmbedding.copy g h, f.toAddHom.copy g h, f.toSMulHom.copy g h with
 }
 
-def ZeroHom.id (α: Type*) [Zero α] : ZeroHom α α where
-  toFun := _root_.id
+protected def ZeroHom.id (α: Type*) [Zero α] : ZeroHom α α where
+  toFun := id
   map_zero := rfl
 
-def OneHom.id (α: Type*) [One α] : OneHom α α where
-  toFun := _root_.id
+protected def OneHom.id (α: Type*) [One α] : OneHom α α where
+  toFun := id
   map_one := rfl
 
-def AddHom.id (α: Type*) [Add α] : AddHom α α where
-  toFun := _root_.id
+protected def AddHom.id (α: Type*) [Add α] : AddHom α α where
+  toFun := id
   map_add := rfl
 
-def MulHom.id (α: Type*) [Mul α] : MulHom α α where
-  toFun := _root_.id
+protected def MulHom.id (α: Type*) [Mul α] : MulHom α α where
+  toFun := id
   map_mul := rfl
 
-def SMulHom.id (R α: Type*) [SMul R α] : SMulHom R α α where
-  toFun := _root_.id
+protected def SMulHom.id (R α: Type*) [SMul R α] : SMulHom R α α where
+  toFun := id
   map_smul := rfl
 
-def AddGroupHom.id (α: Type*) [Zero α] [Add α] : α →+ α := {
+protected def AddGroupHom.id (α: Type*) [Zero α] [Add α] : α →+ α := {
   AddHom.id _, ZeroHom.id _ with
 }
 
-def AddGroupWithOneHom.id (α: Type*) [Zero α] [One α] [Add α] : α →+₁ α := {
+protected def AddGroupWithOneHom.id (α: Type*) [Zero α] [One α] [Add α] : α →+₁ α := {
   AddGroupHom.id _, OneHom.id _ with
 }
 
-def GroupHom.id (α: Type*) [One α] [Mul α] : α →* α := {
+protected def GroupHom.id (α: Type*) [One α] [Mul α] : α →* α := {
   MulHom.id _, OneHom.id _ with
 }
 
-def GroupWithZeroHom.id (α: Type*) [Zero α] [One α] [Mul α] : α →*₀ α := {
+protected def GroupWithZeroHom.id (α: Type*) [Zero α] [One α] [Mul α] : α →*₀ α := {
   GroupHom.id _, ZeroHom.id _ with
 }
 
-def RngHom.id (α: Type*) [Zero α] [Add α] [Mul α] : α →+*₀ α := {
+protected def RngHom.id (α: Type*) [Zero α] [Add α] [Mul α] : α →+*₀ α := {
   MulHom.id _, AddGroupHom.id _ with
 }
 
-def RingHom.id (α: Type*) [Zero α] [One α] [Add α] [Mul α] : α →+* α := {
+protected def RingHom.id (α: Type*) [Zero α] [One α] [Add α] [Mul α] : α →+* α := {
   GroupHom.id _, AddGroupHom.id _ with
 }
 
-def LinearMap.id (α: Type*) [Add α] [SMul R α] : α →ₗ[R] α := {
+protected def LinearMap.id (α: Type*) [Add α] [SMul R α] : α →ₗ[R] α := {
   AddHom.id _, SMulHom.id _ _ with
 }
 
@@ -797,20 +797,20 @@ def RingEquiv.toHom (h: α ≃+* β) : α →+* β := h
 def RngEquiv.toHom (h: α ≃+*₀ β) : α →+*₀ β := h
 def LinearEquiv.toHom (h: α ≃ₗ[R] β) : α →ₗ[R] β := h
 
-@[simp] def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-@[simp] def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-@[simp] def AddGroupWithOneEquiv.coe_symm (h: α ≃+₁ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-@[simp] def AddGroupWithOneEquiv.symm_coe (h: α ≃+₁ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-@[simp] def GroupEquiv.coe_symm (h: α ≃* β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-@[simp] def GroupEquiv.symm_coe (h: α ≃* β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-@[simp] def GroupWithZeroEquiv.coe_symm (h: α ≃*₀ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-@[simp] def GroupWithZeroEquiv.symm_coe (h: α ≃*₀ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-@[simp] def RingEquiv.coe_symm (h: α ≃+* β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-@[simp] def RingEquiv.symm_coe (h: α ≃+* β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-@[simp] def RngEquiv.coe_symm (h: α ≃+*₀ β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-@[simp] def RngEquiv.symm_coe (h: α ≃+*₀ β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
-@[simp] def LinearEquiv.coe_symm (h: α ≃ₗ[R] β) (x: α) : h.symm (h x) = x := _root_.Equiv.coe_symm _ _
-@[simp] def LinearEquiv.symm_coe (h: α ≃ₗ[R] β) (x: β) : h (h.symm x) = x := _root_.Equiv.symm_coe _ _
+@[simp] def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def AddGroupWithOneEquiv.coe_symm (h: α ≃+₁ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def AddGroupWithOneEquiv.symm_coe (h: α ≃+₁ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def GroupEquiv.coe_symm (h: α ≃* β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def GroupEquiv.symm_coe (h: α ≃* β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def GroupWithZeroEquiv.coe_symm (h: α ≃*₀ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def GroupWithZeroEquiv.symm_coe (h: α ≃*₀ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def RingEquiv.coe_symm (h: α ≃+* β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def RingEquiv.symm_coe (h: α ≃+* β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def RngEquiv.coe_symm (h: α ≃+*₀ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def RngEquiv.symm_coe (h: α ≃+*₀ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def LinearEquiv.coe_symm (h: α ≃ₗ[R] β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def LinearEquiv.symm_coe (h: α ≃ₗ[R] β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
 
 @[simp] def AddGroupEquiv.trans_symm (h: α ≃+ β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
 @[simp] def AddGroupEquiv.symm_trans (h: α ≃+ β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
@@ -828,7 +828,6 @@ def LinearEquiv.toHom (h: α ≃ₗ[R] β) : α →ₗ[R] β := h
 def AddHom.toAddOpp (f: AddHom α β) (f_img_comm: ∀a b, f a + f b = f b + f a) : AddHom αᵃᵒᵖ β where
   toFun x := f x.get
   map_add {x y} := by
-    dsimp
     show f (y.get + x.get) = _
     rw [map_add f, f_img_comm]
 
@@ -847,7 +846,6 @@ def RingHom.toAddOpp (f: α →+* β) (f_img_comm: ∀a b, f a + f b = f b + f a
 def MulHom.toMulOpp (f: MulHom α β) (f_img_comm: ∀a b, f a * f b = f b * f a) : MulHom αᵐᵒᵖ β where
   toFun x := f x.get
   map_mul {x y} := by
-    dsimp
     show f (y.get * x.get) = _
     rw [map_mul, f_img_comm]
 

@@ -10,13 +10,11 @@ variable [QAlgebraOps α] [IsQAlgebra α]
 instance : AlgebraMap ℚ α where
   toFun q := q
   map_zero := by
-    dsimp
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
     rw [div?_eq_mul_inv?]
     simp [intCast_zero]
   map_one := by
-    dsimp
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
     rw [div?_eq_mul_inv?]
@@ -26,7 +24,6 @@ instance : AlgebraMap ℚ α where
   map_add := by
     have := (inferInstanceAs (IsQAlgebra α)).toHasChar
     intro a b
-    simp
     cases a, b with | mk a b =>
     simp
     simp [ratCast_eq_ratCastRec]

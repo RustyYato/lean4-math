@@ -58,7 +58,7 @@ private def allOn (as: List α) (bs: List β) (has: as.Nodup) (hbs: bs.Nodup) : 
       simp [head_sublists, finRange] at hb
       obtain ⟨i, rfl, rfl⟩ := hb
       exact Nodup.eraseIdx (↑i) hbs)).map fun f => by
-      have notmem_head := (has.head _ · _root_.rfl)
+      have notmem_head := (has.head _ · rfl)
       have hb : ∃a: Fin bs.length, bs[a] = b ∧ bs.eraseIdx a = bs' := by
         simp [head_sublists, finRange] at hb
         assumption
@@ -72,7 +72,7 @@ private def allOn (as: List α) (bs: List β) (has: as.Nodup) (hbs: bs.Nodup) : 
         simp [allOn₁, allOn₂]
         dsimp only
         split
-        rw [dif_pos _root_.rfl]
+        rw [dif_pos rfl]
         symm; congr
         rw [dif_neg]
         simp
@@ -91,7 +91,7 @@ private def allOn (as: List α) (bs: List β) (has: as.Nodup) (hbs: bs.Nodup) : 
       · intro ⟨x, hx⟩
         simp [allOn₁, allOn₂]
         split
-        rw [dif_pos _root_.rfl]
+        rw [dif_pos rfl]
         symm; congr
         rw [dif_neg]
         simp
@@ -143,7 +143,7 @@ private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nod
         intro h
         have has := has
         rw [←h] at has
-        have := (has.head _ hx _root_.rfl)
+        have := (has.head _ hx rfl)
         contradiction
       · apply ih
     · intro ⟨(b₀, bs₀'), hb₀⟩ ⟨(b₁, bs₁'), hb₁⟩
@@ -162,7 +162,7 @@ private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nod
       simp [head_sublists, finRange] at hb₀ hb₁
       obtain ⟨i, rfl, rfl⟩ := hb₀
       obtain ⟨j, eq, rfl⟩ := hb₁
-      apply And.intro _root_.rfl
+      apply And.intro rfl
       congr 1; symm
       exact nodup_getElem_inj hbs eq
 
@@ -187,7 +187,7 @@ private def mem_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup
         refine (mem_erase_of_ne ?_).mpr ?_
         intro h
         cases f.inj (Subtype.val_inj h)
-        have := (has.head _ · _root_.rfl) x.property
+        have := (has.head _ · rfl) x.property
         contradiction
         apply Subtype.property (p := (· ∈ bs))⟩
       invFun x := ⟨f.symm ⟨x.val, by
@@ -227,7 +227,7 @@ private def mem_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup
       exact b.property
       rw [getElem_idxOf]
       exact b.property
-      rw [erase_eq_eraseIdx_of_idxOf _ _ _ _root_.rfl]
+      rw [erase_eq_eraseIdx_of_idxOf rfl]
     · ext ⟨x, hx⟩
       simp
       simp [Equiv.allOn₁]

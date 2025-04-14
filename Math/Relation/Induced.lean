@@ -21,7 +21,6 @@ def Subtype.inducedEquiv (f: α ↪ β) (r: α -> α -> Prop) : r ≃r Subtype.i
     congr
     rw [←Classical.choose_spec hx]
   resp_rel := by
-    dsimp
     intro x y
     apply Iff.intro
     intro h

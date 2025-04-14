@@ -366,7 +366,7 @@ def sum_sum_index
     obtain ⟨i, _, rfl⟩ := h
     apply h₁
     intro x y
-    dsimp; repeat rw [←sum_eq_sum' (g := g₁) (resp := by
+    repeat rw [←sum_eq_sum' (g := g₁) (resp := by
       intro i h
       rw [h, h₁])]
     rw [sum_eq_support_max_sum _ _ _ _ (Finsupp.support_add x y)]

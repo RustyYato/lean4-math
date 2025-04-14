@@ -21,5 +21,7 @@ instance : LargeCategory Cat where
 def Cat.toSet : Cat.{v, u} ⥤ Type u where
   obj := Cat.Ty
   map := Functor.obj
+  map_id := by intros; rfl
+  map_comp := by intros; rfl
 
 end Category

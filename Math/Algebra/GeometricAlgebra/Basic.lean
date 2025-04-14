@@ -396,21 +396,15 @@ instance [RingOps R] [IsRing R] : IsRing (GA R basis) := IsRing.inst
 
 instance [RingOps R] [IsRing R] : AlgebraMap R (GA R basis) where
   toFun r := ofScalar r
-  map_zero := by
-    simp
-    rfl
-  map_one := by
-    simp
-    rfl
+  map_zero := rfl
+  map_one := rfl
   map_add {x y} := by
-    simp
     induction basis with
     | nil => rfl
     | cons v vs ih =>
       simp [ofScalar, ih]
       symm; apply add_zero
   map_mul {x y} := by
-    simp
     induction basis with
     | nil => rfl
     | cons v vs ih =>

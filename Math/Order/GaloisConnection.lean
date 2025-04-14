@@ -438,11 +438,11 @@ abbrev GaloisInsertion.liftCompleteLattice
       apply Set.mem_image'
       assumption
     sInf_le s := by
-      dsimp; rw [gi.choice_eq]
+      rw [gi.choice_eq]
       apply (gi.isGLB_of_u_image (isGLB_sInf _)).left
       assumption
     le_sInf s _ := by
-      dsimp; rw [gi.choice_eq]
+      rw [gi.choice_eq]
       apply (gi.isGLB_of_u_image (isGLB_sInf _)).right }
 
 end GaloisInsertion

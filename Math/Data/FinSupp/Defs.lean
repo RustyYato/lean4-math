@@ -303,7 +303,6 @@ def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: Finsupp α β S) : Fin
     return {
       val := FiniteSupportSet.singleton a ⊔ fs
       property x ne := by
-        dsimp only at ne
         apply FiniteSupportSet.coe_max_sub_max_coe
         apply Finset.mem_union.mpr
         split at ne
@@ -321,7 +320,6 @@ def erase [DecidableEq α] [Zero β] (a: α) (f: Finsupp α β S) : Finsupp α �
     return {
       val := FiniteSupportSet.remove a fs
       property x ne := by
-        dsimp only at ne
         split at ne
         contradiction
         have := hf x ne

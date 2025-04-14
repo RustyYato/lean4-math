@@ -72,19 +72,15 @@ def embed_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S
     apply f.inj
     apply Subtype.mk.inj eq
   map_zero := by
-    dsimp
     congr
     rw [map_zero]
   map_one := by
-    dsimp
     congr
     rw [map_one]
   map_add {x y} := by
-    dsimp
     congr
     rw [map_add]
   map_mul {x y} := by
-    dsimp
     congr
     rw [map_mul]
 

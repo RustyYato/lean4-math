@@ -1,16 +1,17 @@
 import Math.Type.Notation
 import Math.Tactics.PPWithUniv
 import Math.Data.Opposite
+import Math.Function.Basic
 
 @[pp_with_univ]
 class Category.{v, u} (α: Type u) where
   Hom : α -> α -> Type v
-  id : ∀a, Hom a a
+  protected id : ∀a, Hom a a
   comp : ∀{a b c: α}, Hom b c -> Hom a b -> Hom a c
-  id_comp: ∀{a b} (h: Hom a b), comp (id b) h = h := by intros; simp; try rfl
-  comp_id: ∀{a b} (h: Hom a b), comp h (id a) = h := by intros; simp; try rfl
+  id_comp: ∀{a b} (h: Hom a b), comp (id b) h = h := by intros; rfl
+  comp_id: ∀{a b} (h: Hom a b), comp h (id a) = h := by intros; rfl
   comp_assoc: ∀{a b c d: α} (f: Hom c d) (g: Hom b c) (h: Hom a b),
-    comp f (comp g h) = comp (comp f g) h := by intros; simp; try rfl
+    comp f (comp g h) = comp (comp f g) h := by intros; try rfl
 
 namespace Category
 
@@ -114,7 +115,7 @@ end
 @[pp_with_univ]
 instance Set.{u} : LargeCategory (Type u) where
   Hom α β := α -> β
-  id _ := _root_.id
+  id _ := id
   comp f g := f ∘ g
 
 end Category

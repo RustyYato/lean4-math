@@ -416,7 +416,6 @@ def giGenerate [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeMin �
   choice s hs := FilterBase.mkOfClosure s (le_antisymm hs <| le_generate_iff.1 <| by
     rw [generate_eq_generate_nonempty])
   choice_eq s _ := by
-    dsimp
     apply ext
     intro x
     unfold FilterBase.mkOfClosure

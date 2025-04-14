@@ -318,11 +318,11 @@ def Subgroup.equiv_of_embed [GroupOps β] [IsGroup β] (h: α ↪* β) : α ≃*
     congr
     exact (Classical.choose_spec x.property).symm
   map_one := by
-    dsimp; congr
+    congr
     rw [map_one]
   map_mul := by
     intro a b
-    dsimp; congr
+    congr
     rw [map_mul]
 
 noncomputable
@@ -341,11 +341,11 @@ def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) 
     congr
     exact (Classical.choose_spec x.property).symm
   map_zero := by
-    dsimp; congr
+    congr
     rw [map_zero]
   map_add := by
     intro a b
-    dsimp; congr
+    congr
     rw [map_add]
 
 @[simp]

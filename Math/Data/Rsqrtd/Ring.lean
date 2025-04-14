@@ -71,7 +71,6 @@ def normHom : (R√d) →* R where
   toFun := norm
   map_one := by simp [norm]
   map_mul {x y} := by
-    simp
     apply coe_inj
     simp
     repeat erw [norm_eq_mul_conj]

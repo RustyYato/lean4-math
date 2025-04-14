@@ -164,12 +164,10 @@ instance [SemiringOps R] : AlgebraMap R (FreeAlgebra R X) where
   map_one := rfl
   map_add := by
     intro x y
-    dsimp
     apply Quotient.sound
     apply Rel.add_scalar
   map_mul := by
     intro x y
-    dsimp
     apply Quotient.sound
     apply Rel.mul_scalar
 

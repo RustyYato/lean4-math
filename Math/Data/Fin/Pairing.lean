@@ -62,8 +62,8 @@ def Equiv.finProd : Fin n × Fin m ≃ Fin (n * m) where
   leftInv x := by simp
   rightInv x := by simp
 
-@[simp] def Equiv.symm_finProd_fst (x: Fin (n * m)) : (Equiv.finProd.symm x).1 = x.pair_left := _root_.rfl
-@[simp] def Equiv.symm_finProd_snd (x: Fin (n * m)) : (Equiv.finProd.symm x).2 = x.pair_right := _root_.rfl
+@[simp] def Equiv.symm_finProd_fst (x: Fin (n * m)) : (Equiv.finProd.symm x).1 = x.pair_left := rfl
+@[simp] def Equiv.symm_finProd_snd (x: Fin (n * m)) : (Equiv.finProd.symm x).2 = x.pair_right := rfl
 
 def Fin.pair.inj : Function.Injective₂ (Fin.pair (n := n) (m := m)) := by
   intro a b c d h

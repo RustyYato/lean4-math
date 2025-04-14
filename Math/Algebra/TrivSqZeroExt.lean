@@ -263,7 +263,7 @@ private def snd_npow' (x: TrivSqZeroExt R M) (n: ℕ) : snd (npow' n x) = ((List
     rw [smul_list_sum]
     simp
     congr
-    ext i; simp
+    ext i
     simp [←mul_smul, ←MulOpp.mk_mul, ←npow_succ]
     congr 3
     rw [Nat.add_comm, Nat.sub_add_eq]

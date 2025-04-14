@@ -7,7 +7,7 @@ structure Functor (C D: Type*) [Category C] [Category D] where
   obj: C -> D
   map: ∀{X Y: C}, X ⟶ Y -> obj X ⟶ obj Y
   map_id: ∀{X: C}, map (𝟙 X) = 𝟙 (obj X) := by intros; simp; try rfl
-  map_comp: ∀{X Y Z: C} (f: Y ⟶ Z) (g: X ⟶ Y), map (f ≫ g) = map f ≫ map g := by intros; simp; try rfl
+  map_comp: ∀{X Y Z: C} (f: Y ⟶ Z) (g: X ⟶ Y), map (f ≫ g) = map f ≫ map g := by intros; try simp; try rfl
 
 scoped infixr:26 " ⥤ " => Functor
 

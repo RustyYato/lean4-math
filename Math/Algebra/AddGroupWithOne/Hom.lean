@@ -18,6 +18,5 @@ def intCast_AddGroupHom
   toFun n := n
   map_zero := intCast_zero
   map_add := by
-    dsimp
     intro x y
     rw [intCast_add]

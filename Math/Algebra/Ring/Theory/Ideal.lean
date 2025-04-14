@@ -176,13 +176,11 @@ def Ideal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (Ideal R) _ _ R.toI
   }
   choice_eq := by
     intro S h
-    simp
     apply le_antisymm
     apply Generate.of
     apply h
   gc := by
     intro a b
-    dsimp
     apply Iff.intro
     · intro h x x_in_a
       exact h x (Ideal.Generate.of _ x_in_a)
@@ -272,13 +270,11 @@ def LeftIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (LeftIdeal R) _
   }
   choice_eq := by
     intro S h
-    simp
     apply le_antisymm
     apply Generate.of
     apply h
   gc := by
     intro a b
-    dsimp
     apply Iff.intro
     · intro h x x_in_a
       exact h x (LeftIdeal.Generate.of _ x_in_a)
@@ -367,13 +363,11 @@ def RightIdeal.giGenerate (R: Ring α) : @GaloisInsertion (Set R) (RightIdeal R)
   }
   choice_eq := by
     intro S h
-    simp
     apply le_antisymm
     apply Generate.of
     apply h
   gc := by
     intro a b
-    dsimp
     apply Iff.intro
     · intro h x x_in_a
       exact h x (RightIdeal.Generate.of _ x_in_a)

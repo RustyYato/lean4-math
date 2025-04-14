@@ -285,7 +285,6 @@ def toInt_intCast (x: ZMod n) : x.toInt = x := by
 def homOfDvd (n m: ℕ) (h: m ∣ n) : ZMod n →+* ZMod m where
   toFun n := toInt n
   map_zero := by
-    dsimp
     cases n <;> unfold toInt <;> dsimp
     rw [map_zero, intCast_zero]
     rw [map_zero]

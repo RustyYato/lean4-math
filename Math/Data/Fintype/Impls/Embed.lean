@@ -5,7 +5,7 @@ open List
 
 namespace Embedding
 
-variable [_root_.DecidableEq α]
+variable [DecidableEq α]
 
 private def allOn (as: List α) (bs: List β) (hbs: bs.Nodup) : List (as ↪ bs) :=
   match as with
@@ -77,7 +77,7 @@ private def nodup_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nod
     · apply (List.nodup_attach _).mp
       apply nodup_head_sublists
       assumption
-    · have : a ∉ as := (has.head _ · _root_.rfl)
+    · have : a ∉ as := (has.head _ · rfl)
       intro ⟨x, hx⟩
       apply List.nodup_map
       · intro f₀ f₁ eq
@@ -129,7 +129,7 @@ private def mem_allOn {as: List α} {bs: List β} {has: as.Nodup} {hbs: bs.Nodup
         apply Subtype.property
         intro h
         cases (f.inj (Subtype.val_inj h))
-        exact has.head a.val a.property _root_.rfl)⟩
+        exact has.head a.val a.property rfl)⟩
       inj' := by
         intro ⟨x, hx⟩ ⟨y, hy⟩ eq
         dsimp at eq
