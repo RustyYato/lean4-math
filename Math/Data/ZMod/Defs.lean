@@ -169,8 +169,13 @@ def ofInt_toInt (x: ZMod n) : ofInt n (toInt x) = x := by
   congr
   rw [Nat.mod_eq_of_lt x.isLt]
 
-def lift (n: ℕ) {A: Type*} [AddGroupOps A] [IsAddGroup A] : { f: ℤ →+ A // f n = 0 } ≃ (ZMod n →+ A) :=
-  have (f: {f: ℤ →+ A // f n = 0}) : ∀x, n • f.val x = 0 := by
+@[induction_eliminator]
+def induction {n: ℕ} {motive: ZMod n -> Prop} (ofInt: ∀x: ℤ, motive (ZMod.ofInt n x)) : ∀x, motive x := by
+  intro x
+  rw [←ofInt_toInt x]
+  apply ofInt
+
+private def liftHelper {n: ℕ} {A: Type*} [AddGroupOps A] [IsAddGroup A] (f: {f: ℤ →+ A // f n = 0}) : ∀x, n • f.val x = 0 := by
     suffices ∀x: ℕ, n • f.val x = 0 by
       intro x
       cases x with
@@ -184,6 +189,12 @@ def lift (n: ℕ) {A: Type*} [AddGroupOps A] [IsAddGroup A] : { f: ℤ →+ A //
     induction x with
     | zero => rw [mul_zero, natCast_zero, map_zero]
     | succ x ih => rw [Nat.mul_succ, natCast_add, map_add, ih, f.property, add_zero]
+
+section
+
+variable {A: Type*} [AddGroupOps A] [IsAddGroup A]
+
+def lift (n: ℕ) : { f: ℤ →+ A // f n = 0 } ≃ (ZMod n →+ A) :=
   match n with
   | 0 => {
     toFun f := f.1
@@ -203,7 +214,7 @@ def lift (n: ℕ) {A: Type*} [AddGroupOps A] [IsAddGroup A] : { f: ℤ →+ A //
         rw (occs := [2]) [←Nat.div_add_mod (x.val + y.val) (n + 1)]
         rw (occs := [3]) [natCast_add]
         rw [natCast_mul, map_add, ←smul_eq_mul, zsmul_ofNat, map_nsmul]
-        rw [this, zero_add]
+        rw [liftHelper, zero_add]
     }
     invFun f := {
       val := f.comp (toAddGroupHom (ofInt _))
@@ -216,7 +227,7 @@ def lift (n: ℕ) {A: Type*} [AddGroupOps A] [IsAddGroup A] : { f: ℤ →+ A //
       simp
       show f.val (toInt (ofInt _ x)) = f.val x
       rw [toInt_ofInt, ←zero_add (f.val _)]
-      rw (occs := [1]) [←this f (x / (n + 1: ℕ))]
+      rw (occs := [1]) [←liftHelper f (x / (n + 1: ℕ))]
       rw [←map_nsmul, ←map_add, ←zsmul_ofNat,
         smul_eq_mul, Int.ediv_add_emod]
     rightInv f := by
@@ -225,5 +236,85 @@ def lift (n: ℕ) {A: Type*} [AddGroupOps A] [IsAddGroup A] : { f: ℤ →+ A //
       show f (ofInt _ (toInt x)) = f x
       rw [ofInt_toInt]
   }
+
+def apply_lift (n: ℕ) (f: { f: ℤ →+ A // f n = 0 }) (x: ZMod n) : lift n f x = f.val (toInt x) := by
+  cases n <;> rfl
+
+def symm_apply_lift (n: ℕ) (f: ZMod n →+ A) (x: ℤ) : ((lift n).symm f).val x = f (ofInt n x) := by
+  cases n <;> rfl
+
+def lift_ofInt (n: ℕ) (f: { f: ℤ →+ A // f n = 0 }) : lift n f (ofInt n x) = f.val x := by
+  cases n
+  rfl
+  rename_i n
+  have : ((lift (n + 1)).invFun ((lift (n + 1)).toFun f)).val = (f.val: _ -> _) := by rw [(lift (n + 1) (A := A)).leftInv f]
+  apply congrFun this
+
+def symm_lift_toInt (n: ℕ) (f: ZMod n →+ A) (x: ZMod n) : ((lift n).symm f).val (toInt x) = f x := by
+  cases n
+  rfl
+  rename_i n
+  have : (lift (n + 1)).toFun ((lift (n + 1)).invFun f) = (f: _ -> _) := by rw [(lift (n + 1) (A := A)).rightInv f]
+  apply congrFun this
+
+end
+
+section
+
+variable {A: Type*} [RingOps A] [IsRing A]
+
+def liftRing (n: ℕ) : { f: ℤ →+* A // f n = 0 } ≃ (ZMod n →+* A) := {
+  toFun f := {
+    lift n ⟨f.val.toAddGroupHom, f.property⟩ with
+    map_one := by
+      show lift _ _ _ = _
+      rw [←map_one (ofInt _), lift_ofInt]
+      apply map_one f.val
+    map_mul {x y} := by
+      show lift _ _ _ = lift _ _ _ * lift _ _ _
+      simp
+      induction x with | ofInt x =>
+      induction y with | ofInt y =>
+      rw [←map_mul, lift_ofInt, lift_ofInt, lift_ofInt]
+      apply map_mul f.val
+  }
+  invFun f := {
+    val := f.comp (toRingHom (ofInt _))
+    property := by
+      show f (ofInt _ _) = 0
+      rw [map_natCast, n_eq_zero, map_zero]
+  }
+  leftInv f := by
+    ext x
+    show lift n _ (ofInt n _) = _
+    apply lift_ofInt
+  rightInv f := by
+    ext x
+    induction x with | ofInt x =>
+    erw [lift_ofInt]
+    rfl
+}
+
+def apply_liftRing (n: ℕ) (f: { f: ℤ →+* A // f n = 0 }) (x: ZMod n) : liftRing n f x = f.val (toInt x) := by
+  cases n <;> rfl
+
+def symm_apply_liftRing (n: ℕ) (f: ZMod n →+* A) (x: ℤ) : ((liftRing n).symm f).val x = f (ofInt n x) := by
+  cases n <;> rfl
+
+def liftRing_ofInt (n: ℕ) (f: { f: ℤ →+* A // f n = 0 }) : liftRing n f (ofInt n x) = f.val x := by
+  cases n
+  rfl
+  rename_i n
+  have : ((liftRing (n + 1)).invFun ((liftRing (n + 1)).toFun f)).val = (f.val: _ -> _) := by rw [(liftRing (n + 1) (A := A)).leftInv f]
+  apply congrFun this
+
+def symm_liftRing_toInt (n: ℕ) (f: ZMod n →+* A) (x: ZMod n) : ((liftRing n).symm f).val (toInt x) = f x := by
+  cases n
+  rfl
+  rename_i n
+  have : (liftRing (n + 1)).toFun ((liftRing (n + 1)).invFun f) = (f: _ -> _) := by rw [(liftRing (n + 1) (A := A)).rightInv f]
+  apply congrFun this
+
+end
 
 end ZMod
