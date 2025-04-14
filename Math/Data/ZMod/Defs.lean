@@ -1,8 +1,10 @@
 import Math.Algebra.Ring.Char
 import Math.Algebra.Ring.Basic
+import Math.Algebra.Algebra.Hom
 import Math.Algebra.Ring.Units.Defs
 import Math.Algebra.Field.Impls.Fin
 import Math.Order.OrderIso
+import Math.Algebra.AddGroupWithOne.Hom
 
 def ZMod : ℕ -> Type
 | 0 => ℤ
@@ -136,5 +138,92 @@ def toUnit : { x: ZMod n // Int.gcd x.toInt n = 1 } ≃ Units (ZMod n) where
 
 @[simp] def apply_toUnit_val (x: { x: ZMod n // Int.gcd x.toInt n = 1 }) : (toUnit x).val = x.val := preToUnit_val _ _
 @[simp] def apply_symm_toUnit (x: Units (ZMod n)) : (toUnit.symm x).val = x.val := rfl
+
+def ofInt (n: ℕ) : ℤ →ₐ[ℤ] ZMod n := {
+    toFun x := x
+    map_add {x y} := by rw [intCast_add]
+    map_mul {x y} := by rw [intCast_mul]
+    map_algebraMap x := rfl
+  }
+
+def apply_ofInt (n: ℕ) (x: ℤ) : ofInt n x = x := rfl
+
+def toInt_ofInt (x: ℤ) : toInt (ofInt n x) = x % n := by
+  cases n
+  erw [Int.emod_zero]; rfl
+  rename_i n
+  show Fin.val _ = x % (n + 1)
+  rw [apply_ofInt, ←Int.ofNat_succ]
+  show Fin.val ⟨Int.toNat _, _⟩ = x % (n + 1)
+  simp
+  rw [max_eq_left.mpr]
+  apply Int.emod_nonneg
+  omega
+def ofInt_toInt (x: ZMod n) : ofInt n (toInt x) = x := by
+  cases n
+  rfl
+  rename_i n
+  rw [apply_ofInt]
+  erw [intCast_ofNat]
+  show ⟨x.val % (n + 1: ℕ), _⟩ = x
+  congr
+  rw [Nat.mod_eq_of_lt x.isLt]
+
+def lift (n: ℕ) {A: Type*} [AddGroupOps A] [IsAddGroup A] : { f: ℤ →+ A // f n = 0 } ≃ (ZMod n →+ A) :=
+  have (f: {f: ℤ →+ A // f n = 0}) : ∀x, n • f.val x = 0 := by
+    suffices ∀x: ℕ, n • f.val x = 0 by
+      intro x
+      cases x with
+      | ofNat x => apply this
+      | negSucc x =>
+        rw [Int.negSucc_eq, map_neg, ←zsmul_ofNat, zsmul_neg,
+          ←Int.ofNat_succ, zsmul_ofNat, this, neg_zero]
+    intro x
+    rw [←map_nsmul]
+    show f.val ((n * x: ℕ)) = 0
+    induction x with
+    | zero => rw [mul_zero, natCast_zero, map_zero]
+    | succ x ih => rw [Nat.mul_succ, natCast_add, map_add, ih, f.property, add_zero]
+  match n with
+  | 0 => {
+    toFun f := f.1
+    invFun f := ⟨f, map_zero f⟩
+    leftInv _ := rfl
+    rightInv _ := rfl
+  }
+  | n + 1 => {
+    toFun f := {
+      toFun x := f.val x.toInt
+      map_zero := map_zero f.val
+      map_add {x y} := by
+        show f.val ((x.val + y.val) % (n + 1): ℕ) = _
+        rw [←map_add f.val]
+        show _ = f.val (x.val + y.val)
+        rw [←natCast_add]
+        rw (occs := [2]) [←Nat.div_add_mod (x.val + y.val) (n + 1)]
+        rw (occs := [3]) [natCast_add]
+        rw [natCast_mul, map_add, ←smul_eq_mul, zsmul_ofNat, map_nsmul]
+        rw [this, zero_add]
+    }
+    invFun f := {
+      val := f.comp (toAddGroupHom (ofInt _))
+      property := by
+        show f (ofInt _ _) = 0
+        rw [map_natCast, n_eq_zero, map_zero]
+    }
+    leftInv f := by
+      ext x
+      simp
+      show f.val (toInt (ofInt _ x)) = f.val x
+      rw [toInt_ofInt, ←zero_add (f.val _)]
+      rw (occs := [1]) [←this f (x / (n + 1: ℕ))]
+      rw [←map_nsmul, ←map_add, ←zsmul_ofNat,
+        smul_eq_mul, Int.ediv_add_emod]
+    rightInv f := by
+      ext x
+      simp
+      show f (ofInt _ (toInt x)) = f x
+      rw [ofInt_toInt]
+  }
 
 end ZMod

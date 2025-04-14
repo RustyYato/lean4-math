@@ -411,10 +411,16 @@ def zsmul_add [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a 
   | succ y ih => rw [succ_zsmul, ih, add_comm a b, add_assoc, ←add_assoc (y • b), ←succ_zsmul, add_comm _ a, ←add_assoc, ←succ_zsmul]
   | pred y ih => rw [pred_zsmul, ih, sub_eq_add_neg, neg_add_rev a b, add_assoc, ←add_assoc (y • b), ←sub_eq_add_neg _ b, ←pred_zsmul, add_comm _ (-a), ←add_assoc, ←sub_eq_add_neg, ←pred_zsmul]
 
-def zsmul_neg [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a: α) : x • (-a) = -(x • a) := by
-  symm
-  apply neg_eq_of_add
-  rw [←zsmul_add, add_neg_cancel, zsmul_zero]
+def nsmul_neg [IsAddGroup α] (x: ℕ) (a: α) : x • (-a) = -(x • a) := by
+  induction x with
+  | zero => simp
+  | succ n ih => rw [succ_nsmul, succ_nsmul', neg_add_rev, ih]
+
+def zsmul_neg [IsAddGroup α] (x: ℤ) (a: α) : x • (-a) = -(x • a) := by
+  cases x
+  rw [zsmul_ofNat, zsmul_ofNat, nsmul_neg]
+  rw [Int.negSucc_eq, neg_zsmul, neg_zsmul,
+    ←Int.ofNat_succ, zsmul_ofNat, zsmul_ofNat, nsmul_neg]
 
 def zsmul_sub [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a - b) = x • a - x • b := by
   rw [sub_eq_add_neg, sub_eq_add_neg, zsmul_add, zsmul_neg]
@@ -443,7 +449,10 @@ def zpow_neg [IsGroup α] (x: ℤ) (a: α) : a ^ (-x) = (a ^ x)⁻¹ :=
 def mul_zpow [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a * b) ^ x = a ^ x * b ^ x :=
   zsmul_add (α := AddOfMul α) _ _ _
 
-def inv_zpow [IsGroup α] [IsCommMagma α] (x: ℤ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
+def inv_npow [IsGroup α] (x: ℕ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
+  nsmul_neg (α := AddOfMul α) _ _
+
+def inv_zpow [IsGroup α] (x: ℤ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
   zsmul_neg (α := AddOfMul α) _ _
 
 def div_zpow [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a / b) ^ x = a ^ x / b ^ x :=
