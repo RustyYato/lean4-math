@@ -418,4 +418,12 @@ def gcd_eq_gcd_ab (x y: Nat) : gcd x y = x * gcdA x y + y * gcdB x y := by
   dsimp at *
   assumption
 
+def gcd_eq_dvd_lincomb (a b: Nat) : ∀x y, gcd a b ∣ a * x + b * y := by
+  intro x y
+  obtain ⟨a₀, aeq⟩ := Nat.gcd_dvd_left a b
+  obtain ⟨b₀, beq⟩ := Nat.gcd_dvd_right a b
+  rw (occs := [2]) [beq, aeq]
+  rw [Nat.mul_assoc, Nat.mul_assoc, ←Nat.mul_add]
+  apply Nat.dvd_mul_right
+
 end Nat

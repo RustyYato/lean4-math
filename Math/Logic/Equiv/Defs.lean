@@ -62,6 +62,8 @@ def copy (f: α ↪ β) (g: α -> β) (h: f = g) : α ↪ β where
   toFun := g
   inj' := h ▸ f.inj
 
+@[simp] def apply_trans (f: α ↪ β) (g: β ↪ γ) (x: α) : f.trans g x = g (f x) := rfl
+
 end Embedding
 
 namespace Equiv
