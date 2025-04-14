@@ -127,6 +127,30 @@ def instIsLinearLattice {_: LE α} [LT α] {_: LE β} [LT β]
   (h: F)
   : IsLinearLattice α := { instIsLinearOrder h, instIsLattice h with }
 
+def instIsDecidableLinearOrder {_: LE α} [LT α] {_: LE β} [LT β]
+  [Min α] [Min β] [Max α] [Max β]
+  [IsDecidableLinearOrder β]
+  [IsLawfulLT α]
+  [EmbeddingLike F α β] [IsOrderHom F α β] [IsMinHom F α β] [IsMaxHom F α β]
+  (h: F)
+  : IsDecidableLinearOrder α :=
+  have := instIsLinearLattice h
+  {
+    decLE a b := decidable_of_iff (h a ≤ h b) <| (map_le h).symm
+    min_def a b := by
+      split
+      rwa [min_eq_left]
+      rw [min_eq_right]
+      apply le_of_not_le
+      assumption
+    max_def a b := by
+      split
+      rwa [max_eq_right]
+      rw [max_eq_left]
+      apply le_of_not_le
+      assumption
+  }
+
 end
 
 namespace OrderEmbedding
