@@ -1,6 +1,7 @@
 import Math.Algebra.Semigroup.Con
 import Math.Algebra.Monoid.Defs
 import Math.Algebra.Hom.Defs
+import Math.Algebra.Con.Basic
 
 variable {C α: Type*} [RelLike C α] (c: C)
 
@@ -51,3 +52,17 @@ def IsMulCon.mkQuot [MonoidOps α] [IsMonoid α] [IsMulCon C] : α →* IsCon.Qu
   toFun a := IsCon.mkQuot c a
   map_one := rfl
   map_mul := rfl
+
+def AddCon.mkQuot_kernel [AddMonoidOps α] [IsAddMonoid α] (c: AddCon α) : AddCon.kernel (IsAddCon.mkQuot c) = c := by
+  apply le_antisymm
+  · intro x y h
+    exact Quotient.exact h
+  · intro x y h
+    exact Quotient.sound h
+
+def MulCon.mkQuot_kernel [MonoidOps α] [IsMonoid α] (c: MulCon α) : MulCon.kernel (IsMulCon.mkQuot c) = c := by
+  apply le_antisymm
+  · intro x y h
+    exact Quotient.exact h
+  · intro x y h
+    exact Quotient.sound h

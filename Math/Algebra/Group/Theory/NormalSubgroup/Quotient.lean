@@ -5,6 +5,31 @@ namespace NormalSubgroup
 
 variable [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β]
 
+protected def ofCon (c: MulCon α) : NormalSubgroup α where
+  carrier := Set.mk (c 1 ·)
+  mem_one := c.refl _
+  mem_mul := by
+    intro a b ha hb
+    show c 1 (a * b)
+    rw [←mul_one 1]
+    apply resp_mul
+    assumption
+    assumption
+  mem_inv := by
+    intro a ha
+    show c 1 (a⁻¹)
+    rw [←inv_one]
+    apply resp_inv
+    assumption
+  mem_conj := by
+    intro x a ha
+    simp
+    rw [←map_one (Group.conj x)]
+    rw [Group.apply_conj, Group.apply_conj]
+    apply resp_mul
+    apply resp_mul
+    rfl; assumption; rfl
+
 protected def Con (s: NormalSubgroup α) : MulCon α where
   r a b := a / b ∈ s
   iseqv := {
@@ -34,6 +59,29 @@ protected def Con (s: NormalSubgroup α) : MulCon α where
     rw (occs := [1]) [←inv_inv c]
     apply mem_conj
     assumption
+
+def equivCon : NormalSubgroup α ≃ MulCon α where
+  toFun := NormalSubgroup.Con
+  invFun := NormalSubgroup.ofCon
+  leftInv s := by
+    ext x
+    apply Iff.trans (Relation.symm_iff (r := s.Con))
+    show x / 1 ∈ s ↔ x ∈ s
+    rw [div_one]
+  rightInv c := by
+    apply le_antisymm
+    intro a b
+    show c 1 (a / b) -> _
+    intro h
+    have := resp_mul c (z := b) h (by rfl)
+    rw [one_mul, div_mul_cancel] at this
+    apply Relation.symm
+    assumption
+    intro a b h
+    have := resp_mul c (z := a⁻¹) h (by rfl)
+    rw [mul_inv_cancel, ←div_eq_mul_inv] at this
+    have := resp_inv _ this
+    rwa [inv_one, inv_div] at this
 
 protected def Quotient (s: NormalSubgroup α) :=
   IsCon.Quotient s.Con
