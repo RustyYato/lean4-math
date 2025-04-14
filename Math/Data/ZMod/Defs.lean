@@ -9,14 +9,12 @@ def ZMod : ℕ -> Type
 
 namespace ZMod
 
-instance : RingOps (ZMod n) :=
-  match n with
-  | 0 => inferInstanceAs (RingOps ℤ)
-  | n + 1 => inferInstanceAs (RingOps (Fin (n + 1)))
-instance : IsRing (ZMod n) :=
-  match n with
-  | 0 => inferInstanceAs (IsRing ℤ)
-  | n + 1 => inferInstanceAs (IsRing (Fin (n + 1)))
+macro "infer_zmod_instnace" n:ident x:term : term => `(match ($n) with
+  | 0 => inferInstanceAs ($x ℤ)
+  | _ + 1 => inferInstanceAs ($x (Fin _)))
+
+instance : RingOps (ZMod n) := infer_zmod_instnace n RingOps
+instance : IsRing (ZMod n) := infer_zmod_instnace n IsRing
 
 def equivInt : ZMod 0 ≃+* Int := RingEquiv.refl
 def equivFin (n: ℕ) : ZMod (n + 1) ≃+* Fin (n + 1) := RingEquiv.refl
@@ -43,43 +41,17 @@ def toInt : ∀{n}, ZMod n ↪ ℤ
 | 0 => Embedding.rfl
 | _ + 1 => Embedding.trans Fin.embedNat ⟨Int.ofNat, by apply Int.ofNat.inj⟩
 
-instance : LE (ZMod n) where
-  le a b := a.toInt ≤ b.toInt
-instance : LT (ZMod n) where
-  lt a b := a.toInt < b.toInt
+instance : LE (ZMod n) := infer_zmod_instnace n LE
+instance : LT (ZMod n) := infer_zmod_instnace n LT
 
-instance : Min (ZMod n) where
-  min :=
-    match n with
-    | 0 => min (α := ℤ)
-    | _ + 1 => min (α := Fin _)
-instance : Max (ZMod n) where
-  max :=
-    match n with
-    | 0 => max (α := ℤ)
-    | _ + 1 => max (α := Fin _)
+instance : Min (ZMod n) := infer_zmod_instnace n Min
+instance : Max (ZMod n) := infer_zmod_instnace n Max
 
-def toIntHom : ZMod n ↪⊓⊔ Int where
-  toEmbedding := toInt
-  map_le _ _ := Iff.rfl
-  map_min a b :=
-    match n with
-    | 0 => rfl
-    | n + 1 => by
-      show Int.ofNat (min (α := Fin (n + 1)) a b).val = Int.ofNat a.val ⊓ Int.ofNat b.val
-      simp [Nat.min_def, Int.min_def]
-      split <;> rfl
-  map_max a b :=
-    match n with
-    | 0 => rfl
-    | n + 1 => by
-      show Int.ofNat (max (α := Fin (n + 1)) a b).val = Int.ofNat a.val ⊔ Int.ofNat b.val
-      simp [Nat.max_def, Int.max_def]
-      split <;> rfl
+instance : IsDecidableLinearOrder (ZMod n) := infer_zmod_instnace n IsDecidableLinearOrder
+-- this decidable eq inst is faster than from `IsDecidableLinearOrder`
+instance : DecidableEq (ZMod n) := infer_zmod_instnace n DecidableEq
 
-instance : IsLawfulLT (ZMod n) where
-  lt_iff_le_and_not_le := lt_iff_le_and_not_le (α := ℤ)
-
-instance : IsDecidableLinearOrder (ZMod n) := _root_.instIsDecidableLinearOrder toIntHom
+instance : Repr (ZMod n) := infer_zmod_instnace n Repr
+variable {n}
 
 end ZMod
