@@ -6,17 +6,17 @@ namespace SetLike
 variable {S: Type*} [SetLike S R] (A: ι -> S)
 
 class GradedOne [One R] [Zero ι] where
-  one_mem: 1 ∈ A 0
+  mem_one: 1 ∈ A 0
 
 class GradedMul [Mul R] [Add ι] where
-  mul_mem: ∀{i₀ i₁: ι} (a b: R),
+  mem_mul: ∀{i₀ i₁: ι} (a b: R),
     a ∈ A i₀ -> b ∈ A i₁ ->
     a * b ∈ A (i₀ + i₁)
 
-def _root_.gmem_one [One R] [Zero ι] [GradedOne A] : (1: R) ∈ A 0 := GradedOne.one_mem
+def _root_.gmem_one [One R] [Zero ι] [GradedOne A] : (1: R) ∈ A 0 := GradedOne.mem_one
 def _root_.gmem_mul [Mul R] [Add ι] [GradedMul A] : ∀{i₀ i₁: ι} (a b: R),
     a ∈ A i₀ -> b ∈ A i₁ ->
-    a * b ∈ A (i₀ + i₁) := GradedMul.mul_mem
+    a * b ∈ A (i₀ + i₁) := GradedMul.mem_mul
 
 instance [Zero ι] [One R] [GradedOne A] : GOne (fun i => A i) where
   gOne := ⟨1, gmem_one A⟩
@@ -54,7 +54,9 @@ private def ext' (a b: GradedMonoid fun i => ↑(A i)) : a.fst = b.fst -> a.snd.
   cases h; cases g
   rfl
 
-instance : IsGMonoid (fun i => A i) where
+instance instGMonoidOps : GMonoidOps (fun i => A i) := inferInstance
+
+instance instIsGMonoid : IsGMonoid (fun i => A i) where
   mul_assoc a b c := by
     ext; apply add_assoc
     apply mul_assoc
@@ -71,9 +73,11 @@ instance : IsGMonoid (fun i => A i) where
     ext; apply succ_nsmul
     apply npow_succ
 
-instance [IsAddCommMagma ι] [IsCommMagma R] : IsGCommMagma (fun i => A i) where
+instance instIsGCommMagma [IsAddCommMagma ι] [IsCommMagma R] : IsGCommMagma (fun i => A i) where
   mul_comm a b := by
     ext; apply add_comm
     apply mul_comm
+
+
 
 end SetLike
