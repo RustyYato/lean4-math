@@ -1,5 +1,41 @@
 import Math.Algebra.CliffordAlgebra.Defs
 import Math.Algebra.Monoid.Units.Defs
+import Math.Algebra.Ring.Theory.Ideal.TwoSided.Quotient
+
+namespace CliffordAlgebra
+
+variable [RingOps R] [IsRing R] [IsCommMagma R] [AddGroupOps V]
+  [IsAddGroup V] [IsAddCommMagma V] [SMul R V] [IsModule R V]
+
+variable (Q: QuadraticForm R V)
+
+def ideal : Ideal (TensorAlgebra R V) := Ideal.generate (Set.mk <| fun x => ∃v: V, x = .ι R v * .ι R v - algebraMap (Q v))
+
+def ideal_eq_kernel : ideal Q = Ideal.kernel (ofTensorAlgebra Q).toRingHom := by
+  ext x
+  apply Iff.intro
+  · intro h
+    apply Ideal.of_mem_generate _ _ _ _ h
+    clear h x; rintro _ ⟨v, rfl, hv⟩
+    show ofTensorAlgebra Q (.ι R v * .ι R v - algebraMap (Q v)) = 0
+    symm; rw [map_sub, ←add_eq_iff_eq_sub, zero_add]; symm
+    apply RingQuot.mk_rel
+    apply CliffordAlgebra.Rel.intro
+  · intro h
+    obtain h : ofTensorAlgebra Q x = 0 := h
+    rw [←map_zero (ofTensorAlgebra Q)] at h
+    replace h := RingQuot.of_mk_rel h
+    apply (Ideal.equivCon_mem_iff _).mpr
+    apply RingCon.ofGenerate _ _ _ _ _ h
+    clear h x
+    intro x y h
+    apply (Ideal.equivCon_rel_iff _).mpr
+    rw [Equiv.coe_symm]
+    cases h with | intro v =>
+    apply Ideal.Generate.of
+    exists v
+
+end CliffordAlgebra
 
 namespace CliffordAlgebra
 

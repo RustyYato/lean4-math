@@ -9,6 +9,35 @@ namespace Ideal
 
 variable [RingOps R] [IsRing R] [RingOps S] [IsRing S]
 
+protected def ofCon (c: RingCon R) : Ideal R where
+  carrier := Set.mk fun x => c x 0
+  mem_add := by
+    intro a b ha hb
+    show c _ 0
+    rw [←add_zero 0]
+    apply resp_add
+    assumption
+    assumption
+  mem_zero := by show c 0 0; rfl
+  mem_neg := by
+    intro a ha
+    show c (-a) 0
+    rw [←neg_zero]
+    apply resp_neg
+    assumption
+  mem_mul_left := by
+    intro r x hx
+    show c (r * x) 0
+    rw [←mul_zero r]
+    apply resp_mul
+    rfl; assumption
+  mem_mul_right := by
+    intro r x hx
+    show c (x * r) 0
+    rw [←zero_mul r]
+    apply resp_mul
+    assumption; rfl
+
 protected def Con (i: Ideal R) : RingCon R where
   r a b := a - b ∈ i
   iseqv := {
@@ -46,6 +75,41 @@ protected def Con (i: Ideal R) : RingCon R where
     assumption
     apply mem_mul_right
     assumption
+
+def equivCon : Ideal R ≃ RingCon R where
+  toFun := Ideal.Con
+  invFun := Ideal.ofCon
+  leftInv i := by
+    ext x
+    show x - 0 ∈ i ↔ x ∈ i
+    rw [sub_zero]
+  rightInv c := by
+    apply le_antisymm
+    intro a b h
+    replace h : c (a - b) 0 := h
+    have := resp_add c (z := b) h (by rfl)
+    rwa [sub_add_cancel, zero_add] at this
+    intro a b h
+    show c (a - b) 0
+    have := resp_sub c (z := b) h (by rfl)
+    rwa [sub_self] at this
+
+def equivCon_mem_iff (i: Ideal R) : ∀{x}, x ∈ i ↔ equivCon i x 0 := by
+  intro x
+  rw (occs := [1]) [←sub_zero x]
+  apply Iff.rfl
+
+def equivCon_rel_iff (c: RingCon R) : ∀{x y}, c x y ↔ x - y ∈ equivCon.symm c := by
+  intro x y
+  apply Iff.trans _ (equivCon_mem_iff _).symm
+  rw [Equiv.symm_coe]
+  apply Iff.intro
+  intro h
+  have := resp_sub c (z := y) h (by rfl)
+  simpa using this
+  intro h
+  have := resp_add c (z := y) h (by rfl)
+  simpa [sub_add_cancel] using this
 
 protected def toRing (i: Ideal R) := IsCon.Quotient i.Con
 

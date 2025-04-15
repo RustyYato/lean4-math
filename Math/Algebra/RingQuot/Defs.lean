@@ -49,6 +49,7 @@ def ind [SemiringOps R] [IsSemiring R] {motive: RingQuot r -> Prop} (mk: ∀x, m
   apply mk
 
 def mk_rel [SemiringOps R] [IsSemiring R] (w: r x y) : mk r x = mk r y := Quot.sound (RingCon.Generator.of w)
+def of_mk_rel [SemiringOps R] [IsSemiring R] : mk r x = mk r y -> RingCon.generate r x y := Quotient.exact
 def mk_surj [SemiringOps R] [IsSemiring R] : Function.Surjective (mk r) := by
   intro a
   induction a with | mk a =>
