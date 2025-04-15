@@ -106,6 +106,15 @@ def lift [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R
     apply (RingQuot.liftAlgHom_mkAlgHom_apply _ _ _ _).trans
     apply TensorAlgebra.lift_ι_apply
 
+@[simp]
+def lift_ι_apply
+  [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R A]
+  (v: V) (f: { f : V →ₗ[R] A // ∀ m, f m * f m = algebraMap (Q m) }) : lift Q f (ι Q v) = f.val v := by
+  show RingQuot.liftAlgHom _ _ _ = _
+  rw [ι, ofTensorAlgebra]
+  erw [RingQuot.liftAlgHom_mkAlgHom_apply]
+  apply TensorAlgebra.lift_ι_apply f.val v
+
 @[elab_as_elim, induction_eliminator]
 def induction {C : CliffordAlgebra Q → Prop}
   (algebraMap: ∀r: R, C (algebraMap r)) (ι: ∀ x, C (ι Q x))

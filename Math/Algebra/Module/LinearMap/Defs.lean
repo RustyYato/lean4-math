@@ -99,6 +99,26 @@ instance [IsAddCommMagma B] [IsCommMagma R] : IsDistribMulAction R (A →ₗ[R] 
 
 end AddMonoid
 
+section AddMonoidWithOne
+
+variable
+  [AddMonoidOps A] [IsAddMonoid A] [IsAddCommMagma A]
+  [MonoidOps R] [IsMonoid R] [IsCommMagma R] [IsDistribMulAction R A]
+
+instance [Add A] : One (A →ₗ[R] A) where
+  one := .id _
+
+def apply_one [Add A] (a: A) : (1: A →ₗ[R] A) a = a := rfl
+
+instance : NatCast (A →ₗ[R] A) where
+  natCast n := n • 1
+
+instance : IsAddMonoidWithOne (A →ₗ[R] A) where
+  natCast_zero := zero_nsmul _
+  natCast_succ _ := succ_nsmul _ _
+
+end AddMonoidWithOne
+
 section Module
 
 variable
@@ -158,6 +178,24 @@ instance [IsAddCommMagma B] [IsCommMagma R] : IsAddGroup (A →ₗ[R] B) where
   zsmul_negSucc _ _ := by ext; apply zsmul_negSucc
 
 end AddGroup
+
+section AddGroupWithOne
+
+variable
+  [AddGroupOps A] [IsAddGroup A] [IsAddCommMagma A]
+  [MonoidOps R] [IsMonoid R] [IsCommMagma R] [IsDistribMulAction R A]
+
+instance : IntCast (A →ₗ[R] A) where
+  intCast n := n • 1
+
+instance : IsAddGroupWithOne (A →ₗ[R] A) := {
+  inferInstanceAs (IsAddGroup (A →ₗ[R] A)),
+  inferInstanceAs (IsAddMonoidWithOne (A →ₗ[R] A)) with
+  intCast_ofNat _ := zsmul_ofNat _ _
+  intCast_negSucc _ := zsmul_negSucc _ _
+}
+
+end AddGroupWithOne
 
 end LinearMap
 

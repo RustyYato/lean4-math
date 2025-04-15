@@ -112,6 +112,17 @@ def polar (Q: QuadraticMap R M N) : BilinMap R M N := by
     ]
     simp [add_neg_cancel, map_smul]
 
+def polar_self (Q: QuadraticMap R M N) : Q.polar a a = (2: R) • Q a := by
+  unfold polar
+  simp
+  rw (occs := [1,2]) [←one_smul (R := R) a]
+  rw [←add_smul, smul_eq_smul_sq]
+  rw [mul_smul, add_smul, one_smul, add_smul, one_smul,
+    add_sub_assoc, add_sub_assoc, add_assoc, add_sub_cancel,
+    add_sub_cancel, show (2: R) = 1 + 1 from ?_,
+    add_smul, one_smul]
+  rw [ofNat_eq_natCast, natCast_succ, natCast_one]
+
 end QuadraticMap
 
 namespace QuadraticFrom
@@ -123,6 +134,9 @@ variable
 
 def polar (Q: QuadraticForm R M) : BilinMap R M R :=
   QuadraticMap.polar Q
+
+def polar_self (Q: QuadraticForm R M) : Q.polar a a = (2: R) • Q a :=
+  QuadraticMap.polar_self Q
 
 end QuadraticFrom
 

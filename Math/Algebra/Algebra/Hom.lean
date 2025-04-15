@@ -38,19 +38,19 @@ instance : FunLike (A →ₐ[R] B) A B where
     congr
     apply DFunLike.coe_inj eq
 
-instance : IsAddHom (A →ₐ[R] B) A B where
+instance (priority := 2000) : IsAddHom (A →ₐ[R] B) A B where
   map_add f := f.map_add
 
-instance : IsMulHom (A →ₐ[R] B) A B where
+instance (priority := 2000) : IsMulHom (A →ₐ[R] B) A B where
   map_mul f := f.map_mul
 
-instance : IsAlgebraMapHom (A →ₐ[R] B) R A B where
+instance (priority := 2000) : IsAlgebraMapHom (A →ₐ[R] B) R A B where
   map_algebraMap f := f.map_algebraMap
 
-instance : IsZeroHom (A →ₐ[R] B) A B where
+instance (priority := 2000) : IsZeroHom (A →ₐ[R] B) A B where
   map_zero f := by rw [←map_zero (algebraMap (R := R)), map_algebraMap, map_zero]
 
-instance : IsOneHom (A →ₐ[R] B) A B where
+instance (priority := 2000) : IsOneHom (A →ₐ[R] B) A B where
   map_one f := by rw [←map_one (algebraMap (R := R)), map_algebraMap, map_one]
 
 structure AlgEmbedding extends A ↪ B, A →ₐ[R] B where
@@ -131,12 +131,24 @@ def toAlgHom' (f: F) : A →ₐ[R] B := {
   toAddHom f, toMulHom f, toAlgebraMapHom f with
 }
 
+protected def AlgHom.id : A →ₐ[R] A where
+  toFun := id
+  map_add {_ _} := rfl
+  map_mul {_ _} := rfl
+  map_algebraMap _ := rfl
+
 @[simp] def AlgHom.toAddHom_eq_coe (f: A →ₐ[R] B) : (f.toAddHom: A -> B) = f := rfl
 
-instance [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsSemiring R] [IsAlgebra R A] [IsAlgebra R B]: IsSMulHom F R A B where
+variable [SMul R A] [SMul R B] [IsSemiring A] [IsSemiring B] [IsSemiring R] [IsAlgebra R A] [IsAlgebra R B]
+
+instance (priority := 1100): IsSMulHom F R A B where
   map_smul := by
     intro f r x
     rw [smul_def, smul_def, map_mul, map_algebraMap]
+
+instance (priority := 2000) AlgHom.instIsSMulHom : IsSMulHom (A →ₐ[R] B) R A B := inferInstance
+instance (priority := 2000) AlgEmbedding.instIsSMulHom : IsSMulHom (A ↪ₐ[R] B) R A B := inferInstance
+instance (priority := 2000) AlgEquiv.instIsSMulHom : IsSMulHom (A ≃ₐ[R] B) R A B := inferInstance
 
 end
 
