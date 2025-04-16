@@ -303,7 +303,21 @@ private def preLift [LatticeOps L] [IsLattice L] (f: α -> L) : FreeLattice α -
     show _ ⊔ _ = _ ⊔ _
     congr
 
-def lift [LatticeOps L] [IsLattice L] : (α -> L) ≃ (FreeLattice α →⊓⊔ L) where
+section
+
+variable (α β: Type*) [Min α] [Min β] [Max α] [Max β]
+
+structure MinMaxHom extends MinHom α β, MaxHom α β where
+
+instance : FunLike (MinMaxHom α β) α β where
+
+instance : IsMinHom (MinMaxHom α β) α β where
+instance : IsMaxHom (MinMaxHom α β) α β where
+
+end
+
+def lift [LatticeOps L] [IsLattice L] : (α -> L) ≃ (
+  MinMaxHom (FreeLattice α) L) where
   toFun f := {
     toFun := preLift f
     map_min a b := by
