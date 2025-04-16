@@ -917,28 +917,63 @@ end Impls
 
 section Pi
 
-variable {α: Type*} {β: α -> Type*} [∀x, LE (β x)] [∀x, LT (β x)]
+variable {ι: Type*} {α: ι -> Type*} [∀x, LE (α x)] [∀x, LT (α x)]
+  [∀x, Max (α x)] [∀x, Min (α x)]
 
-instance : LE (∀x, β x) where
+instance : LE (∀x, α x) where
   le f g := ∀x, f x ≤ g x
 
-instance : LT (∀x, β x) where
+instance : LT (∀x, α x) where
   lt f g := f ≤ g ∧ ¬g ≤ f
 
-instance : IsLawfulLT (∀x, β x) where
+instance : IsLawfulLT (∀x, α x) where
   lt_iff_le_and_not_le := Iff.rfl
 
-instance [∀x, IsPreOrder (β x)] : IsPreOrder (∀x, β x) where
+instance [∀x, IsPreOrder (α x)] : IsPreOrder (∀x, α x) where
   le_refl _ _ := le_refl _
   le_trans h g _ := le_trans (h _) (g _)
 
-instance [∀x, IsPartialOrder (β x)] : IsPartialOrder (∀x, β x) where
+instance [∀x, IsPartialOrder (α x)] : IsPartialOrder (∀x, α x) where
   le_antisymm := by
     intro a b ha hb
     ext x
     apply le_antisymm
     apply ha
     apply hb
+
+instance : Max (∀x, α x) where
+  max f g x := max (f x) (g x)
+
+instance : Min (∀x, α x) where
+  min f g x := min (f x) (g x)
+
+instance [∀x, IsSemiLatticeMax (α x)] : IsSemiLatticeMax (∀x, α x) where
+  le_max_left := by
+    intro f g i
+    apply le_max_left
+  le_max_right := by
+    intro f g i
+    apply le_max_right
+  max_le := by
+    intro f g k fk gk  i
+    apply max_le
+    apply fk
+    apply gk
+
+instance [∀x, IsSemiLatticeMin (α x)] : IsSemiLatticeMin (∀x, α x) where
+  min_le_left := by
+    intro f g i
+    apply min_le_left
+  min_le_right := by
+    intro f g i
+    apply min_le_right
+  le_min := by
+    intro f g k kf kg i
+    apply le_min
+    apply kf
+    apply kg
+
+instance [∀x, IsLattice (α x)] : IsLattice (∀x, α x) := inferInstance
 
 end Pi
 

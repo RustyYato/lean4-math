@@ -128,48 +128,13 @@ instance (priority := 500) [SemiringOps α] [IsSemiring α] : IsNonUnitalSemirin
 end Semiring
 
 instance : IsSemiring Nat where
-  add_comm := Nat.add_comm
-  add_assoc := Nat.add_assoc
-  zero_add := Nat.zero_add
-  add_zero := Nat.add_zero
   natCast_zero := rfl
   natCast_succ _ := rfl
-  mul_assoc := Nat.mul_assoc
-  zero_mul := Nat.zero_mul
-  mul_zero := Nat.mul_zero
-  one_mul := Nat.one_mul
-  mul_one := Nat.mul_one
   mul_add := Nat.mul_add
   add_mul := Nat.add_mul
-  zero_nsmul := Nat.zero_mul
-  succ_nsmul := Nat.succ_mul
-
-instance : IsCommMagma Nat where
-  mul_comm := Nat.mul_comm
-
-instance : SMul ℕ ℤ where
-  smul a b := a * b
 
 instance instSemiringInt : IsSemiring Int where
-  add_comm := Int.add_comm
-  add_assoc := Int.add_assoc
-  zero_add := Int.zero_add
-  add_zero := Int.add_zero
   natCast_zero := rfl
   natCast_succ _ := rfl
-  mul_assoc := Int.mul_assoc
-  zero_mul := Int.zero_mul
-  mul_zero := Int.mul_zero
-  one_mul := Int.one_mul
-  mul_one := Int.mul_one
   mul_add := Int.mul_add
   add_mul := Int.add_mul
-  zero_nsmul := Int.zero_mul
-  succ_nsmul := by
-    intro n a
-    show (n + 1) * a = _
-    rw [Int.add_mul, Int.one_mul]
-    rfl
-
-instance : IsCommMagma Int where
-  mul_comm := Int.mul_comm

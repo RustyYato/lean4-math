@@ -77,3 +77,9 @@ instance (priority := 100) [SMul R A] [SMul S A] [IsSMulComm R S A]
   smul_comm := by
     intro r s a; symm
     apply smul_comm
+
+instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] : IsDistribMulAction ℕ α where
+  one_smul _ := one_nsmul _
+  mul_smul _ _ _ := mul_nsmul _ _ _
+  smul_zero := nsmul_zero
+  smul_add := nsmul_add
