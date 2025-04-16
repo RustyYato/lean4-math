@@ -1,9 +1,9 @@
-import Math.Data.FinSupp.Algebra
+import Math.Data.Finsupp.Algebra
 import Math.Data.Fintype.Algebra
 
 namespace Finsupp
 
-variable [FiniteSupportSet S ι]
+variable [FiniteSupport S ι]
 
 def sum_eq_fintypesum
   [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0):

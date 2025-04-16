@@ -1,5 +1,5 @@
 import Math.Data.Poly.Degree
-import Math.Data.FinSupp.Fintype
+import Math.Data.Finsupp.Fintype
 import Math.Algebra.Dvd
 import Math.Order.TopBot
 

@@ -1,15 +1,15 @@
-import Math.Data.FinSupp.Basic
-import Math.Data.FinSupp.Algebra
+import Math.Data.Finsupp.Basic
+import Math.Data.Finsupp.Algebra
 import Math.Algebra.Module.Defs
 import Math.AxiomBlame
 
-structure AddMonoidAlgebra (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
+structure AddMonoidAlgebra (α β S: Type*) [Zero β] [FiniteSupport S α] where
   ofFinsupp ::
   toFinsupp : Finsupp α β S
 
 namespace AddMonoidAlgebra
 
-variable [FiniteSupportSet S α]
+variable [FiniteSupport S α]
 
 instance [Zero β] : FunLike (AddMonoidAlgebra α β S) α β where
   coe f := f.toFinsupp
@@ -165,7 +165,7 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAss
     rw [single_add, add_mul]
 
 def sum_toFinsupp
-  [FiniteSupportSet S ι]
+  [FiniteSupport S ι]
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀ h₁} :
@@ -180,7 +180,7 @@ def sum_toFinsupp
   rfl
 
 def sum_toFinsupp'
-  [FiniteSupportSet S ι]
+  [FiniteSupport S ι]
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀} :
@@ -200,7 +200,7 @@ def sum_toFinsupp'
 
 @[simp]
 def single_toFinsupp
-  [FiniteSupportSet S ι] [Zero α] [DecidableEq ι] :
+  [FiniteSupport S ι] [Zero α] [DecidableEq ι] :
   (single a b: AddMonoidAlgebra ι α S).toFinsupp  = Finsupp.single a b := rfl
 
 def single_mul [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]

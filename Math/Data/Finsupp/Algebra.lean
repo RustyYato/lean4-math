@@ -1,9 +1,9 @@
 import Math.Data.Multiset.Algebra
-import Math.Data.FinSupp.Defs
+import Math.Data.Finsupp.Defs
 
 namespace Finsupp
 
-variable [FiniteSupportSet S ι]
+variable [FiniteSupport S ι]
 
 def sum [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0) : γ := by
   refine f.spec.lift (?_) ?_

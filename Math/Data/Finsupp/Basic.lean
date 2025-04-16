@@ -1,8 +1,8 @@
-import Math.Data.FinSupp.Defs
+import Math.Data.Finsupp.Defs
 import Math.Algebra.Monoid.Action.Defs
 import Math.Algebra.Algebra.Defs
 
-variable [FiniteSupportSet S α]
+variable [FiniteSupport S α]
 
 instance [SemiringOps β] [IsSemiring β] : IsDistribMulAction β (Finsupp α β S) where
   one_smul a := by

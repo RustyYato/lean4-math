@@ -1,5 +1,5 @@
 import Math.Algebra.Module.LinearMap.Defs
-import Math.Data.FinSupp.Algebra
+import Math.Data.Finsupp.Algebra
 
 def FreeModule (R M: Type*) [Zero R] [DecidableEq M]
   := Finsupp M R (Finset M)

@@ -1,80 +1,17 @@
-import Math.Data.Finset.Like
+import Math.Data.DFinsupp.Support
 import Math.Data.Trunc
-import Math.Order.Lattice.Basic
-import Math.Data.Finset.Lattice
 import Math.Algebra.Group.Hom
-import Math.Logic.Basic
 import Math.Algebra.Module.Defs
 
-class FiniteSupportSet (S: Type*) (α: outParam Type*) extends FinsetLike S α, Max S, Min S, LE S, LT S, IsLattice S, Inhabited S, IsLawfulEmptyFinsetLike S where
-  coe_map_le: ∀{a b: S}, a ≤ b ↔ (a: Finset α) ≤ (b: Finset α)
-  singleton: α -> S
-  mem_singleton: ∀a: α, a ∈ singleton a
-  remove: α -> S -> S
-  mem_remove: ∀(s: S) (x a: α), x ∈ s -> a ≠ x -> x ∈ remove a s
-
-structure Finsupp (α β S: Type*) [Zero β] [FiniteSupportSet S α] where
+structure Finsupp (α β S: Type*) [Zero β] [FiniteSupportOps S α] where
   toFun: α -> β
   spec: Trunc { set : S // ∀x, toFun x ≠ 0 -> x ∈ set }
 
-namespace FiniteSupportSet
-
-variable [FiniteSupportSet S α] [DecidableEq α]
-
-def coe_map_lt {a b: S} : a < b ↔ (a: Finset α) < (b: Finset α) := by
-  simp only [lt_iff_le_and_not_le, coe_map_le]
-
-def coe_max_sub_max_coe (a b: S) : (a ⊔ b: Finset α) ≤ ((a ⊔ b: S): Finset α) := by
-  apply max_le
-  apply coe_map_le.mp
-  apply le_max_left
-  apply coe_map_le.mp
-  apply le_max_right
-
-def min_coe_sub_coe_min (a b: S) : ((a ⊓ b: S): Finset α) ≤ (a ⊓ b: Finset α) := by
-  apply le_min
-  apply coe_map_le.mp
-  apply min_le_left
-  apply coe_map_le.mp
-  apply min_le_right
-
-end FiniteSupportSet
-
-instance [DecidableEq α] : FiniteSupportSet (Finset α) α where
-  coe_map_le := Iff.rfl
-  singleton a := {a}
-  mem_singleton _ := Finset.mem_singleton.mpr rfl
-  remove a s := s.erase a
-  mem_remove _ _ _ h g := Finset.mem_erase.mpr ⟨h, g.symm⟩
-
-instance : FiniteSupportSet Nat Nat where
-  coe_map_le {a b} := by
-    conv => {
-      rhs; rw [LE.le, Finset.instLE]
-    }
-    dsimp [HasSubset.Subset]
-    conv => {
-      rhs; intro x
-      erw [Nat.mem_iff_lt, Nat.mem_iff_lt]
-    }
-    apply Iff.intro
-    intro h x hx
-    apply Nat.lt_of_lt_of_le
-    assumption
-    assumption
-    intro h
-    rcases Nat.lt_or_ge b a with g | g
-    have := Nat.lt_irrefl _ (h _ g)
-    contradiction
-    assumption
-  singleton a := a+1
-  mem_singleton _ := (Nat.mem_iff_lt _ _).mpr (Nat.lt_succ_self _)
-  remove a s := s
-  mem_remove _ _ _ h _ := h
-
 namespace Finsupp
 
-variable [FiniteSupportSet S α]
+section
+
+variable [FiniteSupportOps S α]
 
 instance [Zero β] : FunLike (Finsupp α β S) α β where
   coe f := f.toFun
@@ -97,15 +34,19 @@ instance [Zero β] : Zero (Finsupp α β S) where
 
 @[simp] def apply_zero [Zero β] (x: α) : (0: Finsupp α β S) x = 0 := rfl
 
+end
+
+variable [FiniteSupport S α]
+
 def single [Zero β] [DecidableEq α] (a: α) (b: β) : Finsupp α β S where
   toFun x := if x = a then b else 0
   spec := Trunc.mk {
-    val := FiniteSupportSet.singleton a
+    val := FiniteSupport.singleton a
     property x hx := by
       dsimp at hx
       split at hx
       subst x
-      apply FiniteSupportSet.mem_singleton
+      apply FiniteSupport.mem_singleton
       contradiction
   }
 
@@ -123,11 +64,11 @@ instance [Zero β] [Add β] [IsAddZeroClass β] : Add (Finsupp α β S) where
           classical
           replace ne : f x + g x ≠ 0 := ne
           by_cases x ∈ fs
-          apply FiniteSupportSet.coe_max_sub_max_coe
+          apply FiniteSupport.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           left; assumption
           by_cases x ∈ gs
-          apply FiniteSupportSet.coe_max_sub_max_coe
+          apply FiniteSupport.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           right; assumption
           rename_i fx gx
@@ -186,11 +127,11 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (Finsupp
           classical
           replace ne : f x - g x ≠ 0 := ne
           by_cases x ∈ fs
-          apply FiniteSupportSet.coe_max_sub_max_coe
+          apply FiniteSupport.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           left; assumption
           by_cases x ∈ gs
-          apply FiniteSupportSet.coe_max_sub_max_coe
+          apply FiniteSupport.coe_max_sub_max_coe
           apply Finset.mem_union.mpr
           right; assumption
           rename_i fx gx
@@ -301,13 +242,13 @@ def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: Finsupp α β S) : Fin
   spec := do
     let ⟨fs, hf⟩←f.spec
     return {
-      val := FiniteSupportSet.singleton a ⊔ fs
+      val := FiniteSupport.singleton a ⊔ fs
       property x ne := by
-        apply FiniteSupportSet.coe_max_sub_max_coe
+        apply FiniteSupport.coe_max_sub_max_coe
         apply Finset.mem_union.mpr
         split at ne
         subst x
-        left; apply FiniteSupportSet.mem_singleton
+        left; apply FiniteSupport.mem_singleton
         right
         apply hf
         assumption
@@ -318,12 +259,12 @@ def erase [DecidableEq α] [Zero β] (a: α) (f: Finsupp α β S) : Finsupp α �
   spec := do
     let ⟨fs, hf⟩←f.spec
     return {
-      val := FiniteSupportSet.remove a fs
+      val := FiniteSupport.remove a fs
       property x ne := by
         split at ne
         contradiction
         have := hf x ne
-        apply FiniteSupportSet.mem_remove
+        apply FiniteSupport.mem_remove
         assumption
         symm; assumption
     }

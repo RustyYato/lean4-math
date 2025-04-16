@@ -1,7 +1,7 @@
 import Math.Data.Poly.Defs
 import Math.Data.Nat.Basic
 import Math.Order.TopBot
-import Math.Data.FinSupp.Fintype
+import Math.Data.Finsupp.Fintype
 
 namespace Poly
 

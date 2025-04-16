@@ -1,6 +1,6 @@
 import Math.Algebra.Monoid.MonoidAlgebra
 import Math.Algebra.GroupWithZero.Defs
-import Math.Data.FinSupp.Fintype
+import Math.Data.Finsupp.Fintype
 
 def Poly (P: Type*) [Zero P] := AddMonoidAlgebra ℕ P ℕ
 
