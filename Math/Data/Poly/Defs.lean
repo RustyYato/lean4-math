@@ -128,6 +128,10 @@ private def apply_monomial [SemiringOps P] [IsSemiring P] (x: P) (n i: ℕ) : (C
   show (AddMonoidAlgebra.single _ _) i = _
   rw [AddMonoidAlgebra.apply_single]
 
+def addmonoid_single_eq [SemiringOps P] [IsSemiring P] : (AddMonoidAlgebra.single n a) = (C a * X ^ n: P[X]) := by
+  rw [←mul_one a, ←zero_add n, ←AddMonoidAlgebra.single_mul, x_npow_eq]
+  simp; rfl
+
 @[induction_eliminator]
 def induction
   [SemiringOps P] [IsSemiring P]
@@ -136,35 +140,13 @@ def induction
   (monomial: ∀r: P, ∀n: ℕ, motive (.C r * X ^ n) -> motive (.C r * X ^ (n + 1)))
   (add: ∀a b: P[X], motive a -> motive b -> motive (a + b))
   (p: P[X]): motive p := by
-  unfold Poly at p
-  induction p.toFinsupp.spec with | mk spec =>
-  obtain ⟨degree, spec⟩ := spec
-  induction degree generalizing p with
+  induction p using AddMonoidAlgebra.induction with
   | zero =>
-    suffices p = Poly.C 0 by
-      rw [this]
-      apply C
-    ext n
-    rw [map_zero]
-    show p n = 0
-    apply Classical.byContradiction
-    intro h
-    have := spec _ h
-    contradiction
-  | succ n ih =>
-    suffices p = erase p n + Poly.C (p.toFinsupp n) * X ^ n by
-      rw [this]; clear this
-      apply add
-      apply ih
-      · intro x h
-        unfold erase AddMonoidAlgebra.erase Finsupp.erase at h
-        simp at h
-        obtain ⟨x_ne_n, h⟩ := h
-        have := spec _ h
-        rw [Nat.mem_iff_lt] at *
-        exact lt_of_le_of_ne (Nat.le_of_lt_succ this) x_ne_n
-      clear spec ih
-      generalize p.toFinsupp n = p'
+    rw [←map_zero Poly.C]
+    apply C
+  | single_add n p c ne h =>
+    apply add
+    · rw [addmonoid_single_eq]
       induction n with
       | zero =>
         rw [npow_zero, mul_one]
@@ -172,13 +154,7 @@ def induction
       | succ n ih =>
         apply monomial
         assumption
-    ext i
-    show _ = (erase p n).toFinsupp i + _
-    rw [apply_monomial]
-    show _ = (if _ then _ else _) + _
-    split
-    rw [zero_add]; subst i; rfl
-    rw [add_zero]; rfl
+    · assumption
 
 def alg_induction [SemiringOps P] [IsSemiring P] {motive: P[X] -> Prop}
   (C: ∀x, motive (C x))

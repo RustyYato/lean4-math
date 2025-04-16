@@ -3,15 +3,15 @@ import Math.Data.Finsupp.Algebra
 import Math.Algebra.Module.Defs
 import Math.AxiomBlame
 
-structure AddMonoidAlgebra (α β S: Type*) [Zero β] [FiniteSupport S α] where
+structure AddMonoidAlgebra (α β S: Type*) [Zero β] [FiniteSupportOps S α] where
   ofFinsupp ::
   toFinsupp : Finsupp α β S
 
 namespace AddMonoidAlgebra
 
-variable [FiniteSupport S α]
+variable [FiniteSupportOps S α] [Zero β]
 
-instance [Zero β] : FunLike (AddMonoidAlgebra α β S) α β where
+instance : FunLike (AddMonoidAlgebra α β S) α β where
   coe f := f.toFinsupp
   coe_inj := by
     intro a b eq; cases a ; cases b; congr
@@ -19,20 +19,29 @@ instance [Zero β] : FunLike (AddMonoidAlgebra α β S) α β where
     assumption
 
 @[ext]
-def ext [Zero β] (f g: AddMonoidAlgebra α β S) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+def ext (f g: AddMonoidAlgebra α β S) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 
-instance [Zero β] : Zero (AddMonoidAlgebra α β S) where
+instance : Zero (AddMonoidAlgebra α β S) where
   zero := ⟨0⟩
 
-@[simp] def apply_zero [Zero β] (x: α) : (0: AddMonoidAlgebra α β S) x = 0 := rfl
+@[simp] def apply_zero (x: α) : (0: AddMonoidAlgebra α β S) x = 0 := rfl
 
-def toFinsupp_inj [Zero β] : Function.Injective (toFinsupp (α := α) (β := β) (S := S)) := by
+def toFinsupp_inj : Function.Injective (toFinsupp (α := α) (β := β) (S := S)) := by
   intro a b eq; cases a; congr
+
+instance [DecidableEq β] : DecidableEq (AddMonoidAlgebra α β S) :=
+  fun a b => decidable_of_iff (a.toFinsupp = b.toFinsupp) toFinsupp_inj.eq_iff
+
+end AddMonoidAlgebra
+
+namespace AddMonoidAlgebra
+
+variable [FiniteSupport S α]
 
 def single [Zero β] [DecidableEq α] (a: α) (b: β) : AddMonoidAlgebra α β S where
   toFinsupp := .single a b
 
-def apply_single [Zero β] [DecidableEq α] {a: α} {b: β} (x: α) : single (S := S) a b x = if x = a then b else 0 := rfl
+def apply_single {β} [Zero β] [DecidableEq α] {a: α} {b: β} (x: α) : single (S := S) a b x = if x = a then b else 0 := rfl
 
 instance [Zero β] [Add β] [IsAddZeroClass β] : Add (AddMonoidAlgebra α β S) where
   add f g := ⟨f.toFinsupp + g.toFinsupp⟩
@@ -333,5 +342,59 @@ instance [SemiringOps β] [IsSemiring β] : IsModule β (AddMonoidAlgebra α β 
   zero_smul a := by
     ext i
     apply zero_mul
+
+def induction
+  [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β]
+  {motive: AddMonoidAlgebra α β S -> Prop}
+  (zero: motive 0)
+  (single_add: ∀a b c, b ≠ 0 -> motive c -> motive (single a b + c))
+  (x: AddMonoidAlgebra α β S) : motive x := by
+  obtain ⟨f, spec⟩ := x
+  induction spec with | mk spec =>
+  obtain ⟨degree', spec'⟩ := spec
+  replace ⟨degree, spec⟩: Σ' s: Finset α, ∀x, f x ≠ 0 -> x ∈ s := ⟨degree', spec'⟩
+  induction degree with
+  | mk degree nodup =>
+  replace spec:  ∀x, f x ≠ 0 -> x ∈ degree := spec
+  clear nodup
+  induction degree generalizing f with
+  | nil =>
+    rw [show ofFinsupp (.mk f _) = 0 from ?_]
+    apply zero
+    ext a; show f a = 0
+    apply Classical.byContradiction
+    intro h
+    have := spec _ h
+    contradiction
+  | cons a as ih =>
+    -- replace ih := ih
+    rw [show ofFinsupp (.mk f _) =
+        .single a (f a) + .ofFinsupp (.mk (
+          fun x => if x = a then 0 else f x
+        ) (Trunc.mk ⟨degree', (by
+          intro x hx
+          simp at hx
+          apply spec'
+          exact hx.right)⟩))
+      from ?_]
+    by_cases ha:f a = 0
+    · rw [ha]; simp
+      apply ih
+      simp; intros x ne hx
+      have := spec x hx; simp at this
+      apply this.resolve_left
+      assumption
+    · apply single_add
+      assumption
+      apply ih
+      simp; intros x ne hx
+      have := spec x hx; simp at this
+      apply this.resolve_left
+      assumption
+    ext x
+    show f x = AddMonoidAlgebra.single  a (f a) x + (if x = a then 0 else f x)
+    rw [AddMonoidAlgebra.apply_single]
+    split <;> simp
+    subst a; rfl
 
 end AddMonoidAlgebra
