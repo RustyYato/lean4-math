@@ -1,8 +1,7 @@
 import Math.Algebra.Module.LinearMap.Defs
 import Math.Data.Finsupp.Algebra
 
-def FreeModule (R M: Type*) [Zero R] [DecidableEq M]
-  := Finsupp M R (Finset M)
+def FreeModule (R M: Type*) [Zero R] := Finsupp M R (Finset M)
 
 namespace FreeModule
 

@@ -1,7 +1,7 @@
 import Math.Data.Free.Module
 import Math.Data.Set.Like
 
-def LinearCombo (R: Type*) {M: Type*} (s: Set M) [Zero R] [DecidableEq M] :=
+def LinearCombo (R: Type*) {M: Type*} (s: Set M) [Zero R] :=
   FreeModule R s
 
 namespace LinearCombo
