@@ -139,4 +139,28 @@ def eval_mul (x: M) (a b: P[X]) : eval x (a * b) = eval x a * eval x b :=
 
 end Semiring
 
+section Lift
+
+variable [SemiringOps P] [SemiringOps A] [FunLike F P A]
+  [IsSemiring P] [IsSemiring A] [IsCommMagma P] [IsCommMagma A]
+  [DecidableEq σ] [SMul P A] [AlgebraMap P A] [IsAlgebra P A]
+
+-- show that P[X] is the free commutative P-algebra over a single variable
+def lift : A ≃ (P[X] →ₐ[P] A) where
+  toFun := evalHom
+  invFun x := x X
+  leftInv f := by simp [evalHom_X]
+  rightInv f := by
+    ext p
+    simp
+    induction p using alg_induction with
+    | C p =>
+      show _ = f (algebraMap p)
+      rw [evalHom_C, map_algebraMap]
+    | X => simp [evalHom_X]
+    | add a b iha ihb => simp [iha, ihb, map_add]
+    | mul a b iha ihb => simp [iha, ihb, map_mul]
+
+end Lift
+
 end Poly

@@ -182,6 +182,7 @@ variable [SemiringOps P] [SemiringOps A] [FunLike F P A]
   [IsSemiring P] [IsSemiring A] [IsCommMagma P] [IsCommMagma A]
   [DecidableEq σ] [SMul P A] [AlgebraMap P A] [IsAlgebra P A]
 
+-- show that MvPoly is the free commutative P-algebra over σ
 def lift : (σ -> A) ≃ (MvPoly P σ →ₐ[P] A) where
   toFun := evalHom
   invFun x i := x (X i)
