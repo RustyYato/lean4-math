@@ -397,4 +397,14 @@ def induction
     split <;> simp
     subst a; rfl
 
+-- def single_mul_sum
+--   [DecidableEq α]
+--   [Add α] [DecidableEq α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] [Mul β] [IsMulZeroClass β]
+--   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+--   (a: α) (b: β) (c: AddMonoidAlgebra α β S)
+--   (g: α -> β -> γ) (resp: ∀i: α, toFinsupp (single a b * c) i = 0 -> g i (toFinsupp (single a b * c) i) = 0)
+--   :
+--   (toFinsupp (S := S) (single (S := S) a b * c)).sum g resp =
+--   g a b * sorry := sorry
+
 end AddMonoidAlgebra

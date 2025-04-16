@@ -36,6 +36,9 @@ def sum [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Fin
   rw [resp _ this] at eq
   symm; assumption
 
+def sum_rw_proof [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp₀ resp₁: ∀i: ι, f i = 0 -> g i (f i) = 0) :
+  f.sum g resp₀ = f.sum g resp₁ := rfl
+
 def prod [Zero α] [MonoidOps γ] [IsCommMagma γ] [IsMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 1) : γ :=
   sum (γ := AddOfMul γ) f g resp
 
@@ -58,6 +61,11 @@ def zero_sum
   intro i
   rw [eq]
   rfl
+
+def zero_prod
+  [Zero α] [MonoidOps γ] [IsCommMagma γ] [IsMonoid γ]
+  (g: ι -> α -> γ) (eq: ∀i, (0: Finsupp ι α S) i = 0 -> g i ((0: Finsupp ι α S) i) = 1) : prod 0 g eq = 1 :=
+  zero_sum (γ := AddOfMul γ) _ _
 
 def coe_def [Zero α] (f: Finsupp ι α S) (i: ι) : f i = f.toFun i := rfl
 
@@ -115,6 +123,17 @@ def add_sum
   congr; ext i
   apply map_add
 
+def add_prod
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [MonoidOps γ] [IsCommMagma γ] [IsMonoid γ]
+  (f₀ f₁: Finsupp ι α S) (g: ι -> α -> γ)
+  (map_add: ∀i a b, g i (a + b) = g i a * g i b)
+  (eq₀: ∀i, f₀ i = 0 -> g i (f₀ i) = 1)
+  (eq₁: ∀i, f₁ i = 0 -> g i (f₁ i) = 1)
+  (eq₂: ∀i, f₀ i + f₁ i = 0 -> g i (f₀ i + f₁ i) = 1) :
+  prod (f₀ + f₁) g eq₂ = prod f₀ g eq₀ * prod f₁ g eq₁ :=
+  add_sum (γ := AddOfMul γ) _ _ _ map_add _ _ _
+
 def add_sum'
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
@@ -157,6 +176,14 @@ def single_sum
   rw [Finsupp.single]
   show (if _ then _ else _) = b
   rw [if_pos rfl]
+
+def single_prod
+  [DecidableEq ι]
+  [Zero α] [Add α] [IsAddZeroClass α]
+  [MonoidOps γ] [IsCommMagma γ] [IsMonoid γ]
+  (f: ι -> α -> γ) {h}:
+  (single a b: Finsupp ι α S).prod f h = f a b :=
+  single_sum (γ := AddOfMul γ) _
 
 def map_sum
   [Zero α] [Add α] [IsAddZeroClass α]
