@@ -34,6 +34,28 @@ instance [Zero β] : Zero (Finsupp α β S) where
 
 @[simp] def apply_zero [Zero β] (x: α) : (0: Finsupp α β S) x = 0 := rfl
 
+instance [Zero β] [DecidableEq β] : DecidableEq (Finsupp α β S) :=
+  fun a b =>
+    a.spec.recOnSubsingleton fun ⟨aset, aspec⟩ =>
+    b.spec.recOnSubsingleton fun ⟨bset, bspec⟩ =>
+    decidable_of_bool (
+      FiniteSupportOps.all aset (fun x: α => a x = b x) &&
+      FiniteSupportOps.all bset (fun x: α => a x = b x)) <| by
+    simp [←FiniteSupportOps.all_spec]
+    apply Iff.intro
+    intro h
+    ext x
+    by_cases ha:a x = 0
+    by_cases hb:b x = 0
+    rw [ha, hb]
+    exact h.right x (bspec x hb)
+    exact h.left x (aspec x ha)
+    intro h
+    subst h
+    apply And.intro
+    intros; rfl
+    intros; rfl
+
 end
 
 variable [FiniteSupport S α]
@@ -281,6 +303,9 @@ def applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) : Finsupp α β S �
   toFun f := f a
   map_zero := rfl
   map_add := rfl
+
+@[simp]
+def apply_applyHom [Zero β] [Add β] [IsAddZeroClass β] (a: α) (x: Finsupp α β S) : Finsupp.applyHom a x = x a := rfl
 
 def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): Finsupp α β S where
   toFun x := if x ∈ s then f x else 0

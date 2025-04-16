@@ -7,6 +7,8 @@ section
 -- so we that we don't require DecidableEq to just mention DFinsupp
 class FiniteSupportOps (S ι: Type*) extends Inhabited S, FinsetLike S ι where
   mem_spec (s: S) (i: ι): i ∈ s ↔ i ∈ (s: Finset ι)
+  all (s: S): (ι -> Bool) -> Bool
+  all_spec (s: S) (f: ι -> Bool) : (∀x ∈ s, f x) ↔ all s f = true
 
 class FiniteSupport (S: Type*) (ι: outParam Type*) extends
   FiniteSupportOps S ι, LatticeOps S, IsLattice S where
@@ -19,6 +21,8 @@ class FiniteSupport (S: Type*) (ι: outParam Type*) extends
 
 instance : FiniteSupportOps (Finset ι) ι where
   mem_spec _ _ := Iff.rfl
+  all s f := ∀x ∈ s, f x
+  all_spec s f := by simp
 
 instance [DecidableEq ι] : FiniteSupport (Finset ι) ι where
   singleton := ({·})
@@ -37,6 +41,9 @@ instance [DecidableEq ι] : FiniteSupport (Finset ι) ι where
 
 instance : FiniteSupportOps Nat Nat where
   mem_spec _ _ := Iff.rfl
+  all n f := ∀x < n, f x
+  all_spec n f := by
+    simp [Nat.mem_iff_lt]
 
 instance : FiniteSupport Nat Nat where
   singleton := (· + 1)

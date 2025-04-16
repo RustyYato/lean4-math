@@ -243,6 +243,17 @@ def mem_flatMap {f: α -> Finset β} {as: Finset α} : ∀{x}, x ∈ as.flatMap 
 
 def card (a: Finset α) : Nat := a.val.length
 
+def card_eq_zero_iff_empty {a: Finset α} : a.card = 0 ↔ a = ∅ := by
+  apply Iff.intro
+  · intro h
+    obtain ⟨a, ha⟩ := a
+    cases a with | mk a =>
+    cases a
+    rfl
+    contradiction
+  · intro h
+    subst h; rfl
+
 def card_le_of_sub {a b: Finset α} : a ⊆ b -> a.card ≤ b.card := by
   intro sub
   cases a with | mk a ha =>
