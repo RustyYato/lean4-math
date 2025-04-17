@@ -14,7 +14,7 @@ variable {r: α -> α -> Prop}
 
 instance instMonoidOps [MonoidOps α] [IsMonoid α] : MonoidOps (GroupQuot r) :=
   inferInstanceAs (MonoidOps (IsCon.Quotient (GroupQuot.Con r)))
-instance instIsSemiring [MonoidOps α] [IsMonoid α] : IsMonoid (GroupQuot r) :=
+instance instIsMonoid [MonoidOps α] [IsMonoid α] : IsMonoid (GroupQuot r) :=
   inferInstanceAs (IsMonoid (IsCon.Quotient (GroupQuot.Con r)))
 
 instance instGroupOps [GroupOps α] [IsGroup α] : GroupOps (GroupQuot r) :=
