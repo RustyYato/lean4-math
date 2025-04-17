@@ -175,7 +175,7 @@ def basis_mul (a b c d: ℤ) : (a + b * i) * (c + d * i) = (a * c - b * d: ℤ) 
   ac_rfl
 
 instance : HasChar ℤ[i] 0 := HasChar.of_ring_emb {
-  algebraMap (R := ℤ) (A := ℤ[i]) with
+  algebraMap (R := ℤ) (α := ℤ[i]) with
   inj' := by
     intro a b eq
     replace eq : (a: ℤ[i]) = b := eq

@@ -4,12 +4,7 @@ import Math.Algebra.Module.Defs
 
 section
 
-class AlgebraMap (R A: Type*) [SemiringOps R] [SemiringOps A] extends R →+* A where
-
 def AlgebraMap.ofHom {R A: Type*} [SemiringOps R] [SemiringOps A] (f: R →+* A) : AlgebraMap R A := { f with }
-
-def algebraMap {R A: Type*} [SemiringOps R] [SemiringOps A] [f: AlgebraMap R A]
-  : R →+* A := f.toRingHom
 
 class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A] [IsSemiring R] : Prop where
   commutes: ∀(r: R) (x: A), algebraMap r * x = x * algebraMap r
@@ -87,7 +82,7 @@ instance (priority := 900) : AlgebraMap R R where
   map_add := rfl
   map_mul := rfl
 
-def algebraMap_id : algebraMap (R := R) (A := R) x = x := rfl
+def algebraMap_id : algebraMap (R := R) (α := R) x = x := rfl
 
 instance : IsAlgebra R R where
   commutes := mul_comm

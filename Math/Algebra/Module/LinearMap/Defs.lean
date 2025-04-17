@@ -245,3 +245,32 @@ def BilinMap.apply_mk
   {map_smul_left: ∀(r: R) (a k: A), f (r • a) k = r • f a k}
   {map_smul_right: ∀(r: R) (a k: A), f k (r • a) = r • f k a}
   (a b: A) : BilinMap.mk f map_add_left map_add_right map_smul_left map_smul_right a b = f a b := rfl
+
+section
+
+variable
+  {R: Type*} [SMul R A] [SMul R B] [SMul R C]
+  [AddMonoidOps A] [AddMonoidOps B] [AddMonoidOps C]
+  [IsAddMonoid A] [IsAddMonoid B] [IsAddMonoid C]
+  [IsAddCommMagma A] [IsAddCommMagma B] [IsAddCommMagma C]
+  [MonoidOps R] [IsMonoid R] [IsCommMagma R]
+  [IsDistribMulAction R A] [IsDistribMulAction R B] [IsDistribMulAction R C]
+
+def LinearMap.swap (f: A →ₗ[R] B →ₗ[R] C) : B →ₗ[R] A →ₗ[R] C where
+  toFun b := {
+    toFun a := f a b
+    map_add := by
+      intro x y
+      rw [map_add]; rfl
+    map_smul := by
+      intro x y
+      rw [map_smul]; rfl
+  }
+  map_add := by
+    intro x y
+    ext a; apply map_add (f a)
+  map_smul := by
+    intro r x
+    ext a; apply map_smul (f a)
+
+end

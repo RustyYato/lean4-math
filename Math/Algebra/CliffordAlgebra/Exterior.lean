@@ -25,8 +25,8 @@ def ι : V -> ExteriorAlgebra R V := CliffordAlgebra.ι 0
 def lift [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R A] :
     { f : V →ₗ[R] A // ∀ m, f m * f m = 0 } ≃ (ExteriorAlgebra R V →ₐ[R] A) :=
     flip Equiv.trans (CliffordAlgebra.lift 0) <| {
-      toFun f := ⟨f.val, fun m => (map_zero (algebraMap (R := R) (A := A))).symm ▸ f.property m⟩
-      invFun f := ⟨f.val, fun m => (map_zero (algebraMap (R := R) (A := A))).symm ▸ f.property m⟩
+      toFun f := ⟨f.val, fun m => (map_zero (algebraMap (R := R) (α := A))).symm ▸ f.property m⟩
+      invFun f := ⟨f.val, fun m => (map_zero (algebraMap (R := R) (α := A))).symm ▸ f.property m⟩
       leftInv _ := rfl
       rightInv _ := rfl
     }
@@ -56,9 +56,9 @@ variable {Q: QuadraticForm R V}
 -- set_option trace.Meta.synthInstance.resume false in
 
 def pre_vector_wedge (v: V) : CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q where
-  toFun x := ⅟(2: R) • (ι Q v * x + involute x * ι Q v)
+  toFun x := ⅟(2: R) • (ι Q v * x + involute Q x * ι Q v)
   map_add {x y} := by
-    rw [map_add involute]
+    rw [map_add (involute Q)]
     rw [←smul_add]
     congr 1
     simp only [mul_add, add_mul]
@@ -70,7 +70,7 @@ def pre_vector_wedge (v: V) : CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q wher
       smul_def r, mul_assoc, ←smul_def, ←smul_def, ←smul_add,
       smul_comm]
 
-def apply_pre_vector_wedge (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v x = ⅟(2: R) • (ι Q v * x + involute x * ι Q v) := rfl
+def apply_pre_vector_wedge (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v x = ⅟(2: R) • (ι Q v * x + involute Q x * ι Q v) := rfl
 
 def pre_vector_wedge_sq_zero (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v (pre_vector_wedge v x) = 0 := by
   rw [apply_pre_vector_wedge, apply_pre_vector_wedge]
@@ -141,13 +141,8 @@ def apply_ext_to_cliff_end_ι (Q: QuadraticForm R V) (v: V) :
 --   | ι => sorry
 
 
-def ofExteriorₗ : ExteriorAlgebra R V →ₗ[R] CliffordAlgebra Q where
-  toFun v := ext_to_cliff_end (Q := Q) v 1
-  map_add {x y} := by
-    rw [map_add]; rfl
-  map_smul {r x} := by
-    rw [map_smul]
-    rfl
+def ofExteriorₗ : ExteriorAlgebra R V →ₗ[R] CliffordAlgebra Q :=
+  (ext_to_cliff_end (Q := Q)).toLinearMap.swap 1
 
 def lineqvExterior : ExteriorAlgebra R V ≃ₗ[R] CliffordAlgebra Q := {
   ofExteriorₗ with

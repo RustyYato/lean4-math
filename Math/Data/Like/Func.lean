@@ -10,7 +10,7 @@ class DFunLike (F: Sort*) (α: outParam Sort*) (β: outParam (α -> Sort*)) wher
 abbrev FunLike (F: Sort*) (α β: outParam <| Sort*) := DFunLike F α (fun _ => β)
 abbrev RelLike (F: Sort*) (α: outParam Sort*) := FunLike F α (α -> Prop)
 
-instance [DFunLike F α β] : CoeFun F (fun _ => ∀x, β x) where
+instance (priority := 2000) [DFunLike F α β] : CoeFun F (fun _ => ∀x, β x) where
   coe := DFunLike.coe
 
 instance {β: α -> Sort*} : DFunLike (∀x, β x) α β where

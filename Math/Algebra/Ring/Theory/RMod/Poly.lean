@@ -32,7 +32,7 @@ def modPoly_zero {p: P[X]} (h: IsInvertible p.lead) : (0: RMod p).modPoly h = 0 
   apply Poly.deg_nontrivial_of_invertible
   assumption
 
-def modPoly_const {p: P[X]} (h: IsInvertible p.lead) {x: P} (g: .of 0 < p.degree) : modPoly h (algebraMap (A := RMod p) (C x)) = C x := by
+def modPoly_const {p: P[X]} (h: IsInvertible p.lead) {x: P} (g: .of 0 < p.degree) : modPoly h (algebraMap (α := RMod p) (C x)) = C x := by
   show Poly.mod (C x) p = C x
   rw [Poly.mod_of_lt]
   apply lt_of_le_of_lt _ g
@@ -42,7 +42,7 @@ def modPoly_const {p: P[X]} (h: IsInvertible p.lead) {x: P} (g: .of 0 < p.degree
   | n + 1 =>
   rfl
 
-def modPoly_add {p: P[X]} (h: IsInvertible p.lead) (a b: P[X]) : modPoly h (algebraMap (A := RMod p) (a + b)) = modPoly h (algebraMap a) + modPoly h (algebraMap b) := by
+def modPoly_add {p: P[X]} (h: IsInvertible p.lead) (a b: P[X]) : modPoly h (algebraMap (α := RMod p) (a + b)) = modPoly h (algebraMap a) + modPoly h (algebraMap b) := by
   apply Poly.add_mod
 
 end RMod

@@ -136,7 +136,7 @@ def HasChar.ofQAlgebra [IsNontrivial α] [RingOps α] [IsRing α] [SMul ℚ α] 
     | zero => simp [natCast_zero, map_zero]
     | succ m ih =>
       simp [natCast_succ, map_add, map_one, ih]
-  rw [h, ←map_zero (algebraMap (R := ℚ) (A := α))] at this
+  rw [h, ←map_zero (algebraMap (R := ℚ) (α := α))] at this
   replace this := field_hom_inj (F := ℚ) (R := α) algebraMap this
   rw [natCast_inj this]
   apply Nat.dvd_refl

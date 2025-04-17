@@ -93,7 +93,7 @@ def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit := AlgEquiv.symm
     induction p with
     | grade0 r =>
       rw [map_algebraMap]
-      erw [map_algebraMap ((CommFreeAlgebra.lift P (fun x => Poly.X))) r]
+      erw [map_algebraMap (β := P[X]) ((CommFreeAlgebra.lift P (fun x => Poly.X))) r]
       rw [map_algebraMap]
       rfl
     | grade1 =>

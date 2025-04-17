@@ -240,7 +240,7 @@ instance [SemiringOps R] [IsSemiring R] : IsSemiring (FreeAlgebra R X) where
     intro n
     show ⟦.scalar _⟧ = ⟦_⟧ + ⟦_⟧
     rw [natCast_succ]
-    apply map_add (algebraMap (R := R) (A := FreeAlgebra R X))
+    apply map_add (algebraMap (R := R) (α := FreeAlgebra R X))
   mul_add := by
     intro k a b; induction a, b, k
     apply Quotient.sound
@@ -287,7 +287,7 @@ instance [RingOps R] [IsRing R] : IsAddGroup (FreeAlgebra R X) where
     induction a with | mk a =>
     simp [Neg.neg, smul_def]
     conv => { lhs; rhs; rw [←one_mul ⟦a⟧] }
-    rw [←add_mul, ←map_one (algebraMap (R := R) (A := FreeAlgebra R X)),
+    rw [←add_mul, ←map_one (algebraMap (R := R) (α := FreeAlgebra R X)),
       ←map_add, neg_add_cancel, map_zero, zero_mul]
 
 instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
@@ -299,7 +299,8 @@ instance [RingOps R] [IsRing R] : IsAddGroupWithOne (FreeAlgebra R X) where
   intCast_negSucc n := by
     show ⟦_⟧ = ⟦_⟧
     simp [IntCast.intCast, intCast_negSucc]
-    show algebraMap (R := R) (A := FreeAlgebra R X) (-NatCast.natCast (n + 1)) = -algebraMap (R := R) (A := FreeAlgebra R X) _
+    show algebraMap (R := R) (α := FreeAlgebra R X) (-NatCast.natCast (n + 1)) =
+        -algebraMap (R := R) (α := FreeAlgebra R X) _
     rw [map_neg]
 
 instance [RingOps R] [IsRing R] : IsRing (FreeAlgebra R X) := IsRing.inst
@@ -493,9 +494,9 @@ def hom_ext {f g : FreeAlgebra R X →ₐ[R] A}
 /-- The left-inverse of `algebraMap`. -/
 def algebraMapInv : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 0)
 
-def algebraMap.leftInverse : Function.IsLeftInverse algebraMapInv (algebraMap (A := FreeAlgebra R X)) := fun _ => rfl
+def algebraMap.leftInverse : Function.IsLeftInverse algebraMapInv (algebraMap (α := FreeAlgebra R X)) := fun _ => rfl
 
-def algebraMap_inj : Function.Injective (algebraMap (R := R) (A := FreeAlgebra R X)) := algebraMap.leftInverse.Injective
+def algebraMap_inj : Function.Injective (algebraMap (R := R) (α := FreeAlgebra R X)) := algebraMap.leftInverse.Injective
 
 def ι_ne_algebraMap [IsNontrivial R] (x: X) (y: R) : ι R x ≠ algebraMap y := by
   intro h
