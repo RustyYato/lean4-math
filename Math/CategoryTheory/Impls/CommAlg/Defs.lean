@@ -26,6 +26,8 @@ instance : SMul R a := a.smul
 instance : AlgebraMap R a := a.map
 instance : IsAlgebra R a := a.alg
 instance : IsCommMagma a := a.comm
+instance : IsCommMagma a := a.comm
+instance : IsCommMagma a.toAlg := a.comm
 
 end Impls
 
@@ -41,7 +43,7 @@ variable (R: Type v) [SemiringOps R] [IsSemiring R]
 -- the forgetful functor, a faithful functor from `CommAlg` to `Set`
 -- which just gets the underlying set
 
-def CommAlg.toSet : CommAlg.{u, v} R ⥤ Type u where
+protected def CommAlg.toSet : CommAlg.{u, v} R ⥤ Type u where
   obj a := a.A
   map {A B} f :=
     have f: A →ₐ[R] B  := f
