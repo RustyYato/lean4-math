@@ -81,6 +81,10 @@ def lift [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T]: {f: G →* T // 
 def lift_mk_apply [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T] (f : G →* T) {r : G → G → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
     lift ⟨f, w⟩ (mk r x) = f x := rfl
 
+@[simp]
+def symm_lift_mk_apply [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T] {r: G -> G -> Prop} (f : GroupQuot r →* T) (x: G) :
+    (lift.symm f).val x = f (mk r x) := rfl
+
 def mkQuot_eq_mk [MonoidOps G] [IsMonoid G] : MulCon.mkQuot (GroupQuot.Con r) = GroupQuot.mk r := rfl
 
 attribute [irreducible] instMonoidOps instGroupOps mk lift

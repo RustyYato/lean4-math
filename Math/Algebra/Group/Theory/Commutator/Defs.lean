@@ -42,10 +42,44 @@ def lift : { f: M →* G // ∀a b: M, f (a * b) = f (b * a) } ≃ (Commutator M
     cases r
     apply h
 
+def liftComm [IsCommMagma G] : (M →* G) ≃ (Commutator M →* G) :=
+  Equiv.symm <| Equiv.trans lift.symm <| {
+    toFun f := f.val
+    invFun f := {
+      val := f
+      property := by
+        intro a b
+        rw [map_mul, map_mul, mul_comm]
+    }
+    leftInv f := rfl
+    rightInv f := rfl
+  }
+
 def lift_mk (f: { f: M →* G // ∀a b: M, f (a * b) = f (b * a) }) (x: M) : lift f (mk x) = f.val x :=
   GroupQuot.lift_mk_apply _ _ _
 
 def lift_comp_mk (f: { f: M →* G // ∀a b: M, f (a * b) = f (b * a) }) : (lift f).comp mk = f.val :=
   GroupHom.ext _ _ (lift_mk _)
+
+def symm_lift_mk (f: Commutator M →* G) (x: M) : (lift.symm f).val x = f (mk x) :=
+  GroupQuot.symm_lift_mk_apply _ _
+
+def liftComm_mk [IsCommMagma G] (f: M →* G) (x: M) : liftComm f (mk x) = f x :=
+  GroupQuot.lift_mk_apply _ _ _
+
+def liftComm_comp_mk [IsCommMagma G] (f: M →* G) : (liftComm f).comp mk = f :=
+  GroupHom.ext _ _ (lift_mk _)
+
+def symm_liftComm_mk [IsCommMagma G] (f: Commutator M →* G) (x: M) : liftComm.symm f x = f (mk x) :=
+  GroupQuot.symm_lift_mk_apply _ _
+
+def equivComm [IsCommMagma M] : M ≃ Commutator M where
+  toFun := liftComm.symm (.id _)
+  invFun := liftComm (.id _)
+  leftInv x := by simp [symm_liftComm_mk, liftComm_mk]
+  rightInv x := by
+    induction x with
+    | mk x =>
+    simp [symm_liftComm_mk, liftComm_mk]
 
 end Commutator
