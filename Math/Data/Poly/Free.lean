@@ -63,6 +63,17 @@ def CommFreeAlgebra.lift_ι_apply
   erw [RingQuot.liftAlgHom_mkAlgHom_apply]
   apply FreeAlgebra.lift_ι_apply
 
+def CommFreeAlgebra.lift_eq_id
+  [SemiringOps P] [IsSemiring P] [IsCommMagma P]
+  (x: CommFreeAlgebra P X)
+  : lift P (CommFreeAlgebra.ι P) x = x := by
+  obtain ⟨p, rfl⟩ := RingQuot.mkAlgHom_surj P _ x
+  induction p with
+  | grade0 a => erw [map_algebraMap, map_algebraMap]; rfl
+  | grade1 => erw [lift_ι_apply]; rfl
+  | add a b iha ihb => rw [map_add, map_add, iha, ihb]
+  | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
+
 -- Polynomials are algebraically equivalent to the commutative free algebra
 def poly_equiv_free_alg : P[X] ≃ₐ[P] CommFreeAlgebra P Unit := AlgEquiv.symm {
   CommFreeAlgebra.lift P (fun x => Poly.X) with

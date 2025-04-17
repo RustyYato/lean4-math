@@ -204,6 +204,8 @@ def AlgHom.comp (h: B →ₐ[R] C) (g: A →ₐ[R] B) : A →ₐ[R] C where
     dsimp
     rw [g.map_algebraMap, h.map_algebraMap]
 
+def AlgHom.apply_comp (h: B →ₐ[R] C) (g: A →ₐ[R] B) (x: A) : h.comp g x = h (g x) := rfl
+
 def AlgEmbedding.comp (h: B ↪ₐ[R] C) (g: A ↪ₐ[R] B) : A ↪ₐ[R] C where
   toEmbedding := (g.toEmbedding.trans h.toEmbedding)
   -- inj := (g.toEmbedding.trans h.toEmbedding).inj

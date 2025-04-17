@@ -161,6 +161,16 @@ def lift : A ≃ (P[X] →ₐ[P] A) where
     | add a b iha ihb => simp [iha, ihb, map_add]
     | mul a b iha ihb => simp [iha, ihb, map_mul]
 
+def apply_lift_C (x: A) (p: P) : lift x (C p) = algebraMap p := evalWith_C _ _ _
+def apply_lift_X (x: A) : lift x (X: P[X]) = x := evalWith_X _ _
+
+def lift_X : lift (X: P[X]) x = x := by
+  induction x using alg_induction with
+  | C a => rw [apply_lift_C]; rfl
+  | X => rw [apply_lift_X]
+  | add a b iha ihb => rw [map_add, iha, ihb]
+  | mul a b iha ihb => rw [map_mul, iha, ihb]
+
 end Lift
 
 end Poly
