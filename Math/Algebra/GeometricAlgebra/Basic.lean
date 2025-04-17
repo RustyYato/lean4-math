@@ -362,18 +362,8 @@ def basis_mul_mul [RingOps R] [IsRing R] (a b: GA R basis) : (a * b).basis_mul =
   | cons v vs ih =>
     cases a with | node  a₀ a₁ =>
     cases b with | node  b₀ b₁ =>
-    cases v <;> simp [ih,neg_add_rev]
-    rw [←neg_mul, ←mul_neg, add_comm]
-    rw [neg_mul, ←mul_neg]
-    simp only [basis_mul_neg_neg, basis_mul_basis_mul, true_and, neg_neg]
-    rw [neg_mul, mul_neg, add_comm]
-    rw [neg_mul, ←mul_neg]
-    simp only [basis_mul_neg_neg, basis_mul_basis_mul, neg_neg]
-    rw [neg_mul, mul_neg, add_comm]
-    apply And.intro _ rfl
-    rw [sub_eq_add_neg]
-    simp only [basis_mul_add, ih]
-    simp [←sub_neg, ih]
+    cases v <;> simp [ih,neg_add_rev, sub_eq_add_neg]
+    all_goals rw [add_comm]
 
 instance [RingOps R] [IsRing R] : IsMonoid (GA R basis) where
   mul_assoc := by

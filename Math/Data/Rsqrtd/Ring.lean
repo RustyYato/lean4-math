@@ -54,8 +54,7 @@ def conjHom : (R√d) →+* (R√d) where
     rw [neg_add_rev, add_comm]
   map_mul {x y} := by
     ext <;> simp [conj]
-    rw [mul_neg, mul_neg, neg_mul, neg_neg]
-    rw [neg_mul, mul_neg, neg_add_rev, add_comm]
+    rw [neg_add_rev, add_comm]
 
 @[simp] def conj_zero : conj (d := d) 0 = 0 := map_zero conjHom
 @[simp] def conj_one : conj (d := d) 1 = 1 := map_one conjHom
@@ -64,8 +63,8 @@ def conj_mul (x y: R√d) : conj (x * y) = conj x * conj y := map_mul conjHom
 
 def norm_eq_mul_conj (x: R√d) : norm x = x * x.conj := by
   ext <;> simp [Norm.norm, norm, conj, npow_two]
-  rw [mul_neg, sub_eq_add_neg, mul_assoc]
-  rw [mul_neg, mul_comm, neg_add_cancel]
+  rw [sub_eq_add_neg, mul_assoc]
+  rw [mul_comm, neg_add_cancel]
 
 def normHom : (R√d) →* R where
   toFun := norm

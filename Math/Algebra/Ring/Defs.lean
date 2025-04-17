@@ -68,9 +68,11 @@ def sub_mul [AddGroupOps α] [IsAddGroup α] [Mul α] [IsRightDistrib α] [IsMul
   apply neg_eq_of_add_left
   rw [←add_mul, add_neg_cancel, zero_mul]
 
+@[simp]
 def neg_mul [AddGroupOps α] [Mul α] [IsAddGroup α] [IsRightDistrib α] [IsMulZeroClass α] (a b: α) : -a * b = -(a * b) := by
   symm; apply neg_eq_of_add_left
   rw [←add_mul, add_neg_cancel, zero_mul]
+@[simp]
 def mul_neg [AddGroupOps α] [Mul α] [IsAddGroup α] [IsLeftDistrib α] [IsMulZeroClass α] (a b: α) : a * -b = -(a * b) := by
   symm; apply neg_eq_of_add_left
   rw [←mul_add, add_neg_cancel, mul_zero]

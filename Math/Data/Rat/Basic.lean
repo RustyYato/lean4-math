@@ -541,8 +541,7 @@ instance : IsRing ℚ where
     cases a
     apply sound
     show _ = _
-    simp [Fract.ofInt, ←Int.neg_mul]
-    rfl
+    simp [Fract.ofInt, Int.negSucc_eq]
   neg_add_cancel a := by
     cases a
     apply sound
