@@ -30,7 +30,9 @@ instance : IsAlgebra R a := a.alg
 
 end Impls
 
--- instance : Category (Alg R) where
---   Hom A B := A →ₐ[R] B
+instance : Category (Alg R) where
+  Hom A B := A →ₐ[R] B
+  id _ := AlgHom.id _
+  comp := AlgHom.comp
 
 end Category
