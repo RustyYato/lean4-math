@@ -23,7 +23,7 @@ namespace Functor
 
 section
 
-variable {C: Type*} [Category C]
+variable {C D: Type*} [Category C] [Category D]
 
 instance : Inhabited (C ⥤ C) :=
   ⟨𝟭 C⟩
@@ -33,6 +33,15 @@ def id_obj (X : C) : (𝟭 C).obj X = X := rfl
 
 @[simp]
 def id_map {X Y : C} (f : X ⟶ Y) : (𝟭 C).map f = f := rfl
+
+protected class IsFaithful (f: C ⥤ D) : Prop where
+  protected map_inj: ∀{X Y: C}, Function.Injective (@f.map X Y)
+protected class IsFull (f: C ⥤ D) : Prop where
+  protected map_surj: ∀{X Y: C}, Function.Surjective (@f.map X Y)
+protected class IsFullyFaithful (f: C ⥤ D) : Prop extends f.IsFaithful, f.IsFull where
+
+def map_inj (f: C ⥤ D) [h: f.IsFaithful] : ∀{X Y: C}, Function.Injective (@f.map X Y) := @h.map_inj
+def map_surj (f: C ⥤ D) [h: f.IsFull] : ∀{X Y: C}, Function.Surjective (@f.map X Y) := h.map_surj
 
 end
 
@@ -65,5 +74,14 @@ variable {C D E F: Type*} [Category C] [Category D] [Category E] [Category F]
   f ⋙ g ⋙ h = (f ⋙ g) ⋙ h := rfl
 
 end Functor
+
+class Concrete.{u} (C: Type*) [Category C] where
+  toSet : C ⥤ Type u
+  toSet_faithful: toSet.IsFaithful := by infer_instance
+
+def toSet (C: Type*) [Category C] [h: Concrete C] : C ⥤ Type _ := h.toSet
+def toSet_faithful (C: Type*) [Category C] [h: Concrete C] : (toSet C).IsFaithful := h.toSet_faithful
+
+-- def IsFree [Category C] [Concrete C] (c: C) :  := sorry
 
 end Category
