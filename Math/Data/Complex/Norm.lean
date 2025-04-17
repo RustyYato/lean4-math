@@ -19,7 +19,7 @@ private def norm_mul' (x y: ℂ) : ‖x * y‖ = ‖x‖ * ‖y‖ := by
   apply NNReal.embedReal.inj
   simp [map_add, map_mul, square_add, square_sub,
     sub_eq_add_neg, mul_npow, mul_add, add_mul]
-  rw [←neg_mul_right, mul_assoc, square_neg, mul_npow]
+  rw [mul_neg, mul_assoc, square_neg, mul_npow]
   ac_nf
   rw [add_comm (-_)]
   repeat rw [add_assoc]

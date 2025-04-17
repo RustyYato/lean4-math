@@ -98,7 +98,7 @@ def abs_mul (a b: α) : |a * b| = |a| * |b| := by
   apply le_antisymm
   · apply max_le
     rcases le_total a 0
-    · rw (occs := [1]) [←neg_neg (a * b), neg_mul_left, neg_mul_right]
+    · rw (occs := [1]) [←neg_neg (a * b), ←neg_mul, ←mul_neg]
       apply le_trans
       apply mul_le_mul_of_nonneg_left
       show -b ≤ b ⊔ -b
@@ -116,7 +116,7 @@ def abs_mul (a b: α) : |a * b| = |a| * |b| := by
       apply le_max_left
       apply abs_nonneg
     rcases le_total a 0
-    · rw [neg_mul_left]
+    · rw [←neg_mul]
       apply le_trans
       apply mul_le_mul_of_nonneg_left
       show b ≤ b ⊔ -b
@@ -125,7 +125,7 @@ def abs_mul (a b: α) : |a * b| = |a| * |b| := by
       apply mul_le_mul_of_nonneg_right
       apply le_max_right
       apply abs_nonneg
-    · rw [neg_mul_right]
+    · rw [←mul_neg]
       apply le_trans
       apply mul_le_mul_of_nonneg_left
       show -b ≤ b ⊔ -b
@@ -139,13 +139,13 @@ def abs_mul (a b: α) : |a * b| = |a| * |b| := by
     left; rw [max_eq_left.mpr, max_eq_left.mpr]
     apply neg_le_of_nonneg; assumption
     apply neg_le_of_nonneg; assumption
-    right; rw [max_eq_right.mpr, max_eq_left.mpr, neg_mul_left]
+    right; rw [max_eq_right.mpr, max_eq_left.mpr, ←neg_mul]
     apply neg_le_of_nonneg; assumption
     apply le_neg_of_nonpos; assumption
-    right; rw [max_eq_left.mpr, max_eq_right.mpr, neg_mul_right]
+    right; rw [max_eq_left.mpr, max_eq_right.mpr, ←mul_neg]
     apply le_neg_of_nonpos; assumption
     apply neg_le_of_nonneg; assumption
-    left; rw [max_eq_right.mpr, max_eq_right.mpr, ←neg_mul_right, ←neg_mul_left, neg_neg]
+    left; rw [max_eq_right.mpr, max_eq_right.mpr, mul_neg, neg_mul, neg_neg]
     apply le_neg_of_nonpos; assumption
     apply le_neg_of_nonpos; assumption
 

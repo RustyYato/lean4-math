@@ -68,11 +68,11 @@ def sub_mul [AddGroupOps α] [IsAddGroup α] [Mul α] [IsRightDistrib α] [IsMul
   apply neg_eq_of_add_left
   rw [←add_mul, add_neg_cancel, zero_mul]
 
-def neg_mul_left [AddGroupOps α] [Mul α] [IsAddGroup α] [IsRightDistrib α] [IsMulZeroClass α] (a b: α) : -(a * b) = -a * b := by
-  apply neg_eq_of_add_left
+def neg_mul [AddGroupOps α] [Mul α] [IsAddGroup α] [IsRightDistrib α] [IsMulZeroClass α] (a b: α) : -a * b = -(a * b) := by
+  symm; apply neg_eq_of_add_left
   rw [←add_mul, add_neg_cancel, zero_mul]
-def neg_mul_right [AddGroupOps α] [Mul α] [IsAddGroup α] [IsLeftDistrib α] [IsMulZeroClass α] (a b: α) : -(a * b) = a * -b := by
-  apply neg_eq_of_add_left
+def mul_neg [AddGroupOps α] [Mul α] [IsAddGroup α] [IsLeftDistrib α] [IsMulZeroClass α] (a b: α) : a * -b = -(a * b) := by
+  symm; apply neg_eq_of_add_left
   rw [←mul_add, add_neg_cancel, mul_zero]
 
 def zsmul_eq_intCast_mul [RingOps α] [IsRing α] (n: ℤ) (x: α) : n • x = n * x := by
@@ -80,26 +80,26 @@ def zsmul_eq_intCast_mul [RingOps α] [IsRing α] (n: ℤ) (x: α) : n • x = n
   | ofNat n =>
     erw [zsmul_ofNat n, intCast_ofNat, nsmul_eq_natCast_mul]
   | negSucc n =>
-    rw [zsmul_negSucc, intCast_negSucc, nsmul_eq_natCast_mul, neg_mul_left]
+    rw [zsmul_negSucc, intCast_negSucc, nsmul_eq_natCast_mul, ←neg_mul]
 
 def intCast_mul_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : r * x = r • x := by
   induction r with
   | ofNat r => erw [intCast_ofNat, zsmul_ofNat, natCast_mul_eq_nsmul]
-  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, ←neg_mul_left, natCast_mul_eq_nsmul]
+  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, neg_mul, natCast_mul_eq_nsmul]
 
 def mul_intCast_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : x * r = r • x := by
   induction r with
   | ofNat r => erw [intCast_ofNat, zsmul_ofNat, mul_natCast_eq_nsmul]
-  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, ←neg_mul_right, mul_natCast_eq_nsmul]
+  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, mul_neg, mul_natCast_eq_nsmul]
 
 def square_neg [RingOps α] [IsRing α] (x: α) : (-x) ^ 2 = x ^ 2 := by
-  rw [npow_two, npow_two, ←neg_mul_right, ←neg_mul_left, neg_neg]
+  rw [npow_two, npow_two, mul_neg, neg_mul, neg_neg]
 
 def square_sub  [RingOps α] [IsRing α] [IsCommMagma α] (a b: α) : (a - b) ^ 2 = a ^ 2 - 2 * a * b + b ^ 2 := by
   rw [sub_eq_add_neg, sub_eq_add_neg, square_add]
   congr 1
   congr 1
-  rw [neg_mul_right]
+  rw [←mul_neg]
   rw [square_neg]
 
 @[norm_cast]

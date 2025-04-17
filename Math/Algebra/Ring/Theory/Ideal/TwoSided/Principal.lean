@@ -18,7 +18,7 @@ def principal (a: α) : Ideal α where
     | cons x l ih =>
       obtain ⟨r, s⟩ := x
       simp only [List.map_cons, List.sum_cons, List.map_map]
-      rw [neg_add_rev, add_comm, ←neg_mul_left, ←neg_mul_left, ih,
+      rw [neg_add_rev, add_comm, neg_mul, neg_mul, ih,
         List.map_map]
   mem_add := by
     simp only [Set.mk_mem, forall_exists_index]

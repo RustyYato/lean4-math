@@ -62,7 +62,7 @@ def mul_self_eq_mul_self_iff [AddGroupOps R] [Mul R]
   intro g
   rcases g with rfl | rfl
   rfl
-  rw [←neg_mul_left, ←neg_mul_right, neg_neg]
+  rw [neg_mul, mul_neg, neg_neg]
   intro g
   replace g : (a + b) * (a - b) = 0 := by
     rw [add_mul, mul_sub, mul_sub, ←add_sub_assoc _ (b * a),

@@ -56,11 +56,11 @@ instance : IsGroupWithZero (R√d) where
     ext <;> simp
     rw [div?_eq_mul_inv?, div?_eq_mul_inv?,
       ←mul_assoc, ←mul_assoc,
-      ←neg_mul_right, ←add_mul, ←sub_eq_add_neg,
+      mul_neg, ←add_mul, ←sub_eq_add_neg,
       ←npow_two, mul_assoc, ←npow_two,
       ←norm_def, mul_inv?_cancel]
     rw [div?_eq_mul_inv?, div?_eq_mul_inv?, ←mul_assoc,
-      ←mul_assoc, ←neg_mul_right, ←neg_mul_left, mul_comm a.a,
+      ←mul_assoc, mul_neg, neg_mul, mul_comm a.a,
       neg_add_cancel]
 
 end Rsqrtd

@@ -61,7 +61,7 @@ instance : Mul (Ideal α) where
       rw [←hxs, neg_eq_neg_one_zsmul, List.smul_sum, List.map_map, List.map_map]
       congr; ext ⟨x, y⟩
       show -x.val * y.val = -1 • (x.val * y.val)
-      rw [neg_one_zsmul, neg_mul_left]
+      rw [neg_one_zsmul, ←neg_mul]
     mem_mul_left := by
       intro r _ ⟨xs, hxs⟩
       exists xs.map (fun (a, b) => (⟨r * a.val, mem_mul_left _ _ _ a.property⟩, b))

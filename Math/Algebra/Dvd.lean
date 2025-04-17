@@ -72,10 +72,10 @@ def dvd_neg [RingOps α] [h: IsRing α] [IsLawfulDvd α] {a b: α} : a ∣ b ↔
   apply Iff.intro
   rintro ⟨k, rfl⟩
   exists -k
-  rw [neg_mul_right]
+  rw [←mul_neg]
   intro ⟨k, eq⟩
   exists -k
-  rw [←neg_mul_right, ←eq, neg_neg]
+  rw [mul_neg, ←eq, neg_neg]
 
 def dvd_zero [Mul α] [Zero α] [IsMulZeroClass α] [IsLawfulDvd α] (a: α) : a ∣ 0 := by
   rw [dvd_iff]

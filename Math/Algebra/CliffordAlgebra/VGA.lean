@@ -217,7 +217,7 @@
 --     all_goals decide
 
 -- example : ι i * ι j = -ι j * ι i := by
---   rw [←neg_mul_left]
+--   rw [neg_mul]
 --   refine neg_eq_of_add_right ?_
 --   rw [ι_mul_add_comm_mul]
 --   rfl
@@ -246,7 +246,7 @@
 --   rfl
 
 -- def anticomm' (v w: Vector 3) : ι v * ι w = -ι w * ι v + 2 * algebraMap (dot v w) := by
---   rw [←neg_mul_left]
+--   rw [neg_mul]
 --   apply add_left_cancel (k := ι w * ι v)
 --   rw [←add_assoc, add_neg_cancel, zero_add]
 --   rw [ι_eq_lincomb v, ι_eq_lincomb w]
@@ -266,10 +266,10 @@
 --   rw [npow_two, ←mul_assoc, ←mul_assoc]
 --   repeat rw [mul_assoc (ι i)]
 --   repeat rw [mul_assoc (ι j)]
---   rw [anticomm_ik]; simp only [←neg_mul_left, ←neg_mul_right]
---   rw [mul_assoc (ι i), anticomm_jk]; simp only [←neg_mul_left, ←neg_mul_right]
+--   rw [anticomm_ik]; simp only [neg_mul, mul_neg]
+--   rw [mul_assoc (ι i), anticomm_jk]; simp only [neg_mul, mul_neg]
 --   rw [mul_assoc, mul_assoc, ι_sq,
---     ←mul_assoc (ι j), anticomm_ij]; simp only [←neg_mul_left, ←neg_mul_right]
+--     ←mul_assoc (ι j), anticomm_ij]; simp only [neg_mul, mul_neg]
 --   rw [←mul_assoc, ←mul_assoc, ←mul_assoc, mul_assoc (_ * ι i),
 --     ι_sq, ι_sq]
 --   simp [neg_neg]

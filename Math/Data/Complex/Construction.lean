@@ -129,7 +129,7 @@ def equivComplex : ℂ ≃+* ℝ[i] where
     repeat first|rw [add_assoc]|rw [mul_assoc]
     rw [mul_left_comm i, i_sq]
     rw (occs := [2]) [add_comm (algebraMap x.real * _)]
-    rw [add_assoc, add_assoc, ←neg_mul_right, ←neg_mul_right, mul_one]
+    rw [add_assoc, add_assoc, mul_neg, mul_neg, mul_one]
     rw [add_comm (-_), sub_eq_add_neg]
     ac_nf
 

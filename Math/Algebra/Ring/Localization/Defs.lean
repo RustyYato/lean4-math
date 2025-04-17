@@ -26,7 +26,7 @@ instance : Sub (Localization S) where
       exact d.val * a - b.val * c
       exact b * d
     · intro a₀ a₁ c₀ c₁ b₀ b₁ d₀ d₁ ab cd
-      rw [sub_eq_add_neg, sub_eq_add_neg, neg_mul_right, neg_mul_right]
+      rw [sub_eq_add_neg, sub_eq_add_neg, ←mul_neg, ←mul_neg]
       rw [←mk_add, ←mk_add, ←mk_neg, ←mk_neg]
       rw [sound _ ab, sound _ cd]
 
@@ -56,11 +56,11 @@ instance : IsAddGroup (Localization S) where
   sub_eq_add_neg a b := by
     induction a with | mk a =>
     induction b with | mk b =>
-    rw [mk_sub, sub_eq_add_neg, neg_mul_right]
+    rw [mk_sub, sub_eq_add_neg, ←mul_neg]
     rfl
   neg_add_cancel a := by
     induction a with | mk a =>
-    rw [mk_neg, mk_add, ←neg_mul_right, neg_add_cancel]
+    rw [mk_neg, mk_add, mul_neg, neg_add_cancel]
     apply zero_eq
   zsmul_ofNat n a := by
     induction a with | mk a =>

@@ -207,7 +207,7 @@ def mk_mul (a b c d: ℝ) : mk a b * mk c d = mk (a * c - b * d) (a * d + b * c)
   show Rsqrtd.mk _ _ * Rsqrtd.mk _ _ = mk_grat _ _
   show _ = Rsqrtd.mk _ _
   ext <;> simp
-  rw [sub_eq_add_neg, ←neg_mul_left]
+  rw [sub_eq_add_neg, neg_mul]
   rfl
   rfl
 

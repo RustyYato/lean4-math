@@ -59,7 +59,7 @@ def i : ℂ := ⟨0, 1⟩
   rw [sub_eq_add_neg]
   apply Eq.trans
   apply Rsqrtd.a_mul
-  rw [neg_one_mul, ←neg_mul_left]
+  rw [neg_one_mul, neg_mul]
   rfl
 @[simp] def img_mul (x y: ℂ) : img (x * y) = x.real * y.img + x.img * y.real := rfl
 

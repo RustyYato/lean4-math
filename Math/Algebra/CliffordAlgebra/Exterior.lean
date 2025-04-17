@@ -78,8 +78,8 @@ def pre_vector_wedge_sq_zero (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v 
   rw [←mul_assoc, ←commutes, mul_assoc, map_mul, mul_assoc,
   map_algebraMap, ←mul_add, map_add, map_mul, involute_ι,
   map_mul, involute_involute, involute_ι, ←mul_assoc,
-  ←neg_mul_left, ←neg_mul_right, add_mul, mul_add (ι Q v),
-  ←neg_mul_left, ←neg_mul_left, mul_assoc x,
+  neg_mul, mul_neg, add_mul, mul_add (ι Q v),
+  neg_mul, neg_mul, mul_assoc x,
   ι_sq_scalar, ←mul_assoc, ι_sq_scalar]
   rw [commutes _ x, add_assoc, ←add_assoc _ (-_), ←mul_assoc,
   add_neg_cancel, zero_add, add_neg_cancel, mul_zero]

@@ -123,7 +123,7 @@ def mem_bot_iff (a: α) : a ∈ (⊥: Subfield α) ↔ ∃a': ℤ × ℕ, ∃h: 
       obtain ⟨⟨a, b⟩, h, g⟩ := ih
       refine ⟨⟨-a, b⟩, h, ?_⟩
       simp
-      rw [g, div?_eq_mul_inv?, div?_eq_mul_inv?, neg_mul_left,
+      rw [g, div?_eq_mul_inv?, div?_eq_mul_inv?, ←neg_mul,
         intCast_neg]
     | mul _ _ ih₀ ih₁ =>
       obtain ⟨⟨a, b⟩, h₀, g₀⟩ := ih₀

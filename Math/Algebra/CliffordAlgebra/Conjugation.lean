@@ -13,7 +13,7 @@ private def preInvolute (Q: QuadraticForm R V) : { f: V →ₗ[R] CliffordAlgebr
  := {
     val := -CliffordAlgebra.ι Q
     property v := by
-      rw [LinearMap.apply_neg, ←neg_mul_left, ←neg_mul_right,
+      rw [LinearMap.apply_neg, neg_mul, mul_neg,
         neg_neg, ι_sq_scalar]
   }
 

@@ -73,7 +73,7 @@ def divmod_rec_lemma [IsNontrivial P] [IsCommMagma P] (a b: P[X]) (h: IsInvertib
     · unfold a'
       rw [sub_eq_add_neg]
       show a.toFinsupp i + AddMonoidAlgebra.toFinsupp (-_) i = _
-      rw [neg_mul_left, ←neg_smul', coeff_mul_Xpow, Nat.sub_sub', Nat.add_comm i,
+      rw [←neg_mul, ←neg_smul', coeff_mul_Xpow, Nat.sub_sub', Nat.add_comm i,
         Nat.add_sub_assoc]
       show _ + _ * -(b.toFinsupp (b.degreeNat + (i - a.degreeNat))) = 0
       unfold lead
@@ -91,10 +91,10 @@ def divmod_rec_lemma [IsNontrivial P] [IsCommMagma P] (a b: P[X]) (h: IsInvertib
     · unfold a'
       rw [sub_eq_add_neg]
       show a.toFinsupp deg + AddMonoidAlgebra.toFinsupp (-_) deg = _
-      rw [neg_mul_left, ←neg_smul', coeff_mul_Xpow, Nat.sub_sub', Nat.add_comm deg,
+      rw [←neg_mul, ←neg_smul', coeff_mul_Xpow, Nat.sub_sub', Nat.add_comm deg,
         Nat.add_sub_assoc]
       show _ + _ * -(b.toFinsupp (b.degreeNat + (deg - a.degreeNat))) = 0
-      rw [adegnat, Nat.sub_self, add_zero, ←neg_mul_right,
+      rw [adegnat, Nat.sub_self, add_zero, mul_neg,
         mul_assoc]
       erw [h.invOf_mul, mul_one, add_neg_cancel]
       rw [adegnat]
@@ -232,7 +232,7 @@ def mod_eq_iff_sub_dvd (a b: P[X]) : p ∣ (a - b) ↔ a.mod p = b.mod p := by
     rw [sub_eq_add_neg, neg_add_rev, ←add_assoc, add_assoc (_ * _),
       add_comm_right, ←sub_eq_add_neg, ←sub_eq_add_neg, ←sub_mul] at eq
     replace eq := dvd_add eq (dvd_mul_right p (b.div p - a.div p))
-    rw [add_comm_right, ←neg_sub, ←neg_mul_left, neg_add_cancel,
+    rw [add_comm_right, ←neg_sub, neg_mul, neg_add_cancel,
       zero_add] at eq
     have := Poly.eq_zero_of_dvd_of_degree_lt _ _ eq ?_
     apply eq_of_sub_eq_zero
@@ -509,7 +509,7 @@ def dvd_mod (a: P[X]) : p ∣ a ↔ p ∣ a.mod p := by
   apply Iff.intro
   intro h
   have := dvd_add h (dvd_mul_right p (-a.div p))
-  rwa [←neg_mul_left, add_comm_right, add_neg_cancel, zero_add] at this
+  rwa [neg_mul, add_comm_right, add_neg_cancel, zero_add] at this
   intro h
   apply dvd_add
   apply dvd_mul_right

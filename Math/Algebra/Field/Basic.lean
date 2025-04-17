@@ -18,7 +18,7 @@ macro_rules
 def neg_inv? (a: α) (h: a ≠ 0) : (-a)⁻¹? = -a⁻¹? := by
   symm
   refine inv?_eq_of_mul_right (-a) (-a⁻¹?) ?_
-  rw [←neg_mul_right, ←neg_mul_left, neg_neg, inv?_mul_cancel]
+  rw [mul_neg, neg_mul, neg_neg, inv?_mul_cancel]
 
 def sub_div?_sub₀ (a b c: α) (hc: c ≠ 0) : a /? c - b /? c = (a - b) /? c := by
   simp [div?_eq_mul_inv?]

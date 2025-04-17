@@ -398,7 +398,7 @@ def le_div_iff_mul_le_of_pos (a b c: ℚ) (h: 0 < b) : c ≤ a /? b ↔ c * b �
   rw [le_iff_mul_right_pos  (k := b), div?_mul_cancel]
   assumption
 def le_div_iff_mul_le_of_neg (a b c: ℚ) (h: b < 0) : c ≤ a /? b ↔ a ≤ c * b := by
-  rw [le_iff_mul_right_pos  (k := -b), ←neg_mul_right, ←neg_mul_right, div?_mul_cancel,
+  rw [le_iff_mul_right_pos  (k := -b), mul_neg, mul_neg, div?_mul_cancel,
     ←neg_le_neg_iff]
   rw [neg_lt_neg_iff, neg_neg]
   assumption
@@ -407,8 +407,8 @@ def div_le_iff_le_mul_of_pos (a b c: ℚ) (h: 0 < b) : a /? b ≤ c ↔ a ≤ c 
   rw [le_iff_mul_right_pos  (k := b), div?_mul_cancel]
   assumption
 def div_le_iff_le_mul_of_neg (a b c: ℚ) (h: b < 0) : a /? b ≤ c ↔ c * b ≤ a := by
-  rw [le_iff_mul_right_pos  (k := -b), ←neg_mul_right, div?_mul_cancel,
-    ←neg_mul_right, ←neg_le_neg_iff]
+  rw [le_iff_mul_right_pos  (k := -b), mul_neg, div?_mul_cancel,
+    mul_neg, ←neg_le_neg_iff]
   rw [neg_lt_neg_iff, neg_neg]
   assumption
 
@@ -532,7 +532,7 @@ def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by
       unfold Fract.isNonneg
       rw [Fract.sub_eq_add_neg]
       show 0 ≤ _ + _
-      simp [←neg_mul_left]
+      simp [neg_mul]
       apply Int.le_sub_left_of_add_le
       simp; rw [Int.mul_comm]
       apply Int.mul_ediv_self_le

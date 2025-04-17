@@ -319,7 +319,7 @@ def Fract.neg_den (a: Fract) : (-a).den = a.den := rfl
 def Fract.neg.spec (a b: Fract) : a ≈ b -> -a ≈ -b := by
   intro ab
   show _ * _ = _ * _
-  simp [←neg_mul_left]
+  simp [neg_mul]
   rw [ab]
 
 instance : Neg ℚ where
@@ -349,7 +349,7 @@ def Fract.sub_eq_add_neg (a b: Fract) : a - b = a + -b := by
   cases a; cases b
   show sub _ _ = add _ (neg _)
   unfold sub add neg
-  simp [←neg_mul_left]
+  simp [neg_mul]
   rw [Int.sub_eq_add_neg]
 
 instance : Sub ℚ where
@@ -531,7 +531,7 @@ instance : IsRing ℚ where
     cases a, b
     apply sound
     show _ = _
-    simp [Int.sub_eq_add_neg, ←neg_mul_left]
+    simp [Int.sub_eq_add_neg, neg_mul]
   zsmul_ofNat n a := by
     cases a
     apply sound
@@ -547,7 +547,7 @@ instance : IsRing ℚ where
     cases a
     apply sound
     show _ = _
-    simp [Int.add_left_neg, ←neg_mul_left]
+    simp [Int.add_left_neg, neg_mul]
   intCast_ofNat _ := rfl
   intCast_negSucc _ := rfl
   zero_nsmul a := by

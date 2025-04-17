@@ -107,7 +107,7 @@ def toUnit : { x: ZMod n // Int.gcd x.toInt n = 1 } ≃ Units (ZMod n) where
       rw [Int.eq_one_of_mul_eq_one_left h x.inv_mul_val]
       rfl
       have := x.inv_mul_val
-      rw [←neg_neg (x.inv * x.val), neg_mul_left, neg_mul_right] at this
+      rw [←neg_neg (x.inv * x.val), ←neg_mul, ←mul_neg] at this
       rw [←neg_neg x.val]
       rw [Int.eq_one_of_mul_eq_one_left _ this]
       rfl

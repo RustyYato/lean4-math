@@ -21,7 +21,7 @@ def center (R: Type*) [RingOps R] [IsRing R] : Subring R where
     rw [mul_assoc, hb, ←mul_assoc, ha, mul_assoc]
   mem_neg := by
     intro a ha x
-    rw [←neg_mul_left, ha, ←neg_mul_right]
+    rw [neg_mul, ha, mul_neg]
 
 instance : IsCommMagma (center R) where
   mul_comm := by

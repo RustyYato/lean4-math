@@ -278,7 +278,7 @@ def seq₂_fst_lim (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.
     contradiction
   · rw [nsign] at this
     rw [Int.sign_eq_neg_one_iff_neg] at nsign
-    rw [←intCast_neg, intCast_one, ←neg_mul_right, mul_one] at this
+    rw [←intCast_neg, intCast_one, mul_neg, mul_one] at this
     replace this : (b - a) /? |n| < 0 := by
       apply lt_of_le_of_lt this
       refine Rat.neg_lt_neg_iff.mpr ?_
