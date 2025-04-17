@@ -176,12 +176,15 @@ def evalHom_X (x: σ -> A) (i: σ) : evalHom (P := P) x (X i) = x i :=
 
 end Eval
 
-section Lift
+noncomputable section Lift
 
-variable [SemiringOps P] [SemiringOps A] [FunLike F P A]
-  [IsSemiring P] [IsSemiring A] [IsCommMagma P] [IsCommMagma A]
-  [DecidableEq σ] [SMul P A] [AlgebraMap P A] [IsAlgebra P A]
+variable [SemiringOps P] [IsSemiring P] [IsCommMagma P]
+  [SemiringOps A] [IsSemiring A] [IsCommMagma A] [SMul P A] [AlgebraMap P A] [IsAlgebra P A]
+  [SemiringOps B] [IsSemiring B] [IsCommMagma B] [SMul P B] [AlgebraMap P B] [IsAlgebra P B]
+  [DecidableEq σ] [DecidableEq σ'] [DecidableEq σ'']
+  [DecidableEq A] [DecidableEq B] [DecidableEq P]
 
+@[irreducible]
 -- show that MvPoly is the free commutative P-algebra over σ
 def lift : (σ -> A) ≃ (MvPoly P σ →ₐ[P] A) where
   toFun := evalHom
@@ -199,6 +202,62 @@ def lift : (σ -> A) ≃ (MvPoly P σ →ₐ[P] A) where
     | X i => simp
     | add a b iha ihb => simp [iha, ihb, map_add]
     | mul a b iha ihb => simp [iha, ihb, map_mul]
+
+
+unseal lift in
+@[simp] def apply_lift_C (x: σ -> A) (p: P) : lift x (C p) = algebraMap p := evalWith_C _ _ _
+unseal lift in
+@[simp] def apply_lift_X (x: σ -> A) : lift x (X i: MvPoly P σ) = x i := evalWith_X _ _ _
+
+def lift_X (x: MvPoly P σ) : lift (X: σ -> MvPoly P σ) x = x := by
+  induction x using alg_induction with
+  | C a => rw [apply_lift_C]; rfl
+  | X => rw [apply_lift_X]
+  | add a b iha ihb => rw [map_add, iha, ihb]
+  | mul a b iha ihb => rw [map_mul, iha, ihb]
+
+def map (f: σ -> σ') : MvPoly P σ →ₐ[P] MvPoly P σ' :=
+  lift (fun x => MvPoly.X (f x))
+
+@[simp] def apply_map_C (f: σ -> σ') : map f (C x) = C (P := P) x := apply_lift_C _ _
+@[simp] def apply_map_X (f: σ -> σ') : map f (X i) = X (P := P) (f i) := apply_lift_X _
+
+def map_map (f: σ' -> σ'') (g: σ -> σ') (x: MvPoly P σ) : map f (map g x) = map (f ∘ g) x := by
+  induction x using alg_induction with
+  | add a b iha ihb => simp [map_add, iha, ihb]
+  | mul a b iha ihb => simp [map_mul, iha, ihb]
+  | C => simp
+  | X => simp
+
+def map_comp_map (f: σ' -> σ'') (g: σ -> σ') : (map f).comp (map g) = map (f ∘ g) (P := P) := by
+  apply DFunLike.ext
+  apply map_map
+
+def lift_id_map_X : lift (P := P) (A := MvPoly P σ) id (map (P := P) (σ := σ) (MvPoly.X (P := P)) x) = x := by
+  induction x using alg_induction with
+  | add a b iha ihb => simp [map_add, iha, ihb]
+  | mul a b iha ihb => simp [map_mul, iha, ihb]
+  | C => simp; rfl
+  | X => simp
+
+def lift_id_comp_map_X : (MvPoly.lift id).comp (MvPoly.map MvPoly.X) = AlgHom.id (MvPoly P σ) := by
+  apply DFunLike.ext
+  apply lift_id_map_X
+
+def lift_comp_map_algmap (f: A →ₐ[P] B) : (lift id).comp (map f) = f.comp (lift id) := by
+  ext x;
+  induction x using alg_induction with
+  | add a b iha ihb => simp [map_add, iha, ihb]
+  | mul a b iha ihb => simp [map_mul, iha, ihb]
+  | C => simp; rw [map_algebraMap]
+  | X => simp
+
+-- def lift_lift (f: A -> B) (g: σ -> A) (x: MvPoly P σ) : (lift f) (lift g x) = lift (f ∘ g) x := by
+--   induction x using alg_induction with
+--   | C a => rw [apply_lift_C]; rfl
+--   | X => rw [apply_lift_X]
+--   | add a b iha ihb => rw [map_add, iha, ihb]
+--   | mul a b iha ihb => rw [map_mul, iha, ihb]
 
 end Lift
 

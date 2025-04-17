@@ -4,7 +4,7 @@ import Math.CategoryTheory.Functor.Basic
 namespace Category
 
 structure CommAlg.{u, v} (R: Type v) [SemiringOps R] [IsSemiring R] extends Alg.{u, v} R where
-  comm: IsCommMagma A
+  comm: IsCommMagma A := by infer_instance
 
 section
 

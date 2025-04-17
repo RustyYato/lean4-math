@@ -5,11 +5,11 @@ namespace Category
 
 structure Alg.{u, v} (R: Type v) [SemiringOps R] [IsSemiring R] where
   A: Type u
-  ops: SemiringOps A
-  semi: IsSemiring A
-  smul: SMul R A
-  map: AlgebraMap R A
-  alg: IsAlgebra R A
+  ops: SemiringOps A := by infer_instance
+  semi: IsSemiring A := by infer_instance
+  smul: SMul R A := by infer_instance
+  map: AlgebraMap R A := by infer_instance
+  alg: IsAlgebra R A := by infer_instance
 
 attribute [coe] Alg.A
 
