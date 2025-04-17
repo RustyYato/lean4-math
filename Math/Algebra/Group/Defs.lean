@@ -353,6 +353,12 @@ def eq_of_sub_eq_zero [IsAddGroup α] {a b: α} : a - b = 0 -> a = b := by
   rw [neg_neg] at this
   assumption
 
+def neg_eq_zsmul [IsAddGroup α] (a: α) : -a = (-1: ℤ) • a := by
+  erw [zsmul_negSucc, one_nsmul]
+
+def inv_eq_zpow [IsGroup α] (a: α) : a⁻¹ = a ^ (-1) :=
+  neg_eq_zsmul (α := AddOfMul α) _
+
 def inv_div [IsGroup α] (a b: α) : (a / b)⁻¹ = b / a :=
   neg_sub (α := AddOfMul α) _ _
 def div_div [IsGroup α] (a b c: α) : a / (b / c) = a * c / b :=

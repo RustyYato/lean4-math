@@ -83,14 +83,13 @@ def zsmul_eq_intCast_mul [RingOps α] [IsRing α] (n: ℤ) (x: α) : n • x = n
     rw [zsmul_negSucc, intCast_negSucc, nsmul_eq_natCast_mul, ←neg_mul]
 
 def intCast_mul_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : r * x = r • x := by
-  induction r with
-  | ofNat r => erw [intCast_ofNat, zsmul_ofNat, natCast_mul_eq_nsmul]
-  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, neg_mul, natCast_mul_eq_nsmul]
+  rw [zsmul_eq_intCast_mul]
 
 def mul_intCast_eq_zsmul [RingOps α] [IsRing α] (x: α) (r: Int) : x * r = r • x := by
+  rw [zsmul_eq_intCast_mul]
   induction r with
-  | ofNat r => erw [intCast_ofNat, zsmul_ofNat, mul_natCast_eq_nsmul]
-  | negSucc r => rw [intCast_negSucc, zsmul_negSucc, mul_neg, mul_natCast_eq_nsmul]
+  | ofNat r => erw [intCast_ofNat, mul_natCast_eq_nsmul, nsmul_eq_natCast_mul]
+  | negSucc r => rw [intCast_negSucc, mul_neg, neg_mul, mul_natCast_eq_nsmul, nsmul_eq_natCast_mul]
 
 def square_neg [RingOps α] [IsRing α] (x: α) : (-x) ^ 2 = x ^ 2 := by
   rw [npow_two, npow_two, mul_neg, neg_mul, neg_neg]
