@@ -1,36 +1,30 @@
-import Math.Algebra.Ring.Theory.Basic
 import Math.Algebra.Ring.SetLike.Basic
 import Math.Algebra.Ring.SetLike.Lattice
+import Math.Algebra.Semiring.Theory.Center
 
 namespace Ring
 
 variable [RingOps R] [IsRing R]
 
--- the center of a ring is the subring of all elements which commute with
--- all other elements of the ring. i.e. the maximum commutative subring
--- of the given ring
-def center (R: Type*) [RingOps R] [IsRing R] : Subring R where
-  carrier := Set.mk fun r => ∀x: R, r * x = x * r
-  mem_zero := by intro x; simp
-  mem_one := by intro x; simp
-  mem_add := by
-    intro a b ha hb x
-    rw [add_mul, mul_add, ha, hb ]
-  mem_mul := by
-    intro a b ha hb x
-    rw [mul_assoc, hb, ←mul_assoc, ha, mul_assoc]
+@[coe]
+def _root_.Semiring.Center.toSubring (r: Semiring.Center R) : Subring R := {
+  Semiring.Center.toSubsemiring r with
   mem_neg := by
     intro a ha x
-    rw [neg_mul, ha, mul_neg]
+    simp [ha x]
+}
 
-instance : IsCommMagma (center R) where
-  mul_comm := by
-    intro a b
-    apply Subtype.val_inj
-    show a.val * b.val = b.val * a.val
-    apply a.property
+def center (R: Type*) [RingOps R] [IsRing R] : Semiring.Center R := Semiring.center R
 
-def center_eq_top [IsCommMagma R] : center R = ⊤ := by
+instance (c: Semiring.Center R) : RingOps c :=
+  inferInstanceAs (RingOps c.toSubring)
+instance (c: Semiring.Center R) : IsRing c :=
+  inferInstanceAs (IsRing c.toSubring)
+
+instance : Coe (Semiring.Center R) (Subring R) where
+  coe r := Semiring.Center.toSubring r
+
+def center_eq_top [IsCommMagma R] : (center R: Subring R) = ⊤ := by
   ext i
   apply Iff.intro; intro; trivial
   intro h x
