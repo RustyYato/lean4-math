@@ -1,5 +1,5 @@
 import Math.Data.Free.Algebra
-import Math.Algebra.RingQuot.Defs
+import Math.Algebra.RingQuot
 import Math.Algebra.Module.LinearMap.Defs
 import Math.Algebra.Module.Hom
 import Math.Algebra.Algebra.Hom

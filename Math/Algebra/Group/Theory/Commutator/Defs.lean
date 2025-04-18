@@ -1,4 +1,4 @@
-import Math.Algebra.GroupQuot.Defs
+import Math.Algebra.GroupQuot
 
 -- every product is related to the product with it's arguments swapped
 inductive Commutator.Rel (α: Type*) [Mul α] : α -> α -> Prop where

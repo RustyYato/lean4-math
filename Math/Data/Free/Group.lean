@@ -1,5 +1,5 @@
 import Math.Data.Free.Monoid
-import Math.Algebra.GroupQuot.Defs
+import Math.Algebra.GroupQuot
 import Math.Algebra.Group.Hom
 
 inductive FreeGroup.Rel (α: Type*) : FreeMonoid (Bool × α) -> FreeMonoid (Bool × α) -> Prop where

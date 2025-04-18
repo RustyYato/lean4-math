@@ -1,6 +1,6 @@
 import Math.Data.Free.Algebra
 import Math.Data.Poly.Eval
-import Math.Algebra.RingQuot.Defs
+import Math.Algebra.RingQuot
 
 -- show that polynomials are precicely the commutative free algebra over a
 -- commutative semiring
