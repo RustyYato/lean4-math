@@ -1,5 +1,5 @@
 import Math.Algebra.Notation
-import Math.Algebra.Monoid.Defs
+import Math.Algebra.Group.Defs
 
 class IsMulAction (R M: Type*) [SMul R M] [MonoidOps R] [IsMonoid R]: Prop where
   one_smul: ∀a: M, (1: R) • a = a
@@ -83,3 +83,8 @@ instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] : IsDistribMulAc
   mul_smul _ _ _ := mul_nsmul _ _ _
   smul_zero := nsmul_zero
   smul_add := nsmul_add
+
+def neg_smul' [SMul R M] [MonoidOps R] [AddGroupOps M] [IsMonoid R] [IsAddGroup M] [IsAddCommMagma M] [IsDistribMulAction R M]
+  (r: R) (x: M) : r • (-x) = -(r • x) := by
+  refine neg_eq_of_add_right ?_
+  rw [←smul_add, neg_add_cancel, smul_zero]
