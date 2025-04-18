@@ -12,27 +12,27 @@ variable {r: M -> M -> Prop} [SMul R M]
 section
 
 instance instAddMonoidOps [AddMonoidOps M] [IsAddMonoid M] : AddMonoidOps (ModuleQuot R r) :=
-  inferInstanceAs (AddMonoidOps (AlgQuotient (ModuleQuot.Con R r)))
-instance instIsSemiring [AddMonoidOps M] [IsAddMonoid M] : IsAddMonoid (ModuleQuot R r) :=
-  inferInstanceAs (IsAddMonoid (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instAddMonoidOps _
+instance instIsAddMonoid [AddMonoidOps M] [IsAddMonoid M] : IsAddMonoid (ModuleQuot R r) :=
+  AlgQuotient.instIsAddMonoid _
 
 instance instAddGroupOps [AddGroupOps M] [IsAddGroup M] : AddGroupOps (ModuleQuot R r) :=
-  inferInstanceAs (AddGroupOps (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instAddGroupOps _
 instance instIsAddGroup [AddGroupOps M] [IsAddGroup M] : IsAddGroup (ModuleQuot R r) :=
-  inferInstanceAs (IsAddGroup (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instIsAddGroup _
 
 instance instSMul [Add M] : SMul R (ModuleQuot R r) :=
-  inferInstanceAs (SMul R (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instSMul _
 
 instance [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] : IsAddCommMagma (ModuleQuot R r) :=
-  inferInstanceAs (IsAddCommMagma (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instIsAddCommMagma _
 
 instance [MonoidOps R] [IsMonoid R] [Add M] [SMul R M] [IsMulAction R M] : IsMulAction R (ModuleQuot R r) :=
-  inferInstanceAs (IsMulAction R (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instIsMulAction _
 instance [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M] [SMul R M] [IsDistribMulAction R M] : IsDistribMulAction R (ModuleQuot R r) :=
-  inferInstanceAs (IsDistribMulAction R (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instIsDistribMulAction _
 instance [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] : IsModule R (ModuleQuot R r) :=
-  inferInstanceAs (IsModule R (AlgQuotient (ModuleQuot.Con R r)))
+  AlgQuotient.instIsModule _
 
 end
 

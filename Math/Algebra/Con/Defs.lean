@@ -236,7 +236,7 @@ def AlgQuotient.ind [IsCon C] {c: C}
   (mk: ∀x, motive (IsCon.mkQuot c x))
   (a: AlgQuotient c) : motive a := _root_.Quotient.ind mk a
 
-instance [Add α] [IsAddCon C] (c: C) : Add (AlgQuotient c) where
+instance AlgQuotient.instAdd [Add α] [IsAddCon C] (c: C) : Add (AlgQuotient c) where
   add := by
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a + b))
     intro w x y z wy xz
@@ -245,7 +245,7 @@ instance [Add α] [IsAddCon C] (c: C) : Add (AlgQuotient c) where
     assumption
     assumption
 
-instance [Mul α] [IsMulCon C] (c: C) : Mul (AlgQuotient c) where
+instance AlgQuotient.instMul [Mul α] [IsMulCon C] (c: C) : Mul (AlgQuotient c) where
   mul := by
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a * b))
     intro w x y z wy xz
@@ -254,7 +254,7 @@ instance [Mul α] [IsMulCon C] (c: C) : Mul (AlgQuotient c) where
     assumption
     assumption
 
-instance [SMul R α] [IsSMulCon C R] (c: C) : SMul R (AlgQuotient c) where
+instance AlgQuotient.instSMul [SMul R α] [IsSMulCon C R] (c: C) : SMul R (AlgQuotient c) where
   smul r := by
     apply Quotient.lift (fun a => IsCon.mkQuot c (r • a))
     intro x y h
@@ -271,13 +271,13 @@ instance : Relation.IsSymmetric c where
 instance : Relation.IsTrans c where
   trans := (IsCon.toEquivalence c).trans
 
-instance [Zero α] : Zero (AlgQuotient c) where
+instance AlgQuotient.instZero [Zero α] : Zero (AlgQuotient c) where
   zero := IsCon.mkQuot _ 0
-instance [One α] : One (AlgQuotient c) where
+instance AlgQuotient.instOne [One α] : One (AlgQuotient c) where
   one := IsCon.mkQuot _ 1
-instance [NatCast α] : NatCast (AlgQuotient c) where
+instance AlgQuotient.instNatCast [NatCast α] : NatCast (AlgQuotient c) where
   natCast n := IsCon.mkQuot _ n
-instance [IntCast α] : IntCast (AlgQuotient c) where
+instance AlgQuotient.instIntCast [IntCast α] : IntCast (AlgQuotient c) where
   intCast n := IsCon.mkQuot _ n
 
 end Quotient

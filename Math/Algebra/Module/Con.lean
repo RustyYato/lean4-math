@@ -3,7 +3,7 @@ import Math.Algebra.Monoid.Action.Con
 
 variable {C α: Type*} [RelLike C α] (c: C)
 
-instance
+instance AlgQuotient.instIsModule
   [SemiringOps R] [IsSemiring R]
   [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
   [SMul R α] [IsSMulCon C R] [IsAddCon C]

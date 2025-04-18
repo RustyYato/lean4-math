@@ -13,25 +13,25 @@ section
 variable {r: α -> α -> Prop}
 
 instance instSemiringOps [SemiringOps α] [IsSemiring α] : SemiringOps (RingQuot r) :=
-  inferInstanceAs (SemiringOps (AlgQuotient (RingQuot.Con r)))
+  AlgQuotient.instSemiringOps _
 instance instIsSemiring [SemiringOps α] [IsSemiring α] : IsSemiring (RingQuot r) :=
-  inferInstanceAs (IsSemiring (AlgQuotient (RingQuot.Con r)))
+  AlgQuotient.instIsSemiring _
 
 instance instRingOps [RingOps α] [IsRing α] : RingOps (RingQuot r) :=
-  inferInstanceAs (RingOps (AlgQuotient (RingQuot.Con r)))
+  AlgQuotient.instRingOps _
 instance instIsRing [RingOps α] [IsRing α] : IsRing (RingQuot r) :=
-  inferInstanceAs (IsRing (AlgQuotient (RingQuot.Con r)))
+  AlgQuotient.instIsRing _
 
 variable [SemiringOps α] [SemiringOps S]
   [IsSemiring α] [IsSemiring S]
   [SMul S α] [AlgebraMap S α] [IsAlgebra S α]
 
 instance : SMul S (RingQuot r) :=
-  inferInstanceAs (SMul S (AlgQuotient (RingQuot.Con r)))
+  AlgQuotient.instSMul _
 instance : AlgebraMap S (RingQuot r) :=
-  inferInstanceAs (AlgebraMap S (AlgQuotient (RingQuot.Con r)))
+  AlgQuotient.instAlgebraMap _
 instance : IsAlgebra S (RingQuot r) :=
-  inferInstanceAs (IsAlgebra S (AlgQuotient (RingQuot.Con r)))
+  AlgQuotient.instIsAlgebra _
 
 end
 

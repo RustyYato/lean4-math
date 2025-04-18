@@ -89,6 +89,8 @@ instance [GroupOps α] [IsMulCon C] [IsGroup α] : Div (AlgQuotient c) where
     assumption
     assumption
 
+instance AlgQuotient.instAddGroupOps [AddGroupOps α] [IsAddGroup α] [IsAddCon C]: AddGroupOps (AlgQuotient c) := inferInstance
+
 instance AlgQuotient.instIsAddGroup [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : IsAddGroup (AlgQuotient c) where
   sub_eq_add_neg a b := by
     induction a; induction b
@@ -106,6 +108,8 @@ instance AlgQuotient.instIsAddGroup [AddGroupOps α] [IsAddCon C] [IsAddGroup α
     induction a
     apply Quotient.sound
     rw [zsmul_negSucc]
+
+instance AlgQuotient.instGroupOps [GroupOps α] [IsGroup α] [IsMulCon C]: GroupOps (AlgQuotient c) := inferInstance
 
 instance AlgQuotient.instIsGroup [GroupOps α] [IsMulCon C] [IsGroup α] : IsGroup (AlgQuotient c) where
   div_eq_mul_inv := sub_eq_add_neg (α := (AlgQuotient (AddOfMul.mk c)))

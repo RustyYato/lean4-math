@@ -13,14 +13,14 @@ section
 variable {r: α -> α -> Prop}
 
 instance instMonoidOps [MonoidOps α] [IsMonoid α] : MonoidOps (GroupQuot r) :=
-  inferInstanceAs (MonoidOps (AlgQuotient (GroupQuot.Con r)))
+  AlgQuotient.instMonoidOps _
 instance instIsMonoid [MonoidOps α] [IsMonoid α] : IsMonoid (GroupQuot r) :=
-  inferInstanceAs (IsMonoid (AlgQuotient (GroupQuot.Con r)))
+  AlgQuotient.instIsMonoid _
 
 instance instGroupOps [GroupOps α] [IsGroup α] : GroupOps (GroupQuot r) :=
-  inferInstanceAs (GroupOps (AlgQuotient (GroupQuot.Con r)))
+  AlgQuotient.instGroupOps _
 instance instIsGroup [GroupOps α] [IsGroup α] : IsGroup (GroupQuot r) :=
-  inferInstanceAs (IsGroup (AlgQuotient (GroupQuot.Con r)))
+  AlgQuotient.instIsGroup _
 
 end
 
@@ -98,14 +98,14 @@ section
 variable {r: α -> α -> Prop}
 
 instance instAddMonoidOps [AddMonoidOps α] [IsAddMonoid α] : AddMonoidOps (AddGroupQuot r) :=
-  inferInstanceAs (AddMonoidOps (AlgQuotient (AddGroupQuot.Con r)))
+  AlgQuotient.instAddMonoidOps _
 instance instIsSemiring [AddMonoidOps α] [IsAddMonoid α] : IsAddMonoid (AddGroupQuot r) :=
-  inferInstanceAs (IsAddMonoid (AlgQuotient (AddGroupQuot.Con r)))
+  AlgQuotient.instIsAddMonoid _
 
 instance instGroupOps [AddGroupOps α] [IsAddGroup α] : AddGroupOps (AddGroupQuot r) :=
-  inferInstanceAs (AddGroupOps (AlgQuotient (AddGroupQuot.Con r)))
+  AlgQuotient.instAddGroupOps _
 instance instIsGroup [AddGroupOps α] [IsAddGroup α] : IsAddGroup (AddGroupQuot r) :=
-  inferInstanceAs (IsAddGroup (AlgQuotient (AddGroupQuot.Con r)))
+  AlgQuotient.instIsAddGroup _
 
 end
 

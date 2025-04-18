@@ -14,4 +14,6 @@ instance AlgQuotient.instIsRightDistrib [Add α] [Mul α] [IsRightDistrib α] [I
     apply Quotient.sound
     rw [add_mul]
 
+instance AlgQuotient.instSemiringOps [SemiringOps α] [IsSemiring α] [IsAddCon C] [IsMulCon C] : SemiringOps (AlgQuotient c) := inferInstance
+
 instance AlgQuotient.instIsSemiring [SemiringOps α] [IsSemiring α] [IsAddCon C] [IsMulCon C] : IsSemiring (AlgQuotient c) := IsSemiring.inst

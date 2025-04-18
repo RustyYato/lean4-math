@@ -30,6 +30,8 @@ instance [MonoidOps α] [IsMonoid α] [IsMulCon C] : Pow (AlgQuotient c) ℕ whe
     apply resp_npow
     assumption
 
+instance AlgQuotient.instAddMonoidOps [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C]: AddMonoidOps (AlgQuotient c) := inferInstance
+
 instance AlgQuotient.instIsAddMonoid [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : IsAddMonoid (AlgQuotient c) where
   zero_nsmul a := by
     induction a with | mk a =>
@@ -39,6 +41,9 @@ instance AlgQuotient.instIsAddMonoid [AddMonoidOps α] [IsAddMonoid α] [IsAddCo
     induction a with | mk a =>
     apply Quotient.sound
     rw [succ_nsmul]
+
+instance AlgQuotient.instMonoidOps [MonoidOps α] [IsMonoid α] [IsMulCon C]: MonoidOps (AlgQuotient c) := inferInstance
+
 instance AlgQuotient.instIsMonoid [MonoidOps α] [IsMonoid α] [IsMulCon C] : IsMonoid (AlgQuotient c) where
   npow_zero := zero_nsmul (α := (AlgQuotient (AddOfMul.mk c)))
   npow_succ := succ_nsmul (α := (AlgQuotient (AddOfMul.mk c)))
