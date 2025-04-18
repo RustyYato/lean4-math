@@ -4,7 +4,7 @@ import Math.Algebra.Algebra.Hom
 
 def RingQuot.Con [Add α] [Mul α] (r: α -> α -> Prop) : RingCon α := RingCon.generate r
 
-def RingQuot [Add α] [Mul α] (r: α -> α -> Prop) : Type _ := IsCon.Quotient (RingQuot.Con r)
+def RingQuot [Add α] [Mul α] (r: α -> α -> Prop) : Type _ := AlgQuotient (RingQuot.Con r)
 
 namespace RingQuot
 
@@ -13,14 +13,14 @@ section
 variable {r: α -> α -> Prop}
 
 instance instSemiringOps [SemiringOps α] [IsSemiring α] : SemiringOps (RingQuot r) :=
-  inferInstanceAs (SemiringOps (IsCon.Quotient (RingQuot.Con r)))
+  inferInstanceAs (SemiringOps (AlgQuotient (RingQuot.Con r)))
 instance instIsSemiring [SemiringOps α] [IsSemiring α] : IsSemiring (RingQuot r) :=
-  inferInstanceAs (IsSemiring (IsCon.Quotient (RingQuot.Con r)))
+  inferInstanceAs (IsSemiring (AlgQuotient (RingQuot.Con r)))
 
 instance instRingOps [RingOps α] [IsRing α] : RingOps (RingQuot r) :=
-  inferInstanceAs (RingOps (IsCon.Quotient (RingQuot.Con r)))
+  inferInstanceAs (RingOps (AlgQuotient (RingQuot.Con r)))
 instance instIsRing [RingOps α] [IsRing α] : IsRing (RingQuot r) :=
-  inferInstanceAs (IsRing (IsCon.Quotient (RingQuot.Con r)))
+  inferInstanceAs (IsRing (AlgQuotient (RingQuot.Con r)))
 
 
 variable [SemiringOps α] [SemiringOps S]
@@ -28,11 +28,11 @@ variable [SemiringOps α] [SemiringOps S]
   [SMul S α] [AlgebraMap S α] [IsAlgebra S α]
 
 instance (priority := 900) : SMul S (RingQuot r) :=
-  inferInstanceAs (SMul S (IsCon.Quotient (RingQuot.Con r)))
+  inferInstanceAs (SMul S (AlgQuotient (RingQuot.Con r)))
 instance (priority := 900) : AlgebraMap S (RingQuot r) :=
-  inferInstanceAs (AlgebraMap S (IsCon.Quotient (RingQuot.Con r)))
+  inferInstanceAs (AlgebraMap S (AlgQuotient (RingQuot.Con r)))
 instance (priority := 900) : IsAlgebra S (RingQuot r) :=
-  inferInstanceAs (IsAlgebra S (IsCon.Quotient (RingQuot.Con r)))
+  inferInstanceAs (IsAlgebra S (AlgQuotient (RingQuot.Con r)))
 
 end
 
@@ -44,7 +44,7 @@ def mk [SemiringOps R] [IsSemiring R] (r: R -> R -> Prop) : R →+* RingQuot r :
 @[induction_eliminator]
 def ind [SemiringOps R] [IsSemiring R] {motive: RingQuot r -> Prop} (mk: ∀x, motive (mk r x)) : ∀q, motive q := by
   intro q
-  induction q using IsCon.Quotient.ind with
+  induction q using AlgQuotient.ind with
   | mk a =>
   apply mk
 
@@ -114,7 +114,7 @@ def mkAlgHom (r: R -> R -> Prop) : R →ₐ[S] RingQuot r where
 
 def indAlg {motive: RingQuot r -> Prop} (mk: ∀x, motive (mkAlgHom S r x)) : ∀q, motive q := by
   intro q
-  induction q using IsCon.Quotient.ind with
+  induction q using AlgQuotient.ind with
   | mk a =>
   apply mk
 

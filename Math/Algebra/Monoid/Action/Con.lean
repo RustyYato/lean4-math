@@ -3,7 +3,7 @@ import Math.Algebra.Monoid.Action.Defs
 
 variable {C α: Type*} [RelLike C α] (c: C) [MonoidOps R] [IsMonoid R]
 
-instance [SMul R α] [IsSMulCon C R] [IsMulAction R α] : IsMulAction R (IsCon.Quotient c) where
+instance [SMul R α] [IsSMulCon C R] [IsMulAction R α] : IsMulAction R (AlgQuotient c) where
   one_smul a := by
     induction a with | mk a =>
     apply Quotient.sound
@@ -13,7 +13,7 @@ instance [SMul R α] [IsSMulCon C R] [IsMulAction R α] : IsMulAction R (IsCon.Q
     apply Quotient.sound
     rw [mul_smul]
 
-instance [SMul R α] [IsSMulCon C R] [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] [IsDistribMulAction R α] : IsDistribMulAction R (IsCon.Quotient c) where
+instance [SMul R α] [IsSMulCon C R] [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] [IsDistribMulAction R α] : IsDistribMulAction R (AlgQuotient c) where
   smul_zero r := by
     apply Quotient.sound
     rw [smul_zero]

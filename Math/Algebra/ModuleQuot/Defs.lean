@@ -3,7 +3,7 @@ import Math.Algebra.Group.Con
 
 def ModuleQuot.Con (R : Type*) [Add α] [SMul R α] (r: α -> α -> Prop) : LinearCon R α := LinearCon.generate R r
 
-def ModuleQuot (R: Type*) [Add α] [SMul R α] (r: α -> α -> Prop) := IsCon.Quotient (ModuleQuot.Con R r)
+def ModuleQuot (R: Type*) [Add α] [SMul R α] (r: α -> α -> Prop) := AlgQuotient (ModuleQuot.Con R r)
 
 namespace ModuleQuot
 
@@ -12,27 +12,27 @@ variable {r: M -> M -> Prop} [SMul R M]
 section
 
 instance instAddMonoidOps [AddMonoidOps M] [IsAddMonoid M] : AddMonoidOps (ModuleQuot R r) :=
-  inferInstanceAs (AddMonoidOps (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (AddMonoidOps (AlgQuotient (ModuleQuot.Con R r)))
 instance instIsSemiring [AddMonoidOps M] [IsAddMonoid M] : IsAddMonoid (ModuleQuot R r) :=
-  inferInstanceAs (IsAddMonoid (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (IsAddMonoid (AlgQuotient (ModuleQuot.Con R r)))
 
 instance instGroupOps [AddGroupOps M] [IsAddGroup M] : AddGroupOps (ModuleQuot R r) :=
-  inferInstanceAs (AddGroupOps (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (AddGroupOps (AlgQuotient (ModuleQuot.Con R r)))
 instance instIsGroup [AddGroupOps M] [IsAddGroup M] : IsAddGroup (ModuleQuot R r) :=
-  inferInstanceAs (IsAddGroup (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (IsAddGroup (AlgQuotient (ModuleQuot.Con R r)))
 
 instance instSMul [Add M] : SMul R (ModuleQuot R r) :=
-  inferInstanceAs (SMul R (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (SMul R (AlgQuotient (ModuleQuot.Con R r)))
 
 instance [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] : IsAddCommMagma (ModuleQuot R r) :=
-  inferInstanceAs (IsAddCommMagma (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (IsAddCommMagma (AlgQuotient (ModuleQuot.Con R r)))
 
 instance [MonoidOps R] [IsMonoid R] [Add M] [SMul R M] [IsMulAction R M] : IsMulAction R (ModuleQuot R r) :=
-  inferInstanceAs (IsMulAction R (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (IsMulAction R (AlgQuotient (ModuleQuot.Con R r)))
 instance [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M] [SMul R M] [IsDistribMulAction R M] : IsDistribMulAction R (ModuleQuot R r) :=
-  inferInstanceAs (IsDistribMulAction R (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (IsDistribMulAction R (AlgQuotient (ModuleQuot.Con R r)))
 instance [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M] : IsModule R (ModuleQuot R r) :=
-  inferInstanceAs (IsModule R (IsCon.Quotient (ModuleQuot.Con R r)))
+  inferInstanceAs (IsModule R (AlgQuotient (ModuleQuot.Con R r)))
 
 end
 
@@ -44,7 +44,7 @@ def mk (R: Type*) [AddMonoidOps M] [IsAddMonoid M] [SMul R M] (r: M -> M -> Prop
 @[induction_eliminator]
 def ind [AddMonoidOps M] [IsAddMonoid M] {motive: ModuleQuot R r -> Prop} (mk: ∀x, motive (mk R r x)) : ∀q, motive q := by
   intro q
-  induction q using IsCon.Quotient.ind with
+  induction q using AlgQuotient.ind with
   | mk a =>
   apply mk
 

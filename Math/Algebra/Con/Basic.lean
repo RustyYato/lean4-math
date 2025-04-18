@@ -32,11 +32,11 @@ def LinearCon.kernel (f: F) : LinearCon R α := {
   AddCon.kernel f, SMulCon.kernel f with
 }
 
-def AddCon.lift (f: F) {c: AddCon α} (resp: c ≤ kernel f) : IsCon.Quotient c -> β := Quotient.lift f resp
-def MulCon.lift (f: F) {c: MulCon α} (resp: c ≤ kernel f) : IsCon.Quotient c -> β := Quotient.lift f resp
-def SMulCon.lift (f: F) {c: SMulCon R α} (resp: c ≤ kernel f) : IsCon.Quotient c -> β := Quotient.lift f resp
-def RingCon.lift (f: F) {c: RingCon α} (resp: c ≤ kernel f) : IsCon.Quotient c -> β := Quotient.lift f resp
-def LinearCon.lift (f: F) {c: LinearCon R α} (resp: c ≤ kernel f) : IsCon.Quotient c -> β := Quotient.lift f resp
+def AddCon.lift (f: F) {c: AddCon α} (resp: c ≤ kernel f) : AlgQuotient c -> β := Quotient.lift f resp
+def MulCon.lift (f: F) {c: MulCon α} (resp: c ≤ kernel f) : AlgQuotient c -> β := Quotient.lift f resp
+def SMulCon.lift (f: F) {c: SMulCon R α} (resp: c ≤ kernel f) : AlgQuotient c -> β := Quotient.lift f resp
+def RingCon.lift (f: F) {c: RingCon α} (resp: c ≤ kernel f) : AlgQuotient c -> β := Quotient.lift f resp
+def LinearCon.lift (f: F) {c: LinearCon R α} (resp: c ≤ kernel f) : AlgQuotient c -> β := Quotient.lift f resp
 
 def AddCon.comap (f: F) (c: AddCon β) : AddCon α := {
   Setoid.comap f c.toSetoid with
@@ -76,22 +76,22 @@ def LinearCon.comap (f: F) (c: LinearCon R β) : LinearCon R α := {
 
 variable [Zero α] [One α] [RelLike C α]
 
-def AddCon.mkQuot [IsAddCon C] (c: C) : α →+ IsCon.Quotient c where
+def AddCon.mkQuot [IsAddCon C] (c: C) : α →+ AlgQuotient c where
   toFun a := IsCon.mkQuot c a
   map_zero := rfl
   map_add := rfl
-def MulCon.mkQuot [IsMulCon C] (c: C) : α →* IsCon.Quotient c where
+def MulCon.mkQuot [IsMulCon C] (c: C) : α →* AlgQuotient c where
   toFun a := IsCon.mkQuot c a
   map_one := rfl
   map_mul := rfl
-def SMulCon.mkQuot [IsSMulCon C R] (c: C) : SMulHom R α (IsCon.Quotient c) where
+def SMulCon.mkQuot [IsSMulCon C R] (c: C) : SMulHom R α (AlgQuotient c) where
   toFun a := IsCon.mkQuot c a
   map_smul := rfl
-def LinearCon.mkQuot [IsAddCon C] [IsSMulCon C R] (c: C) : α →ₗ[R] (IsCon.Quotient c) where
+def LinearCon.mkQuot [IsAddCon C] [IsSMulCon C R] (c: C) : α →ₗ[R] (AlgQuotient c) where
   toFun a := IsCon.mkQuot c a
   map_add := rfl
   map_smul := rfl
-def RingCon.mkQuot [IsAddCon C] [IsMulCon C] (c: C) : α →+* (IsCon.Quotient c) where
+def RingCon.mkQuot [IsAddCon C] [IsMulCon C] (c: C) : α →+* (AlgQuotient c) where
   toFun a := IsCon.mkQuot c a
   map_zero := rfl
   map_one := rfl

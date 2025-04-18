@@ -36,7 +36,7 @@ def resp_zpow? (c: C) (n: ℤ) {a b: α} (h: c a b) (ha: a ≠ 0 ∨ 0 ≤ n) (h
   apply ha.resolve_right
   omega
 
-instance : CheckedInv? (IsCon.Quotient c) where
+instance : CheckedInv? (AlgQuotient c) where
   checked_invert a := by
     refine Quotient.hrecOn a ?_ ?_
     intro a ha
@@ -53,7 +53,7 @@ instance : CheckedInv? (IsCon.Quotient c) where
     apply resp_inv?
     assumption
 
-instance : CheckedDiv? (IsCon.Quotient c) where
+instance : CheckedDiv? (AlgQuotient c) where
   checked_div a b := by
     refine Quotient.liftOn a ?_ ?_
     intro a
@@ -81,7 +81,7 @@ instance : CheckedDiv? (IsCon.Quotient c) where
     assumption
     rfl
 
-instance : CheckedIntPow? (IsCon.Quotient c) where
+instance : CheckedIntPow? (AlgQuotient c) where
   checked_pow a n := by
     refine Quotient.hrecOn a ?_ ?_
     intro a ha
@@ -102,7 +102,7 @@ instance : CheckedIntPow? (IsCon.Quotient c) where
 
 -- we can't prove that the quotient is non-trivial because this could have been the always
 -- true relation. In which case, the quotient would be subsingleton
-instance [IsNontrivial (IsCon.Quotient c)] : IsGroupWithZero (IsCon.Quotient c) where
+instance AlgQuotient.instIsGroupWithZero [IsNontrivial (AlgQuotient c)] : IsGroupWithZero (AlgQuotient c) where
   mul_inv?_cancel a _ := by
     induction a
     apply Quotient.sound

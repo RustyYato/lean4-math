@@ -3,8 +3,8 @@ import Math.Algebra.Group.Con
 def GroupQuot.Con [Mul α] (r: α -> α -> Prop) : MulCon α := MulCon.generate r
 def AddGroupQuot.Con [Add α] (r: α -> α -> Prop) : AddCon α := AddCon.generate r
 
-def GroupQuot [Mul α] (r: α -> α -> Prop) : Type _ := IsCon.Quotient (GroupQuot.Con r)
-def AddGroupQuot [Add α] (r: α -> α -> Prop) : Type _ := IsCon.Quotient (AddGroupQuot.Con r)
+def GroupQuot [Mul α] (r: α -> α -> Prop) : Type _ := AlgQuotient (GroupQuot.Con r)
+def AddGroupQuot [Add α] (r: α -> α -> Prop) : Type _ := AlgQuotient (AddGroupQuot.Con r)
 
 namespace GroupQuot
 
@@ -13,14 +13,14 @@ section
 variable {r: α -> α -> Prop}
 
 instance instMonoidOps [MonoidOps α] [IsMonoid α] : MonoidOps (GroupQuot r) :=
-  inferInstanceAs (MonoidOps (IsCon.Quotient (GroupQuot.Con r)))
+  inferInstanceAs (MonoidOps (AlgQuotient (GroupQuot.Con r)))
 instance instIsMonoid [MonoidOps α] [IsMonoid α] : IsMonoid (GroupQuot r) :=
-  inferInstanceAs (IsMonoid (IsCon.Quotient (GroupQuot.Con r)))
+  inferInstanceAs (IsMonoid (AlgQuotient (GroupQuot.Con r)))
 
 instance instGroupOps [GroupOps α] [IsGroup α] : GroupOps (GroupQuot r) :=
-  inferInstanceAs (GroupOps (IsCon.Quotient (GroupQuot.Con r)))
+  inferInstanceAs (GroupOps (AlgQuotient (GroupQuot.Con r)))
 instance instIsGroup [GroupOps α] [IsGroup α] : IsGroup (GroupQuot r) :=
-  inferInstanceAs (IsGroup (IsCon.Quotient (GroupQuot.Con r)))
+  inferInstanceAs (IsGroup (AlgQuotient (GroupQuot.Con r)))
 
 end
 
@@ -32,7 +32,7 @@ def mk [MonoidOps G] [IsMonoid G] (r: G -> G -> Prop) : G →* GroupQuot r :=
 @[induction_eliminator]
 def ind [MonoidOps G] [IsMonoid G] {motive: GroupQuot r -> Prop} (mk: ∀x, motive (mk r x)) : ∀q, motive q := by
   intro q
-  induction q using IsCon.Quotient.ind with
+  induction q using AlgQuotient.ind with
   | mk a =>
   apply mk
 
@@ -98,14 +98,14 @@ section
 variable {r: α -> α -> Prop}
 
 instance instAddMonoidOps [AddMonoidOps α] [IsAddMonoid α] : AddMonoidOps (AddGroupQuot r) :=
-  inferInstanceAs (AddMonoidOps (IsCon.Quotient (AddGroupQuot.Con r)))
+  inferInstanceAs (AddMonoidOps (AlgQuotient (AddGroupQuot.Con r)))
 instance instIsSemiring [AddMonoidOps α] [IsAddMonoid α] : IsAddMonoid (AddGroupQuot r) :=
-  inferInstanceAs (IsAddMonoid (IsCon.Quotient (AddGroupQuot.Con r)))
+  inferInstanceAs (IsAddMonoid (AlgQuotient (AddGroupQuot.Con r)))
 
 instance instGroupOps [AddGroupOps α] [IsAddGroup α] : AddGroupOps (AddGroupQuot r) :=
-  inferInstanceAs (AddGroupOps (IsCon.Quotient (AddGroupQuot.Con r)))
+  inferInstanceAs (AddGroupOps (AlgQuotient (AddGroupQuot.Con r)))
 instance instIsGroup [AddGroupOps α] [IsAddGroup α] : IsAddGroup (AddGroupQuot r) :=
-  inferInstanceAs (IsAddGroup (IsCon.Quotient (AddGroupQuot.Con r)))
+  inferInstanceAs (IsAddGroup (AlgQuotient (AddGroupQuot.Con r)))
 
 end
 
@@ -117,7 +117,7 @@ def mk [AddMonoidOps G] [IsAddMonoid G] (r: G -> G -> Prop) : G →+ AddGroupQuo
 @[induction_eliminator]
 def ind [AddMonoidOps G] [IsAddMonoid G] {motive: AddGroupQuot r -> Prop} (mk: ∀x, motive (mk r x)) : ∀q, motive q := by
   intro q
-  induction q using IsCon.Quotient.ind with
+  induction q using AlgQuotient.ind with
   | mk a =>
   apply mk
 

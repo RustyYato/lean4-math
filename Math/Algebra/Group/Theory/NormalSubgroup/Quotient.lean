@@ -84,14 +84,14 @@ def equivCon : NormalSubgroup α ≃ MulCon α where
     rwa [inv_one, inv_div] at this
 
 protected def Quotient (s: NormalSubgroup α) :=
-  IsCon.Quotient s.Con
+  AlgQuotient s.Con
 
 instance (s: NormalSubgroup α) : GroupOps s.Quotient :=
-  inferInstanceAs (GroupOps (IsCon.Quotient s.Con))
+  inferInstanceAs (GroupOps (AlgQuotient s.Con))
 instance (s: NormalSubgroup α) : IsGroup s.Quotient :=
-  inferInstanceAs (IsGroup (IsCon.Quotient s.Con))
+  inferInstanceAs (IsGroup (AlgQuotient s.Con))
 instance [IsCommMagma α] (s: NormalSubgroup α) : IsCommMagma s.Quotient :=
-  inferInstanceAs (IsCommMagma (IsCon.Quotient s.Con))
+  inferInstanceAs (IsCommMagma (AlgQuotient s.Con))
 
 def mkQuot (s: NormalSubgroup α) : α →* s.Quotient :=
   MulCon.mkQuot _
@@ -119,7 +119,7 @@ noncomputable def image_equiv (f: α →* β) : (kernel f).Quotient ≃* Subgrou
   invFun f := mkQuot _ (Classical.choose f.property)
   leftInv := by
     intro x
-    induction x using IsCon.Quotient.ind with | mk x =>
+    induction x using AlgQuotient.ind with | mk x =>
     simp
     apply Quotient.sound
     show f (_ / x) = 1
@@ -136,8 +136,8 @@ noncomputable def image_equiv (f: α →* β) : (kernel f).Quotient ≃* Subgrou
     apply map_one f
   map_mul := by
     intro x y
-    induction x using IsCon.Quotient.ind with | mk x =>
-    induction y using IsCon.Quotient.ind with | mk y =>
+    induction x using AlgQuotient.ind with | mk x =>
+    induction y using AlgQuotient.ind with | mk y =>
     apply Subtype.val_inj
     apply map_mul f
 

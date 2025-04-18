@@ -20,8 +20,8 @@ def resp_npow [MonoidOps α] [IsMonoid α] [IsMulCon C] (c: C) (n: ℕ) {a b: α
 instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : IsSMulCon C ℕ where
   resp_smul := resp_nsmul
 
-instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : SMul ℕ (IsCon.Quotient c) := inferInstance
-instance [MonoidOps α] [IsMonoid α] [IsMulCon C] : Pow (IsCon.Quotient c) ℕ where
+instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : SMul ℕ (AlgQuotient c) := inferInstance
+instance [MonoidOps α] [IsMonoid α] [IsMulCon C] : Pow (AlgQuotient c) ℕ where
   pow := flip <| by
     intro n
     apply Quotient.lift (fun a => IsCon.mkQuot c (a ^ n))
@@ -30,7 +30,7 @@ instance [MonoidOps α] [IsMonoid α] [IsMulCon C] : Pow (IsCon.Quotient c) ℕ 
     apply resp_npow
     assumption
 
-instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : IsAddMonoid (IsCon.Quotient c) where
+instance AlgQuotient.instIsAddMonoid [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : IsAddMonoid (AlgQuotient c) where
   zero_nsmul a := by
     induction a with | mk a =>
     apply Quotient.sound
@@ -39,6 +39,6 @@ instance [AddMonoidOps α] [IsAddMonoid α] [IsAddCon C] : IsAddMonoid (IsCon.Qu
     induction a with | mk a =>
     apply Quotient.sound
     rw [succ_nsmul]
-instance [MonoidOps α] [IsMonoid α] [IsMulCon C] : IsMonoid (IsCon.Quotient c) where
-  npow_zero := zero_nsmul (α := (IsCon.Quotient (AddOfMul.mk c)))
-  npow_succ := succ_nsmul (α := (IsCon.Quotient (AddOfMul.mk c)))
+instance AlgQuotient.instIsMonoid [MonoidOps α] [IsMonoid α] [IsMulCon C] : IsMonoid (AlgQuotient c) where
+  npow_zero := zero_nsmul (α := (AlgQuotient (AddOfMul.mk c)))
+  npow_succ := succ_nsmul (α := (AlgQuotient (AddOfMul.mk c)))

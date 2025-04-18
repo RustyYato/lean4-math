@@ -14,10 +14,10 @@ instance : IsSMulCon C S where
     rfl
     assumption
 
-instance (priority := 900) : AlgebraMap S (IsCon.Quotient c) :=
+instance (priority := 900) : AlgebraMap S (AlgQuotient c) :=
   AlgebraMap.ofHom <| (RingCon.mkQuot c).comp algebraMap
 
-instance (priority := 900) : IsAlgebra S (IsCon.Quotient c) where
+instance (priority := 900) : IsAlgebra S (AlgQuotient c) where
   commutes s a := by
     induction a with | mk a =>
     apply Quotient.sound

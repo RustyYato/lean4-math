@@ -68,11 +68,11 @@ def con_eq_con' : con S = con' S := by
 
 def con_iff_exists {x y : M × S} : con S x y ↔ ∃ c : S, c.val * (y.2.val * x.1) = c.val * (x.2.val * y.1) := by rw [con_eq_con']; rfl
 
-def _root_.Localization := IsCon.Quotient (con S)
+def _root_.Localization := AlgQuotient (con S)
 
-instance : MonoidOps (Localization S) := inferInstanceAs (MonoidOps (IsCon.Quotient (con S)))
-instance : IsMonoid (Localization S) := inferInstanceAs (IsMonoid (IsCon.Quotient (con S)))
-instance : IsCommMagma (Localization S) := inferInstanceAs (IsCommMagma (IsCon.Quotient (con S)))
+instance : MonoidOps (Localization S) := inferInstanceAs (MonoidOps (AlgQuotient (con S)))
+instance : IsMonoid (Localization S) := inferInstanceAs (IsMonoid (AlgQuotient (con S)))
+instance : IsCommMagma (Localization S) := inferInstanceAs (IsCommMagma (AlgQuotient (con S)))
 
 def mkHom : (M × S) →* Localization S := MulCon.mkQuot (con S)
 def mk (a: M) (b: S) : Localization S := mkHom S (a, b)

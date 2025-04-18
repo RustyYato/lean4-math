@@ -7,7 +7,7 @@ instance
   [SemiringOps R] [IsSemiring R]
   [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
   [SMul R α] [IsSMulCon C R] [IsAddCon C]
-  [IsModule R α] : IsModule R (IsCon.Quotient c) where
+  [IsModule R α] : IsModule R (AlgQuotient c) where
   add_smul r s a := by
     induction a with | mk a =>
     apply Quotient.sound

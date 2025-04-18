@@ -44,7 +44,7 @@ def resp_div [GroupOps α] [IsGroup α] [IsMulCon C] (c: C) {w x y z: α} (h: c 
 instance [AddGroupOps α] [IsAddGroup α] [IsAddCon C] : IsSMulCon C ℤ where
   resp_smul := resp_zsmul
 
-instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Neg (IsCon.Quotient c) where
+instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Neg (AlgQuotient c) where
   neg := by
     apply Quotient.lift (fun a => IsCon.mkQuot c (-a))
     intro a b h
@@ -52,9 +52,9 @@ instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Neg (IsCon.Quotient c) 
     apply resp_neg
     assumption
 
-instance [AddGroupOps α] [IsAddGroup α] [IsAddCon C] : SMul ℤ (IsCon.Quotient c) := inferInstance
+instance [AddGroupOps α] [IsAddGroup α] [IsAddCon C] : SMul ℤ (AlgQuotient c) := inferInstance
 
-instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Sub (IsCon.Quotient c) where
+instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Sub (AlgQuotient c) where
   sub := by
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a - b))
     intro a b c d h g
@@ -63,7 +63,7 @@ instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : Sub (IsCon.Quotient c) 
     assumption
     assumption
 
-instance [GroupOps α] [IsMulCon C] [IsGroup α] : Inv (IsCon.Quotient c) where
+instance [GroupOps α] [IsMulCon C] [IsGroup α] : Inv (AlgQuotient c) where
   inv := by
     apply Quotient.lift (fun a => IsCon.mkQuot c (a⁻¹))
     intro a b h
@@ -71,7 +71,7 @@ instance [GroupOps α] [IsMulCon C] [IsGroup α] : Inv (IsCon.Quotient c) where
     apply resp_inv
     assumption
 
-instance [GroupOps α] [IsMulCon C] [IsGroup α] : Pow (IsCon.Quotient c) ℤ where
+instance [GroupOps α] [IsMulCon C] [IsGroup α] : Pow (AlgQuotient c) ℤ where
   pow := flip <| by
     intro n
     apply Quotient.lift (fun a => IsCon.mkQuot c (a ^ n))
@@ -80,7 +80,7 @@ instance [GroupOps α] [IsMulCon C] [IsGroup α] : Pow (IsCon.Quotient c) ℤ wh
     apply resp_zpow
     assumption
 
-instance [GroupOps α] [IsMulCon C] [IsGroup α] : Div (IsCon.Quotient c) where
+instance [GroupOps α] [IsMulCon C] [IsGroup α] : Div (AlgQuotient c) where
   div := by
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a / b))
     intro a b c d h g
@@ -89,7 +89,7 @@ instance [GroupOps α] [IsMulCon C] [IsGroup α] : Div (IsCon.Quotient c) where
     assumption
     assumption
 
-instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : IsAddGroup (IsCon.Quotient c) where
+instance AlgQuotient.instIsAddGroup [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : IsAddGroup (AlgQuotient c) where
   sub_eq_add_neg a b := by
     induction a; induction b
     apply Quotient.sound
@@ -107,8 +107,8 @@ instance [AddGroupOps α] [IsAddCon C] [IsAddGroup α] : IsAddGroup (IsCon.Quoti
     apply Quotient.sound
     rw [zsmul_negSucc]
 
-instance [GroupOps α] [IsMulCon C] [IsGroup α] : IsGroup (IsCon.Quotient c) where
-  div_eq_mul_inv := sub_eq_add_neg (α := (IsCon.Quotient (AddOfMul.mk c)))
-  inv_mul_cancel := neg_add_cancel (α := (IsCon.Quotient (AddOfMul.mk c)))
-  zpow_ofNat := zsmul_ofNat (α := (IsCon.Quotient (AddOfMul.mk c)))
-  zpow_negSucc := zsmul_negSucc (α := (IsCon.Quotient (AddOfMul.mk c)))
+instance AlgQuotient.instIsGroup [GroupOps α] [IsMulCon C] [IsGroup α] : IsGroup (AlgQuotient c) where
+  div_eq_mul_inv := sub_eq_add_neg (α := (AlgQuotient (AddOfMul.mk c)))
+  inv_mul_cancel := neg_add_cancel (α := (AlgQuotient (AddOfMul.mk c)))
+  zpow_ofNat := zsmul_ofNat (α := (AlgQuotient (AddOfMul.mk c)))
+  zpow_negSucc := zsmul_negSucc (α := (AlgQuotient (AddOfMul.mk c)))

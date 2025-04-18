@@ -422,7 +422,7 @@ def LinearCon.copy [Add α] [SMul R α] [RelLike C α] [IsAddCon C] [IsSMulCon C
 
 end Generator
 
-section Quotient
+section Impls
 
 variable {C α: Type*} [RelLike C α]
 
@@ -465,17 +465,23 @@ instance [Add α] [Mul α] [IsRingCon C] : IsRingCon (Cᵐᵒᵖ) := {
   instIsAddConMulOpp, instIsMulConMulOpp with
 }
 
-protected def IsCon.Quotient [IsCon C] (c: C) : Type _ := Quotient (IsCon.toSetoid c)
+end Impls
 
-def IsCon.mkQuot [IsCon C] (c: C) : α -> IsCon.Quotient c := Quotient.mk _
+section Quotient
+
+variable {C α: Type*} [RelLike C α]
+
+def AlgQuotient [IsCon C] (c: C) : Type _ := Quotient (IsCon.toSetoid c)
+
+def IsCon.mkQuot [IsCon C] (c: C) : α -> AlgQuotient c := Quotient.mk _
 
 @[induction_eliminator]
-def IsCon.Quotient.ind [IsCon C] {c: C}
-  {motive: IsCon.Quotient c -> Prop}
+def AlgQuotient.ind [IsCon C] {c: C}
+  {motive: AlgQuotient c -> Prop}
   (mk: ∀x, motive (IsCon.mkQuot c x))
-  (a: IsCon.Quotient c) : motive a := _root_.Quotient.ind mk a
+  (a: AlgQuotient c) : motive a := _root_.Quotient.ind mk a
 
-instance [Add α] [IsAddCon C] (c: C) : Add (IsCon.Quotient c) where
+instance [Add α] [IsAddCon C] (c: C) : Add (AlgQuotient c) where
   add := by
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a + b))
     intro w x y z wy xz
@@ -484,7 +490,7 @@ instance [Add α] [IsAddCon C] (c: C) : Add (IsCon.Quotient c) where
     assumption
     assumption
 
-instance [Mul α] [IsMulCon C] (c: C) : Mul (IsCon.Quotient c) where
+instance [Mul α] [IsMulCon C] (c: C) : Mul (AlgQuotient c) where
   mul := by
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a * b))
     intro w x y z wy xz
@@ -493,7 +499,7 @@ instance [Mul α] [IsMulCon C] (c: C) : Mul (IsCon.Quotient c) where
     assumption
     assumption
 
-instance [SMul R α] [IsSMulCon C R] (c: C) : SMul R (IsCon.Quotient c) where
+instance [SMul R α] [IsSMulCon C R] (c: C) : SMul R (AlgQuotient c) where
   smul r := by
     apply Quotient.lift (fun a => IsCon.mkQuot c (r • a))
     intro x y h
@@ -510,13 +516,13 @@ instance : Relation.IsSymmetric c where
 instance : Relation.IsTrans c where
   trans := (IsCon.toEquivalence c).trans
 
-instance [Zero α] : Zero (IsCon.Quotient c) where
+instance [Zero α] : Zero (AlgQuotient c) where
   zero := IsCon.mkQuot _ 0
-instance [One α] : One (IsCon.Quotient c) where
+instance [One α] : One (AlgQuotient c) where
   one := IsCon.mkQuot _ 1
-instance [NatCast α] : NatCast (IsCon.Quotient c) where
+instance [NatCast α] : NatCast (AlgQuotient c) where
   natCast n := IsCon.mkQuot _ n
-instance [IntCast α] : IntCast (IsCon.Quotient c) where
+instance [IntCast α] : IntCast (AlgQuotient c) where
   intCast n := IsCon.mkQuot _ n
 
 end Quotient

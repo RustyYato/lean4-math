@@ -4,8 +4,8 @@ import Math.Algebra.AddGroupWithOne.Defs
 
 variable {C α: Type*} [RelLike C α] (c: C)
 
-instance [AddGroupWithOneOps α] [IsAddGroupWithOne α] [IsAddCon C] : IsAddGroupWithOne (IsCon.Quotient c) := {
-  instIsAddMonoidWithOneQuotient c, instIsAddGroupQuotient c with
+instance AlgQuotient.instIsAddGroupWithOne [AddGroupWithOneOps α] [IsAddGroupWithOne α] [IsAddCon C] : IsAddGroupWithOne (AlgQuotient c) := {
+  AlgQuotient.instIsAddMonoidWithOne c, AlgQuotient.instIsAddGroup c with
   intCast_ofNat _ := by
     apply Quotient.sound
     rw [intCast_ofNat]

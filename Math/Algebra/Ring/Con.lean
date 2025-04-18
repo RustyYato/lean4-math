@@ -4,4 +4,8 @@ import Math.Algebra.Ring.Defs
 
 variable {C α: Type*} [RelLike C α] (c: C)
 
-instance [RingOps α] [IsRing α] [IsRingCon C] : IsRing (IsCon.Quotient c) := IsRing.inst
+variable [RingOps α] [IsRing α] [IsRingCon C]
+
+instance AlgQuotient.instRingOps : RingOps (AlgQuotient c) := inferInstance
+
+instance AlgQuotient.instIsRing : IsRing (AlgQuotient c) := IsRing.inst

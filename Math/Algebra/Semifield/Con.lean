@@ -7,4 +7,4 @@ variable {C α: Type*} [RelLike C α] (c: C)
 
 open Classical
 
-instance [IsNontrivial (IsCon.Quotient c)] : IsSemifield (IsCon.Quotient c) where
+instance AlgQuotient.instIsSemifield [IsNontrivial (AlgQuotient c)] : IsSemifield (AlgQuotient c) where
