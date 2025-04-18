@@ -1,4 +1,4 @@
-import Math.Algebra.Con.Defs
+import Math.Algebra.Con.Order
 import Math.Relation.Lattice
 import Math.Order.GaloisConnection
 

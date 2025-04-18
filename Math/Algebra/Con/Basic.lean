@@ -1,5 +1,5 @@
 import Math.Algebra.Hom.Defs
-import Math.Algebra.Con.Defs
+import Math.Algebra.Con.Order
 import Math.Data.Setoid.Basic
 
 variable
