@@ -19,12 +19,6 @@ class IsMulCon (C: Sort*) {α: Type*} [RelLike C α] [Mul α]: Prop extends IsCo
 class IsSMulCon (C: Sort*) (R: Type*) {α: Type*} [RelLike C α] [SMul R α]: Prop extends IsCon C where
   protected resp_smul (c: C): ∀(r: R) {x y: α}, c x y -> c (r • x) (r • y) := by intro c; exact c.resp_smul
 
-class IsRingCon (F: Sort*) {α: Type*} [RelLike F α] [Add α] [Mul α]: Prop extends IsAddCon F, IsMulCon F where
-
-instance [Add α] [Mul α] [RelLike F α] [IsMulCon F] [IsAddCon F] : IsRingCon F := {
-  inferInstanceAs (IsMulCon F), inferInstanceAs (IsAddCon F) with
-}
-
 def resp_add [RelLike C α] [Add α] [IsAddCon C] (c: C): ∀{w x y z: α}, c w y -> c x z -> c (w + x) (y + z) := IsAddCon.resp_add _
 def resp_mul [RelLike C α] [Mul α] [IsMulCon C] (c: C): ∀{w x y z: α}, c w y -> c x z -> c (w * x) (y * z) := IsMulCon.resp_mul _
 def resp_smul [RelLike C α] [SMul R α] [IsSMulCon C R] (c: C): ∀(r: R) {x y: α}, c x y -> c (r • x) (r • y) := IsSMulCon.resp_smul _
@@ -350,7 +344,7 @@ def SMulCon.le_generate [SMul R α] (r: α -> α -> Prop) : r ≤ generate R r :
   apply Generator.of
   assumption
 
-def RingCon.ofGenerate [Add α] [Mul α] [RelLike C α] [IsRingCon C] (r: α -> α -> Prop) (c: C) (h: r ≤ c) : ∀a b, generate r a b -> c a b := by
+def RingCon.ofGenerate [Add α] [Mul α] [RelLike C α] [IsAddCon C] [IsMulCon C] (r: α -> α -> Prop) (c: C) (h: r ≤ c) : ∀a b, generate r a b -> c a b := by
   intro a b g
   induction g
   apply h; assumption
@@ -408,7 +402,7 @@ def SMulCon.copy [SMul R α] [RelLike C α] [IsSMulCon C R] (c: C) (r: α -> α 
   iseqv := by rw [h]; exact IsCon.toEquivalence c
   resp_smul {_ _ _} := by simp [h]; apply IsSMulCon.resp_smul c
 
-def RingCon.copy [Add α] [Mul α] [RelLike C α] [IsRingCon C] (c: C) (r: α -> α -> Prop) (h: r = c) : RingCon α where
+def RingCon.copy [Add α] [Mul α] [RelLike C α] [IsAddCon C] [IsMulCon C] (c: C) (r: α -> α -> Prop) (h: r = c) : RingCon α where
   r := r
   iseqv := by rw [h]; exact IsCon.toEquivalence c
   resp_add {_ _ _ _} := by simp [h]; exact IsAddCon.resp_add c
@@ -456,14 +450,6 @@ instance [Mul α] [IsMulCon C] : IsMulCon (Cᵐᵒᵖ) where
     apply resp_mul (C := C)
     assumption
     assumption
-
-instance [Add α] [Mul α] [IsRingCon C] : IsRingCon (Cᵃᵒᵖ) := {
-  instIsAddConAddOpp, instIsMulConAddOpp with
-}
-
-instance [Add α] [Mul α] [IsRingCon C] : IsRingCon (Cᵐᵒᵖ) := {
-  instIsAddConMulOpp, instIsMulConMulOpp with
-}
 
 end Impls
 

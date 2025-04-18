@@ -3,7 +3,7 @@ import Math.Algebra.Algebra.Defs
 
 variable {C R: Type*} [RelLike C R]
   [SemiringOps R] [SemiringOps S]
-  [IsSemiring R] [IsSemiring S] [IsRingCon C]
+  [IsSemiring R] [IsSemiring S] [IsAddCon C] [IsMulCon C]
   [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
   (c: C)
 

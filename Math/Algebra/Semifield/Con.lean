@@ -3,7 +3,7 @@ import Math.Algebra.GroupWithZero.Con
 import Math.Algebra.Field.Defs
 
 variable {C α: Type*} [RelLike C α] (c: C)
-   [SemifieldOps α] [IsSemifield α] [IsRingCon C]
+   [SemifieldOps α] [IsSemifield α] [IsAddCon C] [IsMulCon C]
 
 open Classical
 
