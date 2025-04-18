@@ -412,14 +412,17 @@ section
 
 variable [FunLike F α β]
 
-instance [IsZeroHom F α β] : IsOneHom F (MulOfAdd α) (MulOfAdd β) where
+-- reduce priority of these conversions since they are def-eq to the originals
+-- and that leads to bad type-class synth and timeouts.
+
+instance (priority := 500) [IsZeroHom F α β] : IsOneHom F (MulOfAdd α) (MulOfAdd β) where
   map_one := map_zero (α := α) (β := β)
-instance [IsOneHom F α β] : IsZeroHom F (AddOfMul α) (AddOfMul β) where
+instance (priority := 500) [IsOneHom F α β] : IsZeroHom F (AddOfMul α) (AddOfMul β) where
   map_zero := map_one (α := α) (β := β)
 
-instance [IsAddHom F α β] : IsMulHom F (MulOfAdd α) (MulOfAdd β) where
+instance (priority := 500) [IsAddHom F α β] : IsMulHom F (MulOfAdd α) (MulOfAdd β) where
   map_mul := map_add (α := α) (β := β)
-instance [IsMulHom F α β] : IsAddHom F (AddOfMul α) (AddOfMul β) where
+instance (priority := 500) [IsMulHom F α β] : IsAddHom F (AddOfMul α) (AddOfMul β) where
   map_add := map_mul (α := α) (β := β)
 
 end
@@ -1134,22 +1137,3 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 @[simp] def MonoidWithOneHom.toFun_eq_coe (f: α →*₀ β) : f.toFun = f := rfl
 
 @[simp] def AlgHom.toAddHom_eq_coe (f: α →ₐ[R] β) : (f.toAddHom: α -> β) = f := rfl
-
-variable [FunLike F α β]
-
-instance (priority := 1100) [f: IsAddGroupWithOneHom F α β] : IsZeroHom F α β := f.toIsZeroHom
-instance (priority := 1100) [f: IsAddGroupWithOneHom F α β] : IsOneHom F α β := f.toIsOneHom
-instance (priority := 1100) [f: IsAddGroupWithOneHom F α β] : IsAddHom F α β := f.toIsAddHom
-
-instance (priority := 1100) [f: IsGroupWithZeroHom F α β] : IsZeroHom F α β := f.toIsZeroHom
-instance (priority := 1100) [f: IsGroupWithZeroHom F α β] : IsOneHom F α β := f.toIsOneHom
-instance (priority := 1100) [f: IsGroupWithZeroHom F α β] : IsMulHom F α β := f.toIsMulHom
-
-instance (priority := 1100) [f: IsRngHom F α β] : IsZeroHom F α β := f.toIsZeroHom
-instance (priority := 1100) [f: IsRngHom F α β] : IsAddHom F α β := f.toIsAddHom
-instance (priority := 1100) [f: IsRngHom F α β] : IsMulHom F α β := f.toIsMulHom
-
-instance (priority := 1100) [f: IsRingHom F α β] : IsZeroHom F α β := f.toIsZeroHom
-instance (priority := 1100) [f: IsRingHom F α β] : IsOneHom F α β := f.toIsOneHom
-instance (priority := 1100) [f: IsRingHom F α β] : IsAddHom F α β := f.toIsAddHom
-instance (priority := 1100) [f: IsRingHom F α β] : IsMulHom F α β := f.toIsMulHom
