@@ -21,6 +21,9 @@ def mk : M →* Commutator M := GroupQuot.mk _
 
 @[induction_eliminator]
 def ind {motive: Commutator M -> Prop} : (mk: ∀m, motive (mk m)) -> ∀x, motive x := GroupQuot.ind
+def mk_surj : Function.Surjective (mk (M := M)) := by
+  intro x
+  induction x with | mk x => exists x
 
 instance (M: Type*) [MonoidOps M] [IsMonoid M] : IsCommMagma (Commutator M) where
   mul_comm := by
