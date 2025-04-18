@@ -203,7 +203,7 @@ structure RingEquiv extends α ≃ β, RingHom α β, AddGroupEquiv α β, Group
 
 instance : EquivLike (RingEquiv α β) α β where
 instance : IsRingHom (RingEquiv α β) α β where
-instance (priority := 4000) : IsMulHom (RingEquiv α β) α β where
+instance : IsMulHom (RingEquiv α β) α β where
 
 structure RngEquiv extends α ≃ β, RngHom α β, AddGroupEquiv α β, MulEquiv α β where
 
@@ -275,7 +275,7 @@ instance : IsAlgebraMapHom (AlgebraMapEquiv R α β) R α β where
 structure AlgHom extends AddHom α β, MulHom α β, AlgebraMapHom R α β where
 
 instance : FunLike (AlgHom R α β) α β where
-instance (priority := 2000) : IsAlgebraMapHom (AlgHom R α β) R α β where
+instance : IsAlgebraMapHom (AlgHom R α β) R α β where
 instance : IsRingHom (AlgHom R α β) α β := {
   IsAlgebraMapHom.toZeroHom (AlgHom R α β) R α β,
   IsAlgebraMapHom.toOneHom (AlgHom R α β) R α β with
@@ -284,7 +284,7 @@ instance : IsRingHom (AlgHom R α β) α β := {
 structure AlgEmbedding extends α ↪ β, AlgHom R α β where
 
 instance : EmbeddingLike (AlgEmbedding R α β) α β where
-instance (priority := 2000) : IsAlgebraMapHom (AlgEmbedding R α β) R α β where
+instance : IsAlgebraMapHom (AlgEmbedding R α β) R α β where
 instance : IsRingHom (AlgEmbedding R α β) α β where
   map_zero f := IsZeroHom.map_zero f.toAlgHom
   map_one f := IsOneHom.map_one f.toAlgHom
@@ -292,7 +292,7 @@ instance : IsRingHom (AlgEmbedding R α β) α β where
 structure AlgEquiv extends α ≃ β, AddEquiv α β, MulEquiv α β, AlgebraMapEquiv R α β, AlgHom R α β where
 
 instance : EquivLike (AlgEquiv R α β) α β where
-instance (priority := 2000) : IsAlgebraMapHom (AlgEquiv R α β) R α β where
+instance : IsAlgebraMapHom (AlgEquiv R α β) R α β where
 instance : IsRingHom (AlgEquiv R α β) α β where
   map_zero f := IsZeroHom.map_zero f.toAlgHom
   map_one f := IsOneHom.map_one f.toAlgHom

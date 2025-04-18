@@ -22,16 +22,15 @@ instance instRingOps [RingOps α] [IsRing α] : RingOps (RingQuot r) :=
 instance instIsRing [RingOps α] [IsRing α] : IsRing (RingQuot r) :=
   inferInstanceAs (IsRing (AlgQuotient (RingQuot.Con r)))
 
-
 variable [SemiringOps α] [SemiringOps S]
   [IsSemiring α] [IsSemiring S]
   [SMul S α] [AlgebraMap S α] [IsAlgebra S α]
 
-instance (priority := 900) : SMul S (RingQuot r) :=
+instance : SMul S (RingQuot r) :=
   inferInstanceAs (SMul S (AlgQuotient (RingQuot.Con r)))
-instance (priority := 900) : AlgebraMap S (RingQuot r) :=
+instance : AlgebraMap S (RingQuot r) :=
   inferInstanceAs (AlgebraMap S (AlgQuotient (RingQuot.Con r)))
-instance (priority := 900) : IsAlgebra S (RingQuot r) :=
+instance : IsAlgebra S (RingQuot r) :=
   inferInstanceAs (IsAlgebra S (AlgQuotient (RingQuot.Con r)))
 
 end
@@ -167,6 +166,6 @@ def ringQuot_ext'
   ext
   rw [w]
 
-attribute [irreducible] instSemiringOps instRingOps mk lift liftAlgHom
+attribute [irreducible] RingQuot instSemiringOps instRingOps mk lift liftAlgHom
 
 end RingQuot

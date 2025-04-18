@@ -16,9 +16,9 @@ instance instAddMonoidOps [AddMonoidOps M] [IsAddMonoid M] : AddMonoidOps (Modul
 instance instIsSemiring [AddMonoidOps M] [IsAddMonoid M] : IsAddMonoid (ModuleQuot R r) :=
   inferInstanceAs (IsAddMonoid (AlgQuotient (ModuleQuot.Con R r)))
 
-instance instGroupOps [AddGroupOps M] [IsAddGroup M] : AddGroupOps (ModuleQuot R r) :=
+instance instAddGroupOps [AddGroupOps M] [IsAddGroup M] : AddGroupOps (ModuleQuot R r) :=
   inferInstanceAs (AddGroupOps (AlgQuotient (ModuleQuot.Con R r)))
-instance instIsGroup [AddGroupOps M] [IsAddGroup M] : IsAddGroup (ModuleQuot R r) :=
+instance instIsAddGroup [AddGroupOps M] [IsAddGroup M] : IsAddGroup (ModuleQuot R r) :=
   inferInstanceAs (IsAddGroup (AlgQuotient (ModuleQuot.Con R r)))
 
 instance instSMul [Add M] : SMul R (ModuleQuot R r) :=
@@ -103,6 +103,6 @@ def lift_mk_apply [AddMonoidOps M] [IsAddMonoid M] [AddMonoidOps T] [IsAddMonoid
 
 def mkQuot_eq_mk [AddMonoidOps M] [IsAddMonoid M] : LinearCon.mkQuot (ModuleQuot.Con R r) = ModuleQuot.mk R r := rfl
 
-attribute [irreducible] instAddMonoidOps instGroupOps instSMul mk lift
+attribute [irreducible] ModuleQuot instAddMonoidOps instAddGroupOps instSMul mk lift
 
 end ModuleQuot

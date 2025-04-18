@@ -168,6 +168,6 @@ def lift_mk_apply [AddMonoidOps G] [IsAddMonoid G] [AddMonoidOps T] [IsAddMonoid
 
 def mkQuot_eq_mk [AddMonoidOps G] [IsAddMonoid G] : AddCon.mkQuot (AddGroupQuot.Con r) = AddGroupQuot.mk r := rfl
 
-attribute [irreducible] instAddMonoidOps instGroupOps mk lift
+attribute [irreducible] GroupQuot instAddMonoidOps instGroupOps mk lift
 
 end AddGroupQuot
