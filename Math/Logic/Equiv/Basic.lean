@@ -9,10 +9,41 @@ def optionSome {α: Type*} : α ↪ Option α where
   toFun := .some
   inj' _ _ := Option.some.inj
 
+@[simp]
+def apply_optionSome : (optionSome: α -> _) = .some := rfl
+
 def subtypeVal {P: α -> Prop} : Subtype P ↪ α where
   toFun := Subtype.val
   inj' a b eq := by
     cases a; cases b; congr
+
+@[simp]
+def apply_subtypeVal {P: α -> Prop} : (subtypeVal (P := P): _ -> _) = Subtype.val := rfl
+
+def finSucc (n: Nat) : Fin n ↪ Fin (n + 1) where
+  toFun := Fin.succ
+  inj' _ _ := Fin.succ_inj.mp
+
+@[simp]
+def apply_finSucc : (finSucc n: _ -> _) = Fin.succ := rfl
+
+def fin_erase (i: Fin (n + 1)) : Fin n ↪ Fin (n + 1) where
+  toFun x := if x.val < i.val then x.castSucc else x.succ
+  inj' := by
+    intro ⟨x, xLt⟩ ⟨y, yLt⟩ h
+    dsimp at h
+    split at h <;> split at h <;> rename_i h₀ h₁
+    any_goals
+      cases h; rfl
+    all_goals
+      simp at h
+      subst h
+      omega
+
+def apply_fin_erase_of_lt (i: Fin (n + 1)) (x: Fin n) (h: x.val < i.val) :
+  fin_erase i x = x.castSucc := by simp [fin_erase, h]
+def apply_fin_erase_of_ge (i: Fin (n + 1)) (x: Fin n) (h: i.val ≤ x.val) :
+  fin_erase i x = x.succ := by simp [fin_erase, h]; intro; omega
 
 def empty [IsEmpty α] : α ↪ β where
   toFun := elim_empty
@@ -368,6 +399,40 @@ def fin {n m: Nat} (h: n = m) : Fin n ≃ Fin m where
 @[simp] def apply_fin (h: n = m) : fin h x = x.cast h := rfl
 @[simp] def symm_fin (h: n = m) : (fin h).symm = fin h.symm := rfl
 
+def fin_cast_succ (f: Fin n ≃ Fin n) : Fin (n + 1) ≃ Fin (n + 1) where
+  toFun x := if h:x.val < n then (f ⟨x.val, h⟩).castSucc else Fin.last n
+  invFun  x := if h:x.val < n then (f.symm ⟨x.val, h⟩).castSucc else Fin.last n
+  rightInv x := by
+    dsimp
+    split
+    simp
+    simp
+    rename_i h
+    simp at h
+    apply Fin.le_antisymm
+    assumption
+    apply Nat.le_of_lt_succ
+    apply x.isLt
+  leftInv x := by
+    dsimp
+    split
+    simp
+    simp
+    rename_i h
+    simp at h
+    apply Fin.le_antisymm
+    assumption
+    apply Nat.le_of_lt_succ
+    apply x.isLt
+
+def apply_fin_cast_succ (f: Fin n ≃ Fin n) (x: Fin (n + 1)) :
+  fin_cast_succ f x =
+  if h:x.val < n then (f ⟨x.val, h⟩).castSucc else Fin.last n := rfl
+
+@[simp]
+def symm_fin_cast_succ (f: Fin n ≃ Fin n) :
+  (fin_cast_succ f).symm = fin_cast_succ f.symm := rfl
+
 def fin_equiv_nat_subtype : Fin n ≃ { x: Nat // x < n } where
   toFun x := ⟨x.1, x.2⟩
   invFun x := ⟨x.1, x.2⟩
@@ -425,31 +490,103 @@ def eqv_equiv_subtype (α β: Type*) : (α ≃ β) ≃ { fg: (α -> β) × (β -
   leftInv x := by rfl
   rightInv x := by rfl
 
-def fin_equiv_option (n: Nat) : Fin (n + 1) ≃ Option (Fin n) where
-  toFun x := if h:x.val = n then .none else .some ⟨x.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ x.isLt) h⟩
+def fin_erase (i: Fin (n + 1)) : Fin (n + 1) ≃ Option (Fin n) where
+  toFun x :=
+    if h₀:x.val < i.val then .some ⟨x.val, by omega⟩
+    else if h₁:x.val = i.val  then .none
+    else .some ⟨x.val - 1, by omega⟩
   invFun
-  | .some x => x.castSucc
-  | .none => Fin.last _
-  leftInv := by
-    intro x
-    dsimp
-    cases x using Fin.lastCases
-    dsimp; rw [dif_pos rfl]
+  | .some x =>
+    if x.val < i.val then ⟨x.val, by omega⟩
+    else ⟨x.val + 1, by omega⟩
+  | .none => i
+  leftInv x := by
+    dsimp only
+    by_cases h:x.val < i.val
+    simp [h]
+    by_cases g:x.val = i.val
+    simp [h, g]
+    symm; apply Fin.val_inj.mp; assumption
+    simp [h, g]
+    rw [if_neg]
+    congr; omega
+    omega
+  rightInv x := by
+    cases x <;> dsimp only
+    rw [dif_neg, dif_pos]
+    rfl; omega
+    rename_i x
+    by_cases h:x.val < i.val
+    simp [h]
+    by_cases g:x.val = i.val
+    simp [h, g]
     rw [dif_neg]
-    rfl
-    rename_i x
-    intro h
-    replace h : x.val = n := h
-    exact Nat.lt_irrefl _ (h ▸ x.isLt)
-  rightInv := by
-    intro x
-    cases x
-    simp
-    simp
-    rename_i x
-    intro h
-    replace h : x.val = n := h
-    exact Nat.lt_irrefl _ (h ▸ x.isLt)
+    congr 2; symm; assumption
+    omega
+    simp [h, g]
+    rw [dif_neg, if_neg]
+    omega
+    omega
+
+def apply_fin_erase_of_lt (i x: Fin (n + 1)) (h: x < i) :
+  fin_erase i x = .some ⟨x.val, by omega⟩ := by
+  simp [fin_erase]
+  rw [dif_pos]
+  assumption
+
+def apply_fin_erase_of_gt (i x: Fin (n + 1)) (h: i < x) :
+  fin_erase i x = .some ⟨x.val - 1, by omega⟩ := by
+  simp [fin_erase]
+  rw [dif_neg, dif_neg]
+  omega
+  omega
+
+@[simp]
+def apply_fin_erase_of_eq (i: Fin (n + 1)) :
+  fin_erase i i = .none := by simp [fin_erase]
+
+def apply_fin_erase_of_eq' (i x: Fin (n + 1)) (h: x = i) :
+  fin_erase i x = .none := by subst h; rw [apply_fin_erase_of_eq]
+
+def symm_apply_fin_erase_none (i: Fin (n + 1)) :
+  (fin_erase i).symm .none = i := by simp [fin_erase]
+
+def symm_apply_fin_erase_some_of_lt (i: Fin (n + 1)) (x: Fin n) (h: x.val < i) :
+  (fin_erase i).symm (.some x) = ⟨x.val, by omega⟩ := by simpa [fin_erase]
+
+def symm_apply_fin_erase_some_of_ge (i: Fin (n + 1)) (x: Fin n) (h: i ≤ x.val) :
+  (fin_erase i).symm (.some x) = ⟨x.val + 1, by omega⟩ := by simpa [fin_erase]
+
+def fin_equiv_option (n: Nat) : Fin (n + 1) ≃ Option (Fin n) := fin_erase (.last _)
+
+def apply_fin_equiv_option (x: Fin (n + 1)) : fin_equiv_option n x = if h:x.val = n then .none else .some ⟨x.val, by omega⟩ := by
+  rw [fin_equiv_option]
+  rcases Nat.lt_trichotomy x.val n with h | h | h
+  rw [apply_fin_erase_of_lt, dif_neg]
+  omega
+  assumption
+  rw [dif_pos h, apply_fin_erase_of_eq']
+  apply Fin.val_inj.mp; assumption
+  rw [apply_fin_erase_of_gt]
+  simp
+  omega
+  assumption
+
+@[simp]
+def apply_fin_equiv_option_last : fin_equiv_option n (Fin.last _) = .none := by
+  rw [apply_fin_equiv_option]
+  simp
+
+@[simp]
+def symm_apply_fin_equiv_option_none : (fin_equiv_option n).symm .none = Fin.last _ := by
+  rfl
+
+@[simp]
+def symm_apply_fin_equiv_option_some (x: Fin n) : (fin_equiv_option n).symm (.some x) = x.castSucc := by
+  symm; apply eq_symm_of_coe_eq
+  rw [apply_fin_equiv_option]
+  simp
+  omega
 
 def option_equiv_unit_sum (α: Type*) : Option α ≃ Unit ⊕ α where
   toFun

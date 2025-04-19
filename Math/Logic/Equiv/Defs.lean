@@ -180,6 +180,7 @@ protected def Nonempty [g: Nonempty α] (h: α ≃ β) : Nonempty β :=
   ⟨h x⟩
 
 @[simp] def toFun_eq_coe (f: α ≃ β) : f.toFun = f := rfl
+@[simp] def toEmbedding_eq_coe (f: α ≃ β) : (f.toEmbedding: _ -> _) = f := rfl
 
 @[simp] def coe_mk (f: α -> β) (g: β -> α) (hf: Function.IsRightInverse f g) (hg: Function.IsLeftInverse f g) : Equiv.mk f g hf hg = f := rfl
 
