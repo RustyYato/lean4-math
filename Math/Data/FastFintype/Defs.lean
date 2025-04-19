@@ -5,6 +5,8 @@ structure Fintype.Encoding (α: Type*) where
   card: Nat
   all: Fin card ↪ α
   complete: Function.Surjective all
+  decode : Option (α -> Fin card) := .none
+  decode_spec : ∀f ∈ decode, ∀i: Fin card, f (all i) = i := by intro f hf; contradiction
 
 class Fintype (α: Type*) where
   encode: Trunc (Fintype.Encoding α)
@@ -57,9 +59,10 @@ def bind {α β: Type*}
   recOnSubsingleton (motive := fun _ => _) mk h
 
 def Encoding.card_eq (a b: Encoding α) : a.card = b.card := by
-  obtain ⟨ac, fa, ha⟩ := a
-  obtain ⟨bc, fb, hb⟩ := b
+  obtain ⟨ac, fa, ha, ha', ha''⟩ := a
+  obtain ⟨bc, fb, hb, hb', hb''⟩ := b
   simp
+  clear ha' hb' ha'' hb''
   have eq_range : ∀{x}, (∃i: Fin ac, x = fa i) ↔ (∃i: Fin bc, x = fb i) := by
     intro x
     apply Iff.intro
@@ -460,6 +463,10 @@ instance instFin : Fintype (Fin n) where
     card := n
     all := .rfl
     complete _ := ⟨_, rfl⟩
+    decode := .some id
+    decode_spec := by
+      intro f h; cases h
+      intro i; rfl
   }
 
 instance instBool : Fintype Bool where
@@ -472,6 +479,13 @@ instance instBool : Fintype Bool where
       inj' := by trivial
     }
     complete := by trivial
+    decode := .some <| fun
+    | false => 0
+    | true => 1
+    decode_spec := by
+      intro f h; cases h
+      intro i
+      match i with | 0 | 1 => rfl
   }
 
 instance instProp : Fintype Prop where
@@ -553,7 +567,7 @@ private def le_maxNat (f: Fin n -> Nat) : ∀i, f i ≤ maxNat f := by
 def nat_not_fintype : Fintype Nat -> False := by
   intro h
   induction h with | mk h =>
-  obtain ⟨card, f, h⟩ := h
+  obtain ⟨card, f, h, _⟩ := h
   let m := maxNat f
   have ⟨i, g⟩ := h (m + 1)
   have : f i ≤ m := le_maxNat f i

@@ -36,4 +36,27 @@ instance {α β: Type*} [fα: Fintype α] [fβ: Fintype β] : Fintype (α ⊕ β
       ext; simp
       omega
       omega
+    decode :=
+      fα.decode.bind fun deca =>
+      fβ.decode.map fun decb x =>
+      match x with
+      | .inl x => Equiv.finSum (.inl (deca x))
+      | .inr x => Equiv.finSum (.inr (decb x))
+    decode_spec := by
+      intro f hf i
+      obtain ⟨cardα, fα, _, deca, deca_spec⟩ := fα
+      obtain ⟨cardβ, fβ, _, decb, decb_spec⟩ := fβ
+      simp; simp at i f hf
+      cases deca with
+      | none => contradiction
+      | some deca =>
+      cases decb with
+      | none => contradiction
+      | some decb =>
+      cases hf
+      rw [Equiv.symm_apply_finSum]
+      simp; refine if hi:i.val < cardα then ?_ else ?_
+      rw [dif_pos hi]; simp; rw [deca_spec deca rfl]; rfl
+      rw [dif_neg hi]; simp; rw [decb_spec decb rfl]
+      simp; congr; omega
   }
