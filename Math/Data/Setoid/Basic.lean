@@ -27,6 +27,24 @@ def forallSetoid {ι: Sort _} (α: ι -> Sort _) [∀i: ι, Setoid (α i)] : Set
     trans h g i := trans (h i) (g i)
   }
 
+def forallsetoid_eval {ι: Sort _} {α: ι -> Sort _} [S: ∀i: ι, Setoid (α i)] : Quotient (forallSetoid α) -> ∀i, Quotient (S i) := by
+  intro q i; revert q
+  refine Quotient.lift ?_ ?_
+  intro f; exact Quotient.mk _ (f i)
+  intro a b h
+  apply Quotient.sound
+  apply h
+
+
+def forallsetoid_ext {ι: Sort _} (α: ι -> Sort _) [∀i: ι, Setoid (α i)] (a b: Quotient (forallSetoid α)) :
+  (∀i, forallsetoid_eval a i = forallsetoid_eval b i) -> a = b := by
+  intro h
+  induction a using Quotient.ind with | _ a =>
+  induction b using Quotient.ind with | _ b =>
+  apply Quotient.sound
+  intro i
+  exact Quotient.exact (h i)
+
 def trueSetoid (α: Sort _) : Setoid α where
   r := Relation.trivial
   iseqv := Relation.equiv _

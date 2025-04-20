@@ -347,11 +347,21 @@ def ofEquiv' (h: α ≃ β) [f: Fintype α] : Fintype β :=
 
 def ofEquiv (h: α ≃ β) [f: Fintype β] : Fintype α := ofEquiv' h.symm
 
-def equiv_fin_card (α: Type*) [DecidableEq α] [h: Fintype α] : Trunc (α ≃ Fin (card α)) :=
-  h.encode.recOnSubsingleton (motive := fun e: Trunc (Fintype.Encoding α) => Trunc (α ≃ Fin (@card α ⟨e⟩))) <|
-  fun enc =>
+@[irreducible]
+def Encoding.equiv_fin_card [DecidableEq α] (enc: Encoding α) : α ≃ Fin enc.card :=
+  match hdec:enc.decode with
+  | .some dec => {
+    toFun := dec
+    invFun := enc.all
+    leftInv x := by
+      obtain ⟨i, rfl⟩ := enc.complete x
+      rw [enc.decode_spec dec]
+      assumption
+    rightInv x := by rwa [enc.decode_spec dec]
+  }
+  | .none =>
   if hcard:enc.card = 0 then
-    Trunc.mk <| Equiv.symm <| Equiv.trans (Equiv.fin hcard) {
+    Equiv.symm <| Equiv.trans (Equiv.fin hcard) {
       toFun x := x.elim0
       invFun x := by
         exfalso
@@ -371,7 +381,7 @@ def equiv_fin_card (α: Type*) [DecidableEq α] [h: Fintype α] : Trunc (α ≃ 
         have ⟨i, h⟩ := enc.complete x
         refine ⟨i.val, i.isLt, ?_⟩
         simp [h])
-    Trunc.mk {
+    {
       toFun x :=
         have := find x
         ⟨this.1, this.2.1⟩
@@ -396,6 +406,17 @@ def equiv_fin_card (α: Type*) [DecidableEq α] [h: Fintype α] : Trunc (α ≃ 
         rw [dif_pos h.2.1] at this
         symm; assumption
     }
+
+def Encoding.equiv_fin_card_symm_eq [DecidableEq α] (enc: Encoding α) : (enc.equiv_fin_card.symm: _ -> _) = enc.all := by
+  unfold equiv_fin_card
+  dsimp; split; rfl
+  split; ext i
+  rename_i h; rw [h] at i; exact i.elim0
+  rfl
+
+def equiv_fin_card (α: Type*) [DecidableEq α] [h: Fintype α] : Trunc (α ≃ Fin (card α)) :=
+  h.encode.recOnSubsingleton (motive := fun e: Trunc (Fintype.Encoding α) => Trunc (α ≃ Fin (@card α ⟨e⟩))) <|
+  fun enc => Trunc.mk enc.equiv_fin_card
 
 def equiv_of_card_eq (α β: Type*) [DecidableEq α] [DecidableEq β] {ha: Fintype α} {hb: Fintype β} (h: card α = card β) : Trunc (α ≃ β) :=
   (ha.equiv_fin_card _).bind fun fa =>
