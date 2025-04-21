@@ -437,4 +437,23 @@ def perm_of_equiv (a: Vector α n) (b: Vector α m) (eqv: Fin n ≃ Fin m) (h: �
     simp
     assumption
 
+def map (a: Vector α n) (f: α -> β) : Vector β n where
+  toFun i := f a[i]
+
+def reindex (a: Vector α n) (f: Fin m -> Fin n) : Vector α m where
+  toFun i := a[f i]
+
+@[simp]
+def getElem_map (a: Vector α n) (f: α -> β) (i: Fin n) : (a.map f)[i] = f a[i] := rfl
+
+@[simp]
+def getElem_reindex (a: Vector α n) (f: Fin m -> Fin n) (i: Fin m) : (a.reindex f)[i] = a[f i] := rfl
+
+@[simp]
+def map_cons (a: α) (as: Vector α n) (f: α -> β) : (a::ᵥas).map f = f a::ᵥas.map f := by
+  ext i; cases i using Fin.cases
+  rfl
+  rfl
+
+
 end Function.Vector
