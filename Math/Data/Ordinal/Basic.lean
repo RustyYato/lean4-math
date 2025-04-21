@@ -6,7 +6,6 @@ import Math.Order.Linear
 import Math.AxiomBlame
 import Math.Data.Quotient.Basic
 import Math.Data.Set.Order.Bounds
-import Math.Data.Fintype.Basic
 import Math.Relation.Induced
 import Math.Order.Lattice.ConditionallyComplete
 
@@ -1454,9 +1453,7 @@ instance : IsConditionallyCompleteLattice Ordinal where
 def ofNat_le_ofNat (n m: Nat) : Ordinal.ofNat n ≤ Ordinal.ofNat m ↔ n ≤ m := by
   apply Iff.intro
   intro ⟨h⟩
-  have := Fintype.embed_iff_card_le.mp ⟨h.toEmbedding⟩
-  rw [Fintype.card_fin, Fintype.card_fin] at this
-  assumption
+  exact Fin.le_of_emebd h.toEmbedding
   intro h
   refine ⟨Fin.relEmbedFin h, ?_⟩
   intro a b g

@@ -1,6 +1,6 @@
 import Math.Order.Fin
 import Math.Data.Fin.Basic
-import Math.Data.Fintype.Basic
+import Math.Data.FastFintype.Basic
 
 open Classical
 
@@ -88,6 +88,10 @@ def IsFinite.card α [IsFinite α] : Nat :=
 noncomputable
 def IsFinite.toEquiv α [IsFinite α] : α ≃ Fin (card α) :=
   Classical.choice (Classical.choose_spec (existsEquiv α))
+
+noncomputable
+def Nat.card (α: Type*) : Nat :=
+  if _:IsFinite α then IsFinite.card α else 0
 
 def IsFinite.card_of_equiv (h: Nonempty (α ≃ β)) [IsFinite α] [IsFinite β] : IsFinite.card α = IsFinite.card β := by
   obtain ⟨h⟩ := h

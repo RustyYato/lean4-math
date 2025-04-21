@@ -225,6 +225,13 @@ def legnth_toList (v: Vector α n) : v.toList.length = n :=
 def ofList (l: List α) : Vector α l.length :=
   (Equiv.sigma_vector_equiv_list.symm l).snd
 
+@[simp]
+def ofList_ofFn (f: Fin n -> α) : ofList (List.ofFn f) = (ofFun f).cast (by simp) := by
+  ext i
+  show (List.ofFn _)[i]'_ = _
+  simp
+  rfl
+
 def toList_inj : Function.Injective (toList (α := α) (n := n)) := by
   unfold toList
   intro x y h

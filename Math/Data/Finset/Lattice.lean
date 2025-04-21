@@ -1,4 +1,5 @@
-import Math.Data.Fintype.Basic
+import Math.Data.FastFintype.Finset
+import Math.Data.Finset.Basic
 import Math.Order.Lattice.Basic
 
 namespace Finset
@@ -109,6 +110,7 @@ def Finset.relIso [Fintype α] [DecidableEq α] : (· > (·: Finset α)) ≃r (�
   toFun x := xᶜ
   invFun x := xᶜ
   leftInv := by
+    classical
     intro x
     simp
   rightInv := by
