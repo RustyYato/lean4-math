@@ -1,5 +1,7 @@
-import Math.Algebra.Monoid.Defs
-import Math.Data.FastFintype.Induction
+import Math.Algebra.Ring.Defs
+import Math.Algebra.Module.Defs
+import Math.Algebra.Hom.Defs
+import Math.Data.FastFintype.Basic
 
 section
 
@@ -264,3 +266,147 @@ def prod_eq_of_equiv
   [One α] [Mul α] [IsSemigroup α] [IsCommMagma α]
   (f: ι₀ -> α) (g: ι₁ -> α) (h: ι₀ ≃ ι₁) (eq: ∀i, f i = g (h i)) : ∏i, f i = ∏i, g i :=
   sum_eq_of_equiv (α := AddOfMul α) _ _ h eq
+
+def sum_congr {f: Fintype ι} [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (f g: ι -> α) (eq: ∀i, f i = g i) : ∑i, f i = ∑i, g i := by
+  apply sum_eq_of_equiv _ _ .rfl
+  assumption
+
+def prod_congr {f: Fintype ι} [One α] [Mul α] [IsSemigroup α] [IsCommMagma α]
+  (f g: ι -> α) (eq: ∀i, f i = g i) : ∏i, f i = ∏i, g i := by
+  apply prod_eq_of_equiv _ _ .rfl
+  assumption
+
+attribute [irreducible] sum
+
+def sum_sumty {fsum: Fintype (ι₀ ⊕ ι₁)} {fι₀: Fintype ι₀} {fι₁: Fintype ι₁} [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι₀ ⊕ ι₁ -> α) : ∑i, f i = (∑i, f (.inl i)) + ∑i, f (.inr i) := by
+  induction fι₀ using Fintype.typeInduction with
+  | empty =>
+    simp
+    rw [sum_reindex _ Equiv.empty_sum_eqv.symm]
+    apply sum_eq_of_equiv _ _ .rfl
+    intro i; rfl
+  | option _ _ ih =>
+    rw [sum_reindex _ Equiv.option_sum_eqv.symm]
+    simp
+    rw [add_assoc]
+    congr; apply ih
+  | resp ι₀ ι₀' fι₀ fι₀' eqv ih =>
+    rw [sum_reindex (eqv := Equiv.congrSum eqv .rfl)]
+    rw [Subsingleton.allEq (Fintype.ofEquiv _)]
+    show ∑i, (f ∘ eqv.congrSum .rfl) i = _
+    rw [ih]
+    congr 1
+    show ∑i, (f (.inl (eqv i))) = _
+    symm; apply sum_reindex' _ eqv
+
+def prod_sumty {fsum: Fintype (ι₀ ⊕ ι₁)} {fι₀: Fintype ι₀} {fι₁: Fintype ι₁} [One α] [Mul α] [IsMulOneClass α] [IsSemigroup α] [IsCommMagma α] (f: ι₀ ⊕ ι₁ -> α) : ∏i, f i = (∏i, f (.inl i)) * ∏i, f (.inr i) :=
+  sum_sumty (α := AddOfMul α) f
+
+def sum_const {fι: Fintype ι} [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (x: α) : ∑_: ι, x = Fintype.card ι • x := by
+  induction fι using Fintype.typeInduction with
+  | empty => simp
+  | option _ _ ih =>
+    simp; rw [succ_nsmul', ih]
+  | resp ι₀ ι₁ _ _ h ih =>
+    rw [Fintype.card_eq_of_equiv h.symm, ←ih]
+    apply sum_eq_of_equiv _ _ h.symm
+    intro; rfl
+
+def prod_const {fι: Fintype ι} [MonoidOps α] [IsMonoid α] [IsCommMagma α] (x: α) : ∏_: ι, x = x ^ Fintype.card ι :=
+  sum_const (α := AddOfMul α) _
+
+def sum_sum {fprod: Fintype (ι₀ × ι₁)} [fι₀: Fintype ι₀] [Fintype ι₁] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι₀ -> ι₁ -> α) :
+  ∑i j, f i j = ∑i: ι₀ × ι₁, f i.1 i.2 := by
+  rw [Subsingleton.allEq fprod Fintype.instProd]
+  clear fprod
+  induction fι₀ using Fintype.typeInduction with
+  | empty => simp
+  | option ι₀ fι₀ ih =>
+    simp
+    rw [ih, sum_reindex _ Equiv.option_prod_equiv_sum_prod.symm,
+      sum_sumty]
+    rfl
+  | resp ι₀ ι₀' fι₀ _ eqv ih =>
+    rw [sum_reindex _ eqv]
+    rw [Subsingleton.allEq (Fintype.ofEquiv _) fι₀]
+    rw [ih]
+    apply sum_eq_of_equiv _ _ (Equiv.congrProd eqv.symm .rfl).symm
+    intro i
+    rfl
+
+def prod_prod {fprod: Fintype (ι₀ × ι₁)} [fι₀: Fintype ι₀] [Fintype ι₁] [MonoidOps α] [IsMonoid α] [IsCommMagma α] (f: ι₀ -> ι₁ -> α) :
+  ∏i j, f i j = ∏i: ι₀ × ι₁, f i.1 i.2 :=
+  sum_sum (α := AddOfMul α) _
+
+def map_sum
+  {fι: Fintype ι}
+  [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
+  [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β]
+  [FunLike F α β] [IsZeroHom F α β] [IsAddHom F α β]
+  (g: F) (f: ι -> α) :
+  g (∑i: ι, f i) = ∑i: ι, g (f i) := by
+  induction fι using Fintype.typeInduction with
+  | empty => simp; rw [map_zero]
+  | option _ _ ih => simp; rw[map_add, ih]
+  | resp ι₀ ι₁ _ _ eqv ih =>
+    rw [sum_reindex' _ eqv, ih,
+      sum_reindex' _ eqv.symm]
+    simp
+    assumption
+
+def map_prod
+  {fι: Fintype ι}
+  [MonoidOps α] [IsMonoid α] [IsCommMagma α]
+  [MonoidOps β] [IsMonoid β] [IsCommMagma β]
+  [FunLike F α β] [IsOneHom F α β] [IsMulHom F α β]
+  (g: F) (f: ι -> α) :
+  g (∏i: ι, f i) = ∏i: ι, g (f i) :=
+  map_sum (α := AddOfMul α) (β := AddOfMul β) _ _
+
+def mul_sum {fι: Fintype ι} [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α] [IsLeftDistrib α] [IsMulZeroClass α] (x: α) (f: ι -> α) :
+  x * ∑i: ι, f i = ∑i: ι, x * f i  := by
+  let g : α →+ α := {
+    toFun a := x * a
+    map_add := mul_add _ _ _
+    map_zero := mul_zero _
+  }
+  show g (∑i: ι, f i) = _
+  rw [map_sum]
+  rfl
+
+def sum_mul {fι: Fintype ι} [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α] [IsRightDistrib α] [IsMulZeroClass α] (x: α) (f: ι -> α) :
+  (∑i: ι, f i) * x = ∑i: ι, f i * x  := by
+  let g : α →+ α := {
+    toFun a := a * x
+    map_add := add_mul _ _ _
+    map_zero := zero_mul _
+  }
+  show g (∑i: ι, f i) = _
+  rw [map_sum]
+  rfl
+
+def smul_sum {fι: Fintype ι} [SMul β α] [AddMonoidOps α] [Mul α] [IsAddMonoid α] [IsAddCommMagma α]
+  [MonoidOps β] [IsMonoid β] [IsDistribMulAction β α] (x: β) (f: ι -> α) :
+  x • (∑i: ι, f i) = ∑i: ι, x • f i  := by
+  let g : α →+ α := {
+    toFun a := x • a
+    map_add := smul_add _ _ _
+    map_zero := smul_zero _
+  }
+  show g (∑i: ι, f i) = _
+  rw [map_sum]
+  rfl
+
+def neg_sum {fι: Fintype ι} [AddGroupOps α] [Mul α] [IsAddGroup α] [IsAddCommMagma α] (f: ι -> α) :
+  -∑i, f i = ∑i, -f i := by
+  let g : α →+ α := {
+    toFun a := -a
+    map_add := by
+      intro a b
+      simp [neg_add_rev, add_comm]
+    map_zero := neg_zero
+  }
+  show g (∑i: ι, f i) = _
+  rw [map_sum]
+  rfl

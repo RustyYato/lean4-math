@@ -1,7 +1,7 @@
 import Math.Data.FastFintype.Defs
 import Math.Data.Fin.Pairing
 
-instance {α β: Type*} [fα: Fintype α] [fβ: Fintype β] : Fintype (α × β) :=
+instance Fintype.instProd {α β: Type*} [fα: Fintype α] [fβ: Fintype β] : Fintype (α × β) :=
   fα.bind fun fα =>
   fβ.map fun fβ =>
   {
