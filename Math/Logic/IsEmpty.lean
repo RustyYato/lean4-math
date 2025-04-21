@@ -86,3 +86,6 @@ def empty_or_nonempty {motive: Sort u -> Prop} (empty: ∀t, IsEmpty t -> motive
   exact IsEmpty.ofNotNonempty h
 
 def empty_inj [IsEmpty α] (f: α -> β) : Function.Injective f := fun x => elim_empty x
+
+def empty_preimage [IsEmpty β] (f: α -> β) : IsEmpty α where
+  elim x := elim_empty (f x)

@@ -84,7 +84,7 @@ private noncomputable def card_succ_eqv_option (α: Type u) (a: α) :
     rename_i x
     exists x.property
 
-def induction
+def Fintype.typeInduction
   {motive: ∀α: Type u, Fintype α -> Prop}
   (empty: motive PEmpty inferInstance)
   (option: ∀(α: Type u) (f: Fintype α), motive α f -> motive (Option α) inferInstance)

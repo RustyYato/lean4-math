@@ -1,6 +1,8 @@
 import Math.Algebra.Monoid.Defs
 import Math.Data.FastFintype.Induction
 
+section
+
 variable [Fintype ι] [Fintype ι₀] [Fintype ι₁]
 
 section
@@ -169,6 +171,8 @@ def sum [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι -> α)
     symm; apply Fin.sum_perm
 def prod [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι -> α) : α := sum (α := AddOfMul α) f
 
+end
+
 section Syntax
 
 open Lean
@@ -190,3 +194,73 @@ macro "∏ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders `
   | _                                              => throw ()
 
 end Syntax
+
+@[simp] def sum_empty [IsEmpty ι] {fι: Fintype ι} [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι -> α) : ∑i, f i = 0 := by
+  rw [Subsingleton.allEq fι Fintype.instIsEmpty]
+  rfl
+@[simp] def sum_option {fopt: Fintype (Option ι)} [fι: Fintype ι] [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (f: Option ι -> α) : ∑i, f i = f .none + ∑i, f (.some i) := by
+  rw [Subsingleton.allEq fopt (Fintype.instOption (α := ι))]
+  induction fι
+  apply Fin.sum_succ
+@[simp] def prod_empty [IsEmpty ι] {fι: Fintype ι} [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι -> α) : ∏i, f i = 1 :=
+  sum_empty (α := AddOfMul α) _
+@[simp] def prod_option {fopt: Fintype (Option ι)} [fι: Fintype ι] [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: Option ι -> α) : ∏i, f i = f .none * ∏i, f (.some i) :=
+  sum_option (α := AddOfMul α) _
+
+def sum_reindex {fι: Fintype ι} [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι -> α) (eqv: ι₀ ≃ ι) :
+  have := Fintype.ofEquiv eqv
+  ∑i, f i = ∑i, f (eqv i) := by
+  unfold sum
+  induction fι with | _ fι =>
+  show Fin.sum _ = Fin.sum (fun _ => f (eqv (eqv.symm (fι.all _))))
+  simp
+  rfl
+
+def prod_reindex {fι: Fintype ι} [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι -> α) (eqv: ι₀ ≃ ι) :
+  have := Fintype.ofEquiv eqv
+  ∏i, f i = ∏i, f (eqv i) :=
+  sum_reindex (α := AddOfMul α) _ _
+
+def sum_reindex' {fι₀: Fintype ι₀} {fι₁: Fintype ι₁} [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι₀ -> α) (eqv: ι₁ ≃ ι₀) : ∑i, f i = ∑i, f (eqv i) := by
+  rw [Subsingleton.allEq fι₁]
+  apply sum_reindex
+
+def prod_reindex' {fι₀: Fintype ι₀} {fι₁: Fintype ι₁} [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι₀ -> α) (eqv: ι₁ ≃ ι₀) : ∏i, f i = ∏i, f (eqv i) :=
+  sum_reindex' (α := AddOfMul α) _ _
+
+def sum_eq_of_equiv
+  {fι₀: Fintype ι₀} {fι₁: Fintype ι₁}
+  [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
+  (f: ι₀ -> α) (g: ι₁ -> α) (h: ι₀ ≃ ι₁) (eq: ∀i, f i = g (h i)) : ∑i, f i = ∑i, g i := by
+  rw [sum_reindex _ h]
+  induction fι₀ using Fintype.typeInduction generalizing ι₁ with
+  | empty =>
+    have := empty_preimage h.symm
+    simp
+  | option ι₀ fι₀ ih =>
+    induction fι₁ using Fintype.typeInduction with
+    | empty =>
+      have := empty_preimage h
+      simp
+    | option ι₁ fι₁ ih =>
+      clear ih
+      simp
+      congr
+      apply eq
+      ext i
+      apply eq
+    | resp =>
+      congr;
+      apply Subsingleton.allEq
+      ext i; apply eq
+  | resp =>
+    congr;
+    apply Subsingleton.allEq
+    ext i; apply eq
+
+def prod_eq_of_equiv
+  {fι₀: Fintype ι₀} {fι₁: Fintype ι₁}
+  [One α] [Mul α] [IsSemigroup α] [IsCommMagma α]
+  (f: ι₀ -> α) (g: ι₁ -> α) (h: ι₀ ≃ ι₁) (eq: ∀i, f i = g (h i)) : ∏i, f i = ∏i, g i :=
+  sum_eq_of_equiv (α := AddOfMul α) _ _ h eq
