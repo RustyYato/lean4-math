@@ -595,6 +595,11 @@ instance instOption [fα: Fintype α] : Fintype (Option α) :=
       rfl
   }
 
+instance [Fintype α] : Fintype (PLift α) :=
+  ofEquiv (Equiv.plift _)
+instance [Fintype α] : Fintype (ULift α) :=
+  ofEquiv (Equiv.ulift _)
+
 @[simp]
 def card_fin {f: Fintype (Fin n)} : card (Fin n) = n := by
   rw [Subsingleton.allEq f instFin]

@@ -2,6 +2,8 @@ import Math.Order.Fin
 import Math.Data.Fin.Basic
 import Math.Data.Fintype.Basic
 
+open Classical
+
 class inductive IsFinite (α: Sort*): Prop where
 | intro (limit: Nat) : (α ≃ Fin limit) -> IsFinite α
 
@@ -102,7 +104,6 @@ def IsFinite.card_eq_card (α: Type _) [IsFinite α] :
   rw [Fintype.ofIsFinite, Fintype.card_eq_of_equiv (IsFinite.toEquiv α),
     Fintype.card_fin]
 
-open Classical in
 instance [f: Fintype α] : IsFinite α := by
   induction Fintype.equivFin α with | mk h =>
   exists Fintype.card α
@@ -169,7 +170,6 @@ instance {α: Sort*} {β: Sort*} [IsFinite α]  [IsFinite β] : IsFinite (α ×'
   apply (Equiv.prod_equiv_pprod _ _).symm
 
 instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : IsFinite (∀x, β x) := by
-  classical
   have := Fintype.ofIsFinite (PLift α)
   have := fun x: PLift α => Fintype.ofIsFinite (PLift (β x.down))
   apply IsFinite.ofEquiv' (∀x: PLift α, PLift (β x.down))
@@ -186,7 +186,6 @@ instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : 
 instance {α: Sort*} {β: Sort*} [IsFinite α] [IsFinite β] : IsFinite (α -> β) := inferInstance
 
 instance {α: Sort*} {P: α -> Prop} [IsFinite α] : IsFinite (Subtype P) := by
-  classical
   have := Fintype.ofIsFinite (PLift α)
   apply IsFinite.ofEquiv' (Subtype fun x: PLift α => P x.down)
   apply Equiv.congrSubtype _ _
@@ -230,7 +229,6 @@ instance {α: Sort*} {P Q: α -> Prop} [hp: IsFinite (Subtype P)] [hq: IsFinite 
     rfl
 
 instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
-  classical
   apply IsFinite.ofEmbed (Subtype P)
   refine ⟨?_, ?_⟩
   intro ⟨x, h, g⟩
@@ -238,7 +236,6 @@ instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype P)] : IsFinite (Subtyp
   intro ⟨_, _, _⟩ ⟨_, _, _⟩ eq; cases eq; rfl
 
 instance {α: Sort*} {P Q: α -> Prop} [IsFinite (Subtype Q)] : IsFinite (Subtype (fun x => P x ∧ Q x)) := by
-  classical
   apply IsFinite.ofEmbed (Subtype Q)
   refine ⟨?_, ?_⟩
   intro ⟨x, h, g⟩
