@@ -1019,6 +1019,7 @@ def rotate (n k: Nat) : Fin n ≃ Fin n where
 
 @[simp]
 def apply_rotate : rotate n k x = ⟨(x + k) % n, Nat.mod_lt _ x.pos⟩ := rfl
+def symm_apply_rotate : (rotate n k).symm x = ⟨(x + n - k % n) % n, Nat.mod_lt _ x.pos⟩ := rfl
 
 -- rotates all elements in the range i <= x <= j by k
 def rotateRange (i j: Fin n) (offset: Nat) : Fin n ≃ Fin n := by
@@ -1091,6 +1092,28 @@ def rotateRange_of_between (i j: Fin n) (offset: Nat) (x: Fin n)
   simp
   omega
 
+def symm_rotateRange_of_between (i j: Fin n) (offset: Nat) (x: Fin n)
+  (h: i ≤ j) (i_le_x: i ≤ x) (x_le_j: x ≤ j) :
+  (rotateRange i j offset).symm x = ⟨i + (x - i + (j - i + 1) - offset % (j - i + 1)) % (j - i + 1), by
+    apply Nat.lt_of_lt_of_le
+    apply Nat.add_lt_add_left
+    apply Nat.mod_lt
+    apply Nat.zero_lt_succ
+    omega⟩ := by
+  unfold rotateRange
+  conv => {
+    lhs; arg 1; arg 1
+    conv => { arg 2; rw [Nat.min_eq_left h] }
+    conv => { arg 3; rw [Nat.max_eq_right h]  }
+  }
+  unfold rotateRange.go
+  simp [congrEquiv', apply_congrEquiv]
+  rw [apply_splitRange_eq₂]
+  simp [symm_apply_rotate]
+  assumption
+  simp
+  omega
+
 def symmEquiv : (α ≃ β) ≃ (β ≃ α) where
   toFun := symm
   invFun := symm
@@ -1124,7 +1147,7 @@ def Fin.le_of_emebd (h: Fin n ↪ Fin m) : n ≤ m := by
       apply Equiv.fin_equiv_option
       apply Equiv.fin_equiv_option
 
-def Fin.eq_of_embed (h: Fin n ≃ Fin m) : n = m := by
+def Fin.eq_of_equiv (h: Fin n ≃ Fin m) : n = m := by
   apply Nat.le_antisymm
   apply Fin.le_of_emebd
   apply h.toEmbedding

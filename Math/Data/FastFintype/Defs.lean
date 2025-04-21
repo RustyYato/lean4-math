@@ -528,6 +528,73 @@ instance instProp : Fintype Prop where
         exists 0; simp [h]
   }
 
+instance instIsEmpty [IsEmpty α] : Fintype α where
+  encode := Trunc.mk {
+    card := 0
+    all := Embedding.empty
+    complete x := elim_empty x
+  }
+
+instance instUnique [Inhabited α] [Subsingleton α] : Fintype α where
+  encode := Trunc.mk {
+    card := 1
+    all := {
+      toFun _ := default
+      inj' _ _ _ := Subsingleton.allEq (α := Fin 1) _ _
+    }
+    complete x := by
+      rw [Subsingleton.allEq x default]
+      exists 0
+    decode := .some (fun _ => 0)
+    decode_spec := by
+      intro f h i
+      simp; apply Subsingleton.allEq
+  }
+
+instance instOption [fα: Fintype α] : Fintype (Option α) :=
+  fα.map fun fα => {
+    card := fα.card + 1
+    all := {
+      toFun x :=
+        match x with
+        | 0 => .none
+        | ⟨x + 1, xLt⟩ => .some (fα.all ⟨x, Nat.lt_of_succ_lt_succ xLt⟩)
+      inj' := by
+        intro x y
+        cases x using Fin.cases <;> cases y using Fin.cases
+        all_goals simp
+        exact nofun
+        exact nofun
+        intro h
+        apply fα.all.inj
+        apply Option.some.inj
+        assumption
+    }
+    complete x := by
+      cases x
+      exists 0
+      rename_i x
+      obtain ⟨i, rfl⟩ := fα.complete x
+      exists i.succ
+    decode :=
+      fα.decode.map fun dec x =>
+      match x with
+      | .none => 0
+      | .some x => (dec x).succ
+    decode_spec f hf x := by
+      obtain ⟨card, all, complete, dec, dec_spec⟩ := fα
+      cases dec; contradiction
+      cases hf
+      simp
+      cases x using Fin.cases
+      rfl
+      rename_i dec _
+      show Fin.succ _ = _
+      congr
+      apply dec_spec dec
+      rfl
+  }
+
 @[simp]
 def card_fin {f: Fintype (Fin n)} : card (Fin n) = n := by
   rw [Subsingleton.allEq f instFin]
@@ -541,6 +608,22 @@ def card_bool {f: Fintype Bool} : card Bool = 2 := by
 @[simp]
 def card_prop {f: Fintype Prop} : card Prop = 2 := by
   rw [Subsingleton.allEq f instProp]
+  rfl
+
+@[simp]
+def card_empty [IsEmpty α] {f: Fintype α} : card α = 0 := by
+  rw [Subsingleton.allEq f instIsEmpty]
+  rfl
+
+@[simp]
+def card_unique [Inhabited α] [Subsingleton α] {f: Fintype α} : card α = 1 := by
+  rw [Subsingleton.allEq f instUnique]
+  rfl
+
+@[simp]
+def card_option {f: Fintype α} {fopt: Fintype (Option α)} : card (Option α) = card α + 1 := by
+  rw [Subsingleton.allEq fopt instOption]
+  induction f
   rfl
 
 -- stores all values in an array and then just
