@@ -124,10 +124,21 @@ private instance
   }
 
 instance Fintype.sigma
-  {ι: Type*} [DecidableEq ι] [fι: Fintype ι]
-  (α: ι -> Type*) [fα: ∀i: ι, Fintype (α i)]
-  : Fintype (Σi, α i) :=
-  (Fintype.equiv_fin_card ι).recOnSubsingleton fun eqv =>
-  Fintype.ofEquiv (Equiv.congrSigma
-    (β₁ := fun i: Fin (Fintype.card ι) => (α (eqv.symm i)))
-    eqv (fun i => by simp; rfl))
+  {ι: Type*} [fι: Fintype ι]
+  (α: ι -> Type*) [fα: ∀i: ι, Fintype (α i)] : Fintype (Σi, α i) :=
+  (Fintype.bij_fin_card ι).recOnSubsingleton fun eqv =>
+  Fintype.ofBij (fun x: Σi: Fin (Fintype.card ι), α (eqv.val i) => ⟨eqv.val x.1, x.2⟩) <| by
+    apply And.intro
+    · intro x y h
+      simp at h
+      apply Sigma.ext
+      exact eqv.property.left h.left
+      exact h.right
+    · intro x
+      have ⟨i, eq⟩ := eqv.property.right x.1
+      exists ⟨i, eq ▸ x.2⟩
+      simp
+      ext
+      simp; assumption
+      simp; symm
+      exact eqRec_heq eq x.snd

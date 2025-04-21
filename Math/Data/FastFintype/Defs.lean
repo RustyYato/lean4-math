@@ -334,18 +334,30 @@ private def find (n: Nat) (f: Nat -> α) (h: α -> Bool) (hx: ∃i < n, h (f i))
         assumption)
       ⟨i, Nat.lt_trans hi (Nat.lt_succ_self _), eq⟩
 
-def ofEquiv' (h: α ≃ β) [f: Fintype α] : Fintype β :=
-  f.map fun e => {
+def ofBij (f: α -> β) (h: Function.Bijective f) [fα: Fintype α] : Fintype β :=
+  fα.map fun e => {
     card := e.card
-    all := Equiv.congrEmbed .rfl h e.all
+    all := e.all.trans (Embedding.mk f h.left)
     complete x := by
-      have ⟨i, g⟩ := e.complete (h.symm x)
+      obtain ⟨x, rfl⟩ := h.right x
+      have ⟨i, g⟩ := e.complete x
       exists i
-      show x = h (e.all i)
       simp [←g]
   }
 
+def ofEquiv' (h: α ≃ β) [f: Fintype α] : Fintype β := ofBij h ⟨h.inj, by
+  intro x
+  exists h.symm x
+  simp⟩
+
 def ofEquiv (h: α ≃ β) [f: Fintype β] : Fintype α := ofEquiv' h.symm
+
+def Encoding.bij_fin_card (enc: Encoding α) : { f : Fin enc.card -> α // f.Bijective } where
+  val := enc.all
+  property := {
+    left := enc.all.inj
+    right := enc.complete
+  }
 
 @[irreducible]
 def Encoding.equiv_fin_card [DecidableEq α] (enc: Encoding α) : α ≃ Fin enc.card :=
@@ -414,6 +426,10 @@ def Encoding.equiv_fin_card_symm_eq [DecidableEq α] (enc: Encoding α) : (enc.e
   rename_i h; rw [h] at i; exact i.elim0
   rfl
 
+def bij_fin_card (α: Type*) [h: Fintype α] : Trunc { f: Fin (card α) -> α // f.Bijective } :=
+  h.encode.recOnSubsingleton (motive := fun e: Trunc (Fintype.Encoding α) => Trunc { f: Fin (@card α ⟨e⟩) -> α // f.Bijective }) <|
+  fun enc => Trunc.mk enc.bij_fin_card
+
 def equiv_fin_card (α: Type*) [DecidableEq α] [h: Fintype α] : Trunc (α ≃ Fin (card α)) :=
   h.encode.recOnSubsingleton (motive := fun e: Trunc (Fintype.Encoding α) => Trunc (α ≃ Fin (@card α ⟨e⟩))) <|
   fun enc => Trunc.mk enc.equiv_fin_card
@@ -423,7 +439,7 @@ def equiv_of_card_eq (α β: Type*) [DecidableEq α] [DecidableEq β] {ha: Finty
   (hb.equiv_fin_card _).map fun fb =>
   fa.trans <| (Equiv.fin h).trans fb.symm
 
-def card_eq_of_equiv (h: α ≃ β) [fa: Fintype α] [fb: Fintype β] : card α = card β := by
+def card_eq_of_equiv (h: α ≃ β) {fa: Fintype α} {fb: Fintype β} : card α = card β := by
   rw [Subsingleton.allEq fa (ofEquiv h)]
   induction fb; rfl
 local instance decFinExists (n: Nat) (P: Fin n -> Prop) [dec: DecidablePred P] : Decidable (∃i: Fin n, P i) :=

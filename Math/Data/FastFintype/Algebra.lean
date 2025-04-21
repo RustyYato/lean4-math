@@ -217,7 +217,6 @@ def sum_reindex {fι: Fintype ι} [Zero α] [Add α] [IsAddSemigroup α] [IsAddC
   induction fι with | _ fι =>
   show Fin.sum _ = Fin.sum (fun _ => f (eqv (eqv.symm (fι.all _))))
   simp
-  rfl
 
 def prod_reindex {fι: Fintype ι} [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι -> α) (eqv: ι₀ ≃ ι) :
   have := Fintype.ofEquiv eqv
