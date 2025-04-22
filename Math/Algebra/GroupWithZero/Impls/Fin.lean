@@ -4,9 +4,8 @@ import Math.Algebra.Monoid.Units.Defs
 import Math.Data.Nat.Gcd
 import Math.Logic.Fact
 
-instance [Fact (Nat.IsPrime n)] : NeZero n where
+instance [Nat.IsPrimeClass n] : NeZero n where
   out := by
-    have : Nat.IsPrime n := Fact.proof
     rintro rfl
     contradiction
 
@@ -72,11 +71,11 @@ unseal Nat.xgcdAux in def Fin.toUnit {n: ℕ} (x: Fin n) (coprime: Nat.gcd x.val
       omega
   }
 
-variable (n: ℕ) [Fact (Nat.IsPrime n)]
+variable (n: ℕ) [Nat.IsPrimeClass n]
 
-private def n_prime : Nat.IsPrime n := Fact.proof
+private def n_prime : Nat.IsPrime n := Nat.prime n
 
-private def toUnit_of_prime {n: ℕ} [Fact (Nat.IsPrime n)] (a: Fin n) (h: a ≠ 0) : Units (Fin n) := (Fin.toUnit a <| by
+private def toUnit_of_prime {n: ℕ} [Nat.IsPrimeClass n] (a: Fin n) (h: a ≠ 0) : Units (Fin n) := (Fin.toUnit a <| by
   rw [Nat.gcd_comm]
   apply (Nat.gcd_eq_one_or_dvd_of_prime (n_prime (n := n)) a.val).resolve_right
   intro g

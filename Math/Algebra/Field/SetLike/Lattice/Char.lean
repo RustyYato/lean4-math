@@ -167,11 +167,11 @@ private def n_prime : Nat.IsPrime n := by
   rename_i h; exact (h.out rfl).elim
   assumption
 
--- instance : Fact (Nat.IsPrime n) where
+-- instance : IsPrimeClass n where
 --   proof := n_prime F
 
 def Subfield.ofFinCast : Subfield F :=
-  have : Fact (Nat.IsPrime n) := ⟨n_prime F⟩
+  have : Nat.IsPrimeClass n := ⟨n_prime F⟩
   Subfield.range (α := Fin n) <| {
     toFun a := a.val
     map_zero := by apply natCast_zero
@@ -207,7 +207,7 @@ def Subfield.ofFinCast_eq_bot : Subfield.ofFinCast F = ⊥ := by
 
 noncomputable def has_char_prime_equiv_fin : Fin n ≃+* (⊥: Subfield F) := by
   apply RingEquiv.trans _ (Subfield.equiv_of_eq (Subfield.ofFinCast F) ⊥ (Subfield.ofFinCast_eq_bot F))
-  have : Fact (Nat.IsPrime n) := ⟨n_prime F⟩
+  have : Nat.IsPrimeClass n := ⟨n_prime F⟩
   apply Subfield.equiv_range
 
 end

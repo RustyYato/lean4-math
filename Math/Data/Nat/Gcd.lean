@@ -20,6 +20,9 @@ def IsAtomic (n: Nat): Prop := ∀m, m ∣ n -> m = 1 ∨ m = n
 
 def IsPrime (n: Nat): Prop := n ≠ 1 ∧ IsAtomic n
 
+class IsPrimeClass (n: Nat) : Prop where
+  prime: IsPrime n
+
 def IsComposite (n: Nat): Prop := ∃a b, a ≠ 1 ∧ b ≠ 1 ∧ n = a * b
 
 def prime2 : IsPrime 2 := by
@@ -244,6 +247,24 @@ decidable_of_iff (classify n).isComposite <| by
   · intro h
     rw [show n.classify = .composite h from Subsingleton.allEq _ _]
     rfl
+
+def IsPrimeClass.iff_is_prime (n: Nat) : IsPrimeClass n ↔ IsPrime n := by
+  apply Iff.intro
+  intro ⟨h⟩; exact h
+  intro h; exact ⟨h⟩
+
+instance : Decidable (IsPrimeClass n) := decidable_of_iff _ (IsPrimeClass.iff_is_prime _).symm
+
+-- generate some small primes (all primes less than 20)
+instance : IsPrimeClass 3 := by decide
+instance : IsPrimeClass 5 := by decide
+instance : IsPrimeClass 7 := by decide
+instance : IsPrimeClass 11 := by decide
+instance : IsPrimeClass 13 := by decide
+instance : IsPrimeClass 17 := by decide
+instance : IsPrimeClass 19 := by decide
+
+def prime (n: Nat) [IsPrimeClass n] : IsPrime n := IsPrimeClass.prime
 
 def gcd_eq_one_or_dvd_of_prime {p: Nat} (hp: IsPrime p) : ∀n, gcd p n = 1 ∨ p ∣ n := by
   intro n

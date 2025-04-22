@@ -68,15 +68,11 @@ instance [h: Nat.NeOne n] : IsNontrivial (ZMod n) := match n, h with
 
 instance : Inhabited (ZMod n) := ⟨0⟩
 
-instance [h: Fact (Nat.IsPrime n)] : FieldOps (ZMod n) := match n, h with
-  | 0, _ => by
-    have : Nat.IsPrime 0 := Fact.proof
-    contradiction
+instance [h: Nat.IsPrimeClass n] : FieldOps (ZMod n) := match n, h with
+  | 0, _ => by contradiction
   | n + 1, h => inferInstanceAs (FieldOps (Fin _))
-instance [h: Fact (Nat.IsPrime n)] : IsField (ZMod n) := match n, h with
-  | 0, _ => by
-    have : Nat.IsPrime 0 := Fact.proof
-    contradiction
+instance [h: Nat.IsPrimeClass n] : IsField (ZMod n) := match n, h with
+  | 0, _ => by contradiction
   | n + 1, h => inferInstanceAs (IsField (Fin _))
 
 private def preToUnit {n: ℕ} (x: ZMod n) (coprime: Int.gcd x.toInt n = 1 := by decide) : Units (ZMod n) := match n with
