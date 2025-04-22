@@ -147,3 +147,21 @@ end
 
 instance [SemiringOps α] [LT α] [LE α] [IsOrderedSemiring α]
   : IsOrderedAddCommMonoid α := inferInstance
+
+section
+
+variable [SemiringOps α] [LE α] [LT α] [IsStrictOrderedSemiring α]
+  [IsNontrivial α]
+
+def npow_pos (a: α) (n: ℕ) (ha: 0 < a) : 0 < a ^ n := by
+  induction n with
+  | zero =>
+    rw [npow_zero]
+    apply zero_lt_one
+  | succ n ih =>
+    rw [npow_succ]
+    apply mul_pos
+    assumption
+    assumption
+
+end

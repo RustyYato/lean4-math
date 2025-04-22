@@ -366,6 +366,36 @@ def norm : PadicRat p -> ℚ :=
 instance : Norm (PadicRat p) ℚ where
   norm := norm
 
+@[simp]
+def znorm_zero : znorm p 0 = 0 := by
+  unfold znorm
+  split
+  simp
+  simp
+
+@[simp]
+def znorm_pos (x: ℤ) (hx: x ≠ 0) : 0 < znorm p x := by
+  unfold znorm
+  split
+  apply zero_lt_one
+  simp
+  unfold valuation
+  simp
+  rw [if_neg]
+  simp
+  apply npow_pos
+  apply div?_pos
+  apply zero_lt_one
+  rw [←natCast_zero]
+  apply natCast_strictmonotone
+  apply Nat.zero_lt_of_ne_zero
+  rintro rfl
+  contradiction
+  simp; apply And.intro
+  rintro rfl
+  contradiction
+  assumption
+
 def norm_zero_iff' {x: PadicRat p} : norm x = 0 ↔ x = 0 := by
   apply Iff.intro
   · induction x using Rat.ind with | mk x =>
@@ -389,7 +419,6 @@ def norm_zero_iff' {x: PadicRat p} : norm x = 0 ↔ x = 0 := by
     unfold norm'
     simp
     show znorm p 0 /? znorm p 1 = 0
-    unfold znorm
     simp
 
 def norm_one' : norm (1: PadicRat p) = 1 := div?_self _ _
@@ -413,8 +442,32 @@ def norm_mul' (a b: PadicRat p) : norm (a * b) = norm a * norm b := by
   rw [znorm_mul]; rfl
   rw [znorm_mul]; rfl
 
-def norm_add_le_add_norm (a b: PadicRat p) : norm (a + b) ≤ norm a + norm b := by
+def norm_add_le_max_norm (a b: PadicRat p) : norm (a + b) ≤ max (norm a) (norm b) := by
   sorry
+
+def norm_nonneg' (a: PadicRat p) : 0 ≤ norm a := by
+  induction a using Rat.ind with | mk a =>
+  show 0 ≤ norm' _ _
+  unfold norm'
+  by_cases ha:a.num = 0
+  rw [ha]
+  simp
+  apply le_of_lt
+  apply div?_pos
+  apply znorm_pos
+  assumption
+  apply znorm_pos
+  apply a.den_nz'
+
+def norm_add_le_add_norm (a b: PadicRat p) : norm (a + b) ≤ norm a + norm b := by
+  apply le_trans
+  apply norm_add_le_max_norm
+  apply max_le_iff.mpr
+  apply And.intro
+  apply le_add_right
+  apply norm_nonneg'
+  apply le_add_left
+  apply norm_nonneg'
 
 instance [Nat.IsPrimeClass p] : IsAlgebraNorm (PadicRat p) where
   norm_zero_iff := norm_zero_iff'
