@@ -1,15 +1,16 @@
 import Math.Data.Encodable.Basic
-import Math.Data.FastFintype.Defs
+import Math.Data.Fintype.Defs
 
 def Fintype.toEncodable (α: Type*) [f: Fintype α] [DecidableEq α] : Trunc (Encodable α) := by
   apply f.recOnSubsingleton
-  intro enc
-  have eqv := enc.equiv_fin_card
+  intro list nodup complete
   apply Trunc.mk
   exact {
-    encode a := eqv a
-    decode' i := if h:i < enc.card then .some (eqv.symm ⟨i, h⟩) else .none
-    spec x := by simp
+    encode a := list.idxOf a
+    decode' i := list[i]?
+    spec x := by
+      rw [List.getElem?_eq_getElem, List.getElem_idxOf]
+      apply complete
   }
 
 namespace Encodable

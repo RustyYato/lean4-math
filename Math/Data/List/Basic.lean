@@ -625,23 +625,6 @@ def List.MinCount.append
   MinCount (as ++ bs) x (n + m) :=
   MinCountBy.append ha hb
 
-def List.getElem_idxOf [BEq α] [LawfulBEq α] (as: List α) (a: α) (ha: a ∈ as) : as[as.idxOf a]'(List.idxOf_lt_length ha) = a := by
-  apply Option.some.inj
-  rw [←List.getElem?_eq_getElem]
-  induction as with
-  | nil => contradiction
-  | cons a₀ as ih =>
-    simp [idxOf_cons, cond]
-    split <;> rename_i h
-    cases LawfulBEq.eq_of_beq h
-    rfl
-    rw [List.getElem?_cons_succ]
-    apply ih
-    cases ha
-    rw [LawfulBEq.rfl] at h
-    contradiction
-    assumption
-
 def List.eq_of_sublist_of_length_eq {as bs: List α} (h: as <+ bs) (g: bs.length ≤ as.length) : as = bs := by
   induction h with
   | slnil => rfl

@@ -1,6 +1,6 @@
 import Math.Order.Fin
 import Math.Data.Fin.Basic
-import Math.Data.FastFintype.Basic
+import Math.Data.Fintype.Basic
 
 open Classical
 

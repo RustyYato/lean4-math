@@ -99,3 +99,33 @@ def List.nodup_ofFn (f: Fin n -> α) : Function.Injective f ↔ (List.ofFn f).No
   apply Fin.isLt
   rw [List.length_ofFn]
   apply Fin.isLt
+
+def List.nodup_eraseIdx (as: List α) (h: as.Nodup) : (as.eraseIdx i).Nodup := by
+  induction as generalizing i with
+  | nil => assumption
+  | cons a as ih =>
+    cases i with
+    | zero => apply h.tail
+    | succ i =>
+      apply List.Pairwise.cons
+      intro x hx
+      exact h.head _ (List.mem_of_mem_eraseIdx hx)
+      apply ih
+      exact h.tail
+
+def List.getElem_idxOf [BEq α] [LawfulBEq α] (as: List α) (a: α) (ha: a ∈ as) : as[as.idxOf a]'(List.idxOf_lt_length ha) = a := by
+  apply Option.some.inj
+  rw [←List.getElem?_eq_getElem]
+  induction as with
+  | nil => contradiction
+  | cons a₀ as ih =>
+    simp [idxOf_cons, cond]
+    split <;> rename_i h
+    cases LawfulBEq.eq_of_beq h
+    rfl
+    rw [List.getElem?_cons_succ]
+    apply ih
+    cases ha
+    rw [LawfulBEq.rfl] at h
+    contradiction
+    assumption

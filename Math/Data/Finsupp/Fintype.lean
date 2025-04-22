@@ -1,6 +1,5 @@
 import Math.Data.Finsupp.Algebra
-import Math.Data.FastFintype.Algebra
-import Math.Data.FastFintype.Impls.Finset
+import Math.Data.Fintype.Algebra
 
 namespace Finsupp
 

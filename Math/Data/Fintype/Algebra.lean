@@ -95,7 +95,7 @@ def sum_option [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAdd
   rfl
 def sum_succ [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: Fin (n + 1) -> α) : ∑i, f i = f (Fin.last _) + ∑i: Fin n, f i.castSucc := by
   rw [sum_reindex (h := (Equiv.fin_equiv_option n).symm), sum_option]
-  rfl
+  simp
 def sum_succ' [Zero α] [Add α] [IsAddZeroClass α] [IsAddSemigroup α] [IsAddCommMagma α] (f: Fin (n + 1) -> α) : ∑i, f i = f 0 + ∑i: Fin n, f i.succ := by
   rw [sum_reindex (h := Equiv.fin_rev), sum_succ, sum_reindex (h := Equiv.fin_rev), ]
   congr

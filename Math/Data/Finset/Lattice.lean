@@ -1,4 +1,4 @@
-import Math.Data.FastFintype.Finset
+import Math.Data.Fintype.Basic
 import Math.Data.Finset.Basic
 import Math.Order.Lattice.Basic
 
