@@ -181,6 +181,10 @@ def toFract : ℚ -> Fract := by
   apply Relation.IsTrans.trans eq
   apply Fract.reduce.spec
 
+def toFract.isReduced (q: ℚ) : q.toFract.isReduced := by
+  induction q using ind
+  apply Fract.reduce.isReduced
+
 def toFract.inj : ∀{a b: ℚ}, a.toFract = b.toFract ↔ a = b :=
   Function.Injective.eq_iff <| by
     intro a b eq
@@ -234,6 +238,10 @@ instance : OfNat ℚ n := ⟨n⟩
 
 instance : IsNontrivial ℚ where
   exists_ne := ⟨0, 1, by decide⟩
+
+def Fract.eq_zero_iff_num_eq_zero (q: Fract) : q ≈ 0 ↔ q.num = 0 := by
+  show q.num * 1 = 0 * _ ↔ _
+  simp
 
 def Fract.add (a b: Fract) : Fract where
   num := a.num * b.den + b.num * a.den
@@ -329,6 +337,22 @@ instance : Neg ℚ where
     apply sound
     apply Fract.neg.spec
     assumption
+
+@[simp] def toFract_neg (q: ℚ) : (-q).toFract = -q.toFract := by
+  induction q using ind with | mk q =>
+  show Fract.reduce _ = -Fract.reduce q
+  ext <;> (unfold Fract.reduce; simp)
+  rw [Int.neg_ediv, if_pos, Int.sub_zero]
+  congr 4
+  apply Int.natAbs_neg
+  apply Int.dvd_trans
+  apply Int.ofNat_dvd.mpr
+  apply Nat.gcd_dvd_left
+  apply Int.natAbs_dvd.mpr
+  apply Int.neg_dvd.mpr
+  apply Int.dvd_refl
+  congr 2
+  apply Int.natAbs_neg
 
 @[simp]
 def mk_neg (a: Fract) : -⟦a⟧ = ⟦-a⟧ := rfl

@@ -35,13 +35,13 @@ def mul_eq_toUnit?_mul (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) :
   toUnit? (a * b) = toUnit? a * toUnit? b := Units.val_inj.mp rfl
 
 def div_eq_toUnit?_div (a b: α) (ha: a ≠ 0) (hb: b ≠ 0) : toUnit? (a /? b) (by
-    intro h
-    rw [div?_eq_mul_inv?] at h
-    have := inv?_ne_zero b hb
-    cases of_mul_eq_zero h <;> contradiction) = toUnit? a / toUnit? b := by
-    rw [div_eq_mul_inv, ←inv?_eq_toUnit?_inv, ←mul_eq_toUnit?_mul]
-    congr
-    rw [div?_eq_mul_inv?]
+  intro h
+  rw [div?_eq_mul_inv?] at h
+  have := inv?_ne_zero b hb
+  cases of_mul_eq_zero h <;> contradiction) = toUnit? a / toUnit? b := by
+  rw [div_eq_mul_inv, ←inv?_eq_toUnit?_inv, ←mul_eq_toUnit?_mul]
+  congr
+  rw [div?_eq_mul_inv?]
 
 def checked_zpow_pos_add (a: α) (n m: ℤ) (hn: a ≠ 0 ∨ 0 ≤ n) (hm: a ≠ 0 ∨ 0 ≤ m) : a ≠ 0 ∨ 0 ≤ n + m := by
   cases hn
@@ -189,3 +189,13 @@ def div?_one (a: α) : a /? 1 =  a := by
 @[simp]
 def zero_div? (a: α) (ha: a ≠ 0) : 0 /? a = 0 := by
   rw [div?_eq_mul_inv?, zero_mul]
+
+def inv?_npow' (a: α) (h: a ≠ 0) (n: ℕ) : (a ^ n)⁻¹? = a ^? (-(n: ℤ)) := by
+  conv => { lhs; lhs; rw [←zpow?_ofNat] }
+  symm; apply inv?_eq_of_mul_right
+  rw [←zpow?_add]
+  conv => {
+    lhs; arg 2; rw [show -(n: ℤ) + (n :ℤ) = 0 by omega, ←Int.ofNat_zero]
+  }
+  rw [←npow_zero a]
+  apply zpow?_ofNat

@@ -319,24 +319,37 @@ def prime_factor_pow {p: Nat} (hp: IsPrime p) :
       exact (ih dvd).left
       assumption
 
+def gcd_eq_one_iff_no_common_factor (a b: Nat):
+  gcd a b = 1 ↔ ∀k, k ∣ a -> k ∣ b -> k = 1 := by
+  apply Iff.intro
+  intro h k ha hb
+  apply Nat.dvd_antisymm
+  rw [←h]
+  apply dvd_gcd
+  assumption
+  assumption
+  apply Nat.one_dvd
+  intro h
+  apply h
+  apply gcd_dvd_left
+  apply gcd_dvd_right
+
 def gcd_eq_one_iff_no_common_prime_factor (a b: Nat):
   gcd a b = 1 ↔ ∀k, Nat.IsPrime k -> k ∣ a -> k ∣ b -> False := by
+  apply Iff.trans (gcd_eq_one_iff_no_common_factor _ _)
   apply Iff.intro
   intro h k kprime ha hb
-  have := Nat.dvd_gcd ha hb
-  rw [h] at this
-  cases Nat.dvd_one.mp this
-  exact kprime.left rfl
-  intro nocomm
+  cases h k ha hb
+  contradiction
+  intro h k ha hb
   apply Decidable.byContradiction
-  intro h
-  apply nocomm (a.gcd b).minFac (minFac_prime _ h)
-  apply Nat.dvd_trans
+  intro hk
+  apply h k.minFac
+  exact minFac_prime k hk
+  apply Nat.dvd_trans _ ha
   apply minFac_dvd
-  apply Nat.gcd_dvd_left
-  apply Nat.dvd_trans
+  apply Nat.dvd_trans _ hb
   apply minFac_dvd
-  apply Nat.gcd_dvd_right
 
 def prime_dvd_of_dvd_pow (p a n: Nat) (h: IsPrime p) : p ∣ a ^ n -> p ∣ a := by
   induction n with
