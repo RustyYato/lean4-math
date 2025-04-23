@@ -443,6 +443,10 @@ def norm_mul' (a b: PadicRat p) : norm (a * b) = norm a * norm b := by
   rw [znorm_mul]; rfl
 
 def norm_add_le_max_norm (a b: PadicRat p) : norm (a + b) ≤ max (norm a) (norm b) := by
+  induction a, b using Rat.ind₂ with | mk a b =>
+  show norm' _ _ ≤ max (norm' _ _) (norm' _ _)
+  unfold norm'
+  simp
   sorry
 
 def norm_nonneg' (a: PadicRat p) : 0 ≤ norm a := by
