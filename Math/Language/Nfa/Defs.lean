@@ -7,7 +7,8 @@ structure Nfa (σ α: Type*) where
 
 namespace Nfa
 
-def stepSet (nfa: Nfa σ α) (a: σ) (states: Set α) : Set α := (⋃states.image (nfa.step a))
+def stepSet (nfa: Nfa σ α) (a: σ) (states: Set α) : Set α :=
+  states.bind (nfa.step a)
 
 def runWith (nfa: Nfa σ α) (states: Set α) : List σ -> Set α
 | [] => states
@@ -158,13 +159,8 @@ def single_language [DecidableEq σ] (x: σ) : (single x).Language = {[x]} := by
     apply And.intro _ rfl
     unfold run runWith runWith
       stepSet
-    rw [Set.mem_sUnion]
-    exists {true}
-    apply And.intro _ rfl
-    rw [Set.mem_image]
+    rw [Set.mem_bind]
     exists false
-    apply And.intro rfl
-    ext b
     simp
   · intro h
     match l with
@@ -193,5 +189,67 @@ def single_language [DecidableEq σ] (x: σ) : (single x).Language = {[x]} := by
       simp at h
       rw [single_dead_state] at h
       contradiction
+
+@[simp]
+def alt_step' (a: Nfa σ α) (b: Nfa σ β) (x: σ) : α ⊕ β -> Set (α ⊕ β)
+| .inl s => (a.step x s).image .inl
+| .inr s => (b.step x s).image .inr
+
+def alt (a: Nfa σ α) (b: Nfa σ β) : Nfa σ (α ⊕ β) where
+  step := alt_step' a b
+  start := a.start.sum b.start
+  accept := a.accept.sum b.accept
+
+@[simp] def alt_step (a: Nfa σ α) (b: Nfa σ β) : (alt a b).step = alt_step' a b := rfl
+@[simp] def alt_start (a: Nfa σ α) (b: Nfa σ β) : (alt a b).start = a.start.sum b.start := rfl
+@[simp] def alt_accept (a: Nfa σ α) (b: Nfa σ β) : (alt a b).accept = a.accept.sum b.accept := rfl
+
+def alt_stepSet (a: Nfa σ α) (b: Nfa σ β) (sa: Set α) (sb: Set β) (w: σ) : (alt a b).stepSet w (sa.sum sb) = (a.stepSet w sa).sum (b.stepSet w sb) := by
+  unfold stepSet
+  rw [Set.sum_bind, alt_step]
+  unfold alt_step'
+  simp [alt_step']
+  rw [←Function.comp_def, ←Function.comp_def, Set.bind_image, Set.bind_image]
+  rw [←Set.sum_eq_image_union]
+
+def alt_runWith (a: Nfa σ α) (b: Nfa σ β) (sa: Set α) (sb: Set β) : (alt a b).runWith (sa.sum sb) word = (a.runWith sa word).sum (b.runWith sb word) := by
+  induction word generalizing sa sb with
+  | nil => rfl
+  | cons w word ih => simp [runWith, alt_stepSet, ih]
+
+def alt_run (a: Nfa σ α) (b: Nfa σ β) : (alt a b).run word = (a.run word).sum (b.run word) := by
+  unfold run
+  simp [alt_runWith]
+
+def alt_language (a: Nfa σ α) (b: Nfa σ β) : (alt a b).Language = a.Language ∪ b.Language := by
+  ext word
+  apply Iff.intro
+  · intro h
+    obtain ⟨x, hx, h⟩ := h
+    simp at h
+    rw [Set.sum_eq_image_union] at h
+    rcases h with ⟨x, h₁, rfl⟩ | ⟨x, h₁, rfl⟩
+    · left
+      exists x
+      apply And.intro _ h₁
+      rw [alt_run] at hx
+      simpa using hx
+    · right
+      exists x
+      apply And.intro _ h₁
+      rw [alt_run] at hx
+      simpa using hx
+  · intro h
+    rcases h with ⟨s, hs, h₀⟩ | ⟨s, hs, h₀⟩
+    · exists .inl s
+      apply And.intro
+      · clear h₀
+        simpa [alt_run]
+      · simpa [alt_accept]
+    · exists .inr s
+      apply And.intro
+      · clear h₀
+        simpa [alt_run]
+      · simpa [alt_accept]
 
 end Nfa

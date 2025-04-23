@@ -52,7 +52,7 @@ def bdd_above_iff (S: Set ℝ≥0) : S.BoundedAbove ↔ (S.image orderEmbedReal)
     · intro ⟨b, hb⟩
       exists b.val
       rwa [←mem_upper_bounds_iff]
-  · rw [Set.not_nonempty _ h, Set.empty_image]
+  · rw [Set.not_nonempty _ h, Set.image_empty]
     apply Iff.intro
     intro
     exists 0

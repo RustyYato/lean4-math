@@ -216,12 +216,18 @@ def sInter_sub (a: Set α) (s: Set (Set α)): a ∈ s -> ⋂s ⊆ a := by
   assumption
 
 def preimage (a: Set α) (f: β -> α) : Set β := mk fun x => f x ∈ a
-def mem_preimage {a: Set α} {f: β -> α} : ∀{x}, x ∈ a.preimage f ↔ f x ∈ a := Iff.refl _
-def image (a: Set α) (f: α -> β) : Set β := mk fun x => ∃a' ∈ a, x = f a'
+@[simp] def mem_preimage {a: Set α} {f: β -> α} : ∀{x}, x ∈ a.preimage f ↔ f x ∈ a := Iff.refl _
+def image (f: α -> β) (a: Set α) : Set β := mk fun x => ∃a' ∈ a, x = f a'
 def mem_image {a: Set α} {f: α -> β} : ∀{x}, x ∈ a.image f ↔ ∃a' ∈ a, x = f a' := Iff.refl _
 def mem_image' {a: Set α} {f: α -> β} (h: x ∈ a) : f x ∈ a.image f := by
   apply mem_image.mpr
   exists x
+def mem_image_of_inj (a: Set α) (f: α -> β) (h: Function.Injective f) : f x ∈ a.image f ↔ x ∈ a := by
+  apply Iff.intro
+  intro ⟨_, _, g⟩
+  cases h g
+  assumption
+  apply mem_image'
 def range (f: α -> β) : Set β := mk fun x => ∃a', x = f a'
 def mem_range {f: α -> β} : ∀{x}, x ∈ range f ↔ ∃a', x = f a' := Iff.rfl
 
@@ -240,7 +246,7 @@ def mem_powerset {a: Set α} : ∀{x}, x ∈ a.powerset ↔ x ⊆ a := Iff.refl 
 def compl (a: Set α) : Set α := mk fun x => x ∉ a
 instance : SetComplement (Set α) where
   scompl := compl
-def mem_compl {a: Set α} : ∀{x}, x ∈ aᶜ ↔ x ∉ a := Iff.refl _
+@[simp] def mem_compl {a: Set α} : ∀{x}, x ∈ aᶜ ↔ x ∉ a := Iff.refl _
 
 def univ_compl : (⊤: Set α)ᶜ = ∅ := by
   apply ext_empty
@@ -256,8 +262,7 @@ def Nonempty (a: Set α) := ∃x, x ∈ a
 
 instance : Singleton α (Set α) where
   singleton a := mk fun x => x = a
-@[simp]
-def mem_singleton {a: α}: ∀{x}, x ∈ ({a}: Set α) ↔ x = a := Iff.refl _
+@[simp] def mem_singleton {a: α}: ∀{x}, x ∈ ({a}: Set α) ↔ x = a := Iff.refl _
 
 instance : Insert α (Set α) where
   insert a x := {a} ∪ x
@@ -538,7 +543,7 @@ def inter_sub_inter (a b c d: Set α) : a ⊆ c -> b ⊆ d -> a ∩ b ⊆ c ∩ 
   apply ac; assumption
   apply bd; assumption
 
-def sInter_union (a b: Set (Set α)) : ⋂(a ∪ b) = ⋂a ∩ ⋂b := by
+@[simp] def sInter_union (a b: Set (Set α)) : ⋂(a ∪ b) = ⋂a ∩ ⋂b := by
   ext x
   simp [mem_sInter, mem_union, mem_inter]
   apply Iff.intro
@@ -555,7 +560,7 @@ def sInter_union (a b: Set (Set α)) : ⋂(a ∪ b) = ⋂a ∩ ⋂b := by
   apply ha; assumption
   apply hb; assumption
 
-def sUnion_union (a b: Set (Set α)) : ⋃(a ∪ b) = ⋃a ∪ ⋃b := by
+@[simp] def sUnion_union (a b: Set (Set α)) : ⋃(a ∪ b) = ⋃a ∪ ⋃b := by
   ext x
   simp [mem_sUnion, mem_union]
   apply Iff.intro
@@ -571,6 +576,22 @@ def sUnion_union (a b: Set (Set α)) : ⋃(a ∪ b) = ⋃a ∪ ⋃b := by
     apply And.intro _ h)
   left; assumption
   right; assumption
+
+@[irreducible]
+def bind (a: Set α) (f: α -> Set β) : Set β := ⋃ a.image f
+
+unseal bind in
+def mem_bind {A: Set α} {f: α -> Set β} : ∀{x}, x ∈ A.bind f ↔  ∃a ∈ A, x ∈ f a := by
+  intro b
+  simp [bind, Set.mem_sUnion, Set.mem_image]
+  apply Iff.intro
+  intro ⟨_, ⟨x, _, rfl⟩, _⟩
+  exists x
+  intro ⟨t, ta, bt⟩
+  exists f t
+  apply And.intro _ bt
+  apply Set.mem_image'
+  assumption
 
 def singleton_sub (a: α) (b: Set α) : {a} ⊆ b ↔ a ∈ b := by
   simp [sub_def, mem_singleton]
@@ -595,12 +616,12 @@ instance : @Std.Commutative (Set α) (· ∪ ·) := ⟨union_comm⟩
 instance : @Std.Associative (Set α) (· ∪ ·) := ⟨union_assoc⟩
 
 @[simp]
-def pair_image (a b: α) (f: α -> β) : Set.image {a, b} f = {f a, f b} := by
+def pair_image (a b: α) (f: α -> β) : Set.image f {a, b} = {f a, f b} := by
   ext x
   simp [mem_pair, mem_image]
 
 @[simp]
-def singleton_image (a: α) (f: α -> β) : Set.image {a} f = {f a} := by
+def singleton_image (a: α) (f: α -> β) : Set.image f {a} = {f a} := by
   ext x
   simp [mem_image]
 
@@ -699,11 +720,20 @@ def empty_attach : (∅: Set α).attach = ∅ := by
   contradiction
 
 @[simp]
-def empty_image : (∅: Set α).image f = ∅ := by
+def image_empty : (∅: Set α).image f = ∅ := by
   apply ext_empty
   intro x h
   have ⟨_, _, _⟩  := mem_image.mp h
   contradiction
+
+@[simp]
+def bind_empty (f: α -> Set β) : bind ∅ f = ∅ := by
+  simp [bind]
+
+@[simp]
+def bind_singleton (a: α) (f: α -> Set β) : bind {a} f = f a := by
+  ext x
+  simp [mem_bind]
 
 def has_min (r: α -> α -> Prop) (wf: WellFounded r) (s: Set α) (h: s.Nonempty):
   ∃x ∈ s, ∀y ∈ s, ¬r y x := by
@@ -822,6 +852,7 @@ def image_id' (s: Set α) {f: α -> α} (h: ∀x, f x = x) : s.image f = s := by
   rw [h]
   trivial
 
+@[simp]
 def image_image (s: Set α) (f: α -> β) (g: β -> γ) : (s.image f).image g = s.image (g ∘ f) := by
   ext x
   apply Iff.intro
@@ -860,6 +891,18 @@ def image_preimage (s: Set α) (f: α -> β) (h: Function.Injective f) : (s.imag
   intro mem
   exists x
 
+@[simp] def image_union (a b: Set α) (f: α -> β) : (a ∪ b).image f = a.image f ∪ b.image f := by
+  ext x
+  simp [mem_union, mem_image]
+  apply Iff.intro
+  rintro ⟨x, hx, rfl⟩
+  cases hx
+  left; exists x
+  right; exists x
+  intro h; rcases h with ⟨x, hx, rfl⟩ | ⟨x, hx, rfl⟩
+  exists x; apply And.intro _ rfl; left; assumption
+  exists x; apply And.intro _ rfl; right; assumption
+
 def image_inter' (A B: Set α) (f: α -> β) : (A ∩ B).image f ⊆ A.image f ∩ B.image f := by
   intro b
   intro ⟨a, ⟨a_in_A, a_in_B⟩, eq⟩
@@ -889,13 +932,33 @@ def attach_image_val (s: Set α) : s.attach.image Subtype.val = s := by
   intro mem
   exists ⟨x, mem⟩
 
+def sum (a: Set α) (b: Set β) : Set (α ⊕ β) := Set.mk fun
+  | .inl x => x ∈ a
+  | .inr x => x ∈ b
 def prod (a: Set α) (b: Set β) : Set (α × β) := Set.mk fun x => x.fst ∈ a ∧ x.snd ∈ b
 
-def image_empty : Set.image ∅ f = ∅ := by
-  apply ext_empty
-  intro x ⟨_, _, _⟩
-  contradiction
+@[simp]
+def inl_mem_sum {a: Set α} {b: Set β} : ∀{x: α}, .inl x ∈ sum a b ↔ x ∈ a := Iff.rfl
+@[simp]
+def inr_mem_sum {a: Set α} {b: Set β} : ∀{x: β}, .inr x ∈ sum a b ↔ x ∈ b := Iff.rfl
 
+def sum_eq_image_union (a: Set α) (b: Set β) : a.sum b = a.image .inl ∪ b.image .inr := by
+  ext x
+  cases x
+  · simp [mem_union]; rw [mem_image_of_inj a Sum.inl (fun _ _ => Sum.inl.inj)]
+    apply Iff.intro .inl
+    intro h
+    rcases h with h | ⟨_, _, _⟩
+    assumption
+    contradiction
+  · simp [mem_union]; rw [mem_image_of_inj b Sum.inr (fun _ _ => Sum.inr.inj)]
+    apply Iff.intro .inr
+    intro h
+    rcases h with ⟨_, _, _⟩ | h
+    contradiction
+    assumption
+
+@[simp]
 def image_insert (a: α) (as: Set α) : (insert a as: Set α).image f = (insert (f a) (as.image f)) := by
   ext x
   apply Iff.intro
@@ -922,6 +985,39 @@ def image_insert (a: α) (as: Set α) : (insert a as: Set α).image f = (insert 
   apply And.intro _ rfl
   rw [mem_insert]
   right; assumption
+
+@[simp]
+def bind_insert (a: α) (s: Set α) (f: α -> Set β) : bind (insert a s) f = f a ∪ s.bind f := by
+  simp [bind]
+
+@[simp]
+def bind_union (a b: Set α) (f: α -> Set β) : bind (a ∪ b) f = a.bind f ∪ b.bind f := by
+  simp [bind]
+
+@[simp]
+def image_bind (a: Set γ) (g: γ -> α) (f: α -> Set β) : bind (a.image g) f = a.bind (f ∘ g) := by
+  simp [bind]
+
+@[simp]
+def bind_image (a: Set α) (g: β -> γ) (f: α -> Set β) : bind a ((Set.image g) ∘ f) = (a.bind f).image g := by
+  ext x
+  apply Iff.intro
+  rw [mem_bind]
+  rintro ⟨t, ht, hx⟩
+  obtain ⟨w, _, rfl⟩ := hx
+  apply mem_image'
+  rw [mem_bind]
+  exists t
+  simp [mem_bind, mem_image]
+  rintro b a ha hb rfl
+  exists a
+  apply And.intro
+  assumption
+  exists b
+
+@[simp]
+def sum_bind {a: Set α} {b: Set β} (f: α ⊕ β -> Set γ) : (a.sum b).bind f = a.bind (f ∘ .inl) ∪ b.bind (f ∘ .inr) := by
+  simp [sum_eq_image_union]
 
 def image_pair (a b: α) : ({a, b}: Set α).image f = ({f a, f b}: Set _) := by
   rw [image_insert, singleton_eq_insert_empty, image_insert, image_empty,
@@ -1030,7 +1126,7 @@ def image_eq_range (f : α → β) (s : Set α) : s.image f = range fun x : s =>
   apply Set.mem_image'
   assumption
 
-def range_eq_image (f : α → β) : range f = Set.image ⊤ f := by
+def range_eq_image (f : α → β) : range f = Set.image f ⊤ := by
   ext x
   simp [mem_range, mem_image, mem_univ]
 
@@ -1056,7 +1152,7 @@ def nonempty_range  [h : _root_.Nonempty ι] (f : ι → α) : (range f).Nonempt
   obtain ⟨x⟩ := h
   refine ⟨f x, Set.mem_range'⟩
 
-def nonempty_image {s: Set ι} (h: Nonempty s) (f : ι → α) : (s.image f).Nonempty := by
+def nonimage_empty {s: Set ι} (h: Nonempty s) (f : ι → α) : (s.image f).Nonempty := by
   obtain ⟨x, h⟩ := h
   refine ⟨f x, Set.mem_image' h⟩
 

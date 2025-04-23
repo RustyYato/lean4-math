@@ -65,7 +65,7 @@ def isLUB_ciSup [Nonempty ι] {f : ι → α} (H : BoundedAbove (range f)) :
 def isLUB_ciSup_set {f : β → α} {s : Set β} (H : BoundedAbove (s.image f)) (Hne : s.Nonempty) :
     IsLUB (s.image f) (⨆i: s, f i) := by
   rw [← sSup_image']
-  exact isLUB_csSup (nonempty_image Hne _) H
+  exact isLUB_csSup (nonimage_empty Hne _) H
 
 def isGLB_csInf (ne : s.Nonempty) (H : BoundedBelow s) : IsGLB s (⨅ s) :=
   isLUB_csSup (α := Opposite α) ne H
