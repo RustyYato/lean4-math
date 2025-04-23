@@ -41,7 +41,7 @@ def preimage (f: α →+* β) (i: Ideal β) : Ideal α where
     assumption
 
 def image (f: α →+* β) (i: Ideal α) (h: Function.Surjective f) : Ideal β where
-  carrier := Set.image i.carrier f
+  carrier := Set.image f i.carrier
   mem_zero := by
     rw [←map_zero f]
     apply Set.mem_image'

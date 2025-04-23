@@ -354,7 +354,7 @@ def instIsCompleteSemiLatticeSup
   : IsCompleteSemiLatticeSup β :=
   h.toEmbedding.instIsCompleteSemiLatticeSup <| by
   intro s
-  show h _ = ⨆ (Set.image _ h)
+  show h _ = ⨆ (Set.image h _)
   rw [hs]
   rw [h.symm_coe]
   congr

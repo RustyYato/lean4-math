@@ -714,7 +714,7 @@ theorem tendsto_principal {f : α → β} {l : Filter α} {s : Set β} :
 end Limit
 
 /-- The tail of a sequence is the set of all values that occur after N -/
-def tail (seq: ℕ -> α) (N: ℕ) : Set α := Set.image (Set.Ici N) seq
+def tail (seq: ℕ -> α) (N: ℕ) : Set α := Set.image seq (Set.Ici N)
 
 def of_seq (seq: ℕ -> α) : Filter α where
   set := Set.mk fun A => ∃N, tail seq N ⊆ A

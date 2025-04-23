@@ -138,7 +138,7 @@ instance : Set.IsFinite ({a}: Set α) := by
 instance {a: α} {as: Set α} [IsFinite as] : Set.IsFinite (Insert.insert a as) :=
   inferInstanceAs (Set.IsFinite ({ a } ∪ as))
 
-instance {as: Set α} {f: α -> β} [ha: Set.IsFinite as] : Set.IsFinite (Set.image as f) := by
+instance {as: Set α} {f: α -> β} [ha: Set.IsFinite as] : Set.IsFinite (Set.image f as) := by
   apply IsFinite.ofEmbed as
   apply Embedding.mk
   case toFun =>

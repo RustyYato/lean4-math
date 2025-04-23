@@ -355,7 +355,7 @@ def induced (f: α -> β) (t: Topology β) : Topology α where
     rw [Set.preimage_sUnion, Set.image_image]
     show ⋃(S.attach.image fun _ => Set.preimage _ _) = _
     conv => {
-      lhs; arg 1; arg 2; intro x
+      lhs; arg 1; arg 1; intro x
       rw [this x.val x.property]
     }
     rw [Set.attach_image_val]

@@ -188,7 +188,7 @@ def AddSubgroup.preimage [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAd
     assumption
 
 def Subgroup.image [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) (s: Subgroup α) : Subgroup β where
-  carrier := Set.image s f
+  carrier := Set.image f s
   mem_one := by
     rw [←map_one f]
     apply Set.mem_image'
@@ -208,7 +208,7 @@ def Subgroup.image [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α 
     assumption
 
 def AddSubgroup.image [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) (s: AddSubgroup α) : AddSubgroup β where
-  carrier := Set.image s f
+  carrier := Set.image f s
   mem_zero := by
     rw [←map_zero f]
     apply Set.mem_image'
