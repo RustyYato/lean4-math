@@ -19,6 +19,6 @@ inductive Matches {σ: Type*} : Regex σ -> List σ -> Prop where
 | seq (a b: Regex σ) (left right: List σ) : Matches a left -> Matches b right -> Matches (.seq a b) (left ++ right)
 
 protected def Language (r: Regex σ) : Langauge σ where
-  words := Set.mk r.Matches
+  Mem := r.Matches
 
 end Regex

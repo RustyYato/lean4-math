@@ -7,11 +7,11 @@ structure Nfa (σ α: Type*) where
 
 namespace Nfa
 
-def stepAll (nfa: Nfa σ α) (states: Set α) (a: σ) : Set α := (⋃states.image (nfa.step a))
+def stepSet (nfa: Nfa σ α) (a: σ) (states: Set α) : Set α := (⋃states.image (nfa.step a))
 
 def runWith (nfa: Nfa σ α) (states: Set α) : List σ -> Set α
 | [] => states
-| a::as => nfa.runWith (nfa.stepAll states a) as
+| a::as => nfa.runWith (nfa.stepSet a states) as
 
 def run (nfa: Nfa σ α) (word: List σ) : Set α :=
   nfa.runWith nfa.start word
@@ -20,6 +20,178 @@ def Matches (nfa: Nfa σ α) (word: List σ) : Prop :=
   (nfa.run word ∩ nfa.accept).Nonempty
 
 def Language (nfa: Nfa σ α) : Langauge σ where
-  words := Set.mk nfa.Matches
+  Mem := nfa.Matches
+
+-- if running the nfa from this state set never hits an accepting node
+-- then this is a dead state
+def IsDeadStateSet (nfa: Nfa σ α) (states: Set α) :=
+  ∀word: List σ, nfa.runWith states word ∩ nfa.accept = ∅
+
+-- a state set is reachable from another if there is a word
+-- which transitions the nfa from `b` to `a`
+def IsReachableFrom (nfa: Nfa σ α) (a b: Set α) :=
+  ∃word, nfa.runWith b word = a
+
+def ReachableStates (nfa: Nfa σ α) (s: Set α) :=
+  Set.mk fun a => nfa.IsReachableFrom a s
+
+def ReachableStates.ofIdempot (nfa: Nfa σ α) (s: Set α) :
+  (∀x, nfa.stepSet x s = s) -> nfa.ReachableStates s = {s} := by
+  intro h
+  ext t
+  apply flip Iff.intro
+  · rintro rfl
+    exists []
+  · rintro ⟨word, rfl⟩
+    show _ = s
+    induction word with
+    | nil => rfl
+    | cons w ws ih =>
+      unfold runWith
+      rw [h, ih]
+
+def runWith_append (nfa: Nfa σ α) (a b: Set α) (w₀ w₁: List σ) :
+  nfa.runWith a w₀ = b ->
+  nfa.runWith a (w₀ ++ w₁) = nfa.runWith b w₁ := by
+  intro h
+  induction w₀ generalizing a with
+  | nil =>
+    replace h : a = b := h
+    subst a
+    rfl
+  | cons w ws ih =>
+    rw [List.cons_append, runWith]
+    apply ih
+    assumption
+
+def IsDeadStateSet.ofIsReachableFrom (nfa: Nfa σ α) (a b: Set α)
+  (hb: nfa.IsDeadStateSet b) (h: nfa.IsReachableFrom a b) : nfa.IsDeadStateSet a := by
+  obtain ⟨word, hx⟩ := h
+  intro w
+  have : nfa.runWith b (word ++ w) = nfa.runWith a w := by
+    apply runWith_append
+    assumption
+  rw [←nfa.runWith_append b a word w]
+  clear this
+  apply hb
+  assumption
+
+def IsDeadStateSet.ofStep (nfa: Nfa σ α) (a: Set α)
+  (ha: a ∩ nfa.accept = ∅)
+  (h: ∀x, nfa.IsDeadStateSet (nfa.stepSet x a)) : nfa.IsDeadStateSet a := by
+  intro word
+  induction word
+  assumption
+  apply h
+
+def IsDeadStateSet.ofIdempot (nfa: Nfa σ α) (a: Set α)
+  (ha: a ∩ nfa.accept = ∅)
+  (h: ∀x, (nfa.stepSet x a) = a) : nfa.IsDeadStateSet a := by
+  intro word
+  induction word
+  assumption
+  unfold runWith
+  rw [h]
+  assumption
+
+def empty (σ α: Type*) : Nfa σ α where
+  step _ _ := ∅
+  start := ∅
+  accept := ∅
+
+def empty_reachable : (empty σ α).ReachableStates (empty σ α).start = {∅} := by
+  apply ReachableStates.ofIdempot
+  intro x
+  show stepSet _ _ ∅ = ∅
+  unfold stepSet
+  simp
+
+def empty_run : (empty σ α).run xs = ∅ := by
+  have : (empty σ α).run xs ∈ (empty σ α).ReachableStates (empty σ α).start := by exists xs
+  rw [empty_reachable] at this
+  assumption
+
+def empty_language : (empty σ α).Language = ∅ := by
+  apply Set.ext_empty
+  intro l h
+  replace h : (empty σ α).Matches l := h
+  unfold Matches at h
+  rw [empty_run] at h
+  simp at h
+  contradiction
+
+def single [DecidableEq σ] (x: σ) : Nfa σ Bool where
+  step a s :=
+    if a = x ∧ !s then
+      {true}
+    else
+      ∅
+  start := {false}
+  accept := {true}
+
+@[simp]
+def single_start [DecidableEq σ] (x: σ):
+  (single x).start = {false} := rfl
+
+@[simp]
+def single_step [DecidableEq σ] (x: σ):
+  (single x).step a s =
+    if a = x ∧ !s then
+      {true}
+    else
+      ∅ := rfl
+
+def single_dead_state [DecidableEq σ] (x: σ) : (single x).IsDeadStateSet ∅ := by
+  apply IsDeadStateSet.ofIdempot
+  simp
+  intro y
+  simp [stepSet]
+
+def single_language [DecidableEq σ] (x: σ) : (single x).Language = {[x]} := by
+  ext l
+  simp
+  apply flip Iff.intro
+  · rintro rfl
+    show Matches _ _
+    unfold Matches
+    exists true
+    apply And.intro _ rfl
+    unfold run runWith runWith
+      stepSet
+    rw [Set.mem_sUnion]
+    exists {true}
+    apply And.intro _ rfl
+    rw [Set.mem_image]
+    exists false
+    apply And.intro rfl
+    ext b
+    simp
+  · intro h
+    match l with
+    | [] =>
+      replace h : (single x).Matches [] := h
+      unfold Matches run runWith at h
+      obtain ⟨x, rfl, h₁⟩ := h
+      contradiction
+    | [y] =>
+      congr
+      replace h : (single x).Matches [y] := h
+      unfold Matches run at h
+      simp [runWith, stepSet, single] at h
+      split at h
+      assumption
+      simp at h
+      contradiction
+    | x₀::x₁::xs =>
+      replace h : (single x).Matches (x₀::x₁::xs) := h
+      unfold Matches run at h
+      simp [runWith, stepSet] at h
+      split at h
+      simp [runWith] at h
+      rw [single_dead_state] at h
+      contradiction
+      simp at h
+      rw [single_dead_state] at h
+      contradiction
 
 end Nfa
