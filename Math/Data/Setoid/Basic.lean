@@ -57,6 +57,10 @@ def subtypeSetoid (P: α -> Prop) [Setoid α] : Setoid (Subtype P) where
     trans := Relation.trans'
   }
 
+def eqSetoid : Setoid α where
+  r a b := a = b
+  iseqv := Relation.equiv _
+
 end Setoid
 
 def Quotient.apply
