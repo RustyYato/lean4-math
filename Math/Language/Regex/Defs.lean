@@ -1,6 +1,7 @@
 import Math.Language.Defs
 
 inductive Regex (σ: Type*) where
+| nil
 | empty
 | single (a: σ)
 | alt (a b: Regex σ)
@@ -20,6 +21,10 @@ inductive Matches {σ: Type*} : Regex σ -> List σ -> Prop where
 
 protected def Langauge (r: Regex σ) : Langauge σ where
   Mem := r.Matches
+
+def language_nil : (Regex.nil: Regex σ).Langauge = ∅ := by
+  ext
+  apply Iff.intro nofun nofun
 
 def language_empty : (Regex.empty: Regex σ).Langauge = {[]} := by
   ext
