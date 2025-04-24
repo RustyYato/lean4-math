@@ -3,7 +3,7 @@ import Math.Language.Defs
 structure Nfa (σ α: Type*) where
   step: σ -> α -> Set α
   start: Set α
-  accept: Set α
+  accept: α -> Bool
 
 namespace Nfa
 
@@ -17,8 +17,10 @@ def runWith (nfa: Nfa σ α) (states: Set α) : List σ -> Set α
 def run (nfa: Nfa σ α) (word: List σ) : Set α :=
   nfa.runWith nfa.start word
 
+def accepting_states (nfa: Nfa σ α) : Set α := Set.mk <| (· = true) ∘ nfa.accept
+
 def Matches (nfa: Nfa σ α) (word: List σ) : Prop :=
-  (nfa.run word ∩ nfa.accept).Nonempty
+  (nfa.run word ∩ nfa.accepting_states).Nonempty
 
 def Language (nfa: Nfa σ α) : Langauge σ where
   Mem := nfa.Matches
@@ -26,7 +28,7 @@ def Language (nfa: Nfa σ α) : Langauge σ where
 -- if running the nfa from this state set never hits an accepting node
 -- then this is a dead state
 def IsDeadStateSet (nfa: Nfa σ α) (states: Set α) :=
-  ∀word: List σ, nfa.runWith states word ∩ nfa.accept = ∅
+  ∀word: List σ, nfa.runWith states word ∩ nfa.accepting_states = ∅
 
 -- a state set is reachable from another if there is a word
 -- which transitions the nfa from `b` to `a`
@@ -78,7 +80,7 @@ def IsDeadStateSet.ofIsReachableFrom (nfa: Nfa σ α) (a b: Set α)
   assumption
 
 def IsDeadStateSet.ofStep (nfa: Nfa σ α) (a: Set α)
-  (ha: a ∩ nfa.accept = ∅)
+  (ha: a ∩ nfa.accepting_states = ∅)
   (h: ∀x, nfa.IsDeadStateSet (nfa.stepSet x a)) : nfa.IsDeadStateSet a := by
   intro word
   induction word
@@ -86,7 +88,7 @@ def IsDeadStateSet.ofStep (nfa: Nfa σ α) (a: Set α)
   apply h
 
 def IsDeadStateSet.ofIdempot (nfa: Nfa σ α) (a: Set α)
-  (ha: a ∩ nfa.accept = ∅)
+  (ha: a ∩ nfa.accepting_states = ∅)
   (h: ∀x, (nfa.stepSet x a) = a) : nfa.IsDeadStateSet a := by
   intro word
   induction word
@@ -98,7 +100,7 @@ def IsDeadStateSet.ofIdempot (nfa: Nfa σ α) (a: Set α)
 def empty (σ α: Type*) : Nfa σ α where
   step _ _ := ∅
   start := ∅
-  accept := ∅
+  accept _ := false
 
 def empty_reachable : (empty σ α).ReachableStates (empty σ α).start = {∅} := by
   apply ReachableStates.ofIdempot
@@ -128,7 +130,7 @@ def single [DecidableEq σ] (x: σ) : Nfa σ Bool where
     else
       ∅
   start := {false}
-  accept := {true}
+  accept x := x = true
 
 @[simp]
 def single_start [DecidableEq σ] (x: σ):
@@ -198,11 +200,15 @@ def alt_step' (a: Nfa σ α) (b: Nfa σ β) (x: σ) : α ⊕ β -> Set (α ⊕ �
 def alt (a: Nfa σ α) (b: Nfa σ β) : Nfa σ (α ⊕ β) where
   step := alt_step' a b
   start := a.start.sum b.start
-  accept := a.accept.sum b.accept
+  accept
+  | .inl x => a.accept x
+  | .inr x => b.accept x
 
 @[simp] def alt_step (a: Nfa σ α) (b: Nfa σ β) : (alt a b).step = alt_step' a b := rfl
 @[simp] def alt_start (a: Nfa σ α) (b: Nfa σ β) : (alt a b).start = a.start.sum b.start := rfl
-@[simp] def alt_accept (a: Nfa σ α) (b: Nfa σ β) : (alt a b).accept = a.accept.sum b.accept := rfl
+@[simp] def alt_accept (a: Nfa σ α) (b: Nfa σ β) : (alt a b).accepting_states = a.accepting_states.sum b.accepting_states := by
+  ext x
+  cases x <;> rfl
 
 def alt_stepSet (a: Nfa σ α) (b: Nfa σ β) (sa: Set α) (sb: Set β) (w: σ) : (alt a b).stepSet w (sa.sum sb) = (a.stepSet w sa).sum (b.stepSet w sb) := by
   unfold stepSet
@@ -251,5 +257,19 @@ def alt_language (a: Nfa σ α) (b: Nfa σ β) : (alt a b).Language = a.Language
       · clear h₀
         simpa [alt_run]
       · simpa [alt_accept]
+
+def seq_step' (a: Nfa σ α) (b: Nfa σ β) (x: σ) : α ⊕ β -> Set (α ⊕ β)
+| .inl s => (a.step x s).image .inl ∪ if a.accept s then b.start.image .inr else ∅
+| .inr s => (b.step x s).image .inr
+
+def seq (a: Nfa σ α) (b: Nfa σ β) : Nfa σ (α ⊕ β) where
+  step := seq_step' a b
+  start := a.start.image .inl
+  accept
+  | .inl _ => false
+  | .inr x => b.accept x
+
+-- def seq_language (a: Nfa σ α) (b: Nfa σ β) : (seq a b).Language = a.Language.seq b.Language := by
+--   sorry
 
 end Nfa
