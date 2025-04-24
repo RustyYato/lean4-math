@@ -19,34 +19,34 @@ inductive Matches {σ: Type*} : Regex σ -> List σ -> Prop where
 | star_cons (a: Regex σ) (left right: List σ) : Matches a left -> Matches (.star a) right -> Matches (.star a) (left ++ right)
 | seq (a b: Regex σ) (left right: List σ) : Matches a left -> Matches b right -> Matches (.seq a b) (left ++ right)
 
-protected def Langauge (r: Regex σ) : Langauge σ where
+protected def Language (r: Regex σ) : Language σ where
   Mem := r.Matches
 
-def language_nil : (Regex.nil: Regex σ).Langauge = ∅ := by
+def language_nil : (Regex.nil: Regex σ).Language = ∅ := by
   ext
   apply Iff.intro nofun nofun
 
-def language_empty : (Regex.empty: Regex σ).Langauge = {[]} := by
+def language_empty : (Regex.empty: Regex σ).Language = {[]} := by
   ext
-  simp [Regex.Langauge]
+  simp [Regex.Language]
   apply Iff.intro
   intro h; cases h
   rfl
   rintro rfl
   apply Matches.empty
 
-def language_single : (Regex.single a).Langauge = {[a]} := by
+def language_single : (Regex.single a).Language = {[a]} := by
   ext
-  simp [Regex.Langauge]
+  simp [Regex.Language]
   apply Iff.intro
   intro h; cases h
   rfl
   rintro rfl
   apply Matches.single
 
-def language_alt (a b: Regex σ) : (Regex.alt a b).Langauge = a.Langauge ∪ b.Langauge := by
+def language_alt (a b: Regex σ) : (Regex.alt a b).Language = a.Language ∪ b.Language := by
   ext
-  simp [Regex.Langauge]
+  simp [Regex.Language]
   apply Iff.intro
   intro h; cases h
   left; assumption
@@ -56,12 +56,12 @@ def language_alt (a b: Regex σ) : (Regex.alt a b).Langauge = a.Langauge ∪ b.L
   apply Matches.alt_left; assumption
   apply Matches.alt_right; assumption
 
-def language_seq (a b: Regex σ) : (Regex.seq a b).Langauge = a.Langauge.seq b.Langauge := by
+def language_seq (a b: Regex σ) : (Regex.seq a b).Language = a.Language.seq b.Language := by
   ext
-  simp [Regex.Langauge]
+  simp [Regex.Language]
   apply Iff.intro
   intro h; cases h
-  apply Langauge.SeqMatches.mk
+  apply Language.SeqMatches.mk
   assumption
   assumption
   intro h
@@ -70,17 +70,17 @@ def language_seq (a b: Regex σ) : (Regex.seq a b).Langauge = a.Langauge.seq b.L
   assumption
   assumption
 
-def language_star (a: Regex σ) : (Regex.star a).Langauge = a.Langauge.star := by
+def language_star (a: Regex σ) : (Regex.star a).Language = a.Language.star := by
   ext
-  simp [Regex.Langauge]
+  simp [Regex.Language]
   apply Iff.intro
   · generalize ha':a.star = a'
     intro h
     induction h with
     | empty | single | alt_left | alt_right | seq => contradiction
-    | star_nil => apply Langauge.StarMatches.nil
+    | star_nil => apply Language.StarMatches.nil
     | star_cons _ _ _ _ _ ih₀ ih₁ =>
-      apply Langauge.StarMatches.cons; cases ha'; assumption
+      apply Language.StarMatches.cons; cases ha'; assumption
       apply ih₁
       assumption
   . intro h

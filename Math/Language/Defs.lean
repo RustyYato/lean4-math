@@ -1,25 +1,25 @@
 import Math.Data.Set.Basic
 
-abbrev Langauge (σ: Type*) := Set (List σ)
+abbrev Language (σ: Type*) := Set (List σ)
 
-namespace Langauge
+namespace Language
 
-inductive SeqMatches (a b: Langauge σ) : List σ -> Prop where
+inductive SeqMatches (a b: Language σ) : List σ -> Prop where
 | mk (left right: List σ) :
   left ∈ a -> right ∈ b ->
   SeqMatches a b (left ++ right)
 
-def seq (a b: Langauge σ) : Langauge σ where
+def seq (a b: Language σ) : Language σ where
   Mem := SeqMatches a b
 
-inductive StarMatches (a: Langauge σ) : List σ -> Prop where
+inductive StarMatches (a: Language σ) : List σ -> Prop where
 | nil : StarMatches a []
 | cons (left right: List σ) :
   left ∈ a ->
   StarMatches a right ->
   StarMatches a (left ++ right)
 
-def star (a: Langauge σ) : Langauge σ where
+def star (a: Language σ) : Language σ where
   Mem := StarMatches a
 
-end Langauge
+end Language

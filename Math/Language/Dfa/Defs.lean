@@ -17,7 +17,7 @@ def run (nfa: Dfa σ α) (word: List σ) : α :=
 def Matches (nfa: Dfa σ α) (word: List σ) : Prop :=
   nfa.run word ∈ nfa.accept
 
-def Language (dfa: Dfa σ α) : Langauge σ where
+def Language (dfa: Dfa σ α) : Language σ where
   Mem := dfa.Matches
 
 end Dfa

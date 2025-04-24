@@ -22,7 +22,7 @@ def accepting_states (nfa: Nfa σ α) : Set α := Set.mk <| (· = true) ∘ nfa.
 def Matches (nfa: Nfa σ α) (word: List σ) : Prop :=
   (nfa.run word ∩ nfa.accepting_states).Nonempty
 
-def Language (nfa: Nfa σ α) : Langauge σ where
+def Language (nfa: Nfa σ α) : Language σ where
   Mem := nfa.Matches
 
 -- if running the nfa from this state set never hits an accepting node
