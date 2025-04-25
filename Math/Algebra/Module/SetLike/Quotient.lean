@@ -46,7 +46,7 @@ def ofCon (c: LinearCon R M) : Submodule R M where
     apply resp_add
     assumption
     assumption
-  mem_smul' r a h := by
+  mem_smul r a h := by
     show c 0 (r • a)
     rw [←smul_zero r]
     apply resp_smul

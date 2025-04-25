@@ -23,7 +23,7 @@ def span (U: Set M) : Submodule R M where
     rintro a b ⟨fa, ha, rfl⟩ ⟨fb, hb, rfl⟩
     exists fa + fb
     rw [map_add]
-  mem_smul' := by
+  mem_smul := by
     rintro r _ ⟨f, hf, rfl⟩
     exists r • f
     rw [map_smul]

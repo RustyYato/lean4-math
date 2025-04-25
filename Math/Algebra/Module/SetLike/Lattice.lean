@@ -17,7 +17,7 @@ private instance builder : SetLike.LatticeBuilder (Submodule R M) where
     mem_add := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_add s <;> assumption
-    mem_smul' := by
+    mem_smul := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_smul s <;> assumption
   }
@@ -40,7 +40,7 @@ private instance builder : SetLike.LatticeBuilder (Submodule R M) where
     mem_add := by
       rintro _ _ rfl rfl
       rw [add_zero]; rfl
-    mem_smul' := by
+    mem_smul := by
       rintro _ _ rfl
       rw [smul_zero]; rfl
   }, by rintro _ _ rfl; apply Generate.zero⟩

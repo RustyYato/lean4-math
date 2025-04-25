@@ -25,7 +25,7 @@ def grading (i: ZMod 2) : Submodule R (CliffordAlgebra Q) where
   mem_add := by
     intro a b
     apply Grading.add i
-  mem_smul' := by
+  mem_smul := by
     intro r a h
     rw [smul_def]
     simp
