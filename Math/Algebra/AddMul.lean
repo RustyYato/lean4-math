@@ -108,6 +108,9 @@ instance [Pow α ℤ] : Pow αᵐᵒᵖ ℤ where
 instance [Mul α] : SMul αᵐᵒᵖ α where
   smul c x := x * c.get
 
+instance [Mul α] : SMul α αᵐᵒᵖ where
+  smul c x := .mk c * x
+
 instance [Add α] : Add αᵐᵒᵖ := ⟨(.mk <| ·.get + ·.get)⟩
 instance [Sub α] : Sub αᵐᵒᵖ := ⟨(.mk <| ·.get - ·.get)⟩
 instance [Neg α] : Neg αᵐᵒᵖ := ⟨(.mk <| -·.get)⟩

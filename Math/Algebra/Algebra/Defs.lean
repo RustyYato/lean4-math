@@ -12,13 +12,13 @@ class IsAlgebra (R A: Type*) [SemiringOps R] [SemiringOps A] [SMul R A] [Algebra
 
 export IsAlgebra (commutes smul_def)
 
--- class Algebra (R A: Type*) [SemiringOps A] [IsSemiring A] extends SemiringOps R, IsSemiring R, SMul R A, AlgebraMap R A where
---   commutes: ∀(r: R) (x: A), algebraMap r * x = x * algebraMap r
---   smul_def: ∀(r: R) (x: A), r • x = algebraMap r * x
+class Algebra (R A: Type*) [SemiringOps A] [IsSemiring A] extends SemiringOps R, IsSemiring R, SMul R A, AlgebraMap R A where
+  commutes: ∀(r: R) (x: A), algebraMap r * x = x * algebraMap r
+  smul_def: ∀(r: R) (x: A), r • x = algebraMap r * x
 
--- instance [SemiringOps A] [IsSemiring A] [a: Algebra R A] : IsAlgebra R A where
---   commutes := a.commutes
---   smul_def := a.smul_def
+instance [SemiringOps A] [IsSemiring A] [a: Algebra R A] : IsAlgebra R A where
+  commutes := a.commutes
+  smul_def := a.smul_def
 
 variable [SemiringOps R] [SemiringOps A] [SMul R A] [AlgebraMap R A] [IsSemiring A]
   [IsSemiring R] [IsAlgebra R A]
@@ -40,32 +40,31 @@ variable [IsCommMagma R] [IsSemiring R] [IsSemiring A] [SMul R A]
 -- a shortcut instance
 local instance : IsSemigroup A := inferInstance
 
--- abbrev Algebra.ofModule [IsModule R A]
---   (h₁ : ∀ (r : R) (x y : A), r • x * y = r • (x * y))
---   (h₂ : ∀ (r : R) (x y : A), x * r • y = r • (x * y)) : Algebra R A where
---   toFun r := r • (1: A)
---   map_zero := zero_smul _
---   map_one := one_smul _
---   map_add := add_smul _ _ _
---   map_mul := by
---     dsimp
---     intro x y
---     rw [h₁, one_mul, mul_smul]
---   commutes := by
---     intro r x
---     show (r • (1: A)) * x = x * (r • (1: A))
---     rw [h₁, one_mul, h₂, mul_one]
---   smul_def := by
---     intro r x
---     show r • x = (r • (1: A)) * x
---     rw [h₁, one_mul]
+abbrev Algebra.ofModule [IsModule R A]
+  (h₁ : ∀ (r : R) (x y : A), r • x * y = r • (x * y))
+  (h₂ : ∀ (r : R) (x y : A), x * r • y = r • (x * y)) : Algebra R A where
+  toFun r := r • (1: A)
+  map_zero := zero_smul _
+  map_one := one_smul _
+  map_add := add_smul _ _ _
+  map_mul := by
+    intro x y
+    rw [h₁, one_mul, mul_smul]
+  commutes := by
+    intro r x
+    show (r • (1: A)) * x = x * (r • (1: A))
+    rw [h₁, one_mul, h₂, mul_one]
+  smul_def := by
+    intro r x
+    show r • x = (r • (1: A)) * x
+    rw [h₁, one_mul]
 
--- def AlgebraMap.toAlgebra [AlgebraMap R A] (h : ∀(c: R) (x: A), algebraMap c * x = x * algebraMap c) : Algebra R A where
---   smul c x := algebraMap c * x
---   commutes := by
---     intro r x
---     rw [h]
---   smul_def _ _ := rfl
+def AlgebraMap.toAlgebra [AlgebraMap R A] (h : ∀(c: R) (x: A), algebraMap c * x = x * algebraMap c) : Algebra R A where
+  smul c x := algebraMap c * x
+  commutes := by
+    intro r x
+    rw [h]
+  smul_def _ _ := rfl
 
 instance [AlgebraMap R A] [IsAlgebra R A] : IsModule R A where
   one_smul x := by rw [smul_def, map_one, one_mul]
@@ -116,3 +115,65 @@ instance [SemiringOps R] [IsSemiring R] : IsAlgebra Nat R where
   smul_def a b := by
     rw [←natCast_mul_eq_nsmul]
     rfl
+
+section
+
+variable [SemiringOps R] [IsSemiring R] [SemiringOps A] [IsSemiring A] [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
+
+instance (priority := 500) : AlgebraMap Rᵐᵒᵖ A where
+  toFun r := algebraMap r.get
+  map_zero := map_zero algebraMap
+  map_add := map_add algebraMap
+  map_one := map_one algebraMap
+  map_mul := by
+    intro x y
+    simp
+    rw [map_mul, commutes]
+
+instance (priority := 500) : SMul Rᵐᵒᵖ A where
+  smul r a := r.get • a
+
+instance (priority := 500) : IsAlgebra Rᵐᵒᵖ A where
+  commutes := commutes (R := R)
+  smul_def := smul_def (R := R)
+
+instance : IsScalarTower R Rᵐᵒᵖ A where
+  smul_assoc := by
+    intro x y z
+    show (.mk x * y ) • z = _
+    simp only [smul_def]
+    rw [map_mul, mul_assoc]
+    rfl
+
+instance : IsScalarTower Rᵐᵒᵖ R A where
+  smul_assoc := by
+    intro x y z
+    show (y * x.get) • z = _
+    simp only [smul_def]
+    rw [map_mul, commutes, mul_assoc]
+    rfl
+
+end
+
+section
+
+variable (A B C: Type*) [SemiringOps A] [IsSemiring A] [SemiringOps B] [IsSemiring B]
+   [SemiringOps C] [IsSemiring C]
+   [AlgebraMap A B] [AlgebraMap B C] [AlgebraMap A C]
+   [SMul A B] [SMul B C] [SMul A C]
+   [IsAlgebra A B] [IsAlgebra B C] [IsAlgebra A C]
+
+class IsAlgebraTower where
+  algebraMap_algebraMap (a: A) : algebraMap (algebraMap a: B) = (algebraMap a: C)
+
+def algebraMap_algebraMap [IsAlgebraTower A B C] (a: A) : algebraMap (algebraMap a: B) = (algebraMap a: C) :=
+  IsAlgebraTower.algebraMap_algebraMap a
+
+instance [IsAlgebraTower A B C]: IsScalarTower A B C where
+  smul_assoc := by
+    intro x y z
+    simp only [smul_def]
+    rw [map_mul]
+    rw [mul_assoc, algebraMap_algebraMap]
+
+end

@@ -121,6 +121,20 @@ def ratCast_inv? (a: ℚ) (h: a ≠ 0) : (a: α)⁻¹? = a⁻¹? := by
 def ratCast_div? (a b: ℚ) (h: b ≠ 0) : (a: α) /? (b: α) = ((a /? b: ℚ): α) := by
   rw [div?_eq_mul_inv?, div?_eq_mul_inv?, ratCast_inv?, ratCast_mul]
 
+def map_ratCast
+  [FunLike F α β]
+  [QAlgebraOps α] [QAlgebraOps β]
+  [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] [IsMulHom F α β]
+  [IsQAlgebra α] [IsQAlgebra β]
+  (f: F) (n: ℚ) : f n = n := by
+  rw [ratCast_eq_ratCastRec, ratCast_eq_ratCastRec]
+  induction n using Rat.ind with | mk n =>
+  show f (_ /? _ ~(_)) = _ /? _ ~(_)
+  rw [map_div?]
+  congr
+  rw [map_intCast]
+  rw [map_natCast]
+
 end
 
 -- given a non-trivial ring which is an algebra over ℚ, we can show that it must
@@ -179,3 +193,16 @@ scoped instance : IsQAlgebra α where
   qsmul_eq_ratCast_mul q a := smul_def _ _
 
 end ofAlgebra
+
+section
+
+variable (A B C: Type*) [QAlgebraOps A] [IsQAlgebra A] [QAlgebraOps B] [IsQAlgebra B]
+   [AlgebraMap A B] [SMul A B]
+   [IsAlgebra A B] [IsQAlgebra A] [IsQAlgebra B]
+
+instance : IsAlgebraTower ℚ A B where
+  algebraMap_algebraMap n := by
+    show algebraMap (algebraMap (Rat.cast n: ℚ)) = algebraMap (Rat.cast n: ℚ)
+    simp only [map_ratCast]
+
+end
