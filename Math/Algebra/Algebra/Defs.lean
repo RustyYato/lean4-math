@@ -90,11 +90,7 @@ instance : IsAlgebra R R where
 variable [SemiringOps S] [SMul S A]
 
 instance [AlgebraMap R A] [IsAlgebra R A] [AlgebraMap S A] [IsSemiring S] [IsAlgebra S A] : IsSMulComm R S A where
-  smul_comm := by
-    intro r s x
-    simp [smul_def, ←mul_assoc]
-    congr 1
-    apply commutes
+  smul_comm r s x := by simp only [smul_def, ←mul_assoc]; rw [commutes]
 
 def smul_one [AlgebraMap S A] [IsSemiring S] [IsAlgebra S A] (s: S) : s • (1: A) = algebraMap s := by
   rw [smul_def, mul_one]
@@ -157,6 +153,12 @@ instance : IsScalarTower R A A where
   smul_assoc r a b := by
     simp only [smul_def, smul_eq_mul]
     rw [mul_assoc]
+
+instance : IsCentralScalar R A where
+  op_smul_eq_smul _ _ := rfl
+
+instance : IsCentralScalar Rᵐᵒᵖ A where
+  op_smul_eq_smul _ _ := rfl
 
 end
 
