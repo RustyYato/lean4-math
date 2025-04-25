@@ -153,6 +153,11 @@ instance : IsScalarTower Rᵐᵒᵖ R A where
     rw [map_mul, commutes, mul_assoc]
     rfl
 
+instance : IsScalarTower R A A where
+  smul_assoc r a b := by
+    simp only [smul_def, smul_eq_mul]
+    rw [mul_assoc]
+
 end
 
 section
@@ -169,11 +174,17 @@ class IsAlgebraTower where
 def algebraMap_algebraMap [IsAlgebraTower A B C] (a: A) : algebraMap (algebraMap a: B) = (algebraMap a: C) :=
   IsAlgebraTower.algebraMap_algebraMap a
 
-instance [IsAlgebraTower A B C]: IsScalarTower A B C where
+instance (priority := 900) instScalarTowerOfAlgebraTower [IsAlgebraTower A B C]: IsScalarTower A B C where
   smul_assoc := by
     intro x y z
     simp only [smul_def]
     rw [map_mul]
     rw [mul_assoc, algebraMap_algebraMap]
+
+instance : IsAlgebraTower A B B where
+  algebraMap_algebraMap _ := rfl
+
+instance : IsAlgebraTower A A B where
+  algebraMap_algebraMap _ := rfl
 
 end

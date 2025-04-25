@@ -88,3 +88,6 @@ def neg_smul' [SMul R M] [MonoidOps R] [AddGroupOps M] [IsMonoid R] [IsAddGroup 
   (r: R) (x: M) : r • (-x) = -(r • x) := by
   refine neg_eq_of_add_right ?_
   rw [←smul_add, neg_add_cancel, smul_zero]
+
+instance [MonoidOps R] [IsMonoid R] [SMul R M] [IsMulAction R M] : IsScalarTower R R M where
+  smul_assoc r a b := by rw [smul_eq_mul, mul_smul]
