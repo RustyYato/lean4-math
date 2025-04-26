@@ -41,8 +41,7 @@ def npow_fin_add (a: Cyclic n) (x y: Fin n) : a ^ (x + y).val = a ^ (x.val + y.v
   simp
   rw [←npow_add, Nat.div_add_mod]
 
-def toFin [NeZero n] : Cyclic n →* MulOfAdd (Fin n) where
-  toFun := GroupQuot.lift {
+def toFin [NeZero n] : Cyclic n →* MulOfAdd (Fin n) := GroupQuot.lift {
     val := FreeGroup.lift (fun () => MulOfAdd.mk 1)
     property := by
       intro x y (.intro a)
@@ -59,14 +58,12 @@ def toFin [NeZero n] : Cyclic n →* MulOfAdd (Fin n) where
       | inv _ ih => rw [map_inv, inv_npow, ih, inv_one]
       | mul a b iha ihb => rw [map_mul, mul_npow, iha, ihb, mul_one]
   }
-  map_one := by rw [map_one]
-  map_mul {_ _} := by rw [map_mul]
 
 def toFin_mk_of [NeZero n] (x: Unit) : toFin (n := n) (GroupQuot.mk _ (FreeGroup.of x)) = MulOfAdd.mk 1 := by
   show GroupQuot.lift _ _ = _
   rw [GroupQuot.lift_mk_apply, FreeGroup.lift_of]
 
-def equiv_fin [NeZero n] : Cyclic n ≃* MulOfAdd (Fin n) := {
+def equiv_fin_add [NeZero n] : Cyclic n ≃* MulOfAdd (Fin n) := {
     toFin with
     invFun x := (unit n) ^ x.get.val
     leftInv x := by
@@ -114,19 +111,54 @@ def equiv_fin [NeZero n] : Cyclic n ≃* MulOfAdd (Fin n) := {
         rw [npow_fin_add, npow_add, iha, ihb]
     rightInv x := by
       simp
-      rw [map_npow, unit, toFin_mk_of]
+      rw [map_npow, unit, toFin_mk_of, ←MulOfAdd.mk_nsmul]
+      rw [←natCast_eq_nsmul_one]
       simp
       cases x with | mk x =>
-      simp
-      rw [←MulOfAdd.mk_nsmul]
       congr
+      simp
       show Fin.mk _ _ = _
-      rename_i h
-      match n, h with
-      | 1, h => apply Subsingleton.allEq
-      | n + 2, h =>
-        simp
-        congr; rw [Nat.mod_eq_of_lt x.isLt]
+      congr; rw [Nat.mod_eq_of_lt x.isLt]
   }
+
+def toInt : Cyclic 0 →* MulOfAdd ℤ := GroupQuot.lift {
+    val := FreeGroup.lift (fun () => MulOfAdd.mk 1)
+    property := by
+      intro x y (.intro a)
+      rw [map_npow, map_one]
+      induction a with
+      | one => rw [map_one, one_npow]
+      | of x =>
+        rw [FreeGroup.lift_of]
+        simp
+      | inv _ ih => rw [map_inv, inv_npow, ih, inv_one]
+      | mul a b iha ihb => rw [map_mul, mul_npow, iha, ihb, mul_one]
+  }
+
+def toInt_mk_of (x: Unit) : toInt (GroupQuot.mk _ (FreeGroup.of x)) = MulOfAdd.mk 1 := by
+  show GroupQuot.lift _ _ = _
+  rw [GroupQuot.lift_mk_apply, FreeGroup.lift_of]
+
+def equiv_int_add : Cyclic 0 ≃* MulOfAdd ℤ := {
+  toInt with
+  invFun x := (unit 0) ^ x.get
+  rightInv x := by simp [map_zpow, unit, toInt_mk_of, ←MulOfAdd.mk_zsmul]
+  leftInv x := by
+    induction x using GroupQuot.ind with | mk x =>
+    simp
+    induction x with
+    | one => simp [map_one]
+    | of =>
+      simp [toInt_mk_of]
+      rfl
+    | inv a ih =>
+      rw [map_inv, ←ih]
+      simp [toInt_mk_of, map_inv]
+      rw [unit, toInt_mk_of]
+      simp
+      rw [zpow_neg_one]
+    | mul a b iha ihb =>
+      simp [map_mul, zpow_add, iha, ihb]
+}
 
 end Cyclic
