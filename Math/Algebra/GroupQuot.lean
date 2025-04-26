@@ -87,7 +87,7 @@ def symm_lift_mk_apply [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T] {r:
 
 def mkQuot_eq_mk [MonoidOps G] [IsMonoid G] : MulCon.mkQuot (GroupQuot.Con r) = GroupQuot.mk r := rfl
 
-attribute [irreducible] instMonoidOps instGroupOps mk lift
+attribute [irreducible] mk lift
 
 end GroupQuot
 
@@ -102,7 +102,7 @@ instance instAddMonoidOps [AddMonoidOps α] [IsAddMonoid α] : AddMonoidOps (Add
 instance instIsSemiring [AddMonoidOps α] [IsAddMonoid α] : IsAddMonoid (AddGroupQuot r) :=
   AlgQuotient.instIsAddMonoid _
 
-instance instGroupOps [AddGroupOps α] [IsAddGroup α] : AddGroupOps (AddGroupQuot r) :=
+instance instAddGroupOps [AddGroupOps α] [IsAddGroup α] : AddGroupOps (AddGroupQuot r) :=
   AlgQuotient.instAddGroupOps _
 instance instIsGroup [AddGroupOps α] [IsAddGroup α] : IsAddGroup (AddGroupQuot r) :=
   AlgQuotient.instIsAddGroup _
@@ -168,6 +168,6 @@ def lift_mk_apply [AddMonoidOps G] [IsAddMonoid G] [AddMonoidOps T] [IsAddMonoid
 
 def mkQuot_eq_mk [AddMonoidOps G] [IsAddMonoid G] : AddCon.mkQuot (AddGroupQuot.Con r) = AddGroupQuot.mk r := rfl
 
-attribute [irreducible] GroupQuot instAddMonoidOps instGroupOps mk lift
+attribute [irreducible] GroupQuot mk lift
 
 end AddGroupQuot

@@ -2,34 +2,131 @@ import Math.Algebra.Group.Theory.Basic
 import Math.Algebra.Impls.Fin
 import Math.Algebra.Group.SetLike.Basic
 import Math.Order.OrderIso
+import Math.Data.Free.Group
+import Math.Algebra.GroupQuot
 
--- the cyclic group of order n
-instance Cyclic (n: ℕ) [h: NeZero n] : Group (Fin n) := by
-  match n, h with
-  | n + 1, h =>
-  apply Group.ofAdd
+inductive Cyclic.Rel (n: ℕ) : FreeGroup Unit -> FreeGroup Unit -> Prop where
+| intro (a: FreeGroup Unit) : Rel n (a ^ n) 1
+
+def Cyclic (n: ℕ) := GroupQuot (Cyclic.Rel n)
+
+-- -- the cyclic group of order n
+-- instance Cyclic (n: ℕ) [h: NeZero n] : Group (Fin n) := by
+--   match n, h with
+--   | n + 1, h =>
+--   apply Group.ofAdd
 
 namespace Cyclic
 
-variable {n: ℕ} [NeZero n]
+variable {n: ℕ}
+
+instance : GroupOps (Cyclic n) := GroupQuot.instGroupOps
+instance : IsGroup (Cyclic n) := GroupQuot.instIsGroup
+
+def unit (n: ℕ) : Cyclic n := GroupQuot.mk _ (FreeGroup.of ())
 
 def npow_n_eq_one (a: Cyclic n) : a ^ n = 1 := by
-  rename_i h
-  match n, h with
-  | n + 1, h =>
-  apply HasChar.char_spec (Fin (n + 1))
+  induction a using GroupQuot.ind with | mk a =>
+  rw [←map_one (GroupQuot.mk _), ←map_npow (GroupQuot.mk _)]
+  apply GroupQuot.mk_rel
+  apply Cyclic.Rel.intro
 
-def sub_cyclic_eq_generate (S: Subgroup (Cyclic n)) : ∃x: Cyclic n, S = Subgroup.generate {x} := by
-  rename_i h
-  match n, h with
-  | n + 1, h =>
-  have ⟨m, ⟨m_pos, m_le_n_succ, m_spec⟩, m_min⟩ := Relation.exists_min (α := Nat) (· < ·) (P := fun x => 0 < x ∧ x ≤ n+1 ∧ ∀a' ∈ S, a' ^ x = 1) ⟨n+1, Nat.zero_lt_succ _, Nat.le_refl _, by
-    intros
-    rename_i a' _
-    apply HasChar.char_spec (Fin (n + 1))⟩
-  sorry
+instance : Subsingleton (Cyclic 1) where
+  allEq a b := by rw [←npow_one a, ←npow_one b, npow_n_eq_one, npow_n_eq_one]
 
-def sub_cylic (G: Subgroup (Cyclic n)) : ∃m, Nonempty (G ≃* Cyclic (m + 1)) := by
-  sorry
+def npow_fin_add (a: Cyclic n) (x y: Fin n) : a ^ (x + y).val = a ^ (x.val + y.val) := by
+  rw [←one_mul (a ^ (x + y).val), ←npow_n_eq_one (a ^ ((x.val + y.val) / n)),
+    ←npow_mul]
+  show _ * a ^ (Fin.mk _ _).val = _
+  simp
+  rw [←npow_add, Nat.div_add_mod]
+
+def toFin [NeZero n] : Cyclic n →* MulOfAdd (Fin n) where
+  toFun := GroupQuot.lift {
+    val := FreeGroup.lift (fun () => MulOfAdd.mk 1)
+    property := by
+      intro x y (.intro a)
+      rw [map_npow, map_one]
+      induction a with
+      | one => rw [map_one, one_npow]
+      | of x =>
+        rw [FreeGroup.lift_of]
+        show MulOfAdd.mk (n • 1) = MulOfAdd.mk 0
+        congr
+        show Fin.mk _ _ = Fin.mk _ _
+        congr 1
+        simp
+      | inv _ ih => rw [map_inv, inv_npow, ih, inv_one]
+      | mul a b iha ihb => rw [map_mul, mul_npow, iha, ihb, mul_one]
+  }
+  map_one := by rw [map_one]
+  map_mul {_ _} := by rw [map_mul]
+
+def toFin_mk_of [NeZero n] (x: Unit) : toFin (n := n) (GroupQuot.mk _ (FreeGroup.of x)) = MulOfAdd.mk 1 := by
+  show GroupQuot.lift _ _ = _
+  rw [GroupQuot.lift_mk_apply, FreeGroup.lift_of]
+
+def equiv_fin [NeZero n] : Cyclic n ≃* MulOfAdd (Fin n) := {
+    toFin with
+    invFun x := (unit n) ^ x.get.val
+    leftInv x := by
+      induction x using GroupQuot.ind with | mk x =>
+      simp
+      induction x with
+      | one =>
+        rw [map_one, map_one]
+        show _ ^ 0 = _
+        rw [npow_zero]
+      | of a =>
+        rw [toFin_mk_of]
+        simp
+        rename_i h
+        match n, h with
+        | 1, h => apply Subsingleton.allEq
+        | n + 2, h =>
+          show _ ^ 1 = _
+          rw [npow_one]
+          rfl
+      | inv a ih =>
+        rename_i h
+        rw [map_inv, map_inv, toFin_mk_of]
+        rw [toFin_mk_of] at ih
+        simp at *
+        rw [←ih]; clear ih
+        match n, h with
+        | 1, h => apply Subsingleton.allEq
+        | n + 2, h =>
+          rw [←zpow_ofNat, ←zpow_ofNat, ←zpow_neg]
+          rw (occs := [2]) [←one_mul (unit _ ^ _)]
+          rw [←npow_n_eq_one (unit _), ←zpow_ofNat, ←zpow_add]
+          congr 1
+          simp
+          show Nat.cast (Fin.val (Fin.sub _ _)) = _
+          unfold Fin.sub
+          simp only
+          rw [add_zero, Nat.mod_eq_of_lt (a := 1), Nat.mod_eq_of_lt]
+          simp; rw [add_assoc]
+          congr
+          apply Nat.lt_succ_self
+          omega
+      | mul a b iha ihb =>
+        simp [map_mul]
+        rw [npow_fin_add, npow_add, iha, ihb]
+    rightInv x := by
+      simp
+      rw [map_npow, unit, toFin_mk_of]
+      simp
+      cases x with | mk x =>
+      simp
+      rw [←MulOfAdd.mk_nsmul]
+      congr
+      show Fin.mk _ _ = _
+      rename_i h
+      match n, h with
+      | 1, h => apply Subsingleton.allEq
+      | n + 2, h =>
+        simp
+        congr; rw [Nat.mod_eq_of_lt x.isLt]
+  }
 
 end Cyclic

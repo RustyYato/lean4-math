@@ -1131,9 +1131,14 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 @[simp] def MulHom.toFun_eq_coe (f: MulHom α β) : f.toFun = f := rfl
 @[simp] def SMulHom.toFun_eq_coe (f: SMulHom R α β) : f.toFun = f := rfl
 
-@[simp] def AddMonoidHom.toFun_eq_coe (f: α →+ β) : f.toFun = f := rfl
-@[simp] def MonoidHom.toFun_eq_coe (f: α →* β) : f.toFun = f := rfl
-@[simp] def AddMonoidWithZeroHom.toFun_eq_coe (f: α →+₁ β) : f.toFun = f := rfl
-@[simp] def MonoidWithOneHom.toFun_eq_coe (f: α →*₀ β) : f.toFun = f := rfl
+@[simp] def AddGroupHom.toFun_eq_coe (f: α →+ β) : f.toFun = f := rfl
+@[simp] def GroupHom.toFun_eq_coe (f: α →* β) : f.toFun = f := rfl
+@[simp] def AddGroupWithZeroHom.toFun_eq_coe (f: α →+₁ β) : f.toFun = f := rfl
+@[simp] def GroupWithOneHom.toFun_eq_coe (f: α →*₀ β) : f.toFun = f := rfl
+
+@[simp] def AddGroupHom.toZeroHom_eq_coe (f: α →+ β) : (f.toZeroHom: _ -> _) = f := rfl
+@[simp] def GroupHom.toOneHom_eq_coe (f: α →* β) : (f.toOneHom: _ -> _) = f := rfl
+@[simp] def AddGroupWithZeroHom.toZeroHom_eq_coe (f: α →+₁ β) : (f.toZeroHom: _ -> _) = f := rfl
+@[simp] def GroupWithOneHom.toOneHom_eq_coe (f: α →*₀ β) : (f.toOneHom: _ -> _) = f := rfl
 
 @[simp] def AlgHom.toAddHom_eq_coe (f: α →ₐ[R] β) : (f.toAddHom: α -> β) = f := rfl

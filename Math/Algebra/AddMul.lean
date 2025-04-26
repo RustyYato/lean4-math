@@ -123,6 +123,27 @@ instance [IntCast α] : IntCast αᵐᵒᵖ := ⟨(.mk ·)⟩
 -- instance [Nat.AtLeastTwoOfNat α n] : Nat.AtLeastTwoOfNat αᵃᵒᵖ n := ⟨(.mk (OfNat.ofNat n))⟩
 -- instance [Nat.AtLeastTwoOfNat α n] : Nat.AtLeastTwoOfNat αᵐᵒᵖ n := ⟨(.mk (OfNat.ofNat n))⟩
 
+namespace MulOfAdd
+
+@[cases_eliminator]
+def cases {motive: MulOfAdd α -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, motive x := mk
+
+@[simp] def mk_zero [Zero α] : mk (0: α) = 1 := rfl
+@[simp] def mk_add [Add α] (a b: α) : mk (a + b) = mk a * mk b := rfl
+@[simp] def mk_neg [Neg α] (a: α) : mk (-a) = (mk a)⁻¹ := rfl
+@[simp] def mk_nsmul [SMul ℕ α] (n: ℕ) (a: α) : mk (n • a) = (mk a) ^ n := rfl
+@[simp] def mk_zsmul [SMul ℤ α] (n: ℤ) (a: α) : mk (n • a) = (mk a) ^ n := rfl
+@[simp] def get_one [Zero α] : (get 1: α) = 0 := rfl
+@[simp] def get_mul [Add α] (a b: MulOfAdd α) : (a * b).get = a.get + b.get := rfl
+@[simp] def get_inv [Neg α] (a: MulOfAdd α) : (a⁻¹).get = -a.get := rfl
+@[simp] def get_npow [SMul ℕ α] (n: ℕ) (a: MulOfAdd α) : (a ^ n).get = n • a.get := rfl
+@[simp] def get_zpow [SMul ℤ α] (n: ℤ) (a: MulOfAdd α) : (a ^ n).get = n • a.get := rfl
+
+@[simp] def mk_get (a: MulOfAdd α) : mk a.get = a := rfl
+@[simp] def get_mk (a: α) : (mk a).get = a := rfl
+
+end MulOfAdd
+
 namespace AddOpp
 
 @[cases_eliminator]
