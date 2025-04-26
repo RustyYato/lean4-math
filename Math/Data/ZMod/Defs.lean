@@ -45,6 +45,10 @@ def toInt : ∀{n}, ZMod n ↪ ℤ
 | 0 => Embedding.rfl
 | _ + 1 => Embedding.trans Fin.embedNat ⟨Int.ofNat, by apply Int.ofNat.inj⟩
 
+@[simp]
+def toInt_zero : toInt (0: ZMod n) = 0 := by
+  cases n <;> rfl
+
 instance : LE (ZMod n) := infer_zmod_instnace n LE
 instance : LT (ZMod n) := infer_zmod_instnace n LT
 
@@ -170,6 +174,66 @@ def induction {n: ℕ} {motive: ZMod n -> Prop} (ofInt: ∀x: ℤ, motive (ZMod.
   intro x
   rw [←ofInt_toInt x]
   apply ofInt
+
+def intCast_toInt (x: ZMod n) : (toInt x) = x := ofInt_toInt x
+
+def toInt_neg (x: ZMod n) (hx: x ≠ 0) : toInt x + toInt (-x) = n := by
+  induction x with | ofInt x =>
+  rw [←map_neg, toInt_ofInt, toInt_ofInt,
+    Int.neg_emod, if_neg]
+  simp
+  rw [←add_sub_assoc, add_comm, add_sub_cancel']
+  rintro ⟨k, rfl⟩
+  replace hx : Int.cast (n * k) ≠ (0: ZMod n) := hx
+  rw [←intCast_mul, intCast_ofNat, n_eq_zero, zero_mul] at hx
+  contradiction
+
+def toInt_add (x y: ZMod n) : ∃k, toInt (x + y) = toInt x + toInt y - k ∧ (k = 0 ∨ k = n) := by
+  cases n
+  exists 0
+  simp; rfl
+  rename_i n
+  if toInt (x + y) ≥ toInt x + toInt y then
+    exists 0
+    simp
+    apply flip le_antisymm
+    assumption
+    apply Int.ofNat_le.mpr
+    apply Nat.mod_le
+  else
+    rename_i h
+    rw [Fin.add_def] at h
+    simp at h
+    replace h : (((x.val + y.val) % (n + 1): ℕ): ℤ) < (x.val: ℤ) + (y.val: ℤ) := h
+    rw [←natCast_add] at h
+    exists (n + 1: ℕ)
+    apply And.intro _ (.inr rfl)
+    rw [Fin.add_def]
+    show (((x.val + y.val) % (n + 1): ℕ): ℤ) = (x.val: ℤ) + (y.val: ℤ) - _
+    rw [←natCast_add]
+    rw (occs := [2]) [←Nat.div_add_mod (x.val + y.val) (n + 1)]
+    rw [natCast_add, sub_eq_add_neg, add_comm_right,
+      ←sub_eq_add_neg]; rw [←mul_one (Nat.cast (n + 1)),
+        Int.ofNat_mul, ←mul_sub]
+    rw (occs := [1]) [←zero_add ( Nat.cast _)]; congr
+    rw [←mul_zero]; congr
+    suffices n + 1 ≤ x.val + y.val by
+      rw [Nat.div_eq, if_pos, Nat.div_eq_of_lt]
+      simp
+      apply lt_of_lt_of_le
+      apply Nat.sub_lt_sub_right
+      assumption
+      apply Nat.add_lt_add
+      apply x.isLt
+      apply y.isLt
+      simp
+      simp
+      assumption
+    apply Decidable.byContradiction
+    intro g; simp at g
+    rw [Nat.mod_eq_of_lt] at h
+    exact lt_irrefl h
+    assumption
 
 private def liftHelper {n: ℕ} {A: Type*} [AddGroupOps A] [IsAddGroup A] (f: {f: ℤ →+ A // f n = 0}) : ∀x, n • f.val x = 0 := by
     suffices ∀x: ℕ, n • f.val x = 0 by
