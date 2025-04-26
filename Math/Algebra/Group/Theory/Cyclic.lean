@@ -8,13 +8,9 @@ import Math.Algebra.GroupQuot
 inductive Cyclic.Rel (n: ℕ) : FreeGroup Unit -> FreeGroup Unit -> Prop where
 | intro (a: FreeGroup Unit) : Rel n (a ^ n) 1
 
+-- the cylic group of order `n` is the group with one
+-- generator and the relation `a ^ n = 1` for all `a`
 def Cyclic (n: ℕ) := GroupQuot (Cyclic.Rel n)
-
--- -- the cyclic group of order n
--- instance Cyclic (n: ℕ) [h: NeZero n] : Group (Fin n) := by
---   match n, h with
---   | n + 1, h =>
---   apply Group.ofAdd
 
 namespace Cyclic
 
@@ -160,5 +156,13 @@ def equiv_int_add : Cyclic 0 ≃* MulOfAdd ℤ := {
     | mul a b iha ihb =>
       simp [map_mul, zpow_add, iha, ihb]
 }
+
+instance : IsCommMagma (Cyclic n) where
+  mul_comm a b := by
+    cases n
+    apply equiv_int_add.inj
+    rw [map_mul, map_mul, mul_comm]
+    apply equiv_fin_add.inj
+    rw [map_mul, map_mul, mul_comm]
 
 end Cyclic
