@@ -527,6 +527,42 @@ instance [IsLawfulNonstrict rel srel eqv] [CongrEquiv srel eqv] : IsLawfulNonstr
     intro h; apply Quotient.sound h
     intro h; apply Quotient.exact h
 
+instance (priority := 500) [LE α] [LT α] [IsLawfulLT α] : @IsLawfulStrict α (· ≤ ·) (· < ·) where
+  is_lawful_strict _ _ := lt_iff_le_and_not_le
+
+instance (priority := 500) [LE α] [LT α] [@IsLawfulStrict α (· ≤ ·) (· < ·)] : IsLawfulLT α where
+  lt_iff_le_and_not_le := is_lawful_strict _ _
+
+instance [IsTrans rel] [IsLawfulStrict rel srel] : Trans rel srel srel where
+  trans := by
+    intro a b c ab bc
+    rw [is_lawful_strict (srel := srel) (rel := rel)] at *
+    apply And.intro
+    exact trans ab bc.left
+    intro h; apply bc.right
+    exact trans h ab
+
+instance [IsTrans rel] [IsLawfulStrict rel srel] : Trans srel rel srel where
+  trans := by
+    intro a b c ab bc
+    rw [is_lawful_strict (srel := srel) (rel := rel)] at *
+    apply And.intro
+    exact trans ab.left bc
+    intro h; apply ab.right
+    exact trans bc h
+
+protected def IsLawfulStrict.IsTrans [IsTrans rel] [IsLawfulStrict rel srel] : IsTrans srel where
+  trans := by
+    intro a b c ab bc
+    rw [is_lawful_strict (srel := srel) (rel := rel)] at *
+    apply And.intro
+    exact trans ab.left bc.left
+    intro h
+    exact bc.right (trans h ab.left)
+
+instance [LE α] [LT α] [@IsTrans α (· ≤ ·)] [IsLawfulLT α] : @IsTrans α (· < ·) :=
+  IsLawfulStrict.IsTrans (rel := (· ≤ ·))
+
 end Relation
 
 namespace Quot
