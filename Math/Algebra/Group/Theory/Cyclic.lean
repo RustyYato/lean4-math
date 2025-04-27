@@ -134,6 +134,24 @@ def pow_mul (a b: Cyclic n) : pow (a * b) = (pow a + pow b) % n := by
     unfold pow
     simp [map_mul]
     rfl
+def pow_unit : pow (unit n) = 1 % n := by
+  unfold pow
+  rw [toZMod_unit]
+  simp
+  match n with
+  | 0 => rfl
+  | 1 => rfl
+  | n + 2 => rfl
+
+@[cases_eliminator]
+def cases {motive: Cyclic n -> Sort*} (pow: ∀m: ℤ, m < n ∨ n = 0 -> motive (unit n ^ m)) (c: Cyclic n) : motive c :=
+  c.pow_spec ▸ pow c.pow <| by
+    cases n
+    right; rfl
+    left
+    rename_i n
+    apply Int.ofNat_lt.mpr
+    apply Fin.isLt
 
 def of_npow_eq_one : (unit n) ^ m = 1 ->  n ∣ m := by
   intro h
@@ -159,38 +177,83 @@ instance : IsCommMagma (Cyclic n) where
   mul_comm a b := by
     rw [←pow_spec a, ←pow_spec b, ←zpow_add, ←zpow_add, Int.add_comm]
 
--- def preLift (G: Type*) [GroupOps G] [IsGroup G] (g: G) (hg: g ^ n = 1) : Cyclic n →* G where
---   toFun n := g ^ n.pow
---   map_one := by rw [pow_one, zpow_zero]
---   map_mul {x y} := by
---     rw [pow_mul, ←zpow_add]; rw (occs := [2]) [←Int.ediv_add_emod (x.pow + y.pow) n]
---     rw [zpow_add , zpow_mul]
---     sorry
--- def lift (G: Type*) [GroupOps G] [IsGroup G] : { g: G // g ^ n = 1 } ≃ (Cyclic n →* G) := {
---   toFun g := preLift G g.val g.property
---   invFun f := {
---     val := f (unit _)
---     property := sorry
---   }
---   leftInv := sorry
---   rightInv := sorry
--- }
+private def lift_zpow_mod (G: Type*) [GroupOps G] [IsGroup G] (g: G) (hg: g ^ n = 1) (k: ℤ) :
+  g ^ (k % n)  = g ^ k := by
+  rw (occs := [2]) [←Int.ediv_add_emod k n]
+  rw [zpow_add , mul_comm (Nat.cast n), zpow_mul, zpow_ofNat, hg, one_zpow, one_mul]
+
+private def preLift (G: Type*) [GroupOps G] [IsGroup G] (g: G) (hg: g ^ n = 1) : Cyclic n →* G where
+  toFun n := g ^ n.pow
+  map_one := by rw [pow_one, zpow_zero]
+  map_mul {x y} := by
+    rw [pow_mul, ←zpow_add, lift_zpow_mod]
+    assumption
+
+def lift {G: Type*} [GroupOps G] [IsGroup G] : { g: G // g ^ n = 1 } ≃ (Cyclic n →* G) := {
+  toFun g := preLift G g.val g.property
+  invFun f := {
+    val := f (unit _)
+    property := by rw [←map_npow, npow_n_eq_one, map_one]
+  }
+  leftInv x := by
+    simp
+    congr
+    show x.val ^ (unit n).pow = x.val
+    rw [pow_unit, lift_zpow_mod, zpow_one]
+    exact x.property
+  rightInv f := by
+    ext x
+    simp
+    show (f (unit n)) ^ x.pow = f x
+    rw (occs := [2]) [←pow_spec x]
+    rw [map_zpow]
+}
+
+def lift_unit [GroupOps G] [IsGroup G] (g: {g : G // g ^ n = 1}) : lift g (unit n) = g := by
+  show g.val ^ (unit n).pow = _
+  rw [pow_unit, lift_zpow_mod, zpow_one]
+  exact g.property
+
+def npow_congr (x y: ℤ) (a: Cyclic n) : x % n = y % n -> a ^ x = a ^ y := by
+  intro h
+  rw [←Int.ediv_add_emod x n, ←Int.ediv_add_emod y n,
+    zpow_add, zpow_add, h]
+  congr 1
+  rw [mul_comm, zpow_mul, mul_comm, zpow_mul,
+    zpow_ofNat, npow_n_eq_one, one_zpow, one_zpow]
 
 def equiv_cyclic_iff_generated_by_unit (G: Type*) [GroupOps G] [IsGroup G] :
-  (∃u: G, ∀g: G, ∃n: ℕ, g = u ^ n) ↔ ∃n, Nonempty (G ≃* Cyclic n) := by
+  (∃u: G, ∀g: G, ∃n: ℤ, g = u ^ n) ↔ ∃n, Nonempty (G ≃* Cyclic n) := by
   apply Iff.intro
   · intro ⟨u, hu⟩
     let n := char (AddOfMul G)
-    exists n
+    have n_spec : ∀g: G, g ^ n = 1 := char_spec (AddOfMul G)
+    have n_dvd : ∀m, (∀g: G, g ^ m = 1) -> n ∣ m := char_dvd (AddOfMul G)
     have ⟨f, hf⟩ := Classical.axiomOfChoice hu; clear hu
-    have toG : Cyclic n →* G := sorry
+    exists n
+    let toG : Cyclic n →* G := Cyclic.lift {
+      val := u
+      property := n_spec _
+    }
     refine ⟨?_⟩; apply GroupEquiv.symm
-    refine { toG with invFun := ?_, leftInv := ?_, rightInv := ?_ }
-    · sorry
-    · sorry
-    · sorry
-  · sorry
-
+    refine { toG with invFun := fun g => (unit _) ^ f g, leftInv := ?_, rightInv := ?_ }
+    · intro x
+      simp
+      cases x with | pow m hm =>
+      rw [map_zpow, lift_unit]
+      simp
+      apply npow_congr
+      sorry
+    · intro g
+      simp
+      rw [map_zpow, lift_unit]
+      simp; rw [←hf]
+  · intro ⟨n, ⟨hn⟩⟩
+    exists (hn.symm (unit n))
+    intro g
+    cases h:hn g with | _ m hm =>
+    exists m
+    rw [←map_zpow, ←h, GroupEquiv.coe_symm]
 
 def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cyclic m) := by
   classical
