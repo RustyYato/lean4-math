@@ -167,44 +167,47 @@ class IsTotal: Prop where
   total (a b): rel a b ∨ rel b a
 def total [IsTotal rel] : ∀(a b: α), rel a b ∨ rel b a := IsTotal.total
 
-class IsTrichotomousBy: Prop where
-  tri: ∀a b, rel a b ∨ eqv a b ∨ rel b a
-def trichotomous_by [IsTrichotomousBy rel eqv] : ∀(a b: α), rel a b ∨ eqv a b ∨ rel b a := IsTrichotomousBy.tri
-abbrev IsTrichotomous := IsTrichotomousBy rel (· = ·)
-def trichotomous [IsTrichotomous rel] : ∀(a b: α), rel a b ∨ a = b ∨ rel b a := trichotomous_by _ _
+class IsConnectedBy: Prop where
+  protected connected_by: ∀a b, rel a b ∨ eqv a b ∨ rel b a
+def connected_by [IsConnectedBy rel eqv] : ∀(a b: α), rel a b ∨ eqv a b ∨ rel b a := IsConnectedBy.connected_by
+abbrev IsConnected := IsConnectedBy rel (· = ·)
+def connected [IsConnected rel] : ∀(a b: α), rel a b ∨ a = b ∨ rel b a := connected_by _ _
 
-def IsTrichotomous.toTotal (h: IsTrichotomous r) [IsRefl r] : IsTotal r where
+def IsConnected.toTotal (h: IsConnected r) [IsRefl r] : IsTotal r where
   total a b := by
-    rcases trichotomous r a b with h | rfl | h
+    rcases connected r a b with h | rfl | h
     left; assumption
     left; rfl
     right; assumption
 
-instance (priority := 500) [h: IsTrichotomous r] [IsRefl r] : IsTotal r := h.toTotal
-instance (priority := 500) [h: IsTotal r] : IsTrichotomous r where
-  tri a b := by
+instance (priority := 500) [h: IsConnected r] [IsRefl r] : IsTotal r := h.toTotal
+instance (priority := 500) [h: IsTotal r] : IsConnected r where
+  connected_by a b := by
     rcases total r a b with h | h
     left; assumption
     right; right; assumption
 
-def eq_of_not_lt_or_gt [IsTrichotomous rel] : ∀a b, ¬rel a b -> ¬rel b a -> a = b := by
+def eq_of_not_lt_or_gt [IsConnected rel] : ∀a b, ¬rel a b -> ¬rel b a -> a = b := by
   intro a b nab nba
-  rcases trichotomous rel a b with h | h | h
+  rcases connected rel a b with h | h | h
   exact (nab h).elim
   assumption
   exact (nba h).elim
 
-class IsWellOrder : Prop extends IsWellFounded rel, IsTrans rel, IsTrichotomous rel where
-instance [IsWellFounded rel] [IsTrans rel] [IsTrichotomous rel] : IsWellOrder rel where
+class IsWellOrder : Prop extends IsWellFounded rel, IsTrans rel, IsConnected rel where
+instance [IsWellFounded rel] [IsTrans rel] [IsConnected rel] : IsWellOrder rel where
 
 instance [IsWellOrder rel] : IsIrrefl rel := inferInstance
+
+-- class IsDense : Prop where
+--   dense:
 
 def symm_iff [IsSymmetric r] : ∀{a b}, r a b ↔ r b a := Iff.intro symm symm
 
 /-- In a trichotomous irreflexive order, every element is determined by the set of predecessors. -/
-def extensional_of_trichotomous_of_irrefl (r : α → α → Prop) [IsTrichotomous r] [IsIrrefl r]
+def extensional_of_trichotomous_of_irrefl (r : α → α → Prop) [IsConnected r] [IsIrrefl r]
     {a b : α} (H : ∀ x, r x a ↔ r x b) : a = b :=
-  ((@trichotomous _ r _ a b).resolve_left <| mt (H _).2 <| irrefl).resolve_right <| mt (H _).1
+  ((@connected _ r _ a b).resolve_left <| mt (H _).2 <| irrefl).resolve_right <| mt (H _).1
     <| irrefl
 
 def equiv [IsRefl rel] [IsSymmetric rel] [IsTrans rel] : Equivalence rel where
@@ -253,18 +256,18 @@ instance [IsTrans r] [IsTrans s] : IsTrans (Sum.Lex r s) where
     apply Sum.Lex.inr
     apply trans' <;> assumption
     apply Sum.Lex.sep
-instance [IsTrichotomous r] [IsTrichotomous s] : IsTrichotomous (Sum.Lex r s) where
-  tri a b := by
+instance [IsConnected r] [IsConnected s] : IsConnected (Sum.Lex r s) where
+  connected_by a b := by
     cases a <;> cases b
     rename_i a b
-    rcases trichotomous r a b with ab | eq | ba
+    rcases connected r a b with ab | eq | ba
     left; apply Sum.Lex.inl; assumption
     right; left; congr
     right; right; apply Sum.Lex.inl; assumption
     left; apply Sum.Lex.sep
     right; right; apply Sum.Lex.sep
     rename_i a b
-    rcases trichotomous s a b with ab | eq | ba
+    rcases connected s a b with ab | eq | ba
     left; apply Sum.Lex.inr; assumption
     right; left; congr
     right; right; apply Sum.Lex.inr; assumption
@@ -289,13 +292,13 @@ instance [IsTrans r] [IsTrans s] : IsTrans (Prod.Lex r s) where
     apply Prod.Lex.right
     apply trans' <;> assumption
 
-instance [IsTrichotomous r] [IsTrichotomous s] : IsTrichotomous (Prod.Lex r s) where
-  tri := by
+instance [IsConnected r] [IsConnected s] : IsConnected (Prod.Lex r s) where
+  connected_by := by
     intro ⟨a, b⟩ ⟨c, d⟩
-    rcases trichotomous r a c with ac | eq | ca
+    rcases connected r a c with ac | eq | ca
     left; apply Prod.Lex.left; assumption
     · subst c
-      rcases trichotomous s b d with bd | eq | bd
+      rcases connected s b d with bd | eq | bd
       left; apply Prod.Lex.right; assumption
       right; left; congr
       right; right; apply Prod.Lex.right; assumption
@@ -377,9 +380,9 @@ instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsTrans rel] : IsTrans (or_eqv rel 
     cases h <;> cases g <;> rename_i h g
     repeat left; exact trans h g
     right; exact trans h g
-instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsTrichotomousBy rel eqv] : IsTotal (or_eqv rel eqv) where
+instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsConnectedBy rel eqv] : IsTotal (or_eqv rel eqv) where
   total a b := by
-    rcases trichotomous_by rel eqv a b with h | h | h
+    rcases connected_by rel eqv a b with h | h | h
     left; left; assumption
     left; right; assumption
     right; left; assumption
@@ -392,6 +395,15 @@ instance [IsEquiv eqv] [CongrEquiv rel eqv] : CongrEquiv (or_eqv rel eqv) eqv wh
     right; apply congr_eqv h g
     assumption
     assumption
+
+def quot_rel (rel eqv: α -> α -> Prop) [IsEquiv eqv] [CongrEquiv rel eqv] : Quotient (Relation.setoid eqv) -> Quotient (Relation.setoid eqv) -> Prop := by
+  refine Quotient.lift₂ rel ?_
+  intro a b c d h g
+  apply propext
+  apply Iff.intro; intro r
+  apply congr_eqv (eqv := eqv) h g r
+  intro r
+  apply congr_eqv (eqv := eqv) (symm h) (symm g) r
 
 end Relation
 
@@ -452,7 +464,7 @@ class IsPartialOrder: Prop extends IsPreorder rel, IsAntisymmBy rel eqv where
 class IsLinearOrder: Prop extends IsPartialOrder rel eqv, IsTotal rel where
 
 class IsStrictPartialOrder: Prop extends IsTrans rel, IsAsymm rel where
-class IsStrictLinearOrder: Prop extends IsStrictPartialOrder rel, IsTrichotomousBy rel eqv where
+class IsStrictLinearOrder: Prop extends IsStrictPartialOrder rel, IsConnectedBy rel eqv where
 
 def strict_rel_or_eqv_of_rel [IsAntisymmBy rel eqv] (a b: α) : rel a b -> strict rel a b ∨ eqv a b := by
   intro h
@@ -465,7 +477,7 @@ def strict_rel_or_eqv_of_rel [IsAntisymmBy rel eqv] (a b: α) : rel a b -> stric
 
 instance [IsPreorder rel] : IsStrictPartialOrder (strict rel) where
 instance [IsLinearOrder rel eqv] : IsStrictLinearOrder (strict rel) eqv where
-  tri a b := by
+  connected_by a b := by
     rcases total rel a b with h | h <;> rcases strict_rel_or_eqv_of_rel rel eqv _ _ h with g | g
     left; assumption
     right; left; assumption
