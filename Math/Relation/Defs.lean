@@ -59,6 +59,8 @@ class IsSymmetric: Prop where
   symm: ∀{a b}, rel a b -> rel b a
 export IsSymmetric (symm)
 
+def symm_iff [IsSymmetric r] : ∀{a b}, r a b ↔ r b a := Iff.intro symm symm
+
 instance {r: β -> β -> Prop} (f: α -> β) [IsSymmetric r] : IsSymmetric (fun x y => r (f x) (f y)) where
   symm := symm
 instance : IsSymmetric (fun x y: α => x ≠ y) where
@@ -199,10 +201,17 @@ instance [IsWellFounded rel] [IsTrans rel] [IsConnected rel] : IsWellOrder rel w
 
 instance [IsWellOrder rel] : IsIrrefl rel := inferInstance
 
--- class IsDense : Prop where
---   dense:
+class IsDense : Prop where
+  dense: ∀a b: α, rel a b -> ∃x: α, rel a x ∧ rel x b
+export IsDense (dense)
 
-def symm_iff [IsSymmetric r] : ∀{a b}, r a b ↔ r b a := Iff.intro symm symm
+class IsLawfulStrict (rel srel: α -> α -> Prop) : Prop where
+  is_lawful_strict (a b: α): srel a b ↔ rel a b ∧ ¬rel b a
+export IsLawfulStrict (is_lawful_strict)
+
+class IsLawfulNonstrict (rel srel eqv: α -> α -> Prop) : Prop where
+  is_lawful_nonstrict (a b: α): rel a b ↔ srel a b ∨ eqv a b
+export IsLawfulNonstrict (is_lawful_nonstrict)
 
 /-- In a trichotomous irreflexive order, every element is determined by the set of predecessors. -/
 def extensional_of_trichotomous_of_irrefl (r : α → α → Prop) [IsConnected r] [IsIrrefl r]
@@ -308,6 +317,9 @@ end
 
 namespace Relation
 
+variable {rel srel eqv: α -> α -> Prop}
+variable [IsEquiv eqv] [CongrEquiv rel eqv]
+
 instance (s: Setoid α) : IsRefl s.r := ⟨s.refl⟩
 instance (s: Setoid α) : IsSymmetric s.r := ⟨s.symm⟩
 instance (s: Setoid α) : IsTrans s.r := ⟨s.trans⟩
@@ -366,28 +378,36 @@ instance [IsTrans rel] : IsTrans (strict rel) where
     intro h'
     exact g.right (trans h' h.left)⟩
 
-instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsTrans rel] : Trans rel eqv rel where
+instance [IsTrans rel] : Trans rel eqv rel where
   trans {a b c} h g := congr_eqv (by rfl) g h
-instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsTrans rel] : Trans eqv rel rel where
+instance [IsTrans rel] : Trans eqv rel rel where
   trans {a b c} h g := congr_eqv (symm h) (by rfl) g
 
 instance [IsRefl eqv] : IsRefl (or_eqv rel eqv) where
   refl _ := .inr (by rfl)
 instance [IsRefl rel] : IsRefl (or_eqv rel eqv) where
   refl _ := .inl (by rfl)
-instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsTrans rel] : IsTrans (or_eqv rel eqv) where
+instance [IsTrans rel] : IsTrans (or_eqv rel eqv) where
   trans h g := by
     cases h <;> cases g <;> rename_i h g
     repeat left; exact trans h g
     right; exact trans h g
-instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsConnectedBy rel eqv] : IsTotal (or_eqv rel eqv) where
+instance [IsConnectedBy rel eqv] : IsTotal (or_eqv rel eqv) where
   total a b := by
     rcases connected_by rel eqv a b with h | h | h
     left; left; assumption
     left; right; assumption
     right; left; assumption
 
-instance [IsEquiv eqv] [CongrEquiv rel eqv] : CongrEquiv (or_eqv rel eqv) eqv where
+instance : CongrEquiv (strict rel) eqv where
+  congr_eqv := by
+    intro a b c d ac bd ⟨r₀, r₁⟩
+    apply And.intro
+    exact congr_eqv ac bd r₀
+    intro r; apply r₁
+    exact congr_eqv (symm bd) (symm ac) r
+
+instance : CongrEquiv (or_eqv rel eqv) eqv where
   congr_eqv {a b c d} h g r := by
     cases r
     left; apply congr_eqv h g
@@ -395,6 +415,43 @@ instance [IsEquiv eqv] [CongrEquiv rel eqv] : CongrEquiv (or_eqv rel eqv) eqv wh
     right; apply congr_eqv h g
     assumption
     assumption
+
+instance : IsLawfulStrict rel (strict rel) where
+  is_lawful_strict _ _ := Iff.rfl
+
+instance [IsAsymm rel] : IsLawfulStrict (or_eqv rel eqv) rel where
+  is_lawful_strict a b := by
+    apply Iff.intro
+    · intro h
+      apply And.intro
+      left; assumption
+      intro g; rcases g with g | g
+      exact asymm h g
+      exact irrefl (congr_eqv (by rfl) g h)
+    · intro ⟨h, g⟩
+      apply h.resolve_right
+      intro h'
+      apply g
+      right; exact symm h'
+
+instance [IsAntisymmBy rel eqv] [IsRefl rel] : IsLawfulNonstrict rel (strict rel) eqv where
+  is_lawful_nonstrict a b := by
+    apply Iff.intro
+    intro h
+    apply Classical.or_iff_not_imp_right.mpr
+    intro g; apply And.intro
+    assumption
+    intro h'; apply g
+    apply antisymm_by (rel := rel)
+    assumption
+    assumption
+    intro h
+    rcases h with h | h
+    exact h.left
+    exact congr_eqv (by rfl) h (by rfl)
+
+instance : IsLawfulNonstrict (or_eqv rel eqv) rel eqv where
+  is_lawful_nonstrict _ _ := Iff.rfl
 
 def quot_rel (rel eqv: α -> α -> Prop) [IsEquiv eqv] [CongrEquiv rel eqv] : Quotient (Relation.setoid eqv) -> Quotient (Relation.setoid eqv) -> Prop := by
   refine Quotient.lift₂ rel ?_
@@ -404,6 +461,71 @@ def quot_rel (rel eqv: α -> α -> Prop) [IsEquiv eqv] [CongrEquiv rel eqv] : Qu
   apply congr_eqv (eqv := eqv) h g r
   intro r
   apply congr_eqv (eqv := eqv) (symm h) (symm g) r
+
+instance [IsRefl rel] : IsRefl (quot_rel rel eqv) where
+  refl a := by
+    induction a using Quotient.ind with | _ a =>
+    show rel a a
+    rfl
+
+instance [IsTrans rel] : IsTrans (quot_rel rel eqv) where
+  trans {a b c} h g := by
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    induction c using Quotient.ind with | _ c =>
+    exact trans (r := rel) h g
+
+instance [IsAntisymmBy rel eqv] : IsAntisymm (quot_rel rel eqv) where
+  antisymm_by {a b} h g := by
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    exact Quotient.sound (antisymm_by (rel := rel) h g)
+
+instance [IsTotal rel] : IsTotal (quot_rel rel eqv) where
+  total a b := by
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    apply total rel a b
+
+instance [IsIrrefl rel] : IsIrrefl (quot_rel rel eqv) where
+  irrefl {a} h := by
+    induction a using Quotient.ind with | _ a =>
+    exact irrefl (rel := rel) h
+
+instance [IsAsymm rel] : IsAsymm (quot_rel rel eqv) where
+  asymm {a b} h g := by
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    exact asymm (rel := rel) h g
+
+instance [IsConnectedBy rel eqv] : IsConnected (quot_rel rel eqv) where
+  connected_by a b := by
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    show rel a b ∨ _ ∨ rel b a
+    rcases connected_by rel eqv a b with h | h | h
+    left; assumption
+    right; left; exact Quotient.sound h
+    right; right; assumption
+
+instance [IsLawfulStrict rel srel] [CongrEquiv srel eqv] : IsLawfulStrict (quot_rel rel eqv) (quot_rel srel eqv) where
+  is_lawful_strict {a b} := by
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    show srel a b ↔ rel a b ∧ ¬rel b a
+    apply is_lawful_strict
+
+instance [IsLawfulNonstrict rel srel eqv] [CongrEquiv srel eqv] : IsLawfulNonstrict (quot_rel rel eqv) (quot_rel srel eqv) (· = ·) where
+  is_lawful_nonstrict {a b} := by
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    show rel a b ↔ srel a b ∨ _
+    apply (is_lawful_nonstrict (srel := srel) (eqv := eqv) a b).trans
+    refine or_congr ?_ ?_
+    rfl
+    apply Iff.intro
+    intro h; apply Quotient.sound h
+    intro h; apply Quotient.exact h
 
 end Relation
 
@@ -497,5 +619,11 @@ instance [IsEquiv eqv] [CongrEquiv rel eqv] [IsStrictLinearOrder rel eqv] : IsLi
     assumption
 
 instance [IsWellOrder rel] : IsLinearOrder (or_eqv rel (· = ·)) (· = ·) := inferInstance
+
+instance [IsPreorder rel] [CongrEquiv rel eqv] : IsPreorder (quot_rel rel eqv) where
+instance [IsPartialOrder rel eqv] [CongrEquiv rel eqv] : IsPartialOrder (quot_rel rel eqv) (· = ·) where
+instance [IsLinearOrder rel eqv] [CongrEquiv rel eqv] : IsLinearOrder (quot_rel rel eqv) (· = ·) where
+instance [IsStrictPartialOrder rel] [CongrEquiv rel eqv] : IsStrictPartialOrder (quot_rel rel eqv) where
+instance [IsStrictLinearOrder rel eqv] [CongrEquiv rel eqv] : IsStrictLinearOrder (quot_rel rel eqv) (· = ·) where
 
 end Relation
