@@ -5,6 +5,7 @@ import Math.Algebra.Ring.Units.Defs
 import Math.Algebra.Field.Impls.Fin
 import Math.Order.OrderIso
 import Math.Algebra.AddGroupWithOne.Hom
+import Math.Type.Finite
 
 def ZMod : ℕ -> Type
 | 0 => ℤ
@@ -376,5 +377,53 @@ def symm_liftRing_toInt (n: ℕ) (f: ZMod n →+* A) (x: ZMod n) : ((liftRing n)
   apply congrFun this
 
 end
+
+instance [h: NeZero n] : Fintype (ZMod n) :=
+  match n, h with
+  | n + 1, _ => inferInstanceAs (Fintype (Fin (n + 1)))
+
+instance [h: NeZero n] : IsFinite (ZMod n) := inferInstance
+
+def not_finite : ¬IsFinite (ZMod 0) := by
+  intro f
+  apply Fintype.nat_not_fintype
+  apply @Fintype.ofIsFinite _ ?_
+  apply IsFinite.ofEmbed (ZMod 0)
+  refine ⟨Int.ofNat, fun {_ _} => Int.ofNat.inj⟩
+
+@[simp]
+def _root_.Fintype.card_zmod [h: NeZero n] : Fintype.card (ZMod n) = n :=
+  match n, h with
+  | _ + 1, _ => Fintype.card_fin _
+
+macro_rules
+| `(tactic|contradiction) => `(tactic|exfalso; apply not_finite; assumption)
+
+-- given any equivalence between two ZMod, they must be the same type
+def inj (h: ZMod n ≃ ZMod m) : n = m := by
+  revert n m
+  suffices ∀n m: ℕ, ZMod n ≃ ZMod m -> n < m -> False by
+    intro n m h
+    rcases Nat.lt_trichotomy n m with g | g | g
+    have := this n m h
+    contradiction
+    assumption
+    have := this m n h.symm
+    contradiction
+  intro n m h g
+  match n with
+  | 0 =>
+    match m with
+    | m + 1 =>
+    clear g
+    have : IsFinite (ZMod 0) := IsFinite.ofEquiv h
+    contradiction
+  | n + 1 =>
+    match m with
+    | m + 1 =>
+    have := Fintype.card_eq_of_equiv h
+    simp at this
+    cases this
+    exact lt_irrefl g
 
 end ZMod
