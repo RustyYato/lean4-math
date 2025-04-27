@@ -112,9 +112,144 @@ def equiv_zmod_add : Cyclic n ≃* MulOfAdd (ZMod n) := {
       simp
 }
 
+def equiv_zmod_add_unit : equiv_zmod_add (unit n) = MulOfAdd.mk 1 := by apply toZMod_unit
+
+def pow (c: Cyclic n) : ℤ := ZMod.toInt (toZMod _ c).get
+
+instance : Repr (Cyclic n) where
+  reprPrec c := reprPrec (pow c)
+
+def pow_spec (c: Cyclic n) : unit n ^ pow c = c := equiv_zmod_add.coe_symm _
+def pow_one : pow (n := n) 1 = 0 := by
+  unfold pow
+  rw [map_one, MulOfAdd.get_one, ZMod.toInt_zero]
+def pow_mul (a b: Cyclic n) : pow (a * b) = (pow a + pow b) % n := by
+  cases n with
+  | zero =>
+    rw [natCast_zero, Int.emod_zero]
+    unfold pow
+    simp [map_mul]
+    rfl
+  | succ n =>
+    unfold pow
+    simp [map_mul]
+    rfl
+
+def of_npow_eq_one : (unit n) ^ m = 1 ->  n ∣ m := by
+  intro h
+  have : equiv_zmod_add (unit n ^ m) = 1 := by rw [h, map_one]
+  rw [map_npow, equiv_zmod_add_unit, ←MulOfAdd.mk_nsmul, ←MulOfAdd.mk_zero] at this
+  replace : m • 1 = (0: ZMod _) := this
+  apply HasChar.char_dvd_natCast_eq_zero (α := ZMod n)
+  rwa [natCast_eq_nsmul_one]
+
+def of_zpow_eq_one (m: ℤ) : (unit n) ^ m = 1 -> Nat.cast n ∣ m := by
+  intro h
+  have : unit n ^ m.natAbs = 1 := by
+    rw [←zpow_ofNat]
+    rcases Int.natAbs_eq m  with g | g
+    rw [←g, h]
+    rw [←neg_neg (Nat.cast m.natAbs), ←g, zpow_neg, h, inv_one]
+  have := of_npow_eq_one this
+  apply Int.dvd_natAbs.mp
+  apply Int.ofNat_dvd.mpr
+  assumption
+
 instance : IsCommMagma (Cyclic n) where
   mul_comm a b := by
-    apply equiv_zmod_add.inj
-    rw [map_mul, map_mul, mul_comm]
+    rw [←pow_spec a, ←pow_spec b, ←zpow_add, ←zpow_add, Int.add_comm]
+
+-- def preLift (G: Type*) [GroupOps G] [IsGroup G] (g: G) (hg: g ^ n = 1) : Cyclic n →* G where
+--   toFun n := g ^ n.pow
+--   map_one := by rw [pow_one, zpow_zero]
+--   map_mul {x y} := by
+--     rw [pow_mul, ←zpow_add]; rw (occs := [2]) [←Int.ediv_add_emod (x.pow + y.pow) n]
+--     rw [zpow_add , zpow_mul]
+--     sorry
+-- def lift (G: Type*) [GroupOps G] [IsGroup G] : { g: G // g ^ n = 1 } ≃ (Cyclic n →* G) := {
+--   toFun g := preLift G g.val g.property
+--   invFun f := {
+--     val := f (unit _)
+--     property := sorry
+--   }
+--   leftInv := sorry
+--   rightInv := sorry
+-- }
+
+def equiv_cyclic_iff_generated_by_unit (G: Type*) [GroupOps G] [IsGroup G] :
+  (∃u: G, ∀g: G, ∃n: ℕ, g = u ^ n) ↔ ∃n, Nonempty (G ≃* Cyclic n) := by
+  apply Iff.intro
+  · intro ⟨u, hu⟩
+    let n := char (AddOfMul G)
+    exists n
+    have ⟨f, hf⟩ := Classical.axiomOfChoice hu; clear hu
+    have toG : Cyclic n →* G := sorry
+    refine ⟨?_⟩; apply GroupEquiv.symm
+    refine { toG with invFun := ?_, leftInv := ?_, rightInv := ?_ }
+    · sorry
+    · sorry
+    · sorry
+  · sorry
+
+
+def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cyclic m) := by
+  classical
+  let m := char (AddOfMul s)
+  have m_spec : ∀x: s, x ^ m = 1 := char_spec (AddOfMul s)
+  have m_dvd : ∀k, (∀x: s, x ^ k = 1) -> m ∣ k := char_dvd (AddOfMul s)
+  exists m
+  let u := (equiv_zmod_add (n := n)).symm (AddOfMul.mk (n / m))
+  have : ∀x: Cyclic n, x ^ m = 1 -> x ∈ s := by
+    intro x hx
+    rw [←pow_spec x, ←zpow_ofNat, ←zpow_mul] at hx
+    have := of_zpow_eq_one (n := n) _ hx
+
+
+    sorry
+  have : u ∈ s := by
+    sorry
+  -- have u : ∃u: s, ∀ := sorry
+  sorry
+  -- match n with
+  -- | 0 =>
+  --   rcases subsingleton_or_nontrivial s with sub | nontriv
+  --   exists 1
+  --   exact ⟨{
+  --     toFun _ := 1
+  --     invFun _ := 1
+  --     leftInv _ := Subsingleton.allEq _ _
+  --     rightInv _ := Subsingleton.allEq _ _
+  --     map_one := Subsingleton.allEq _ _
+  --     map_mul {_ _} := Subsingleton.allEq _ _
+  --   }⟩
+  --   exists 0
+  --   have ⟨a, ha⟩ := exists_ne (α := s) 1
+  --   have exists_card : ∃m: ℕ, Nat.cast m ∣ (equiv_int_add a.val).get := by
+  --     exists (equiv_int_add a.val).get.natAbs
+  --     apply Int.natAbs_dvd.mpr
+  --     apply Int.dvd_refl
+  --   let m := Nat.findP exists_card
+  --   let m_spec := Nat.findP_spec exists_card
+  --   let m_smallest := Nat.lt_findP_spec exists_card
+
+
+
+  --   sorry
+  -- | n + 1 =>
+  -- have exists_card : ∃m: ℕ, (∀x: s, x ^ m = 1) ∧ (0 < m) := by
+  --   exists n + 1
+  --   apply And.intro
+  --   intro x
+  --   apply Subtype.val_inj
+  --   simp
+  --   rw [npow_n_eq_one]
+  --   apply Nat.zero_lt_succ
+  -- let m := Nat.findP exists_card
+  -- let m_spec := Nat.findP_spec exists_card
+  -- let m_smallest := Nat.lt_findP_spec exists_card
+  -- -- match m with
+  -- -- | 0 => sorry
+  -- exists m
+  -- sorry
 
 end Cyclic
