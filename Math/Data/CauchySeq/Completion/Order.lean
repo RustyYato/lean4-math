@@ -19,10 +19,21 @@ def Pos : Cauchy γ -> Prop := by
   apply Relation.symm; assumption
 
 instance : LT (Cauchy γ) where
-  lt a b := (b - a).Pos
+  lt := Relation.quot_rel CauchySeq.lt (· ≈ ·)
 
 instance : LE (Cauchy γ) where
   le a b := a < b ∨ a = b
+
+def lt_def (a b: Cauchy γ) : a < b ↔ (b - a).Pos := by
+  induction a, b using ind₂
+  apply Iff.rfl
+
+instance : Relation.IsLawfulNonstrict (α := Cauchy γ) (· ≤ ·) (· < ·) (· = ·) where
+  is_lawful_nonstrict _ _ := Iff.rfl
+
+def le_iff_quot_rel (a b: Cauchy γ) : a ≤ b ↔ Relation.quot_rel CauchySeq.le (· ≈ ·) a b := by
+  have := Relation.quot_rel.instIsLawfulNonstrict (α := CauchySeq γ) (rel := (CauchySeq.le (γ := γ))) (srel := CauchySeq.lt) (eqv := (· ≈ ·))
+  symm; apply (this.is_lawful_nonstrict _ _)
 
 def mk_lt (a b: CauchySeq γ) : ofSeq a < ofSeq b ↔ a < b := by rfl
 def mk_le (a b: CauchySeq γ) : ofSeq a ≤ ofSeq b ↔ a ≤ b := by
@@ -62,12 +73,10 @@ def mul_pos {a b: Cauchy γ} : a.Pos -> b.Pos -> (a * b).Pos := by
   apply CauchySeq.mul_pos
 
 def pos_or_eq_or_neg (a: Cauchy γ) : a.Pos ∨ a = 0 ∨ (-a).Pos := by
-  by_cases h:a = 0
-  right; left; assumption
-  cases pos_or_neg_of_abs_pos (f := a) (by
-    have : (‖a‖ - 0).Pos := (norm_pos_of_not_zero _ h)
-    rwa [sub_zero] at this)
+  induction a with | ofSeq a =>
+  rcases (CauchySeq.pos_or_eq_or_neg a) with h | h | h
   left; assumption
+  right; left; apply Quotient.sound; assumption
   right; right; assumption
 
 @[simp]
@@ -76,58 +85,17 @@ def zero_not_pos : ¬Pos (0: Cauchy γ) := by
   have := non_zero_of_Pos _ h
   contradiction
 
-private def lt_asymm {a b: Cauchy γ} : a < b -> b < a -> False := by
-  intro h g
-  replace h : (b - a).Pos := h
-  replace g : (a - b).Pos := g
-  rw [←neg_sub] at g
-  have := not_neg_of_pos h
-  contradiction
+instance : Relation.IsStrictLinearOrder (α := Cauchy γ) (· < ·) (· = ·) :=
+  inferInstanceAs (Relation.IsStrictLinearOrder (Relation.quot_rel CauchySeq.lt (· ≈ ·)) (· = ·))
 
-instance : IsLinearOrder (Cauchy γ) where
-  lt_iff_le_and_not_le := by
-    intro a b
-    apply Iff.intro
-    intro h
-    apply And.intro
-    left; assumption
-    intro g
-    rcases g  with g | g
-    have := lt_asymm h g
-    contradiction
-    subst g
-    replace h : (b - b).Pos := h
-    simp at h
-    intro ⟨h, g⟩
-    apply h.resolve_right
-    rintro rfl
-    apply g
-    right; rfl
-  le_antisymm := by
-    intro a b h g
-    cases h <;> cases g <;> rename_i h g
-    have := lt_asymm h g
-    contradiction
-    symm; repeat assumption
-  le_trans := by
-    suffices ∀{a b c: Cauchy γ}, (b - a).Pos -> (c - b).Pos -> (c - a).Pos by
-      intro a b c ab bc
-      rcases ab with ab | rfl <;> rcases bc with bc | rfl
-      · left; apply this <;> assumption
-      · left; assumption
-      · left; assumption
-      · right; rfl
-    intro a b c ab bc
-    have ac := add_pos bc ab
-    rwa [←add_sub_assoc, sub_add_cancel] at ac
-  lt_or_le := by
-    intro a b
-    rcases pos_or_eq_or_neg (b - a) with h | h | h
-    left; assumption
-    right; right; apply eq_of_sub_eq_zero; assumption
-    right; left
-    show (a - b).Pos
-    rwa [←neg_sub]
+instance : Relation.IsLinearOrder (α := Cauchy γ) (· ≤ ·) (· = ·) :=
+  inferInstanceAs (Relation.IsLinearOrder (Relation.or_eqv (· < ·) (· = ·)) (· = ·))
+
+instance : IsLawfulLT (Cauchy γ) :=
+  have : Relation.IsLawfulStrict (α := Cauchy γ) (· ≤ ·) (· < ·) := inferInstanceAs (Relation.IsLawfulStrict (Relation.or_eqv _ _) _)
+  inferInstance
+
+instance : IsLinearOrder (Cauchy γ) := inferInstance
 
 private def mul_le_mul_of_nonneg_left: ∀a b: Cauchy γ, a ≤ b -> ∀c, 0 ≤ c -> c * a ≤ c * b := by
   intro a b ab c hc
@@ -136,11 +104,13 @@ private def mul_le_mul_of_nonneg_left: ∀a b: Cauchy γ, a ≤ b -> ∀c, 0 ≤
   rcases Or.symm ab with rfl | ab
   rfl
   left
+  rw [lt_def]
   show (c * b - c * a).Pos
   rw [←mul_sub]
   apply mul_pos
+  rw [lt_def] at hc
   rwa [←sub_zero c]
-  assumption
+  rwa [lt_def] at ab
 
 instance : IsStrictOrderedSemiring (Cauchy γ) where
   add_le_add_left := by
@@ -159,7 +129,8 @@ instance : IsStrictOrderedSemiring (Cauchy γ) where
     rw [zero_mul]
     rcases Or.symm hb with rfl | hb
     rw [mul_zero]
-    left; show (a * _ - 0).Pos
+    left; rw [lt_def]; show (a * _ - 0).Pos
+    rw [lt_def] at ha hb
     simp; apply mul_pos
     rwa [←sub_zero a]
     rwa [←sub_zero b]
@@ -180,6 +151,7 @@ instance : IsStrictOrderedSemiring (Cauchy γ) where
     simp
   mul_pos := by
     intro a b ha hb
+    rw [lt_def] at *
     replace ha : (a - 0).Pos := ha
     replace hb : (b - 0).Pos := hb
     show (a * b - 0).Pos

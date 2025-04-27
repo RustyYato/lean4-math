@@ -525,14 +525,14 @@ instance [IsConnectedBy rel eqv] : IsConnected (quot_rel rel eqv) where
     right; left; exact Quotient.sound h
     right; right; assumption
 
-instance [IsLawfulStrict rel srel] [CongrEquiv srel eqv] : IsLawfulStrict (quot_rel rel eqv) (quot_rel srel eqv) where
+instance quot_rel.instIsLawfulStrict [IsLawfulStrict rel srel] [CongrEquiv srel eqv] : IsLawfulStrict (quot_rel rel eqv) (quot_rel srel eqv) where
   is_lawful_strict {a b} := by
     induction a using Quotient.ind with | _ a =>
     induction b using Quotient.ind with | _ b =>
     show srel a b ↔ rel a b ∧ ¬rel b a
     apply is_lawful_strict
 
-instance [IsLawfulNonstrict rel srel eqv] [CongrEquiv srel eqv] : IsLawfulNonstrict (quot_rel rel eqv) (quot_rel srel eqv) (· = ·) where
+instance quot_rel.instIsLawfulNonstrict [IsLawfulNonstrict rel srel eqv] [CongrEquiv srel eqv] : IsLawfulNonstrict (quot_rel rel eqv) (quot_rel srel eqv) (· = ·) where
   is_lawful_nonstrict {a b} := by
     induction a using Quotient.ind with | _ a =>
     induction b using Quotient.ind with | _ b =>
@@ -598,7 +598,6 @@ protected def IsLawfulStrict.IsConnected [IsTotal rel] [IsAntisymmBy rel eqv] [I
 
 instance [LE α] [LT α] [IsLawfulLT α] [IsTotal (α := α) (· ≤ ·)] [@IsAntisymm (α := α) (· ≤ ·)] : IsConnected (α := α) (· < ·) :=
   IsLawfulStrict.IsConnected (rel := (· ≤ ·))
-
 
 end Relation
 

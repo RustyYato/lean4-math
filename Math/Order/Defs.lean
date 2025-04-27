@@ -159,12 +159,20 @@ instance (priority := 500) instLOofPOofLEconnected_by [Relation.IsConnected (· 
     right; rw [eq]
     right; assumption
 
-instance (priority := 500) [Relation.IsLinearOrder (α := α) (· ≤ ·) (· = ·)] : IsLinearOrder α := inferInstance
 instance (priority := 500) instLOofPOofLEtot [Relation.IsTotal (· ≤ (·: α))] : IsLinearOrder α := inferInstance
 
 end IsPartialOrder
 
 section IsLinearOrder
+
+instance (priority := 500) [LT α] [LE α] [IsLawfulLT α] [Relation.IsPreorder (α := α) (· ≤ ·)] : IsPreOrder α where
+  le_refl := Relation.refl
+  le_trans := trans
+
+instance (priority := 500) [LT α] [LE α] [IsLawfulLT α] [Relation.IsPartialOrder (α := α) (· ≤ ·) (· = ·)] : IsPartialOrder α where
+  le_antisymm := antisymm (· ≤ ·)
+
+instance (priority := 500) [LT α] [LE α] [IsLawfulLT α] [Relation.IsLinearOrder (α := α) (· ≤ ·) (· = ·)] : IsLinearOrder α := inferInstance
 
 variable [LT α] [LE α] [IsLinearOrder α] {a b c: α}
 
