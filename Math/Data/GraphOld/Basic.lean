@@ -1,6 +1,6 @@
 import Math.Tactics.PPWithUniv
 import Math.Order.Defs
-import Math.Relation.Basic
+import Math.Relation.Defs
 
 @[pp_with_univ]
 structure Graph.{u} where

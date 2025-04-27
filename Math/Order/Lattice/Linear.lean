@@ -6,7 +6,7 @@ open Set hiding Nonempty
 section
 
 variable [SupSet α] [InfSet α] [Max α] [Min α] [LE α] [LT α]
-variable [IsPartialOrder α] [@Relation.IsWellFounded α (· < ·)] [@Relation.IsTrichotomous α (· < ·)]
+variable [IsPartialOrder α] [@Relation.IsWellFounded α (· < ·)] [@Relation.IsConnected α (· < ·)]
 variable {a b c: α} {s t: Set α} [IsConditionallyCompleteLattice α]
 
 variable [IsConditionallyCompleteLattice α]

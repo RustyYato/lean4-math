@@ -213,7 +213,7 @@ class IsLawfulNonstrict (rel srel eqv: α -> α -> Prop) : Prop where
   is_lawful_nonstrict (a b: α): rel a b ↔ srel a b ∨ eqv a b
 export IsLawfulNonstrict (is_lawful_nonstrict)
 
-/-- In a trichotomous irreflexive order, every element is determined by the set of predecessors. -/
+/-- In a connected irreflexive order, every element is determined by the set of predecessors. -/
 def extensional_of_trichotomous_of_irrefl (r : α → α → Prop) [IsConnected r] [IsIrrefl r]
     {a b : α} (H : ∀ x, r x a ↔ r x b) : a = b :=
   ((@connected _ r _ a b).resolve_left <| mt (H _).2 <| irrefl).resolve_right <| mt (H _).1
@@ -450,6 +450,23 @@ instance [IsAntisymmBy rel eqv] [IsRefl rel] : IsLawfulNonstrict rel (strict rel
     exact h.left
     exact congr_eqv (by rfl) h (by rfl)
 
+instance [IsAntisymmBy rel eqv] [IsLawfulStrict rel srel] [IsRefl rel] : IsLawfulNonstrict rel srel eqv where
+  is_lawful_nonstrict a b := by
+    rw [is_lawful_strict (rel := rel) (srel := srel)]
+    apply Iff.intro
+    intro h
+    apply Classical.or_iff_not_imp_right.mpr
+    intro g; apply And.intro
+    assumption
+    intro h'; apply g
+    apply antisymm_by (rel := rel)
+    assumption
+    assumption
+    intro h
+    rcases h with h | h
+    exact h.left
+    exact congr_eqv (by rfl) h (by rfl)
+
 instance : IsLawfulNonstrict (or_eqv rel eqv) rel eqv where
   is_lawful_nonstrict _ _ := Iff.rfl
 
@@ -560,8 +577,28 @@ protected def IsLawfulStrict.IsTrans [IsTrans rel] [IsLawfulStrict rel srel] : I
     intro h
     exact bc.right (trans h ab.left)
 
+protected def IsLawfulStrict.IsIrrefl [IsRefl rel] [IsLawfulStrict rel srel] : IsIrrefl srel where
+  irrefl {a} h := (propext (is_lawful_strict (rel := rel) (srel := srel) a a) ▸ h).right (by rfl)
 instance [LE α] [LT α] [@IsTrans α (· ≤ ·)] [IsLawfulLT α] : @IsTrans α (· < ·) :=
   IsLawfulStrict.IsTrans (rel := (· ≤ ·))
+instance [LE α] [LT α] [@IsRefl α (· ≤ ·)] [IsLawfulLT α] : @IsIrrefl α (· < ·) :=
+  IsLawfulStrict.IsIrrefl (rel := (· ≤ ·))
+instance [LE α] [LT α] [@IsAntisymm α (· ≤ ·)] [@IsRefl α (· ≤ ·)] [IsLawfulLT α] : @IsLawfulNonstrict α (· ≤ ·) (· < ·) (· = ·) :=
+  inferInstance
+
+protected def IsLawfulStrict.IsConnected [IsTotal rel] [IsAntisymmBy rel eqv] [IsLawfulStrict rel srel] : IsConnectedBy srel eqv where
+  connected_by a b := by
+    iterate 2 rw [is_lawful_strict (rel := rel) (srel := srel)]
+    by_cases h:rel a b
+    by_cases g:rel b a
+    right; left; apply antisymm_by h g
+    left; trivial
+    have := (total rel a b).resolve_left h
+    right ;right ; trivial
+
+instance [LE α] [LT α] [IsLawfulLT α] [IsTotal (α := α) (· ≤ ·)] [@IsAntisymm (α := α) (· ≤ ·)] : IsConnected (α := α) (· < ·) :=
+  IsLawfulStrict.IsConnected (rel := (· ≤ ·))
+
 
 end Relation
 
@@ -661,5 +698,48 @@ instance [IsPartialOrder rel eqv] [CongrEquiv rel eqv] : IsPartialOrder (quot_re
 instance [IsLinearOrder rel eqv] [CongrEquiv rel eqv] : IsLinearOrder (quot_rel rel eqv) (· = ·) where
 instance [IsStrictPartialOrder rel] [CongrEquiv rel eqv] : IsStrictPartialOrder (quot_rel rel eqv) where
 instance [IsStrictLinearOrder rel eqv] [CongrEquiv rel eqv] : IsStrictLinearOrder (quot_rel rel eqv) (· = ·) where
+
+end Relation
+
+namespace Relation
+
+def exists_min {P: α -> Prop} (r: α -> α -> Prop) [IsWellFounded r] (h: ∃x, P x) : ∃x, P x ∧ ∀y, r y x -> ¬P y := by
+  obtain ⟨x, px⟩ := h
+  induction x using wfInduction r with
+  | h x ih =>
+  by_cases h:∃y, r y x ∧ P y
+  obtain ⟨y, ryx, px⟩ := h
+  apply ih
+  assumption
+  assumption
+  refine ⟨x, px, ?_⟩
+  intro y
+  exact not_and.mp (not_exists.mp h y)
+
+instance (f: α -> β) {r: β -> β -> Prop} [IsWellFounded r] : IsWellFounded (fun x y => r (f x) (f y)) where
+  wf := by
+    apply WellFounded.intro
+    intro a
+    generalize h:f a = b
+    induction b using wfInduction r generalizing a with | h b ih =>
+    subst b
+    apply Acc.intro
+    intro a' ra
+    exact ih (f a') ra _ rfl
+
+noncomputable
+def argMin (f: α -> β) (r: β -> β -> Prop) [IsWellFounded r] [h: Nonempty α]: α :=
+  Classical.choose <|
+    have ⟨a⟩ := h
+    exists_min (fun x y => r (f x) (f y)) (P := fun _ => True) ⟨a, True.intro⟩
+
+def not_lt_argMin (a : α) (f: α -> β) {r: β -> β -> Prop} [IsWellFounded r] :
+  have : Nonempty α := ⟨a⟩
+  ¬r (f a) (f (argMin f r)) := by
+    have := exists_min (fun x y => r (f x) (f y)) (P := fun _ => True) ⟨a, True.intro⟩
+    have ⟨_, spec⟩ := Classical.choose_spec this
+    intro h h
+    have := spec _ h
+    contradiction
 
 end Relation

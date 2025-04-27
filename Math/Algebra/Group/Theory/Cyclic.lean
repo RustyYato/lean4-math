@@ -243,6 +243,7 @@ def equiv_cyclic_iff_generated_by_unit (G: Type*) [GroupOps G] [IsGroup G] :
       rw [map_zpow, lift_unit]
       simp
       apply npow_congr
+      have := hf (u ^ m)
       sorry
     · intro g
       simp

@@ -1,5 +1,5 @@
 import Math.Order.Chain
-import Math.Relation.Basic
+import Math.Relation.Defs
 
 namespace Zorn
 
@@ -55,7 +55,7 @@ def preorder_in (U: Set α) (h : ∀c ⊆ U, Set.IsChain (· ≤ ·) c → ∃ub
         subst eqa; subst eqb
         unfold Set.Induced
         dsimp
-        rcases c.tri ⟨_, mema⟩ ⟨_, memb⟩ with lt | eq | gt
+        rcases c.connected_by ⟨_, mema⟩ ⟨_, memb⟩ with lt | eq | gt
         left; assumption
         right; left
         cases eq; congr

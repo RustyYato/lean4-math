@@ -1,4 +1,4 @@
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Relation.RelIso
 import Math.Tactics.PPWithUniv
 import Math.Relation.Segments
@@ -51,7 +51,7 @@ def type (rel: α -> α -> Prop) [Relation.IsWellOrder rel] := ⟦.mk _ rel⟧
 def Pre.lift (a: Pre.{u}): Pre.{max u v} where
   ty := ULift a.ty
   rel x y := a.rel x.down y.down
-  wo := (ULift.relIso _).toRelEmbedding.wo
+  wo := (ULift.relIso _).toRelEmbedding.lift_wo
 
 def lift : Ordinal -> Ordinal := by
   apply Quotient.lift (fun _ => ⟦_⟧) _
@@ -151,14 +151,14 @@ instance : IsPartialOrder Ordinal where
 instance : @Relation.IsWellOrder Nat (· < ·) where
   wf := Nat.lt_wfRel.wf
   trans := Nat.lt_trans
-  tri := Nat.lt_trichotomy
+  connected_by := Nat.lt_trichotomy
 
 def Pre.zero : Pre where
   ty := PEmpty
   rel := nofun
   wo := {
     trans := fun {x} => x.elim
-    tri := fun {x} => x.elim
+    connected_by := fun {x} => x.elim
     wf := ⟨fun {x} => x.elim⟩
   }
 
@@ -167,7 +167,7 @@ def Pre.one : Pre where
   rel _ _ := False
   wo := {
     trans := fun x => x.elim
-    tri := fun  _ _ => .inr (.inl rfl)
+    connected_by := fun  _ _ => .inr (.inl rfl)
     wf := by
       refine ⟨?_⟩
       intro x
@@ -182,7 +182,7 @@ def one : Ordinal := ⟦Pre.one⟧
 def Pre.ofNat (n: Nat) : Pre where
   ty := Fin n
   rel a b := a < b
-  wo := Fin.relEmbedNat.wo
+  wo := Fin.relEmbedNat.lift_wo
 
 def ofNat (n: Nat) := ⟦Pre.ofNat n⟧
 
@@ -231,7 +231,7 @@ instance (p: Pre) : WellFoundedRelation p.ty where
 def Pre.typein {α: Type u} (r: α -> α -> Prop) [Relation.IsWellOrder r] (a: α) : Pre.{u} where
   ty := { x: α // r x a }
   rel x y := r x y
-  wo := (Subtype.relEmbed r).wo
+  wo := (Subtype.relEmbed r).lift_wo
 
 def typein (r: α -> α -> Prop) [Relation.IsWellOrder r] (a: α) : Ordinal := ⟦Pre.typein r a⟧
 
@@ -289,8 +289,8 @@ def typein_lt (r: α -> α -> Prop) (a) [Relation.IsWellOrder r] : (typein r a) 
   apply Pre.typein_lt
 
 def typein_lt_typein_iff [Relation.IsWellOrder r] : typein r a < typein r b ↔ r a b := by
-  have := (Subtype.relEmbed (P := fun x => r x b) r).wo
-  have := (Subtype.relEmbed (P := fun x => r x a) r).wo
+  have := (Subtype.relEmbed (P := fun x => r x b) r).lift_wo
+  have := (Subtype.relEmbed (P := fun x => r x a) r).lift_wo
   apply Iff.intro
   · intro ⟨h⟩
     let rb_lt_r := Pre.typein_lt r b
@@ -445,7 +445,7 @@ def Pre.minTypeRelEmbed : (fun x y: Pre.minType a b => a.rel x.val.fst y.val.fst
 def Pre.min (a b: Pre) : Pre where
   ty := minType a b
   rel x y := a.rel x.val.fst y.val.fst
-  wo := Pre.minTypeRelEmbed.wo
+  wo := Pre.minTypeRelEmbed.lift_wo
 
 def Pre.min.spec (a b c d: Pre) (ac: a.rel ≃r c.rel) (bd:  b.rel ≃r d.rel): (a.min b).rel ≃r (c.min d).rel where
   toFun | ⟨⟨a₀, b₀⟩, ordeq⟩ => ⟨⟨ac a₀, bd b₀⟩, by
@@ -556,8 +556,8 @@ def min_eq_left_iff {a b: Ordinal} : a ≤ b ↔ min a b = a := by
     let binit := Subtype.initalSegment b.rel (P := fun y => b.rel y x.val.fst) <| by
       intro a₀ a₁
       exact flip trans
-    have awo := ainit.wo
-    have bwo := binit.wo
+    have awo := ainit.lift_wo
+    have bwo := binit.lift_wo
     have : typein b.rel y = _ := typein_congr_initial binit (rwo := inferInstance) (swo := inferInstance) (a := ⟨y, h⟩)
     rw [this]; clear this
     have : typein a.rel (g ⟨y, h⟩).val  = _ := typein_congr_initial ainit (rwo := inferInstance) (swo := inferInstance) (a := (g ⟨y, h⟩))
@@ -649,7 +649,7 @@ def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b �
   subst eq
   have ⟨b, eq⟩ := typein_surj o.rel b bo
   subst eq
-  rcases Relation.trichotomous o.rel a b with ab | eq | ba
+  rcases Relation.connected o.rel a b with ab | eq | ba
   left; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
   left; rw [eq]
   right; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
@@ -695,8 +695,8 @@ instance : IsLinearOrder Ordinal where
     right; rw [eq]
     right; assumption
 
-instance : @Relation.IsTrichotomous Ordinal (· < ·) where
-  tri := lt_trichotomy
+instance : @Relation.IsConnected Ordinal (· < ·) where
+  connected_by := lt_trichotomy
 
 instance : @Relation.IsWellOrder Ordinal (· < ·) where
 
@@ -768,7 +768,7 @@ instance : Relation.IsWellOrder (Pre.maxType.LT (r := r) (s := s)) where
     apply Relation.trans' <;> assumption
     apply LT.inr
     apply Relation.trans' <;> assumption
-  tri := by
+  connected_by := by
     intro a b
     cases a <;> cases b
     any_goals
@@ -776,13 +776,13 @@ instance : Relation.IsWellOrder (Pre.maxType.LT (r := r) (s := s)) where
       have := not_inl_and_inr _ ha _ hb
       contradiction
     rename_i a _ b _
-    rcases Relation.trichotomous r a b with ab | eq | ba
+    rcases Relation.connected r a b with ab | eq | ba
     left; apply LT.inl; assumption
     right; left; congr
     right; right; apply LT.inl; assumption
     right; right; apply LT.mk_inl
     rename_i a _ b _
-    rcases Relation.trichotomous s a b with ab | eq | ba
+    rcases Relation.connected s a b with ab | eq | ba
     left; apply LT.inr; assumption
     right; left; congr
     right; right; apply LT.inr; assumption
@@ -790,7 +790,7 @@ instance : Relation.IsWellOrder (Pre.maxType.LT (r := r) (s := s)) where
     left; apply LT.mk_inl
     left; apply LT.mk_inr
     rename_i a _ ha b _ hb
-    rcases Relation.trichotomous r a b with ab | eq | ba
+    rcases Relation.connected r a b with ab | eq | ba
     left; apply LT.mk; assumption
     right; left; congr
     rw [←eq, ha] at hb
@@ -1585,15 +1585,15 @@ instance [Relation.IsTrans r] : Relation.IsTrans (Pre.succRel r) where
     apply Pre.succRel.none
     apply Pre.succRel.some
     apply Relation.trans' <;> assumption
-instance [Relation.IsTrichotomous r] : Relation.IsTrichotomous (Pre.succRel r) where
-  tri := by
+instance [Relation.IsConnected r] : Relation.IsConnected (Pre.succRel r) where
+  connected_by := by
     intro a b
     cases a <;> cases b
     right; left; rfl
     right; right; apply Pre.succRel.none
     left; apply Pre.succRel.none
     rename_i a b
-    rcases Relation.trichotomous r a b with ab | eq | ba
+    rcases Relation.connected r a b with ab | eq | ba
     left; apply Pre.succRel.some; assumption
     right; left; congr
     right; right; apply Pre.succRel.some; assumption
@@ -1791,7 +1791,7 @@ def succ_lt_succ_of_lt {a b: Ordinal} : a < b -> a + 1 < b + 1 := by
       cases g
       apply Set.mem_range.mpr
       rename_i x lt_newtop
-      rcases Relation.trichotomous b.rel x top with lt_top | eq_top | top_lt
+      rcases Relation.connected b.rel x top with lt_top | eq_top | top_lt
       have ⟨a, eq⟩ := Set.mem_range.mp ((top_spec x).mp lt_top)
       exists a
       rw [eq]; rfl
@@ -1818,7 +1818,7 @@ def succ_lt_succ_of_lt {a b: Ordinal} : a < b -> a + 1 < b + 1 := by
       cases g
       apply Set.mem_range.mpr
       rename_i x
-      rcases Relation.trichotomous b.rel x top with lt_top | eq_top | top_lt
+      rcases Relation.connected b.rel x top with lt_top | eq_top | top_lt
       have ⟨a, eq⟩ := Set.mem_range.mp ((top_spec x).mp lt_top)
       exists a
       rw [eq]; rfl
@@ -1881,7 +1881,7 @@ def lt_succ_of_le {a b: Ordinal} (h: a ≤ b) : a < b.succ := by
   intro ⟨a₀, eq⟩
   subst b₁
   apply Pre.succRel.some
-  rcases Relation.trichotomous b.rel (h a₀) b₀ with lt | eq | gt
+  rcases Relation.connected b.rel (h a₀) b₀ with lt | eq | gt
   assumption
   subst b₀
   have := hb₀ Set.mem_range'
@@ -2243,7 +2243,7 @@ def lift_le_iff {x y: Ordinal} :
 def Pre.le_type {A: Pre.{u}} {B: Pre.{max u v}} (h: B.rel ≼i A.rel): Pre.{u} where
   ty := Subtype (· ∈ Set.range h)
   rel := Subtype.inducedRelation h.toEmbedding B.rel
-  wo := (Subtype.inducedEquiv h.toEmbedding B.rel).symm.toRelEmbedding.wo
+  wo := (Subtype.inducedEquiv h.toEmbedding B.rel).symm.toRelEmbedding.lift_wo
 
 def le_lift {x: Ordinal.{u}} {y: Ordinal.{max u v}} :
   y ≤ Ordinal.lift.{u, v} x -> ∃z, y = Ordinal.lift.{u, v} z := by

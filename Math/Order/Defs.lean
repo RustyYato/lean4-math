@@ -1,6 +1,6 @@
 import Math.Logic.Basic
 import Math.Order.Notation
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Data.Opposite
 
 class OrderOps (α: Type*) extends LE α, LT α where
@@ -62,6 +62,17 @@ variable [LT α] [LE α] [IsPreOrder α] {a b c: α}
 def le_refl: ∀a: α, a ≤ a := IsPreOrder.le_refl
 def le_trans: a ≤ b -> b ≤ c -> a ≤ c := IsPreOrder.le_trans
 
+instance : @Relation.IsTrans α (· ≤ ·) where
+  trans := le_trans
+instance : @Relation.IsRefl α (· ≤ ·) where
+  refl := le_refl
+instance : @Relation.IsTrans α (· < ·) := inferInstance
+instance : @Relation.IsIrrefl α (· < ·) := inferInstance
+instance : @Trans α α α (· < ·) (· ≤ ·) (· < ·) := inferInstance
+instance : @Trans α α α (· < ·) (· ≤ ·) (· < ·) := inferInstance
+instance : @Trans α α α (· < ·) (· < ·) (· < ·) := inferInstance
+instance : @Trans α α α (· ≤ ·) (· ≤ ·) (· ≤ ·) := inferInstance
+
 def le_of_lt: a < b -> a ≤ b := fun h => (lt_iff_le_and_not_le.mp h).left
 def lt_of_le_of_not_le : a ≤ b -> ¬(b ≤ a) -> a < b := (lt_iff_le_and_not_le.mpr ⟨·, ·⟩)
 
@@ -75,45 +86,11 @@ def le_of_lt_or_eq: a < b ∨ a = b -> a ≤ b := by
   cases h
   apply le_of_lt; assumption
   apply le_of_eq; assumption
-def lt_trans : a < b -> b < c -> a < c := by
-  intro ab bc
-  replace ⟨ab, nba⟩ := lt_iff_le_and_not_le.mp ab
-  replace ⟨bc, ncb⟩ := lt_iff_le_and_not_le.mp bc
-  apply lt_iff_le_and_not_le.mpr ⟨le_trans ab bc, _⟩
-  intro h
-  apply nba
-  apply le_trans
-  assumption
-  assumption
-def lt_of_lt_of_le : a < b -> b ≤ c -> a < c := by
-  intro ab bc
-  replace ⟨ab, nba⟩ := lt_iff_le_and_not_le.mp ab
-  apply lt_iff_le_and_not_le.mpr ⟨le_trans ab bc, _⟩
-  intro h
-  apply nba
-  apply le_trans
-  assumption
-  assumption
-def lt_of_le_of_lt : a ≤ b -> b < c -> a < c := by
-  intro ab bc
-  replace ⟨bc, ncb⟩ := lt_iff_le_and_not_le.mp bc
-  apply lt_iff_le_and_not_le.mpr ⟨le_trans ab bc, _⟩
-  intro h
-  apply ncb
-  apply le_trans
-  assumption
-  assumption
+def lt_trans : a < b -> b < c -> a < c := trans
+def lt_of_lt_of_le : a < b -> b ≤ c -> a < c := trans
+def lt_of_le_of_lt : a ≤ b -> b < c -> a < c := trans
 
 def lt_asymm : a < b -> b < a -> False := (lt_irrefl <| lt_trans · ·)
-
-instance : @Relation.IsTrans α (· < ·) where
-  trans := lt_trans
-instance : @Relation.IsTrans α (· ≤ ·) where
-  trans := le_trans
-instance : @Relation.IsIrrefl α (· < ·) where
-  irrefl := lt_irrefl
-instance : @Relation.IsRefl α (· ≤ ·) where
-  refl := le_refl
 
  instance : @Trans α α α (· < ·) (· ≤ ·) (· < ·) where
   trans := lt_of_lt_of_le
@@ -138,54 +115,51 @@ variable [LT α] [LE α] [IsPartialOrder α] {a b c: α}
 
 def le_antisymm: a ≤ b -> b ≤ a -> a = b := IsPartialOrder.le_antisymm
 
-def lt_or_eq_of_le: a ≤ b -> a < b ∨ a = b := by
-  intro h
-  by_cases g:b ≤ a
-  right
-  apply le_antisymm
-  assumption
-  assumption
-  left
-  apply lt_iff_le_and_not_le.mpr
-  apply And.intro <;> assumption
+instance : Relation.IsPartialOrder (α := α) (· ≤ ·) (· = ·) where
+  antisymm_by := le_antisymm
+
+def le_iff_lt_or_eq: a ≤ b ↔ a < b ∨ a = b := Relation.IsLawfulNonstrict.is_lawful_nonstrict _ _
+def lt_or_eq_of_le: a ≤ b -> a < b ∨ a = b := le_iff_lt_or_eq.mp
 def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
   intro h g
   cases lt_or_eq_of_le h
   assumption
   contradiction
-def le_iff_lt_or_eq: a ≤ b ↔ a < b ∨ a = b := Iff.intro lt_or_eq_of_le le_of_lt_or_eq
 
 instance : @Relation.IsAntisymm α (· ≤ ·) where
-  antisymm := le_antisymm
+  antisymm_by := le_antisymm
 
 instance [IsPartialOrder α] : IsPartialOrder αᵒᵖ where
   le_antisymm := by
     intro a b ab ba
     apply le_antisymm (α := α) <;> assumption
 
-instance (priority := 500) instLOofPOofLTtri [Relation.IsTrichotomous (· < (·: α))] : IsLinearOrder α where
+instance (priority := 500) [Relation.IsPreorder (α := α) (· ≤ ·)] : IsPreOrder α := inferInstance
+
+instance (priority := 500) instLOofPOofLTconnected_by [Relation.IsConnected (· < (·: α))] : IsLinearOrder α where
   lt_iff_le_and_not_le := lt_iff_le_and_not_le
   le_antisymm := le_antisymm
   le_trans := le_trans
   lt_or_le := by
     intro a b
-    rcases Relation.trichotomous (· < ·) a b with lt | eq | gt
+    rcases Relation.connected (· < ·) a b with lt | eq | gt
     left; assumption
     right; rw [eq]
     right; apply le_of_lt; assumption
 
-instance (priority := 500) instLOofPOofLEtri [Relation.IsTrichotomous (· ≤ (·: α))] : IsLinearOrder α where
+instance (priority := 500) instLOofPOofLEconnected_by [Relation.IsConnected (· ≤ (·: α))] : IsLinearOrder α where
   lt_iff_le_and_not_le := lt_iff_le_and_not_le
   le_antisymm := le_antisymm
   le_trans := le_trans
   lt_or_le := by
     intro a b
-    rcases Relation.trichotomous (· ≤ ·) a b with lt | eq | gt
+    rcases Relation.connected (· ≤ ·) a b with lt | eq | gt
     cases lt_or_eq_of_le lt
     left; assumption; rename_i h; right; rw[h]
     right; rw [eq]
     right; assumption
 
+instance (priority := 500) [Relation.IsLinearOrder (α := α) (· ≤ ·) (· = ·)] : IsLinearOrder α := inferInstance
 instance (priority := 500) instLOofPOofLEtot [Relation.IsTotal (· ≤ (·: α))] : IsLinearOrder α := inferInstance
 
 end IsPartialOrder
@@ -201,6 +175,10 @@ def le_total: ∀a b: α, a ≤ b ∨ b ≤ a := by
   rcases lt_or_le a b with ab | ba
   left; apply le_of_lt; assumption
   right; assumption
+
+instance : Relation.IsTotal (α := α) (· ≤ ·) := ⟨le_total⟩
+instance : Relation.IsConnected (α := α) (· < ·) := inferInstance
+
 def le_complete: ∀a b: α, a ≤ b ∨ ¬(a ≤ b) := by
   intro a b
   rcases lt_or_le b a with ab | ba
@@ -222,17 +200,10 @@ def le_of_not_lt : ¬(a < b) -> b ≤ a := by
 def le_of_not_le : ¬(a ≤ b) -> b ≤ a := le_of_lt ∘ lt_of_not_le
 
 def lt_or_gt_of_ne : a ≠ b -> a < b ∨ b < a := by
-  intro h
-  cases le_total a b <;> rename_i h
-  cases lt_or_eq_of_le h
-  apply Or.inl
-  assumption
-  contradiction
-  apply Or.inr
-  apply lt_of_le_of_ne
-  assumption
-  symm
-  assumption
+  intro h; apply Classical.byContradiction
+  intro g; simp at g
+  apply h; apply Relation.eq_of_not_lt_or_gt (· < ·)
+  exact g.left; exact g.right
 
 def lt_iff_not_le : a < b ↔ ¬b ≤ a := ⟨not_le_of_lt,lt_of_not_le⟩
 def le_iff_not_lt : a ≤ b ↔ ¬b < a := ⟨not_lt_of_le,le_of_not_lt⟩
@@ -254,22 +225,7 @@ def le_iff_of_lt_iff [LE β] [LT β] [IsLinearOrder β] {a b: α} {c d: β} : (a
   apply Iff.not_iff_not
   assumption
 
-instance : @Relation.IsTrichotomous α (· < ·) where
-  tri a b := by
-    rcases lt_or_le a b with ab | ba
-    left; assumption
-    right
-    rcases lt_or_eq_of_le ba
-    right; assumption
-    left; symm; assumption
-
-instance : @Relation.IsTotal α (· ≤ ·) where
-  total a b := by
-    rcases lt_or_le a b with ab | ba
-    left; apply le_of_lt; assumption
-    right; assumption
-
-def lt_trichotomy [IsLinearOrder α] := (inferInstanceAs (@Relation.IsTrichotomous α (· < ·))).tri
+def lt_trichotomy [IsLinearOrder α] (a b: α) : a < b ∨ a = b ∨ b < a := Relation.connected_by _ _ a b
 
 end IsLinearOrder
 

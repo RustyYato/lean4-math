@@ -31,9 +31,9 @@ def Induced.embedSInter {s: Set α} {t: Set (Set α)} (h: s ∈ t) : (⋂t).Indu
     rfl
   resp_rel := Iff.rfl
 
--- a chain is a set which is trichotomous over it's elements
+-- a chain is a set which is connected over it's elements
 abbrev IsChain (s: Set α) :=
-  Relation.IsTrichotomous (s.Induced r)
+  Relation.IsConnected (s.Induced r)
 
 instance {s: Set α} [Relation.IsRefl r] : Relation.IsRefl (s.Induced r) where
   refl := by
@@ -55,22 +55,22 @@ def IsMaxChain (s: Set α) :=
 namespace IsChain
 
 def empty : (∅: Set α).IsChain r where
-  tri x := elim_empty x
+  connected_by x := elim_empty x
 
-def univ [Relation.IsTrichotomous r] : (Set.univ α).IsChain r :=
-  (Induced.embed r (Set.univ α)).tri
+def univ [Relation.IsConnected r] : (Set.univ α).IsChain r :=
+  (Induced.embed r (Set.univ α)).lift_connected
 
 def directedOn [Relation.IsRefl r] {s: Set α} (h: s.IsChain r) : s.DirectedOn r := by
   intro a ha b hb
-  rcases h.tri ⟨a, ha⟩ ⟨b, hb⟩ with h | h | h
+  rcases h.connected_by ⟨a, ha⟩ ⟨b, hb⟩ with h | h | h
   exists b
   cases h
   exists a
   exists a
 
 def opp {s: Set α} (h: s.IsChain r) : s.IsChain (flip r) where
-  tri a b := by
-    rcases h.tri a b with h | h | h
+  connected_by a b := by
+    rcases h.connected_by a b with h | h | h
     right; right; assumption
     right; left; assumption
     left; assumption
@@ -84,10 +84,10 @@ variable {r: α -> α -> Prop}
 namespace IsChain
 
 def ofSubset (h: s ⊆ t) (c: IsChain r t) : IsChain r s :=
-  (Induced.embedSub r h).tri
+  (Induced.embedSub r h).lift_connected
 
 def insert (c: IsChain r s) (x: α) (h: ∀y ∈ s, r x y ∨ x = y ∨ r y x) : IsChain r (insert x s) where
-  tri := by
+  connected_by := by
     intro ⟨a, amem⟩ ⟨b, bmem⟩
     cases Set.mem_insert.mp amem <;>
     cases Set.mem_insert.mp bmem
@@ -106,7 +106,7 @@ def insert (c: IsChain r s) (x: α) (h: ∀y ∈ s, r x y ∨ x = y ∨ r y x) :
     right; left; symm; congr
     left; assumption
     rename_i amem bmem
-    rcases c.tri ⟨_, amem⟩ ⟨_, bmem⟩ with hr | hr | hr
+    rcases c.connected_by ⟨_, amem⟩ ⟨_, bmem⟩ with hr | hr | hr
     left; assumption
     cases hr
     right; left; congr
@@ -115,7 +115,7 @@ def insert (c: IsChain r s) (x: α) (h: ∀y ∈ s, r x y ∨ x = y ∨ r y x) :
 def sInter {t: Set (Set α)} (h: t.Nonempty) (c: ∀s ∈ t, IsChain r s) : IsChain r (⋂ t) :=
   have ⟨s, mem⟩ := h
   have := c s mem
-  (Induced.embedSInter r mem).tri
+  (Induced.embedSInter r mem).lift_connected
 
 def inter (cs: IsChain r s) (ct: IsChain r t) : IsChain r (s ∩ t) := by
   rw [←Set.sInter_pair]
@@ -288,7 +288,7 @@ def IsChain (c: ChainClosure r s) : IsChain r s := by
   induction c with
   | succ c ih => exact ih.succ
   | union c ih =>
-    apply Relation.IsTrichotomous.mk
+    apply Relation.IsConnectedBy.mk
     intro ⟨a, amem⟩ ⟨b, bmem⟩
     unfold Induced; dsimp
     rw [Set.mem_sUnion] at amem bmem
@@ -297,11 +297,11 @@ def IsChain (c: ChainClosure r s) : IsChain r s := by
     have sa_chain := ih sa sa_in_s
     have sb_chain := ih sb sb_in_s
     rcases total (c _ sa_in_s) (c _ sb_in_s) with sa_sub_sb | sb_sub_sa
-    rcases sb_chain.tri ⟨_, sa_sub_sb _ a_in_sa⟩ ⟨_, b_in_sb⟩ with h | h | h
+    rcases sb_chain.connected_by ⟨_, sa_sub_sb _ a_in_sa⟩ ⟨_, b_in_sb⟩ with h | h | h
     left; assumption
     right; left; cases h; congr
     right; right; assumption
-    rcases sa_chain.tri ⟨_, a_in_sa⟩ ⟨_, sb_sub_sa _ b_in_sb⟩ with h | h | h
+    rcases sa_chain.connected_by ⟨_, a_in_sa⟩ ⟨_, sb_sub_sa _ b_in_sb⟩ with h | h | h
     left; assumption
     right; left; cases h; congr
     right; right; assumption

@@ -1,5 +1,5 @@
 import Math.Data.Like.Func
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Algebra.AddMul
 
 section Algebra

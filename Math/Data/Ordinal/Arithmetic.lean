@@ -313,7 +313,7 @@ def Pre.non_zero_limit_is_infinite (p: Pre) (lim: ⟦p⟧.IsLimitOrdinal) :
   rw [dif_neg h]
   dsimp
   have := spec x
-  rcases Relation.trichotomous p.rel max x with lt | eq | gt
+  rcases Relation.connected p.rel max x with lt | eq | gt
   contradiction
   assumption
   contradiction

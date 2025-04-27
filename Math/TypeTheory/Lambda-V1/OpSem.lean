@@ -1,5 +1,5 @@
 import Math.TypeTheory.«Lambda-Old».Basic
-import Math.Relation.Basic
+import Math.Relation.Defs
 
 namespace LamTerm
 

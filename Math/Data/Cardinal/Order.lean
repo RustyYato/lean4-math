@@ -98,7 +98,7 @@ def ord_eq (α: Type*) : ∃ (r : α → α → Prop) (_wo: Relation.IsWellOrder
 
   refine ⟨?_, ?_, ?_⟩
   exact rel
-  exact eqv.symm.toRelEmbedding.wo
+  exact eqv.symm.toRelEmbedding.lift_wo
   rw [eq]
   apply Ordinal.sound
   assumption
@@ -191,7 +191,7 @@ noncomputable def remb_ord_lt : @RelEmbedding Cardinal Ordinal (· < ·) (· < �
 
 instance : IsLinearOrder Cardinal := oemb_ord.instIsLinearOrder
 
-instance : @Relation.IsWellOrder Cardinal (· < ·) := remb_ord_lt.wo
+instance : @Relation.IsWellOrder Cardinal (· < ·) := remb_ord_lt.lift_wo
 
 noncomputable def initseg_ord : @InitialSegment Cardinal Ordinal (· < ·) (· < ·) :=
   Classical.choice (InitialSegment.collapse ⟨remb_ord_lt⟩)

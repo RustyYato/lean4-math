@@ -36,4 +36,4 @@ def Subtype.inducedEquiv (f: α ↪ β) (r: α -> α -> Prop) : r ≃r Subtype.i
 
 instance (f: α ↪ β) (r: α -> α -> Prop) [Relation.IsWellOrder r] :
   Relation.IsWellOrder (Subtype.inducedRelation f r) :=
-  (Subtype.inducedEquiv f r).symm.toRelEmbedding.wo
+  (Subtype.inducedEquiv f r).symm.toRelEmbedding.lift_wo

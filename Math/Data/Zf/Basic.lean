@@ -1,7 +1,7 @@
 import Math.Data.Quotient.Basic
 import Math.Type.Notation
 import Math.Data.Set.Basic
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Tactics.PPWithUniv
 
 namespace ZfSet

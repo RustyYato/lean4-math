@@ -2,7 +2,7 @@ import Math.Algebra.Field.Order.Basic
 import Math.Function.Basic
 import Math.Ops.Abs
 import Math.Topology.MetricSpace.Abs
-import Math.Relation.Basic
+import Math.Relation.Defs
 
 namespace CauchySeq
 

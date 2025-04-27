@@ -51,7 +51,7 @@ def trans (h: r ≼i s) (g: s ≼i t): r ≼i t where
     apply Set.mem_range.mpr
     exact ⟨_, rfl⟩
 
-instance [IsTrichotomous s] [IsIrrefl s] [IsWellFounded r] : Subsingleton (r ≼i s) where
+instance [IsConnected s] [IsIrrefl s] [IsWellFounded r] : Subsingleton (r ≼i s) where
   allEq := by
     intro a b
     ext x
@@ -96,7 +96,7 @@ def antisymm [IsWellOrder r] (f : r ≼i s) (g: s ≼i r) : r ≃r s where
   invFun := g
   leftInv := f.antisymm_aux g
   rightInv :=
-    have := g.toRelEmbedding.wo
+    have := g.toRelEmbedding.lift_wo
     g.antisymm_aux f
   resp_rel := f.resp_rel
 
@@ -117,7 +117,7 @@ def eqv_or_principal [IsWellOrder s] (h: r ≼i s) :
   intro mem
   have ⟨a, eq⟩ := Set.mem_range.mp mem
   subst b'
-  rcases trichotomous s (h a) b with ab | eq | ba
+  rcases connected s (h a) b with ab | eq | ba
   assumption
   have := f _ eq.symm
   contradiction
@@ -147,7 +147,7 @@ def collapse_helper [IsWellOrder s] (f: r ↪r s) : ∀ a, { b // ¬s (f a) b } 
   have : f a ∈ S := by
     intro a' h
     have := (ih a' h).property
-    rcases Relation.trichotomous s (ih a' h) (f a) with s' | eq | s'
+    rcases connected s (ih a' h) (f a) with s' | eq | s'
     assumption
     rw [eq] at this
     have : ¬r a' a := (this <| f.resp_rel.mp ·)
@@ -179,7 +179,7 @@ theorem collapse_helper_not_lt [IsWellOrder s] (f : r ↪r s) (a : α) {b}
 
 def collapse [IsWellOrder s] (f: Nonempty (r ↪r s)) : Nonempty (r ≼i s) := by
   obtain ⟨f⟩ := f
-  have := f.wo
+  have := f.lift_wo
   refine ⟨⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩⟩
   intro a
   exact (collapse_helper f a).val
@@ -199,7 +199,7 @@ def collapse [IsWellOrder s] (f: Nonempty (r ↪r s)) : Nonempty (r ≼i s) := b
   apply Iff.intro
   apply collapse_helper_lt
   intro h
-  rcases trichotomous r a b with ab | eq | ba
+  rcases connected r a b with ab | eq | ba
   assumption
   rw [eq] at h
   exact (irrefl h).elim

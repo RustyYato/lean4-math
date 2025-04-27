@@ -3,7 +3,7 @@ import Math.Data.Int.Basic
 import Math.Ops.Checked
 import Math.Algebra.Norm.Basic
 import Math.Logic.Nontrivial
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Algebra.Field.Basic
 import Math.Algebra.Semiring.Char
 import Math.Algebra.Ring.Basic

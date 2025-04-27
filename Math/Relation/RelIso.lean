@@ -1,5 +1,5 @@
 import Math.Logic.Equiv.Basic
-import Math.Relation.Basic
+import Math.Relation.Defs
 
 section
 
@@ -135,20 +135,22 @@ def trans (h: r ↪r s) (g: s ↪r t) : r ↪r t where
   toEmbedding := Embedding.trans h.toEmbedding g.toEmbedding
   resp_rel := Iff.trans h.resp_rel g.resp_rel
 
-def tri (h: s ↪r r) [Relation.IsTrichotomous r] : Relation.IsTrichotomous s where
-  tri := by
+def lift_connected (h: s ↪r r) [Relation.IsConnected r] : Relation.IsConnected s where
+  connected_by := by
     intro a b
-    rcases Relation.trichotomous r (h a) (h b) with ab | eq | ba
+    rcases Relation.connected r (h a) (h b) with ab | eq | ba
     left; exact h.resp_rel.mpr ab
     right; left; exact h.inj eq
     right; right; exact h.resp_rel.mpr ba
 
-def wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s where
-  toIsWellFounded := h.toRelHom.wf
-  toIsTrichotomous := h.tri
+def lift_trans (h: s ↪r r) [Relation.IsTrans r] : Relation.IsTrans s where
   trans := by
     intro a b c ab bc
     exact h.resp_rel.mpr <| Trans.trans (h.resp_rel.mp ab) (h.resp_rel.mp bc)
+
+def lift_wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s := {
+  h.toRelHom.wf, h.lift_connected, h.lift_trans with
+}
 
 end RelEmbedding
 
@@ -184,6 +186,11 @@ def symm_inj : Function.Injective (symm (r := r) (s := s)) := by
   apply Equiv.equiv_symm.inj
   exact RelIso.mk.inj h
 
+def toEmbedding (h: r ≃r s) : r ↪r s := {
+  h.toEquiv.toEmbedding with
+  resp_rel := h.resp_rel
+}
+
 end RelIso
 
 namespace RelIso
@@ -194,20 +201,14 @@ def wf (h: s ≃r r) [Relation.IsWellFounded r] : Relation.IsWellFounded s :=
 def irrefl (h: s ≃r r) [Relation.IsIrrefl r] : Relation.IsIrrefl s :=
   h.toRelHom.irrefl
 
-def tri (h: s ≃r r) [Relation.IsTrichotomous s] : Relation.IsTrichotomous r where
-  tri a b := by
-    rcases Relation.trichotomous s (h.symm a) (h.symm b) with ab | eq | ba
-    exact .inl <| h.inv_resp_rel.mpr ab
-    exact .inr <| .inl <| h.symm.inj eq
-    exact .inr <| .inr <| h.inv_resp_rel.mpr ba
+def lift_connected (h: s ≃r r) [Relation.IsConnected s] : Relation.IsConnected r :=
+  h.symm.toEmbedding.lift_connected
 
-def trans' (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r where
-  trans := by
-    intro a b c ab bc
-    apply h.inv_resp_rel.mpr
-    apply Relation.IsTrans.trans
-    exact h.inv_resp_rel.mp ab
-    exact h.inv_resp_rel.mp bc
+def lift_trans (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r :=
+  h.symm.toEmbedding.lift_trans
+
+def lift_wo (h: s ≃r r) [Relation.IsWellOrder s] : Relation.IsWellOrder r :=
+  h.symm.toEmbedding.lift_wo
 
 end RelIso
 

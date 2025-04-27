@@ -1,5 +1,5 @@
 import Math.Algebra.Con.Defs
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Algebra.Semigroup.Defs
 
 variable {C α: Type*} [RelLike C α] (c: C)

@@ -1,7 +1,7 @@
 import Math.Logic.IsEmpty
 import Math.Function.Basic
 import Math.Order.Notation
-import Math.Relation.Basic
+import Math.Relation.Defs
 
 class SUnion (α: Type*) (β: outParam <| Type*) where
   sUnion : α -> β

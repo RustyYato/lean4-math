@@ -89,11 +89,11 @@ def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R
     exists b; right; assumption
     right; exact trans h g
   rel_defined_is_chain := {
-    tri := by
+    connected_by := by
       have : ∀a b: α, R.defines a -> R.defines b ->
         R.insert A a b ∨ a = b ∨ R.insert A b a := by
         intro a b ha hb
-        rcases IsLocallyWellOrdered.rel_defined_is_chain.tri ⟨_, ha⟩ ⟨_, hb⟩ with h | h | h
+        rcases IsLocallyWellOrdered.rel_defined_is_chain.connected_by ⟨_, ha⟩ ⟨_, hb⟩ with h | h | h
         left; right; assumption
         right; left; cases h; rfl
         right; right; right; assumption
@@ -142,13 +142,13 @@ def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R
 
 def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrdered R) (chain: S.IsChain (· ≤ ·)) : IsLocallyWellOrdered (⨆ S) where
   rel_defined_is_chain := {
-    tri := by
-      have memtri : ∀s ∈ S, ∀a b: α, s.defines a -> s.defines b -> (⨆ S) a b ∨ a = b ∨ (⨆ S) b a := by
+    connected_by := by
+      have mem_conn : ∀s ∈ S, ∀a b: α, s.defines a -> s.defines b -> (⨆ S) a b ∨ a = b ∨ (⨆ S) b a := by
         intro s hs a b ⟨a', ha⟩ ⟨b', hb⟩
         have := h s hs
         have adef : s.defines a := by exists a'
         have bdef : s.defines b := by exists b'
-        rcases (IsLocallyWellOrdered.rel_defined_is_chain (R := s)).tri
+        rcases (IsLocallyWellOrdered.rel_defined_is_chain (R := s)).connected_by
           ⟨a, adef⟩ ⟨b, bdef⟩ with h | h | h
         left; exists s
         right; left; cases h; rfl
@@ -162,10 +162,10 @@ def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrde
       all_goals simp [Set.Induced] at h
       any_goals
         rename r ≤ s => h
-        apply memtri _ hs
+        apply mem_conn _ hs
       any_goals
         rename s ≤ r => h
-        apply memtri _ hr
+        apply mem_conn _ hr
       any_goals exists a'; left; assumption
       any_goals exists a'; right; assumption
       any_goals exists b'; left; assumption
@@ -253,7 +253,7 @@ def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
         intro a
         apply Acc.intro
         intro _ _; contradiction
-      tri := by
+      connected_by := by
         intro a b
         right; left
         apply Subsingleton.allEq
@@ -278,7 +278,7 @@ def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
         rintro _ ⟨rfl, rfl⟩
         contradiction
       rel_defined_is_chain := {
-        tri := by
+        connected_by := by
           intro ⟨x, hx⟩ ⟨y, hy⟩
           simp [Set.Induced]
           rcases hx with ⟨x', ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩
@@ -308,11 +308,11 @@ def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
     apply nrab
     trivial
   suffices Set.mk R.defines = ⊤ by
-    refine ⟨R, { trans := hR.trans, wf := hR.wf, tri := ?_ }⟩
+    refine ⟨R, { trans := hR.trans, wf := hR.wf, connected_by := ?_ }⟩
     intro a b
     have chain := hR.rel_defined_is_chain
     rw [this] at chain
-    rcases chain.tri ⟨a, True.intro⟩ ⟨b, True.intro⟩ with h | h | h
+    rcases chain.connected_by ⟨a, True.intro⟩ ⟨b, True.intro⟩ with h | h | h
     left; exact h
     cases h; right; left; rfl
     right; right; exact h

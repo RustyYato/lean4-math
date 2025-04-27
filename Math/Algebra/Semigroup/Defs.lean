@@ -1,7 +1,7 @@
 import Math.Type.Notation
 import Math.Algebra.Notation
 import Math.Algebra.AddMul
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Logic.Nontrivial
 
 instance (priority := 2000) [Zero α] : OfNat α 0 := inferInstance

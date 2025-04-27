@@ -1,5 +1,5 @@
 import Math.TypeTheory.Lambda.Basic
-import Math.Relation.Basic
+import Math.Relation.Defs
 
 inductive ReduceTo (ctx: Context) : LamTerm -> LamTerm -> Prop where
 | Subst : LamTerm.IsValue arg -> ReduceTo ctx (.App (.Lambda name argty body) arg) (body.subst (arg.relabel body ctx.max_name) name)

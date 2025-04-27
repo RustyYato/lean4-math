@@ -57,7 +57,7 @@ def IsAtomic.of_isChain_bounded {α : Type*}
     intro S Schain Sne g
     refine h (S.preimage Opposite.get) ?_ Sne g
     refine ⟨fun a b => ?_⟩
-    rcases Schain.tri ⟨Opposite.mk a.val, a.property⟩ ⟨Opposite.mk b.val, b.property⟩ with h | h | h
+    rcases Schain.connected_by ⟨Opposite.mk a.val, a.property⟩ ⟨Opposite.mk b.val, b.property⟩ with h | h | h
     right; right
     assumption
     right; left

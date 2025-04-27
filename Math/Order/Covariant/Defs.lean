@@ -1,4 +1,4 @@
-import Math.Relation.Basic
+import Math.Relation.Defs
 import Math.Type.Notation
 
 section
