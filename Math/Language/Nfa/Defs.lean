@@ -17,6 +17,13 @@ def runWith (nfa: Nfa σ α) (states: Set α) : List σ -> Set α
 def run (nfa: Nfa σ α) (word: List σ) : Set α :=
   nfa.runWith nfa.start word
 
+inductive Derivation (nfa: Nfa σ α) : List σ -> Set α -> Type _ where
+| nil : Derivation nfa [] s
+| cons : Derivation nfa word s -> Derivation nfa (w::word) (nfa.stepSet w s)
+
+def derives (nfa: Nfa σ α) (word: List σ) : Set (Set α) where
+  Mem s := Nonempty (nfa.Derivation word s)
+
 def accepting_states (nfa: Nfa σ α) : Set α := Set.mk <| (· = true) ∘ nfa.accept
 
 def Matches (nfa: Nfa σ α) (word: List σ) : Prop :=
@@ -96,6 +103,25 @@ def IsDeadStateSet.ofIdempot (nfa: Nfa σ α) (a: Set α)
   unfold runWith
   rw [h]
   assumption
+
+def stepSet_monotone (nfa: Nfa σ α) (sa sb: Set α) (w: σ) (h: sa ⊆ sb) : nfa.stepSet w sa ⊆ nfa.stepSet w sb := by
+  intro x hx
+  simp [stepSet, Set.mem_bind] at *
+  obtain ⟨t, tsa, hx⟩ := hx
+  exists t
+  apply And.intro
+  apply h
+  assumption
+  assumption
+
+def runWith_monotone (nfa: Nfa σ α) (sa sb: Set α) (word: List σ) (h: sa ⊆ sb) : nfa.runWith sa word ⊆ nfa.runWith sb word := by
+  induction word generalizing sa sb with
+  | nil => assumption
+  | cons w ws ih =>
+    simp [runWith]
+    apply ih
+    apply stepSet_monotone
+    assumption
 
 def empty (σ α: Type*) : Nfa σ α where
   step _ _ := ∅
@@ -259,7 +285,7 @@ def alt_language (a: Nfa σ α) (b: Nfa σ β) : (alt a b).Language = a.Language
       · simpa [alt_accept]
 
 def seq_step' (a: Nfa σ α) (b: Nfa σ β) (x: σ) : α ⊕ β -> Set (α ⊕ β)
-| .inl s => (a.step x s).image .inl ∪ if a.accept s then b.start.image .inr else ∅
+| .inl s => (a.step x s).sum (if a.accept s then b.stepSet x b.start else ∅)
 | .inr s => (b.step x s).image .inr
 
 def seq (a: Nfa σ α) (b: Nfa σ β) : Nfa σ (α ⊕ β) where
@@ -269,7 +295,93 @@ def seq (a: Nfa σ α) (b: Nfa σ β) : Nfa σ (α ⊕ β) where
   | .inl _ => false
   | .inr x => b.accept x
 
--- def seq_language (a: Nfa σ α) (b: Nfa σ β) : (seq a b).Language = a.Language.seq b.Language := by
---   sorry
+@[simp]
+def seq_start (a: Nfa σ α) (b: Nfa σ β) : (seq a b).start = a.start.image .inl := rfl
+@[simp]
+def seq_step (a: Nfa σ α) (b: Nfa σ β) : (seq a b).step = seq_step' a b := rfl
+
+open Classical
+
+def seq_stepSet (a: Nfa σ α) (b: Nfa σ β) (sa: Set α) (sb: Set β) (w: σ) : (seq a b).stepSet w (sa.sum sb) = (a.stepSet w sa).sum (b.stepSet w sb ∪ if ∃x ∈ sa, a.accept x then (b.stepSet w b.start) else ∅) := by
+  ext x
+  apply Iff.intro
+  intro h
+  simp [stepSet, Set.mem_bind, Set.mem_union, seq_step',
+    Set.mem_image] at *
+  cases h <;> rename_i h
+  obtain ⟨a', a'_in_sa, x_in_sum⟩ := h
+  split at x_in_sum
+  rw [if_pos]
+  cases x
+  simp
+  simp at x_in_sum
+  rw [Set.mem_bind]
+  exists a'
+  simp
+  right
+  assumption
+  exists a'
+  cases x
+  simp; simp at x_in_sum
+  rw [Set.mem_bind]
+  exists a'
+  simp at x_in_sum
+  contradiction
+  obtain ⟨b, b_in_sb, b₀, b₀_in_step, rfl⟩ := h
+  simp [Set.mem_bind]
+  left; rw [Set.mem_bind]; exists b
+  simp [stepSet, seq_step']
+  cases x <;> simp
+  intro h
+  left
+  rename_i a'
+  rw [Set.mem_bind]
+  simp
+  rw [Set.mem_bind] at h
+  assumption
+  intro h
+  cases h
+  right; rw [←Function.comp_def, Set.bind_image]
+  apply Set.mem_image'
+  assumption
+  rename_i h
+  split at h
+  left
+  rename_i g
+  obtain ⟨a', ha', ga'⟩ := g
+  rw [Set.mem_bind]
+  exists a'
+  apply And.intro; assumption
+  simp; rw [if_pos ga']
+  assumption
+  contradiction
+
+def seq_runWith_left (a: Nfa σ α) (b: Nfa σ β) (sa: Set α) (sb: Set β) (word: List σ) : ((seq a b).runWith (sa.sum sb) word).preimage .inl = a.runWith sa word := by
+  induction word generalizing sa sb with
+  | nil => rfl
+  | cons w ws ih =>
+    unfold runWith
+    rw [seq_stepSet, ih]
+
+def seq_runWith_right (a: Nfa σ α) (b: Nfa σ β) (sa: Set α) (sb: Set β) (word: List σ) : b.runWith sb word ⊆ ((seq a b).runWith (sa.sum sb) word).preimage .inr := by
+  induction word generalizing sa sb with
+  | nil => rfl
+  | cons w ws ih =>
+    unfold runWith
+    rw [seq_stepSet]
+    apply flip Set.sub_trans
+    apply ih
+    apply runWith_monotone
+    intro x hx; left; assumption
+
+def seq_language (a: Nfa σ α) (b: Nfa σ β) : (seq a b).Language = a.Language.seq b.Language := by
+  ext word
+  apply Iff.intro
+  · sorry
+  · rintro ⟨left, right, hl, hr⟩
+    simp [Language, Matches, run]
+    have : Matches _ _ := hl
+    unfold Matches at this
+    sorry
 
 end Nfa
