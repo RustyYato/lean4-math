@@ -1,5 +1,4 @@
-notation "ℕ" => Nat
-notation "ℤ" => Int
+import Math.Type.Notation
 
 class One (α) where
   one: α

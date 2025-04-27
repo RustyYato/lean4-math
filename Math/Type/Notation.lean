@@ -13,3 +13,6 @@ elab "Sort*" : term => do
 elab "Type*" : term => do
   let u ← Lean.Meta.mkFreshLevelMVar
   Elab.Term.levelMVarToParam (.sort (.succ u))
+
+notation "ℕ" => Nat
+notation "ℤ" => Int
