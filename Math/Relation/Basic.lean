@@ -100,8 +100,7 @@ instance [wf: IsWellFounded rel] : IsIrrefl rel where
 class IsWellOrder : Prop extends IsWellFounded rel, IsTrans rel, IsTrichotomous rel where
 instance [IsWellFounded rel] [IsTrans rel] [IsTrichotomous rel] : IsWellOrder rel where
 
-instance [wo: IsWellOrder rel] : IsIrrefl rel where
-  irrefl := wo.wf.irrefl
+instance [IsWellOrder rel] : IsIrrefl rel := inferInstance
 
 class IsSymmetric: Prop where
   symm: ∀{a b}, rel a b -> rel b a
