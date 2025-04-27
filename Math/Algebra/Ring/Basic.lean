@@ -6,7 +6,7 @@ instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] [IsAddCommMagma R] : IsMod
   one_smul := one_zsmul
   mul_smul _ _ _ := mul_zsmul _ _ _
   smul_zero := zsmul_zero
-  smul_add := zsmul_add
+  smul_add _ _ _ := zsmul_add _ _ _
   add_smul := add_zsmul
   zero_smul := zero_zsmul
 

@@ -205,7 +205,7 @@ def neg_eq_of_add_right [IsSubtractionMonoid α] {a b: α} : a + b = 0 -> a = -b
 def inv_eq_of_mul_right [IsDivisionMonoid α] {a b: α} : a * b = 1 -> a = b⁻¹ :=
   neg_eq_of_add_right (α := AddOfMul α)
 
-def neg_sub_neg [IsAddCommMagma α] [IsSubtractionMonoid α] (a b: α) : -a - -b = b - a := by
+def neg_sub_neg [IsSubtractionMonoid α] (a b: α) [IsAddCommutes (-a) b] : -a - -b = b - a := by
   rw [sub_eq_add_neg, neg_neg, add_comm, sub_eq_add_neg]
 
 end DivisionMonoid
@@ -300,6 +300,38 @@ instance [IsAddGroup α] : IsNegZeroClass α where
 
 instance [IsGroup α] : IsInvOneClass α where
   inv_one := neg_zero (α := AddOfMul α)
+
+instance (x a: α) [IsAddCommutes a x] : IsAddCommutes (-a) x where
+  add_commutes := by
+    apply add_left_cancel (k := a)
+    rw [←add_assoc, add_neg_cancel, zero_add, ←add_assoc,
+      add_comm a, add_assoc, add_neg_cancel, add_zero]
+
+instance (n: ℤ) (x a: α) [IsAddCommutes a x] : IsAddCommutes (n • a) x where
+  add_commutes := by
+    cases n with
+    | ofNat => rw [zsmul_ofNat, add_comm]
+    | negSucc => rw [zsmul_negSucc, add_comm]
+
+instance (n: ℤ) (x a: α) [IsAddCommutes x a] : IsAddCommutes x (n • a) := inferInstance
+instance (n: ℤ) (a: α) : IsAddCommutes a (n • a) := inferInstance
+instance (n: ℤ) (a: α) : IsAddCommutes (n • a) a := inferInstance
+instance (n m: ℤ) (a: α) : IsAddCommutes (n • a) (m • a) := inferInstance
+instance (n: ℕ) (m: ℤ) (a: α) : IsAddCommutes (n • a) (m • a) := inferInstance
+instance (n: ℤ) (m: ℕ) (a: α) : IsAddCommutes (n • a) (m • a) := inferInstance
+
+instance (x a: α) [IsCommutes a x] : IsCommutes (a⁻¹) x where
+  mul_commutes := add_comm (-AddOfMul.mk a) (AddOfMul.mk x)
+
+instance (n: ℤ) (x a: α) [IsCommutes a x] : IsCommutes (a ^ n) x where
+  mul_commutes := add_comm (n • AddOfMul.mk a) (AddOfMul.mk x)
+
+instance (n: ℤ) (x a: α) [IsCommutes x a] : IsCommutes x (a ^ n) := inferInstance
+instance (n: ℤ) (a: α) : IsCommutes a (a ^ n) := inferInstance
+instance (n: ℤ) (a: α) : IsCommutes (a ^ n) a := inferInstance
+instance (n m: ℤ) (a: α) : IsCommutes (a ^ n) (a ^ m) := inferInstance
+instance (n: ℕ) (m: ℤ) (a: α) : IsCommutes (a ^ n) (a ^ m) := inferInstance
+instance (n: ℤ) (m: ℕ) (a: α) : IsCommutes (a ^ n) (a ^ m) := inferInstance
 
 def eq_one_of_mul_left_id [IsGroup α]  (a: α) (h: ∀x: α, a * x = x) : a = 1 := by
   apply mul_right_cancel
@@ -411,7 +443,7 @@ def neg_zsmul [IsAddGroup α] (x: ℤ) (a: α) : (-x) • a = -(x • a) := by
   apply neg_eq_of_add
   rw [←add_zsmul, Int.add_right_neg, zero_zsmul]
 
-def zsmul_add [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a + b) = x • a + x • b := by
+def zsmul_add [IsAddGroup α] (x: ℤ) (a b: α) [IsAddCommutes a b] : x • (a + b) = x • a + x • b := by
   induction x using Int.induction with
   | zero => rw [zero_zsmul, zero_zsmul, zero_zsmul, add_zero]
   | succ y ih => rw [succ_zsmul, ih, add_comm a b, add_assoc, ←add_assoc (y • b), ←succ_zsmul, add_comm _ a, ←add_assoc, ←succ_zsmul]
@@ -428,13 +460,13 @@ def zsmul_neg [IsAddGroup α] (x: ℤ) (a: α) : x • (-a) = -(x • a) := by
   rw [Int.negSucc_eq, neg_zsmul, neg_zsmul,
     ←Int.ofNat_succ, zsmul_ofNat, zsmul_ofNat, nsmul_neg]
 
-def zsmul_sub [IsAddGroup α] [IsAddCommMagma α] (x: ℤ) (a b: α) : x • (a - b) = x • a - x • b := by
+def zsmul_sub [IsAddGroup α] (x: ℤ) (a b: α) [IsAddCommutes a b] : x • (a - b) = x • a - x • b := by
   rw [sub_eq_add_neg, sub_eq_add_neg, zsmul_add, zsmul_neg]
 
 def sub_zsmul [IsAddGroup α] (x y: ℤ) (a: α) : (x - y) • a = x • a - y • a := by
   rw [Int.sub_eq_add_neg, sub_eq_add_neg, add_zsmul, neg_zsmul]
 
-def mul_zsmul [IsAddGroup α] [IsAddCommMagma α] (x y: ℤ) (a: α) : (x * y) • a = x • y • a := by
+def mul_zsmul [IsAddGroup α] (x y: ℤ) (a: α) : (x * y) • a = x • y • a := by
   induction y using Int.induction with
   | zero => rw [Int.mul_zero, zero_zsmul, zsmul_zero]
   | succ y ih => rw [Int.mul_add, Int.mul_one, add_zsmul, add_zsmul, one_zsmul, zsmul_add, ih]
@@ -452,8 +484,8 @@ def zpow_add [IsGroup α] (x y: ℤ) (a: α) : a ^ (x + y) = a ^ x * a ^ y :=
 def zpow_neg [IsGroup α] (x: ℤ) (a: α) : a ^ (-x) = (a ^ x)⁻¹ :=
   neg_zsmul (α := AddOfMul α) _ _
 
-def mul_zpow [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a * b) ^ x = a ^ x * b ^ x :=
-  zsmul_add (α := AddOfMul α) _ _ _
+def mul_zpow [IsGroup α] (x: ℤ) (a b: α) [IsCommutes a b] : (a * b) ^ x = a ^ x * b ^ x :=
+  zsmul_add (α := AddOfMul α) x (AddOfMul.mk a) (AddOfMul.mk b)
 
 def inv_npow [IsGroup α] (x: ℕ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
   nsmul_neg (α := AddOfMul α) _ _
@@ -461,13 +493,13 @@ def inv_npow [IsGroup α] (x: ℕ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
 def inv_zpow [IsGroup α] (x: ℤ) (a: α) : (a⁻¹) ^ x = (a ^ x)⁻¹ :=
   zsmul_neg (α := AddOfMul α) _ _
 
-def div_zpow [IsGroup α] [IsCommMagma α] (x: ℤ) (a b: α) : (a / b) ^ x = a ^ x / b ^ x :=
-  zsmul_sub (α := AddOfMul α) _ _ _
+def div_zpow [IsGroup α] (x: ℤ) (a b: α) [IsCommutes a b] : (a / b) ^ x = a ^ x / b ^ x :=
+  zsmul_sub (α := AddOfMul α) x (AddOfMul.mk a) (AddOfMul.mk b)
 
 def zpow_sub [IsGroup α] (x y: ℤ) (a: α) : a ^ (x - y) = a ^ x / a ^ y :=
   sub_zsmul (α := AddOfMul α) _ _ _
 
-def zpow_mul [IsGroup α]  [IsCommMagma α] (x y: ℤ) (a: α) : a ^ (x * y) = (a ^ y) ^ x :=
+def zpow_mul [IsGroup α] (x y: ℤ) (a: α) : a ^ (x * y) = (a ^ y) ^ x :=
   mul_zsmul (α := AddOfMul α) _ _ _
 
 def sub_neg [IsAddGroup α] (a b: α) : a - -b = a + b := by

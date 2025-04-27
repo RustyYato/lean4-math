@@ -48,6 +48,27 @@ instance (priority := 2000) (a b: α) [IsAddCommMagma α] : IsAddCommutes a b wh
 instance (priority := 2000) (a b: α) [IsCommMagma α] : IsCommutes a b where
   mul_commutes := IsCommMagma.mul_comm _ _
 
+instance (priority := 10) (a b: α) [IsAddCommutes a b] : IsAddCommutes b a where
+  add_commutes := (add_comm a b).symm
+instance (priority := 10) (a b: α) [IsCommutes a b] : IsCommutes b a where
+  mul_commutes := (mul_comm a b).symm
+
+instance (a b: α) [IsAddCommutes a b] : IsCommutes (MulOfAdd.mk a) (MulOfAdd.mk b) where
+  mul_commutes := add_comm a b
+instance (a b: α) [IsCommutes a b] : IsAddCommutes (AddOfMul.mk a) (AddOfMul.mk b) where
+  add_commutes := mul_comm a b
+instance (a b: MulOfAdd α) [IsCommutes a b] : IsAddCommutes (MulOfAdd.get a) (MulOfAdd.get b) where
+  add_commutes := mul_comm a b
+instance (a b: AddOfMul α) [IsAddCommutes a b] : IsCommutes (AddOfMul.get a) (AddOfMul.get b) where
+  mul_commutes := add_comm a b
+instance (priority := 10) (a b: α) [IsCommutes a b] : IsCommutes b a where
+  mul_commutes := (mul_comm a b).symm
+
+instance (a: α) : IsAddCommutes a a where
+  add_commutes := rfl
+instance (a: α) : IsCommutes a a where
+  mul_commutes := rfl
+
 instance [Mul α] [IsCommMagma α] : IsAddCommMagma (AddOfMul α) where
   add_comm _ _ := mul_comm (α := α) _ _
 instance [Add α] [IsAddCommMagma α] : IsCommMagma (MulOfAdd α) where
@@ -234,3 +255,12 @@ instance : NoZeroDivisors ℕ where
 
 instance : NoZeroDivisors ℤ where
   of_mul_eq_zero := Int.mul_eq_zero.mp
+
+instance [IsAddZeroClass α] (a: α) : IsAddCommutes 0 a where
+  add_commutes := by rw [add_zero, zero_add]
+
+instance [IsMulZeroClass α] (a: α) : IsCommutes 0 a where
+  mul_commutes := by rw [mul_zero, zero_mul]
+
+instance [IsMulOneClass α] (a: α) : IsCommutes 1 a where
+  mul_commutes := by rw [mul_one, one_mul]

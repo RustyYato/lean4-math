@@ -130,6 +130,26 @@ def eq_one_iff_left (a: α) : a = 1 ↔ ∀b, a * b = b :=
 def eq_one_iff_right (a: α) : a = 1 ↔ ∀b, b * a = b :=
   eq_zero_iff_right (α := AddOfMul α) _
 
+instance (n: ℕ) (x a: α) [IsAddCommutes a x] : IsAddCommutes (n • a) x where
+  add_commutes := by
+    induction n with
+    | zero => simp
+    | succ n ih =>
+      rw [succ_nsmul, add_assoc, add_comm _ x, ←add_assoc, ih, add_assoc]
+
+instance (n: ℕ) (x a: α) [IsAddCommutes x a] : IsAddCommutes x (n • a) := inferInstance
+instance (n: ℕ) (a: α) : IsAddCommutes a (n • a) := inferInstance
+instance (n: ℕ) (a: α) : IsAddCommutes (n • a) a := inferInstance
+instance (n m: ℕ) (a: α) : IsAddCommutes (n • a) (m • a) := inferInstance
+
+instance (n: ℕ) (x a: α) [IsCommutes a x] : IsCommutes (a ^ n) x where
+  mul_commutes := add_comm (n • AddOfMul.mk a) (AddOfMul.mk x)
+
+instance (n: ℕ) (x a: α) [IsCommutes x a] : IsCommutes x (a ^ n) := inferInstance
+instance (n: ℕ) (a: α) : IsCommutes a (a ^ n) := inferInstance
+instance (n: ℕ) (a: α) : IsCommutes (a ^ n) a := inferInstance
+instance (n m: ℕ) (a: α) : IsCommutes (a ^ n) (a ^ m) := inferInstance
+
 instance : IsAddCommMagma Nat where
   add_comm := Nat.add_comm
 
