@@ -92,8 +92,6 @@ open Norm.ofAbs
 
 local instance : Dist α γ := Norm.instDist α
 local instance : IsMetric α := Norm.instIsMetric α
-local instance : @Std.Commutative α (· + ·) := ⟨add_comm⟩
-local instance :  @Std.Associative α (· + ·) := ⟨add_assoc⟩
 
 section Helpers
 
@@ -590,8 +588,6 @@ open Norm.ofAbs
 local instance : IsLinearOrder γ := (inferInstanceAs (IsLinearLattice γ)).toIsLinearOrder
 local instance : Dist α γ := Norm.instDist α
 local instance : IsMetric α := Norm.instIsMetric α
-local instance : @Std.Commutative α (· + ·) := ⟨add_comm⟩
-local instance :  @Std.Associative α (· + ·) := ⟨add_assoc⟩
 
 def mul.spec (a b c d: CauchySeq α) : a ≈ c -> b ≈ d ->
   is_cauchy_equiv (fun n => a n * b n) (fun n => c n * d n) := by

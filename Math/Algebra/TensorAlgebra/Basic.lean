@@ -157,16 +157,16 @@ private def toTrivSqZeroExt_ι (x : M) : toTrivSqZeroExt (ι R x) = TrivSqZeroEx
 end
 
 private def ιInv : TensorAlgebra R M →ₗ[R] M := by
-  let hom := ((RingHom.id R).toMulOpp mul_comm)
+  let hom := ((RingHom.id R).toMulOpp (mul_comm · ·))
   let smul: SMul Rᵐᵒᵖ M := SMul.comp hom
-  let _ : @IsModule Rᵐᵒᵖ M _ _ _ _ _ _ := IsModule.compHom ((RingHom.id R).toMulOpp mul_comm)
+  let _ : @IsModule Rᵐᵒᵖ M _ _ _ _ _ _ := IsModule.compHom ((RingHom.id R).toMulOpp (mul_comm · ·))
   haveI : IsCentralScalar R M := ⟨fun r m => rfl⟩
   exact (TrivSqZeroExt.sndHom (R := R) (M := M)).comp toTrivSqZeroExt.toLinearMap
 
 private def ι_leftInverse : Function.IsLeftInverse ιInv (ι R : M → TensorAlgebra R M) := fun x ↦
-  let hom := ((RingHom.id R).toMulOpp mul_comm)
+  let hom := ((RingHom.id R).toMulOpp (mul_comm · ·))
   let _: SMul Rᵐᵒᵖ M := SMul.comp hom
-  let _ : @IsModule Rᵐᵒᵖ M _ _ _ _ _ _ := IsModule.compHom ((RingHom.id R).toMulOpp mul_comm)
+  let _ : @IsModule Rᵐᵒᵖ M _ _ _ _ _ _ := IsModule.compHom ((RingHom.id R).toMulOpp (mul_comm · ·))
   haveI : IsCentralScalar R M := ⟨fun _ _ => rfl⟩
   of_eq_true (Eq.trans (congrArg (fun x_1 ↦ (TrivSqZeroExt.sndHom) x_1 = x) (toTrivSqZeroExt_ι x)) (eq_self x))
 

@@ -84,7 +84,7 @@ instance (priority := 900) : AlgebraMap R R where
 def algebraMap_id : algebraMap (R := R) (α := R) x = x := rfl
 
 instance : IsAlgebra R R where
-  commutes := mul_comm
+  commutes _ _ := mul_comm _ _
   smul_def _ _ := rfl
 
 variable [SemiringOps S] [SMul S A]

@@ -34,13 +34,30 @@ class IsAddCommMagma (α: Type*) [Add α]: Prop where
 class IsCommMagma (α: Type*) [Mul α]: Prop where
   mul_comm (a b: α) : a * b = b * a
 
-def add_comm [IsAddCommMagma α] : ∀(a b: α), a + b = b + a := IsAddCommMagma.add_comm
-def mul_comm [IsCommMagma α] : ∀(a b: α), a * b = b * a := IsCommMagma.mul_comm
+class IsAddCommutes (a b: α) where
+  add_commutes: a + b = b + a
+
+class IsCommutes (a b: α) where
+  mul_commutes: a * b = b * a
+
+def add_comm (a b: α) [IsAddCommutes a b] : a + b = b + a := IsAddCommutes.add_commutes
+def mul_comm (a b: α) [IsCommutes a b] : a * b = b * a := IsCommutes.mul_commutes
+
+instance (priority := 2000) (a b: α) [IsAddCommMagma α] : IsAddCommutes a b where
+  add_commutes := IsAddCommMagma.add_comm _ _
+instance (priority := 2000) (a b: α) [IsCommMagma α] : IsCommutes a b where
+  mul_commutes := IsCommMagma.mul_comm _ _
 
 instance [Mul α] [IsCommMagma α] : IsAddCommMagma (AddOfMul α) where
-  add_comm := mul_comm (α := α)
+  add_comm _ _ := mul_comm (α := α) _ _
 instance [Add α] [IsAddCommMagma α] : IsCommMagma (MulOfAdd α) where
-  mul_comm := add_comm (α := α)
+  mul_comm _ _ := add_comm (α := α) _ _
+instance (a b: AddOfMul α) [Mul α] [IsCommMagma α] : IsAddCommutes a b where
+  add_commutes := mul_comm (α := α) _ _
+instance (a b: MulOfAdd α) [Mul α] [IsAddCommMagma α] : IsCommutes a b where
+  mul_commutes := add_comm (α := α) _ _
+instance [Add α] [IsAddCommMagma α] : IsCommMagma (MulOfAdd α) where
+  mul_comm _ _ := add_comm (α := α) _ _
 instance [Add α] [IsAddCommMagma α] : IsAddCommMagma αᵃᵒᵖ where
   add_comm _ _ := add_comm (α := α) _ _
 instance [Mul α] [IsCommMagma α] : IsCommMagma αᵃᵒᵖ :=
@@ -198,9 +215,9 @@ instance (priority := 100) [Mul α] [IsSemigroup α] : @Std.Associative α (· *
   assoc := mul_assoc
 
 instance (priority := 100) [Add α] [IsAddCommMagma α] : @Std.Commutative α (· + ·) where
-  comm := add_comm
+  comm _ _ := add_comm _ _
 instance (priority := 100) [Mul α] [IsCommMagma α] : @Std.Commutative α (· * ·) where
-  comm := mul_comm
+  comm _ _ := mul_comm _ _
 
 instance : IsAddCancel ℕ where
   add_left_cancel := Nat.add_left_cancel

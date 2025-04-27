@@ -13,7 +13,7 @@ instance AlgQuotient.instIsAddCommMagma [Add α] [IsAddCon C] [IsAddCommMagma α
     rw [add_comm]
 
 instance AlgQuotient.instIsCommMagma [Mul α] [IsMulCon C] [IsCommMagma α] : IsCommMagma (AlgQuotient c) where
-  mul_comm := add_comm (α := (AlgQuotient (AddOfMul.mk c)))
+  mul_comm _ _ := add_comm (α := (AlgQuotient (AddOfMul.mk c))) _ _
 
 instance AlgQuotient.instIsAddSemigroup [Add α] [IsAddCon C] [IsAddSemigroup α] : IsAddSemigroup (AlgQuotient c) where
   add_assoc := by
