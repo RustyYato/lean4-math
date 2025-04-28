@@ -127,4 +127,81 @@ def flatMap (f: α -> LazyMultiset β) (as: LazyMultiset α) : LazyMultiset β :
   exists x
   assumption
 
+@[simp]
+def nodup_nil : (nil (α := α)).Nodup := LazyList.nodup_nil
+
+def nodup_cons_iff (a: α) (as: LazyMultiset α) : ¬as.mem a ∧ as.Nodup ↔ (cons a as).Nodup := by
+  induction as using ind
+  apply LazyList.nodup_cons_iff
+
+def nodup_cons_head {a: α} {as: LazyMultiset α} : (cons a as).Nodup -> ¬as.mem a := by
+  intro h
+  rw [←nodup_cons_iff] at h
+  exact h.left
+
+def nodup_cons_tail {a: α} {as: LazyMultiset α} : (cons a as).Nodup -> as.Nodup := by
+  intro h
+  rw [←nodup_cons_iff] at h
+  exact h.right
+
+def nodup_cons {a: α} {as: LazyMultiset α} : ¬as.mem a -> as.Nodup -> (cons a as).Nodup := by
+  intro h g
+  rw [←nodup_cons_iff]
+  trivial
+
+def nodup_map {f: α -> β} (hf: f.Injective) (as: LazyMultiset α) (h: as.Nodup) : (as.map f).Nodup := by
+  induction as using ind
+  apply LazyList.nodup_map
+  assumption
+  assumption
+
+def nodup_append (as bs: LazyMultiset α) (ha: as.Nodup) (hb: bs.Nodup) (h: ∀x, as.mem x -> bs.mem x -> False) : (as.append bs).Nodup := by
+  induction as using ind; induction bs using ind
+  apply LazyList.nodup_append
+  assumption
+  assumption
+  assumption
+
+def nodup_flatten (as: LazyMultiset (LazyMultiset α))  (h₀: as.Nodup)
+  (h₁: ∀a, as.mem a -> a.Nodup)
+  (h₂: ∀a b, as.mem a -> as.mem b -> ∀x, a.mem x -> b.mem x -> a = b) : as.flatten.Nodup := by
+  induction as with
+  | nil => simp
+  | cons a as ih =>
+    simp
+    apply nodup_append
+    apply h₁; simp
+    apply ih
+    apply nodup_cons_tail h₀
+    intro x hx
+    apply h₁
+    simp [hx]
+    intro x y hx hy z hzx hzy
+    apply h₂
+    simp [hx]
+    simp [hy]
+    assumption
+    assumption
+    intro x y h
+    simp at h
+    obtain ⟨b, b_in_as, x_in_b⟩ := h
+    cases h₂ a b (by simp) (by simp [b_in_as]) x (by assumption) (by assumption)
+    have := nodup_cons_head h₀
+    contradiction
+
+def nodup_flatMap {f: α -> LazyMultiset β} (hf: f.Injective) (as: LazyMultiset α) (h₀: as.Nodup)
+  (h₁: ∀a, as.mem a -> (f a).Nodup)
+  (h₂: ∀a b, as.mem a -> as.mem b -> ∀x, (f a).mem x -> (f b).mem x -> f a = f b) : (as.flatMap f).Nodup := by
+  apply nodup_flatten
+  apply nodup_map
+  assumption
+  assumption
+  · intro a; simp; rintro _ h rfl; apply h₁
+    assumption
+  · simp
+    rintro _ _ _ _ rfl _ _ rfl
+    apply h₂
+    assumption
+    assumption
+
 end LazyMultiset
