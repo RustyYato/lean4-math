@@ -613,4 +613,68 @@ def Perm.cons_inv (a: α) (as bs: LazyList α) : (LazyList.cons a as).Perm (Lazy
   rw [perm_iff_list_perm, perm_iff_list_perm]
   simp
 
+def Perm.mem_iff {as bs: LazyList α} (h: as.Perm bs) : ∀{x}, as.mem x ↔ bs.mem x := by
+  induction h with
+  | nil => simp
+  | cons _ ih => simp [ih]
+  | swap => intro x; simp; rw [←or_assoc, or_comm (a := x = _), or_assoc]
+  | trans _ _ iha ihb => intro x; rw [iha, ihb]
+
+def Perm.nodup_iff {as bs: LazyList α} (h: as.Perm bs) : as.Nodup ↔ bs.Nodup := by
+  induction h with
+  | nil => simp
+  | cons h ih => simp [←nodup_cons_iff, Perm.mem_iff h, ih]
+  | swap =>
+    simp [←nodup_cons_iff]
+    rw [Eq.comm]; ac_nf
+  | trans _ _ iha ihb => rw [iha, ihb]
+
+def perm_append_comm {as bs: LazyList α} : (append as bs).Perm (append bs as) := by
+  induction as generalizing bs with
+  | nil => simp; rfl
+  | cons a as ih =>
+    simp
+    apply ih.cons.trans
+    clear ih
+    induction bs with
+    | nil => simp; rfl
+    | cons b bs ih =>
+      simp
+      apply Perm.trans
+      apply Perm.swap
+      apply Perm.cons
+      assumption
+
+def Perm.append {a b c d : LazyList α} (ac: a.Perm c) (bd: b.Perm d) : (append a b).Perm (append c d) := by
+  induction ac generalizing b d with
+  | nil => simpa
+  | cons _ ih => simp; apply (ih _).cons; assumption
+  | trans _ _ iha ihb =>
+    apply (iha _).trans
+    apply ihb
+    assumption
+    rfl
+  | swap =>
+    simp
+    apply Perm.trans
+    apply Perm.swap
+    apply Perm.cons
+    apply Perm.cons
+    rename_i c
+    induction c with
+    | nil => simpa
+    | cons c cs ih =>
+      simp
+      apply Perm.cons
+      assumption
+
+def Perm.map {a b : LazyList α} (h: a.Perm b) (f: α -> β) : (map a f).Perm (map b f) := by
+  induction h with
+  | nil => rfl
+  | cons _ ih => simp [ih, Perm.cons]
+  | trans _ _ iha ihb => exact Perm.trans iha ihb
+  | swap =>
+    simp
+    apply Perm.swap
+
 end LazyList
