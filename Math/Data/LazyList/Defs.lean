@@ -1,7 +1,7 @@
 import Math.Logic.Equiv.Basic
 import Math.Relation.Defs
 
-structure LazyList (α: Sort u) : Sort (max 1 u) where
+structure LazyList (α: Type*) where
   ofFun ::
   size: ℕ
   getElem : Fin size -> α
@@ -16,9 +16,6 @@ namespace LazyList
 instance : GetElem (LazyList α) Nat α (fun l i => i < l.size) where
   getElem xs i h := xs.getElem ⟨i, h⟩
 
-instance : GetElem (LazyList α) (Fin n) α (fun l i => i < l.size) where
-  getElem xs i h := xs[i.val]
-
 @[simp]
 def mk_getElem_nat {n: ℕ} (i: Nat) (h: i < n) {f: Fin n -> α} : (LazyList.ofFun n f)[i] = f ⟨i, h⟩ := rfl
 
@@ -26,10 +23,16 @@ def mk_getElem_nat {n: ℕ} (i: Nat) (h: i < n) {f: Fin n -> α} : (LazyList.ofF
 def mk_getElem_fin {n k: ℕ} (i: Fin k) (h: i < n) {f: Fin n -> α} : (LazyList.ofFun n f)[i] = f ⟨i, h⟩ := rfl
 
 @[simp]
+def getElem_fin {k: ℕ} (i: Fin k) (l: LazyList α) (h: i < l.size) : l[i] = l[i.val] := rfl
+
+@[simp]
 def getElem_eq (l: LazyList α) (i: Fin l.size) : l.getElem i = l[i] := rfl
 
+@[simp]
+def getElem_eq' (l: LazyList α) (i: Fin l.size) : l.getElem i = l[i.val] := rfl
+
 @[ext]
-def ext (as bs: LazyList α) (hsize: as.size = bs.size) (h: ∀(i: ℕ) (ha: i < as.size) (hb: i < bs.size), as.getElem ⟨i, ha⟩ = bs.getElem ⟨i, hb⟩) : as = bs := by
+def ext (as bs: LazyList α) (hsize: as.size = bs.size) (h: ∀(i: ℕ) (ha: i < as.size) (hb: i < bs.size), as[i] = bs[i]) : as = bs := by
   obtain ⟨asize, afn⟩ := as
   obtain ⟨bsize, bfn⟩ := bs
   congr
@@ -71,31 +74,28 @@ def lazy_list_eqv_list {α: Type*} : LazyList α ≃ List α where
     simp; omega
     simp; omega
 
-def congrLazyList {α β: Sort*} (h: α ≃ β) : LazyList α ≃ LazyList β where
+def congrLazyList {α β: Type*} (h: α ≃ β) : LazyList α ≃ LazyList β where
   toFun l := {
     size := l.size
-    getElem i := h (l.getElem i)
+    getElem i := h l[i]
   }
   invFun l := {
     size := l.size
-    getElem i := h.symm (l.getElem i)
+    getElem i := h.symm l[i]
   }
-  leftInv x := by simp
-  rightInv x := by simp
+  leftInv x := by simp; simp only [←LazyList.getElem_eq']
+  rightInv x := by simp; simp only [←LazyList.getElem_eq']
 
 def liftList : (LazyList α ≃ LazyList β) ≃ (List α ≃ List β) :=
   (Equiv.congrEquiv Equiv.lazy_list_eqv_list Equiv.lazy_list_eqv_list)
 
 def congrList (h: α ≃ β) : List α ≃ List β := Equiv.liftList (Equiv.congrLazyList h)
 
-def lazy_list_eqv_list_plift {α: Sort*} : LazyList α ≃ List (PLift α) :=
-  (congrLazyList (Equiv.plift _).symm).trans Equiv.lazy_list_eqv_list
-
 end Equiv
 
 namespace LazyList
 
-variable {α β: Sort*}
+variable {α β: Type*}
 
 def nil : LazyList α where
   size := 0
@@ -122,14 +122,35 @@ def getElem_cons_zero' (a: α) (as: LazyList α) : (cons a as).getElem (0: Fin (
 @[simp]
 def getElem_cons_succ' (a: α) (as: LazyList α) (i: Fin as.size) : (cons a as).getElem i.succ = as.getElem i := rfl
 
-def getElem_cons {α: Type*} (a: α) (as: LazyList α) (i: Nat) (h: i < as.size + 1) : (cons a as)[i] = if h:i = 0 then a else as[i - 1] := by
+def getElem_cons (a: α) (as: LazyList α) (i: Nat) (h: i < as.size + 1) : (cons a as)[i] = if h:i = 0 then a else as[i - 1] := by
   apply getElem_cons'
 
-@[simp]
-def getElem_cons_zero {α: Type*} (a: α) (as: LazyList α) : (cons a as)[(0: Nat)] = a := rfl
+instance (a: α) (as: LazyList α) : NeZero (LazyList.cons a as).size where
+  out := by simp
 
 @[simp]
-def getElem_cons_succ {α: Type*} (a: α) (as: LazyList α) (i: Nat) (h: i < as.size) : (cons a as)[i + 1]'(by simp; omega) = as[i] := rfl
+def getElem_cons_zero (a: α) (as: LazyList α) : (cons a as)[(0: Nat)] = a := rfl
+
+@[simp]
+def getElem_cons_zero₁ (a: α) (as: LazyList α) : (cons a as)[(0: Fin (as.size + 1))] = a := rfl
+
+@[simp]
+def getElem_cons_zero₁' (a: α) (as: LazyList α) :
+  GetElem.getElem (idx := Fin (cons a as).size)
+    (cons a as) 0 (by get_elem_tactic) = a := rfl
+
+@[simp]
+def getElem_cons_succ (a: α) (as: LazyList α) (i: Nat) (h: i < as.size) : (cons a as)[i + 1]'(by simp; omega) = as[i] := rfl
+
+@[simp]
+def getElem_cons_succ₁ (a: α) (as: LazyList α) (i: Nat) (h: i + 1 < as.size + 1) : (cons a as)[i + 1] = as[i] := rfl
+
+@[simp]
+def getElem_cons_succ₂ (a: α) (as: LazyList α) (i: Fin k) (h: i.succ < as.size + 1) : (cons a as)[i.succ] = as[i]'(by simpa using h) := rfl
+@[simp]
+def getElem_cons_succ₂' (a: α) (as: LazyList α) (i: Fin as.size) (h: i.succ < as.size + 1) :
+  GetElem.getElem (idx := Fin (cons a as).size)
+    (cons a as) i.succ (by get_elem_tactic) = as[i] := rfl
 
 @[induction_eliminator]
 def rec' {motive: LazyList α -> Sort*} (nil: motive .nil) (cons: ∀a as, motive as -> motive (.cons a as)) (list: LazyList α) : motive list :=
@@ -166,10 +187,14 @@ def append (as bs: LazyList α) : LazyList α where
     | .inl x => as.getElem x
     | .inr x => bs.getElem x
 
-@[simp]
-def size_append (as bs: LazyList α) : (append as bs).size = as.size + bs.size := rfl
+instance : Append (LazyList α) where
+  append as bs := append as bs
 
-def getElem_append' (as bs: LazyList α) (i: Nat) (h: i < as.size + bs.size) : (append as bs).getElem ⟨i, h⟩  = if h:i < as.size then as.getElem ⟨i, h⟩ else bs.getElem ⟨i - as.size, by omega⟩ := by
+@[simp]
+def size_append (as bs: LazyList α) : (as ++ bs).size = as.size + bs.size := rfl
+
+def getElem_append' (as bs: LazyList α) (i: Nat) (h: i < as.size + bs.size) : (as ++ bs)[i]  = if h:i < as.size then as[i] else bs[i - as.size] := by
+  show (append _ _)[_]'_ = _
   unfold append
   simp; rw [Equiv.symm_apply_finSum]
   simp; symm
@@ -177,7 +202,7 @@ def getElem_append' (as bs: LazyList α) (i: Nat) (h: i < as.size + bs.size) : (
   rfl
   rfl
 
-def getElem_append {α: Type*} (as bs: LazyList α) (i: Nat) (h: i < as.size + bs.size) : (append as bs)[i] = if h:i < as.size then as[i] else bs[i - as.size] := by
+def getElem_append (as bs: LazyList α) (i: Nat) (h: i < as.size + bs.size) : (as ++ bs)[i] = if h:i < as.size then as[i] else bs[i - as.size] := by
   apply getElem_append'
 
 def Nodup (as: LazyList α) := Function.Injective as.getElem
@@ -202,19 +227,18 @@ instance : Relation.IsEquiv (Perm (α := α)) where
     | trans _ _ iha ihb => exact ihb.trans iha
 
 @[simp]
-def llepl_length (as: LazyList α) : (Equiv.lazy_list_eqv_list_plift as).length = as.size := by
+def llepl_length (as: LazyList α) : (Equiv.lazy_list_eqv_list as).length = as.size := by
   show (List.map _ _).length = _
-  simp; rfl
+  simp
 
-def llepl_getElem (as: LazyList α) (i: ℕ) (h: i < as.size) : (Equiv.lazy_list_eqv_list_plift as)[i]'(by simpa) = PLift.up (as.getElem ⟨i, h⟩) := by
+def llepl_getElem (as: LazyList α) (i: ℕ) (h: i < as.size) : (Equiv.lazy_list_eqv_list as)[i]'(by simpa) = as[i] := by
   show (List.map _ _)[_]'_ = _
   simp
-  rfl
 
 @[simp]
-def llepl_nil : Equiv.lazy_list_eqv_list_plift .nil = ([]: List (PLift α)) := rfl
+def llepl_nil : Equiv.lazy_list_eqv_list .nil = ([]: List α) := rfl
 @[simp]
-def llepl_cons (a: α) (as: LazyList α) : Equiv.lazy_list_eqv_list_plift (.cons a as) = (PLift.up a::Equiv.lazy_list_eqv_list_plift as) := by
+def llepl_cons (a: α) (as: LazyList α) : Equiv.lazy_list_eqv_list (.cons a as) = (a::Equiv.lazy_list_eqv_list as) := by
   apply List.ext_getElem
   simp; intro i h₀ h₁
   rw [llepl_getElem _ _ (by simpa using h₀)]
@@ -224,40 +248,35 @@ def llepl_cons (a: α) (as: LazyList α) : Equiv.lazy_list_eqv_list_plift (.cons
   rw [llepl_getElem]
 
 @[simp]
-def llepl_symm_nil : Equiv.lazy_list_eqv_list_plift.symm ([]: List (PLift α)) = .nil := by
+def llepl_symm_nil : Equiv.lazy_list_eqv_list.symm ([]: List α) = .nil := by
   symm; apply Equiv.eq_symm_of_coe_eq
   rfl
 @[simp]
-def llepl_symm_cons (a: PLift α) (as: List (PLift α)) : Equiv.lazy_list_eqv_list_plift.symm (a::as) = (.cons a.down (Equiv.lazy_list_eqv_list_plift.symm as)) := by
+def llepl_symm_cons (a: α) (as: List α) : Equiv.lazy_list_eqv_list.symm (a::as) = (.cons a (Equiv.lazy_list_eqv_list.symm as)) := by
   symm; apply Equiv.eq_symm_of_coe_eq
   simp
 
 @[simp]
-def nil_append (as: LazyList α) : append .nil as = as := by
+def nil_append (as: LazyList α) : nil ++ as = as := by
   ext i; simp
-  simp [append]
-  rw [Equiv.symm_apply_finSum]
-  simp
+  simp [getElem_append]
 
 @[simp]
-def append_nil (as: LazyList α) : append as .nil = as := by
-  ext i; simp
-  simp [append]
-  rw [Equiv.symm_apply_finSum]
-  simp
-  rw [dif_pos]
-  assumption
+def append_nil (as: LazyList α) : as ++ nil = as := by
+  ext i _ h; simp
+  simp [getElem_append, h]
+
 
 @[simp]
-def cons_append (a: α) (as bs: LazyList α) : append (cons a as) bs = cons a (append as bs) := by
+def cons_append (a: α) (as bs: LazyList α) : (cons a as) ++ bs = cons a (as ++ bs) := by
   ext i ha hb; simp; omega
   simp [getElem_append', getElem_cons']
   simp at ha hb
   match i with
   | 0 => simp
-  | i + 1 => simp
+  | i + 1 => simp [getElem_append]
 
-def append_assoc (as bs cs: LazyList α) : append (append as bs) cs = append as (append bs cs) := by
+def append_assoc (as bs cs: LazyList α) : (as ++ bs) ++ cs = as ++ (bs ++ cs) := by
   induction as with
   | nil => simp
   | cons a as ih => simp [ih]
@@ -294,13 +313,13 @@ def size_reindex (as: LazyList α) (f: Fin n -> Fin as.size) : (as.reindex f).si
 @[simp]
 def getElem_reindex' (as: LazyList α) (f: Fin n -> Fin as.size) (i: ℕ) (h: i < n) : (as.reindex f).getElem ⟨i, by get_elem_tactic⟩ = as.getElem (f ⟨i, by get_elem_tactic⟩) := rfl
 @[simp]
-def getElem_reindex {α: Type*} (as: LazyList α) (f: Fin n -> Fin as.size) (i: ℕ) (h: i < n) : (as.reindex f)[i] = as[f ⟨i, by get_elem_tactic⟩] := rfl
+def getElem_reindex (as: LazyList α) (f: Fin n -> Fin as.size) (i: ℕ) (h: i < n) : (as.reindex f)[i] = as[f ⟨i, by get_elem_tactic⟩] := rfl
 
-def sum {α: Type*} [Add α] [Zero α] (as: LazyList α) : α :=
+def sum [Add α] [Zero α] (as: LazyList α) : α :=
   as.rec' (motive := fun _ => α) 0 (fun a _ ih => a + ih)
 
-@[simp] def sum_nil {α: Type*} [Add α] [Zero α] : sum (α := α) nil = 0 := rfl
-@[simp] def sum_cons {α: Type*} [Add α] [Zero α] (a: α) (as: LazyList α) : sum (cons a as) = a + sum as := rfl
+@[simp] def sum_nil [Add α] [Zero α] : sum (α := α) nil = 0 := rfl
+@[simp] def sum_cons [Add α] [Zero α] (a: α) (as: LazyList α) : sum (cons a as) = a + sum as := rfl
 
 def getChunk (as: LazyList (LazyList α)) (i: ℕ) (hi: i < (as.map LazyList.size).sum) :
   Σ'(a: LazyList α) (i: Fin as.size) (j: ℕ), as.getElem i = a ∧ j < a.size :=
@@ -340,7 +359,7 @@ def flatten_nil : flatten nil = nil (α := α) := by
   contradiction
 
 @[simp]
-def flatten_cons (a: LazyList α) (as: LazyList (LazyList α)) : flatten (cons a as) = append a (flatten as) := by
+def flatten_cons (a: LazyList α) (as: LazyList (LazyList α)) : flatten (cons a as) = a ++ (flatten as) := by
   ext i ha hb; simp
   conv => { lhs; unfold flatten }
   simp
@@ -356,14 +375,15 @@ def flatten_cons (a: LazyList α) (as: LazyList (LazyList α)) : flatten (cons a
 def flatMap (as: LazyList α) (f: α -> LazyList β) : LazyList β := (as.map f).flatten
 
 @[simp] def flatMap_nil (f: α -> LazyList β) : flatMap nil f = nil := by simp [flatMap]
-@[simp] def flatMap_cons (a: α) (as: LazyList α) (f: α -> LazyList β) : flatMap (cons a as) f = append (f a) (flatMap as f) := by simp [flatMap]
+@[simp] def flatMap_cons (a: α) (as: LazyList α) (f: α -> LazyList β) : flatMap (cons a as) f = (f a) ++ (flatMap as f) := by simp [flatMap]
 
-def mem (a: α) (as: LazyList α) := ∃i, a = as.getElem i
+instance : Membership α (LazyList α) where
+  mem l a := ∃i: Fin l.size, a = l[i]
 
 @[simp]
 def nodup_nil : Nodup (nil (α := α)) := by intro i; exact i.elim0
 
-def nodup_cons_iff (a: α) (as: LazyList α) : ¬as.mem a ∧ as.Nodup ↔ (cons a as).Nodup := by
+def nodup_cons_iff (a: α) (as: LazyList α) : ¬a ∈ as ∧ as.Nodup ↔ (cons a as).Nodup := by
   apply Iff.intro
   · intro ⟨h₀, g⟩
     intro x y h
@@ -389,7 +409,7 @@ def nodup_cons_iff (a: α) (as: LazyList α) : ¬as.mem a ∧ as.Nodup ↔ (cons
     intro x y g
     exact Fin.succ_inj.mp (@h x.succ y.succ g)
 
-def nodup_cons_head {a: α} {as: LazyList α} : (cons a as).Nodup -> ¬as.mem a := by
+def nodup_cons_head {a: α} {as: LazyList α} : (cons a as).Nodup -> ¬a ∈ as := by
   intro h
   rw [←nodup_cons_iff] at h
   exact h.left
@@ -399,7 +419,7 @@ def nodup_cons_tail {a: α} {as: LazyList α} : (cons a as).Nodup -> as.Nodup :=
   rw [←nodup_cons_iff] at h
   exact h.right
 
-def nodup_cons {a: α} {as: LazyList α} : ¬as.mem a -> as.Nodup -> (cons a as).Nodup := by
+def nodup_cons {a: α} {as: LazyList α} : ¬a ∈ as -> as.Nodup -> (cons a as).Nodup := by
   intro h g
   rw [←nodup_cons_iff]
   trivial
@@ -410,34 +430,34 @@ def nodup_map (as: LazyList α) (f: α -> β) (hf: Function.Injective f) (ha: as
   assumption
 
 @[simp]
-def not_mem_nil {a: α} : ¬mem a nil := nofun
+def not_mem_nil {a: α} : ¬a ∈ nil := nofun
 @[simp]
-def mem_cons {a: α} {as: LazyList α} : ∀{x}, (cons a as).mem x ↔ x = a ∨ as.mem x := by
+def mem_cons {a: α} {as: LazyList α} : ∀{x}, x ∈ cons a as ↔ x = a ∨ x ∈ as := by
   intro x
   apply Iff.intro
   rintro ⟨i, rfl⟩
   cases i using Fin.cases
-  left; rfl; right; simp; rename_i i; exists i
+  left; rfl; right
+  simp; rename_i i; exists i
   intro h
   rcases h with rfl | h
   exists ⟨0, by simp⟩
   obtain ⟨i, rfl⟩ := h
-  rw [←getElem_cons_succ']
-  refine ⟨_, rfl⟩
+  exists i.succ
 
 @[simp]
-def mem_map {as: LazyList α} {f: α -> β} : ∀{x}, (as.map f).mem x ↔ ∃a, as.mem a ∧ x = f a := by
+def mem_map {as: LazyList α} {f: α -> β} : ∀{x}, x ∈ as.map f ↔ ∃a ∈ as, x = f a := by
   induction as with
   | nil => simp
   | cons a as ih => simp [ih]
 
 @[simp]
-def mem_append {as bs: LazyList α} : ∀{x}, (append as bs).mem x ↔ as.mem x ∨ bs.mem x := by
+def mem_append {as bs: LazyList α} : ∀{x}, x ∈ as ++ bs ↔ x ∈ as ∨ x ∈ bs := by
   induction as with
   | nil => simp
   | cons a as ih => simp [ih, or_assoc]
 
-def nodup_append (as bs: LazyList α) (ha: as.Nodup) (hb: bs.Nodup) (nocomm: ∀x, as.mem x -> bs.mem x -> False) : (append as bs).Nodup := by
+def nodup_append (as bs: LazyList α) (ha: as.Nodup) (hb: bs.Nodup) (nocomm: ∀x, x ∈ as -> x ∈ bs -> False) : (as ++ bs).Nodup := by
   induction as with
   | nil => simpa
   | cons a as ih =>
@@ -459,7 +479,7 @@ def nodup_append (as bs: LazyList α) (ha: as.Nodup) (hb: bs.Nodup) (nocomm: ∀
       assumption
 
 @[simp]
-def mem_flatten {as: LazyList (LazyList α)} : ∀{x}, as.flatten.mem x ↔ ∃a, as.mem a ∧ a.mem x := by
+def mem_flatten {as: LazyList (LazyList α)} : ∀{x}, x ∈ as.flatten ↔ ∃a ∈ as, x ∈ a := by
   induction as with
   | nil => simp
   | cons a as ih => simp [ih]
@@ -491,9 +511,7 @@ def truncate_cons_succ (a: α) (as: LazyList α) (n: ℕ) : truncate (cons a as)
   simp [truncate]
   cases i
   simp
-  erw [getElem_cons_succ' (i := ⟨_, _⟩)]
-  intro; simp at ha
-  omega
+  simp
 
 @[simp]
 def truncate_map (as: LazyList α) (f: α -> β) (n: ℕ) : (truncate as n).map f = truncate (as.map f) n := by
@@ -524,11 +542,10 @@ def drop_zero (as: LazyList α) : drop as 0 = as := by
 def drop_cons_succ (a: α) (as: LazyList α) (n: ℕ) : drop (cons a as) (n + 1) = drop as n := by
   ext i ha; simp
   simp [drop]
-  erw [getElem_cons_succ' (i := ⟨_, _⟩)]
-  intro; simp at ha;
-  show i + n < _; omega
+  show _[(i + n) + 1]'_ = _
+  simp
 
-def truncate_append_drop (as: LazyList α) (n: ℕ) : append (truncate as n) (drop as n) = as := by
+def truncate_append_drop (as: LazyList α) (n: ℕ) : (truncate as n) ++ (drop as n) = as := by
   induction as generalizing n with
   | nil => simp
   | cons a as ih =>
@@ -540,9 +557,9 @@ def nodup_flatten (as: LazyList (LazyList α))
   -- as has no duplicates
   (h₀: as.Nodup)
   -- as has no duplicates
-  (h₁: ∀a, as.mem a -> a.Nodup)
+  (h₁: ∀a ∈ as, a.Nodup)
   -- and if any two elements share any elements, they must be the same list
-  (h₂: ∀a b: LazyList α, as.mem a -> as.mem b -> ∀x: α, a.mem x -> b.mem x -> a = b) : as.flatten.Nodup := by
+  (h₂: ∀a b: LazyList α, a ∈ as -> b ∈ as -> ∀x: α, x ∈ a -> x ∈ b -> a = b) : as.flatten.Nodup := by
   induction as with
   | nil => simp
   | cons a as ih =>
@@ -569,8 +586,8 @@ def nodup_flatten (as: LazyList (LazyList α))
 
 def nodup_flatMap (as: LazyList α) (f: α -> LazyList β)
   (h₀: as.Nodup)
-  (h₁: ∀a, as.mem a -> (f a).Nodup)
-  (h₂: ∀a b: α, as.mem a -> as.mem b -> ∀x: β, (f a).mem x -> (f b).mem x -> f a = f b)
+  (h₁: ∀a, a ∈ as -> (f a).Nodup)
+  (h₂: ∀a b: α, a ∈ as -> b ∈ as -> ∀x: β, x ∈ f a -> x ∈ f b -> f a = f b)
   (h₃: Function.Injective f) : (as.flatMap f).Nodup := by
   apply nodup_flatten
   apply nodup_map
@@ -587,7 +604,7 @@ def nodup_flatMap (as: LazyList α) (f: α -> LazyList β)
   assumption
   assumption
 
-def perm_iff_list_perm {as bs: LazyList α} : as.Perm bs ↔ (Equiv.lazy_list_eqv_list_plift as).Perm (Equiv.lazy_list_eqv_list_plift bs) := by
+def perm_iff_list_perm {as bs: LazyList α} : as.Perm bs ↔ (Equiv.lazy_list_eqv_list as).Perm (Equiv.lazy_list_eqv_list bs) := by
   apply Iff.intro
   intro h
   induction h with
@@ -595,9 +612,9 @@ def perm_iff_list_perm {as bs: LazyList α} : as.Perm bs ↔ (Equiv.lazy_list_eq
   | cons => simpa
   | swap => simp; apply List.Perm.swap
   | trans _ _ iha ihb => apply iha.trans ihb
-  conv => { rhs; rw [←Equiv.lazy_list_eqv_list_plift.coe_symm as, ←Equiv.lazy_list_eqv_list_plift.coe_symm bs] }
-  generalize Equiv.lazy_list_eqv_list_plift as = A
-  generalize Equiv.lazy_list_eqv_list_plift bs = B
+  conv => { rhs; rw [←Equiv.lazy_list_eqv_list.coe_symm as, ←Equiv.lazy_list_eqv_list.coe_symm bs] }
+  generalize Equiv.lazy_list_eqv_list as = A
+  generalize Equiv.lazy_list_eqv_list bs = B
   intro h
   induction h with
   | nil => simp; exact .nil
@@ -605,7 +622,7 @@ def perm_iff_list_perm {as bs: LazyList α} : as.Perm bs ↔ (Equiv.lazy_list_eq
   | swap => simp; apply Perm.swap
   | trans _ _ iha ihb => apply iha.trans ihb
 
-def perm_iff_list_perm' {as bs: List (PLift α)} : as.Perm bs ↔ (Equiv.lazy_list_eqv_list_plift.symm as).Perm (Equiv.lazy_list_eqv_list_plift.symm bs) := by
+def perm_iff_list_perm' {as bs: List α} : as.Perm bs ↔ (Equiv.lazy_list_eqv_list.symm as).Perm (Equiv.lazy_list_eqv_list.symm bs) := by
   rw [perm_iff_list_perm]
   simp
 
@@ -613,7 +630,7 @@ def Perm.cons_inv (a: α) (as bs: LazyList α) : (LazyList.cons a as).Perm (Lazy
   rw [perm_iff_list_perm, perm_iff_list_perm]
   simp
 
-def Perm.mem_iff {as bs: LazyList α} (h: as.Perm bs) : ∀{x}, as.mem x ↔ bs.mem x := by
+def Perm.mem_iff {as bs: LazyList α} (h: as.Perm bs) : ∀{x}, x ∈ as ↔ x ∈ bs := by
   induction h with
   | nil => simp
   | cons _ ih => simp [ih]
@@ -629,7 +646,7 @@ def Perm.nodup_iff {as bs: LazyList α} (h: as.Perm bs) : as.Nodup ↔ bs.Nodup 
     rw [Eq.comm]; ac_nf
   | trans _ _ iha ihb => rw [iha, ihb]
 
-def perm_append_comm {as bs: LazyList α} : (append as bs).Perm (append bs as) := by
+def perm_append_comm {as bs: LazyList α} : (as ++ bs).Perm (bs ++ as) := by
   induction as generalizing bs with
   | nil => simp; rfl
   | cons a as ih =>
@@ -645,7 +662,7 @@ def perm_append_comm {as bs: LazyList α} : (append as bs).Perm (append bs as) :
       apply Perm.cons
       assumption
 
-def Perm.append {a b c d : LazyList α} (ac: a.Perm c) (bd: b.Perm d) : (append a b).Perm (append c d) := by
+def Perm.append {a b c d : LazyList α} (ac: a.Perm c) (bd: b.Perm d) : (a ++ b).Perm (c ++ d) := by
   induction ac generalizing b d with
   | nil => simpa
   | cons _ ih => simp; apply (ih _).cons; assumption

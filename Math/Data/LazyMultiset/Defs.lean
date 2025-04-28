@@ -1,10 +1,10 @@
 import Math.Data.LazyList.Defs
 
-def LazyMultiset (α: Sort*) := Quotient (Relation.setoid (LazyList.Perm (α := α)))
+def LazyMultiset (α: Type*) := Quotient (Relation.setoid (LazyList.Perm (α := α)))
 
 namespace LazyMultiset
 
-variable {α: Sort*}
+variable {α: Type*}
 
 def ofList : LazyList α -> LazyMultiset α := Quotient.mk _
 def nil : LazyMultiset α := ofList .nil
@@ -14,7 +14,7 @@ def cons (a: α) : LazyMultiset α -> LazyMultiset α := by
   apply Quotient.sound
   apply h.cons
 def mem (a: α) : LazyMultiset α -> Prop := by
-  refine Quotient.lift (LazyList.mem a) ?_
+  refine Quotient.lift (a ∈ ·) ?_
   intro a b h
   simp; apply h.mem_iff
 def Nodup : LazyMultiset α -> Prop := by
@@ -65,31 +65,32 @@ def cases
   induction as using ind
   rfl
 
-def append : LazyMultiset α -> LazyMultiset α -> LazyMultiset α := by
-  refine Quotient.lift₂ (fun a b => ofList (a.append b)) ?_
-  intro a b c d ac bd
-  apply Quotient.sound
-  apply LazyList.Perm.append
-  assumption
-  assumption
+instance : Append (LazyMultiset α) where
+  append : LazyMultiset α -> LazyMultiset α -> LazyMultiset α := by
+    refine Quotient.lift₂ (fun a b => ofList (a ++ b)) ?_
+    intro a b c d ac bd
+    apply Quotient.sound
+    apply LazyList.Perm.append
+    assumption
+    assumption
 
-@[simp] def mem_append {as bs: LazyMultiset α} : ∀{x}, (append as bs).mem x ↔ as.mem x ∨ bs.mem x := by
+@[simp] def mem_append {as bs: LazyMultiset α} : ∀{x}, (as ++ bs).mem x ↔ as.mem x ∨ bs.mem x := by
   induction as using ind with | _ a =>
   induction bs using ind with | _ b =>
   apply LazyList.mem_append
 
-@[simp] def size_append (as bs: LazyMultiset α) : size (append as bs) = size as + size bs := by
+@[simp] def size_append (as bs: LazyMultiset α) : size (as ++ bs) = size as + size bs := by
   induction as using ind
   induction bs using ind
   rfl
 
-def append_comm (as bs: LazyMultiset α) : append as bs = append bs as := by
+def append_comm (as bs: LazyMultiset α) : as ++ bs = bs ++ as := by
   induction as using ind with | _ a =>
   induction bs using ind with | _ b =>
   apply Quotient.sound
   apply LazyList.perm_append_comm
 
-def append_assoc (as bs cs: LazyMultiset α) : append (append as bs) cs = append as (append bs cs) := by
+def append_assoc (as bs cs: LazyMultiset α) : (as ++ bs) ++ cs = as ++ (bs ++ cs) := by
   induction as using ind with | _ a =>
   induction bs using ind with | _ b =>
   induction cs using ind with | _ c =>
@@ -112,10 +113,10 @@ def map (f: α -> β) : LazyMultiset α -> LazyMultiset β := by
   rfl
 
 private def preFlatten (l: LazyList (LazyMultiset α)) : LazyMultiset α :=
-  l.rec' (motive := fun _ => LazyMultiset α) nil (fun a _ ih => append a ih)
+  l.rec' (motive := fun _ => LazyMultiset α) nil (fun a _ ih => a ++ ih)
 
 @[simp] private def preFlatten_nil : preFlatten (α := α) .nil = nil := rfl
-@[simp] private def preFlatten_cons : preFlatten (α := α) (.cons a as) = append a (preFlatten as) := rfl
+@[simp] private def preFlatten_cons : preFlatten (α := α) (.cons a as) = a ++ (preFlatten as) := rfl
 
 unsafe def flatten_impl (m: LazyMultiset (LazyMultiset α)) : LazyMultiset α :=
   let m : LazyList (LazyList α) := cast lcProof m
@@ -132,7 +133,7 @@ def flatten : LazyMultiset (LazyMultiset α) -> LazyMultiset α := by
   | trans _ _ iha ihb => rw [iha, ihb]
 
 @[simp] def flatten_nil : flatten (α := α) nil = nil := rfl
-@[simp] def flatten_cons (a: LazyMultiset α) (as: LazyMultiset (LazyMultiset α)) : flatten (cons a as) = append a (flatten as) := by
+@[simp] def flatten_cons (a: LazyMultiset α) (as: LazyMultiset (LazyMultiset α)) : flatten (cons a as) = a ++ (flatten as) := by
   induction as using ind
   rfl
 
@@ -184,7 +185,7 @@ def nodup_map {f: α -> β} (hf: f.Injective) (as: LazyMultiset α) (h: as.Nodup
   assumption
   assumption
 
-def nodup_append (as bs: LazyMultiset α) (ha: as.Nodup) (hb: bs.Nodup) (h: ∀x, as.mem x -> bs.mem x -> False) : (as.append bs).Nodup := by
+def nodup_append (as bs: LazyMultiset α) (ha: as.Nodup) (hb: bs.Nodup) (h: ∀x, as.mem x -> bs.mem x -> False) : (as ++ bs).Nodup := by
   induction as using ind; induction bs using ind
   apply LazyList.nodup_append
   assumption

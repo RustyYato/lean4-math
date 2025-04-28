@@ -1,6 +1,6 @@
 import Math.Data.LazyMultiset.Defs
 
-structure LazyFinset (α: Sort*) where
+structure LazyFinset (α: Type*) where
   ofMultiset ::
   toMultiset : LazyMultiset α
   nodup: toMultiset.Nodup
@@ -27,7 +27,7 @@ def map (f: α ↪ β) (s: LazyFinset α) : LazyFinset β where
     exact s.nodup
 
 def append (as bs: LazyFinset α) (nocomm: ∀x, as.mem x -> bs.mem x -> False) : LazyFinset α where
-  toMultiset := as.toMultiset.append bs.toMultiset
+  toMultiset := as.toMultiset ++ bs.toMultiset
   nodup := by
     apply LazyMultiset.nodup_append
     exact as.nodup
@@ -48,6 +48,8 @@ def flatMap (f: α ↪ LazyFinset β) (as: LazyFinset α) (h: ∀a b, as.mem a -
       congr 1
       apply h
       repeat assumption
+
+def card (s: LazyFinset α) : ℕ := s.toMultiset.size
 
 instance : Membership α (LazyFinset α) where
   mem s a := s.mem a
