@@ -116,6 +116,12 @@ def getElem_cons' (a: α) (as: LazyList α) (i: Nat) (h: i < as.size + 1) : (con
   match i with
   | i + 1 => rfl
 
+@[simp]
+def getElem_cons_zero' (a: α) (as: LazyList α) : (cons a as).getElem (0: Fin (as.size + 1)) = a := rfl
+
+@[simp]
+def getElem_cons_succ' (a: α) (as: LazyList α) (i: Fin as.size) : (cons a as).getElem i.succ = as.getElem i := rfl
+
 def getElem_cons {α: Type*} (a: α) (as: LazyList α) (i: Nat) (h: i < as.size + 1) : (cons a as)[i] = if h:i = 0 then a else as[i - 1] := by
   apply getElem_cons'
 
@@ -213,7 +219,7 @@ def llepl_cons (a: α) (as: LazyList α) : Equiv.lazy_list_eqv_list_plift (.cons
   simp; intro i h₀ h₁
   rw [llepl_getElem _ _ (by simpa using h₀)]
   cases i
-  simp; rfl
+  simp
   simp [cons]
   rw [llepl_getElem]
 
@@ -342,5 +348,96 @@ def flatMap (as: LazyList α) (f: α -> LazyList β) : LazyList β := (as.map f)
 
 @[simp] def flatMap_nil (f: α -> LazyList β) : flatMap nil f = nil := by simp [flatMap]
 @[simp] def flatMap_cons (a: α) (as: LazyList α) (f: α -> LazyList β) : flatMap (cons a as) f = append (f a) (flatMap as f) := by simp [flatMap]
+
+def mem (a: α) (as: LazyList α) := ∃i, a = as.getElem i
+
+def nodup_cons_iff (a: α) (as: LazyList α) : ¬as.mem a ∧ as.Nodup ↔ (cons a as).Nodup := by
+  apply Iff.intro
+  · intro ⟨h₀, g⟩
+    intro x y h
+    cases x using Fin.cases
+    cases y using Fin.cases
+    rfl
+    simp at h
+    have := h₀ ⟨_, h⟩
+    contradiction
+    cases y using Fin.cases
+    simp at h
+    have := h₀ ⟨_, h.symm⟩
+    contradiction
+    congr
+    simp at h
+    exact g h
+  · intro h
+    apply And.intro
+    rintro ⟨k, rfl⟩
+    have := @h ⟨0, by simp⟩ k.succ (by simp)
+    rw [←Fin.val_inj] at this
+    simp at this
+    intro x y g
+    exact Fin.succ_inj.mp (@h x.succ y.succ g)
+
+def nodup_cons_head {a: α} {as: LazyList α} : (cons a as).Nodup -> ¬as.mem a := by
+  intro h
+  rw [←nodup_cons_iff] at h
+  exact h.left
+
+def nodup_cons_tail {a: α} {as: LazyList α} : (cons a as).Nodup -> as.Nodup := by
+  intro h
+  rw [←nodup_cons_iff] at h
+  exact h.right
+
+def nodup_cons {a: α} {as: LazyList α} : ¬as.mem a -> as.Nodup -> (cons a as).Nodup := by
+  intro h g
+  rw [←nodup_cons_iff]
+  trivial
+
+def nodup_map (as: LazyList α) (f: α -> β) (hf: Function.Injective f) (ha: as.Nodup) : (as.map f).Nodup := by
+  apply Function.Injective.comp (g := f)
+  assumption
+  assumption
+
+@[simp]
+def not_mem_nil {a: α} : ¬mem a nil := nofun
+@[simp]
+def mem_cons {a: α} {as: LazyList α} : ∀{x}, (cons a as).mem x ↔ x = a ∨ as.mem x := by
+  intro x
+  apply Iff.intro
+  rintro ⟨i, rfl⟩
+  cases i using Fin.cases
+  left; rfl; right; simp; rename_i i; exists i
+  intro h
+  rcases h with rfl | h
+  exists ⟨0, by simp⟩
+  obtain ⟨i, rfl⟩ := h
+  rw [←getElem_cons_succ']
+  refine ⟨_, rfl⟩
+
+@[simp]
+def mem_append {as bs: LazyList α} : ∀{x}, (append as bs).mem x ↔ as.mem x ∨ bs.mem x := by
+  induction as with
+  | nil => simp
+  | cons a as ih => simp [ih, or_assoc]
+
+def nodup_append (as bs: LazyList α) (ha: as.Nodup) (hb: bs.Nodup) (nocomm: ∀x, as.mem x -> bs.mem x -> False) : (append as bs).Nodup := by
+  induction as with
+  | nil => simpa
+  | cons a as ih =>
+    simp
+    apply nodup_cons
+    · intro h
+      simp at h
+      cases h
+      have := nodup_cons_head ha
+      contradiction
+      apply nocomm a
+      simp; assumption
+    apply ih
+    apply nodup_cons_tail
+    assumption
+    · intro x ha hb
+      apply nocomm x
+      simp [ha]
+      assumption
 
 end LazyList
