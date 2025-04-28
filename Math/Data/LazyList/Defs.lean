@@ -677,4 +677,11 @@ def Perm.map {a b : LazyList α} (h: a.Perm b) (f: α -> β) : (map a f).Perm (m
     simp
     apply Perm.swap
 
+def Perm.size_eq (h: Perm a b) : a.size = b.size := by
+  induction h with
+  | nil => rfl
+  | cons _ ih => simp [ih, Perm.cons]
+  | trans _ _ iha ihb => rw [iha, ihb]
+  | swap => simp
+
 end LazyList

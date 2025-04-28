@@ -21,6 +21,10 @@ def Nodup : LazyMultiset α -> Prop := by
   refine Quotient.lift LazyList.Nodup ?_
   intro a b h
   simp; apply h.nodup_iff
+def size : LazyMultiset α -> ℕ := by
+  refine Quotient.lift LazyList.size ?_
+  intro a b h
+  apply h.size_eq
 
 def ind
   {motive: LazyMultiset α -> Prop}
@@ -40,10 +44,26 @@ def induction
   | nil => apply nil
   | cons a as ih => apply cons a (Quotient.mk _ as) ih
 
+@[cases_eliminator]
+def cases
+  {motive: LazyMultiset α -> Prop}
+  (nil: motive .nil)
+  (cons: ∀a as, motive (.cons a as))
+  (m: LazyMultiset α) : motive m := by
+  induction m using Quotient.ind with | _ m =>
+  cases m with
+  | nil => apply nil
+  | cons a as => apply cons a (Quotient.mk _ as)
+
 @[simp] def not_mem_nil {a: α} : ¬mem a nil := LazyList.not_mem_nil (a := a)
 @[simp] def mem_cons {a: α} {as: LazyMultiset α} : ∀{x}, (cons a as).mem x ↔ x = a ∨ as.mem x := by
   induction as using ind with | _ a =>
   apply LazyList.mem_cons
+
+@[simp] def size_nil : size (nil (α := α)) = 0 := rfl
+@[simp] def size_cons (a: α) (as: LazyMultiset α) : size (cons a as) = size as + 1 := by
+  induction as using ind
+  rfl
 
 def append : LazyMultiset α -> LazyMultiset α -> LazyMultiset α := by
   refine Quotient.lift₂ (fun a b => ofList (a.append b)) ?_
@@ -57,6 +77,11 @@ def append : LazyMultiset α -> LazyMultiset α -> LazyMultiset α := by
   induction as using ind with | _ a =>
   induction bs using ind with | _ b =>
   apply LazyList.mem_append
+
+@[simp] def size_append (as bs: LazyMultiset α) : size (append as bs) = size as + size bs := by
+  induction as using ind
+  induction bs using ind
+  rfl
 
 def append_comm (as bs: LazyMultiset α) : append as bs = append bs as := by
   induction as using ind with | _ a =>
@@ -81,6 +106,10 @@ def map (f: α -> β) : LazyMultiset α -> LazyMultiset β := by
 @[simp] def mem_map {as: LazyMultiset α} {f: α -> β} : ∀{x}, (as.map f).mem x  ↔ ∃a, as.mem a ∧ x = f a := by
   induction as using ind
   apply LazyList.mem_map
+
+@[simp] def size_map (f: α -> β) (as: LazyMultiset α) : size (map f as) = size as := by
+  induction as using ind
+  rfl
 
 private def preFlatten (l: LazyList (LazyMultiset α)) : LazyMultiset α :=
   l.rec' (motive := fun _ => LazyMultiset α) nil (fun a _ ih => append a ih)
@@ -202,6 +231,39 @@ def nodup_flatMap {f: α -> LazyMultiset β} (hf: f.Injective) (as: LazyMultiset
     rintro _ _ _ _ rfl _ _ rfl
     apply h₂
     assumption
+    assumption
+
+def cons_comm (a b: α) (as: LazyMultiset α) : cons a (cons b as) = cons b (cons a as) := by
+  induction as using ind
+  apply Quotient.sound
+  apply LazyList.Perm.swap
+
+@[simp]
+def nil_ne_cons (a: α) (as: LazyMultiset α) : ¬nil = cons a as := by
+  intro h
+  have := size_cons a as
+  rw [←h] at this
+  simp at this
+
+def mem_iff_eq_cons {x: α} {as: LazyMultiset α} : as.mem x ↔ ∃as', as = cons x as' := by
+  induction as with
+  | nil => simp
+  | cons a as ih =>
+    simp
+    apply Iff.intro
+    intro h
+    rcases h with rfl | h
+    exists as
+    obtain ⟨as', rfl⟩ := ih.mp h
+    exists (cons a as')
+    rw [cons_comm]
+    intro ⟨as', hx⟩
+    apply Classical.or_iff_not_imp_right.mpr
+    intro h
+    have : (cons x as').mem x := by simp
+    rw [←hx] at this
+    simp at this
+    apply this.resolve_right
     assumption
 
 end LazyMultiset

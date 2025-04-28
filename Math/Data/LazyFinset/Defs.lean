@@ -49,4 +49,46 @@ def flatMap (f: α ↪ LazyFinset β) (as: LazyFinset α) (h: ∀a b, as.mem a -
       apply h
       repeat assumption
 
+instance : Membership α (LazyFinset α) where
+  mem s a := s.mem a
+
+@[ext]
+def ext {α: Type*} (a b: LazyFinset α) (h: ∀x, x ∈ a ↔ x ∈ b) : a = b := by
+  obtain ⟨a, ha⟩ := a
+  obtain ⟨b, hb⟩ := b
+  congr
+  replace h : ∀x, a.mem x ↔ b.mem x := h
+  induction a generalizing b with
+  | nil =>
+    cases b with
+    | nil => rfl
+    | cons b bs =>
+      have := h b
+      simp at this
+  | cons a as ih =>
+    have := h a
+    simp at this
+    simp [LazyMultiset.mem_iff_eq_cons] at this
+    obtain ⟨b, rfl⟩ := this
+    congr
+    apply ih
+    exact LazyMultiset.nodup_cons_tail ha
+    exact LazyMultiset.nodup_cons_tail hb
+    intro x
+    apply Iff.intro
+    · intro hx
+      have := (h x).mp (by simp [hx])
+      simp at this
+      apply this.resolve_left
+      rintro rfl
+      have := LazyMultiset.nodup_cons_head ha
+      contradiction
+    · intro hx
+      have := (h x).mpr (by simp [hx])
+      simp at this
+      apply this.resolve_left
+      rintro rfl
+      have := LazyMultiset.nodup_cons_head hb
+      contradiction
+
 end LazyFinset
