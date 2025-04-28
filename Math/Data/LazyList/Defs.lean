@@ -224,6 +224,15 @@ def llepl_cons (a: α) (as: LazyList α) : Equiv.lazy_list_eqv_list_plift (.cons
   rw [llepl_getElem]
 
 @[simp]
+def llepl_symm_nil : Equiv.lazy_list_eqv_list_plift.symm ([]: List (PLift α)) = .nil := by
+  symm; apply Equiv.eq_symm_of_coe_eq
+  rfl
+@[simp]
+def llepl_symm_cons (a: PLift α) (as: List (PLift α)) : Equiv.lazy_list_eqv_list_plift.symm (a::as) = (.cons a.down (Equiv.lazy_list_eqv_list_plift.symm as)) := by
+  symm; apply Equiv.eq_symm_of_coe_eq
+  simp
+
+@[simp]
 def nil_append (as: LazyList α) : append .nil as = as := by
   ext i; simp
   simp [append]
@@ -577,5 +586,31 @@ def nodup_flatMap (as: LazyList α) (f: α -> LazyList β)
   apply h₂
   assumption
   assumption
+
+def perm_iff_list_perm {as bs: LazyList α} : as.Perm bs ↔ (Equiv.lazy_list_eqv_list_plift as).Perm (Equiv.lazy_list_eqv_list_plift bs) := by
+  apply Iff.intro
+  intro h
+  induction h with
+  | nil => simp
+  | cons => simpa
+  | swap => simp; apply List.Perm.swap
+  | trans _ _ iha ihb => apply iha.trans ihb
+  conv => { rhs; rw [←Equiv.lazy_list_eqv_list_plift.coe_symm as, ←Equiv.lazy_list_eqv_list_plift.coe_symm bs] }
+  generalize Equiv.lazy_list_eqv_list_plift as = A
+  generalize Equiv.lazy_list_eqv_list_plift bs = B
+  intro h
+  induction h with
+  | nil => simp; exact .nil
+  | cons _ _ ih => simp; apply ih.cons
+  | swap => simp; apply Perm.swap
+  | trans _ _ iha ihb => apply iha.trans ihb
+
+def perm_iff_list_perm' {as bs: List (PLift α)} : as.Perm bs ↔ (Equiv.lazy_list_eqv_list_plift.symm as).Perm (Equiv.lazy_list_eqv_list_plift.symm bs) := by
+  rw [perm_iff_list_perm]
+  simp
+
+def Perm.cons_inv (a: α) (as bs: LazyList α) : (LazyList.cons a as).Perm (LazyList.cons a bs) -> as.Perm bs := by
+  rw [perm_iff_list_perm, perm_iff_list_perm]
+  simp
 
 end LazyList
