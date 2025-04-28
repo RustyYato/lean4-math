@@ -351,6 +351,9 @@ def flatMap (as: LazyList α) (f: α -> LazyList β) : LazyList β := (as.map f)
 
 def mem (a: α) (as: LazyList α) := ∃i, a = as.getElem i
 
+@[simp]
+def nodup_nil : Nodup (nil (α := α)) := by intro i; exact i.elim0
+
 def nodup_cons_iff (a: α) (as: LazyList α) : ¬as.mem a ∧ as.Nodup ↔ (cons a as).Nodup := by
   apply Iff.intro
   · intro ⟨h₀, g⟩
@@ -414,6 +417,12 @@ def mem_cons {a: α} {as: LazyList α} : ∀{x}, (cons a as).mem x ↔ x = a ∨
   refine ⟨_, rfl⟩
 
 @[simp]
+def mem_map {as: LazyList α} {f: α -> β} : ∀{x}, (as.map f).mem x ↔ ∃a, as.mem a ∧ x = f a := by
+  induction as with
+  | nil => simp
+  | cons a as ih => simp [ih]
+
+@[simp]
 def mem_append {as bs: LazyList α} : ∀{x}, (append as bs).mem x ↔ as.mem x ∨ bs.mem x := by
   induction as with
   | nil => simp
@@ -439,5 +448,134 @@ def nodup_append (as bs: LazyList α) (ha: as.Nodup) (hb: bs.Nodup) (nocomm: ∀
       apply nocomm x
       simp [ha]
       assumption
+
+@[simp]
+def mem_flatten {as: LazyList (LazyList α)} : ∀{x}, as.flatten.mem x ↔ ∃a, as.mem a ∧ a.mem x := by
+  induction as with
+  | nil => simp
+  | cons a as ih => simp [ih]
+
+def getElem_flatten_idx (as: LazyList (LazyList α)) := Σx: Fin as.size, Fin (as.getElem x).size
+
+def getElem_flatten (as: LazyList (LazyList α)) (idx: as.getElem_flatten_idx) :=
+  (as.getElem idx.fst).getElem idx.snd
+
+def truncate (as: LazyList α) (n: ℕ) : LazyList α :=
+  as.reindex (Fin.castLE (n := min as.size n) (Nat.min_le_left _ _))
+
+@[simp]
+def truncate_size (as: LazyList α) (n: ℕ) : (as.truncate n).size = min as.size n := rfl
+
+@[simp]
+def truncate_zero (as: LazyList α) : truncate as 0 = nil := by
+  ext; simp
+  contradiction
+
+@[simp]
+def truncate_nil (n: ℕ) : truncate nil n = nil (α := α) := by
+  ext; simp
+  contradiction
+
+@[simp]
+def truncate_cons_succ (a: α) (as: LazyList α) (n: ℕ) : truncate (cons a as) (n + 1) = cons a (truncate as n) := by
+  ext i ha; simp
+  simp [truncate]
+  cases i
+  simp
+  erw [getElem_cons_succ' (i := ⟨_, _⟩)]
+  intro; simp at ha
+  omega
+
+@[simp]
+def truncate_map (as: LazyList α) (f: α -> β) (n: ℕ) : (truncate as n).map f = truncate (as.map f) n := by
+  induction as generalizing n with
+  | nil => simp
+  | cons a as ih =>
+    cases n
+    simp
+    simp [ih]
+
+def drop (as: LazyList α) (n: ℕ) : LazyList α :=
+  as.reindex (fun x: Fin (as.size - n) => ⟨x.val + n, by omega⟩)
+
+@[simp]
+def drop_size (as: LazyList α) (n: ℕ) : (as.drop n).size = as.size - n := rfl
+
+@[simp]
+def drop_nil : drop nil n = nil (α := α) := by
+  ext; simp
+  contradiction
+
+@[simp]
+def drop_zero (as: LazyList α) : drop as 0 = as := by
+  ext; simp
+  simp [drop]
+
+@[simp]
+def drop_cons_succ (a: α) (as: LazyList α) (n: ℕ) : drop (cons a as) (n + 1) = drop as n := by
+  ext i ha; simp
+  simp [drop]
+  erw [getElem_cons_succ' (i := ⟨_, _⟩)]
+  intro; simp at ha;
+  show i + n < _; omega
+
+def truncate_append_drop (as: LazyList α) (n: ℕ) : append (truncate as n) (drop as n) = as := by
+  induction as generalizing n with
+  | nil => simp
+  | cons a as ih =>
+    cases n
+    simp
+    simp [ih]
+
+def nodup_flatten (as: LazyList (LazyList α))
+  -- as has no duplicates
+  (h₀: as.Nodup)
+  -- as has no duplicates
+  (h₁: ∀a, as.mem a -> a.Nodup)
+  -- and if any two elements share any elements, they must be the same list
+  (h₂: ∀a b: LazyList α, as.mem a -> as.mem b -> ∀x: α, a.mem x -> b.mem x -> a = b) : as.flatten.Nodup := by
+  induction as with
+  | nil => simp
+  | cons a as ih =>
+    simp
+    apply nodup_append
+    apply h₁; simp
+    apply ih
+    apply nodup_cons_tail h₀
+    intro x hx
+    apply h₁
+    simp [hx]
+    intro x y hx hy z hzx hzy
+    apply h₂
+    simp [hx]
+    simp [hy]
+    assumption
+    assumption
+    intro x y h
+    simp at h
+    obtain ⟨b, b_in_as, x_in_b⟩ := h
+    cases h₂ a b (by simp) (by simp [b_in_as]) x (by assumption) (by assumption)
+    have := nodup_cons_head h₀
+    contradiction
+
+def nodup_flatMap (as: LazyList α) (f: α -> LazyList β)
+  (h₀: as.Nodup)
+  (h₁: ∀a, as.mem a -> (f a).Nodup)
+  (h₂: ∀a b: α, as.mem a -> as.mem b -> ∀x: β, (f a).mem x -> (f b).mem x -> f a = f b)
+  (h₃: Function.Injective f) : (as.flatMap f).Nodup := by
+  apply nodup_flatten
+  apply nodup_map
+  assumption
+  assumption
+  intro x;
+  simp
+  rintro y hy rfl
+  apply h₁
+  assumption
+  simp
+  rintro a b x hx rfl y hy rfl z
+  apply h₂
+  assumption
+  assumption
 
 end LazyList
