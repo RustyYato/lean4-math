@@ -14,6 +14,18 @@ def map_inv
   [IsOneHom F α β] [IsMulHom F α β] (f: F) {x: α} : f (x⁻¹) = (f x)⁻¹ :=
   map_neg (α := AddOfMul α) (β := AddOfMul β) f
 
+def map_neg_to_inv
+  [FunLike F α β]
+  [AddGroupOps α] [IsAddGroup α] [GroupOps β] [IsDivisionMonoid β]
+  [IsZeroOneHom F α β] [IsAddMulHom F α β] (f: F) {x: α} : f (-x) = (f x)⁻¹ :=
+  map_neg (α := α) (β := AddOfMul β) f
+
+def map_inv_to_neg
+  [FunLike F α β]
+  [GroupOps α] [IsGroup α] [AddGroupOps β] [IsSubtractionMonoid β]
+  [IsOneZeroHom F α β] [IsMulAddHom F α β] (f: F) {x: α} : f x⁻¹ = -f x :=
+  map_neg (α := AddOfMul α) (β := β) f
+
 def map_zsmul
   [FunLike F α β]
   [AddGroupOps α] [AddGroupOps β]
@@ -32,12 +44,28 @@ def map_zpow
   (f: F) (n: ℤ) (x: α) : f (x ^ n) = (f x) ^ n :=
   map_zsmul (α := AddOfMul α) (β := AddOfMul β) f n x
 
+def map_zsmul_to_zpow
+  [FunLike F α β]
+  [AddGroupOps α] [GroupOps β]
+  [IsZeroOneHom F α β] [IsAddMulHom F α β]
+  [IsAddGroup α] [IsGroup β]
+  (f: F) (n: ℤ) (x: α) : f (n • x) = f x ^ n :=
+  map_zsmul (α := α) (β := AddOfMul β) f n x
+
+def map_zpow_to_zsmul
+  [FunLike F α β]
+  [GroupOps α] [AddGroupOps β]
+  [IsOneZeroHom F α β] [IsMulAddHom F α β]
+  [IsGroup α] [IsAddGroup β]
+  (f: F) (n: ℤ) (x: α) : f (x ^ n) = n • f x :=
+  map_zsmul (α := AddOfMul α) (β := β) f n x
+
 def map_sub
   [FunLike F α β]
   [AddGroupOps α] [AddGroupOps β]
   [IsZeroHom F α β] [IsAddHom F α β]
   [IsAddGroup α] [IsAddGroup β]
-  (f: F) {x y: α} : f (x - y) = f x - f y := by
+  (f: F) (x y: α) : f (x - y) = f x - f y := by
   rw [sub_eq_add_neg, sub_eq_add_neg, map_add, map_neg]
 
 def map_div
@@ -45,5 +73,21 @@ def map_div
   [GroupOps α] [GroupOps β]
   [IsOneHom F α β] [IsMulHom F α β]
   [IsGroup α] [IsGroup β]
-  (f: F) {x y: α} : f (x / y) = f x / f y :=
-  map_sub (α := AddOfMul α) (β := AddOfMul β) f
+  (f: F) (x y: α) : f (x / y) = f x / f y :=
+  map_sub (α := AddOfMul α) (β := AddOfMul β) f _ _
+
+def map_sub_to_div
+  [FunLike F α β]
+  [AddGroupOps α] [GroupOps β]
+  [IsZeroOneHom F α β] [IsAddMulHom F α β]
+  [IsAddGroup α] [IsGroup β]
+  (f: F) (x y: α) : f (x - y) = f x / f y :=
+  map_sub (α := α) (β := AddOfMul β) f x y
+
+def map_div_to_sub
+  [FunLike F α β]
+  [GroupOps α] [AddGroupOps β]
+  [IsOneZeroHom F α β] [IsMulAddHom F α β]
+  [IsGroup α] [IsAddGroup β]
+  (f: F) (x y: α) : f (x / y) = f x - f y  :=
+  map_sub (α := AddOfMul α) (β := β) f x y

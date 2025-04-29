@@ -546,6 +546,30 @@ instance (priority := 500) [IsAddHom F α β] : IsMulHom F (MulOfAdd α) (MulOfA
 instance (priority := 500) [IsMulHom F α β] : IsAddHom F (AddOfMul α) (AddOfMul β) where
   map_add := map_mul (α := α) (β := β)
 
+instance (priority := 500) [IsZeroOneHom F α β] : IsOneHom F (MulOfAdd α) β where
+  map_one := map_zero_to_one (α := α) (β := β)
+
+instance (priority := 500) [IsZeroOneHom F α β] : IsZeroHom F α (AddOfMul β) where
+  map_zero := map_zero_to_one (α := α) (β := β)
+
+instance (priority := 500) [IsOneZeroHom F α β] : IsOneHom F α (MulOfAdd β) where
+  map_one := map_one_to_zero (α := α) (β := β)
+
+instance (priority := 500) [IsOneZeroHom F α β] : IsZeroHom F (AddOfMul α) β where
+  map_zero := map_one_to_zero (α := α) (β := β)
+
+instance (priority := 500) [IsAddMulHom F α β] : IsMulHom F (MulOfAdd α) β where
+  map_mul := map_add_to_mul (α := α) (β := β)
+
+instance (priority := 500) [IsAddMulHom F α β] : IsAddHom F α (AddOfMul β) where
+  map_add := map_add_to_mul (α := α) (β := β)
+
+instance (priority := 500) [IsMulAddHom F α β] : IsMulHom F α (MulOfAdd β) where
+  map_mul := map_mul_to_add (α := α) (β := β)
+
+instance (priority := 500) [IsMulAddHom F α β] : IsAddHom F (AddOfMul α) β where
+  map_add := map_mul_to_add (α := α) (β := β)
+
 end
 
 attribute [local irreducible] AddOfMul MulOfAdd

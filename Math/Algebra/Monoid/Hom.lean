@@ -19,6 +19,20 @@ def map_npow
   (f: F) (n: ℕ) (x: α) : f (x ^ n) = (f x) ^ n :=
   map_nsmul f (α := AddOfMul α) (β := AddOfMul β) n x
 
+def map_nsmul_to_npow
+  [FunLike F α β]
+  [AddMonoidOps α] [MonoidOps β]
+  [IsZeroOneHom F α β] [IsAddMulHom F α β]
+  [IsAddMonoid α] [IsMonoid β] (f: F) (n: ℕ) (x: α) : f (n • x) = f x ^ n :=
+  map_nsmul f (α := α) (β := AddOfMul β) _ _
+
+def map_npow_to_nsmul
+  [FunLike F α β]
+  [MonoidOps α] [AddMonoidOps β]
+  [IsOneZeroHom F α β] [IsMulAddHom F α β]
+  [IsMonoid α] [IsAddMonoid β] (f: F) (n: ℕ) (x: α) : f (x ^ n) = n • f x :=
+  map_nsmul f (α := AddOfMul α) (β := β) _ _
+
 def nsmulHom [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (n: ℕ) : α →+ α where
   toFun x := n • x
   map_zero := by simp
