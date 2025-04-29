@@ -50,6 +50,30 @@ def toInt : ∀{n}, ZMod n ↪ ℤ
 def toInt_zero : toInt (0: ZMod n) = 0 := by
   cases n <;> rfl
 
+@[simp]
+def toInt_eq_zero : toInt (x: ZMod n) = 0 -> x = 0 := by
+  intro h
+  cases n
+  assumption
+  rename_i n
+  unfold toInt at h
+  simp at h
+  have : (x.val: ℤ) = 0 := h
+  cases x; cases this
+  rfl
+
+def toInt_natAbs_lt_n (x: ZMod n) (h: n ≠ 0) : toInt x < n := by
+  match n with
+  | n + 1 =>
+  apply Int.ofNat_lt.mpr
+  apply Fin.isLt
+
+def toInt_nonneg (x: ZMod n) (h: n ≠ 0) : 0 ≤ toInt x := by
+  match n with
+  | n + 1 =>
+  apply Int.ofNat_le.mpr
+  apply Nat.zero_le
+
 instance : LE (ZMod n) := infer_zmod_instnace n LE
 instance : LT (ZMod n) := infer_zmod_instnace n LT
 
@@ -177,6 +201,7 @@ def induction {n: ℕ} {motive: ZMod n -> Prop} (ofInt: ∀x: ℤ, motive (ZMod.
   apply ofInt
 
 def intCast_toInt (x: ZMod n) : (toInt x) = x := ofInt_toInt x
+def toInt_intCast (x: ℤ) : toInt (x: ZMod n) = x % n := toInt_ofInt _
 
 def toInt_neg (x: ZMod n) (hx: x ≠ 0) : toInt x + toInt (-x) = n := by
   induction x with | ofInt x =>

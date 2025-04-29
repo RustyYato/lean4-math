@@ -205,6 +205,14 @@ class IsDense : Prop where
   dense: ∀a b: α, rel a b -> ∃x: α, rel a x ∧ rel x b
 export IsDense (dense)
 
+class IsTop (a: α) : Prop where
+  is_top : ∀x, ¬eqv x a -> rel x a
+export IsTop (is_top)
+
+class IsBot (a: α) : Prop where
+  is_bot : ∀x, ¬eqv x a -> rel a x
+export IsBot (is_bot)
+
 class IsLawfulStrict (rel srel: α -> α -> Prop) : Prop where
   is_lawful_strict (a b: α): srel a b ↔ rel a b ∧ ¬rel b a
 export IsLawfulStrict (is_lawful_strict)

@@ -5,6 +5,7 @@ import Math.Order.OrderIso
 import Math.Data.Free.Group
 import Math.Algebra.GroupQuot
 import Math.Data.ZMod.Defs
+import Math.Relation.Basic
 
 inductive Cyclic.Rel (n: ℕ) : FreeGroup Unit -> FreeGroup Unit -> Prop where
 | intro (a: FreeGroup Unit) : Rel n (a ^ n) 1
@@ -213,33 +214,110 @@ def npow_congr (x y: ℤ) (a: Cyclic n) : x % n = y % n -> a ^ x = a ^ y := by
   rw [mul_comm, zpow_mul, mul_comm, zpow_mul,
     zpow_ofNat, npow_n_eq_one, one_zpow, one_zpow]
 
-def equiv_cyclic_iff_generated_by_unit (G: Type*) [GroupOps G] [IsGroup G] :
-  (∃u: G, ∀g: G, ∃n: ℤ, g = u ^ n) ↔ ∃n, Nonempty (G ≃* Cyclic n) := by
+def equiv_cyclic_iff_generated_by_unit (G: Type*) [GroupOps G] [IsGroup G] : (∃u: G, ∀g: G, ∃n: ℤ, g = u ^ n) ↔ ∃n, Nonempty (G ≃* Cyclic n) := by
+  classical
   apply Iff.intro
   · intro ⟨u, hu⟩
+    refine if ueq:u = 1 then ?_ else ?_
+    · subst u
+      simp at hu
+      exists 1
+      refine ⟨{
+        toFun _ := 1
+        invFun _ := 1
+        leftInv x := by
+          dsimp
+          symm; apply hu
+        rightInv _ := Subsingleton.allEq _ _
+        map_one := rfl
+        map_mul {_ _} := by rw [mul_one]
+      }⟩
     let n := char (AddOfMul G)
     have n_spec : ∀g: G, g ^ n = 1 := char_spec (AddOfMul G)
     have n_dvd : ∀m, (∀g: G, g ^ m = 1) -> n ∣ m := char_dvd (AddOfMul G)
+    replace hu (g: G) : ∃n: ℤ, g = u ^ n ∧ ∀m: ℤ, g = u ^ m -> n.natAbs ≤ m.natAbs := by
+      have ⟨k, geq, hk⟩ := Relation.exists_min Int.abs_lt (hu g)
+      exists k
+      apply And.intro
+      assumption
+      intro m hm
+      have : ¬m.natAbs < k.natAbs := (hk m · hm)
+      simpa using this
     have ⟨f, hf⟩ := Classical.axiomOfChoice hu; clear hu
-    exists n
-    let toG : Cyclic n →* G := Cyclic.lift {
-      val := u
-      property := n_spec _
+
+    have f_inj : Function.Injective f := by
+      intro x y h
+      rw [(hf x).left, (hf y).left, h]
+
+    let f' : ZMod n →ₐ* G := {
+      toFun i := u ^ ZMod.toInt i
+      map_zero_to_one := by simp
+      map_add_to_mul {a b} := by
+        have ⟨k, eq, hk⟩ := ZMod.toInt_add a b
+        rw [eq, zpow_sub, zpow_add]
+        rcases hk with rfl | rfl
+        simp
+        rw [zpow_ofNat, n_spec, div_one]
     }
-    refine ⟨?_⟩; apply GroupEquiv.symm
-    refine { toG with invFun := fun g => (unit _) ^ f g, leftInv := ?_, rightInv := ?_ }
-    · intro x
-      simp
-      cases x with | pow m hm =>
-      rw [map_zpow, lift_unit]
-      simp
-      apply npow_congr
-      have := hf (u ^ m)
-      sorry
-    · intro g
-      simp
-      rw [map_zpow, lift_unit]
-      simp; rw [←hf]
+    have f'_surj : Function.Surjective f' := by
+      intro x
+      exists f x
+      show x = u ^ ZMod.toInt (f x)
+      rw [ZMod.toInt_intCast]
+      rw [←one_mul (u ^ _), ←one_zpow (f x / n), ←n_spec u, ←zpow_ofNat, ←zpow_mul, ←zpow_add,
+        Int.mul_comm, Int.ediv_add_emod, ←(hf _).left]
+    have f'_inj : Function.Injective f' := by
+      suffices ∀(i: ZMod n), u ^ (ZMod.toInt i) = 1 -> i = 0 by
+        intro x y h
+        replace h : f' x / f' y = 1 := by rw [h, div_self]
+        rw [←map_sub_to_div] at h
+        replace h : u ^ (ZMod.toInt (x - y)) = 1 := h
+        apply eq_of_sub_eq_zero
+        exact this (x - y) h
+      intro i h
+      have := n_dvd (ZMod.toInt i).natAbs ?_
+      · apply Decidable.byContradiction
+        intro inz
+        have n_le_i := Nat.le_of_dvd ?_ this
+        match hn:n with
+        | 0 =>
+          rw (occs := [1]) [hn] at this
+          simp at this
+          have := ZMod.toInt_eq_zero this
+          contradiction
+        | n' + 1 =>
+          rw (occs := [1]) [hn] at this
+          have := ZMod.toInt_natAbs_lt_n i (by rw [hn]; nofun)
+          rw [←Int.ofNat_le] at n_le_i
+          replace := Int.lt_of_lt_of_le this n_le_i
+          rcases Int.natAbs_eq (ZMod.toInt i) with h' | h'
+          rw [←h'] at this
+          exact Int.lt_irrefl _ this
+          rw [←neg_neg (Nat.cast _), ←h'] at this
+          replace : ZMod.toInt i < 0 := by omega
+          rw [←Int.not_le] at this
+          refine this (ZMod.toInt_nonneg i ?_)
+          rw [hn]; nofun
+        apply Nat.zero_lt_of_ne_zero
+        intro h
+        rw [Int.natAbs_eq_zero] at h
+        have := ZMod.toInt_eq_zero h
+        contradiction
+      · intro g
+        rw [(hf g).left, ←zpow_ofNat, ←zpow_mul, mul_comm, zpow_mul]
+        rcases Int.natAbs_eq (ZMod.toInt i) with h' | h'
+        rw [←h', h, one_zpow]
+        rw [←neg_neg (Nat.cast _), ←h', zpow_neg, h, inv_one, one_zpow]
+
+    have ⟨eqv, heqv⟩ := Equiv.ofBij ⟨f'_inj, f'_surj⟩
+    exists n
+    refine ⟨?_⟩
+    apply GroupEquiv.of_log_exp (β := ZMod n) _ equiv_zmod_add.symm
+    exact ExpEquiv.symm {
+      eqv with
+      map_add_to_mul := by simp [heqv, map_add_to_mul]
+      map_zero_to_one := by simp [heqv, map_zero_to_one]
+    }
   · intro ⟨n, ⟨hn⟩⟩
     exists (hn.symm (unit n))
     intro g
