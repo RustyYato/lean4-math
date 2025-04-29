@@ -24,6 +24,18 @@ class IsMulHom: Prop where
 class IsSMulHom: Prop where
   protected map_smul (f: F): ∀{r: R} {x: α}, f (r • x) = r • f x := by intro f; exact f.map_smul
 
+class IsAddMulHom: Prop where
+  protected map_add_to_mul: ∀f: F, ∀{x y}, f (x + y) = f x * f y := by intro f; exact f.map_add_to_mul
+
+class IsMulAddHom: Prop where
+  protected map_mul_to_add: ∀f: F, ∀{x y}, f (x * y) = f x + f y := by intro f; exact f.map_mul_to_add
+
+class IsZeroOneHom: Prop where
+  protected map_zero_to_one: ∀f: F, f 0 = 1 := by intro f; exact f.map_zero_to_one
+
+class IsOneZeroHom: Prop where
+  protected map_one_to_zero: ∀f: F, f 1 = 0 := by intro f; exact f.map_one_to_zero
+
 class IsAddGroupHom: Prop extends IsZeroHom F α β, IsAddHom F α β where
 class IsGroupHom: Prop extends IsOneHom F α β, IsMulHom F α β where
 class IsAddGroupWithOneHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsAddHom F α β where
@@ -82,6 +94,34 @@ structure SMulHom (R A B: Type*) [SMul R A] [SMul R B] where
 instance [SMul R A] [SMul R B] : FunLike (SMulHom R A B) A B where
 instance [SMul R A] [SMul R B] : IsSMulHom (SMulHom R A B) R A B where
 
+structure AddMulHom (A B: Type*) [Add A] [Mul B] where
+  toFun: A -> B
+  protected map_add_to_mul: ∀{a b: A}, toFun (a + b) = toFun a * toFun b
+
+instance : FunLike (AddMulHom α β) α β where
+instance : IsAddMulHom (AddMulHom α β) α β where
+
+structure MulAddHom (A B: Type*) [Mul A] [Add B] where
+  toFun: A -> B
+  protected map_mul_to_add: ∀{a b: A}, toFun (a * b) = toFun a + toFun b
+
+instance : FunLike (MulAddHom α β) α β where
+instance : IsMulAddHom (MulAddHom α β) α β where
+
+structure ZeroOneHom (A B: Type*) [Zero A] [One B] where
+  toFun: A -> B
+  protected map_zero_to_one: toFun 0 = 1
+
+instance : FunLike (ZeroOneHom α β) α β where
+instance : IsZeroOneHom (ZeroOneHom α β) α β where
+
+structure OneZeroHom (A B: Type*) [One A] [Zero B] where
+  toFun: A -> B
+  protected map_one_to_zero: toFun 1 = 0
+
+instance : FunLike (OneZeroHom α β) α β where
+instance : IsOneZeroHom (OneZeroHom α β) α β where
+
 structure ZeroEquiv extends α ≃ β, ZeroHom α β where
 
 instance : EquivLike (ZeroEquiv α β) α β where
@@ -106,6 +146,26 @@ structure SMulEquiv extends α ≃ β, SMulHom R α β where
 
 instance : EquivLike (SMulEquiv R α β) α β where
 instance : IsSMulHom (SMulEquiv R α β) R α β where
+
+structure AddMulEquiv extends α ≃ β, AddMulHom α β where
+
+instance : EquivLike (AddMulEquiv α β) α β where
+instance : IsAddMulHom (AddMulEquiv α β) α β where
+
+structure MulAddEquiv extends α ≃ β, MulAddHom α β where
+
+instance : EquivLike (MulAddEquiv α β) α β where
+instance : IsMulAddHom (MulAddEquiv α β) α β where
+
+structure ZeroOneEquiv extends α ≃ β, ZeroOneHom α β where
+
+instance : EquivLike (ZeroOneEquiv α β) α β where
+instance : IsZeroOneHom (ZeroOneEquiv α β) α β where
+
+structure OneZeroEquiv extends α ≃ β, OneZeroHom α β where
+
+instance : EquivLike (OneZeroEquiv α β) α β where
+instance : IsOneZeroHom (OneZeroEquiv α β) α β where
 
 structure AddGroupHom extends ZeroHom α β, AddHom α β where
 
@@ -143,6 +203,18 @@ instance : FunLike (LinearMap R α β) α β where
 instance : IsAddHom (LinearMap R α β) α β where
 instance : IsSMulHom (LinearMap R α β) R α β where
 
+structure ExpHom extends AddMulHom α β, ZeroOneHom α β where
+
+instance : FunLike (ExpHom α β) α β where
+instance : IsAddMulHom (ExpHom α β) α β where
+instance : IsZeroOneHom (ExpHom α β) α β where
+
+structure LogHom extends MulAddHom α β, OneZeroHom α β where
+
+instance : FunLike (LogHom α β) α β where
+instance : IsMulAddHom (LogHom α β) α β where
+instance : IsOneZeroHom (LogHom α β) α β where
+
 structure AddGroupEmbedding extends α ↪ β, AddGroupHom α β where
 
 instance : EmbeddingLike (AddGroupEmbedding α β) α β where
@@ -178,6 +250,18 @@ structure LinearEmbedding extends α ↪ β, LinearMap R α β where
 instance : EmbeddingLike (LinearEmbedding R α β) α β where
 instance : IsAddHom (LinearEmbedding R α β) α β where
 instance : IsSMulHom (LinearEmbedding R α β) R α β where
+
+structure ExpEmbedding extends α ↪ β, ExpHom α β where
+
+instance : EmbeddingLike (ExpEmbedding α β) α β where
+instance : IsAddMulHom (ExpEmbedding α β) α β where
+instance : IsZeroOneHom (ExpEmbedding α β) α β where
+
+structure LogEmbedding extends α ↪ β, LogHom α β where
+
+instance : EmbeddingLike (LogEmbedding α β) α β where
+instance : IsMulAddHom (LogEmbedding α β) α β where
+instance : IsOneZeroHom (LogEmbedding α β) α β where
 
 structure AddGroupEquiv extends α ≃ β, AddGroupHom α β, ZeroEquiv α β, AddEquiv α β where
 
@@ -215,6 +299,18 @@ structure LinearEquiv extends α ≃ β, LinearMap R α β, AddEquiv α β, SMul
 instance : EquivLike (LinearEquiv R α β) α β where
 instance : IsAddHom (LinearEquiv R α β) α β where
 instance : IsSMulHom (LinearEquiv R α β) R α β where
+
+structure ExpEquiv extends α ≃ β, ExpHom α β, AddMulEquiv α β, ZeroOneEquiv α β where
+
+instance : EquivLike (ExpEquiv α β) α β where
+instance : IsAddMulHom (ExpEquiv α β) α β where
+instance : IsZeroOneHom (ExpEquiv α β) α β where
+
+structure LogEquiv extends α ≃ β, LogHom α β, MulAddEquiv α β, OneZeroEquiv α β where
+
+instance : EquivLike (LogEquiv α β) α β where
+instance : IsMulAddHom (LogEquiv α β) α β where
+instance : IsOneZeroHom (LogEquiv α β) α β where
 
 class AlgebraMap extends RingHom α β where
 
@@ -329,6 +425,23 @@ notation:25 A " →ₐ[" R "] " B => AlgHom R A B
 notation:25 A " ↪ₐ[" R "] " B => AlgEmbedding R A B
 notation:25 A " ≃ₐ[" R "] " B => AlgEquiv R A B
 
+infixr:25 " →ₙₐ* " => AddMulHom
+infixr:25 " ≃ₙₐ* " => AddMulEquiv
+infixr:25 " →ₙₘ+ " => MulAddHom
+infixr:25 " ≃ₙₘ+ " => MulAddEquiv
+
+infixr:25 " →₀₁ " => ZeroOneHom
+infixr:25 " ≃₀₁ " => ZeroOneEquiv
+infixr:25 " →₁₀ " => OneZeroHom
+infixr:25 " ≃₁₀ " => OneZeroEquiv
+
+infixr:25 " →ₐ* " => ExpHom
+infixr:25 " ↪ₐ* " => ExpEmbedding
+infixr:25 " ≃ₐ* " => ExpEquiv
+infixr:25 " →ₘ+ " => LogHom
+infixr:25 " ↪ₘ+ " => LogEmbedding
+infixr:25 " ≃ₘ+ " => LogEquiv
+
 end
 
 section
@@ -347,6 +460,14 @@ def map_add [IsAddHom F α β] : ∀f: F, ∀{x y: α}, f (x + y) = f x + f y :=
 def map_mul [IsMulHom F α β] : ∀f: F, ∀{x y: α}, f (x * y) = f x * f y := IsMulHom.map_mul
 
 def map_smul [IsSMulHom F R α β] (f: F): ∀{r: R} {x: α}, f (r • x) = r • f x := IsSMulHom.map_smul f
+
+def map_zero_to_one [IsZeroOneHom F α β] (f: F) : f 0 = 1 := IsZeroOneHom.map_zero_to_one _
+
+def map_one_to_zero [IsOneZeroHom F α β] (f: F) : f 1 = 0 := IsOneZeroHom.map_one_to_zero _
+
+def map_add_to_mul [IsAddMulHom F α β] (f: F): ∀{a b: α}, f (a + b) = f a * f b := IsAddMulHom.map_add_to_mul f
+
+def map_mul_to_add [IsMulAddHom F α β] (f: F): ∀{a b: α}, f (a * b) = f a + f b := IsMulAddHom.map_mul_to_add f
 
 def map_algebraMap [IsAlgebraMapHom F R α β] (f: F): ∀(r: R), f (algebraMap r) = algebraMap r := IsAlgebraMapHom.map_algebraMap f
 
@@ -427,6 +548,8 @@ instance (priority := 500) [IsMulHom F α β] : IsAddHom F (AddOfMul α) (AddOfM
 
 end
 
+attribute [local irreducible] AddOfMul MulOfAdd
+
 instance : Coe (α ↪+ β) (α →+ β) where
   coe h := { h with }
 instance : Coe (α ≃+ β) (α ↪+ β) where
@@ -485,6 +608,14 @@ instance : Coe (α →*₀ β) (ZeroHom α β) where
   coe h := { h with }
 instance : Coe (α →ₗ[R] β) (SMulHom R α β) where
   coe h := { h with }
+instance : Coe (α ↪ₐ* β) (α →ₐ* β) where
+  coe h := { h with }
+instance : Coe (α ≃ₐ* β) (α ↪ₐ* β) where
+  coe h := { h, h.toEmbedding with }
+instance : Coe (α ↪ₘ+ β) (α →ₘ+ β) where
+  coe h := { h with }
+instance : Coe (α ≃ₘ+ β) (α ↪ₘ+ β) where
+  coe h := { h, h.toEmbedding with }
 
 def ZeroHom.copy (f: ZeroHom α β) (g: α -> β) (h: f = g) : ZeroHom α β where
   toFun := g
@@ -505,6 +636,22 @@ def MulHom.copy (f: MulHom α β) (g: α -> β) (h: f = g) : MulHom α β where
 def SMulHom.copy (f: SMulHom R α β) (g: α -> β) (h: f = g) : SMulHom R α β where
   toFun := g
   map_smul := h ▸ map_smul f
+
+def ZeroOneHom.copy (f: α →₀₁ β) (g: α -> β) (h: f = g) : α →₀₁ β where
+  toFun := g
+  map_zero_to_one := h ▸ map_zero_to_one f
+
+def OneZeroHom.copy (f: α →₁₀ β) (g: α -> β) (h: f = g) : α →₁₀ β where
+  toFun := g
+  map_one_to_zero := h ▸ map_one_to_zero f
+
+def AddMulHom.copy (f: α →ₙₐ* β) (g: α -> β) (h: f = g) : α →ₙₐ* β where
+  toFun := g
+  map_add_to_mul := h ▸ map_add_to_mul f
+
+def MulAddHom.copy (f: α →ₙₘ+ β) (g: α -> β) (h: f = g) : α →ₙₘ+ β where
+  toFun := g
+  map_mul_to_add := h ▸ map_mul_to_add f
 
 def AlgebraMapHom.copy (f: AlgebraMapHom R α β) (g: α -> β) (h: f = g) : AlgebraMapHom R α β where
   toFun := g
@@ -542,8 +689,12 @@ def AlgHom.copy (f: α →ₐ[R] β) (g: α -> β) (h: f = g) : α →ₐ[R] β 
   f.toAddHom.copy g h, f.toMulHom.copy g h, f.toAlgebraMapHom.copy g h with
 }
 
-def AddGroupEmbedding.copy (f: α ↪+ β) (g: α -> β) (h: f = g) : α ↪+ β := {
-  f.toEmbedding.copy g h, f.toAddGroupHom.copy g h with
+def ExpHom.copy (f: α →ₐ* β) (g: α -> β) (h: f = g) : α →ₐ* β := {
+  f.toZeroOneHom.copy g h, f.toAddMulHom.copy g h with
+}
+
+def LogHom.copy (f: α →ₘ+ β) (g: α -> β) (h: f = g) : α →ₘ+ β := {
+  f.toOneZeroHom.copy g h, f.toMulAddHom.copy g h with
 }
 
 def AddGroupWithOneEmbedding.copy (f: α ↪+₁ β) (g: α -> β) (h: f = g) : α ↪+₁ β := {
@@ -572,6 +723,14 @@ def LinearEmbedding.copy (f: α ↪ₗ[R] β) (g: α -> β) (h: f = g) : α ↪�
 
 def AlgEmbedding.copy (f: α ↪ₐ[R] β) (g: α -> β) (h: f = g) : α ↪ₐ[R] β := {
   f.toEmbedding.copy g h, f.toAlgHom.copy g h with
+}
+
+def ExpEmbedding.copy (f: α ↪ₐ* β ) (g: α -> β) (h: f = g) : α ↪ₐ* β := {
+  f.toEmbedding.copy g h, f.toExpHom.copy g h with
+}
+
+def LogEmbedding.copy (f: α ↪ₘ+ β) (g: α -> β) (h: f = g) : α ↪ₘ+ β := {
+  f.toEmbedding.copy g h, f.toLogHom.copy g h with
 }
 
 protected def ZeroHom.id (α: Type*) [Zero α] : ZeroHom α α where
@@ -701,6 +860,54 @@ def AlgHom.comp (a: β →ₐ[R] γ) (b: α →ₐ[R] β) : α →ₐ[R] γ := {
     a.toAlgebraMapHom.comp b.toAlgebraMapHom with
 }
 
+def ZeroOneHom.zero_comp [FunLike F α β] [IsZeroHom F α β] (g: β →₀₁ γ) (f: F) : α →₀₁ γ where
+  toFun := g ∘ f
+  map_zero_to_one := by dsimp; rw [map_zero, map_zero_to_one]
+
+def ZeroOneHom.comp_one [FunLike F β γ] [IsOneHom F β γ] (g: F) (f: α →₀₁ β) : α →₀₁ γ where
+  toFun := g ∘ f
+  map_zero_to_one := by dsimp; rw [map_zero_to_one, map_one]
+
+def OneZeroHom.one_comp [FunLike F α β] [IsOneHom F α β] (g: β →₁₀ γ) (f: F) : α →₁₀ γ where
+  toFun := g ∘ f
+  map_one_to_zero := by dsimp; rw [map_one, map_one_to_zero]
+
+def OneZeroHom.comp_zero [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: α →₁₀ β) : α →₁₀ γ where
+  toFun := g ∘ f
+  map_one_to_zero := by dsimp; rw [map_one_to_zero, map_zero]
+
+def OneHom.of_log_exp (g: β →₀₁ γ) (f: α →₁₀ β) : OneHom α γ where
+  toFun := g ∘ f
+  map_one := by dsimp; rw [map_one_to_zero, map_zero_to_one]
+
+def ZeroHom.of_exp_log (g: β →₁₀ γ) (f: α →₀₁ β) : ZeroHom α γ where
+  toFun := g ∘ f
+  map_zero := by dsimp; rw [map_zero_to_one, map_one_to_zero]
+
+def AddMulHom.add_comp [FunLike F α β] [IsAddHom F α β] (g: β →ₙₐ* γ) (f: F) : α →ₙₐ* γ where
+  toFun := g ∘ f
+  map_add_to_mul {a b} := by dsimp; rw [map_add, map_add_to_mul]
+
+def AddMulHom.comp_mul [FunLike F β γ] [IsMulHom F β γ] (g: F) (f: α →ₙₐ* β) : α →ₙₐ* γ where
+  toFun := g ∘ f
+  map_add_to_mul {a b} := by dsimp; rw [map_add_to_mul, map_mul]
+
+def MulAddHom.mul_comp [FunLike F α β] [IsMulHom F α β] (g: β →ₙₘ+ γ) (f: F) : α →ₙₘ+ γ where
+  toFun := g ∘ f
+  map_mul_to_add {a b} := by dsimp; rw [map_mul, map_mul_to_add]
+
+def MulAddHom.comp_add [FunLike F β γ] [IsAddHom F β γ] (g: F) (f: α →ₙₘ+ β) : α →ₙₘ+ γ where
+  toFun := g ∘ f
+  map_mul_to_add {a b} := by dsimp; rw [map_mul_to_add, map_add]
+
+def MulHom.of_log_exp (g: β →ₙₐ* γ) (f: α →ₙₘ+ β) : MulHom α γ where
+  toFun := g ∘ f
+  map_mul {a b} := by dsimp; rw [map_mul_to_add, map_add_to_mul]
+
+def AddHom.of_exp_log (g: β →ₙₘ+ γ) (f: α →ₙₐ* β) : AddHom α γ where
+  toFun := g ∘ f
+  map_add {a b} := by dsimp; rw [map_add_to_mul, map_mul_to_add]
+
 @[simp] def AddGroupHom.apply_comp (a: β →+ γ) (b: α →+ β) : a.comp b x = a (b x) := rfl
 @[simp] def AddGroupWithOneHom.apply_comp (a: β →+₁ γ) (b: α →+₁ β) : a.comp b x = a (b x) := rfl
 @[simp] def GroupHom.apply_comp (a: β →* γ) (b: α →* β) : a.comp b x = a (b x) := rfl
@@ -709,6 +916,20 @@ def AlgHom.comp (a: β →ₐ[R] γ) (b: α →ₐ[R] β) : α →ₐ[R] γ := {
 @[simp] def RingHom.apply_comp (a: β →+* γ) (b: α →+* β) : a.comp b x = a (b x) := rfl
 @[simp] def LinearMap.apply_comp (a: β →ₗ[R] γ) (b: α →ₗ[R] β) : a.comp b x = a (b x) := rfl
 @[simp] def AlgHom.apply_comp (a: β →ₐ[R] γ) (b: α →ₐ[R] β) : a.comp b x = a (b x) := rfl
+
+@[simp] def ZeroOneHom.apply_zero_comp [FunLike F α β] [IsZeroHom F α β] (g: β →₀₁ γ) (f: F) : zero_comp g f x = g (f x) := rfl
+@[simp] def ZeroOneHom.apply_comp_one [FunLike F β γ] [IsOneHom F β γ] (g: F) (f: α →₀₁ β) : comp_one g f x = g (f x) := rfl
+@[simp] def OneZeroHom.apply_one_comp [FunLike F α β] [IsOneHom F α β] (g: β →₁₀ γ) (f: F) : one_comp g f x = g (f x) := rfl
+@[simp] def OneZeroHom.apply_comp_zero [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: α →₁₀ β) : comp_zero g f x = g (f x) := rfl
+@[simp] def OneHom.apply_of_log_exp (g: β →₀₁ γ) (f: α →₁₀ β) : of_log_exp g f x = g (f x) := rfl
+@[simp] def ZeroHom.apply_of_exp_log (g: β →₁₀ γ) (f: α →₀₁ β) : of_exp_log g f x = g (f x) := rfl
+
+@[simp] def AddMulHom.apply_add_comp [FunLike F α β] [IsAddHom F α β] (g: β →ₙₐ* γ) (f: F) : add_comp g f x = g (f x) := rfl
+@[simp] def AddMulHom.apply_comp_mul [FunLike F β γ] [IsMulHom F β γ] (g: F) (f: α →ₙₐ* β) : comp_mul g f x = g (f x) := rfl
+@[simp] def MulAddHom.apply_mul_comp [FunLike F α β] [IsMulHom F α β] (g: β →ₙₘ+ γ) (f: F) : mul_comp g f x = g (f x) := rfl
+@[simp] def MulAddHom.apply_comp_add [FunLike F β γ] [IsAddHom F β γ] (g: F) (f: α →ₙₘ+ β) : comp_add g f x = g (f x) := rfl
+@[simp] def MulHom.apply_of_log_exp (g: β →ₙₐ* γ) (f: α →ₙₘ+ β) : of_log_exp g f x = g (f x) := rfl
+@[simp] def AddHom.apply_of_exp_log (g: β →ₙₘ+ γ) (f: α →ₙₐ* β) : of_exp_log g f x = g (f x) := rfl
 
 def AddGroupEmbedding.refl : α ↪+ α := {
   Embedding.rfl, AddGroupHom.id _ with
@@ -815,6 +1036,36 @@ def AlgEmbedding.trans (h: α ↪ₐ[R] β) (g: β ↪ₐ[R] γ) : α ↪ₐ[R] 
   h.toEmbedding.trans g.toEmbedding, g.toAlgHom.comp h.toAlgHom with
 }
 
+def ExpEmbedding.add_trans [EmbeddingLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (f: F) (g: β ↪ₐ* γ) : α ↪ₐ* γ := {
+  Embedding.trans (f: α ↪ β) g.toEmbedding, AddMulHom.add_comp g.toAddMulHom f,
+    ZeroOneHom.zero_comp g.toZeroOneHom f with
+}
+
+def ExpEmbedding.trans_mul [EmbeddingLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (f: α ↪ₐ* β) (g: F) : α ↪ₐ* γ := {
+  Embedding.trans f.toEmbedding (g: β ↪ γ), AddMulHom.comp_mul g f.toAddMulHom,
+    ZeroOneHom.comp_one g f.toZeroOneHom with
+}
+
+def LogEmbedding.mul_trans [EmbeddingLike F α β] [IsOneHom F α β] [IsMulHom F α β] (f: F) (g: β ↪ₘ+ γ) : α ↪ₘ+ γ := {
+  Embedding.trans (f: α ↪ β) g.toEmbedding, MulAddHom.mul_comp g.toMulAddHom f,
+    OneZeroHom.one_comp g.toOneZeroHom f with
+}
+
+def LogEmbedding.trans_add [EmbeddingLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (f: α ↪ₘ+ β) (g: F) : α ↪ₘ+ γ := {
+  Embedding.trans f.toEmbedding (g: β ↪ γ), MulAddHom.comp_add g f.toMulAddHom,
+    OneZeroHom.comp_zero g f.toOneZeroHom with
+}
+
+def GroupEmbedding.of_log_exp (f: α ↪ₘ+ β) (g: β ↪ₐ* γ) : α ↪* γ := {
+  Embedding.trans f.toEmbedding (g: β ↪ γ), MulHom.of_log_exp g.toAddMulHom f.toMulAddHom,
+    OneHom.of_log_exp g.toZeroOneHom f.toOneZeroHom  with
+}
+
+def AddGroupEmbedding.of_exp_log (f: α ↪ₐ* β) (g: β ↪ₘ+ γ) : α ↪+ γ := {
+  Embedding.trans f.toEmbedding (g: β ↪ γ), AddHom.of_exp_log g.toMulAddHom f.toAddMulHom,
+    ZeroHom.of_exp_log g.toOneZeroHom f.toZeroOneHom  with
+}
+
 @[simp] def AddGroupEmbedding.apply_trans (a: β ↪+ γ) (b: α ↪+ β) : b.trans a x = a (b x) := rfl
 @[simp] def AddGroupWithOneEmbedding.apply_trans (a: β ↪+₁ γ) (b: α ↪+₁ β) : b.trans a x = a (b x) := rfl
 @[simp] def GroupEmbedding.apply_trans (a: β ↪* γ) (b: α ↪* β) : b.trans a x = a (b x) := rfl
@@ -823,6 +1074,12 @@ def AlgEmbedding.trans (h: α ↪ₐ[R] β) (g: β ↪ₐ[R] γ) : α ↪ₐ[R] 
 @[simp] def RingEmbedding.apply_trans (a: β ↪+* γ) (b: α ↪+* β) : b.trans a x = a (b x) := rfl
 @[simp] def LinearEmbedding.apply_trans (a: β ↪ₗ[R] γ) (b: α ↪ₗ[R] β) : b.trans a x = a (b x) := rfl
 @[simp] def AlgEmbedding.apply_trans (a: β ↪ₐ[R] γ) (b: α ↪ₐ[R] β) : b.trans a x = a (b x) := rfl
+@[simp] def ExpEmbedding.apply_add_trans [EmbeddingLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (g: β ↪ₐ* γ) (f: F) : add_trans f g x = g (f x) := rfl
+@[simp] def ExpEmbedding.apply_trans_mul [EmbeddingLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (g: F) (f: α ↪ₐ* β) : trans_mul f g x = g (f x) := rfl
+@[simp] def LogEmbedding.apply_mul_trans [EmbeddingLike F α β] [IsOneHom F α β] [IsMulHom F α β] (g: β ↪ₘ+ γ) (f: F) : mul_trans f g x = g (f x) := rfl
+@[simp] def LogEmbedding.apply_trans_add [EmbeddingLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (g: F) (f: α ↪ₘ+ β) : trans_add f g x = g (f x) := rfl
+@[simp] def GroupEmbedding.apply_of_log_exp (f: α ↪ₘ+ β) (g: β ↪ₐ* γ) : of_log_exp f g x = g (f x) := rfl
+@[simp] def AddGroupEmbedding.apply_of_exp_log (f: α ↪ₐ* β) (g: β ↪ₘ+ γ) : of_exp_log f g x = g (f x) := rfl
 
 def AddGroupEquiv.trans (h: α ≃+ β) (g: β ≃+ γ) : α ≃+ γ := {
   h.toEquiv.trans g.toEquiv, g.toAddGroupHom.comp h.toAddGroupHom with
@@ -856,6 +1113,36 @@ def AlgEquiv.trans (h: α ≃ₐ[R] β) (g: β ≃ₐ[R] γ) : α ≃ₐ[R] γ :
   h.toEquiv.trans g.toEquiv, g.toAlgHom.comp h.toAlgHom with
 }
 
+def ExpEquiv.add_trans [EquivLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (f: F) (g: β ≃ₐ* γ) : α ≃ₐ* γ := {
+  Equiv.trans (f: α ≃ β) g.toEquiv, AddMulHom.add_comp g.toAddMulHom f,
+    ZeroOneHom.zero_comp g.toZeroOneHom f with
+}
+
+def ExpEquiv.trans_mul [EquivLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (f: α ≃ₐ* β) (g: F) : α ≃ₐ* γ := {
+  Equiv.trans f.toEquiv (g: β ≃ γ), AddMulHom.comp_mul g f.toAddMulHom,
+    ZeroOneHom.comp_one g f.toZeroOneHom with
+}
+
+def LogEquiv.mul_trans [EquivLike F α β] [IsOneHom F α β] [IsMulHom F α β] (f: F) (g: β ≃ₘ+ γ) : α ≃ₘ+ γ := {
+  Equiv.trans (f: α ≃ β) g.toEquiv, MulAddHom.mul_comp g.toMulAddHom f,
+    OneZeroHom.one_comp g.toOneZeroHom f with
+}
+
+def LogEquiv.trans_add [EquivLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (f: α ≃ₘ+ β) (g: F) : α ≃ₘ+ γ := {
+  Equiv.trans f.toEquiv (g: β ≃ γ), MulAddHom.comp_add g f.toMulAddHom,
+    OneZeroHom.comp_zero g f.toOneZeroHom with
+}
+
+def GroupEquiv.of_log_exp (f: α ≃ₘ+ β) (g: β ≃ₐ* γ) : α ≃* γ := {
+  Equiv.trans f.toEquiv (g: β ≃ γ), MulHom.of_log_exp g.toAddMulHom f.toMulAddHom,
+    OneHom.of_log_exp g.toZeroOneHom f.toOneZeroHom  with
+}
+
+def AddGroupEquiv.of_exp_log (f: α ≃ₐ* β) (g: β ≃ₘ+ γ) : α ≃+ γ := {
+  Equiv.trans f.toEquiv (g: β ≃ γ), AddHom.of_exp_log g.toMulAddHom f.toAddMulHom,
+    ZeroHom.of_exp_log g.toOneZeroHom f.toZeroOneHom  with
+}
+
 @[simp] def AddGroupEquiv.apply_trans (a: β ≃+ γ) (b: α ≃+ β) : b.trans a x = a (b x) := rfl
 @[simp] def AddGroupWithOneEquiv.apply_trans (a: β ≃+₁ γ) (b: α ≃+₁ β) : b.trans a x = a (b x) := rfl
 @[simp] def GroupEquiv.apply_trans (a: β ≃* γ) (b: α ≃* β) : b.trans a x = a (b x) := rfl
@@ -864,6 +1151,12 @@ def AlgEquiv.trans (h: α ≃ₐ[R] β) (g: β ≃ₐ[R] γ) : α ≃ₐ[R] γ :
 @[simp] def RingEquiv.apply_trans (a: β ≃+* γ) (b: α ≃+* β) : b.trans a x = a (b x) := rfl
 @[simp] def LinearEquiv.apply_trans (a: β ≃ₗ[R] γ) (b: α ≃ₗ[R] β) : b.trans a x = a (b x) := rfl
 @[simp] def AlgEquiv.apply_trans (a: β ≃ₐ[R] γ) (b: α ≃ₐ[R] β) : b.trans a x = a (b x) := rfl
+@[simp] def ExpEquiv.apply_add_trans [EquivLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (g: β ≃ₐ* γ) (f: F) : add_trans f g x = g (f x) := rfl
+@[simp] def ExpEquiv.apply_trans_mul [EquivLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (g: F) (f: α ≃ₐ* β) : trans_mul f g x = g (f x) := rfl
+@[simp] def LogEquiv.apply_mul_trans [EquivLike F α β] [IsOneHom F α β] [IsMulHom F α β] (g: β ≃ₘ+ γ) (f: F) : mul_trans f g x = g (f x) := rfl
+@[simp] def LogEquiv.apply_trans_add [EquivLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (g: F) (f: α ≃ₘ+ β) : trans_add f g x = g (f x) := rfl
+@[simp] def GroupEquiv.apply_of_log_exp (f: α ≃ₘ+ β) (g: β ≃ₐ* γ) : of_log_exp f g x = g (f x) := rfl
+@[simp] def AddGroupEquiv.apply_of_exp_log (f: α ≃ₐ* β) (g: β ≃ₘ+ γ) : of_exp_log f g x = g (f x) := rfl
 
 def ZeroEquiv.symm (h: ZeroEquiv α β) : ZeroEquiv β α where
   toEquiv := h.toEquiv.symm
@@ -907,6 +1200,34 @@ def AlgebraMapEquiv.symm (h: AlgebraMapEquiv R α β) : AlgebraMapEquiv R β α 
     show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
     erw [h.map_algebraMap]
 
+def ZeroOneEquiv.symm (h: α ≃₀₁ β) : β ≃₁₀ α where
+  toEquiv := h.toEquiv.symm
+  map_one_to_zero := by
+    rw [←h.coe_symm 0]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.map_zero_to_one]
+
+def OneZeroEquiv.symm (h: α ≃₁₀ β) : β ≃₀₁ α where
+  toEquiv := h.toEquiv.symm
+  map_zero_to_one := by
+    rw [←h.coe_symm 1]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.map_one_to_zero]
+
+def AddMulEquiv.symm (h: α ≃ₙₐ* β) : β ≃ₙₘ+ α where
+  toEquiv := h.toEquiv.symm
+  map_mul_to_add {a b} := by
+    rw [←h.coe_symm (_ + _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.map_add_to_mul, h.rightInv, h.rightInv]
+
+def MulAddEquiv.symm (h: α ≃ₙₘ+ β) : β ≃ₙₐ* α where
+  toEquiv := h.toEquiv.symm
+  map_add_to_mul {a b} := by
+    rw [←h.coe_symm (_ * _)]
+    show h.toEquiv.symm _ = h.toEquiv.symm (h.toFun _)
+    erw [h.map_mul_to_add, h.rightInv, h.rightInv]
+
 def AddGroupEquiv.symm (h: α ≃+ β) : β ≃+ α := {
   h.toAddEquiv.symm, h.toZeroEquiv.symm with
 }
@@ -939,6 +1260,14 @@ def AlgEquiv.symm (h: α ≃ₐ[R] β) : β ≃ₐ[R] α := {
   h.toAddEquiv.symm, h.toMulEquiv.symm, h.toAlgebraMapEquiv.symm with
 }
 
+def ExpEquiv.symm (h: α ≃ₐ* β) : β ≃ₘ+ α := {
+  h.toAddMulEquiv.symm, h.toZeroOneEquiv.symm with
+}
+
+def LogEquiv.symm (h: α ≃ₘ+ β) : β ≃ₐ* α := {
+  h.toMulAddEquiv.symm, h.toOneZeroEquiv.symm with
+}
+
 @[simp] def AddGroupEquiv.symm_symm (a: α ≃+ β) : a.symm.symm = a := rfl
 @[simp] def AddGroupWithOneEquiv.symm_symm (a: α ≃+₁ β) : a.symm.symm = a := rfl
 @[simp] def GroupEquiv.symm_symm (a: α ≃* β) : a.symm.symm = a := rfl
@@ -947,6 +1276,8 @@ def AlgEquiv.symm (h: α ≃ₐ[R] β) : β ≃ₐ[R] α := {
 @[simp] def RingEquiv.symm_symm (a: α ≃+* β) : a.symm.symm = a := rfl
 @[simp] def LinearEquiv.symm_symm (a: α ≃ₗ[R] β) : a.symm.symm = a := rfl
 @[simp] def AlgEquiv.symm_symm (a: α ≃ₐ[R] β) : a.symm.symm = a := rfl
+@[simp] def ExpEquiv.symm_symm (a: α ≃ₐ* β) : a.symm.symm = a := rfl
+@[simp] def LogEquiv.symm_symm (a: α ≃ₘ+ β) : a.symm.symm = a := rfl
 
 def AddGroupEmbedding.toHom (h: α ↪+ β) : α →+ β := h
 def AddGroupWithOneEmbedding.toHom (h: α ↪+₁ β) : α →+₁ β := h
@@ -956,6 +1287,8 @@ def RingEmbedding.toHom (h: α ↪+* β) : α →+* β := h
 def RngEmbedding.toHom (h: α ↪+*₀ β) : α →+*₀ β := h
 def LinearEmbedding.toHom (h: α ↪ₗ[R] β) : α →ₗ[R] β := h
 def AlgEmbedding.toHom (h: α ↪ₐ[R] β) : α →ₐ[R] β := h
+def ExpEmbedding.toHom (h: α ↪ₐ* β) : α →ₐ* β := h
+def LogEmbedding.toHom (h: α ↪ₘ+ β) : α →ₘ+ β := h
 
 def AddGroupEquiv.toEmbedding (h: α ≃+ β) : α ↪+ β := h
 def AddGroupWithOneEquiv.toEmbedding (h: α ≃+₁ β) : α ↪+₁ β := h
@@ -965,6 +1298,8 @@ def RingEquiv.toEmbedding (h: α ≃+* β) : α ↪+* β := h
 def RngEquiv.toEmbedding (h: α ≃+*₀ β) : α ↪+*₀ β := h
 def LinearEquiv.toEmbedding (h: α ≃ₗ[R] β) : α ↪ₗ[R] β := h
 def AlgEquiv.toEmbedding (h: α ≃ₐ[R] β) : α ↪ₐ[R] β := h
+def ExpEquiv.toEmbedding (h: α ≃ₐ* β) : α ↪ₐ* β := h
+def LogEquiv.toEmbedding (h: α ≃ₘ+ β) : α ↪ₘ+ β := h
 
 def AddGroupEquiv.toHom (h: α ≃+ β) : α →+ β := h
 def AddGroupWithOneEquiv.toHom (h: α ≃+₁ β) : α →+₁ β := h
@@ -974,6 +1309,8 @@ def RingEquiv.toHom (h: α ≃+* β) : α →+* β := h
 def RngEquiv.toHom (h: α ≃+*₀ β) : α →+*₀ β := h
 def LinearEquiv.toHom (h: α ≃ₗ[R] β) : α →ₗ[R] β := h
 def AlgEquiv.toHom (h: α ≃ₐ[R] β) : α →ₐ[R] β := h
+def ExpEquiv.toHom (h: α ≃ₐ* β) : α →ₐ* β := h
+def LogEquiv.toHom (h: α ≃ₘ+ β) : α →ₘ+ β := h
 
 @[simp] def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
 @[simp] def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
@@ -991,6 +1328,10 @@ def AlgEquiv.toHom (h: α ≃ₐ[R] β) : α →ₐ[R] β := h
 @[simp] def LinearEquiv.symm_coe (h: α ≃ₗ[R] β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
 @[simp] def AlgEquiv.coe_symm (h: α ≃ₐ[R] β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
 @[simp] def AlgEquiv.symm_coe (h: α ≃ₐ[R] β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def AddMulEquiv.coe_symm (h: α ≃ₐ* β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def AddMulEquiv.symm_coe (h: α ≃ₐ* β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
+@[simp] def MulAddEquiv.coe_symm (h: α ≃ₘ+ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
+@[simp] def MulAddEquiv.symm_coe (h: α ≃ₘ+ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
 
 @[simp] def AddGroupEquiv.trans_symm (h: α ≃+ β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
 @[simp] def AddGroupEquiv.symm_trans (h: α ≃+ β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
@@ -1008,6 +1349,59 @@ def AlgEquiv.toHom (h: α ≃ₐ[R] β) : α →ₐ[R] β := h
 @[simp] def LinearEquiv.symm_trans (h: α ≃ₗ[R] β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
 @[simp] def AlgEquiv.trans_symm (h: α ≃ₐ[R] β) : h.trans h.symm = .refl := by hom_equiv_trans_symm_impl h
 @[simp] def AlgEquiv.symm_trans (h: α ≃ₐ[R] β) : h.symm.trans h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def ExpEquiv.trans_symm (h: α ≃ₐ* β) : AddGroupEquiv.of_exp_log h h.symm = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def ExpEquiv.symm_trans (h: α ≃ₐ* β) : GroupEquiv.of_log_exp h.symm h = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def LogEquiv.trans_symm (h: α ≃ₘ+ β) : GroupEquiv.of_log_exp h h.symm = .refl := by hom_equiv_trans_symm_impl h
+@[simp] def LogEquiv.symm_trans (h: α ≃ₘ+ β) : AddGroupEquiv.of_exp_log h.symm h = .refl := by hom_equiv_trans_symm_impl h
+
+protected def ExpEquiv.MulOfAdd (α: Type*) [Zero α] [Add α] : α ≃ₐ* MulOfAdd α where
+  toFun := MulOfAdd.mk
+  invFun := MulOfAdd.get
+  leftInv _ := rfl
+  rightInv _ := rfl
+  map_add_to_mul := rfl
+  map_zero_to_one := rfl
+
+protected def LogEquiv.AddOfMul (α: Type*) [One α] [Mul α] : α ≃ₘ+ AddOfMul α where
+  toFun := AddOfMul.mk
+  invFun := AddOfMul.get
+  leftInv _ := rfl
+  rightInv _ := rfl
+  map_mul_to_add := rfl
+  map_one_to_zero := rfl
+
+protected def ExpEquiv.AddOfMul (α: Type*) [One α] [Mul α] : AddOfMul α ≃ₐ* α :=
+  (LogEquiv.AddOfMul α).symm
+
+protected def LogEquiv.MulOfAdd (α: Type*) [Zero α] [Add α] : MulOfAdd α ≃ₘ+ α :=
+  (ExpEquiv.MulOfAdd α).symm
+
+protected def ExpHom.toMulOfAdd (α: Type*) [Zero α] [Add α] : α →ₐ* MulOfAdd α :=
+  (ExpEquiv.MulOfAdd α).toHom
+
+protected def LogHom.toAddOfMul (α: Type*) [One α] [Mul α] : α →ₘ+ AddOfMul α :=
+  (LogEquiv.AddOfMul α).toHom
+
+protected def ExpHom.ofAddOfMul (α: Type*) [One α] [Mul α] : AddOfMul α →ₐ* α :=
+  (ExpEquiv.AddOfMul α).toHom
+
+protected def LogHom.ofMulOfAdd (α: Type*) [Zero α] [Add α] : MulOfAdd α →ₘ+ α :=
+  (LogEquiv.MulOfAdd α).toHom
+
+@[simp] def ExpEquiv.apply_MulOfAdd : ExpEquiv.MulOfAdd α x = MulOfAdd.mk x := rfl
+@[simp] def ExpEquiv.apply_AddOfMul : ExpEquiv.AddOfMul α x = AddOfMul.get x := rfl
+@[simp] def LogEquiv.apply_MulOfAdd : LogEquiv.AddOfMul α x = AddOfMul.mk x := rfl
+@[simp] def LogEquiv.apply_AddOfMul : LogEquiv.MulOfAdd α x = MulOfAdd.get x := rfl
+
+@[simp] def ExpEquiv.sym_MulOfAdd : (ExpEquiv.MulOfAdd α).symm = (LogEquiv.MulOfAdd α) := rfl
+@[simp] def ExpEquiv.sym_AddOfMul : (ExpEquiv.AddOfMul α).symm = (LogEquiv.AddOfMul α) := rfl
+@[simp] def LogEquiv.sym_MulOfAdd : (LogEquiv.AddOfMul α).symm = (ExpEquiv.AddOfMul α) := rfl
+@[simp] def LogEquiv.sym_AddOfMul : (LogEquiv.MulOfAdd α).symm = (ExpEquiv.MulOfAdd α) := rfl
+
+@[simp] def ExpHom.apply_toMulOfAdd : ExpHom.toMulOfAdd α x = MulOfAdd.mk x := rfl
+@[simp] def ExpHom.apply_ofAddOfMul : ExpHom.ofAddOfMul α x = AddOfMul.get x := rfl
+@[simp] def LogHom.apply_toMulOfAdd : LogHom.toAddOfMul α x = AddOfMul.mk x := rfl
+@[simp] def LogHom.apply_ofAddOfMul : LogHom.ofMulOfAdd α x = MulOfAdd.get x := rfl
 
 def AddHom.toAddOpp (f: AddHom α β) (f_img_comm: ∀a b, f a + f b = f b + f a) : AddHom αᵃᵒᵖ β where
   toFun x := f x.get
@@ -1052,6 +1446,8 @@ def GroupWithZeroEmbedding.inj (h: α ↪*₀ β) : Function.Injective h := Embe
 def RingEmbedding.inj (h: α ↪+* β) : Function.Injective h := Embedding.inj h.toEmbedding
 def LinearEmbedding.inj (h: α ↪ₗ[R] β) : Function.Injective h := Embedding.inj h.toEmbedding
 def AlgEmbedding.inj (h: α ↪ₐ[R] β) : Function.Injective h := Embedding.inj h.toEmbedding
+def ExpEmbedding.inj (h: α ↪ₐ* β) : Function.Injective h := Embedding.inj h.toEmbedding
+def LogEmbedding.inj (h: α ↪ₘ+ β) : Function.Injective h := Embedding.inj h.toEmbedding
 
 def AddGroupEquiv.inj (h: α ≃+ β) : Function.Injective h := Equiv.inj h.toEquiv
 def AddGroupWithOneEquiv.inj (h: α ≃+₁ β) : Function.Injective h := Equiv.inj h.toEquiv
@@ -1061,6 +1457,8 @@ def RingEquiv.inj (h: α ≃+* β) : Function.Injective h := Equiv.inj h.toEquiv
 def RngEquiv.inj (h: α ≃+*₀ β) : Function.Injective h := Equiv.inj h.toEquiv
 def LinearEquiv.inj (h: α ≃ₗ[R] β) : Function.Injective h := Equiv.inj h.toEquiv
 def AlgEquiv.inj (h: α ≃ₐ[R] β) : Function.Injective h := Equiv.inj h.toEquiv
+def ExpEquiv.inj (h: α ≃ₐ* β) : Function.Injective h := Equiv.inj h.toEquiv
+def LogEquiv.inj (h: α ≃ₘ+ β) : Function.Injective h := Equiv.inj h.toEquiv
 
 @[ext] def AddGroupHom.ext (f g: α →+ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def AddGroupWithOneHom.ext (f g: α →+₁ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
@@ -1069,6 +1467,8 @@ def AlgEquiv.inj (h: α ≃ₐ[R] β) : Function.Injective h := Equiv.inj h.toEq
 @[ext] def RingHom.ext (f g: α →+* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def LinearMap.ext (f g: α →ₗ[R] β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def AlgMap.ext (f g: α →ₐ[R] β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+@[ext] def ExpHom.ext (f g: α →ₐ* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+@[ext] def LogHom.ext (f g: α →ₘ+ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 
 @[ext] def AddGroupEmbedding.ext (f g: α ↪+ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def AddGroupWithOneEmbedding.ext (f g: α ↪+₁ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
@@ -1077,6 +1477,8 @@ def AlgEquiv.inj (h: α ≃ₐ[R] β) : Function.Injective h := Equiv.inj h.toEq
 @[ext] def RingEmbedding.ext (f g: α ↪+* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def LinearEmbedding.ext (f g: α ↪ₗ[R] β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def AlgEmbedding.ext (f g: α ↪ₐ[R] β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+@[ext] def ExpEmbedding.ext (f g: α ↪ₐ* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+@[ext] def LogEmbedding.ext (f g: α ↪ₘ+ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 
 @[ext] def AddGroupEquiv.ext (f g: α ≃+ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def AddGroupWithOneEquiv.ext (f g: α ≃+₁ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
@@ -1085,6 +1487,8 @@ def AlgEquiv.inj (h: α ≃ₐ[R] β) : Function.Injective h := Equiv.inj h.toEq
 @[ext] def RingEquiv.ext (f g: α ≃+* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def LinearEquiv.ext (f g: α ≃ₗ[R] β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 @[ext] def AlgEquiv.ext (f g: α ≃ₐ[R] β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+@[ext] def ExpEquiv.ext (f g: α ≃ₐ* β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
+@[ext] def LogEquiv.ext (f g: α ≃ₘ+ β) : (∀x, f x = g x) -> f = g := DFunLike.ext _ _
 
 def AddGroupHom.congrAddOpp : (α →+ β) ≃ (αᵃᵒᵖ →+ βᵃᵒᵖ) where
   toFun f := {
