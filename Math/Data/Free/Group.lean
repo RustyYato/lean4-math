@@ -118,8 +118,20 @@ def lift [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeGroup α →* G) where
       rfl
       rw [←of_inv, ←map_inv]
 
+def lift_log [AddGroupOps G] [IsAddGroup G] : (α -> G) ≃ (FreeGroup α →ₘ+ G) :=
+  Equiv.trans (lift (G := MulOfAdd G)) {
+    toFun f := LogHom.mul_comp (LogHom.toAddOfMul _) f
+    invFun f := GroupHom.of_log_exp (ExpHom.ofAddOfMul _) f
+    rightInv _ := rfl
+    leftInv _ := rfl
+  }
+
 @[simp]
 def lift_of [GroupOps G] [IsGroup G] (f: α -> G) : lift f (of a) = f a := by
+  erw [GroupQuot.lift_mk_apply, FreeMonoid.lift_of]
+
+@[simp]
+def lift_log_of [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift_log f (of a) = f a := by
   erw [GroupQuot.lift_mk_apply, FreeMonoid.lift_of]
 
 private def Indicator := Bool

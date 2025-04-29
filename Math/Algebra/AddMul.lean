@@ -144,6 +144,28 @@ def cases {motive: MulOfAdd α -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 
 end MulOfAdd
 
+namespace AddOfMul
+
+@[cases_eliminator]
+def cases {motive: MulOfAdd α -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, motive x := mk
+
+@[simp] def get_zero [One α] : get (0: AddOfMul α) = 1 := rfl
+@[simp] def get_add [Mul α] (a b: AddOfMul α) : get (a + b) = get a * get b := rfl
+@[simp] def get_neg [Inv α] (a: AddOfMul α) : get (-a) = (get a)⁻¹ := rfl
+@[simp] def get_nsmul [Pow α ℕ] (n: ℕ) (a: AddOfMul α) : get (n • a) = (get a) ^ n := rfl
+@[simp] def get_zsmul [Pow α ℤ] (n: ℤ) (a: AddOfMul α) : get (n • a) = (get a) ^ n := rfl
+
+@[simp] def mk_one [One α] : (mk 1: α) = 0 := rfl
+@[simp] def mk_mul [Mul α] (a b: α) : mk (a * b) = mk a + mk b := rfl
+@[simp] def mk_inv [Inv α] (a: α) : mk a⁻¹ = -mk a := rfl
+@[simp] def mk_npow [Pow α ℕ] (n: ℕ) (a: α) : mk (a ^ n) = n • mk a := rfl
+@[simp] def mk_zpow [Pow α ℤ] (n: ℤ) (a: α) : mk (a ^ n) = n • mk a := rfl
+
+@[simp] def mk_get (a: AddOfMul α) : mk a.get = a := rfl
+@[simp] def get_mk (a: α) : (mk a).get = a := rfl
+
+end AddOfMul
+
 namespace AddOpp
 
 @[cases_eliminator]

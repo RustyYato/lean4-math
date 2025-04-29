@@ -523,11 +523,12 @@ end
 
 section
 
-variable {R α β γ: Type*}
+variable {R α β γ δ: Type*}
 variable [Zero R] [One R] [Add R] [Mul R]
 variable [Zero α] [One α] [Add α] [Mul α] [SMul R α] [AlgebraMap R α]
 variable [Zero β] [One β] [Add β] [Mul β] [SMul R β] [AlgebraMap R β]
 variable [Zero γ] [One γ] [Add γ] [Mul γ] [SMul R γ] [AlgebraMap R γ]
+variable [Zero δ] [One δ] [Add δ] [Mul δ] [SMul R δ] [AlgebraMap R δ]
 
 section
 
@@ -932,6 +933,30 @@ def AddHom.of_exp_log (g: β →ₙₘ+ γ) (f: α →ₙₐ* β) : AddHom α γ
   toFun := g ∘ f
   map_add {a b} := by dsimp; rw [map_add_to_mul, map_mul_to_add]
 
+def ExpHom.add_comp [FunLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (g: β →ₐ* γ) (f: F) : α →ₐ* γ := {
+  AddMulHom.add_comp g.toAddMulHom f, ZeroOneHom.zero_comp g.toZeroOneHom f with
+}
+
+def ExpHom.comp_mul [FunLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (g: F) (f: α →ₐ* β) : α →ₐ* γ := {
+  AddMulHom.comp_mul g f.toAddMulHom, ZeroOneHom.comp_one g f.toZeroOneHom with
+}
+
+def LogHom.mul_comp [FunLike F α β] [IsOneHom F α β] [IsMulHom F α β] (g: β →ₘ+ γ) (f: F) : α →ₘ+ γ := {
+  MulAddHom.mul_comp g.toMulAddHom f, OneZeroHom.one_comp g.toOneZeroHom f with
+}
+
+def LogHom.comp_add [FunLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (g: F) (f: α →ₘ+ β) : α →ₘ+ γ := {
+  MulAddHom.comp_add g f.toMulAddHom, OneZeroHom.comp_zero g f.toOneZeroHom with
+}
+
+def GroupHom.of_log_exp (g: β →ₐ* γ) (f: α →ₘ+ β) : α →* γ := {
+  MulHom.of_log_exp g.toAddMulHom f.toMulAddHom, OneHom.of_log_exp g.toZeroOneHom f.toOneZeroHom with
+}
+
+def AddGroupHom.of_exp_log (g: β →ₘ+ γ) (f: α →ₐ* β) : α →+ γ := {
+  AddHom.of_exp_log g.toMulAddHom f.toAddMulHom, ZeroHom.of_exp_log g.toOneZeroHom f.toZeroOneHom with
+}
+
 @[simp] def AddGroupHom.apply_comp (a: β →+ γ) (b: α →+ β) : a.comp b x = a (b x) := rfl
 @[simp] def AddGroupWithOneHom.apply_comp (a: β →+₁ γ) (b: α →+₁ β) : a.comp b x = a (b x) := rfl
 @[simp] def GroupHom.apply_comp (a: β →* γ) (b: α →* β) : a.comp b x = a (b x) := rfl
@@ -954,6 +979,25 @@ def AddHom.of_exp_log (g: β →ₙₘ+ γ) (f: α →ₙₐ* β) : AddHom α γ
 @[simp] def MulAddHom.apply_comp_add [FunLike F β γ] [IsAddHom F β γ] (g: F) (f: α →ₙₘ+ β) : comp_add g f x = g (f x) := rfl
 @[simp] def MulHom.apply_of_log_exp (g: β →ₙₐ* γ) (f: α →ₙₘ+ β) : of_log_exp g f x = g (f x) := rfl
 @[simp] def AddHom.apply_of_exp_log (g: β →ₙₘ+ γ) (f: α →ₙₐ* β) : of_exp_log g f x = g (f x) := rfl
+
+@[simp] def ExpHom.apply_add_comp [FunLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (g: β →ₐ* γ) (f: F) : add_comp g f x = g (f x) := rfl
+@[simp] def ExpHom.apply_comp_mul [FunLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (g: F) (f: α →ₐ* β) : comp_mul g f x = g (f x) := rfl
+@[simp] def LogHom.apply_mul_comp [FunLike F α β] [IsOneHom F α β] [IsMulHom F α β] (g: β →ₘ+ γ) (f: F) : mul_comp g f x = g (f x) := rfl
+@[simp] def LogHom.apply_comp_add [FunLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (g: F) (f: α →ₘ+ β) : comp_add g f x = g (f x) := rfl
+@[simp] def GroupHom.apply_of_log_exp (g: β →ₐ* γ) (f: α →ₘ+ β) : of_log_exp g f x = g (f x) := rfl
+@[simp] def AddGroupHom.apply_of_exp_log (g: β →ₘ+ γ) (f: α →ₐ* β) : of_exp_log g f x = g (f x) := rfl
+
+@[simp]
+def mul_comp_comp_of_log_exp
+  (g: α →* β) (h: γ →ₐ* δ) (f: β →ₘ+ γ) :
+  GroupHom.of_log_exp h (LogHom.mul_comp f g) =
+  (GroupHom.of_log_exp h f).comp g := rfl
+
+@[simp]
+def add_comp_comp_of_exp_log
+  (g: α →+ β) (h: γ →ₘ+ δ) (f: β →ₐ* γ) :
+  AddGroupHom.of_exp_log h (ExpHom.add_comp f g) =
+  (AddGroupHom.of_exp_log h f).comp g := rfl
 
 def AddGroupEmbedding.refl : α ↪+ α := {
   Embedding.rfl, AddGroupHom.id _ with
@@ -1061,33 +1105,27 @@ def AlgEmbedding.trans (h: α ↪ₐ[R] β) (g: β ↪ₐ[R] γ) : α ↪ₐ[R] 
 }
 
 def ExpEmbedding.add_trans [EmbeddingLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (f: F) (g: β ↪ₐ* γ) : α ↪ₐ* γ := {
-  Embedding.trans (f: α ↪ β) g.toEmbedding, AddMulHom.add_comp g.toAddMulHom f,
-    ZeroOneHom.zero_comp g.toZeroOneHom f with
+  Embedding.trans (f: α ↪ β) g.toEmbedding, ExpHom.add_comp g.toExpHom f with
 }
 
 def ExpEmbedding.trans_mul [EmbeddingLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (f: α ↪ₐ* β) (g: F) : α ↪ₐ* γ := {
-  Embedding.trans f.toEmbedding (g: β ↪ γ), AddMulHom.comp_mul g f.toAddMulHom,
-    ZeroOneHom.comp_one g f.toZeroOneHom with
+  Embedding.trans f.toEmbedding (g: β ↪ γ), ExpHom.comp_mul g f.toExpHom with
 }
 
 def LogEmbedding.mul_trans [EmbeddingLike F α β] [IsOneHom F α β] [IsMulHom F α β] (f: F) (g: β ↪ₘ+ γ) : α ↪ₘ+ γ := {
-  Embedding.trans (f: α ↪ β) g.toEmbedding, MulAddHom.mul_comp g.toMulAddHom f,
-    OneZeroHom.one_comp g.toOneZeroHom f with
+  Embedding.trans (f: α ↪ β) g.toEmbedding, LogHom.mul_comp g.toLogHom f with
 }
 
 def LogEmbedding.trans_add [EmbeddingLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (f: α ↪ₘ+ β) (g: F) : α ↪ₘ+ γ := {
-  Embedding.trans f.toEmbedding (g: β ↪ γ), MulAddHom.comp_add g f.toMulAddHom,
-    OneZeroHom.comp_zero g f.toOneZeroHom with
+  Embedding.trans f.toEmbedding (g: β ↪ γ), LogHom.comp_add g f.toLogHom with
 }
 
 def GroupEmbedding.of_log_exp (f: α ↪ₘ+ β) (g: β ↪ₐ* γ) : α ↪* γ := {
-  Embedding.trans f.toEmbedding (g: β ↪ γ), MulHom.of_log_exp g.toAddMulHom f.toMulAddHom,
-    OneHom.of_log_exp g.toZeroOneHom f.toOneZeroHom  with
+  Embedding.trans f.toEmbedding (g: β ↪ γ), GroupHom.of_log_exp g.toExpHom f.toLogHom with
 }
 
 def AddGroupEmbedding.of_exp_log (f: α ↪ₐ* β) (g: β ↪ₘ+ γ) : α ↪+ γ := {
-  Embedding.trans f.toEmbedding (g: β ↪ γ), AddHom.of_exp_log g.toMulAddHom f.toAddMulHom,
-    ZeroHom.of_exp_log g.toOneZeroHom f.toZeroOneHom  with
+  Embedding.trans f.toEmbedding (g: β ↪ γ), AddGroupHom.of_exp_log g.toLogHom f.toExpHom with
 }
 
 @[simp] def AddGroupEmbedding.apply_trans (a: β ↪+ γ) (b: α ↪+ β) : b.trans a x = a (b x) := rfl
@@ -1138,33 +1176,27 @@ def AlgEquiv.trans (h: α ≃ₐ[R] β) (g: β ≃ₐ[R] γ) : α ≃ₐ[R] γ :
 }
 
 def ExpEquiv.add_trans [EquivLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (f: F) (g: β ≃ₐ* γ) : α ≃ₐ* γ := {
-  Equiv.trans (f: α ≃ β) g.toEquiv, AddMulHom.add_comp g.toAddMulHom f,
-    ZeroOneHom.zero_comp g.toZeroOneHom f with
+  Equiv.trans (f: α ≃ β) g.toEquiv, ExpHom.add_comp g.toExpHom f with
 }
 
 def ExpEquiv.trans_mul [EquivLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (f: α ≃ₐ* β) (g: F) : α ≃ₐ* γ := {
-  Equiv.trans f.toEquiv (g: β ≃ γ), AddMulHom.comp_mul g f.toAddMulHom,
-    ZeroOneHom.comp_one g f.toZeroOneHom with
+  Equiv.trans f.toEquiv (g: β ≃ γ), ExpHom.comp_mul g f.toExpHom with
 }
 
 def LogEquiv.mul_trans [EquivLike F α β] [IsOneHom F α β] [IsMulHom F α β] (f: F) (g: β ≃ₘ+ γ) : α ≃ₘ+ γ := {
-  Equiv.trans (f: α ≃ β) g.toEquiv, MulAddHom.mul_comp g.toMulAddHom f,
-    OneZeroHom.one_comp g.toOneZeroHom f with
+  Equiv.trans (f: α ≃ β) g.toEquiv, LogHom.mul_comp g.toLogHom f with
 }
 
 def LogEquiv.trans_add [EquivLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (f: α ≃ₘ+ β) (g: F) : α ≃ₘ+ γ := {
-  Equiv.trans f.toEquiv (g: β ≃ γ), MulAddHom.comp_add g f.toMulAddHom,
-    OneZeroHom.comp_zero g f.toOneZeroHom with
+  Equiv.trans f.toEquiv (g: β ≃ γ), LogHom.comp_add g f.toLogHom with
 }
 
 def GroupEquiv.of_log_exp (f: α ≃ₘ+ β) (g: β ≃ₐ* γ) : α ≃* γ := {
-  Equiv.trans f.toEquiv (g: β ≃ γ), MulHom.of_log_exp g.toAddMulHom f.toMulAddHom,
-    OneHom.of_log_exp g.toZeroOneHom f.toOneZeroHom  with
+  Equiv.trans f.toEquiv (g: β ≃ γ), GroupHom.of_log_exp g.toExpHom f.toLogHom with
 }
 
 def AddGroupEquiv.of_exp_log (f: α ≃ₐ* β) (g: β ≃ₘ+ γ) : α ≃+ γ := {
-  Equiv.trans f.toEquiv (g: β ≃ γ), AddHom.of_exp_log g.toMulAddHom f.toAddMulHom,
-    ZeroHom.of_exp_log g.toOneZeroHom f.toZeroOneHom  with
+  Equiv.trans f.toEquiv (g: β ≃ γ), AddGroupHom.of_exp_log g.toLogHom f.toExpHom with
 }
 
 @[simp] def AddGroupEquiv.apply_trans (a: β ≃+ γ) (b: α ≃+ β) : b.trans a x = a (b x) := rfl
@@ -1417,10 +1449,10 @@ protected def LogHom.ofMulOfAdd (α: Type*) [Zero α] [Add α] : MulOfAdd α →
 @[simp] def LogEquiv.apply_MulOfAdd : LogEquiv.AddOfMul α x = AddOfMul.mk x := rfl
 @[simp] def LogEquiv.apply_AddOfMul : LogEquiv.MulOfAdd α x = MulOfAdd.get x := rfl
 
-@[simp] def ExpEquiv.sym_MulOfAdd : (ExpEquiv.MulOfAdd α).symm = (LogEquiv.MulOfAdd α) := rfl
-@[simp] def ExpEquiv.sym_AddOfMul : (ExpEquiv.AddOfMul α).symm = (LogEquiv.AddOfMul α) := rfl
-@[simp] def LogEquiv.sym_MulOfAdd : (LogEquiv.AddOfMul α).symm = (ExpEquiv.AddOfMul α) := rfl
-@[simp] def LogEquiv.sym_AddOfMul : (LogEquiv.MulOfAdd α).symm = (ExpEquiv.MulOfAdd α) := rfl
+@[simp] def ExpEquiv.symm_MulOfAdd : (ExpEquiv.MulOfAdd α).symm = (LogEquiv.MulOfAdd α) := rfl
+@[simp] def ExpEquiv.symm_AddOfMul : (ExpEquiv.AddOfMul α).symm = (LogEquiv.AddOfMul α) := rfl
+@[simp] def LogEquiv.symm_MulOfAdd : (LogEquiv.AddOfMul α).symm = (ExpEquiv.AddOfMul α) := rfl
+@[simp] def LogEquiv.symm_AddOfMul : (LogEquiv.MulOfAdd α).symm = (ExpEquiv.MulOfAdd α) := rfl
 
 @[simp] def ExpHom.apply_toMulOfAdd : ExpHom.toMulOfAdd α x = MulOfAdd.mk x := rfl
 @[simp] def ExpHom.apply_ofAddOfMul : ExpHom.ofAddOfMul α x = AddOfMul.get x := rfl
@@ -1563,6 +1595,8 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 @[simp] def GroupHom.toFun_eq_coe (f: α →* β) : f.toFun = f := rfl
 @[simp] def AddGroupWithZeroHom.toFun_eq_coe (f: α →+₁ β) : f.toFun = f := rfl
 @[simp] def GroupWithOneHom.toFun_eq_coe (f: α →*₀ β) : f.toFun = f := rfl
+@[simp] def ExpHom.toFun_eq_coe (f: α →ₐ* β) : f.toFun = f := rfl
+@[simp] def LogHom.toFun_eq_coe (f: α →ₘ+ β) : f.toFun = f := rfl
 
 @[simp] def AddGroupHom.toZeroHom_eq_coe (f: α →+ β) : (f.toZeroHom: _ -> _) = f := rfl
 @[simp] def GroupHom.toOneHom_eq_coe (f: α →* β) : (f.toOneHom: _ -> _) = f := rfl
@@ -1570,3 +1604,8 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 @[simp] def GroupWithOneHom.toOneHom_eq_coe (f: α →*₀ β) : (f.toOneHom: _ -> _) = f := rfl
 
 @[simp] def AlgHom.toAddHom_eq_coe (f: α →ₐ[R] β) : (f.toAddHom: α -> β) = f := rfl
+
+@[simp] def ExpEquiv.toHom_eq_coe (f: α ≃ₐ* β) : (f.toHom: _ -> _) = f := rfl
+@[simp] def LogEquiv.toHom_eq_coe (f: α ≃ₘ+ β) : (f.toHom: _ -> _) = f := rfl
+@[simp] def GroupEquiv.of_log_exp_hom (g: α ≃ₘ+ β) (f: β ≃ₐ* α) : GroupHom.of_log_exp f.toHom g.toHom = (GroupEquiv.of_log_exp g f).toHom := rfl
+@[simp] def AddGroupEquiv.of_exp_log_hom (f: α ≃ₘ+ β) (g: β ≃ₐ* α) : AddGroupHom.of_exp_log f.toHom g.toHom = (AddGroupEquiv.of_exp_log g f).toHom := rfl

@@ -38,43 +38,35 @@ def npow_fin_add (a: Cyclic n) (x y: Fin n) : a ^ (x + y).val = a ^ (x.val + y.v
   simp
   rw [←npow_add, Nat.div_add_mod]
 
-def toZMod (n: ℕ) :  Cyclic n →* MulOfAdd (ZMod n) := GroupQuot.lift {
-    val := FreeGroup.lift (fun () => MulOfAdd.mk 1)
+def toZMod (n: ℕ) : Cyclic n →ₘ+ ZMod n := GroupQuot.lift_log {
+    val := FreeGroup.lift_log (fun () => 1)
     property := by
       intro x y (.intro a)
-      rw [map_npow, map_one]
+      rw [map_npow_to_nsmul, map_one_to_zero]
       induction a with
-      | one => rw [map_one, one_npow]
+      | one => rw [map_one_to_zero, nsmul_zero]
       | of x =>
-        rw [FreeGroup.lift_of]
-        show MulOfAdd.mk (n • 1) = MulOfAdd.mk 0
-        congr
-        rw [ZMod.n_nsmul_eq_zero]
-      | inv _ ih => rw [map_inv, inv_npow, ih, inv_one]
-      | mul a b iha ihb => rw [map_mul, mul_npow, iha, ihb, mul_one]
+        rw [FreeGroup.lift_log_of, ZMod.n_nsmul_eq_zero]
+      | inv _ ih => rw [map_inv_to_neg, nsmul_neg, ih, neg_zero]
+      | mul a b iha ihb => rw [map_mul_to_add, nsmul_add, iha, ihb, add_zero]
   }
 
-def toZMod_unit : toZMod n (unit n) = MulOfAdd.mk 1 := by
-  show GroupQuot.lift _ _ = _
-  rw [unit, GroupQuot.lift_mk_apply, FreeGroup.lift_of]
+def toZMod_unit : toZMod n (unit n) = 1 := by
+  show GroupQuot.lift_log _ _ = _
+  rw [unit, GroupQuot.lift_log_mk_apply, FreeGroup.lift_log_of]
 
-def equiv_zmod_add : Cyclic n ≃* MulOfAdd (ZMod n) := {
+def equiv_zmod_add : Cyclic n ≃ₘ+ ZMod n := {
   toZMod n with
-  invFun x := (unit n) ^ (ZMod.toInt x.get)
+  invFun x := (unit n) ^ (ZMod.toInt x)
   rightInv x := by
     simp
-    rw [map_zpow, toZMod_unit, ←MulOfAdd.mk_zsmul]
-    cases x with | mk x =>
-    congr
-    rw [←intCast_eq_zsmul_one]
-    show ZMod.ofInt _ _ = _
-    rw [ZMod.ofInt_toInt]
-    simp
+    rw [map_zpow_to_zsmul, toZMod_unit, ←intCast_eq_zsmul_one,
+      ZMod.intCast_toInt]
   leftInv x := by
     induction x using GroupQuot.ind with | mk x =>
     simp
     induction x with
-    | one => simp [map_one, map_zero, ZMod.toInt_zero]
+    | one => simp [map_one, map_one_to_zero]
     | of =>
       rw [←unit]
       simp [toZMod_unit]
@@ -86,8 +78,8 @@ def equiv_zmod_add : Cyclic n ≃* MulOfAdd (ZMod n) := {
     | inv a ih =>
       rw [map_inv, ←ih, ←unit]
       clear ih
-      simp [map_inv, map_zpow, toZMod_unit, ←intCast_eq_zsmul_one]
-      rw [ZMod.intCast_toInt]
+      simp [map_inv_to_neg, map_zpow_to_zsmul, toZMod_unit,
+        ←intCast_eq_zsmul_one, map_one_to_zero, ZMod.intCast_toInt]
       match n with
       | 1 => apply Subsingleton.allEq
       | 0 => rw [←zpow_neg]; rfl
@@ -97,11 +89,11 @@ def equiv_zmod_add : Cyclic n ≃* MulOfAdd (ZMod n) := {
         rw [ZMod.toInt_neg, zpow_ofNat, npow_n_eq_one]
         symm; apply zero_ne_one
     | mul a b iha ihb =>
-      simp [map_mul]
+      simp [map_mul, map_mul_to_add]
       conv => { rhs; rw [←iha, ←ihb] }
       rw [←zpow_add]
-      generalize (toZMod n (GroupQuot.mk _ a)).get = a'
-      generalize (toZMod n (GroupQuot.mk _ b)).get = b'
+      generalize (toZMod n (GroupQuot.mk _ a)) = a'
+      generalize (toZMod n (GroupQuot.mk _ b)) = b'
       clear iha ihb a b
       have ⟨k, eq⟩ := ZMod.toInt_add a' b'
       rw [eq.left]
@@ -112,9 +104,9 @@ def equiv_zmod_add : Cyclic n ≃* MulOfAdd (ZMod n) := {
       simp
 }
 
-def equiv_zmod_add_unit : equiv_zmod_add (unit n) = MulOfAdd.mk 1 := by apply toZMod_unit
+def equiv_zmod_add_unit : equiv_zmod_add (unit n) = 1 := by apply toZMod_unit
 
-def pow (c: Cyclic n) : ℤ := ZMod.toInt (toZMod _ c).get
+def pow (c: Cyclic n) : ℤ := ZMod.toInt (toZMod _ c)
 
 instance : Repr (Cyclic n) where
   reprPrec c := reprPrec (pow c)
@@ -122,22 +114,21 @@ instance : Repr (Cyclic n) where
 def pow_spec (c: Cyclic n) : unit n ^ pow c = c := equiv_zmod_add.coe_symm _
 def pow_one : pow (n := n) 1 = 0 := by
   unfold pow
-  rw [map_one, MulOfAdd.get_one, ZMod.toInt_zero]
+  rw [map_one_to_zero, ZMod.toInt_zero]
 def pow_mul (a b: Cyclic n) : pow (a * b) = (pow a + pow b) % n := by
   cases n with
   | zero =>
     rw [natCast_zero, Int.emod_zero]
     unfold pow
-    simp [map_mul]
+    simp [map_mul_to_add]
     rfl
   | succ n =>
     unfold pow
-    simp [map_mul]
+    simp [map_mul_to_add]
     rfl
 def pow_unit : pow (unit n) = 1 % n := by
   unfold pow
   rw [toZMod_unit]
-  simp
   match n with
   | 0 => rfl
   | 1 => rfl
@@ -155,8 +146,8 @@ def cases {motive: Cyclic n -> Sort*} (pow: ∀m: ℤ, m < n ∨ n = 0 -> motive
 
 def of_npow_eq_one : (unit n) ^ m = 1 ->  n ∣ m := by
   intro h
-  have : equiv_zmod_add (unit n ^ m) = 1 := by rw [h, map_one]
-  rw [map_npow, equiv_zmod_add_unit, ←MulOfAdd.mk_nsmul, ←MulOfAdd.mk_zero] at this
+  have : equiv_zmod_add (unit n ^ m) = 0 := by rw [h, map_one_to_zero]
+  rw [map_npow_to_nsmul, equiv_zmod_add_unit] at this
   replace : m • 1 = (0: ZMod _) := this
   apply HasChar.char_dvd_natCast_eq_zero (α := ZMod n)
   rwa [natCast_eq_nsmul_one]
@@ -262,7 +253,7 @@ def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cycli
   have m_spec : ∀x: s, x ^ m = 1 := char_spec (AddOfMul s)
   have m_dvd : ∀k, (∀x: s, x ^ k = 1) -> m ∣ k := char_dvd (AddOfMul s)
   exists m
-  let u := (equiv_zmod_add (n := n)).symm (AddOfMul.mk (n / m))
+  let u := (equiv_zmod_add (n := n)).symm (n - m)
   have : ∀x: Cyclic n, x ^ m = 1 -> x ∈ s := by
     intro x hx
     rw [←pow_spec x, ←zpow_ofNat, ←zpow_mul] at hx
