@@ -6,6 +6,7 @@ import Math.Data.Free.Group
 import Math.Algebra.GroupQuot
 import Math.Data.ZMod.Defs
 import Math.Relation.Basic
+import Math.Data.Int.Gcd
 
 inductive Cyclic.Rel (n: ℕ) : FreeGroup Unit -> FreeGroup Unit -> Prop where
 | intro (a: FreeGroup Unit) : Rel n (a ^ n) 1
@@ -327,62 +328,78 @@ def equiv_cyclic_iff_generated_by_unit (G: Type*) [GroupOps G] [IsGroup G] : (�
 
 def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cyclic m) := by
   classical
-  let m := char (AddOfMul s)
-  have m_spec : ∀x: s, x ^ m = 1 := char_spec (AddOfMul s)
-  have m_dvd : ∀k, (∀x: s, x ^ k = 1) -> m ∣ k := char_dvd (AddOfMul s)
-  exists m
-  let u := (equiv_zmod_add (n := n)).symm (n - m)
-  have : ∀x: Cyclic n, x ^ m = 1 -> x ∈ s := by
-    intro x hx
-    rw [←pow_spec x, ←zpow_ofNat, ←zpow_mul] at hx
-    have := of_zpow_eq_one (n := n) _ hx
-
-
-    sorry
-  have : u ∈ s := by
-    sorry
-  -- have u : ∃u: s, ∀ := sorry
-  sorry
-  -- match n with
-  -- | 0 =>
-  --   rcases subsingleton_or_nontrivial s with sub | nontriv
-  --   exists 1
-  --   exact ⟨{
-  --     toFun _ := 1
-  --     invFun _ := 1
-  --     leftInv _ := Subsingleton.allEq _ _
-  --     rightInv _ := Subsingleton.allEq _ _
-  --     map_one := Subsingleton.allEq _ _
-  --     map_mul {_ _} := Subsingleton.allEq _ _
-  --   }⟩
-  --   exists 0
-  --   have ⟨a, ha⟩ := exists_ne (α := s) 1
-  --   have exists_card : ∃m: ℕ, Nat.cast m ∣ (equiv_int_add a.val).get := by
-  --     exists (equiv_int_add a.val).get.natAbs
-  --     apply Int.natAbs_dvd.mpr
-  --     apply Int.dvd_refl
-  --   let m := Nat.findP exists_card
-  --   let m_spec := Nat.findP_spec exists_card
-  --   let m_smallest := Nat.lt_findP_spec exists_card
-
-
-
-  --   sorry
-  -- | n + 1 =>
-  -- have exists_card : ∃m: ℕ, (∀x: s, x ^ m = 1) ∧ (0 < m) := by
-  --   exists n + 1
-  --   apply And.intro
-  --   intro x
-  --   apply Subtype.val_inj
-  --   simp
-  --   rw [npow_n_eq_one]
-  --   apply Nat.zero_lt_succ
-  -- let m := Nat.findP exists_card
-  -- let m_spec := Nat.findP_spec exists_card
-  -- let m_smallest := Nat.lt_findP_spec exists_card
-  -- -- match m with
-  -- -- | 0 => sorry
-  -- exists m
-  -- sorry
+  rw [←equiv_cyclic_iff_generated_by_unit]
+  rcases subsingleton_or_nontrivial s with hs | hs
+  exists 1
+  intro x; exists 0
+  apply Subsingleton.allEq
+  have ⟨⟨x, hx⟩, x_ne_one⟩ := exists_ne (1: s)
+  cases x with | pow i hi' =>
+  have i_ne_zero : i ≠ 0 := by
+    rintro rfl; simp at x_ne_one
+    contradiction
+  have n_not_dvd_i : ¬(n: ℤ) ∣ i := by
+    rintro ⟨k, rfl⟩
+    apply x_ne_one
+    congr
+    rw [zpow_mul, zpow_ofNat, npow_n_eq_one]
+  have m_exists : ∃i: ℕ, unit n ^ i ∈ s ∧ 0 < i := ⟨i.natAbs, by
+    apply And.intro
+    apply mem_npow_natAbs_of_mem_zpow
+    assumption
+    omega⟩
+  let m := Nat.findP m_exists
+  let m_spec : unit n ^ m ∈ s := (Nat.findP_spec m_exists).left
+  let m_pos : 0 < m := (Nat.findP_spec m_exists).right
+  let lt_m_spec : ∀i, i < m -> _ := Nat.lt_findP_spec m_exists
+  simp at lt_m_spec
+  let u : s := ⟨unit n ^ m, m_spec⟩
+  exists u
+  intro ⟨g, hg⟩
+  cases g with | pow g hg' =>
+  simp [u]
+  suffices (m: ℤ) ∣ g by
+    obtain ⟨k, rfl⟩ := this
+    exists k
+    congr 1
+    rw [mul_comm, zpow_mul, zpow_ofNat]
+  clear hg'
+  induction g using Relation.wfInduction Int.abs_lt with
+  | h g ih =>
+  have : unit n ^ (Int.gcd g m) ∈ s := by
+    rw [←zpow_ofNat, Int.gcd_eq_gcd_ab, zpow_add]
+    apply mem_mul
+    rw [mul_comm, zpow_mul]
+    apply mem_zpow
+    assumption
+    rw [mul_comm, zpow_mul]
+    apply mem_zpow
+    assumption
+  refine if hg':g.gcd m < g.natAbs then ?_ else ?_
+  replace this := ih (g.gcd m) hg' this
+  apply Int.dvd_trans
+  assumption
+  apply Int.gcd_dvd_left
+  simp at hg'
+  have : g.gcd m ∣ g.natAbs := by apply Nat.gcd_dvd_left
+  refine if hg₁:g = 0 then ?_ else ?_
+  rw [hg₁]; apply Int.dvd_zero
+  replace :=  Nat.le_antisymm (Nat.dvd_le _ _ this (by omega)) hg'
+  have : g ∣ m := by
+    apply Int.natAbs_dvd.mp
+    rw [←this]
+    apply Int.ofNat_dvd.mpr
+    apply Nat.gcd_dvd_right
+  rw [←Int.natAbs_dvd, Int.ofNat_dvd] at this
+  have gnatabs_le_m := Nat.le_of_dvd m_pos this
+  rcases Nat.lt_or_eq_of_le gnatabs_le_m with g_lt_m | g_eq_m
+  · have := lt_m_spec g.natAbs g_lt_m (by
+      apply mem_npow_natAbs_of_mem_zpow
+      assumption)
+    rw [Int.natAbs_eq_zero] at this
+    subst g
+    apply Int.dvd_zero
+  · rw [←g_eq_m]
+    exact Int.natAbs_dvd_self
 
 end Cyclic

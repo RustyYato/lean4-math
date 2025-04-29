@@ -66,6 +66,17 @@ def mem_zpow
   apply mem_npow
   assumption
 
+def mem_npow_natAbs_of_mem_zpow
+  [SetLike S α] [GroupOps α] [IsSubgroup S] [IsGroup α]
+  (s: S) {a: α} (n: ℤ) : a ^ n ∈ s -> a ^ n.natAbs ∈ s := by
+  intro h
+  rw [←zpow_ofNat]
+  rcases Int.natAbs_eq n with g | g
+  rwa [←g]
+  rw [←Int.neg_neg (Nat.cast _), zpow_neg, ←g]
+  apply mem_inv
+  assumption
+
 def mem_sub
   [SetLike S α] [AddGroupOps α] [IsAddSubgroup S] [IsAddGroup α]
   (s: S) {a b: α} (ha: a ∈ s) (hb: b ∈ s) : a - b ∈ s :=
