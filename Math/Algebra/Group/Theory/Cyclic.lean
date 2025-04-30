@@ -202,10 +202,16 @@ def lift {G: Type*} [GroupOps G] [IsGroup G] : { g: G // g ^ n = 1 } ≃ (Cyclic
     rw [map_zpow]
 }
 
+def lift_log {G: Type*} [AddGroupOps G] [IsAddGroup G] : { g: G // n • g = 0 } ≃ (Cyclic n →ₘ+ G) :=
+  Equiv.trans (lift (G := MulOfAdd G)) <| Equiv.log_hom_equiv_group_hom.symm
+
 def lift_unit [GroupOps G] [IsGroup G] (g: {g : G // g ^ n = 1}) : lift g (unit n) = g := by
   show g.val ^ (unit n).pow = _
   rw [pow_unit, lift_zpow_mod, zpow_one]
   exact g.property
+
+def lift_log_unit [AddGroupOps G] [IsAddGroup G] (g: {g : G // n • g = 0}) : lift_log g (unit n) = g :=
+  lift_unit (G := MulOfAdd G) _
 
 def npow_congr (x y: ℤ) (a: Cyclic n) : x % n = y % n -> a ^ x = a ^ y := by
   intro h
@@ -401,5 +407,7 @@ def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cycli
     apply Int.dvd_zero
   · rw [←g_eq_m]
     exact Int.natAbs_dvd_self
+
+attribute [irreducible] lift lift_log instGroupOps Cyclic
 
 end Cyclic
