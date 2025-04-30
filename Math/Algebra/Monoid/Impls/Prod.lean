@@ -43,3 +43,48 @@ instance
   [HasChar α n] [HasChar β n] : HasChar (α × β) n := by
   rw [←Nat.lcm_self n]
   infer_instance
+
+variable [Add α] [Add β] [Add γ] [Add δ]
+variable [Mul α] [Mul β] [Mul γ] [Mul δ]
+variable [Zero α] [Zero β] [Zero γ] [Zero δ]
+variable [One α] [One β] [One γ] [One δ]
+
+def GroupEquiv.congrProd (h: α ≃* γ) (g: β ≃* δ) : α × β ≃* γ × δ := {
+  Equiv.congrProd h.toEquiv g.toEquiv with
+  map_one := by
+    show (h 1, g 1) = _
+    rw [map_one, map_one]; rfl
+  map_mul {x y} := by
+    show (h (x.fst * y.fst), g (x.snd * y.snd)) = _
+    rw [map_mul, map_mul]; rfl
+}
+
+def AddGroupEquiv.congrProd (h: α ≃+ γ) (g: β ≃+ δ) : α × β ≃+ γ × δ := {
+  Equiv.congrProd h.toEquiv g.toEquiv with
+  map_zero := by
+    show (h 0, g 0) = _
+    rw [map_zero, map_zero]; rfl
+  map_add {x y} := by
+    show (h (x.fst + y.fst), g (x.snd + y.snd)) = _
+    rw [map_add, map_add]; rfl
+}
+
+def ExpEquiv.congrProd (h: α ≃ₐ* γ) (g: β ≃ₐ* δ) : α × β ≃ₐ* γ × δ := {
+  Equiv.congrProd h.toEquiv g.toEquiv with
+  map_zero_to_one := by
+    show (h 0, g 0) = _
+    rw [map_zero_to_one, map_zero_to_one]; rfl
+  map_add_to_mul {x y} := by
+    show (h (x.fst + y.fst), g (x.snd + y.snd)) = _
+    rw [map_add_to_mul, map_add_to_mul]; rfl
+}
+
+def LogEquiv.congrProd (h: α ≃ₘ+ γ) (g: β ≃ₘ+ δ) : α × β ≃ₘ+ γ × δ := {
+  Equiv.congrProd h.toEquiv g.toEquiv with
+  map_one_to_zero := by
+    show (h 1, g 1) = _
+    rw [map_one_to_zero, map_one_to_zero]; rfl
+  map_mul_to_add {x y} := by
+    show (h (x.fst * y.fst), g (x.snd * y.snd)) = _
+    rw [map_mul_to_add, map_mul_to_add]; rfl
+}
