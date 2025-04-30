@@ -3,9 +3,11 @@ import Math.Algebra.Ring.Basic
 import Math.Algebra.Algebra.Hom
 import Math.Algebra.Ring.Units.Defs
 import Math.Algebra.Field.Impls.Fin
+import Math.Algebra.Group.Impls.Prod
 import Math.Order.OrderIso
 import Math.Algebra.AddGroupWithOne.Hom
 import Math.Type.Finite
+import Math.Data.Int.Gcd
 
 def ZMod : ℕ -> Type
 | 0 => ℤ
@@ -193,6 +195,15 @@ def ofInt_toInt (x: ZMod n) : ofInt n (toInt x) = x := by
   show ⟨x.val % (n + 1: ℕ), _⟩ = x
   congr
   rw [Nat.mod_eq_of_lt x.isLt]
+
+def ofInt_n (n: ℕ) : ofInt n n = 0 := by
+  show Int.cast (Nat.cast n) = 0
+  rw [intCast_ofNat]
+  apply n_eq_zero
+
+def ofInt_emod (n: ℕ) (x: ℤ) : ofInt n x = ofInt n (x % n) := by
+  rw [←zero_add (ofInt n (x % _)), ←zero_mul (ofInt n (x / n)), ←ofInt_n,
+    ←map_mul (ofInt n), ←map_add, Int.ediv_add_emod]
 
 @[induction_eliminator]
 def induction {n: ℕ} {motive: ZMod n -> Prop} (ofInt: ∀x: ℤ, motive (ZMod.ofInt n x)) : ∀x, motive x := by
@@ -469,5 +480,53 @@ def inj (h: ZMod n ≃ ZMod m) : n = m := by
     simp at this
     cases this
     exact lt_irrefl g
+
+def toProd (n m: ℕ) : ZMod (n * m) →+ ZMod n × ZMod m := lift _ {
+  val := {
+    toFun x := (ZMod.ofInt n x, ZMod.ofInt m x)
+    map_zero := by simp [map_zero]; rfl
+    map_add {x y} := by simp [map_add]; rfl
+  }
+  property := by
+    simp
+    show (ofInt n (n * m), ofInt m (n * m)) = 0
+    rw [ofInt_emod, Int.mul_emod_right, map_zero,
+      ofInt_emod, Int.mul_emod_left, map_zero]; rfl
+}
+
+def apply_toProd (n m: ℕ) (x: ZMod (n * m)) : toProd n m x = (ZMod.ofInt n x.toInt, ZMod.ofInt m x.toInt) :=
+  apply_lift _ _ _
+
+def equiv_prod (n m: ℕ) (h: Nat.gcd n m = 1) : ZMod (n * m) ≃+ ZMod n × ZMod m := {
+  toProd n m with
+  invFun x := ZMod.ofInt _ (Int.chinese_remainder x.fst.toInt x.snd.toInt n m)
+  leftInv x := by
+    simp
+    let p := (toProd n m x)
+    let c := Int.chinese_remainder (toInt (toProd n m x).fst) (toInt (toProd n m x).snd) ↑n ↑m
+    show ofInt (n * m) c = x
+    have := Int.chinese_remainder_unique c (toInt x) n m h ?_ ?_
+    rw [ofInt_emod, Int.ofNat_mul, this, ←Int.ofNat_mul, ←ofInt_emod, ofInt_toInt]
+    rw [Int.chinese_remainder_mod_left, apply_toProd, toInt_ofInt, Int.emod_emod]
+    assumption
+    rw [Int.chinese_remainder_mod_right, apply_toProd, toInt_ofInt, Int.emod_emod]
+    assumption
+  rightInv x := by
+    simp
+    rw [apply_toProd]
+    rw [toInt_ofInt]
+    let c := (toInt x.fst).chinese_remainder (toInt x.snd) ↑n ↑m
+    rw [ofInt_emod, ofInt_emod m,
+      Int.emod_emod_of_dvd,
+      Int.emod_emod_of_dvd,
+      Int.chinese_remainder_mod_left,
+      Int.chinese_remainder_mod_right,
+      ←ofInt_emod, ←ofInt_emod m,
+      ofInt_toInt, ofInt_toInt]
+    assumption
+    assumption
+    rw [Int.ofNat_mul]; apply Int.dvd_mul_left
+    rw [Int.ofNat_mul]; apply Int.dvd_mul_right
+}
 
 end ZMod

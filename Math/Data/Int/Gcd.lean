@@ -85,36 +85,26 @@ def chinese_remainder_unique (x y n m: ℤ) (h: gcd n m = 1) (hn: x % n = y % n)
   refine emod_eq_emod_iff_emod_sub_eq_zero.mpr ?_
   exact emod_eq_zero_of_dvd nm_dvd_sub
 
-def chinese_remainder (x n m: ℤ) : ℤ :=
-  ((x % m) * n * gcdA n m + (x % n) * m * gcdB n m) % (n * m)
+def chinese_remainder (x y n m: ℤ) : ℤ :=
+  y * n * gcdA n m + x * m * gcdB n m
 
-def chinese_remainder_nonneg (x n m: ℤ) (nz: n * m ≠ 0) : 0 ≤ (chinese_remainder x n m) := by
-  apply Int.emod_nonneg
-  assumption
-def chinese_remainder_lt (x n m: ℤ) (nz: n * m ≠ 0) : (chinese_remainder x n m) < Int.natAbs (n * m) := by
-  apply Int.emod_lt
-  assumption
-def chinese_remainder_mod_left (x n m: ℤ) (h: gcd n m = 1) : (chinese_remainder x n m) % n = x % n := by
+def chinese_remainder_mod_left (x y n m: ℤ) (h: gcd n m = 1) : (chinese_remainder x y n m) % n = x % n := by
   unfold chinese_remainder
-  rw [Int.emod_emod_of_dvd]
   have := Int.gcd_eq_gcd_ab n m
   rw [h] at this
   simp at this
   rw [Int.add_comm, ←Int.sub_eq_iff_eq_add] at this
   rw [Int.mul_assoc _ m, ←this, Int.mul_sub, ←Int.add_sub_assoc,
     Int.add_comm, Int.add_sub_assoc, Int.mul_left_comm, Int.mul_comm _ n, Int.mul_assoc, ←Int.mul_sub]
-  rw [Int.add_emod, Int.mul_emod_right, Int.add_zero, Int.mul_one, Int.emod_emod, Int.emod_emod]
-  apply Int.dvd_mul_right
-def chinese_remainder_mod_right (x n m: ℤ) (h: gcd n m = 1) : (chinese_remainder x n m) % m = x % m := by
+  rw [Int.add_emod, Int.mul_emod_right, Int.add_zero, Int.mul_one, Int.emod_emod]
+def chinese_remainder_mod_right (x y n m: ℤ) (h: gcd n m = 1) : (chinese_remainder x y n m) % m = y % m := by
   unfold chinese_remainder
-  rw [Int.emod_emod_of_dvd]
   have := Int.gcd_eq_gcd_ab n m
   rw [h] at this
   simp at this
   rw [←Int.sub_eq_iff_eq_add] at this
   rw [Int.add_comm, Int.mul_assoc _ n, ←this, Int.mul_sub, ←Int.add_sub_assoc,
     Int.add_comm, Int.add_sub_assoc, Int.mul_left_comm, Int.mul_comm _ m, Int.mul_assoc, ←Int.mul_sub]
-  rw [Int.add_emod, Int.mul_emod_right, Int.add_zero, Int.mul_one, Int.emod_emod, Int.emod_emod]
-  apply Int.dvd_mul_left
+  rw [Int.add_emod, Int.mul_emod_right, Int.add_zero, Int.mul_one, Int.emod_emod]
 
 end Int
