@@ -460,4 +460,27 @@ def gcd_eq_dvd_lincomb (a b: Nat) : ∀x y, gcd a b ∣ a * x + b * y := by
   rw [Nat.mul_assoc, Nat.mul_assoc, ←Nat.mul_add]
   apply Nat.dvd_mul_right
 
+def mul_lt_mul (a b c d: ℕ) (h: a < c) (g: b < d) : a * b < c * d := by
+  refine if hb:0 < b then ?_ else ?_
+  apply Nat.lt_of_lt_of_le
+  apply (Nat.mul_lt_mul_right _).mpr
+  assumption
+  assumption
+  apply Nat.mul_le_mul_left
+  apply Nat.le_of_lt; assumption
+  simp at hb
+  subst hb; simp
+  apply Nat.mul_pos
+  omega
+  omega
+
+def mul_dvd (n m: ℕ) (k: ℕ) (h: gcd n m = 1) : n ∣ k -> m ∣ k -> (n * m) ∣ k := by
+  intro hn hm
+  obtain ⟨q, rfl⟩ := hn
+  rw [Nat.mul_comm] at hm
+  replace hm := dvd_left_of_dvd_of_gcd_eq_one _ _ _ hm (by rwa [gcd_comm])
+  obtain ⟨r, rfl⟩ := hm
+  rw [←Nat.mul_assoc]
+  apply Nat.dvd_mul_right
+
 end Nat
