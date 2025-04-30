@@ -412,6 +412,13 @@ def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cycli
 
 attribute [irreducible] lift lift_log instGroupOps Cyclic
 
+def equiv_prod (n m: ℕ) (h: Nat.gcd n m = 1) : Cyclic (n * m) ≃* Cyclic n × Cyclic m := by
+  apply GroupEquiv.of_log_exp equiv_zmod_add
+  apply ExpEquiv.add_trans (ZMod.equiv_prod _ _ h)
+  apply ExpEquiv.congrProd
+  exact equiv_zmod_add.symm
+  exact equiv_zmod_add.symm
+
 end Cyclic
 
 instance [GroupOps G] [h: IsGroup.IsCyclic G] : IsAddGroup.IsCyclic (AddOfMul G) where
