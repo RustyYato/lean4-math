@@ -7,6 +7,8 @@ inductive FreeGroup.Rel (α: Type*) : FreeMonoid (Bool × α) -> FreeMonoid (Boo
 
 def FreeGroup (α: Type*) := GroupQuot (FreeGroup.Rel α)
 
+def FreeAddGroup (α: Type*) := AddOfMul (FreeGroup α)
+
 namespace FreeGroup
 
 instance : MonoidOps (FreeGroup α) := inferInstanceAs (MonoidOps (GroupQuot _))
@@ -81,7 +83,7 @@ instance : IsGroup (FreeGroup α) where
 
 def of (a: α) : FreeGroup α := GroupQuot.mk _ (FreeMonoid.of (false, a))
 
-def of_inv (a: α) : (of a)⁻¹ = GroupQuot.mk _ (FreeMonoid.of (true, a)) := by
+private def of_inv (a: α) : (of a)⁻¹ = GroupQuot.mk _ (FreeMonoid.of (true, a)) := by
   show inv _ = _
   apply GroupQuot.lift_mk_apply
 
@@ -244,6 +246,104 @@ instance : LawfulMonad FreeGroup := by
 
 end FreeGroup
 
+namespace FreeAddGroup
+
+instance : AddGroupOps (FreeAddGroup α) := inferInstanceAs (AddGroupOps (AddOfMul _))
+instance : IsAddGroup (FreeAddGroup α) := inferInstanceAs (IsAddGroup (AddOfMul _))
+
+def of (a: α) : FreeAddGroup α := AddOfMul.mk (FreeGroup.of a)
+
+def lift [AddGroupOps G] [IsAddGroup G] : (α -> G) ≃ (FreeAddGroup α →+ G) :=
+  Equiv.trans (FreeGroup.lift (G := MulOfAdd G)) {
+    toFun f := {
+      toFun x := AddOfMul.get (f (MulOfAdd.get x))
+      map_add := map_mul f
+      map_zero := map_one f
+    }
+    invFun f := {
+      toFun x := MulOfAdd.mk (f (AddOfMul.mk x))
+      map_mul := map_add f
+      map_one := map_zero f
+    }
+    leftInv _ := rfl
+    rightInv _ := rfl
+  }
+
+def lift_exp [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeAddGroup α →ₐ* G) :=
+  Equiv.trans (lift (G := AddOfMul G)) {
+    toFun f := ExpHom.add_comp (ExpHom.ofAddOfMul _) f
+    invFun f := AddGroupHom.of_exp_log (LogHom.toAddOfMul _) f
+    rightInv _ := rfl
+    leftInv _ := rfl
+  }
+
+@[simp]
+def lift_of [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift f (of a) = f a := by
+  apply FreeGroup.lift_of (G := MulOfAdd G)
+
+@[simp]
+def lift_exp_of [GroupOps G] [IsGroup G] (f: α -> G) : lift_exp f (of a) = f a := by
+  apply FreeGroup.lift_of (G := G)
+
+def of_inj : Function.Injective (of (α := α)) :=
+  FreeGroup.of_inj
+
+def zero_ne_of (a: α) : 0 ≠ of a :=
+  FreeGroup.one_ne_of _
+
+@[induction_eliminator]
+def induction {motive: FreeAddGroup α -> Prop}
+  (zero: motive 0)
+  (of: ∀a, motive (.of a))
+  (neg: ∀a, motive (.of a) -> motive (-.of a))
+  (add: ∀a b, motive a -> motive b -> motive (a + b)) :
+  ∀a, motive a := FreeGroup.induction zero of neg add
+
+instance : Inhabited (FreeAddGroup α) := ⟨0⟩
+instance : Nonempty (FreeAddGroup α) := inferInstance
+instance [IsEmpty α] : Subsingleton (FreeAddGroup α) where
+  allEq := Subsingleton.allEq (α := FreeGroup α)
+instance [h: Nonempty α] : IsNontrivial (FreeAddGroup α) where
+  exists_ne := by
+    obtain ⟨a⟩ := h
+    exists 0
+    exists .of a
+    apply zero_ne_of
+
+attribute [irreducible] FreeAddGroup of lift instAddGroupOps
+
+def lift_of' (a : FreeAddGroup α) : lift of a = a := by
+  induction a with
+  | zero | of | neg => simp [map_zero, map_neg]
+  | add => rw [map_add]; congr
+
+def lift_assoc {x: FreeAddGroup α} (f: α -> FreeAddGroup β) (g: β -> FreeAddGroup γ) :
+  (lift g) ((lift f) x) = (lift fun x => (lift g) (f x)) x := by
+  show lift _ (lift _ _) = lift (fun x => lift _ _) _
+  induction x with
+  | zero => simp [map_zero]
+  | of => simp
+  | neg => simp [map_neg]
+  | add => simp [map_add]; congr
+
+instance : Monad FreeAddGroup where
+  pure := of
+  bind a b := lift b a
+
+instance : LawfulMonad FreeAddGroup := by
+  apply LawfulMonad.mk'
+  case id_map =>
+    apply lift_of'
+  case pure_bind =>
+    intro α β x f
+    apply lift_of
+  case bind_assoc =>
+    intro α β γ x f g
+    apply lift_assoc
+  all_goals intro α β x y; rfl
+
+end FreeAddGroup
+
 def Equiv.congrFreeGroup (h: α ≃ β) : FreeGroup α ≃ FreeGroup β where
   toFun a := FreeGroup.lift (fun a => .of (h a)) a
   invFun a := FreeGroup.lift (fun a => .of (h.symm a)) a
@@ -262,3 +362,46 @@ def GroupEquiv.congrFreeGroup (f: α ≃ β) : FreeGroup α ≃* FreeGroup β wh
   toEquiv := Equiv.congrFreeGroup f
   map_one := by simp [Equiv.congrFreeGroup, map_one]
   map_mul := by simp [Equiv.congrFreeGroup, map_mul]
+
+def Equiv.congrFreeAddGroup (h: α ≃ β) : FreeAddGroup α ≃ FreeAddGroup β where
+  toFun a := FreeAddGroup.lift (fun a => .of (h a)) a
+  invFun a := FreeAddGroup.lift (fun a => .of (h.symm a)) a
+  leftInv a := by
+    simp
+    rw [FreeAddGroup.lift_assoc]
+    simp
+    apply FreeAddGroup.lift_of'
+  rightInv a := by
+    simp
+    rw [FreeAddGroup.lift_assoc]
+    simp
+    apply FreeAddGroup.lift_of'
+
+def AddGroupEquiv.congrFreeAddGroup (f: α ≃ β) : FreeAddGroup α ≃+ FreeAddGroup β where
+  toEquiv := Equiv.congrFreeAddGroup f
+  map_zero := by simp [Equiv.congrFreeAddGroup, map_zero]
+  map_add := by simp [Equiv.congrFreeAddGroup, map_add]
+
+def Equiv.FreeGroup_eqv_FreeAddGroup (h: α ≃ β) : FreeGroup α ≃ FreeAddGroup β where
+  toFun a := FreeGroup.lift_log (fun a => .of (h a)) a
+  invFun a := FreeAddGroup.lift_exp (fun a => .of (h.symm a)) a
+  leftInv a := by
+    induction a with
+    | of => simp
+    | one => dsimp; rw [map_one_to_zero, map_zero_to_one]
+    | inv => simp [map_inv_to_neg, map_neg_to_inv]
+    | mul a b iha ihb => simp [map_add_to_mul, map_mul_to_add, iha, ihb]
+  rightInv a := by
+    induction a with
+    | of => simp
+    | zero => dsimp; rw [map_zero_to_one, map_one_to_zero]
+    | neg => simp [map_inv_to_neg, map_neg_to_inv]
+    | add a b iha ihb => simp [map_add_to_mul, map_mul_to_add, iha, ihb]
+
+def LogEquiv.FreeGroup_eqv_FreeAddGroup (h: α ≃ β) : FreeGroup α ≃ₘ+ FreeAddGroup β where
+  toEquiv := Equiv.FreeGroup_eqv_FreeAddGroup h
+  map_mul_to_add {a b} := by simp [Equiv.FreeGroup_eqv_FreeAddGroup, map_mul_to_add]
+  map_one_to_zero := by simp [Equiv.FreeGroup_eqv_FreeAddGroup, map_one_to_zero]
+
+def ExpEquiv.FreeGroup_eqv_FreeAddGroup (h: α ≃ β) : FreeAddGroup α ≃ₐ* FreeGroup β :=
+  (LogEquiv.FreeGroup_eqv_FreeAddGroup h.symm).symm
