@@ -278,7 +278,7 @@ private def liftHelper {n: ℕ} {A: Type*} [AddGroupOps A] [IsAddGroup A] (f: {f
 
 section
 
-variable {A: Type*} [AddGroupOps A] [IsAddGroup A]
+variable {A: Type*} [AddGroupOps A] [IsAddGroup A] [GroupOps A] [IsGroup A]
 
 def lift (n: ℕ) : { f: ℤ →+ A // f n = 0 } ≃ (ZMod n →+ A) :=
   match n with
@@ -323,10 +323,23 @@ def lift (n: ℕ) : { f: ℤ →+ A // f n = 0 } ≃ (ZMod n →+ A) :=
       rw [ofInt_toInt]
   }
 
+def lift_exp (n: ℕ) : { f: ℤ →ₐ* A // f n = 1 } ≃ (ZMod n →ₐ* A) := by
+  apply Equiv.congrEquiv _ _ (lift n (A := AddOfMul A))
+  refine Equiv.congrSubtype ?_ ?_
+  exact Equiv.exp_hom_equiv_addgroup_hom.symm
+  rfl
+  exact Equiv.exp_hom_equiv_addgroup_hom.symm
+
 def apply_lift (n: ℕ) (f: { f: ℤ →+ A // f n = 0 }) (x: ZMod n) : lift n f x = f.val (toInt x) := by
   cases n <;> rfl
 
+def apply_lift_exp (n: ℕ) (f: { f: ℤ →ₐ* A // f n = 1 }) (x: ZMod n) : lift_exp n f x = f.val (toInt x) := by
+  cases n <;> rfl
+
 def symm_apply_lift (n: ℕ) (f: ZMod n →+ A) (x: ℤ) : ((lift n).symm f).val x = f (ofInt n x) := by
+  cases n <;> rfl
+
+def symm_apply_lift_exp (n: ℕ) (f: ZMod n →ₐ* A) (x: ℤ) : ((lift_exp n).symm f).val x = f (ofInt n x) := by
   cases n <;> rfl
 
 def lift_ofInt (n: ℕ) (f: { f: ℤ →+ A // f n = 0 }) : lift n f (ofInt n x) = f.val x := by
@@ -336,12 +349,18 @@ def lift_ofInt (n: ℕ) (f: { f: ℤ →+ A // f n = 0 }) : lift n f (ofInt n x)
   have : ((lift (n + 1)).invFun ((lift (n + 1)).toFun f)).val = (f.val: _ -> _) := by rw [(lift (n + 1) (A := A)).leftInv f]
   apply congrFun this
 
+def lift_exp_ofInt (n: ℕ) (f: { f: ℤ →ₐ* A // f n = 1 }) : lift_exp n f (ofInt n x) = f.val x := by
+  apply lift_ofInt (A := AddOfMul A)
+
 def symm_lift_toInt (n: ℕ) (f: ZMod n →+ A) (x: ZMod n) : ((lift n).symm f).val (toInt x) = f x := by
   cases n
   rfl
   rename_i n
   have : (lift (n + 1)).toFun ((lift (n + 1)).invFun f) = (f: _ -> _) := by rw [(lift (n + 1) (A := A)).rightInv f]
   apply congrFun this
+
+def symm_lift_exp_toInt (n: ℕ) (f: ZMod n →ₐ* A) (x: ZMod n) : ((lift_exp n).symm f).val (toInt x) = f x := by
+  apply symm_lift_toInt (A := AddOfMul A)
 
 end
 
