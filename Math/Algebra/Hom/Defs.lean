@@ -1072,6 +1072,15 @@ def AlgEquiv.refl : α ≃ₐ[R] α := {
 @[simp] def LinearEmbedding.apply_refl (x: α): LinearEmbedding.refl (R := R) x = x := rfl
 @[simp] def AlgEmbedding.apply_refl (x: α): AlgEmbedding.refl (R := R) x = x := rfl
 
+@[simp] def AddGroupEquiv.apply_refl (x: α): AddGroupEquiv.refl x = x := rfl
+@[simp] def AddGroupWithOneEquiv.apply_refl (x: α): AddGroupWithOneEquiv.refl x = x := rfl
+@[simp] def GroupEquiv.apply_refl (x: α): GroupEquiv.refl x = x := rfl
+@[simp] def GroupWithZeroEquiv.apply_refl (x: α): GroupWithZeroEquiv.refl x = x := rfl
+@[simp] def RngEquiv.apply_refl (x: α): RngEquiv.refl x = x := rfl
+@[simp] def RingEquiv.apply_refl (x: α): RingEquiv.refl x = x := rfl
+@[simp] def LinearEquiv.apply_refl (x: α): LinearEquiv.refl (R := R) x = x := rfl
+@[simp] def AlgEquiv.apply_refl (x: α): AlgEquiv.refl (R := R) x = x := rfl
+
 def AddGroupEmbedding.trans (h: α ↪+ β) (g: β ↪+ γ) : α ↪+ γ := {
   h.toEmbedding.trans g.toEmbedding, g.toAddGroupHom.comp h.toAddGroupHom with
 }
@@ -1607,5 +1616,79 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 
 @[simp] def ExpEquiv.toHom_eq_coe (f: α ≃ₐ* β) : (f.toHom: _ -> _) = f := rfl
 @[simp] def LogEquiv.toHom_eq_coe (f: α ≃ₘ+ β) : (f.toHom: _ -> _) = f := rfl
+@[simp] def GroupEquiv.toHom_eq_coe (f: α ≃* β) : (f.toHom: _ -> _) = f := rfl
+@[simp] def AddGroupEquiv.toHom_eq_coe (f: α ≃+ β) : (f.toHom: _ -> _) = f := rfl
 @[simp] def GroupEquiv.of_log_exp_hom (g: α ≃ₘ+ β) (f: β ≃ₐ* α) : GroupHom.of_log_exp f.toHom g.toHom = (GroupEquiv.of_log_exp g f).toHom := rfl
 @[simp] def AddGroupEquiv.of_exp_log_hom (f: α ≃ₘ+ β) (g: β ≃ₐ* α) : AddGroupHom.of_exp_log f.toHom g.toHom = (AddGroupEquiv.of_exp_log g f).toHom := rfl
+
+
+namespace Equiv
+
+def congrExpHomToGroupHom (g: α ≃ₐ* γ) (h: β ≃* δ) : (α →ₐ* β) ≃ (γ →* δ) where
+  toFun f := GroupHom.of_log_exp (ExpHom.comp_mul h.toHom f) g.symm.toHom
+  invFun f := ExpHom.comp_mul h.symm.toHom (ExpHom.comp_mul f g.toHom)
+  leftInv _ := by ext; simp
+  rightInv _ := by ext; simp
+
+def congrLogHomToGroupHom (g: α ≃* γ) (h: β ≃ₐ* δ) : (α →ₘ+ β) ≃ (γ →* δ) where
+  toFun f := GroupHom.comp (GroupHom.of_log_exp h.toHom f) g.symm.toHom
+  invFun f := LogHom.mul_comp h.symm.toHom (GroupHom.comp f g.toHom)
+  leftInv _ := by ext; simp
+  rightInv _ := by ext; simp
+
+def congrGroupHomToAddGroupHom (g: α ≃ₘ+ γ) (h: β ≃ₘ+ δ) : (α →* β) ≃ (γ →+ δ) where
+  toFun f := AddGroupHom.of_exp_log h.toHom (ExpHom.comp_mul f g.symm.toHom)
+  invFun f := GroupHom.of_log_exp h.symm.toHom (LogHom.comp_add f g.toHom)
+  leftInv _ := by ext; simp
+  rightInv _ := by ext; simp
+
+def congrAddGroupHomToGroupHom (g: α ≃ₐ* γ) (h: β ≃ₐ* δ) : (α →+ β) ≃ (γ →* δ) :=
+  (congrGroupHomToAddGroupHom g.symm h.symm).symm
+
+def congrExpHomToAddGroupHom (g: α ≃+ γ) (h: β ≃ₘ+ δ) : (α →ₐ* β) ≃ (γ →+ δ) := by
+  apply Equiv.trans _ (congrGroupHomToAddGroupHom (LogEquiv.MulOfAdd _) (LogEquiv.MulOfAdd _))
+  apply congrExpHomToGroupHom
+  apply ExpEquiv.add_trans g (ExpEquiv.MulOfAdd _)
+  apply GroupEquiv.of_log_exp h (ExpEquiv.MulOfAdd _)
+
+def congrLogHomToAddGroupHom (g: α ≃ₘ+ γ) (h: β ≃+ δ) : (α →ₘ+ β) ≃ (γ →+ δ) := by
+  apply Equiv.trans _ (congrGroupHomToAddGroupHom (LogEquiv.MulOfAdd _) (LogEquiv.MulOfAdd _))
+  apply congrLogHomToGroupHom
+  apply GroupEquiv.of_log_exp g (ExpEquiv.MulOfAdd _)
+  apply ExpEquiv.add_trans h (ExpEquiv.MulOfAdd _)
+
+def congrExpHom (h: α ≃+ γ) (g: β ≃* δ) : (α →ₐ* β) ≃ (γ →ₐ* δ) where
+  toFun f := (ExpHom.comp_mul g.toHom f).add_comp h.symm.toHom
+  invFun f := (ExpHom.comp_mul g.symm.toHom f).add_comp h.toHom
+  leftInv _ := by ext; simp
+  rightInv _ := by ext; simp
+
+def congrLogHom (h: α ≃* γ) (g: β ≃+ δ) : (α →ₘ+ β) ≃ (γ →ₘ+ δ) where
+  toFun f := (LogHom.comp_add g.toHom f).mul_comp h.symm.toHom
+  invFun f := (LogHom.comp_add g.symm.toHom f).mul_comp h.toHom
+  leftInv _ := by ext; simp
+  rightInv _ := by ext; simp
+
+def congrGroupHom (h: α ≃* γ) (g: β ≃* δ) : (α →* β) ≃ (γ →* δ) where
+  toFun f := (g.toHom.comp f).comp h.symm.toHom
+  invFun f := (g.symm.toHom.comp f).comp h.toHom
+  leftInv _ := by ext; simp
+  rightInv _ := by ext; simp
+
+def congrAddGroupHom (h: α ≃* γ) (g: β ≃* δ) : (α →* β) ≃ (γ →* δ) where
+  toFun f := (g.toHom.comp f).comp h.symm.toHom
+  invFun f := (g.symm.toHom.comp f).comp h.toHom
+  leftInv _ := by ext; simp
+  rightInv _ := by ext; simp
+
+def exp_hom_equiv_addgroup_hom : (α →ₐ* β) ≃ (α →+ AddOfMul β) := congrExpHomToAddGroupHom .refl (.AddOfMul _)
+def exp_hom_equiv_group_hom : (α →ₐ* β) ≃ (MulOfAdd α →* β) := congrExpHomToGroupHom (.MulOfAdd _) .refl
+def log_hom_equiv_group_hom : (α →ₘ+ β) ≃ (α →* MulOfAdd β) := congrLogHomToGroupHom .refl (.MulOfAdd _)
+def log_hom_equiv_addgroup_hom : (α →ₘ+ β) ≃ (AddOfMul α →+ β) := congrLogHomToAddGroupHom (.AddOfMul _) .refl
+
+def group_hom_eqv_exp_hom : (α →* β) ≃ (AddOfMul α →ₐ* β) := (congrExpHomToGroupHom (.AddOfMul _) .refl).symm
+def addgroup_hom_eqv_exp_hom : (α →+ β) ≃ (α →ₐ* MulOfAdd β) := (congrExpHomToAddGroupHom .refl (.MulOfAdd _)).symm
+def group_hom_eqv_log_hom : (α →* β) ≃ (α →ₘ+ AddOfMul β) := (congrLogHomToGroupHom .refl (.AddOfMul _)).symm
+def addgroup_hom_eqv_log_hom : (α →+ β) ≃ (MulOfAdd α →ₘ+ β) := (congrLogHomToAddGroupHom (.MulOfAdd _) .refl).symm
+
+end Equiv

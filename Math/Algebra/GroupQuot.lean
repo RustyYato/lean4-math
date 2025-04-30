@@ -77,31 +77,12 @@ def lift [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T]: {f: G →* T // 
     ext x; induction x
     rfl
 
-def lift_log [MonoidOps G] [IsMonoid G] [AddMonoidOps T] [IsAddMonoid T]: {f: G →ₘ+ T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (GroupQuot r →ₘ+ T) where
-  toFun f :=
-    have : GroupQuot r →* MulOfAdd T := lift {
-      val := GroupHom.of_log_exp (ExpHom.ofAddOfMul _) f.val
-      property := f.property
-    }
-    LogHom.mul_comp (LogHom.ofMulOfAdd _) this
-  invFun f :=
-    have : { f: G →* MulOfAdd T // _ } := lift.symm (GroupHom.of_log_exp (ExpHom.toMulOfAdd _) f)
-    {
-      val := LogHom.mul_comp (LogHom.ofMulOfAdd _) this.val
-      property := this.property
-    }
-  leftInv _ := rfl
-  rightInv f := by
-    ext x; simp
-    unfold LogHom.ofMulOfAdd ExpHom.ofAddOfMul
-    conv => {
-      lhs; arg 1; arg 1; arg 2; arg 1;
-      simp
-      rw [←ExpEquiv.symm_MulOfAdd]
-      erw [ExpEquiv.symm_trans (ExpEquiv.MulOfAdd T)]
-    }
-    show ((lift (lift.symm (GroupHom.of_log_exp (ExpHom.toMulOfAdd T) f))) x).get = f x
-    simp
+def lift_log [MonoidOps G] [IsMonoid G] [AddMonoidOps T] [IsAddMonoid T]: {f: G →ₘ+ T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (GroupQuot r →ₘ+ T) := by
+  apply Equiv.congrEquiv _ _ (lift (G := G) (T := MulOfAdd T) (r := r))
+  refine Equiv.congrSubtype ?_ ?_
+  exact Equiv.log_hom_equiv_group_hom.symm
+  rfl
+  exact Equiv.log_hom_equiv_group_hom.symm
 
 @[simp]
 def lift_mk_apply [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T] (f : G →* T) {r : G → G → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
@@ -196,31 +177,12 @@ def lift [AddMonoidOps G] [IsAddMonoid G] [AddMonoidOps T] [IsAddMonoid T]: {f: 
     ext x; induction x
     rfl
 
-def lift_exp [AddMonoidOps G] [IsAddMonoid G] [MonoidOps T] [IsMonoid T]: {f: G →ₐ* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (AddGroupQuot r →ₐ* T) where
-  toFun f :=
-    have : AddGroupQuot r →+ AddOfMul T := lift {
-      val := AddGroupHom.of_exp_log (LogHom.ofMulOfAdd _) f.val
-      property := f.property
-    }
-    ExpHom.add_comp (ExpHom.ofAddOfMul _) this
-  invFun f :=
-    have : { f: G →+ AddOfMul T // _ } := lift.symm (AddGroupHom.of_exp_log (LogHom.toAddOfMul _) f)
-    {
-      val := ExpHom.add_comp (ExpHom.ofAddOfMul _) this.val
-      property := this.property
-    }
-  leftInv _ := rfl
-  rightInv f := by
-    ext x; simp
-    unfold LogHom.ofMulOfAdd ExpHom.ofAddOfMul
-    conv => {
-      lhs; arg 1; arg 1; arg 2; arg 1;
-      simp
-      rw [←LogEquiv.symm_MulOfAdd]
-      erw [LogEquiv.symm_trans (LogEquiv.AddOfMul T)]
-    }
-    show ((lift (lift.symm (AddGroupHom.of_exp_log (LogHom.toAddOfMul T) f))) x).get = f x
-    simp
+def lift_exp [AddMonoidOps G] [IsAddMonoid G] [MonoidOps T] [IsMonoid T]: {f: G →ₐ* T // ∀ ⦃x y⦄, r x y → f x = f y } ≃ (AddGroupQuot r →ₐ* T) := by
+  apply Equiv.congrEquiv _ _ (lift (G := G) (T := AddOfMul T) (r := r))
+  refine Equiv.congrSubtype ?_ ?_
+  exact Equiv.exp_hom_equiv_addgroup_hom.symm
+  rfl
+  exact Equiv.exp_hom_equiv_addgroup_hom.symm
 
 @[simp]
 def lift_mk_apply [AddMonoidOps G] [IsAddMonoid G] [AddMonoidOps T] [IsAddMonoid T] (f : G →+ T) {r : G → G → Prop} (w : ∀ ⦃x y⦄, r x y → f x = f y) (x) :
