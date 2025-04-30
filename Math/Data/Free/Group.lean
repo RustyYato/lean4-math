@@ -121,12 +121,7 @@ def lift [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeGroup α →* G) where
       rw [←of_inv, ←map_inv]
 
 def lift_log [AddGroupOps G] [IsAddGroup G] : (α -> G) ≃ (FreeGroup α →ₘ+ G) :=
-  Equiv.trans (lift (G := MulOfAdd G)) {
-    toFun f := LogHom.mul_comp (LogHom.toAddOfMul _) f
-    invFun f := GroupHom.of_log_exp (ExpHom.ofAddOfMul _) f
-    rightInv _ := rfl
-    leftInv _ := rfl
-  }
+  Equiv.trans (lift (G := MulOfAdd G)) Equiv.log_hom_equiv_group_hom.symm
 
 @[simp]
 def lift_of [GroupOps G] [IsGroup G] (f: α -> G) : lift f (of a) = f a := by
@@ -254,28 +249,11 @@ instance : IsAddGroup (FreeAddGroup α) := inferInstanceAs (IsAddGroup (AddOfMul
 def of (a: α) : FreeAddGroup α := AddOfMul.mk (FreeGroup.of a)
 
 def lift [AddGroupOps G] [IsAddGroup G] : (α -> G) ≃ (FreeAddGroup α →+ G) :=
-  Equiv.trans (FreeGroup.lift (G := MulOfAdd G)) {
-    toFun f := {
-      toFun x := AddOfMul.get (f (MulOfAdd.get x))
-      map_add := map_mul f
-      map_zero := map_one f
-    }
-    invFun f := {
-      toFun x := MulOfAdd.mk (f (AddOfMul.mk x))
-      map_mul := map_add f
-      map_one := map_zero f
-    }
-    leftInv _ := rfl
-    rightInv _ := rfl
-  }
+  Equiv.trans (FreeGroup.lift (G := MulOfAdd G)) <|
+    Equiv.congrGroupHomToAddGroupHom (LogEquiv.AddOfMul _) (LogEquiv.MulOfAdd _)
 
 def lift_exp [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeAddGroup α →ₐ* G) :=
-  Equiv.trans (lift (G := AddOfMul G)) {
-    toFun f := ExpHom.add_comp (ExpHom.ofAddOfMul _) f
-    invFun f := AddGroupHom.of_exp_log (LogHom.toAddOfMul _) f
-    rightInv _ := rfl
-    leftInv _ := rfl
-  }
+  Equiv.trans (lift (G := AddOfMul G)) Equiv.exp_hom_equiv_addgroup_hom.symm
 
 @[simp]
 def lift_of [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift f (of a) = f a := by
