@@ -15,6 +15,12 @@ inductive Cyclic.Rel (n: ℕ) : FreeGroup Unit -> FreeGroup Unit -> Prop where
 -- generator and the relation `a ^ n = 1` for all `a`
 def Cyclic (n: ℕ) := GroupQuot (Cyclic.Rel n)
 
+class IsGroup.IsCyclic (G: Type*) [GroupOps G] extends IsGroup G where
+  exists_generator: ∃u: G, ∀g: G, ∃n: ℤ, g = u ^ n
+
+class IsAddGroup.IsCyclic (G: Type*) [AddGroupOps G] extends IsAddGroup G where
+  exists_generator: ∃u: G, ∀g: G, ∃n: ℤ, g = n • u
+
 namespace Cyclic
 
 variable {n: ℕ}
@@ -411,3 +417,17 @@ def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cycli
 attribute [irreducible] lift lift_log instGroupOps Cyclic
 
 end Cyclic
+
+instance [GroupOps G] [h: IsGroup.IsCyclic G] : IsAddGroup.IsCyclic (AddOfMul G) where
+  exists_generator := h.exists_generator
+instance [AddGroupOps G] [h: IsAddGroup.IsCyclic G] : IsGroup.IsCyclic (MulOfAdd G) where
+  exists_generator := h.exists_generator
+
+def IsGroup.IsCyclic.existsEquivCyclic (G: Type*) [GroupOps G] [h: IsCyclic G] : ∃n, Nonempty (G ≃* Cyclic n) := by
+  rw [←Cyclic.equiv_cyclic_iff_generated_by_unit]
+  exact h.exists_generator
+
+def IsAddGroup.IsCyclic.existsEquivCyclic (G: Type*) [AddGroupOps G] [IsCyclic G] : ∃n, Nonempty (G ≃ₐ* Cyclic n) := by
+  have ⟨n, ⟨h⟩⟩ := IsGroup.IsCyclic.existsEquivCyclic (MulOfAdd G)
+  refine ⟨n, ⟨?_⟩⟩
+  apply ExpEquiv.trans_mul (ExpEquiv.MulOfAdd G) h
