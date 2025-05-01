@@ -1,4 +1,4 @@
-import Math.Algebra.Group.Theory.Basic
+import Math.Algebra.Group.Theory.NormalSubgroup.Lattice
 import Math.Algebra.Group.SetLike.Basic
 import Math.Algebra.Group.Impls.Prod
 import Math.Algebra.Group.Impls.Fin
@@ -37,9 +37,13 @@ def npow_n_eq_one (a: Cyclic n) : a ^ n = 1 := by
   apply GroupQuot.mk_rel
   apply Cyclic.Rel.intro
 
-def npow_emod (a: Cyclic n) (k: ℤ) : a ^ (k % n) = a ^ k := by
+def zpow_emod (a: Cyclic n) (k: ℤ) : a ^ (k % n) = a ^ k := by
   rw (occs := [2]) [←Int.ediv_add_emod k n]
   rw [zpow_add, zpow_mul, zpow_ofNat, npow_n_eq_one, one_mul]
+
+def npow_mod (a: Cyclic n) (k: ℕ) : a ^ (k % n) = a ^ k := by
+  rw (occs := [2]) [←Nat.div_add_mod k n]
+  rw [npow_add, npow_mul, npow_n_eq_one, one_mul]
 
 instance : Subsingleton (Cyclic 1) where
   allEq a b := by rw [←npow_one a, ←npow_one b, npow_n_eq_one, npow_n_eq_one]
@@ -91,7 +95,7 @@ def ofZMod_toZMod (n: ℕ) (c: Cyclic n) : ofZMod n (toZMod n c) = c := by
   induction c with
   | one => simp [map_one, map_one_to_zero, map_zero_to_one]
   | of => rw [←unit, toZMod_unit, apply_ofZMod, ←map_one (ZMod.ofInt n),
-      ZMod.toInt_ofInt, npow_emod, zpow_one]
+      ZMod.toInt_ofInt, zpow_emod, zpow_one]
   | inv a ih => rw [map_inv, map_inv_to_neg, map_neg_to_inv, ih]
   | mul a b iha ihb => rw [map_mul, map_mul_to_add, map_add_to_mul, iha, ihb]
 
@@ -130,12 +134,14 @@ def pow_unit : pow (unit n) = 1 % n := by
   | n + 2 => rfl
 
 @[cases_eliminator]
-def cases {motive: Cyclic n -> Sort*} (pow: ∀m: ℤ, m < n ∨ n = 0 -> motive (unit n ^ m)) (c: Cyclic n) : motive c :=
+def cases {motive: Cyclic n -> Sort*} (pow: ∀m: ℤ, (0 ≤ m ∧ m < n) ∨ n = 0 -> motive (unit n ^ m)) (c: Cyclic n) : motive c :=
   c.pow_spec ▸ pow c.pow <| by
     cases n
     right; rfl
     left
     rename_i n
+    apply And.intro
+    apply Int.ofNat_zero_le
     apply Int.ofNat_lt.mpr
     apply Fin.isLt
 
@@ -215,13 +221,29 @@ def lift_unit [GroupOps G] [IsGroup G] (g: {g : G // g ^ n = 1}) : lift g (unit 
 def lift_log_unit [AddGroupOps G] [IsAddGroup G] (g: {g : G // n • g = 0}) : lift_log g (unit n) = g :=
   lift_unit (G := MulOfAdd G) _
 
-def npow_congr (x y: ℤ) (a: Cyclic n) : x % n = y % n -> a ^ x = a ^ y := by
-  intro h
-  rw [←Int.ediv_add_emod x n, ←Int.ediv_add_emod y n,
-    zpow_add, zpow_add, h]
-  congr 1
-  rw [mul_comm, zpow_mul, mul_comm, zpow_mul,
-    zpow_ofNat, npow_n_eq_one, one_zpow, one_zpow]
+def zpow_congr (x y: ℤ) : x % n = y % n ↔ ∀(a: Cyclic n), a ^ x = a ^ y := by
+  apply Iff.intro
+  · intro h a
+    rw [←Int.ediv_add_emod x n, ←Int.ediv_add_emod y n,
+      zpow_add, zpow_add, h]
+    congr 1
+    rw [mul_comm, zpow_mul, mul_comm, zpow_mul,
+      zpow_ofNat, npow_n_eq_one, one_zpow, one_zpow]
+  · revert x y
+    suffices ∀x: ℕ, (∀a: Cyclic n, a ^ x = 1) -> n ∣ x by
+      intro x y h
+      apply Int.emod_eq_emod_iff_emod_sub_eq_zero.mpr
+      apply Int.emod_eq_zero_of_dvd
+      apply Int.dvd_natAbs.mp
+      apply Int.ofNat_dvd.mpr
+      apply this
+      intro g
+      rw [←zpow_ofNat]
+      rcases Int.natAbs_eq (x - y) with h' | h'
+      rw [←h', zpow_sub, h, div_self]
+      rw [←neg_neg (Nat.cast _), zpow_neg, ←h', zpow_sub, h, div_self, inv_one]
+    intro x h
+    exact of_npow_eq_one (h (unit _))
 
 def equiv_cyclic_iff_generated_by_unit (G: Type*) [GroupOps G] [IsGroup G] : (∃u: G, ∀g: G, ∃n: ℤ, g = u ^ n) ↔ ∃n, Nonempty (G ≃* Cyclic n) := by
   classical
@@ -409,6 +431,63 @@ def subgroup_cyclic (s: Subgroup (Cyclic n)) : ∃m: ℕ, Nonempty (s ≃* Cycli
     apply Int.dvd_zero
   · rw [←g_eq_m]
     exact Int.natAbs_dvd_self
+
+def cyclic_hom_of_dvd (n m: ℕ) (h: m ∣ n) : Cyclic m →* Cyclic n := lift {
+  val := (unit _) ^ (n / m)
+  property := by
+    obtain ⟨k, rfl⟩ := h
+    rw [←npow_mul, Nat.mul_div_cancel', npow_n_eq_one]
+    apply Nat.dvd_mul_right
+}
+
+def cyclic_emb_of_dvd (n m: ℕ) (hn: n ≠ 0) (h: m ∣ n) : Cyclic m ↪* Cyclic n := {
+  cyclic_hom_of_dvd n m h with
+  inj' := by
+    intro x y g
+    simp at g
+    unfold cyclic_hom_of_dvd at g
+    cases x with | pow x hx =>
+    cases y with | pow y hy =>
+    rw [map_zpow, map_zpow, lift_unit] at g
+    dsimp at g
+    refine if hm:m = 0 then ?_ else ?_
+    subst m; cases Nat.zero_dvd.mp h; contradiction
+    rw [←zpow_ofNat, ←zpow_mul, ←zpow_mul] at g
+    congr
+    replace g := (zpow_congr (n := n) (x * (n / m: ℕ)) (y * (n / m: ℕ))).mpr (by
+      intro a; cases a
+      rw [←zpow_mul, mul_comm, zpow_mul, g, ←zpow_mul, mul_comm, zpow_mul])
+    rw [Int.emod_eq_emod_iff_emod_sub_eq_zero, ←Int.sub_mul] at g
+    replace ⟨x_nonneg, hx⟩ := hx.resolve_right hm
+    replace ⟨y_nonneg, hy⟩ := hy.resolve_right hm
+    cases x with
+    | negSucc x => contradiction
+    | ofNat x =>
+    cases y with
+    | negSucc y => contradiction
+    | ofNat y =>
+    rw [Int.ofNat_ediv, ←Int.mul_ediv_assoc _ (Int.ofNat_dvd.mpr h), Int.mul_comm] at g
+    rw [←Int.dvd_iff_emod_eq_zero] at g
+    obtain ⟨k, rfl⟩ := h
+    rename_i src; clear src
+    simp at g
+    rw [Int.mul_assoc, Int.mul_ediv_cancel_left, Int.mul_comm] at g
+    have := Int.dvd_of_mul_dvd g (by
+      apply Int.ofNat_pos.mpr
+      apply Nat.pos_iff_ne_zero.mpr
+      rintro rfl; omega)
+    rw [Int.dvd_iff_emod_eq_zero] at this
+    rw [←Int.emod_eq_emod_iff_emod_sub_eq_zero] at this
+    rwa [Int.emod_eq_of_lt, Int.emod_eq_of_lt] at this
+    repeat omega
+}
+
+def cyclic_hom_of_dvd' (n m: ℕ) (h: n ∣ m) : Cyclic m →* Cyclic n := lift {
+  val := (unit _)
+  property := by
+    obtain ⟨k, rfl⟩ := h
+    rw [npow_mul, npow_n_eq_one]
+}
 
 attribute [irreducible] lift lift_log instGroupOps Cyclic
 

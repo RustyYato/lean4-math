@@ -52,6 +52,14 @@ instance [GroupOps α] [IsGroup α] : Bot (NormalSubgroup α) where
       apply mem_one (⊥: Subgroup α)
   }
 
+instance [GroupOps α] [IsGroup α] : Top (NormalSubgroup α) where
+  top := {
+    toSubgroup := ⊤
+    mem_conj := by
+      rintro x a _
+      trivial
+  }
+
 @[ext]
 def ext (a b: NormalSubgroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
@@ -80,3 +88,10 @@ def image (f: α →* β) (s: NormalSubgroup α) (h: Function.Surjective f) : No
 def kernel (f: α →* β) : NormalSubgroup α := preimage f ⊥
 
 end NormalSubgroup
+
+namespace IsGroup
+
+-- the only normal subgroups of a simple group is the trivial subgroup and the whole group
+def IsSimple (G: Type*) [GroupOps G] [IsGroup G] := ∀s: NormalSubgroup G, s = ⊥ ∨ s = ⊤
+
+end IsGroup
