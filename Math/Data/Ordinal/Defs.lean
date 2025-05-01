@@ -7,7 +7,7 @@ namespace Ordinal
 
 universe u v w
 
-variable {α γ: Type u} {β δ: Type v}
+variable {α β γ δ: Type _}
   (rel: α -> α -> Prop)
   {r: α -> α -> Prop} {s: β -> β -> Prop}
   {t: γ -> γ -> Prop} {u: δ -> δ -> Prop}
@@ -231,39 +231,96 @@ def typein_surj : ∀o < type rel, ∃top, o = typein rel top := by
   }
 
 def typein_lt_type (top: α) : typein rel top < type rel := ⟨rel_typein_hom rel top⟩
-def typein_lt_typein_iff (a b: α) : typein rel a < typein rel b ↔ rel a b := by
+
+def typein_lt_typein_init_iff (init: r ≼i s) (a: α) (b: β) : typein r a < typein s b ↔ s (init a) b := by
   symm; apply Iff.intro
   · intro h
     exact ⟨{
       toFun x := {
-        val := x.val
-        property := trans x.property h
+        val := init x.val
+        property := trans (init.resp_rel.mp x.property) h
       }
       inj' := by
         intro ⟨x, xLt⟩ ⟨y, yLt⟩ h
-        cases h; rfl
-      resp_rel := Iff.rfl
+        simp at h
+        congr; exact init.inj h
+      resp_rel := init.resp_rel
       exists_top := by
-        exists ⟨a, h⟩
-        intro x
-        dsimp; dsimp at x
+        exists ⟨init a, h⟩
+        intro ⟨x, hx⟩
+        dsimp
         apply Iff.intro
         · intro g
-          refine ⟨⟨x.val, g⟩, ?_⟩
-          rfl
+          obtain ⟨x, rfl⟩ := init.isInitial _ _ g
+          refine ⟨⟨x, ?_⟩, rfl⟩
+          exact init.resp_rel.mpr g
         · intro g
-          obtain ⟨⟨_, hx⟩, rfl⟩ := g
+          show s x (init a)
+          obtain ⟨⟨_, hx'⟩, eq⟩ := g
+          cases eq
+          apply init.resp_rel.mp
           assumption
     }⟩
   · intro ⟨h⟩
     dsimp at h
-    let relb := h.trans (rel_typein_hom rel b)
-    have eq : rel_typein_hom rel a = relb := Subsingleton.allEq _ _
-    have princ_top: (rel_typein_hom rel a).IsPrincipalTop a := rel_typein_princ_top rel a
+
+    let r₀ := h.trans (rel_typein_hom s b)
+    let r₁ := (rel_typein_hom r a).lt_of_lt_of_le init
+    have eq : r₁ = r₀ := Subsingleton.allEq _ _
+    have princ_top: r₁.IsPrincipalTop (init a) := by
+      apply PrincipalSegment.top_of_lt_of_lt_of_le
+      apply rel_typein_princ_top
     rw [eq] at princ_top
     have ⟨top, htop⟩ := h.exists_top
-    have top' : relb.IsPrincipalTop top := by apply h.top_of_lt_of_lt_of_le (rel_typein_hom rel b: _ ≼i rel) top htop
+    have top' : r₀.IsPrincipalTop top := by
+      apply PrincipalSegment.top_of_lt_of_lt_of_le
+      assumption
     rw [PrincipalSegment.top_unique' _ _ _ princ_top top']
     exact top.property
+
+def typein_lt_typein_iff (a b: α) : typein rel a < typein rel b ↔ rel a b := typein_lt_typein_init_iff (InitialSegment.refl _) _ _
+
+def typein_congr (init: r ≼i s) (top: α) : typein s (init top) = typein r top := by
+  have (x: { b: β // s b (init top) }) : x.val ∈ Set.range init := init.isInitial top x.val x.property
+  replace := Classical.axiomOfChoice this
+  obtain ⟨f, hf⟩ := this
+  apply sound
+  refine RelIso.symm {
+    toFun x := {
+      val := init x
+      property := by
+        apply init.resp_rel.mp
+        exact x.property
+    }
+    invFun x := {
+      val := f x
+      property := by
+        apply init.resp_rel.mpr
+        show s (init _) (init _)
+        rw [←hf]
+        exact x.property
+    }
+    leftInv x := by
+      simp; congr
+      apply init.inj
+      simp; rw [←hf]
+    rightInv x := by
+      simp; congr; rw [←hf]
+    resp_rel := init.resp_rel
+  }
+
+def typein_inj_initial (init: r ≼i s) (a: α) (b: β) : typein r a = typein s b -> b = init a := by
+  intro h
+  apply Relation.eq_of_not_lt_or_gt s
+  intro g
+  obtain ⟨b, rfl⟩ := init.isInitial _ _ g
+  simp at *
+  rw [←typein_lt_typein_init_iff init, typein_congr, h, typein_congr] at g
+  exact lt_irrefl g
+  intro g
+  rw [←typein_lt_typein_init_iff init, h] at g
+  exact lt_irrefl g
+
+def typein_inj : Function.Injective (typein r) := by intro x y h; apply typein_inj_initial (InitialSegment.refl r) _ _ h.symm
 
 end Ordinal

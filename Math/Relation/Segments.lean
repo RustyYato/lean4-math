@@ -32,6 +32,21 @@ instance : FunLike (PrincipalSegment r s) α β where
 
 namespace InitialSegment
 
+@[simp] def toEmbedding_eq_coe (h: r ≼i s) : (h.toEmbedding: _ -> _) = h := rfl
+@[simp] def toRelEmbedding_eq_coe (h: r ≼i s) : (h.toRelEmbedding: _ -> _) = h := rfl
+@[simp] def toFun_eq_coe (h: r ≼i s) : (h.toFun: _ -> _) = h := rfl
+
+@[coe]
+def ofRelIso (h: r ≃r s) : r ≼i s where
+  toRelEmbedding := h.toEmbedding
+  isInitial a b sb := by
+    replace sb : s b (h a) := sb
+    show b ∈ Set.range h
+    exists h.symm b
+    simp
+
+instance : Coe (r ≃r s) (r ≼i s) := ⟨ofRelIso⟩
+
 def refl (r: α -> α -> Prop) : r ≼i r where
   toRelEmbedding := RelEmbedding.refl
   isInitial _ _ _ := Set.mem_range.mpr ⟨_, rfl⟩
@@ -225,6 +240,10 @@ end collapse
 end InitialSegment
 
 namespace PrincipalSegment
+
+@[simp] def toEmbedding_eq_coe (h: r ≺i s) : (h.toEmbedding: _ -> _) = h := rfl
+@[simp] def toRelEmbedding_eq_coe (h: r ≺i s) : (h.toRelEmbedding: _ -> _) = h := rfl
+@[simp] def toFun_eq_coe (h: r ≺i s) : (h.toFun: _ -> _) = h := rfl
 
 theorem init [IsTrans s] (f : r ≺i s) (a : α) (b : β) (h : s b (f a)) : b ∈ Set.range f := by
   obtain ⟨top, down⟩  := f.exists_top
