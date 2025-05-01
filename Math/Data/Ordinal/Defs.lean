@@ -3,17 +3,23 @@ import Math.Tactics.PPWithUniv
 import Math.Relation.Segments
 import Math.Order.Defs
 
-namespace Ordinal
-
 universe u v w
 
 variable {α β γ δ: Type _}
   (rel: α -> α -> Prop)
+  (relα: α -> α -> Prop) (relβ: β -> β -> Prop)
+  (relγ: γ -> γ -> Prop) (relδ: δ -> δ -> Prop)
   {r: α -> α -> Prop} {s: β -> β -> Prop}
   {t: γ -> γ -> Prop} {u: δ -> δ -> Prop}
   [Relation.IsWellOrder rel]
+  [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ]
+  [Relation.IsWellOrder relγ] [Relation.IsWellOrder relδ]
   [Relation.IsWellOrder r] [Relation.IsWellOrder s]
   [Relation.IsWellOrder t] [Relation.IsWellOrder u]
+
+namespace Ordinal
+
+section Defs
 
 @[pp_with_univ]
 structure Pre: Type (u + 1) where
@@ -232,35 +238,52 @@ def typein_surj : ∀o < type rel, ∃top, o = typein rel top := by
 
 def typein_lt_type (top: α) : typein r top < type r := ⟨rel_typein_hom r top⟩
 
+def rel_typein_lt_rel_typein_init (init: r ≼i s) (a: α) (b: β) (h: s (init a) b) : rel_typein r a ≺i rel_typein s b where
+  toFun x := {
+    val := init x.val
+    property := trans (init.resp_rel.mp x.property) h
+  }
+  inj' := by
+    intro ⟨x, xLt⟩ ⟨y, yLt⟩ h
+    simp at h
+    congr; exact init.inj h
+  resp_rel := init.resp_rel
+  exists_top := by
+    exists ⟨init a, h⟩
+    intro ⟨x, hx⟩
+    dsimp
+    apply Iff.intro
+    · intro g
+      obtain ⟨x, rfl⟩ := init.isInitial _ _ g
+      refine ⟨⟨x, ?_⟩, rfl⟩
+      exact init.resp_rel.mpr g
+    · intro g
+      show s x (init a)
+      obtain ⟨⟨_, hx'⟩, eq⟩ := g
+      cases eq
+      apply init.resp_rel.mp
+      assumption
+
+def rel_typein_rel_typein (a top: α) (h: r top a) : rel_typein (rel_typein r a) ⟨top, h⟩ ≃r rel_typein r top where
+  toFun x := {
+    val := x.val.val
+    property := x.property
+  }
+  invFun x := {
+    val := {
+      val := x.val
+      property := trans x.property h
+    }
+    property := x.property
+  }
+  leftInv _ := rfl
+  rightInv _ := rfl
+  resp_rel := Iff.rfl
+
 def typein_lt_typein_init_iff (init: r ≼i s) (a: α) (b: β) : typein r a < typein s b ↔ s (init a) b := by
   symm; apply Iff.intro
   · intro h
-    exact ⟨{
-      toFun x := {
-        val := init x.val
-        property := trans (init.resp_rel.mp x.property) h
-      }
-      inj' := by
-        intro ⟨x, xLt⟩ ⟨y, yLt⟩ h
-        simp at h
-        congr; exact init.inj h
-      resp_rel := init.resp_rel
-      exists_top := by
-        exists ⟨init a, h⟩
-        intro ⟨x, hx⟩
-        dsimp
-        apply Iff.intro
-        · intro g
-          obtain ⟨x, rfl⟩ := init.isInitial _ _ g
-          refine ⟨⟨x, ?_⟩, rfl⟩
-          exact init.resp_rel.mpr g
-        · intro g
-          show s x (init a)
-          obtain ⟨⟨_, hx'⟩, eq⟩ := g
-          cases eq
-          apply init.resp_rel.mp
-          assumption
-    }⟩
+    exact ⟨rel_typein_lt_rel_typein_init init a b h⟩
   · intro ⟨h⟩
     dsimp at h
 
@@ -308,6 +331,10 @@ def typein_congr (init: r ≼i s) (top: α) : typein s (init top) = typein r top
       simp; congr; rw [←hf]
     resp_rel := init.resp_rel
   }
+
+def typein_typein (a top: α) (h: r top a) : typein (rel_typein r a) ⟨top, h⟩ = typein r top := by
+  apply sound
+  apply rel_typein_rel_typein
 
 def typein_inj_initial (init: r ≼i s) (a: α) (b: β) : typein r a = typein s b -> b = init a := by
   intro h
@@ -408,5 +435,120 @@ instance : @Relation.IsTotal Ordinal (· ≤ ·) where
 instance : IsLinearOrder Ordinal := inferInstance
 instance : @Relation.IsWellOrder Ordinal (· < ·) := inferInstance
 instance : @Relation.IsConnected Ordinal (· < ·) := inferInstance
+
+end Defs
+
+section Lattice
+
+-- the minimum of two relations is the relation on pairs of elements which
+-- are in the same position as each other in their respective orders
+-- since this puts elements in 1-1 correspondence, there can't be elements
+-- than the smaller of the two relations
+def minType := { x: α × β // Ordinal.typein relα x.fst = Ordinal.typein relβ x.snd }
+
+def rel_min : Relation (minType relα relβ) := fun a b => relα a.val.fst b.val.fst
+def rel_min' : Relation (minType relα relβ) := fun a b => relβ a.val.snd b.val.snd
+
+def rel_min_eq_rel_min' : rel_min relα relβ = rel_min' relα relβ := by
+  ext ⟨⟨x₀, x₁⟩, hx⟩ ⟨⟨y₀, y₁⟩, hy⟩
+  unfold rel_min rel_min'
+  simp
+  simp at hx hy
+  apply Iff.intro
+  · intro h
+    rcases Relation.connected relβ x₁ y₁ with hβ | hβ | hβ
+    assumption
+    · subst y₁
+      rw [←hx] at hy
+      cases typein_inj hy
+      have := Relation.irrefl h
+      contradiction
+    · rw [←typein_lt_typein_iff (r := relβ)] at hβ
+      rw [←hx, ←hy] at hβ
+      rw [typein_lt_typein_iff] at hβ
+      have := Relation.asymm h hβ
+      contradiction
+  · intro h
+    rcases Relation.connected relα x₀ y₀ with hα | hα | hα
+    assumption
+    · subst y₀
+      rw [hx] at hy
+      cases typein_inj hy
+      have := Relation.irrefl h
+      contradiction
+    · rw [←typein_lt_typein_iff (r := relα)] at hα
+      rw [hx, hy] at hα
+      rw [typein_lt_typein_iff] at hα
+      have := Relation.asymm h hα
+      contradiction
+
+def rel_min_comm : rel_min relα relβ ≃r rel_min relβ relα where
+  toEquiv := Equiv.congrSubtype (Equiv.commProd _ _) <| by intro (a, b); apply Eq.comm
+  resp_rel := by
+    intro x y
+    show rel_min _ _ x y ↔ rel_min' _ _ x y
+    rw [rel_min_eq_rel_min']
+
+def rel_min_hom_left : rel_min relα relβ ≼i relα where
+  toFun x := x.val.1
+  inj' := by
+    intro ⟨⟨x₀, x₁⟩, hx⟩ ⟨⟨y₀, y₁⟩, hy⟩ h
+    simp at h hx hy
+    subst h
+    suffices x₁ = y₁ by subst this; rfl
+    rwa [hx, typein_inj.eq_iff] at hy
+  resp_rel := Iff.rfl
+  isInitial := by
+    intro ⟨⟨x₀, x₁⟩, hx⟩ a
+    show relα a x₀ -> _
+    intro h
+    suffices ∃b, typein relα a = typein relβ b by
+      obtain ⟨b, eq⟩ := this
+      exists ⟨⟨_, _⟩, eq⟩
+    have ⟨ltα⟩ := typein_lt_type (r := relα) x₀
+    have ⟨ltβ⟩ := typein_lt_type (r := relβ) x₁
+    replace ⟨hx⟩ := Quotient.exact hx
+    let ha := rel_typein_lt_rel_typein_init (InitialSegment.refl relα) a x₀ h
+    let b := hx ⟨a, h⟩
+    have htop := PrincipalSegment.top_of_lt_of_lt_of_le ha (InitialSegment.ofRelIso hx) ⟨_, h⟩ <| by
+      intro ⟨x, hx⟩
+      simp
+      show relα x a ↔ _
+      apply Iff.intro
+      · intro x_lt_a
+        refine ⟨⟨_, x_lt_a⟩, ?_⟩
+        rfl
+      · intro ⟨⟨_, _⟩, rfl⟩
+        assumption
+    exists b
+    rw [←typein_typein (r := relα) _ _ h, ←typein_typein (r := relβ)]
+    symm; apply typein_congr (InitialSegment.ofRelIso hx)
+
+def rel_min_hom_right : rel_min relα relβ ≼i relβ := by
+  apply InitialSegment.congr
+  apply rel_min_comm
+  rfl
+  apply rel_min_hom_left
+
+instance [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ] : Relation.IsWellOrder (rel_min relα relβ) :=
+  (rel_min_hom_left _ _).toRelEmbedding.lift_wo
+
+def min : Ordinal -> Ordinal -> Ordinal := by
+  refine lift₂ (fun _ _ rela relb _ _ => type (rel_min rela relb)) ?_
+  intro A B C D rela relb relc reld _ _ _ _ ac bd
+  simp; apply sound
+  refine {
+      Equiv.congrSubtype (Equiv.congrProd ac.toEquiv bd.toEquiv) ?_ with
+      resp_rel := ?_
+  }
+  · intro (a, b)
+    simp
+    rw [←typein_congr (InitialSegment.ofRelIso ac) a, ←typein_congr (InitialSegment.ofRelIso bd) b]
+    rfl
+  · simp
+    intro ⟨⟨a, b⟩, h₀⟩ ⟨⟨c, d⟩, h₁⟩
+    apply ac.resp_rel
+
+end Lattice
 
 end Ordinal

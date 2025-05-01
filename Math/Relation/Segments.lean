@@ -356,9 +356,7 @@ def top_unique [IsWellOrder t] (e : r ≃r s) (f : r ≺i t) (g : s ≺i t)
   apply top_congr
   assumption
 
-def top_of_lt_of_lt_of_le
-  [IsWellOrder t] (h : r ≺i s) (g : s ≼i t)
-  : ∀x, h.IsPrincipalTop x -> (h.lt_of_lt_of_le g).IsPrincipalTop (g x) := by
+def top_of_lt_of_lt_of_le [IsWellOrder t] (h : r ≺i s) (g : s ≼i t) : ∀x, h.IsPrincipalTop x -> (h.lt_of_lt_of_le g).IsPrincipalTop (g x) := by
   intro x top y
   rw [Set.mem_range]
   apply Iff.intro
@@ -376,6 +374,14 @@ def top_of_lt_of_lt_of_le
   apply g.resp_rel.mp
   apply (top _).mpr
   apply Set.mem_range'
+
+def top_of_trans [IsWellOrder t] (h : r ≺i s) (g : s ≺i t) : ∀x, h.IsPrincipalTop x -> (h.trans g).IsPrincipalTop (g x) := by
+  let h₀ := h.lt_of_lt_of_le (g: s ≼i t)
+  let h₁ := h.trans g
+  have : h₀ = h₁ := Subsingleton.allEq _ _
+  show ∀x, h.IsPrincipalTop x -> h₀.IsPrincipalTop _
+  rw [this]
+  apply top_of_lt_of_lt_of_le
 
 end PrincipalSegment
 
