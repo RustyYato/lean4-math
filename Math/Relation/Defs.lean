@@ -1,5 +1,7 @@
 import Math.Data.WellFounded.Basic
 
+abbrev Relation (α: Sort u) := α -> α -> Prop
+
 inductive Relation.ReflTransGen (r: α -> α -> Prop) : α -> α -> Prop where
 | refl : ReflTransGen r a a
 | cons : r a b -> ReflTransGen r b c -> ReflTransGen r a c

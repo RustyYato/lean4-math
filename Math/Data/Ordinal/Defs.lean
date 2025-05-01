@@ -10,7 +10,7 @@ universe u v w
 @[pp_with_univ]
 structure Pre: Type (u + 1) where
   ty: Type u
-  rel: ty -> ty -> Prop
+  rel: Relation ty
   well_order: Relation.IsWellOrder rel := by infer_instance
 
 instance (p: Pre) : Relation.IsWellOrder p.rel := p.well_order
@@ -55,15 +55,15 @@ def lift₂ (f: ∀(α: Type u) (β: Type v) (relα: α -> α -> Prop) (relβ: �
   assumption
   assumption
 
-private def ulift_rel {α: Type u} (rel: α -> α -> Prop) : ULift α -> ULift α -> Prop := fun a b => rel a.down b.down
-private def ulift_rel_hom {α: Type u} (rel: α -> α -> Prop) : ulift_rel rel ↪r rel where
+def rel_ulift {α: Type u} (rel: α -> α -> Prop) : Relation (ULift α) := fun a b => rel a.down b.down
+def rel_ulift_hom {α: Type u} (rel: α -> α -> Prop) : rel_ulift rel ↪r rel where
   toFun x := x.down
   resp_rel := Iff.rfl
   inj' := (Equiv.ulift _).inj
 
 def ulift : Ordinal.{u} -> Ordinal.{max u v} := by
-  refine lift (fun α relα _ => Ordinal.type' (ulift_rel relα) ?_) ?_
-  · exact (ulift_rel_hom relα).lift_wo
+  refine lift (fun α relα _ => Ordinal.type' (rel_ulift relα) ?_) ?_
+  · exact (rel_ulift_hom relα).lift_wo
   · intro α β relα relβ _ _ h
     dsimp
     apply sound
@@ -169,5 +169,53 @@ instance : Add Ordinal where
   add := add
 instance : Mul Ordinal where
   mul := add
+
+def rel_typein {α: Type u} (rel: α -> α -> Prop) (top: α) : Relation { x: α // rel x top } := fun a b => rel a b
+def rel_typein_hom {α: Type u} (rel: α -> α -> Prop) (top: α) : rel_typein rel top ≺i rel where
+  toFun x := x.val
+  inj' := Subtype.val_inj
+  resp_rel := Iff.rfl
+  exists_top := by
+    exists top
+    intro  x
+    apply Iff.intro
+    intro h
+    exists ⟨x, h⟩
+    rintro ⟨x, rfl⟩
+    exact x.property
+
+instance [Relation.IsWellOrder rel] : Relation.IsWellOrder (rel_typein rel top) :=
+  (rel_typein_hom rel top).toRelEmbedding.lift_wo
+
+def typein (rel: α -> α -> Prop) [Relation.IsWellOrder rel] (top: α) := Ordinal.type (rel_typein rel top)
+def typein' (rel: α -> α -> Prop) (h: Relation.IsWellOrder rel) (top: α) := typein rel top
+
+def typein_surj (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : ∀o < type rel, ∃top, o = typein rel top := by
+  intro o ho
+  induction o with | _ β relβ =>
+  obtain ⟨ho⟩ := ho
+  dsimp at ho
+  have ⟨top, htop⟩ := ho.exists_top
+  have f : ∀a: { x: α // rel x top }, ∃b: β, a.val = ho b := by intro x; exact (htop x).mp x.property
+  replace ⟨f, hf⟩ := Classical.axiomOfChoice f
+  unfold RelEmbedding.IsPrincipalTop at htop
+  exists top
+  apply sound
+  exact {
+    toFun b := {
+      val := ho b
+      property := by
+        apply (htop (ho b)).mpr
+        apply Set.mem_range'
+    }
+    invFun := f
+    leftInv b := by
+      dsimp
+      have := hf ⟨ho b, (htop (ho b)).mpr Set.mem_range'⟩
+      simp at this; erw [ho.inj.eq_iff] at this
+      symm; assumption
+    rightInv a := by dsimp; congr; symm; apply hf
+    resp_rel := ho.resp_rel
+  }
 
 end Ordinal
