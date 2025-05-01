@@ -7,6 +7,14 @@ namespace Ordinal
 
 universe u v w
 
+variable {α γ: Type u} {β δ: Type v}
+  (rel: α -> α -> Prop)
+  {r: α -> α -> Prop} {s: β -> β -> Prop}
+  {t: γ -> γ -> Prop} {u: δ -> δ -> Prop}
+  [Relation.IsWellOrder rel]
+  [Relation.IsWellOrder r] [Relation.IsWellOrder s]
+  [Relation.IsWellOrder t] [Relation.IsWellOrder u]
+
 @[pp_with_univ]
 structure Pre: Type (u + 1) where
   ty: Type u
@@ -37,29 +45,31 @@ def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop
 def sound {α β: Type u} (relα: α -> α -> Prop) (relβ: β -> β -> Prop) (hrelα: Relation.IsWellOrder relα := by infer_instance) (hrelβ: Relation.IsWellOrder relβ := by infer_instance) :
   relα ≃r relβ -> type relα = type relβ := by intro h; exact Quotient.sound ⟨h⟩
 
-def lift (f: ∀(α: Type u) (relα: α -> α -> Prop) [Relation.IsWellOrder relα], γ) (hf: ∀(α β: Type u) (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ], relα ≃r relβ -> f α relα = f β relβ) : Ordinal -> γ := by
+def lift {A: Type w} (f: ∀(α: Type u) (relα: α -> α -> Prop) [Relation.IsWellOrder relα], A) (hf: ∀(α β: Type u) (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ], relα ≃r relβ -> f α relα = f β relβ) : Ordinal -> A := by
   refine Quotient.lift (fun p => f p.ty p.rel) ?_
   intro a b ⟨h⟩; apply hf
   assumption
 
-def lift₂ (f: ∀(α: Type u) (β: Type v) (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ], γ)
+def lift₂ {A: Type w} (f: ∀(α: Type u) (β: Type v) (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ], A)
   (hf: ∀(α β γ δ)
     (relα: α -> α -> Prop) (relβ: β -> β -> Prop)
     (relγ: γ -> γ -> Prop) (relδ: δ -> δ -> Prop)
     [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ]
     [Relation.IsWellOrder relγ] [Relation.IsWellOrder relδ],
     relα ≃r relγ ->
-    relβ ≃r relδ -> f α β relα relβ = f γ δ relγ relδ) : Ordinal -> Ordinal -> γ := by
+    relβ ≃r relδ -> f α β relα relβ = f γ δ relγ relδ) : Ordinal -> Ordinal -> A := by
   refine Quotient.lift₂ (fun p q => f _ _ p.rel q.rel) ?_
   intro a b c d ⟨h⟩ ⟨g⟩; apply hf
   assumption
   assumption
 
-def rel_ulift {α: Type u} (rel: α -> α -> Prop) : Relation (ULift α) := fun a b => rel a.down b.down
-def rel_ulift_hom {α: Type u} (rel: α -> α -> Prop) : rel_ulift rel ↪r rel where
+def rel_ulift : Relation (ULift α) := fun a b => rel a.down b.down
+def rel_ulift_hom : rel_ulift rel ↪r rel where
   toFun x := x.down
   resp_rel := Iff.rfl
   inj' := (Equiv.ulift _).inj
+
+instance : Relation.IsWellOrder (rel_ulift rel) := (rel_ulift_hom rel).lift_wo
 
 def ulift : Ordinal.{u} -> Ordinal.{max u v} := by
   refine lift (fun α relα _ => Ordinal.type' (rel_ulift relα) ?_) ?_
@@ -170,29 +180,29 @@ instance : Add Ordinal where
 instance : Mul Ordinal where
   mul := add
 
-def rel_typein {α: Type u} (rel: α -> α -> Prop) (top: α) : Relation { x: α // rel x top } := fun a b => rel a b
-def rel_typein_emb {α: Type u} (rel: α -> α -> Prop) (top: α) : rel_typein rel top ↪r rel where
+def rel_typein (top: α) : Relation { x: α // rel x top } := fun a b => rel a b
+def rel_typein_emb (top: α) : rel_typein rel top ↪r rel where
   toFun x := x.val
   inj' := Subtype.val_inj
   resp_rel := Iff.rfl
-def rel_typein_princ_top {α: Type u} (rel: α -> α -> Prop) (top: α) : (rel_typein_emb rel top).IsPrincipalTop top := by
+def rel_typein_princ_top (top: α) : (rel_typein_emb rel top).IsPrincipalTop top := by
   intro x
   apply Iff.intro
   intro h
   exists ⟨x, h⟩
   rintro ⟨x, rfl⟩
   exact x.property
-def rel_typein_hom {α: Type u} (rel: α -> α -> Prop) (top: α) : rel_typein rel top ≺i rel where
+def rel_typein_hom (top: α) : rel_typein rel top ≺i rel where
   toRelEmbedding := rel_typein_emb rel top
   exists_top := by exists top; apply rel_typein_princ_top
 
-instance [Relation.IsWellOrder rel] : Relation.IsWellOrder (rel_typein rel top) :=
+instance : Relation.IsWellOrder (rel_typein rel top) :=
   (rel_typein_hom rel top).toRelEmbedding.lift_wo
 
-def typein (rel: α -> α -> Prop) [Relation.IsWellOrder rel] (top: α) := Ordinal.type (rel_typein rel top)
+def typein (top: α) := Ordinal.type (rel_typein rel top)
 def typein' (rel: α -> α -> Prop) (h: Relation.IsWellOrder rel) (top: α) := typein rel top
 
-def typein_surj (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : ∀o < type rel, ∃top, o = typein rel top := by
+def typein_surj : ∀o < type rel, ∃top, o = typein rel top := by
   intro o ho
   induction o with | _ β relβ =>
   obtain ⟨ho⟩ := ho
@@ -220,8 +230,8 @@ def typein_surj (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : ∀o < type
     resp_rel := ho.resp_rel
   }
 
-def typein_lt_type (rel: α -> α -> Prop) [Relation.IsWellOrder rel] (top: α) : typein rel top < type rel := ⟨rel_typein_hom rel top⟩
-def typein_lt_typein_iff (rel: α -> α -> Prop) [Relation.IsWellOrder rel] (a b: α) : typein rel a < typein rel b ↔ rel a b := by
+def typein_lt_type (top: α) : typein rel top < type rel := ⟨rel_typein_hom rel top⟩
+def typein_lt_typein_iff (a b: α) : typein rel a < typein rel b ↔ rel a b := by
   symm; apply Iff.intro
   · intro h
     exact ⟨{
