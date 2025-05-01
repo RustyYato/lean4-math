@@ -220,4 +220,40 @@ def typein_surj (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : ∀o < type
     resp_rel := ho.resp_rel
   }
 
+def typein_lt_type (rel: α -> α -> Prop) [Relation.IsWellOrder rel] (top: α) : typein rel top < type rel := ⟨rel_typein_hom rel top⟩
+def typein_lt_typein_iff (rel: α -> α -> Prop) [Relation.IsWellOrder rel] (a b: α) : typein rel a < typein rel b ↔ rel a b := by
+  symm; apply Iff.intro
+  · intro h
+    exact ⟨{
+      toFun x := {
+        val := x.val
+        property := trans x.property h
+      }
+      inj' := by
+        intro ⟨x, xLt⟩ ⟨y, yLt⟩ h
+        cases h; rfl
+      resp_rel := Iff.rfl
+      exists_top := by
+        exists ⟨a, h⟩
+        intro x
+        dsimp; dsimp at x
+        apply Iff.intro
+        · intro g
+          refine ⟨⟨x.val, g⟩, ?_⟩
+          rfl
+        · intro g
+          obtain ⟨⟨_, hx⟩, rfl⟩ := g
+          assumption
+    }⟩
+  · intro ⟨h⟩
+    dsimp at h
+    let relb := h.trans (rel_typein_hom rel b)
+    have eq : rel_typein_hom rel a = relb := Subsingleton.allEq _ _
+    have princ_top: (rel_typein_hom rel a).IsPrincipalTop a := rel_typein_princ_top rel a
+    rw [eq] at princ_top
+    have ⟨top, htop⟩ := h.exists_top
+    have top' : relb.IsPrincipalTop top := by apply h.top_of_lt_of_lt_of_le (rel_typein_hom rel b: _ ≼i rel) top htop
+    rw [PrincipalSegment.top_unique' _ _ _ princ_top top']
+    exact top.property
+
 end Ordinal
