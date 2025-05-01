@@ -406,5 +406,7 @@ instance : @Relation.IsTotal Ordinal (· ≤ ·) where
     apply le_add_right
 
 instance : IsLinearOrder Ordinal := inferInstance
+instance : @Relation.IsWellOrder Ordinal (· < ·) := inferInstance
+instance : @Relation.IsConnected Ordinal (· < ·) := inferInstance
 
 end Ordinal
