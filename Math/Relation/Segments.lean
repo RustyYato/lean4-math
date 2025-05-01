@@ -36,6 +36,8 @@ namespace InitialSegment
 @[simp] def toRelEmbedding_eq_coe (h: r ≼i s) : (h.toRelEmbedding: _ -> _) = h := rfl
 @[simp] def toFun_eq_coe (h: r ≼i s) : (h.toFun: _ -> _) = h := rfl
 
+def inj (h: r ≼i s) : Function.Injective h := h.toEmbedding.inj
+
 @[coe]
 def ofRelIso (h: r ≃r s) : r ≼i s where
   toRelEmbedding := h.toEmbedding
@@ -244,6 +246,8 @@ namespace PrincipalSegment
 @[simp] def toEmbedding_eq_coe (h: r ≺i s) : (h.toEmbedding: _ -> _) = h := rfl
 @[simp] def toRelEmbedding_eq_coe (h: r ≺i s) : (h.toRelEmbedding: _ -> _) = h := rfl
 @[simp] def toFun_eq_coe (h: r ≺i s) : (h.toFun: _ -> _) = h := rfl
+
+def inj (h: r ≺i s) : Function.Injective h := h.toEmbedding.inj
 
 theorem init [IsTrans s] (f : r ≺i s) (a : α) (b : β) (h : s b (f a)) : b ∈ Set.range f := by
   obtain ⟨top, down⟩  := f.exists_top

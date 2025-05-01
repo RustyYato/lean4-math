@@ -326,7 +326,7 @@ def typein_congr (init: r ≼i s) (top: α) : typein s (init top) = typein r top
     leftInv x := by
       simp; congr
       apply init.inj
-      simp; rw [←hf]
+      rw [←hf]
     rightInv x := by
       simp; congr; rw [←hf]
     resp_rel := init.resp_rel
@@ -548,6 +548,62 @@ def min : Ordinal -> Ordinal -> Ordinal := by
   · simp
     intro ⟨⟨a, b⟩, h₀⟩ ⟨⟨c, d⟩, h₁⟩
     apply ac.resp_rel
+
+def min_le_left' (a b: Ordinal) : min a b ≤ a := by
+  induction a with | _ _ a =>
+  induction b with | _ _ b =>
+  exact ⟨rel_min_hom_left _ _⟩
+def min_le_right' (a b: Ordinal) : min a b ≤ b := by
+  induction a with | _ _ a =>
+  induction b with | _ _ b =>
+  exact ⟨rel_min_hom_right _ _⟩
+
+instance : Min Ordinal where
+  min := min
+
+instance : IsLawfulMin Ordinal where
+  min_le_left := min_le_left'
+  min_le_right := min_le_right'
+
+instance : IsSemiLatticeMin Ordinal where
+  le_min := by
+    intro a b k ka kb
+    induction a with | _ A rela =>
+    induction b with | _ B relb =>
+    induction k with | _ K relk =>
+    obtain ⟨ka⟩ := ka
+    obtain ⟨kb⟩ := kb
+    refine ⟨?_⟩
+    simp; simp at ka kb
+    exact {
+      toFun k := {
+        val := (ka k, kb k)
+        property := by
+          simp;
+          rw [typein_congr, typein_congr]
+      }
+      inj' k₀ k₁ hk := by
+        simp at hk
+        have := Prod.mk.inj (Subtype.mk.inj hk)
+        rw [ka.inj.eq_iff, kb.inj.eq_iff] at this
+        exact this.left
+      resp_rel := ka.resp_rel
+      isInitial := by
+        intro k ⟨⟨a, b⟩, h⟩
+        simp at h
+        show rela a (ka k) -> _
+        intro r
+        obtain ⟨k₀, rfl⟩ := ka.isInitial _ _ r
+        simp
+        suffices b = kb k₀ by
+          cases this
+          exists k₀
+        simp at h
+        simp at r
+        replace r := ka.resp_rel.mpr r
+        rw [typein_congr ka, ←typein_congr kb] at h
+        symm; exact typein_inj h
+    }
 
 end Lattice
 
