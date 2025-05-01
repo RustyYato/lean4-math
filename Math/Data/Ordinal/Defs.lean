@@ -1,6 +1,7 @@
 import Math.Relation.RelIso
 import Math.Tactics.PPWithUniv
 import Math.Relation.Segments
+import Math.Order.Defs
 
 namespace Ordinal
 
@@ -41,8 +42,8 @@ def lift (f: ∀(α: Type u) (relα: α -> α -> Prop) [Relation.IsWellOrder rel
   intro a b ⟨h⟩; apply hf
   assumption
 
-def lift₂ (f: ∀(α β: Type u) (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ], γ)
-  (hf: ∀(α β γ δ: Type u)
+def lift₂ (f: ∀(α: Type u) (β: Type v) (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ], γ)
+  (hf: ∀(α β γ δ)
     (relα: α -> α -> Prop) (relβ: β -> β -> Prop)
     (relγ: γ -> γ -> Prop) (relδ: δ -> δ -> Prop)
     [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ]
@@ -102,5 +103,54 @@ instance : LT Ordinal where
     apply h.congr
     symm; assumption
     symm; assumption
+
+instance : IsPartialOrder Ordinal where
+  le_refl a := by
+    induction a with | _ α rel =>
+    exact ⟨InitialSegment.refl _⟩
+  le_trans {a b c} h g := by
+    induction a with | _ a rela =>
+    induction b with | _ b relb =>
+    induction c with | _ c relc =>
+    obtain ⟨h⟩ := h
+    obtain ⟨g⟩ := g
+    dsimp at h g
+    exact ⟨h.trans g⟩
+  le_antisymm {a b} h g := by
+    induction a with | _ a rela =>
+    induction b with | _ b relb =>
+    obtain ⟨h⟩ := h
+    obtain ⟨g⟩ := g
+    dsimp at h g
+    apply sound
+    exact InitialSegment.antisymm h g
+  lt_iff_le_and_not_le {a b} := by
+    induction a with | _ a rela =>
+    induction b with | _ b relb =>
+    apply Iff.intro
+    · intro ⟨h⟩
+      dsimp at h
+      apply And.intro
+      exact ⟨h⟩
+      intro ⟨g⟩
+      dsimp at g
+      exact PrincipalSegment.irrefl (PrincipalSegment.lt_of_lt_of_le h g)
+    · intro ⟨⟨h⟩, g⟩
+      dsimp at h
+      rcases Or.symm (InitialSegment.eqv_or_principal h) with ⟨top, htop⟩ | hsurj
+      · refine ⟨{ h with exists_top := ?_ }⟩
+        exists top
+      · exfalso; apply g
+        have ⟨eqv, heqv⟩ := Equiv.ofBij ⟨h.inj, hsurj⟩
+        have iso : rela ≃r relb := {
+          eqv with
+          resp_rel := by
+            simp
+            rw [heqv]
+            exact h.resp_rel
+        }
+        apply InitialSegment.collapse
+        dsimp
+        exact ⟨iso.symm.toEmbedding⟩
 
 end Ordinal
