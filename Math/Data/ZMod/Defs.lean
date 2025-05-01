@@ -529,4 +529,7 @@ def equiv_prod (n m: ℕ) (h: Nat.gcd n m = 1) : ZMod (n * m) ≃+ ZMod n × ZMo
     rw [Int.ofNat_mul]; apply Int.dvd_mul_right
 }
 
+instance : NoZeroDivisors (ZMod 0) :=
+  inferInstanceAs (NoZeroDivisors ℤ)
+
 end ZMod

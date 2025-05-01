@@ -434,3 +434,118 @@ def IsAddGroup.IsCyclic.existsEquivCyclic (G: Type*) [AddGroupOps G] [IsCyclic G
   have ⟨n, ⟨h⟩⟩ := IsGroup.IsCyclic.existsEquivCyclic (MulOfAdd G)
   refine ⟨n, ⟨?_⟩⟩
   apply ExpEquiv.trans_mul (ExpEquiv.MulOfAdd G) h
+
+namespace IsGroup.IsCyclic
+
+def exists_minimal_generator (G: Type*) [GroupOps G] [IsCyclic G] :
+  ∃u: G, ∀g: G, ∃n: ℤ, g = u ^ n ∧ ∀m: ℤ, g = u ^ m -> n.natAbs ≤ m.natAbs := by
+  have ⟨u, hu⟩ := exists_generator (G := G)
+  exists u; intro g
+  have ⟨k, geq, hk⟩ := Relation.exists_min Int.abs_lt (hu g)
+  exists k
+  apply And.intro
+  assumption
+  intro m hm
+  have : ¬m.natAbs < k.natAbs := (hk m · hm)
+  simpa using this
+
+def ofEmbedding [GroupOps A] [IsGroup A] [GroupOps B] [IsCyclic B] (h: A ↪* B) : IsCyclic A where
+  exists_generator := by
+    have ⟨n, ⟨g⟩⟩ := existsEquivCyclic B
+    replace h := h.trans g.toEmbedding
+    replace g := Subgroup.equiv_of_embed h
+    have ⟨m, ⟨g'⟩⟩ := Cyclic.subgroup_cyclic (Subgroup.of_hom h.toHom)
+    replace g := g.trans g'
+    exists g.symm (.unit _)
+    intro a
+    exists (g a).pow
+    rw [←map_zpow, Cyclic.pow_spec, g.coe_symm]
+
+def ofLogEmbedding [GroupOps A] [IsGroup A] [AddGroupOps B] [IsAddGroup.IsCyclic B] (h: A ↪ₘ+ B) : IsCyclic A := by
+  apply ofEmbedding (B := MulOfAdd B)
+  apply GroupEmbedding.of_log_exp h (ExpEquiv.MulOfAdd _).toEmbedding
+
+end IsGroup.IsCyclic
+
+namespace IsAddGroup.IsCyclic
+
+def exists_minimal_generator (G: Type*) [AddGroupOps G] [IsCyclic G] :
+  ∃u: G, ∀g: G, ∃n: ℤ, g = n • u ∧ ∀m: ℤ, g = m • u -> n.natAbs ≤ m.natAbs :=
+  IsGroup.IsCyclic.exists_minimal_generator (MulOfAdd G)
+
+def ofEmbedding [AddGroupOps A] [IsAddGroup A] [AddGroupOps B] [IsCyclic B] (h: A ↪+ B) : IsCyclic A := by
+  suffices IsGroup.IsCyclic (MulOfAdd A) by
+    show IsCyclic (AddOfMul (MulOfAdd A))
+    infer_instance
+  apply IsGroup.IsCyclic.ofLogEmbedding (B := B)
+  apply LogEmbedding.trans_add _ h
+  refine (LogEquiv.MulOfAdd A).toEmbedding
+
+def ofLogEmbedding [AddGroupOps A] [IsAddGroup A] [GroupOps B] [IsGroup.IsCyclic B] (h: A ↪ₐ* B) : IsCyclic A := by
+  apply ofEmbedding (B := AddOfMul B)
+  apply AddGroupEmbedding.of_exp_log h (LogEquiv.AddOfMul _).toEmbedding
+
+end IsAddGroup.IsCyclic
+
+instance : IsGroup.IsCyclic (Cyclic n) where
+  exists_generator := by
+    exists .unit n
+    intro g
+    cases g with | _ i =>
+    exists i
+
+instance : IsAddGroup.IsCyclic (ZMod n) :=
+  IsAddGroup.IsCyclic.ofLogEmbedding Cyclic.equiv_zmod_add.symm.toEmbedding
+
+namespace Cyclic
+
+-- def coprime_of_eqv_prod (n m: ℕ) (h: Cyclic (n * m) ≃* Cyclic n × Cyclic m) : Nat.gcd n m = 1 := by
+--   have : IsGroup.IsCyclic (Cyclic n × Cyclic m) := IsGroup.IsCyclic.ofEmbedding h.symm.toEmbedding
+--   have zmod_prod_cyclic := IsAddGroup.IsCyclic.ofLogEmbedding (A := ZMod n × ZMod m) (B := Cyclic n × Cyclic m) (by
+--     apply ExpEquiv.toEmbedding
+--     refine ExpEquiv.congrProd ?_ ?_
+--     exact equiv_zmod_add.symm
+--     exact equiv_zmod_add.symm)
+
+--   match g:Nat.gcd n m with
+--   | 1 => rfl
+--   | 0 =>
+--     -- obtain ⟨rfl, rfl⟩ := Nat.gcd_eq_zero_iff.mp g
+--     -- simp at h
+--     -- exfalso
+--     -- replace ⟨⟨u, v⟩, h⟩ := zmod_prod_cyclic.exists_minimal_generator
+--     -- have ⟨x, hx, xmin⟩ := h (1, 0)
+--     -- have ⟨y, hy, ymin⟩ := h (0, 1)
+--     -- have ⟨hx₀, hx₁⟩ := Prod.mk.inj hx
+--     -- have ⟨hy₀, hy₁⟩ := Prod.mk.inj hy
+--     -- clear g hx hy; simp at *
+--     -- cases of_mul_eq_zero hx₁.symm
+--     -- subst x; simp at hx₀; exact zero_ne_one _ hx₀.symm
+--     -- subst v; simp at hy₁; exact zero_ne_one _ hy₁.symm
+--     sorry
+--   | k + 2 =>
+--     exfalso
+--     replace g : _ = k + 2 := g
+--     have k_dvd_n : k + 2 ∣ n := by rw [←g]; apply Nat.gcd_dvd_left
+--     have k_dvd_m : k + 2 ∣ m := by rw [←g]; apply Nat.gcd_dvd_right
+--     obtain ⟨q₀, rfl⟩ := k_dvd_n
+--     obtain ⟨q₁, rfl⟩ := k_dvd_m
+--     replace g : q₀.gcd q₁ = 1 := by
+--       rw [Nat.gcd_mul_left, ←mul_one  (k + 2), mul_assoc, one_mul] at g
+--       refine mul_left_cancel₀ ?_ g
+--       omega
+--     replace ⟨⟨u, v⟩, h⟩ := zmod_prod_cyclic.exists_minimal_generator
+--     have ⟨x, hx, xmin⟩ := h (1, 0)
+--     have ⟨y, hy, ymin⟩ := h (0, 1)
+--     simp only [ZMod.toInt_zero, ZMod.toInt_eq_zero] at hx hy
+--     have ⟨hx₀, hx₁⟩ := Prod.mk.inj hx
+--     have ⟨hy₀, hy₁⟩ := Prod.mk.inj hy
+--     clear h
+--     clear hx hy; simp at *
+--     induction u with | ofInt u =>
+--     induction v with | ofInt v =>
+--     rw [smul_def, ←map_algebraMap ((ZMod.ofInt ((k + 2) * _))), ←map_mul, algebraMap_id] at hx₀ hx₁ hy₀ hy₁
+
+--     sorry
+
+end Cyclic
