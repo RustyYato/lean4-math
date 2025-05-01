@@ -578,6 +578,8 @@ instance : IsAddGroup.IsCyclic (ZMod n) :=
 
 namespace Cyclic
 
+def IsSimple (n: ℕ) (h: Nat.IsPrime n) : IsGroup.IsSimple (Cyclic n) := sorry
+
 -- def coprime_of_eqv_prod (n m: ℕ) (h: Cyclic (n * m) ≃* Cyclic n × Cyclic m) : Nat.gcd n m = 1 := by
 --   have : IsGroup.IsCyclic (Cyclic n × Cyclic m) := IsGroup.IsCyclic.ofEmbedding h.symm.toEmbedding
 --   have zmod_prod_cyclic := IsAddGroup.IsCyclic.ofLogEmbedding (A := ZMod n × ZMod m) (B := Cyclic n × Cyclic m) (by
