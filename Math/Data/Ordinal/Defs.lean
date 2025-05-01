@@ -605,6 +605,167 @@ instance : IsSemiLatticeMin Ordinal where
         symm; exact typein_inj h
     }
 
+inductive maxType where
+| common (a: α) (b: β) (h: typein relα a = typein relβ b)
+| inl (a: α) (h: ∀b: β, typein relβ b < Ordinal.typein relα a)
+| inr (b: β) (h: ∀a: α, typein relα a < Ordinal.typein relβ b)
+
+inductive rel_max : maxType relα relβ -> maxType relα relβ -> Prop where
+| inl : relα a₀ a₁ -> rel_max (.inl a₀ h₀) (.inl a₁ h₁)
+| inr : relβ b₀ b₁ -> rel_max (.inr b₀ h₀) (.inr b₁ h₁)
+| common : relα a₀ a₁ -> rel_max (.common a₀ b₀ h₀) (.common a₁ b₁ h₁)
+| common_inl : rel_max (.common a₀ b₀ h₀) (.inl a₁ h₁)
+| common_inr : rel_max (.common a₀ b₀ h₀) (.inr b₁ h₁)
+
+namespace maxType
+
+def not_inl_and_inr
+  (a: α) (ha: ∀b₀, Ordinal.typein s b₀ < Ordinal.typein r a)
+  (b: β) (hb: ∀a₀, Ordinal.typein r a₀ < Ordinal.typein s b): False :=
+  lt_asymm (ha b) (hb a)
+
+def acc_common : Acc (rel_max relα relβ) (.common a b h) := by
+  induction a using Relation.wfInduction relα generalizing b with
+  | h a ih =>
+  apply Acc.intro
+  intro x hx
+  cases hx
+  apply ih
+  assumption
+
+def acc_inl : Acc (rel_max relα relβ) (.inl a h) := by
+  induction a using Relation.wfInduction relα with
+  | h a ih =>
+  apply Acc.intro
+  intro x hx
+  cases hx
+  apply ih
+  assumption
+  apply acc_common
+
+def acc_inr : Acc (rel_max relα relβ) (.inr b h) := by
+  induction b using Relation.wfInduction relβ with
+  | h b ih =>
+  apply Acc.intro
+  intro x hx
+  cases hx
+  apply ih
+  assumption
+  apply acc_common
+
+instance : Relation.IsWellFounded (rel_max relα relβ) where
+  wf := by
+    apply WellFounded.intro
+    intro a; cases a
+    apply acc_common
+    apply acc_inl
+    apply acc_inr
+
+instance : Relation.IsTrans (rel_max relα relβ) where
+  trans {a b c} h g := by
+    cases h <;> cases g
+    apply rel_max.inl
+    apply Relation.trans' <;> assumption
+    apply rel_max.inr
+    apply Relation.trans' <;> assumption
+    apply rel_max.common
+    apply Relation.trans' <;> assumption
+    any_goals apply rel_max.common_inl
+    all_goals apply rel_max.common_inr
+
+instance : Relation.IsConnected (rel_max relα relβ) where
+  connected_by a b := by
+    cases a <;> cases b
+    · rename_i a₀ b₀ h₀ a₁ b₁ h₁
+      rcases Relation.connected relα a₀ a₁ with h | h | h
+      left; apply rel_max.common; assumption
+      subst a₁
+      right; left; rw [h₀] at h₁; rw [typein_inj.eq_iff] at h₁; congr
+      right; right; apply rel_max.common; assumption
+    · left; apply rel_max.common_inl
+    · left; apply rel_max.common_inr
+    · right; right; apply rel_max.common_inl
+    · rename_i a₀ h₀ a₁ h₁
+      rcases Relation.connected relα a₀ a₁ with h | h | h
+      left; apply rel_max.inl; assumption
+      subst a₁
+      right; left; rfl
+      right; right; apply rel_max.inl; assumption
+    · rename_i b hb a ha
+      exfalso; apply not_inl_and_inr _ ha _ hb
+    · right; right; apply rel_max.common_inr
+    · rename_i b₀ hb a ha
+      exfalso; apply not_inl_and_inr _ ha _ hb
+    · rename_i b₀ h₀ b₁ h₁
+      rcases Relation.connected relβ b₀ b₁ with h | h | h
+      left; apply rel_max.inr; assumption
+      subst b₁
+      right; left; rfl
+      right; right; apply rel_max.inr; assumption
+
+instance : Relation.IsWellOrder (rel_max relα relβ) where
+
+def map (ac: r ≃r t) (bd: s ≃r u) : maxType r s -> maxType t u
+| .inl a ha => .inl (ac a) <| by
+  intro d
+  erw [typein_congr ac.toInitial]
+  rw [←bd.symm_coe d]
+  erw [typein_congr bd.toInitial]
+  apply ha
+| .inr b hb => .inr (bd b) <| by
+  intro c
+  erw [typein_congr bd.toInitial]
+  rw [←ac.symm_coe c]
+  erw [typein_congr ac.toInitial]
+  apply hb
+| .common a b h => .common (ac a) (bd b) <| by
+  erw [typein_congr ac.toInitial, typein_congr bd.toInitial]
+  assumption
+
+end maxType
+
+private def rel_max_hom (ac: r ≃r t) (bd: s ≃r u) : rel_max r s →r rel_max t u where
+  toFun x := x.map ac bd
+  resp_rel {a b} h := by
+    cases h
+    apply rel_max.inl
+    apply ac.resp_rel.mp; assumption
+    apply rel_max.inr
+    apply bd.resp_rel.mp; assumption
+    apply rel_max.common
+    apply ac.resp_rel.mp; assumption
+    apply rel_max.common_inl
+    apply rel_max.common_inr
+
+@[simp]
+private def rel_max_hom_symm_coe (ac: r ≃r t) (bd: s ≃r u) : rel_max_hom ac.symm bd.symm (rel_max_hom ac bd x) = x := by
+  show (maxType.map _ _ _).map _ _ = _
+  cases x
+  all_goals
+    unfold maxType.map
+    simp
+
+def max : Ordinal -> Ordinal -> Ordinal := by
+  refine lift₂ (fun _ _ a b _ _ => type (rel_max a b)) ?_
+  intro A B C D rela relb relc reld _ _ _ _ ac bd
+  simp; apply sound
+  exact {
+    toFun := rel_max_hom ac bd
+    invFun := rel_max_hom ac.symm bd.symm
+    leftInv x := by apply rel_max_hom_symm_coe
+    rightInv x := by apply rel_max_hom_symm_coe
+    resp_rel := by
+      intro a b
+      apply Iff.intro
+      apply (rel_max_hom _ _).resp_rel
+      intro h
+      have := (rel_max_hom ac.symm bd.symm).resp_rel h
+      simpa using this
+  }
+
+instance : Max Ordinal where
+  max := max
+
 end Lattice
 
 end Ordinal
