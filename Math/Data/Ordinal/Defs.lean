@@ -30,9 +30,9 @@ def type {α: Type u} (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : Ordin
 def type' {α: Type u} (rel: α -> α -> Prop) (is_well_order: Relation.IsWellOrder rel) : Ordinal := type rel
 
 @[induction_eliminator]
-def ind {motive : Ordinal -> Prop} (typein: ∀(α: Type u) (rel: α -> α -> Prop) [Relation.IsWellOrder rel], motive (type rel)) (o: Ordinal) : motive o := by
+def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop) [Relation.IsWellOrder rel], motive (type rel)) (o: Ordinal) : motive o := by
   induction o using Quotient.ind with | _ o =>
-  apply typein
+  apply type
 
 def sound {α β: Type u} (relα: α -> α -> Prop) (relβ: β -> β -> Prop) (hrelα: Relation.IsWellOrder relα := by infer_instance) (hrelβ: Relation.IsWellOrder relβ := by infer_instance) :
   relα ≃r relβ -> type relα = type relβ := by intro h; exact Quotient.sound ⟨h⟩
@@ -152,5 +152,22 @@ instance : IsPartialOrder Ordinal where
         apply InitialSegment.collapse
         dsimp
         exact ⟨iso.symm.toEmbedding⟩
+
+def add : Ordinal -> Ordinal -> Ordinal := by
+  refine lift₂ (fun a b rela relb _ _ => type (Sum.Lex rela relb)) ?_
+  intro a b c d rela relb relc reld _ _ _ _ ac bd
+  apply sound
+  exact RelIso.congrSumLex rela relb relc reld ac bd
+
+def mul : Ordinal -> Ordinal -> Ordinal := by
+  refine lift₂ (fun a b rela relb _ _ => type (Prod.Lex rela relb)) ?_
+  intro a b c d rela relb relc reld _ _ _ _ ac bd
+  apply sound
+  exact RelIso.congrProdLex rela relb relc reld ac bd
+
+instance : Add Ordinal where
+  add := add
+instance : Mul Ordinal where
+  mul := add
 
 end Ordinal

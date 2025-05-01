@@ -177,8 +177,8 @@ def trans (h: r ≃r s) (g: s ≃r t) : r ≃r t where
   toEquiv := .trans h.toEquiv g.toEquiv
   resp_rel := Iff.trans h.resp_rel g.resp_rel
 
-def coe_symm (h: r ≃r s) (x: α) : h.symm (h x) = x := h.leftInv _
-def symm_coe (h: r ≃r s) (x: β) : h (h.symm x) = x := h.rightInv _
+@[simp] def coe_symm (h: r ≃r s) (x: α) : h.symm (h x) = x := h.leftInv _
+@[simp] def symm_coe (h: r ≃r s) (x: β) : h (h.symm x) = x := h.rightInv _
 
 def symm_inj : Function.Injective (symm (r := r) (s := s)) := by
   intro ⟨x, _⟩ ⟨y, _⟩ h
@@ -209,6 +209,62 @@ def lift_trans (h: s ≃r r) [Relation.IsTrans s] : Relation.IsTrans r :=
 
 def lift_wo (h: s ≃r r) [Relation.IsWellOrder s] : Relation.IsWellOrder r :=
   h.symm.toEmbedding.lift_wo
+
+def congrSumLex
+  {α β γ δ: Type*}
+  (rela: α -> α -> Prop)
+  (relb: β -> β -> Prop)
+  (relc: γ -> γ -> Prop)
+  (reld: δ -> δ -> Prop)
+  (ac: rela ≃r relc)
+  (bd: relb ≃r reld) :
+  Sum.Lex rela relb ≃r Sum.Lex relc reld where
+  toEquiv := Equiv.congrSum ac.toEquiv bd.toEquiv
+  resp_rel := by
+    intro x y
+    simp
+    cases x <;> cases y <;> rename_i x y
+    simp
+    apply ac.resp_rel
+    simp
+    simp
+    simp
+    apply bd.resp_rel
+
+def congrProdLex
+  {α β γ δ: Type*}
+  (rela: α -> α -> Prop)
+  (relb: β -> β -> Prop)
+  (relc: γ -> γ -> Prop)
+  (reld: δ -> δ -> Prop)
+  (ac: rela ≃r relc)
+  (bd: relb ≃r reld) :
+  Prod.Lex rela relb ≃r Prod.Lex relc reld where
+  toEquiv := Equiv.congrProd ac.toEquiv bd.toEquiv
+  resp_rel := by
+    intro x y
+    cases x <;> cases y <;> rename_i x₀ x₁ y₀ y₁
+    simp
+    apply Iff.intro
+    intro h
+    cases h
+    apply Prod.Lex.left
+    apply ac.resp_rel.mp; assumption
+    apply Prod.Lex.right
+    apply bd.resp_rel.mp; assumption
+    intro h
+    rw [←ac.coe_symm x₀, ←ac.coe_symm y₀, ←bd.coe_symm x₁, ←bd.coe_symm y₁]
+    revert h
+    generalize ac x₀ = x₀'
+    generalize bd x₁ = x₁'
+    generalize ac y₀ = y₀'
+    generalize bd y₁ = y₁'
+    intro h
+    cases h
+    apply Prod.Lex.left
+    apply ac.resp_rel.mpr; simpa
+    apply Prod.Lex.right
+    apply bd.resp_rel.mpr; simpa
 
 end RelIso
 
