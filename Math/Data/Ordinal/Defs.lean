@@ -230,7 +230,7 @@ def typein_surj : ∀o < type rel, ∃top, o = typein rel top := by
     resp_rel := ho.resp_rel
   }
 
-def typein_lt_type (top: α) : typein rel top < type rel := ⟨rel_typein_hom rel top⟩
+def typein_lt_type (top: α) : typein r top < type r := ⟨rel_typein_hom r top⟩
 
 def typein_lt_typein_init_iff (init: r ≼i s) (a: α) (b: β) : typein r a < typein s b ↔ s (init a) b := by
   symm; apply Iff.intro
@@ -278,7 +278,7 @@ def typein_lt_typein_init_iff (init: r ≼i s) (a: α) (b: β) : typein r a < ty
     rw [PrincipalSegment.top_unique' _ _ _ princ_top top']
     exact top.property
 
-def typein_lt_typein_iff (a b: α) : typein rel a < typein rel b ↔ rel a b := typein_lt_typein_init_iff (InitialSegment.refl _) _ _
+def typein_lt_typein_iff {a b: α} : typein r a < typein r b ↔ r a b := typein_lt_typein_init_iff (InitialSegment.refl _) _ _
 
 def typein_congr (init: r ≼i s) (top: α) : typein s (init top) = typein r top := by
   have (x: { b: β // s b (init top) }) : x.val ∈ Set.range init := init.isInitial top x.val x.property
@@ -322,5 +322,28 @@ def typein_inj_initial (init: r ≼i s) (a: α) (b: β) : typein r a = typein s 
   exact lt_irrefl g
 
 def typein_inj : Function.Injective (typein r) := by intro x y h; apply typein_inj_initial (InitialSegment.refl r) _ _ h.symm
+
+instance : @Relation.IsWellFounded Ordinal (· < ·) where
+  wf := by
+    apply WellFounded.intro
+    intro a
+    apply Acc.intro
+    intro b r
+    induction a using ind with | _ _ rel =>
+    have ⟨a₀, eq⟩ := typein_surj rel b r
+    subst b
+    clear r
+    induction a₀ using (Relation.wellFounded rel).induction with
+    | h a₀ ih =>
+    apply Acc.intro
+    intro c r
+    have ⟨c₀, eq⟩ := typein_surj _ _ (lt_trans r (typein_lt_type _))
+    subst eq
+    apply ih
+    apply typein_lt_typein_iff.mp r
+
+instance : WellFoundedRelation Ordinal where
+  rel a b := a < b
+  wf := Relation.wellFounded _
 
 end Ordinal
