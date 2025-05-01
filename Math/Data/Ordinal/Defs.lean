@@ -346,4 +346,65 @@ instance : WellFoundedRelation Ordinal where
   rel a b := a < b
   wf := Relation.wellFounded _
 
+def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b ≤ a := by
+  suffices ∀a b, a < o -> b < o -> a ≤ b ∨ b ≤ a by
+    intro a b ao bo
+    rcases lt_or_eq_of_le ao with ao | a_eq_o <;> rcases lt_or_eq_of_le bo with bo | b_eq_o
+    apply this <;> assumption
+    subst b
+    left; assumption
+    subst a
+    right; assumption
+    subst a; subst b
+    left; rfl
+  intro a b ao bo
+  induction o with | _ _ rel =>
+  have ⟨a, eq⟩ := typein_surj _ a ao
+  subst eq
+  have ⟨b, eq⟩ := typein_surj _ b bo
+  subst eq
+  rcases Relation.connected rel a b with ab | eq | ba
+  left; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
+  left; rw [eq]
+  right; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
+
+def le_add_left (a b: Ordinal) : a ≤ a + b := by
+  induction a with | _ _ a =>
+  induction b with | _ _ b =>
+  apply Nonempty.intro
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  exact .inl
+  apply Sum.inl.inj
+  intro x y
+  apply Iff.intro
+  exact Sum.Lex.inl
+  intro h
+  cases h
+  assumption
+  intro x y h
+  cases h
+  apply Set.mem_range'
+
+def le_add_right (a b: Ordinal) : b ≤ a + b := by
+  induction a with | _ _ a =>
+  induction b with | _ _ b =>
+  apply InitialSegment.collapse
+  refine ⟨?_⟩
+  refine ⟨⟨.inr, ?_⟩, ?_⟩
+  apply Sum.inr.inj
+  intro x y
+  apply Iff.intro
+  exact Sum.Lex.inr
+  intro h
+  cases h
+  assumption
+
+instance : @Relation.IsTotal Ordinal (· ≤ ·) where
+  total a b := by
+    apply le_total_of_le (a + b)
+    apply le_add_left
+    apply le_add_right
+
+instance : IsLinearOrder Ordinal := inferInstance
+
 end Ordinal
