@@ -436,6 +436,11 @@ instance : IsLinearOrder Ordinal := inferInstance
 instance : @Relation.IsWellOrder Ordinal (· < ·) := inferInstance
 instance : @Relation.IsConnected Ordinal (· < ·) := inferInstance
 
+def typein_le_typein_iff {a b: α} : typein r a ≤ typein r b ↔ ¬r b a := by
+  rw [←not_lt]
+  apply Iff.not_iff_not
+  apply typein_lt_typein_iff
+
 end Defs
 
 section Lattice
@@ -722,6 +727,11 @@ def map (ac: r ≃r t) (bd: s ≃r u) : maxType r s -> maxType t u
   erw [typein_congr ac.toInitial, typein_congr bd.toInitial]
   assumption
 
+def swap : maxType r s -> maxType s r
+| .inl a ha => .inr a ha
+| .inr b hb => .inl b hb
+| .common a b h => .common b a h.symm
+
 end maxType
 
 private def rel_max_hom (ac: r ≃r t) (bd: s ≃r u) : rel_max r s →r rel_max t u where
@@ -736,6 +746,21 @@ private def rel_max_hom (ac: r ≃r t) (bd: s ≃r u) : rel_max r s →r rel_max
     apply ac.resp_rel.mp; assumption
     apply rel_max.common_inl
     apply rel_max.common_inr
+
+private def rel_max_swap_hom : rel_max r s →r rel_max s r where
+  toFun := maxType.swap
+  resp_rel {a b} h := by
+    cases h
+    apply rel_max.inr
+    assumption
+    apply rel_max.inl
+    assumption
+    apply rel_max.common
+    rename_i a₀ a₁ b₀ h₀ b₁ h₁ h₂
+    have : rel_min r s ⟨(a₀, b₀), h₀⟩ ⟨(a₁, b₁), h₁⟩ := h₂
+    rwa [rel_min_eq_rel_min'] at this
+    apply rel_max.common_inr
+    apply rel_max.common_inl
 
 @[simp]
 private def rel_max_hom_symm_coe (ac: r ≃r t) (bd: s ≃r u) : rel_max_hom ac.symm bd.symm (rel_max_hom ac bd x) = x := by
@@ -763,8 +788,175 @@ def max : Ordinal -> Ordinal -> Ordinal := by
       simpa using this
   }
 
+def exists_typein_eq_of_exists_typein_le (a: α) : (∃b: β, ¬typein s b < typein r a) -> ∃b: β, typein r a = typein s b := by
+  intro hb
+  have hb := Relation.exists_min s hb
+  obtain ⟨b, hb, bmin⟩ := hb
+  simp at bmin
+  rcases lt_trichotomy (typein s b) (typein r a) with h | h | h
+  contradiction
+  clear hb
+  exists b
+  symm; assumption
+  have ⟨b', eq⟩ := typein_surj _ _ h
+  rw [typein_typein] at eq
+  rw [eq] at h
+  have := bmin b' (by rwa [typein_lt_typein_iff] at h)
+  rw [eq] at this
+  have := lt_asymm this
+  contradiction
+
+protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
+    classical
+    induction a with | _ A rela =>
+    induction b with | _ B relb =>
+    -- if there exists an `a` which is larger than all `B`s
+    by_cases h:∃a: A, ∀b: B, typein relb b < typein rela a
+    · replace h := Relation.exists_min rela h
+      obtain ⟨a₀, ha₀, a₀_min⟩ := h
+      simp at a₀_min
+      replace a₀_min (a': { a: A // rela a a₀ }) : ∃b: B, typein rela a'.val = typein relb b :=
+        exists_typein_eq_of_exists_typein_le _ (a₀_min a'.val a'.property)
+      replace a₀_min := Classical.axiomOfChoice a₀_min
+      obtain ⟨f, hf⟩ := a₀_min
+      simp at hf
+      refine ⟨?_⟩
+      dsimp; exact {
+        toFun a :=
+          if ha:rela a a₀ then
+            .common a (f ⟨a, ha⟩) (hf _ _)
+          else
+            .inl a <| by
+              intro b
+              apply lt_of_lt_of_le
+              apply ha₀
+              rwa [←typein_le_typein_iff] at ha
+        inj' := by
+          intro x y h
+          simp at h
+          split at h <;> split at h
+          exact (maxType.common.inj h).left
+          contradiction
+          contradiction
+          exact maxType.inl.inj h
+        resp_rel := by
+          intro x y
+          simp
+          split <;> split
+          · apply Iff.intro
+            intro h; apply rel_max.common
+            assumption
+            intro h; cases h
+            assumption
+          · apply Iff.intro
+            intro h; apply rel_max.common_inl
+            intro; rename_i h' _ _
+            rcases Relation.connected rela y a₀ with h | h | h
+            contradiction
+            subst y; assumption
+            exact trans h' h
+          · apply Iff.intro
+            intro h
+            rename_i h' g
+            have := trans h g
+            contradiction
+            nofun
+          · apply Iff.intro
+            intro h
+            apply rel_max.inl
+            assumption
+            intro h; cases h
+            assumption
+        isInitial := by
+          intro a b h
+          replace h : rel_max rela relb b (if _:_ then _ else _) := h
+          split at h
+          cases h; rename_i h₀ a' b' eq h₁ h₂
+          rw [Set.mem_range]
+          refine ⟨a', ?_⟩
+          show _ = if _:_ then _ else _
+          rw[ dif_pos (trans h₁ h₀)]
+          congr
+          have := hf a' (trans h₁ h₀)
+          rw [eq] at this
+          exact typein_inj this
+          cases h
+          rename_i h₀ a' h₁ h₂ h₃
+          exists a'
+          show _ = if _:_ then _ else _
+          rw [dif_neg]
+          intro h
+          have := h₁ (f ⟨a', h⟩)
+          rw [hf a' h] at this
+          exact lt_irrefl this
+          rename_i h₀ a' b h₁ h₂
+          exists a'
+          show _ = if _:_ then _ else _
+          rw [dif_pos (by have := ha₀ b; rwa [←h₁, typein_lt_typein_iff] at this)]
+          congr
+          apply typein_inj (r := relb)
+          rw (occs := [1]) [←h₁]
+          apply hf
+      }
+    · simp at h
+      replace h (a': A) : ∃b: B, typein rela a' = typein relb b :=
+        exists_typein_eq_of_exists_typein_le _ (h a')
+      replace h := Classical.axiomOfChoice h
+      obtain ⟨f, hf⟩ := h
+      refine ⟨?_⟩
+      simp
+      exact {
+        toFun a := .common a (f a) (hf a)
+        inj' := by
+          intro x y h
+          simp at h
+          exact h.left
+        resp_rel := by
+          intro x y
+          apply Iff.intro
+          apply rel_max.common
+          intro h; cases h; assumption
+        isInitial := by
+          intro a b h
+          cases h
+          rename_i a' b h₀ h₁ h₂
+          exists a'
+          congr
+          symm; rwa [hf, typein_inj.eq_iff] at h₀
+      }
+
+protected def max_comm (a b: Ordinal) : max a b = max b a := by
+  induction a with | _ A rela =>
+  induction b with | _ B relb =>
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  refine {
+    toFun := maxType.swap
+    invFun := maxType.swap
+    leftInv x := by cases x <;> rfl
+    rightInv x := by cases x <;> rfl
+    resp_rel := ?_
+  }
+  intro x y
+  apply Iff.intro
+  apply rel_max_swap_hom.resp_rel
+  cases x <;> cases y <;> apply rel_max_swap_hom.resp_rel
+
 instance : Max Ordinal where
   max := max
+
+instance : IsSemiLatticeMax Ordinal where
+  le_max_left a b := by apply Ordinal.le_max_left
+  le_max_right a b := by
+    show b ≤ max a b
+    rw [Ordinal.max_comm]
+    apply Ordinal.le_max_left
+  max_le := by
+    sorry
+
+instance : IsLinearLattice Ordinal where
 
 end Lattice
 
