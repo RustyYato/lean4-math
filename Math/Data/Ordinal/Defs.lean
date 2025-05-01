@@ -171,18 +171,20 @@ instance : Mul Ordinal where
   mul := add
 
 def rel_typein {α: Type u} (rel: α -> α -> Prop) (top: α) : Relation { x: α // rel x top } := fun a b => rel a b
-def rel_typein_hom {α: Type u} (rel: α -> α -> Prop) (top: α) : rel_typein rel top ≺i rel where
+def rel_typein_emb {α: Type u} (rel: α -> α -> Prop) (top: α) : rel_typein rel top ↪r rel where
   toFun x := x.val
   inj' := Subtype.val_inj
   resp_rel := Iff.rfl
-  exists_top := by
-    exists top
-    intro  x
-    apply Iff.intro
-    intro h
-    exists ⟨x, h⟩
-    rintro ⟨x, rfl⟩
-    exact x.property
+def rel_typein_princ_top {α: Type u} (rel: α -> α -> Prop) (top: α) : (rel_typein_emb rel top).IsPrincipalTop top := by
+  intro x
+  apply Iff.intro
+  intro h
+  exists ⟨x, h⟩
+  rintro ⟨x, rfl⟩
+  exact x.property
+def rel_typein_hom {α: Type u} (rel: α -> α -> Prop) (top: α) : rel_typein rel top ≺i rel where
+  toRelEmbedding := rel_typein_emb rel top
+  exists_top := by exists top; apply rel_typein_princ_top
 
 instance [Relation.IsWellOrder rel] : Relation.IsWellOrder (rel_typein rel top) :=
   (rel_typein_hom rel top).toRelEmbedding.lift_wo
