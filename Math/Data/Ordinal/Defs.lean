@@ -43,7 +43,6 @@ instance pre_setoid : Setoid Pre where
 def _root_.Ordinal := Quotient pre_setoid
 
 def type {α: Type u} (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : Ordinal := Quotient.mk _ (Pre.mk _ rel)
-def type' {α: Type u} (rel: α -> α -> Prop) (is_well_order: Relation.IsWellOrder rel) : Ordinal := type rel
 
 @[cases_eliminator]
 def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop) [Relation.IsWellOrder rel], motive (type rel)) (o: Ordinal) : motive o := by
@@ -81,13 +80,11 @@ def rel_ulift_eqv : rel_ulift rel ≃r rel where
   resp_rel := Iff.rfl
 def rel_ulift_hom : rel_ulift rel ↪r rel := (rel_ulift_eqv rel).toRelEmbedding
 
-
 instance : Relation.IsWellOrder (rel_ulift rel) := (rel_ulift_hom rel).lift_wo
 
 @[pp_with_univ]
 def ulift : Ordinal.{v} -> Ordinal.{max u v} := by
-  refine lift (fun α relα _ => Ordinal.type' (rel_ulift relα) ?_) ?_
-  · exact (rel_ulift_hom relα).lift_wo
+  refine lift (fun α relα _ => Ordinal.type (rel_ulift relα)) ?_
   · intro α β relα relβ _ _ h
     dsimp
     apply sound
