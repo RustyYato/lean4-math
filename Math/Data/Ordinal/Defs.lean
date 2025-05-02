@@ -2098,6 +2098,15 @@ def slow_zero (f: FundementalSequences) : slow f 0 = fun _ => 0 := transfiniteRe
 def slow_succ (f: FundementalSequences) (o: Ordinal) : slow f (o + 1) = fun n => slow f o n + 1 := transfiniteRecursion_succ _ _ _ _
 def slow_limit (f: FundementalSequences) (o: Ordinal) [IsSuccLimitOrdinal o] : slow f o = fun n => (slow f (f o n)) n := transfiniteRecursion_limit _ _ _ _
 
+def slow_natCast (f: FundementalSequences) (n: ℕ) : slow f n = fun _ => n := by
+  ext i
+  induction n with
+  | zero => erw [slow_zero]
+  | succ n ih =>
+    rw [←natCast_succ, slow_succ]
+    simp
+    rw [ih]
+
 end FundementalSequence
 
 end Ordinal
