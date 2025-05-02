@@ -1189,11 +1189,11 @@ def natCast_lt_omega (n: ℕ) : n < ω := by
       assumption
   }
 
-inductive succ_rel : Relation (Option α) where
-| some : rel a b -> succ_rel (.some a) (.some b)
-| none : succ_rel (.some x) .none
+inductive rel_succ : Relation (Option α) where
+| some : rel a b -> rel_succ (.some a) (.some b)
+| none : rel_succ (.some x) .none
 
-def succ_rel_eqv : succ_rel rel ≃r Sum.Lex rel (Relation.empty (α := Unit)) where
+def rel_succ_eqv : rel_succ rel ≃r Sum.Lex rel (Relation.empty (α := Unit)) where
   toEquiv := (Equiv.option_equiv_unit_sum _).trans (Equiv.commSum _ _)
   resp_rel := by
     intro a b
@@ -1203,27 +1203,31 @@ def succ_rel_eqv : succ_rel rel ≃r Sum.Lex rel (Relation.empty (α := Unit)) w
     apply Iff.intro nofun nofun
     apply Iff.intro
     intro; apply Sum.Lex.sep
-    intro; apply succ_rel.none
+    intro; apply rel_succ.none
     apply Iff.intro
     intro h; cases h
     apply Sum.Lex.inl
     assumption
     intro h; cases h
-    apply succ_rel.some
+    apply rel_succ.some
     assumption
 
-instance : Relation.IsWellOrder (succ_rel rel) :=
-  (succ_rel_eqv rel).toRelEmbedding.lift_wo
-
-def succ : Ordinal -> Ordinal := by
-  refine lift (fun _ rel _ => type (succ_rel rel)) ?_
-  intro a b rela relb _ _ h
-  simp; apply sound
-  apply (succ_rel_eqv _).trans
-  apply RelIso.trans _ (succ_rel_eqv _).symm
+def rel_succ_congr (h: r ≃r s)   : rel_succ r ≃r rel_succ s := by
+  apply (rel_succ_eqv _).trans
+  apply RelIso.trans _ (rel_succ_eqv _).symm
   apply RelIso.congrSumLex
   assumption
   rfl
+
+instance : Relation.IsWellOrder (rel_succ rel) :=
+  (rel_succ_eqv rel).toRelEmbedding.lift_wo
+
+def succ : Ordinal -> Ordinal := by
+  refine lift (fun _ rel _ => type (rel_succ rel)) ?_
+  intro a b rela relb _ _ h
+  simp; apply sound
+  apply rel_succ_congr
+  assumption
 
 def natCast_add (n m: ℕ) : (n + m: Ordinal) = (n + m: ℕ) := by
   apply sound
@@ -1318,7 +1322,7 @@ def succ_eq_add_one (o: Ordinal): o.succ = o + 1 := by
   apply flip RelIso.trans
   apply RelIso.congrSumLex
   rfl; symm; apply rel_ulift_eqv
-  apply (succ_rel_eqv _).trans
+  apply (rel_succ_eqv _).trans
   apply RelIso.congrSumLex
   rfl
   exact {
@@ -1396,7 +1400,7 @@ def lt_succ_self (o: Ordinal) : o < o + 1 := by
       intro x y
       simp
       apply Iff.intro
-      apply succ_rel.some
+      apply rel_succ.some
       intro h; cases h
       assumption
     exists_top := by
@@ -1406,8 +1410,51 @@ def lt_succ_self (o: Ordinal) : o < o + 1 := by
       intro h ; cases h
       apply Set.mem_range'
       rintro ⟨x, rfl⟩
-      apply succ_rel.none
+      apply rel_succ.none
   }
+
+@[simp]
+def ulift_succ (o: Ordinal.{u}) : (ulift.{v} o).succ = ulift.{v} o.succ := by
+  induction o with | _ _ r =>
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply RelIso.trans _ (rel_ulift_eqv _).symm
+  apply RelIso.trans
+  apply rel_succ_congr
+  apply rel_ulift_eqv
+  rfl
+
+@[simp]
+def ulift_add (a b: Ordinal.{u}) : (ulift.{v} a) + ulift.{v} b = ulift.{v} (a + b) := by
+  induction a with | _ _ rela =>
+  induction b with | _ _ relb =>
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply RelIso.trans _ (rel_ulift_eqv _).symm
+  apply RelIso.trans
+  apply RelIso.congrSumLex
+  apply rel_ulift_eqv
+  apply rel_ulift_eqv
+  rfl
+
+def ulift_natCast (n: ℕ) : ulift.{v, u} n = n := by
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply RelIso.trans
+  apply rel_ulift_eqv
+  apply RelIso.trans
+  apply rel_ulift_eqv
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  rfl
+
+def ofNat_eq_natCast (n: ℕ) : OfNat.ofNat n = (n: Ordinal) := rfl
 
 end Nat
 
@@ -1545,6 +1592,23 @@ def ord_is_minimal (o: Ordinal.{u + 1}) : (∀x: Ordinal.{u}, ulift.{u+1} x ≤ 
   rw [←not_lt] at this
   apply this
   apply lt_succ_self
+
+instance : IsSuccLimitOrdinal ord.{u} where
+  ne_succ := by
+    intro x h
+    rw [lt_ord] at h
+    obtain ⟨x, rfl⟩ := h
+    rw [ulift_succ]
+    intro h
+    have : ulift.{u+1} x.succ < ord.{u} := by rw [lt_ord]; exists x.succ
+    rw [h] at this
+    exact lt_irrefl this
+  out := by
+    intro h
+    have g : ulift.{u + 1, u} 0 = ord.{u} := by rw [ofNat_eq_natCast, ulift_natCast, ←ofNat_eq_natCast, h]
+    have : ulift.{u+1, u} 0 < ord.{u} := by rw [lt_ord]; exists 0
+    rw [g] at this
+    exact lt_irrefl this
 
 end Ord
 
