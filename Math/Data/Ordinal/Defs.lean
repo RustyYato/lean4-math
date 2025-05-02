@@ -475,6 +475,16 @@ def ulift_lt_ulift (a b: Ordinal.{u}) : ulift.{v} a < ulift.{v} b ↔ a < b := b
   symm; apply rel_ulift_eqv
   symm; apply rel_ulift_eqv
 
+@[ext]
+def ext (a b: Ordinal): (∀x, x < a ↔ x < b) -> a = b := by
+  intro h
+  rcases lt_trichotomy a b with ab | eq | ba
+  have := lt_irrefl <| (h a).mpr ab
+  contradiction
+  assumption
+  have := lt_irrefl <| (h b).mp ba
+  contradiction
+
 end Defs
 
 section Lattice
@@ -1569,6 +1579,41 @@ def succ_lt_limit (o: Ordinal) (h: IsLimitOrdinal o := by infer_instance) : ∀x
   have := lt_of_lt_of_le hx (le_of_lt_succ g)
   have := lt_irrefl this
   contradiction
+
+def exists_limit (o: Ordinal) : ∃x: Ordinal, x ≤ o ∧ x.IsLimitOrdinal ∧ ∀y ≤ o, y.IsLimitOrdinal -> y ≤ x := by
+  induction o using transfiniteRecursion' with
+  | limit o lim ih =>
+    refine ⟨o, ?_, lim, ?_⟩
+    rfl
+    intro y _ lim
+    assumption
+  | succ o ih =>
+    obtain ⟨x, x_le_o, x_limit, spec⟩ := ih
+    exists x
+    apply And.intro
+    apply le_trans x_le_o
+    apply le_of_lt
+    apply lt_succ_self
+    apply And.intro x_limit
+    intro y h ylim
+    rcases lt_or_eq_of_le h with h | h
+    exact spec _ (le_of_lt_succ h) ylim
+    subst y
+    have := ylim.ne_succ o (lt_succ_self _) (by simp)
+    contradiction
+
+noncomputable
+def limit (o: Ordinal) : Ordinal :=
+  Classical.choose (exists_limit o)
+
+def limit_le (o: Ordinal) : limit o ≤ o :=
+  (Classical.choose_spec (exists_limit o)).left
+
+def limit_is_limit_ord (o: Ordinal) : (limit o).IsLimitOrdinal :=
+  (Classical.choose_spec (exists_limit o)).right.left
+
+def limit_is_max_limit_ord (o: Ordinal) : ∀x ≤ o, x.IsLimitOrdinal -> x ≤ limit o :=
+  (Classical.choose_spec (exists_limit o)).right.right
 
 end Limit
 
