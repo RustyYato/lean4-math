@@ -1588,14 +1588,162 @@ def ofNat_eq_rankNat (n: ℕ) : ofNat n = rank (· < ·) n := by
   }
 def natCast_eq_rankNat (n: ℕ) : n = ulift (rank (· < ·) n) := by rw [←ofNat_eq_rankNat]; rfl
 
+def le_of_lt_succ {a b: Ordinal} : a < b + 1 -> a ≤ b := by
+  cases a with | _ A rela =>
+  cases b with | _ B relb =>
+  rw [←succ_eq_add_one]
+  intro ⟨ab⟩; simp at ab
+  have ⟨top, htop⟩ := ab.exists_top
+  have ne_none (a: A) : (ab a).isSome := by
+    apply Option.isSome_iff_ne_none.mpr
+    intro g
+    have := (htop (ab a)).mpr Set.mem_range'
+    rw [g] at this
+    nomatch this
+
+  refine ⟨?_⟩; simp
+  refine {
+    toFun a := (ab a).get (ne_none a)
+    inj' a b h := ab.inj (Option.get_inj _ _ _ _ h)
+    resp_rel := by
+      intro a b
+      simp
+      rw [←rel_succ_some_iff (r := relb)]
+      simp
+      apply ab.resp_rel
+    isInitial := by
+      intro a b h
+      simp at h
+      rw [←rel_succ_some_iff (r := relb)] at h
+      simp at h
+      have ⟨a', heq⟩ := ab.init _ _ h
+      exists a'
+      simp
+      apply Option.some.inj
+      simp [heq]
+  }
+
+def lt_succ_of_le {a b: Ordinal} : a ≤ b -> a < b + 1 := by
+  if ha:b ≤ a then
+    intro h
+    cases le_antisymm h ha
+    apply lt_succ_self
+  else
+    rw [not_le] at ha
+    intro ha; clear ha
+    apply lt_trans ha
+    apply lt_succ_self
+
+def lt_succ {a b: Ordinal} : a < b + 1 ↔ a ≤ b := by
+  apply Iff.intro
+  apply le_of_lt_succ
+  apply lt_succ_of_le
+
+def succ_le_of_lt {a b: Ordinal} (h: a < b) : a + 1 ≤ b := by
+  rw [←succ_eq_add_one]
+  cases a with | _ A rela =>
+  cases b with | _ B relb =>
+  obtain ⟨h⟩ := h; simp at h
+  have ⟨top, htop⟩ := h.exists_top
+  refine ⟨?_⟩; simp
+  exact {
+    toFun
+    | .some x => h x
+    | .none => top
+    inj' := by
+      intro x y g
+      cases x <;> cases y <;> simp at g
+      rfl
+      rename_i x
+      have := (htop (h x)).mpr Set.mem_range'
+      rw [←g] at this
+      have := Relation.irrefl this
+      contradiction
+      rename_i x
+      have := (htop (h x)).mpr Set.mem_range'
+      rw [←g] at this
+      have := Relation.irrefl this
+      contradiction
+      rw [h.inj g]
+    resp_rel := by
+      intro x y
+      cases x <;> cases y <;> simp
+      apply Iff.intro
+      exact nofun
+      intro g; have := Relation.irrefl g; contradiction
+      apply Iff.intro
+      exact nofun
+      intro g; rename_i x
+      have := (htop (h x)).mpr Set.mem_range'
+      have := Relation.asymm this
+      contradiction
+      apply Iff.intro
+      intro; apply (htop _).mpr Set.mem_range'
+      intro; apply rel_succ.none
+      rw [rel_succ_some_iff, h.resp_rel]
+      rfl
+    isInitial := by
+      intro a b
+      cases a <;> simp
+      intro hx
+      have ⟨a, ha⟩ := (htop b).mp hx
+      exists a
+      intro hx
+      have ⟨a, ha⟩ := h.init _ _ hx
+      exists .some a
+  }
+
+def succ_lt_succ {a b : Ordinal} (h: a < b) : a + 1 < b + 1 := by
+  apply lt_succ_of_le
+  apply succ_le_of_lt
+  assumption
+
+def succ_inj : Function.Injective succ := by
+  intro x y h
+  simp at h
+  rcases lt_trichotomy x y with g | g | g
+  · have := succ_lt_succ g
+    rw [h] at this
+    have := lt_irrefl this
+    contradiction
+  · assumption
+  · have := succ_lt_succ g
+    rw [h] at this
+    have := lt_irrefl this
+    contradiction
+
 end Nat
 
 section Limit
 
 class IsLimitOrdinal (o: Ordinal) where
-  ne_succ: ∀x < o, x.succ ≠ o
+  protected ne_succ: ∀x < o, x.succ ≠ o
 
 class IsSuccLimitOrdinal (o: Ordinal) extends IsLimitOrdinal o, NeZero o where
+
+def succ_lt_limit (o: Ordinal) (h: IsLimitOrdinal o := by infer_instance) : ∀x < o, x + 1 < o := by
+  intro x hx
+  rcases lt_trichotomy (x + 1) o with g | g | g
+  assumption
+  have := h.ne_succ x hx (by simp [g])
+  contradiction
+  have := lt_of_lt_of_le hx (le_of_lt_succ g)
+  have := lt_irrefl this
+  contradiction
+
+def limit_ne_succ (o: Ordinal) [h: IsLimitOrdinal o] : ∀x, x + 1 ≠ o := by
+  intro x g
+  have := h.ne_succ
+  rcases lt_trichotomy x o with h₀ | h₀ | h₀
+  have := this x h₀
+  simp [g] at this
+  subst o
+  have := lt_succ_self x
+  rw [←h₀] at this
+  exact lt_irrefl this
+  rw [←g] at h₀
+  have := lt_asymm (lt_succ_self x)
+  contradiction
 
 instance : IsLimitOrdinal 0 where
   ne_succ x h g := by
