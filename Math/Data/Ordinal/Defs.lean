@@ -1193,6 +1193,12 @@ inductive rel_succ : Relation (Option α) where
 | some : rel a b -> rel_succ (.some a) (.some b)
 | none : rel_succ (.some x) .none
 
+def rel_succ_some_iff : rel_succ r (some a) (some b) ↔ r a b := by
+  apply Iff.intro
+  intro h; cases h
+  assumption
+  apply rel_succ.some
+
 def rel_succ_eqv : rel_succ rel ≃r Sum.Lex rel (Relation.empty (α := Unit)) where
   toEquiv := (Equiv.option_equiv_unit_sum _).trans (Equiv.commSum _ _)
   resp_rel := by
@@ -1517,6 +1523,51 @@ noncomputable def transfiniteRecursion
         have : NeZero o := ⟨h⟩
         limit _ ⟨⟩ ih)
     succ o
+
+def le_of_lt_succ {a b: Ordinal} : a < b + 1 -> a ≤ b := by
+  induction a using ind with | _ A rela =>
+  induction b using ind with | _ B relb =>
+  rw [←succ_eq_add_one]
+  intro ⟨ab⟩; simp at ab
+  have ⟨top, htop⟩ := ab.exists_top
+  have ne_none (a: A) : (ab a).isSome := by
+    apply Option.isSome_iff_ne_none.mpr
+    intro g
+    have := (htop (ab a)).mpr Set.mem_range'
+    rw [g] at this
+    nomatch this
+
+  refine ⟨?_⟩; simp
+  refine {
+    toFun a := (ab a).get (ne_none a)
+    inj' a b h := ab.inj (Option.get_inj _ _ _ _ h)
+    resp_rel := by
+      intro a b
+      simp
+      rw [←rel_succ_some_iff (r := relb)]
+      simp
+      apply ab.resp_rel
+    isInitial := by
+      intro a b h
+      simp at h
+      rw [←rel_succ_some_iff (r := relb)] at h
+      simp at h
+      have ⟨a', heq⟩ := ab.init _ _ h
+      exists a'
+      simp
+      apply Option.some.inj
+      simp [heq]
+  }
+
+def succ_lt_limit (o: Ordinal) (h: IsLimitOrdinal o := by infer_instance) : ∀x < o, x + 1 < o := by
+  intro x hx
+  rcases lt_trichotomy (x + 1) o with g | g | g
+  assumption
+  have := h.ne_succ x hx (by simp [g])
+  contradiction
+  have := lt_of_lt_of_le hx (le_of_lt_succ g)
+  have := lt_irrefl this
+  contradiction
 
 end Limit
 
