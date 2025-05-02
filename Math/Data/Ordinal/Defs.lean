@@ -1713,6 +1713,154 @@ instance : IsConditionallyCompleteLattice Ordinal where
     apply Ordinal.csInf_le
     assumption
 
+def natCast_eq_ulift_natCast (n: ℕ) : n = ulift.{u, 0} n := by
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply RelIso.trans
+  apply rel_ulift_eqv
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  rfl
+
+def natCast_inj : Function.Injective fun n: ℕ => (n: Ordinal) := by
+  intro x y h
+  simp at h
+  have ⟨h⟩ := Quotient.exact h
+  simp at h
+  replace h := Equiv.trans (Equiv.trans (Equiv.ulift _).symm (h.toEquiv)) (Equiv.ulift _)
+  exact Fin.eq_of_equiv h
+
+def natCast_le_natCast_iff (n m: ℕ) : (n: Ordinal) ≤ m ↔ n ≤ m := by
+  apply Iff.intro
+  intro ⟨h⟩
+  simp at h
+  have h := Equiv.congrEmbed (Equiv.ulift _) (Equiv.ulift _) h.toEmbedding
+  exact Fin.le_of_emebd h
+  intro h
+  refine ⟨?_⟩
+  simp; apply InitialSegment.congr (rel_ulift_eqv _).symm (rel_ulift_eqv _).symm
+  refine {
+    toFun x := x.castLE h
+    inj' := by
+      intro x y h
+      rw [←Fin.val_inj] at *
+      simp at h; assumption
+    resp_rel := Iff.rfl
+    isInitial := by
+      intro a b
+      simp
+      intro g
+      replace g : b.val < a.val := g
+      exists ⟨b.val, ?_⟩
+      omega
+      rfl
+  }
+def natCast_lt_natCast_iff (n m: ℕ) : (n: Ordinal) < m ↔ n < m := by
+  apply lt_iff_of_le_iff
+  apply natCast_le_natCast_iff
+
+def finite_limit (o: Ordinal) : o.IsLimitOrdinal -> o < ω -> o = 0 := by
+  intro ho o_lt_omega
+  rw [lt_omega] at o_lt_omega
+  obtain ⟨n, rfl⟩ := o_lt_omega
+  cases n
+  rfl
+  rename_i n
+  have := ho.ne_succ n
+  simp [natCast_lt_natCast_iff] at this
+
+def lt_natCast (n: ℕ) (o: Ordinal) : o < n ↔ ∃i < n, o = i := by
+  apply flip Iff.intro
+  rintro ⟨i, hi, rfl⟩
+  rwa [natCast_lt_natCast_iff]
+  induction o using ind with | _ A rel =>
+  intro ⟨h⟩
+  simp at h
+  replace h := h.congr .refl (rel_ulift_eqv _)
+  have ⟨⟨top, topLt⟩, htop⟩ := h.exists_top
+  exists top
+  apply And.intro
+  exact topLt
+  have hx_lt_top (x: A) : (h x).val < top := (htop (h x)).mpr Set.mem_range'
+  have hx (x: Fin top) : ⟨x.val, (by omega)⟩ ∈ Set.range h  := (htop ⟨x.val, by omega⟩).mp x.isLt
+  replace hx := Classical.axiomOfChoice hx
+  obtain ⟨f, hf⟩ := hx
+  apply sound
+  infer_instance
+  apply RelIso.trans _ (rel_ulift_eqv _).symm
+  simp
+  exact {
+    toFun x := ⟨h x, hx_lt_top x⟩
+    invFun := f
+    leftInv := by
+      intro a
+      simp; apply h.inj
+      rw [←hf]
+    rightInv := by
+      intro x; simp
+      congr 1
+      rw [←hf]
+    resp_rel := h.resp_rel
+  }
+
+def omega_eq_sSup_natCast : ω = ⨆n: ℕ, (n: Ordinal) := by
+  apply le_antisymm
+  · erw [le_csSup_iff]
+    · intro x hx
+      replace hx : ∀n: ℕ, n ≤ x := by
+        intro n
+        apply hx
+        apply Set.mem_range'
+      induction x using ind with | _ A rel =>
+      replace hx (n: ℕ) : ∃x, n = typein rel x := by
+        apply typein_surj
+        apply lt_of_lt_of_le
+        apply lt_succ_self
+        simp ; apply hx
+      replace hx := Classical.axiomOfChoice hx
+      obtain ⟨f, hf⟩ := hx
+      refine ⟨?_⟩
+      simp
+      apply InitialSegment.congr
+      symm; apply rel_ulift_eqv
+      rfl
+      exact {
+        toFun := f
+        inj' := by
+          intro x y h
+          rw [←(typein_inj (r := rel)).eq_iff, ←hf, ← hf] at h
+          apply natCast_inj
+          assumption
+        resp_rel := by
+          intro x y
+          simp
+          rw [←typein_lt_typein_iff (r := rel), ←hf, ←hf, natCast_lt_natCast_iff]
+        isInitial := by
+          intro a b h
+          simp at h
+          rw [←typein_lt_typein_iff (r := rel), ←hf] at h
+          rw [lt_natCast] at h
+          obtain ⟨i, hi, eq⟩ := h
+          exists i
+          simp
+          apply typein_inj (r := rel)
+          rwa [←hf]
+      }
+    · exists ω
+      rintro _ ⟨n, rfl⟩
+      apply le_of_lt; apply natCast_lt_omega
+    · exists 0
+      exists 0
+  · apply csSup_le
+    exists 0
+    exists 0
+    rintro _ ⟨i, rfl⟩
+    apply le_of_lt; apply natCast_lt_omega
+
 end ConditionallyCompleteLattice
 
 end Ordinal
