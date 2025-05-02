@@ -1772,7 +1772,7 @@ noncomputable def transfiniteRecursion'
   if h:∃x, x + 1 = o then
     let x := Classical.choose h
     have hx : x + 1 = o := Classical.choose_spec h
-    hx ▸ (succ x (transfiniteRecursion' limit succ x))
+    cast (by rw [hx]) (succ x (transfiniteRecursion' limit succ x))
   else
     limit _ { ne_succ x hx g := by exact h ⟨_, succ_eq_add_one _ ▸ g⟩} (fun x hx => transfiniteRecursion' limit succ x)
 termination_by o
@@ -1782,12 +1782,16 @@ decreasing_by
     apply lt_succ_self
   · assumption
 
-@[induction_eliminator]
-noncomputable def transfiniteRecursion
+section
+
+variable
   {motive : Ordinal -> Sort*}
   (zero: motive 0)
+  (succ: ∀o, motive o -> motive (o + 1))
   (limit: ∀o, IsSuccLimitOrdinal o -> (∀x < o, motive x) -> motive o)
-  (succ: ∀o, motive o -> motive (o + 1)) (o: Ordinal) : motive o :=
+
+@[induction_eliminator]
+noncomputable def transfiniteRecursion (o: Ordinal) : motive o :=
   transfiniteRecursion' (motive := motive)
     (fun o _ ih =>
       open scoped Classical in
@@ -1798,50 +1802,34 @@ noncomputable def transfiniteRecursion
         limit _ ⟨⟩ ih)
     succ o
 
-def le_of_lt_succ {a b: Ordinal} : a < b + 1 -> a ≤ b := by
-  cases a with | _ A rela =>
-  cases b with | _ B relb =>
-  rw [←succ_eq_add_one]
-  intro ⟨ab⟩; simp at ab
-  have ⟨top, htop⟩ := ab.exists_top
-  have ne_none (a: A) : (ab a).isSome := by
-    apply Option.isSome_iff_ne_none.mpr
-    intro g
-    have := (htop (ab a)).mpr Set.mem_range'
-    rw [g] at this
-    nomatch this
-
-  refine ⟨?_⟩; simp
-  refine {
-    toFun a := (ab a).get (ne_none a)
-    inj' a b h := ab.inj (Option.get_inj _ _ _ _ h)
-    resp_rel := by
-      intro a b
-      simp
-      rw [←rel_succ_some_iff (r := relb)]
-      simp
-      apply ab.resp_rel
-    isInitial := by
-      intro a b h
-      simp at h
-      rw [←rel_succ_some_iff (r := relb)] at h
-      simp at h
-      have ⟨a', heq⟩ := ab.init _ _ h
-      exists a'
-      simp
-      apply Option.some.inj
-      simp [heq]
-  }
-
-def succ_lt_limit (o: Ordinal) (h: IsLimitOrdinal o := by infer_instance) : ∀x < o, x + 1 < o := by
-  intro x hx
-  rcases lt_trichotomy (x + 1) o with g | g | g
-  assumption
-  have := h.ne_succ x hx (by simp [g])
+def transfiniteRecursion_zero : transfiniteRecursion zero succ limit 0 = zero := by
+  unfold transfiniteRecursion transfiniteRecursion'
+  simp; intro x h
+  have := limit_ne_succ 0 _ h
   contradiction
-  have := lt_of_lt_of_le hx (le_of_lt_succ g)
-  have := lt_irrefl this
-  contradiction
+
+def transfiniteRecursion_limit (o: Ordinal) [IsSuccLimitOrdinal o] : transfiniteRecursion zero succ limit o = limit o inferInstance (fun x _ => transfiniteRecursion zero succ limit x) := by
+  rw [transfiniteRecursion, transfiniteRecursion']
+  simp; rw [dif_neg, dif_neg]
+  rfl
+  rename_i h; exact h.out
+  rename_i h; simp; exact limit_ne_succ o
+
+def transfiniteRecursion_succ (o: Ordinal) : transfiniteRecursion zero succ limit (o + 1) = succ o (transfiniteRecursion zero succ limit o) := by
+  rw [transfiniteRecursion, transfiniteRecursion']
+  have : ∃ x, x + 1 = o + 1 := ⟨o, rfl⟩
+  rw [dif_pos this]
+  simp
+  apply cast_eq_of_heq
+  congr
+  apply succ_inj
+  simp;
+  rw [Classical.choose_spec this]
+  apply succ_inj
+  simp;
+  rw [Classical.choose_spec this]
+
+end
 
 def exists_limit (o: Ordinal) : ∃x: Ordinal, x ≤ o ∧ x.IsLimitOrdinal ∧ ∀y ≤ o, y.IsLimitOrdinal -> y ≤ x := by
   induction o using transfiniteRecursion' with
@@ -2066,5 +2054,38 @@ def omega_eq_sSup_natCast : ω = ⨆n: ℕ, (n: Ordinal) := by
     apply le_of_lt; apply natCast_lt_omega
 
 end ConditionallyCompleteLattice
+
+section FundementalSequence
+
+class IsFundementalSequence (f: ℕ -> Ordinal) (o: Ordinal) : Prop where
+  lt_ord: ∀n, f n < o
+  sup_eq_ord: ⨆i, f i = o
+  increasing: StrictMonotone f
+
+structure FundementalSequences where
+  toFun: Ordinal -> ℕ -> Ordinal
+  spec: ∀o, IsFundementalSequence (toFun o) o
+
+instance : FunLike FundementalSequences Ordinal (ℕ -> Ordinal) where
+
+instance (f: FundementalSequences) (o: Ordinal) : IsFundementalSequence (f o) o := f.spec o
+
+def repeat_fun (f: α -> α) : ℕ -> α -> α
+| 0 => id
+| n + 1 => f ∘ repeat_fun f n
+
+-- the fast growing heirarchy for a given choice of fundemental sequences
+-- https://en.wikipedia.org/wiki/Fast-growing_hierarchy#Definition
+noncomputable def fast (f: FundementalSequences) : Ordinal -> ℕ -> ℕ :=
+  transfiniteRecursion (motive := fun _ => ℕ -> ℕ)
+    Nat.succ
+    (fun _ ih => fun n => repeat_fun ih n n)
+    (fun o _ ih => fun n => ih (f o n) (IsFundementalSequence.lt_ord _) n)
+
+def fast_zero (f: FundementalSequences) : fast f 0 = Nat.succ := transfiniteRecursion_zero _ _ _
+def fast_succ (f: FundementalSequences) (o: Ordinal) : fast f (o + 1) = fun n => repeat_fun (fast f o) n n := transfiniteRecursion_succ _ _ _ _
+def fast_limit (f: FundementalSequences) (o: Ordinal) [IsSuccLimitOrdinal o] : fast f o = fun n => (fast f (f o n)) n := transfiniteRecursion_limit _ _ _ _
+
+end FundementalSequence
 
 end Ordinal
