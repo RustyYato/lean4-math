@@ -45,7 +45,7 @@ def _root_.Ordinal := Quotient pre_setoid
 def type {α: Type u} (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : Ordinal := Quotient.mk _ (Pre.mk _ rel)
 def type' {α: Type u} (rel: α -> α -> Prop) (is_well_order: Relation.IsWellOrder rel) : Ordinal := type rel
 
-@[local induction_eliminator, cases_eliminator]
+@[cases_eliminator]
 def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop) [Relation.IsWellOrder rel], motive (type rel)) (o: Ordinal) : motive o := by
   induction o using Quotient.ind with | _ o =>
   apply type
@@ -126,27 +126,27 @@ instance : LT Ordinal where
 
 instance : IsPartialOrder Ordinal where
   le_refl a := by
-    induction a with | _ α rel =>
+    cases a with | _ α rel =>
     exact ⟨InitialSegment.refl _⟩
   le_trans {a b c} h g := by
-    induction a with | _ a rela =>
-    induction b with | _ b relb =>
-    induction c with | _ c relc =>
+    cases a with | _ a rela =>
+    cases b with | _ b relb =>
+    cases c with | _ c relc =>
     obtain ⟨h⟩ := h
     obtain ⟨g⟩ := g
     dsimp at h g
     exact ⟨h.trans g⟩
   le_antisymm {a b} h g := by
-    induction a with | _ a rela =>
-    induction b with | _ b relb =>
+    cases a with | _ a rela =>
+    cases b with | _ b relb =>
     obtain ⟨h⟩ := h
     obtain ⟨g⟩ := g
     dsimp at h g
     apply sound
     exact InitialSegment.antisymm h g
   lt_iff_le_and_not_le {a b} := by
-    induction a with | _ a rela =>
-    induction b with | _ b relb =>
+    cases a with | _ a rela =>
+    cases b with | _ b relb =>
     apply Iff.intro
     · intro ⟨h⟩
       dsimp at h
@@ -214,7 +214,7 @@ def typein' (rel: α -> α -> Prop) (h: Relation.IsWellOrder rel) (top: α) := t
 
 def typein_surj : ∀o < type rel, ∃top, o = typein rel top := by
   intro o ho
-  induction o with | _ β relβ =>
+  cases o with | _ β relβ =>
   obtain ⟨ho⟩ := ho
   dsimp at ho
   have ⟨top, htop⟩ := ho.exists_top
@@ -360,7 +360,7 @@ instance : @Relation.IsWellFounded Ordinal (· < ·) where
     intro a
     apply Acc.intro
     intro b r
-    induction a using ind with | _ _ rel =>
+    cases a with | _ _ rel =>
     have ⟨a₀, eq⟩ := typein_surj rel b r
     subst b
     clear r
@@ -389,7 +389,7 @@ def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b �
     subst a; subst b
     left; rfl
   intro a b ao bo
-  induction o with | _ _ rel =>
+  cases o with | _ _ rel =>
   have ⟨a, eq⟩ := typein_surj _ a ao
   subst eq
   have ⟨b, eq⟩ := typein_surj _ b bo
@@ -400,8 +400,8 @@ def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b �
   right; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
 
 def le_add_left (a b: Ordinal) : a ≤ a + b := by
-  induction a with | _ _ a =>
-  induction b with | _ _ b =>
+  cases a with | _ _ a =>
+  cases b with | _ _ b =>
   apply Nonempty.intro
   refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
   exact .inl
@@ -417,8 +417,8 @@ def le_add_left (a b: Ordinal) : a ≤ a + b := by
   apply Set.mem_range'
 
 def le_add_right (a b: Ordinal) : b ≤ a + b := by
-  induction a with | _ _ a =>
-  induction b with | _ _ b =>
+  cases a with | _ _ a =>
+  cases b with | _ _ b =>
   apply InitialSegment.collapse
   refine ⟨?_⟩
   refine ⟨⟨.inr, ?_⟩, ?_⟩
@@ -446,8 +446,8 @@ def typein_le_typein_iff {a b: α} : typein r a ≤ typein r b ↔ ¬r b a := by
   apply typein_lt_typein_iff
 
 def ulift_le_ulift (a b: Ordinal.{u}) : ulift.{v} a ≤ ulift.{v} b ↔ a ≤ b := by
-  induction a with | _ _ a =>
-  induction b with | _ _ b =>
+  cases a with | _ _ a =>
+  cases b with | _ _ b =>
   apply Iff.intro
   intro ⟨h⟩
   refine ⟨?_⟩
@@ -461,8 +461,8 @@ def ulift_le_ulift (a b: Ordinal.{u}) : ulift.{v} a ≤ ulift.{v} b ↔ a ≤ b 
   symm; apply rel_ulift_eqv
 
 def ulift_lt_ulift (a b: Ordinal.{u}) : ulift.{v} a < ulift.{v} b ↔ a < b := by
-  induction a with | _ _ a =>
-  induction b with | _ _ b =>
+  cases a with | _ _ a =>
+  cases b with | _ _ b =>
   apply Iff.intro
   intro ⟨h⟩
   refine ⟨?_⟩
@@ -488,8 +488,6 @@ def ext (a b: Ordinal): (∀x, x < a ↔ x < b) -> a = b := by
 end Defs
 
 section Lattice
-
-attribute [local induction_eliminator] ind
 
 -- the minimum of two relations is the relation on pairs of elements which
 -- are in the same position as each other in their respective orders
@@ -601,12 +599,12 @@ def min : Ordinal -> Ordinal -> Ordinal := by
     apply ac.resp_rel
 
 def min_le_left' (a b: Ordinal) : min a b ≤ a := by
-  induction a with | _ _ a =>
-  induction b with | _ _ b =>
+  cases a with | _ _ a =>
+  cases b with | _ _ b =>
   exact ⟨rel_min_hom_left _ _⟩
 def min_le_right' (a b: Ordinal) : min a b ≤ b := by
-  induction a with | _ _ a =>
-  induction b with | _ _ b =>
+  cases a with | _ _ a =>
+  cases b with | _ _ b =>
   exact ⟨rel_min_hom_right _ _⟩
 
 instance : Min Ordinal where
@@ -619,9 +617,9 @@ instance : IsLawfulMin Ordinal where
 instance : IsSemiLatticeMin Ordinal where
   le_min := by
     intro a b k ka kb
-    induction a with | _ A rela =>
-    induction b with | _ B relb =>
-    induction k with | _ K relk =>
+    cases a with | _ A rela =>
+    cases b with | _ B relb =>
+    cases k with | _ K relk =>
     obtain ⟨ka⟩ := ka
     obtain ⟨kb⟩ := kb
     refine ⟨?_⟩
@@ -854,8 +852,8 @@ def exists_typein_eq_of_exists_typein_le (a: α) : (∃b: β, ¬typein s b < typ
 
 protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
     classical
-    induction a with | _ A rela =>
-    induction b with | _ B relb =>
+    cases a with | _ A rela =>
+    cases b with | _ B relb =>
     -- if there exists an `a` which is larger than all `B`s
     by_cases h:∃a: A, ∀b: B, typein relb b < typein rela a
     · replace h := Relation.exists_min rela h
@@ -972,8 +970,8 @@ protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
       }
 
 protected def max_comm (a b: Ordinal) : max a b = max b a := by
-  induction a with | _ A rela =>
-  induction b with | _ B relb =>
+  cases a with | _ A rela =>
+  cases b with | _ B relb =>
   apply sound
   infer_instance
   infer_instance
@@ -1012,9 +1010,9 @@ instance : IsSemiLatticeMax Ordinal where
       assumption
       assumption
     intro a b k
-    induction a with | _ A rela =>
-    induction b with | _ B relb =>
-    induction k with | _ K relk =>
+    cases a with | _ A rela =>
+    cases b with | _ B relb =>
+    cases k with | _ K relk =>
     intro ⟨ab⟩ ⟨bk⟩
     simp at ab bk
     refine ⟨?_⟩
@@ -1168,8 +1166,6 @@ instance : IsLinearLattice Ordinal where
 end Lattice
 
 section Nat
-
-attribute [local induction_eliminator] ind
 
 def ofNat (n: ℕ) : Ordinal := type (· < (·: Fin n))
 def omega : Ordinal := type (· < (·: Nat))
@@ -1331,7 +1327,7 @@ def natCast_mul (n m: ℕ) : (n * m: Ordinal) = (n * m: ℕ) := by
 
 @[simp]
 def succ_eq_add_one (o: Ordinal): o.succ = o + 1 := by
-  induction o with | _ α rel =>
+  cases o with | _ α rel =>
   apply sound
   infer_instance
   infer_instance
@@ -1355,7 +1351,7 @@ def natCast_succ (n: ℕ) : (n: Ordinal) + 1 = (n + 1: ℕ) := by
   congr
 
 def zero_le (o: Ordinal) : 0 ≤ o := by
-  induction o with | _ A rel =>
+  cases o with | _ A rel =>
   refine ⟨?_⟩
   simp
   apply InitialSegment.congr
@@ -1421,7 +1417,7 @@ def lt_natCast (n: ℕ) (o: Ordinal) : o < n ↔ ∃i < n, o = i := by
   apply flip Iff.intro
   rintro ⟨i, hi, rfl⟩
   rwa [natCast_lt_natCast_iff]
-  induction o using ind with | _ A rel =>
+  cases o with | _ A rel =>
   intro ⟨h⟩
   simp at h
   replace h := h.congr .refl (rel_ulift_eqv _)
@@ -1452,7 +1448,7 @@ def lt_natCast (n: ℕ) (o: Ordinal) : o < n ↔ ∃i < n, o = i := by
   }
 
 def of_lt_omega (o: Ordinal) : o < ω -> ∃n: ℕ, o = n := by
-  induction o with | _ A rel =>
+  cases o with | _ A rel =>
   intro ⟨h⟩
   simp at h
   replace h := h.congr .refl (rel_ulift_eqv _)
@@ -1493,7 +1489,7 @@ def lt_omega {o: Ordinal} : o < ω ↔ ∃n: ℕ, o = n := by
 
 def lt_succ_self (o: Ordinal) : o < o + 1 := by
   rw [←succ_eq_add_one]
-  induction o with | _ A rel =>
+  cases o with | _ A rel =>
   refine ⟨?_⟩
   simp; exact {
     Embedding.optionSome with
@@ -1516,7 +1512,7 @@ def lt_succ_self (o: Ordinal) : o < o + 1 := by
 
 @[simp]
 def ulift_succ (o: Ordinal.{u}) : (ulift.{v} o).succ = ulift.{v} o.succ := by
-  induction o with | _ _ r =>
+  cases o with | _ _ r =>
   apply sound
   infer_instance
   infer_instance
@@ -1529,8 +1525,8 @@ def ulift_succ (o: Ordinal.{u}) : (ulift.{v} o).succ = ulift.{v} o.succ := by
 
 @[simp]
 def ulift_add (a b: Ordinal.{u}) : (ulift.{v} a) + ulift.{v} b = ulift.{v} (a + b) := by
-  induction a with | _ _ rela =>
-  induction b with | _ _ relb =>
+  cases a with | _ _ rela =>
+  cases b with | _ _ relb =>
   apply sound
   infer_instance
   infer_instance
@@ -1620,8 +1616,8 @@ noncomputable def transfiniteRecursion
     succ o
 
 def le_of_lt_succ {a b: Ordinal} : a < b + 1 -> a ≤ b := by
-  induction a using ind with | _ A rela =>
-  induction b using ind with | _ B relb =>
+  cases a with | _ A rela =>
+  cases b with | _ B relb =>
   rw [←succ_eq_add_one]
   intro ⟨ab⟩; simp at ab
   have ⟨top, htop⟩ := ab.exists_top
@@ -1714,17 +1710,16 @@ end Limit
 section Ord
 
 -- the ordinal representing the class of all ordinals in universe `u`
--- NOTE: that this lives one universe higher up, so it can faithfully
--- represent those higher ordinals
+-- NOTE: that this lives one universe higher up, since this is a proper class
 def ord : Ordinal.{u + 1} := @type Ordinal.{u} (· < ·) _
 
 def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{u+1} x := by
   apply Iff.intro
-  · induction o using ind with | _ α rel =>
+  · cases o with | _ α rel =>
     intro h
     have ⟨x, hx⟩ := typein_surj _ _ h
     exists x
-    induction x using ind with | _ β relx =>
+    cases x with | _ β relx =>
     replace ⟨hx⟩ := Quotient.exact hx
     simp at hx
     have (x: { o: Ordinal // o < type relx }) := typein_surj relx x.val x.property
@@ -1751,7 +1746,7 @@ def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{
         apply typein_lt_typein_iff.symm
     }
   · rintro ⟨x, rfl⟩
-    induction x using ind with | _ α rel =>
+    cases x with | _ α rel =>
     refine ⟨?_⟩
     simp
     apply PrincipalSegment.congr
@@ -1866,7 +1861,7 @@ def omega_eq_sSup_natCast : ω = ⨆n: ℕ, (n: Ordinal) := by
         intro n
         apply hx
         apply Set.mem_range'
-      induction x using ind with | _ A rel =>
+      cases x with | _ A rel =>
       replace hx (n: ℕ) : ∃x, n = typein rel x := by
         apply typein_surj
         apply lt_of_lt_of_le
