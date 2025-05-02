@@ -191,29 +191,29 @@ instance : Add Ordinal where
 instance : Mul Ordinal where
   mul := mul
 
-def rel_typein (top: α) : Relation { x: α // rel x top } := fun a b => rel a b
-def rel_typein_emb (top: α) : rel_typein rel top ↪r rel where
+def rel_rank (top: α) : Relation { x: α // rel x top } := fun a b => rel a b
+def rel_rank_emb (top: α) : rel_rank rel top ↪r rel where
   toFun x := x.val
   inj' := Subtype.val_inj
   resp_rel := Iff.rfl
-def rel_typein_princ_top (top: α) : (rel_typein_emb rel top).IsPrincipalTop top := by
+def rel_rank_princ_top (top: α) : (rel_rank_emb rel top).IsPrincipalTop top := by
   intro x
   apply Iff.intro
   intro h
   exists ⟨x, h⟩
   rintro ⟨x, rfl⟩
   exact x.property
-def rel_typein_hom (top: α) : rel_typein rel top ≺i rel where
-  toRelEmbedding := rel_typein_emb rel top
-  exists_top := by exists top; apply rel_typein_princ_top
+def rel_rank_hom (top: α) : rel_rank rel top ≺i rel where
+  toRelEmbedding := rel_rank_emb rel top
+  exists_top := by exists top; apply rel_rank_princ_top
 
-instance : Relation.IsWellOrder (rel_typein rel top) :=
-  (rel_typein_hom rel top).toRelEmbedding.lift_wo
+instance : Relation.IsWellOrder (rel_rank rel top) :=
+  (rel_rank_hom rel top).toRelEmbedding.lift_wo
 
-def typein (top: α) := Ordinal.type (rel_typein rel top)
-def typein' (rel: α -> α -> Prop) (h: Relation.IsWellOrder rel) (top: α) := typein rel top
+def rank (top: α) := Ordinal.type (rel_rank rel top)
+def rank' (rel: α -> α -> Prop) (h: Relation.IsWellOrder rel) (top: α) := rank rel top
 
-def typein_surj : ∀o < type rel, ∃top, o = typein rel top := by
+def rank_surj : ∀o < type rel, ∃top, o = rank rel top := by
   intro o ho
   cases o with | _ β relβ =>
   obtain ⟨ho⟩ := ho
@@ -241,9 +241,9 @@ def typein_surj : ∀o < type rel, ∃top, o = typein rel top := by
     resp_rel := ho.resp_rel
   }
 
-def typein_lt_type (top: α) : typein r top < type r := ⟨rel_typein_hom r top⟩
+def rank_lt_type (top: α) : rank r top < type r := ⟨rel_rank_hom r top⟩
 
-def rel_typein_lt_rel_typein_init (init: r ≼i s) (a: α) (b: β) (h: s (init a) b) : rel_typein r a ≺i rel_typein s b where
+def rel_rank_lt_rel_rank_init (init: r ≼i s) (a: α) (b: β) (h: s (init a) b) : rel_rank r a ≺i rel_rank s b where
   toFun x := {
     val := init x.val
     property := trans (init.resp_rel.mp x.property) h
@@ -269,7 +269,7 @@ def rel_typein_lt_rel_typein_init (init: r ≼i s) (a: α) (b: β) (h: s (init a
       apply init.resp_rel.mp
       assumption
 
-def rel_typein_rel_typein (a top: α) (h: r top a) : rel_typein (rel_typein r a) ⟨top, h⟩ ≃r rel_typein r top where
+def rel_rank_rel_rank (a top: α) (h: r top a) : rel_rank (rel_rank r a) ⟨top, h⟩ ≃r rel_rank r top where
   toFun x := {
     val := x.val.val
     property := x.property
@@ -285,19 +285,19 @@ def rel_typein_rel_typein (a top: α) (h: r top a) : rel_typein (rel_typein r a)
   rightInv _ := rfl
   resp_rel := Iff.rfl
 
-def typein_lt_typein_init_iff (init: r ≼i s) (a: α) (b: β) : typein r a < typein s b ↔ s (init a) b := by
+def rank_lt_rank_init_iff (init: r ≼i s) (a: α) (b: β) : rank r a < rank s b ↔ s (init a) b := by
   symm; apply Iff.intro
   · intro h
-    exact ⟨rel_typein_lt_rel_typein_init init a b h⟩
+    exact ⟨rel_rank_lt_rel_rank_init init a b h⟩
   · intro ⟨h⟩
     dsimp at h
 
-    let r₀ := h.trans (rel_typein_hom s b)
-    let r₁ := (rel_typein_hom r a).lt_of_lt_of_le init
+    let r₀ := h.trans (rel_rank_hom s b)
+    let r₁ := (rel_rank_hom r a).lt_of_lt_of_le init
     have eq : r₁ = r₀ := Subsingleton.allEq _ _
     have princ_top: r₁.IsPrincipalTop (init a) := by
       apply PrincipalSegment.top_of_lt_of_lt_of_le
-      apply rel_typein_princ_top
+      apply rel_rank_princ_top
     rw [eq] at princ_top
     have ⟨top, htop⟩ := h.exists_top
     have top' : r₀.IsPrincipalTop top := by
@@ -306,9 +306,9 @@ def typein_lt_typein_init_iff (init: r ≼i s) (a: α) (b: β) : typein r a < ty
     rw [PrincipalSegment.top_unique' _ _ _ princ_top top']
     exact top.property
 
-def typein_lt_typein_iff {a b: α} : typein r a < typein r b ↔ r a b := typein_lt_typein_init_iff (InitialSegment.refl _) _ _
+def rank_lt_rank_iff {a b: α} : rank r a < rank r b ↔ r a b := rank_lt_rank_init_iff (InitialSegment.refl _) _ _
 
-def typein_congr (init: r ≼i s) (top: α) : typein s (init top) = typein r top := by
+def rank_congr (init: r ≼i s) (top: α) : rank s (init top) = rank r top := by
   have (x: { b: β // s b (init top) }) : x.val ∈ Set.range init := init.isInitial top x.val x.property
   replace := Classical.axiomOfChoice this
   obtain ⟨f, hf⟩ := this
@@ -337,23 +337,23 @@ def typein_congr (init: r ≼i s) (top: α) : typein s (init top) = typein r top
     resp_rel := init.resp_rel
   }
 
-def typein_typein (a top: α) (h: r top a) : typein (rel_typein r a) ⟨top, h⟩ = typein r top := by
+def rank_rank (a top: α) (h: r top a) : rank (rel_rank r a) ⟨top, h⟩ = rank r top := by
   apply sound
-  apply rel_typein_rel_typein
+  apply rel_rank_rel_rank
 
-def typein_inj_initial (init: r ≼i s) (a: α) (b: β) : typein r a = typein s b -> b = init a := by
+def rank_inj_initial (init: r ≼i s) (a: α) (b: β) : rank r a = rank s b -> b = init a := by
   intro h
   apply Relation.eq_of_not_lt_or_gt s
   intro g
   obtain ⟨b, rfl⟩ := init.isInitial _ _ g
   simp at *
-  rw [←typein_lt_typein_init_iff init, typein_congr, h, typein_congr] at g
+  rw [←rank_lt_rank_init_iff init, rank_congr, h, rank_congr] at g
   exact lt_irrefl g
   intro g
-  rw [←typein_lt_typein_init_iff init, h] at g
+  rw [←rank_lt_rank_init_iff init, h] at g
   exact lt_irrefl g
 
-def typein_inj : Function.Injective (typein r) := by intro x y h; apply typein_inj_initial (InitialSegment.refl r) _ _ h.symm
+def rank_inj : Function.Injective (rank r) := by intro x y h; apply rank_inj_initial (InitialSegment.refl r) _ _ h.symm
 
 instance : @Relation.IsWellFounded Ordinal (· < ·) where
   wf := by
@@ -362,17 +362,17 @@ instance : @Relation.IsWellFounded Ordinal (· < ·) where
     apply Acc.intro
     intro b r
     cases a with | _ _ rel =>
-    have ⟨a₀, eq⟩ := typein_surj rel b r
+    have ⟨a₀, eq⟩ := rank_surj rel b r
     subst b
     clear r
     induction a₀ using (Relation.wellFounded rel).induction with
     | h a₀ ih =>
     apply Acc.intro
     intro c r
-    have ⟨c₀, eq⟩ := typein_surj _ _ (lt_trans r (typein_lt_type _))
+    have ⟨c₀, eq⟩ := rank_surj _ _ (lt_trans r (rank_lt_type _))
     subst eq
     apply ih
-    apply typein_lt_typein_iff.mp r
+    apply rank_lt_rank_iff.mp r
 
 instance : WellFoundedRelation Ordinal where
   rel a b := a < b
@@ -391,14 +391,14 @@ def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b �
     left; rfl
   intro a b ao bo
   cases o with | _ _ rel =>
-  have ⟨a, eq⟩ := typein_surj _ a ao
+  have ⟨a, eq⟩ := rank_surj _ a ao
   subst eq
-  have ⟨b, eq⟩ := typein_surj _ b bo
+  have ⟨b, eq⟩ := rank_surj _ b bo
   subst eq
   rcases Relation.connected rel a b with ab | eq | ba
-  left; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
+  left; apply le_of_lt; apply rank_lt_rank_iff.mpr; assumption
   left; rw [eq]
-  right; apply le_of_lt; apply typein_lt_typein_iff.mpr; assumption
+  right; apply le_of_lt; apply rank_lt_rank_iff.mpr; assumption
 
 def le_add_left (a b: Ordinal) : a ≤ a + b := by
   cases a with | _ _ a =>
@@ -441,10 +441,10 @@ instance : IsLinearOrder Ordinal := inferInstance
 instance : @Relation.IsWellOrder Ordinal (· < ·) := inferInstance
 instance : @Relation.IsConnected Ordinal (· < ·) := inferInstance
 
-def typein_le_typein_iff {a b: α} : typein r a ≤ typein r b ↔ ¬r b a := by
+def rank_le_rank_iff {a b: α} : rank r a ≤ rank r b ↔ ¬r b a := by
   rw [←not_lt]
   apply Iff.not_iff_not
-  apply typein_lt_typein_iff
+  apply rank_lt_rank_iff
 
 def ulift_le_ulift (a b: Ordinal.{u}) : ulift.{v} a ≤ ulift.{v} b ↔ a ≤ b := by
   cases a with | _ _ a =>
@@ -494,7 +494,7 @@ section Lattice
 -- are in the same position as each other in their respective orders
 -- since this puts elements in 1-1 correspondence, there can't be elements
 -- than the smaller of the two relations
-def minType := { x: α × β // Ordinal.typein relα x.fst = Ordinal.typein relβ x.snd }
+def minType := { x: α × β // rank relα x.fst = rank relβ x.snd }
 
 def rel_min : Relation (minType relα relβ) := fun a b => relα a.val.fst b.val.fst
 def rel_min' : Relation (minType relα relβ) := fun a b => relβ a.val.snd b.val.snd
@@ -510,12 +510,12 @@ def rel_min_eq_rel_min' : rel_min relα relβ = rel_min' relα relβ := by
     assumption
     · subst y₁
       rw [←hx] at hy
-      cases typein_inj hy
+      cases rank_inj hy
       have := Relation.irrefl h
       contradiction
-    · rw [←typein_lt_typein_iff (r := relβ)] at hβ
+    · rw [←rank_lt_rank_iff (r := relβ)] at hβ
       rw [←hx, ←hy] at hβ
-      rw [typein_lt_typein_iff] at hβ
+      rw [rank_lt_rank_iff] at hβ
       have := Relation.asymm h hβ
       contradiction
   · intro h
@@ -523,12 +523,12 @@ def rel_min_eq_rel_min' : rel_min relα relβ = rel_min' relα relβ := by
     assumption
     · subst y₀
       rw [hx] at hy
-      cases typein_inj hy
+      cases rank_inj hy
       have := Relation.irrefl h
       contradiction
-    · rw [←typein_lt_typein_iff (r := relα)] at hα
+    · rw [←rank_lt_rank_iff (r := relα)] at hα
       rw [hx, hy] at hα
-      rw [typein_lt_typein_iff] at hα
+      rw [rank_lt_rank_iff] at hα
       have := Relation.asymm h hα
       contradiction
 
@@ -546,19 +546,19 @@ def rel_min_hom_left : rel_min relα relβ ≼i relα where
     simp at h hx hy
     subst h
     suffices x₁ = y₁ by subst this; rfl
-    rwa [hx, typein_inj.eq_iff] at hy
+    rwa [hx, rank_inj.eq_iff] at hy
   resp_rel := Iff.rfl
   isInitial := by
     intro ⟨⟨x₀, x₁⟩, hx⟩ a
     show relα a x₀ -> _
     intro h
-    suffices ∃b, typein relα a = typein relβ b by
+    suffices ∃b, rank relα a = rank relβ b by
       obtain ⟨b, eq⟩ := this
       exists ⟨⟨_, _⟩, eq⟩
-    have ⟨ltα⟩ := typein_lt_type (r := relα) x₀
-    have ⟨ltβ⟩ := typein_lt_type (r := relβ) x₁
+    have ⟨ltα⟩ := rank_lt_type (r := relα) x₀
+    have ⟨ltβ⟩ := rank_lt_type (r := relβ) x₁
     replace ⟨hx⟩ := exact hx
-    let ha := rel_typein_lt_rel_typein_init (InitialSegment.refl relα) a x₀ h
+    let ha := rel_rank_lt_rel_rank_init (InitialSegment.refl relα) a x₀ h
     let b := hx ⟨a, h⟩
     have htop := PrincipalSegment.top_of_lt_of_lt_of_le ha (InitialSegment.ofRelIso hx) ⟨_, h⟩ <| by
       intro ⟨x, hx⟩
@@ -571,8 +571,8 @@ def rel_min_hom_left : rel_min relα relβ ≼i relα where
       · intro ⟨⟨_, _⟩, rfl⟩
         assumption
     exists b
-    rw [←typein_typein (r := relα) _ _ h, ←typein_typein (r := relβ)]
-    symm; apply typein_congr (InitialSegment.ofRelIso hx)
+    rw [←rank_rank (r := relα) _ _ h, ←rank_rank (r := relβ)]
+    symm; apply rank_congr (InitialSegment.ofRelIso hx)
 
 def rel_min_hom_right : rel_min relα relβ ≼i relβ := by
   apply InitialSegment.congr
@@ -593,7 +593,7 @@ def min : Ordinal -> Ordinal -> Ordinal := by
   }
   · intro (a, b)
     simp
-    rw [←typein_congr (InitialSegment.ofRelIso ac) a, ←typein_congr (InitialSegment.ofRelIso bd) b]
+    rw [←rank_congr (InitialSegment.ofRelIso ac) a, ←rank_congr (InitialSegment.ofRelIso bd) b]
     rfl
   · simp
     intro ⟨⟨a, b⟩, h₀⟩ ⟨⟨c, d⟩, h₁⟩
@@ -630,7 +630,7 @@ instance : IsSemiLatticeMin Ordinal where
         val := (ka k, kb k)
         property := by
           simp;
-          rw [typein_congr, typein_congr]
+          rw [rank_congr, rank_congr]
       }
       inj' k₀ k₁ hk := by
         simp at hk
@@ -651,14 +651,14 @@ instance : IsSemiLatticeMin Ordinal where
         simp at h
         simp at r
         replace r := ka.resp_rel.mpr r
-        rw [typein_congr ka, ←typein_congr kb] at h
-        symm; exact typein_inj h
+        rw [rank_congr ka, ←rank_congr kb] at h
+        symm; exact rank_inj h
     }
 
 inductive maxType where
-| common (a: α) (b: β) (h: typein relα a = typein relβ b)
-| inl (a: α) (h: ∀b: β, typein relβ b < Ordinal.typein relα a)
-| inr (b: β) (h: ∀a: α, typein relα a < Ordinal.typein relβ b)
+| common (a: α) (b: β) (h: rank relα a = rank relβ b)
+| inl (a: α) (h: ∀b: β, rank relβ b < rank relα a)
+| inr (b: β) (h: ∀a: α, rank relα a < rank relβ b)
 
 inductive rel_max : maxType relα relβ -> maxType relα relβ -> Prop where
 | inl : relα a₀ a₁ -> rel_max (.inl a₀ h₀) (.inl a₁ h₁)
@@ -670,8 +670,8 @@ inductive rel_max : maxType relα relβ -> maxType relα relβ -> Prop where
 namespace maxType
 
 def not_inl_and_inr
-  (a: α) (ha: ∀b₀, Ordinal.typein s b₀ < Ordinal.typein r a)
-  (b: β) (hb: ∀a₀, Ordinal.typein r a₀ < Ordinal.typein s b): False :=
+  (a: α) (ha: ∀b₀, rank s b₀ < rank r a)
+  (b: β) (hb: ∀a₀, rank r a₀ < rank s b): False :=
   lt_asymm (ha b) (hb a)
 
 def acc_common : Acc (rel_max relα relβ) (.common a b h) := by
@@ -730,7 +730,7 @@ instance : Relation.IsConnected (rel_max relα relβ) where
       rcases Relation.connected relα a₀ a₁ with h | h | h
       left; apply rel_max.common; assumption
       subst a₁
-      right; left; rw [h₀] at h₁; rw [typein_inj.eq_iff] at h₁; congr
+      right; left; rw [h₀] at h₁; rw [rank_inj.eq_iff] at h₁; congr
       right; right; apply rel_max.common; assumption
     · left; apply rel_max.common_inl
     · left; apply rel_max.common_inr
@@ -758,18 +758,18 @@ instance : Relation.IsWellOrder (rel_max relα relβ) where
 def map (ac: r ≃r t) (bd: s ≃r u) : maxType r s -> maxType t u
 | .inl a ha => .inl (ac a) <| by
   intro d
-  erw [typein_congr ac.toInitial]
+  erw [rank_congr ac.toInitial]
   rw [←bd.symm_coe d]
-  erw [typein_congr bd.toInitial]
+  erw [rank_congr bd.toInitial]
   apply ha
 | .inr b hb => .inr (bd b) <| by
   intro c
-  erw [typein_congr bd.toInitial]
+  erw [rank_congr bd.toInitial]
   rw [←ac.symm_coe c]
-  erw [typein_congr ac.toInitial]
+  erw [rank_congr ac.toInitial]
   apply hb
 | .common a b h => .common (ac a) (bd b) <| by
-  erw [typein_congr ac.toInitial, typein_congr bd.toInitial]
+  erw [rank_congr ac.toInitial, rank_congr bd.toInitial]
   assumption
 
 def swap : maxType r s -> maxType s r
@@ -833,20 +833,20 @@ def max : Ordinal -> Ordinal -> Ordinal := by
       simpa using this
   }
 
-def exists_typein_eq_of_exists_typein_le (a: α) : (∃b: β, ¬typein s b < typein r a) -> ∃b: β, typein r a = typein s b := by
+def exists_rank_eq_of_exists_rank_le (a: α) : (∃b: β, ¬rank s b < rank r a) -> ∃b: β, rank r a = rank s b := by
   intro hb
   have hb := Relation.exists_min s hb
   obtain ⟨b, hb, bmin⟩ := hb
   simp at bmin
-  rcases lt_trichotomy (typein s b) (typein r a) with h | h | h
+  rcases lt_trichotomy (rank s b) (rank r a) with h | h | h
   contradiction
   clear hb
   exists b
   symm; assumption
-  have ⟨b', eq⟩ := typein_surj _ _ h
-  rw [typein_typein] at eq
+  have ⟨b', eq⟩ := rank_surj _ _ h
+  rw [rank_rank] at eq
   rw [eq] at h
-  have := bmin b' (by rwa [typein_lt_typein_iff] at h)
+  have := bmin b' (by rwa [rank_lt_rank_iff] at h)
   rw [eq] at this
   have := lt_asymm this
   contradiction
@@ -856,12 +856,12 @@ protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
     cases a with | _ A rela =>
     cases b with | _ B relb =>
     -- if there exists an `a` which is larger than all `B`s
-    by_cases h:∃a: A, ∀b: B, typein relb b < typein rela a
+    by_cases h:∃a: A, ∀b: B, rank relb b < rank rela a
     · replace h := Relation.exists_min rela h
       obtain ⟨a₀, ha₀, a₀_min⟩ := h
       simp at a₀_min
-      replace a₀_min (a': { a: A // rela a a₀ }) : ∃b: B, typein rela a'.val = typein relb b :=
-        exists_typein_eq_of_exists_typein_le _ (a₀_min a'.val a'.property)
+      replace a₀_min (a': { a: A // rela a a₀ }) : ∃b: B, rank rela a'.val = rank relb b :=
+        exists_rank_eq_of_exists_rank_le _ (a₀_min a'.val a'.property)
       replace a₀_min := Classical.axiomOfChoice a₀_min
       obtain ⟨f, hf⟩ := a₀_min
       simp at hf
@@ -875,7 +875,7 @@ protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
               intro b
               apply lt_of_lt_of_le
               apply ha₀
-              rwa [←typein_le_typein_iff] at ha
+              rwa [←rank_le_rank_iff] at ha
         inj' := by
           intro x y h
           simp at h
@@ -924,7 +924,7 @@ protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
           congr
           have := hf a' (trans h₁ h₀)
           rw [eq] at this
-          exact typein_inj this
+          exact rank_inj this
           cases h
           rename_i h₀ a' h₁ h₂ h₃
           exists a'
@@ -937,15 +937,15 @@ protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
           rename_i h₀ a' b h₁ h₂
           exists a'
           show _ = if _:_ then _ else _
-          rw [dif_pos (by have := ha₀ b; rwa [←h₁, typein_lt_typein_iff] at this)]
+          rw [dif_pos (by have := ha₀ b; rwa [←h₁, rank_lt_rank_iff] at this)]
           congr
-          apply typein_inj (r := relb)
+          apply rank_inj (r := relb)
           rw (occs := [1]) [←h₁]
           apply hf
       }
     · simp at h
-      replace h (a': A) : ∃b: B, typein rela a' = typein relb b :=
-        exists_typein_eq_of_exists_typein_le _ (h a')
+      replace h (a': A) : ∃b: B, rank rela a' = rank relb b :=
+        exists_rank_eq_of_exists_rank_le _ (h a')
       replace h := Classical.axiomOfChoice h
       obtain ⟨f, hf⟩ := h
       refine ⟨?_⟩
@@ -967,7 +967,7 @@ protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
           rename_i a' b h₀ h₁ h₂
           exists a'
           congr
-          symm; rwa [hf, typein_inj.eq_iff] at h₀
+          symm; rwa [hf, rank_inj.eq_iff] at h₀
       }
 
 protected def max_comm (a b: Ordinal) : max a b = max b a := by
@@ -1033,7 +1033,7 @@ instance : IsSemiLatticeMax Ordinal where
       · rename_i a₀ b₀ h₀ a₁ b₁ h₁
         cases ak.inj h
         rw [h₀] at h₁
-        cases typein_inj h₁
+        cases rank_inj h₁
         rfl
       · rename_i a₀ b₀ h₀ a₁ h₁
         have := h₁ b₀
@@ -1043,12 +1043,12 @@ instance : IsSemiLatticeMax Ordinal where
         contradiction
       · rename_i a₀ b₀ h₀ b₁ h₁
         have := h₁ a₀
-        rw [←typein_congr ak, ←typein_congr bk, h] at this
+        rw [←rank_congr ak, ←rank_congr bk, h] at this
         have := lt_irrefl this
         contradiction
       · rename_i a₁ h₁ a₀ b₀ h₀
         have := h₁ b₀
-        rw [←typein_congr ak, ←h₀, ←typein_congr ak, h] at this
+        rw [←rank_congr ak, ←h₀, ←rank_congr ak, h] at this
         have := lt_irrefl this
         contradiction
       · rename_i h
@@ -1059,7 +1059,7 @@ instance : IsSemiLatticeMax Ordinal where
         exact maxType.not_inl_and_inr a ha b hb
       · rename_i b₁ h₁ a₀ b₀ h₀
         have := h₁ a₀
-        rw [←typein_congr ak, ←typein_congr bk, h] at this
+        rw [←rank_congr ak, ←rank_congr bk, h] at this
         have := lt_irrefl this
         contradiction
       · exfalso
@@ -1079,7 +1079,7 @@ instance : IsSemiLatticeMax Ordinal where
         intro h; clear h
         rename_i a₀ b₀ h₀ a₁ h₁
         have := h₁ b₀; rw [←h₀] at this
-        rwa [typein_lt_typein_iff] at this
+        rwa [rank_lt_rank_iff] at this
         intro; apply rel_max.common_inl
       · show _ ↔ relk (bk (ab _)) _
         erw [bk.resp_rel.symm]
@@ -1087,14 +1087,14 @@ instance : IsSemiLatticeMax Ordinal where
         apply Iff.intro
         intro h
         clear h
-        rw [←typein_lt_typein_init_iff ab]
+        rw [←rank_lt_rank_init_iff ab]
         apply h₁
         intro; apply rel_max.common_inr
       · erw [ak.resp_rel.symm]
         rename_i a₁ ha a₀ b₀ h
         apply Iff.intro nofun
         intro g
-        rw [←typein_lt_typein_iff (r := rela), h] at g
+        rw [←rank_lt_rank_iff (r := rela), h] at g
         have := lt_asymm (ha b₀)
         contradiction
       · erw [ak.resp_rel.symm]
@@ -1108,9 +1108,9 @@ instance : IsSemiLatticeMax Ordinal where
         rename_i b₁ hb a₀ b₀ h
         apply Iff.intro nofun
         intro g
-        rw [←typein_lt_typein_iff (r := relb)] at g
+        rw [←rank_lt_rank_iff (r := relb)] at g
         simp at g
-        rw [typein_congr ab] at g
+        rw [rank_congr ab] at g
         have := lt_asymm (hb a₀)
         contradiction
       · rename_i a ha b hb
@@ -1125,9 +1125,9 @@ instance : IsSemiLatticeMax Ordinal where
       · intro lt; rename_i a b h
         obtain ⟨a', rfl⟩ := ak.isInitial _ _ lt
         simp at *
-        erw [ak.resp_rel.symm, ←typein_lt_typein_iff (r := rela)] at lt
+        erw [ak.resp_rel.symm, ←rank_lt_rank_iff (r := rela)] at lt
         rw [h] at lt
-        have ⟨b', hb⟩ := exists_typein_eq_of_exists_typein_le (r := rela) (s := relb) a'
+        have ⟨b', hb⟩ := exists_rank_eq_of_exists_rank_le (r := rela) (s := relb) a'
           ⟨b, by
             apply lt_asymm
             assumption⟩
@@ -1138,28 +1138,28 @@ instance : IsSemiLatticeMax Ordinal where
         intro h
         obtain ⟨a', rfl⟩ := ak.isInitial _ _ h
         simp at *
-        refine if ha':typein rela a' < type relb then ?_ else ?_
-        have ⟨b', hb'⟩ := typein_surj _ _ ha'
+        refine if ha':rank rela a' < type relb then ?_ else ?_
+        have ⟨b', hb'⟩ := rank_surj _ _ ha'
         exists .common a' b' hb'
         refine ⟨.inl a' ?_, rfl⟩
         intro b
         apply lt_of_lt_of_le
-        apply typein_lt_type
+        apply rank_lt_type
         rwa [not_lt] at ha'
       · rename_i a ha
         intro h
         obtain ⟨b', rfl⟩ := bk.isInitial _ _ h
         simp at *
-        refine if hb':typein relb b' < type rela then ?_ else ?_
-        have ⟨a', ha'⟩ := typein_surj _ _ hb'
+        refine if hb':rank relb b' < type rela then ?_ else ?_
+        have ⟨a', ha'⟩ := rank_surj _ _ hb'
         exists .common a' b' ha'.symm
         simp
-        apply typein_inj (r := relk)
-        rwa [typein_congr, typein_congr]
+        apply rank_inj (r := relk)
+        rwa [rank_congr, rank_congr]
         refine ⟨.inr b' ?_, rfl⟩
         intro b
         apply lt_of_lt_of_le
-        apply typein_lt_type
+        apply rank_lt_type
         rwa [not_lt] at hb'
 
 instance : IsLinearLattice Ordinal where
@@ -1718,12 +1718,12 @@ def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{
   apply Iff.intro
   · cases o with | _ α rel =>
     intro h
-    have ⟨x, hx⟩ := typein_surj _ _ h
+    have ⟨x, hx⟩ := rank_surj _ _ h
     exists x
     cases x with | _ β relx =>
     replace ⟨hx⟩ := exact hx
     simp at hx
-    have (x: { o: Ordinal // o < type relx }) := typein_surj relx x.val x.property
+    have (x: { o: Ordinal // o < type relx }) := rank_surj relx x.val x.property
     replace this := Classical.axiomOfChoice this
     obtain ⟨f, hf⟩ := this
     simp at hf
@@ -1733,18 +1733,18 @@ def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{
     simp
     apply RelIso.trans _ (rel_ulift_eqv _).symm
     refine RelIso.symm {
-      toFun b := ⟨typein relx b, typein_lt_type _⟩
+      toFun b := ⟨rank relx b, rank_lt_type _⟩
       invFun := f
       leftInv x := by
         simp
-        apply typein_inj (r := relx)
+        apply rank_inj (r := relx)
         symm; apply hf
       rightInv y := by
         simp; congr
         symm; apply hf
       resp_rel := by
         intro a b
-        apply typein_lt_typein_iff.symm
+        apply rank_lt_rank_iff.symm
     }
   · rintro ⟨x, rfl⟩
     cases x with | _ α rel =>
@@ -1754,19 +1754,19 @@ def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{
     symm; apply rel_ulift_eqv
     rfl
     exact {
-      toFun := typein rel
-      inj' := typein_inj
-      resp_rel := typein_lt_typein_iff.symm
+      toFun := rank rel
+      inj' := rank_inj
+      resp_rel := rank_lt_rank_iff.symm
       exists_top := by
         exists type rel
         intro x
         simp
         apply Iff.intro
         intro h
-        obtain ⟨x, rfl⟩ := typein_surj _ _ h
+        obtain ⟨x, rfl⟩ := rank_surj _ _ h
         apply Set.mem_range'
         rintro ⟨x, rfl⟩
-        apply typein_lt_type
+        apply rank_lt_type
     }
 
 def ord_is_minimal (o: Ordinal.{u + 1}) : (∀x: Ordinal.{u}, ulift.{u+1} x ≤ o) -> ord.{u} ≤ o := by
@@ -1863,8 +1863,8 @@ def omega_eq_sSup_natCast : ω = ⨆n: ℕ, (n: Ordinal) := by
         apply hx
         apply Set.mem_range'
       cases x with | _ A rel =>
-      replace hx (n: ℕ) : ∃x, n = typein rel x := by
-        apply typein_surj
+      replace hx (n: ℕ) : ∃x, n = rank rel x := by
+        apply rank_surj
         apply lt_of_lt_of_le
         apply lt_succ_self
         simp ; apply hx
@@ -1879,22 +1879,22 @@ def omega_eq_sSup_natCast : ω = ⨆n: ℕ, (n: Ordinal) := by
         toFun := f
         inj' := by
           intro x y h
-          rw [←(typein_inj (r := rel)).eq_iff, ←hf, ← hf] at h
+          rw [←(rank_inj (r := rel)).eq_iff, ←hf, ← hf] at h
           apply natCast_inj
           assumption
         resp_rel := by
           intro x y
           simp
-          rw [←typein_lt_typein_iff (r := rel), ←hf, ←hf, natCast_lt_natCast_iff]
+          rw [←rank_lt_rank_iff (r := rel), ←hf, ←hf, natCast_lt_natCast_iff]
         isInitial := by
           intro a b h
           simp at h
-          rw [←typein_lt_typein_iff (r := rel), ←hf] at h
+          rw [←rank_lt_rank_iff (r := rel), ←hf] at h
           rw [lt_natCast] at h
           obtain ⟨i, hi, eq⟩ := h
           exists i
           simp
-          apply typein_inj (r := rel)
+          apply rank_inj (r := rel)
           rwa [←hf]
       }
     · exists ω
