@@ -3,6 +3,7 @@ import Math.Tactics.PPWithUniv
 import Math.Relation.Segments
 import Math.Order.Defs
 import Math.Data.Fin.Pairing
+import Math.Order.Lattice.ConditionallyComplete
 
 universe u v w
 
@@ -1662,5 +1663,56 @@ instance : IsSuccLimitOrdinal ord.{u} where
     exact lt_irrefl this
 
 end Ord
+
+noncomputable section ConditionallyCompleteLattice
+
+open scoped Classical
+
+def BoundedBelow (s: Set Ordinal) : s.BoundedBelow := by
+  exists 0
+  intro x hx
+  apply zero_le
+
+instance : InfSet Ordinal where
+  sInf S :=
+    if hS:S.Nonempty then
+      S.min (· < ·) hS
+    else
+      0
+
+instance : SupSet Ordinal where
+  sSup S := sInf S.upperBounds
+
+protected def le_csInf (S: Set Ordinal) (x: Ordinal) : S.Nonempty → x ∈ S.lowerBounds → x ≤ ⨅ S := by
+  intro hS hx
+  apply hx
+  simp [sInf]
+  rw [dif_pos hS]
+  apply Set.min_mem
+protected def csInf_le (s: Set Ordinal) (x: Ordinal) : x ∈ s → ⨅ s ≤ x := by
+  intro hx
+  rw [←not_lt]; intro h
+  simp [sInf] at h
+  rw [dif_pos ⟨_, hx⟩] at h
+  exact Set.not_lt_min _ _ _ hx h
+
+instance : IsConditionallyCompleteLattice Ordinal where
+  le_csInf := Ordinal.le_csInf _ _
+  csInf_le _ := Ordinal.csInf_le _ _
+  le_csSup := by
+    intro S a hS ha
+    simp [sSup]
+    apply Ordinal.le_csInf
+    assumption
+    intro x hx
+    apply hx
+    assumption
+  csSup_le := by
+    intro S a hS ha
+    simp [sSup]
+    apply Ordinal.csInf_le
+    assumption
+
+end ConditionallyCompleteLattice
 
 end Ordinal
