@@ -1127,13 +1127,14 @@ section Nat
 
 def ofNat (n: ℕ) : Ordinal := type (· < (·: Fin n))
 def omega : Ordinal := type (· < (·: Nat))
+abbrev omega' : Ordinal := omega.ulift
 
-notation "ω" => omega.ulift
+notation "ω" => omega'
 
 instance : NatCast Ordinal := ⟨fun n => (ofNat n).ulift⟩
 instance : OfNat Ordinal n := ⟨n⟩
 
-def ofNat_lt_omega (n: ℕ) : n < ω := by
+def natCast_lt_omega (n: ℕ) : n < ω := by
   refine ⟨?_⟩
   simp
   apply PrincipalSegment.congr
@@ -1189,7 +1190,6 @@ def succ : Ordinal -> Ordinal := by
   assumption
   rfl
 
-@[simp]
 def natCast_add (n m: ℕ) : (n + m: Ordinal) = (n + m: ℕ) := by
   apply sound
   infer_instance
@@ -1224,7 +1224,6 @@ def natCast_add (n m: ℕ) : (n + m: Ordinal) = (n + m: ℕ) := by
     apply Nat.add_lt_add_iff_left.mp
     assumption
 
-@[simp]
 def natCast_mul (n m: ℕ) : (n * m: Ordinal) = (n * m: ℕ) := by
   apply sound
   infer_instance
@@ -1295,10 +1294,91 @@ def succ_eq_add_one (o: Ordinal): o.succ = o + 1 := by
   }
 
 @[simp]
-def natCast_succ (n: ℕ) : (n: Ordinal).succ = (n + 1: ℕ) := by
-  rw [succ_eq_add_one, ←natCast_add]
+def natCast_succ (n: ℕ) : (n: Ordinal) + 1 = (n + 1: ℕ) := by
+  rw [←natCast_add]
   congr
 
+def zero_le (o: Ordinal) : 0 ≤ o := by
+  induction o with | _ A rel =>
+  refine ⟨?_⟩
+  simp
+  apply InitialSegment.congr
+  symm; apply rel_ulift_eqv
+  rfl
+  refine {
+    Embedding.empty with
+    resp_rel := by intro x; exact x.elim0
+    isInitial := by intro x; exact x.elim0
+  }
+
+def of_lt_omega (o: Ordinal) : o < ω -> ∃n: ℕ, o = n := by
+  induction o with | _ A rel =>
+  intro ⟨h⟩
+  simp at h
+  replace h := h.congr .refl (rel_ulift_eqv _)
+  obtain ⟨n, nspec⟩ := h.exists_top
+  have (i: Fin n) := (nspec i.val).mp i.isLt
+  replace := Classical.axiomOfChoice this
+  obtain ⟨f, hf⟩ := this
+  exists n
+  apply sound
+  infer_instance
+  simp
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  simp at hf
+  refine {
+    toFun a := {
+      val := h a
+      isLt := by
+        apply (nspec _).mpr
+        apply Set.mem_range'
+    }
+    invFun := f
+    leftInv x := by
+      simp
+      apply h.inj
+      symm; apply hf ⟨_, _⟩
+    rightInv x := by simp; congr; rw [hf]
+    resp_rel := by
+      intro a b
+      apply h.resp_rel
+  }
+
+def lt_omega {o: Ordinal} : o < ω ↔ ∃n: ℕ, o = n := by
+  apply Iff.intro
+  apply of_lt_omega
+  rintro ⟨n, rfl⟩
+  apply natCast_lt_omega
+
 end Nat
+
+section Limit
+
+class IsLimitOrdinal (o: Ordinal) where
+  ne_succ: ∀x < o, x.succ ≠ o
+
+class IsSuccLimitOrdinal (o: Ordinal) extends IsLimitOrdinal o, NeZero o where
+
+instance : IsLimitOrdinal 0 where
+  ne_succ x h g := by
+    rw [←not_le] at h
+    exact h (zero_le _)
+
+instance : IsSuccLimitOrdinal ω where
+  ne_succ x hx  h := by
+    rw [lt_omega] at hx
+    obtain ⟨n, rfl⟩ := hx
+    simp at h
+    have := natCast_lt_omega (n + 1)
+    rw [h] at this
+    exact lt_irrefl this
+  out := by
+    intro h
+    have := natCast_lt_omega 0
+    rw [h] at this
+    exact lt_irrefl this
+
+end Limit
 
 end Ordinal
