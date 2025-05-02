@@ -371,6 +371,25 @@ instance : @IsEquiv α trivial where
   symm _ := True.intro
   trans _ _ := True.intro
 
+abbrev empty: α -> α -> Prop := fun _ _ => False
+
+instance : @IsAsymm α empty where
+  asymm := nofun
+
+instance : @IsTrans α empty where
+  trans := nofun
+
+instance : @IsWellFounded α empty where
+  wf := by
+    apply WellFounded.intro
+    intro a ; apply Acc.intro
+    nofun
+
+instance [Subsingleton α] : @IsConnectedBy α empty eqv where
+  connected_by a b := by
+    right; left
+    rw [Subsingleton.allEq a b]
+
 instance : @IsWellFounded Nat (· < ·) where
   wf := Nat.lt_wfRel.wf
 

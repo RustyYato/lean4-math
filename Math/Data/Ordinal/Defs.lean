@@ -2,6 +2,7 @@ import Math.Relation.RelIso
 import Math.Tactics.PPWithUniv
 import Math.Relation.Segments
 import Math.Order.Defs
+import Math.Data.Fin.Pairing
 
 universe u v w
 
@@ -70,10 +71,11 @@ def lift₂ {A: Type w} (f: ∀(α: Type u) (β: Type v) (relα: α -> α -> Pro
   assumption
 
 def rel_ulift : Relation (ULift α) := fun a b => rel a.down b.down
-def rel_ulift_hom : rel_ulift rel ↪r rel where
-  toFun x := x.down
+def rel_ulift_eqv : rel_ulift rel ≃r rel where
+  toEquiv := Equiv.ulift _
   resp_rel := Iff.rfl
-  inj' := (Equiv.ulift _).inj
+def rel_ulift_hom : rel_ulift rel ↪r rel := (rel_ulift_eqv rel).toRelEmbedding
+
 
 instance : Relation.IsWellOrder (rel_ulift rel) := (rel_ulift_hom rel).lift_wo
 
@@ -184,7 +186,7 @@ def mul : Ordinal -> Ordinal -> Ordinal := by
 instance : Add Ordinal where
   add := add
 instance : Mul Ordinal where
-  mul := add
+  mul := mul
 
 def rel_typein (top: α) : Relation { x: α // rel x top } := fun a b => rel a b
 def rel_typein_emb (top: α) : rel_typein rel top ↪r rel where
@@ -1120,5 +1122,183 @@ instance : IsSemiLatticeMax Ordinal where
 instance : IsLinearLattice Ordinal where
 
 end Lattice
+
+section Nat
+
+def ofNat (n: ℕ) : Ordinal := type (· < (·: Fin n))
+def omega : Ordinal := type (· < (·: Nat))
+
+notation "ω" => omega.ulift
+
+instance : NatCast Ordinal := ⟨fun n => (ofNat n).ulift⟩
+instance : OfNat Ordinal n := ⟨n⟩
+
+def ofNat_lt_omega (n: ℕ) : n < ω := by
+  refine ⟨?_⟩
+  simp
+  apply PrincipalSegment.congr
+  symm; apply rel_ulift_eqv
+  symm; apply rel_ulift_eqv
+  refine {
+    Fin.embedNat with
+    resp_rel := Iff.rfl
+    exists_top := by
+      exists n
+      intro x
+      simp
+      apply Iff.intro
+      intro h
+      exists ⟨_, h⟩
+      rintro ⟨⟨x, hx⟩, rfl⟩
+      assumption
+  }
+
+inductive succ_rel : Relation (Option α) where
+| some : rel a b -> succ_rel (.some a) (.some b)
+| none : succ_rel (.some x) .none
+
+def succ_rel_eqv : succ_rel rel ≃r Sum.Lex rel (Relation.empty (α := Unit)) where
+  toEquiv := (Equiv.option_equiv_unit_sum _).trans (Equiv.commSum _ _)
+  resp_rel := by
+    intro a b
+    simp
+    cases a <;> cases b
+    apply Iff.intro nofun nofun
+    apply Iff.intro nofun nofun
+    apply Iff.intro
+    intro; apply Sum.Lex.sep
+    intro; apply succ_rel.none
+    apply Iff.intro
+    intro h; cases h
+    apply Sum.Lex.inl
+    assumption
+    intro h; cases h
+    apply succ_rel.some
+    assumption
+
+instance : Relation.IsWellOrder (succ_rel rel) :=
+  (succ_rel_eqv rel).toRelEmbedding.lift_wo
+
+def succ : Ordinal -> Ordinal := by
+  refine lift (fun _ rel _ => type (succ_rel rel)) ?_
+  intro a b rela relb _ _ h
+  simp; apply sound
+  apply (succ_rel_eqv _).trans
+  apply RelIso.trans _ (succ_rel_eqv _).symm
+  apply RelIso.congrSumLex
+  assumption
+  rfl
+
+@[simp]
+def natCast_add (n m: ℕ) : (n + m: Ordinal) = (n + m: ℕ) := by
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  apply RelIso.trans
+  apply RelIso.congrSumLex
+  apply rel_ulift_eqv
+  apply rel_ulift_eqv
+  refine { Equiv.finSum with resp_rel := ?_ }
+  intro a b
+  simp
+  apply Iff.intro
+  · intro h
+    cases h
+    · assumption
+    · simp;
+      apply Nat.add_lt_add_left
+      assumption
+    · simp
+      rename_i a b
+      show a.val  < n + b.val
+      omega
+  · intro h
+    cases a <;> cases b <;> simp at *
+    assumption
+    rename_i a b
+    have : n + a.val < b.val := h
+    omega
+    apply Nat.add_lt_add_iff_left.mp
+    assumption
+
+@[simp]
+def natCast_mul (n m: ℕ) : (n * m: Ordinal) = (n * m: ℕ) := by
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  apply RelIso.trans
+  apply RelIso.congrProdLex
+  apply rel_ulift_eqv
+  apply rel_ulift_eqv
+  refine { Equiv.finProd with resp_rel := ?_ }
+  intro a b
+  simp
+  apply Iff.intro
+  · intro h
+    cases h
+    · simp [Equiv.finProd, Fin.pair]
+      apply Nat.lt_of_lt_of_le
+      apply Nat.add_lt_add_left
+      apply Fin.isLt
+      apply flip Nat.le_trans
+      apply Nat.le_add_right
+      rw [←Nat.succ_mul]
+      simp
+      apply Nat.mul_le_mul
+      omega
+      rfl
+    · simpa [Equiv.finProd, Fin.pair]
+  · obtain ⟨a₀, a₁⟩ := a
+    obtain ⟨b₀, b₁⟩ := b
+    intro h
+    simp [Equiv.finProd, Fin.pair] at h
+    rcases lt_trichotomy a₀.val b₀.val with g | g | g
+    apply Prod.Lex.left
+    assumption
+    rw [Fin.val_inj] at g; cases g
+    apply Prod.Lex.right
+    omega
+    rw [←Nat.succ_le] at g
+    have : (b₀.val + 1) * m + a₁.val < b₀.val * m + b₁.val := Nat.lt_of_le_of_lt (by
+      apply Nat.add_le_add_right
+      apply Nat.mul_le_mul_right
+      assumption) h
+    have : b₀.val * m + b₁.val < (b₀.val + 1) * m := by
+      rw [Nat.succ_mul]
+      omega
+    omega
+
+@[simp]
+def succ_eq_add_one (o: Ordinal): o.succ = o + 1 := by
+  induction o with | _ α rel =>
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply flip RelIso.trans
+  apply RelIso.congrSumLex
+  rfl; symm; apply rel_ulift_eqv
+  apply (succ_rel_eqv _).trans
+  apply RelIso.congrSumLex
+  rfl
+  exact {
+    Equiv.unique _ _ with
+    resp_rel := by
+      intro x y
+      simp
+  }
+
+@[simp]
+def natCast_succ (n: ℕ) : (n: Ordinal).succ = (n + 1: ℕ) := by
+  rw [succ_eq_add_one, ←natCast_add]
+  congr
+
+end Nat
 
 end Ordinal
