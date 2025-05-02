@@ -1367,6 +1367,90 @@ def zero_le (o: Ordinal) : 0 ≤ o := by
     isInitial := by intro x; exact x.elim0
   }
 
+def natCast_eq_ulift_natCast (n: ℕ) : n = ulift.{u, 0} n := by
+  apply sound
+  infer_instance
+  infer_instance
+  simp
+  apply RelIso.trans
+  apply rel_ulift_eqv
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  apply flip RelIso.trans
+  symm; apply rel_ulift_eqv
+  rfl
+
+def natCast_inj : Function.Injective fun n: ℕ => (n: Ordinal) := by
+  intro x y h
+  simp at h
+  have ⟨h⟩ := Quotient.exact h
+  simp at h
+  replace h := Equiv.trans (Equiv.trans (Equiv.ulift _).symm (h.toEquiv)) (Equiv.ulift _)
+  exact Fin.eq_of_equiv h
+
+def natCast_le_natCast_iff (n m: ℕ) : (n: Ordinal) ≤ m ↔ n ≤ m := by
+  apply Iff.intro
+  intro ⟨h⟩
+  simp at h
+  have h := Equiv.congrEmbed (Equiv.ulift _) (Equiv.ulift _) h.toEmbedding
+  exact Fin.le_of_emebd h
+  intro h
+  refine ⟨?_⟩
+  simp; apply InitialSegment.congr (rel_ulift_eqv _).symm (rel_ulift_eqv _).symm
+  refine {
+    toFun x := x.castLE h
+    inj' := by
+      intro x y h
+      rw [←Fin.val_inj] at *
+      simp at h; assumption
+    resp_rel := Iff.rfl
+    isInitial := by
+      intro a b
+      simp
+      intro g
+      replace g : b.val < a.val := g
+      exists ⟨b.val, ?_⟩
+      omega
+      rfl
+  }
+def natCast_lt_natCast_iff (n m: ℕ) : (n: Ordinal) < m ↔ n < m := by
+  apply lt_iff_of_le_iff
+  apply natCast_le_natCast_iff
+
+def lt_natCast (n: ℕ) (o: Ordinal) : o < n ↔ ∃i < n, o = i := by
+  apply flip Iff.intro
+  rintro ⟨i, hi, rfl⟩
+  rwa [natCast_lt_natCast_iff]
+  induction o using ind with | _ A rel =>
+  intro ⟨h⟩
+  simp at h
+  replace h := h.congr .refl (rel_ulift_eqv _)
+  have ⟨⟨top, topLt⟩, htop⟩ := h.exists_top
+  exists top
+  apply And.intro
+  exact topLt
+  have hx_lt_top (x: A) : (h x).val < top := (htop (h x)).mpr Set.mem_range'
+  have hx (x: Fin top) : ⟨x.val, (by omega)⟩ ∈ Set.range h  := (htop ⟨x.val, by omega⟩).mp x.isLt
+  replace hx := Classical.axiomOfChoice hx
+  obtain ⟨f, hf⟩ := hx
+  apply sound
+  infer_instance
+  apply RelIso.trans _ (rel_ulift_eqv _).symm
+  simp
+  exact {
+    toFun x := ⟨h x, hx_lt_top x⟩
+    invFun := f
+    leftInv := by
+      intro a
+      simp; apply h.inj
+      rw [←hf]
+    rightInv := by
+      intro x; simp
+      congr 1
+      rw [←hf]
+    resp_rel := h.resp_rel
+  }
+
 def of_lt_omega (o: Ordinal) : o < ω -> ∃n: ℕ, o = n := by
   induction o with | _ A rel =>
   intro ⟨h⟩
@@ -1615,6 +1699,16 @@ def limit_is_limit_ord (o: Ordinal) : (limit o).IsLimitOrdinal :=
 def limit_is_max_limit_ord (o: Ordinal) : ∀x ≤ o, x.IsLimitOrdinal -> x ≤ limit o :=
   (Classical.choose_spec (exists_limit o)).right.right
 
+def finite_limit (o: Ordinal) : o.IsLimitOrdinal -> o < ω -> o = 0 := by
+  intro ho o_lt_omega
+  rw [lt_omega] at o_lt_omega
+  obtain ⟨n, rfl⟩ := o_lt_omega
+  cases n
+  rfl
+  rename_i n
+  have := ho.ne_succ n
+  simp [natCast_lt_natCast_iff] at this
+
 end Limit
 
 section Ord
@@ -1763,100 +1857,6 @@ instance : IsConditionallyCompleteLattice Ordinal where
     simp [sSup]
     apply Ordinal.csInf_le
     assumption
-
-def natCast_eq_ulift_natCast (n: ℕ) : n = ulift.{u, 0} n := by
-  apply sound
-  infer_instance
-  infer_instance
-  simp
-  apply RelIso.trans
-  apply rel_ulift_eqv
-  apply flip RelIso.trans
-  symm; apply rel_ulift_eqv
-  apply flip RelIso.trans
-  symm; apply rel_ulift_eqv
-  rfl
-
-def natCast_inj : Function.Injective fun n: ℕ => (n: Ordinal) := by
-  intro x y h
-  simp at h
-  have ⟨h⟩ := Quotient.exact h
-  simp at h
-  replace h := Equiv.trans (Equiv.trans (Equiv.ulift _).symm (h.toEquiv)) (Equiv.ulift _)
-  exact Fin.eq_of_equiv h
-
-def natCast_le_natCast_iff (n m: ℕ) : (n: Ordinal) ≤ m ↔ n ≤ m := by
-  apply Iff.intro
-  intro ⟨h⟩
-  simp at h
-  have h := Equiv.congrEmbed (Equiv.ulift _) (Equiv.ulift _) h.toEmbedding
-  exact Fin.le_of_emebd h
-  intro h
-  refine ⟨?_⟩
-  simp; apply InitialSegment.congr (rel_ulift_eqv _).symm (rel_ulift_eqv _).symm
-  refine {
-    toFun x := x.castLE h
-    inj' := by
-      intro x y h
-      rw [←Fin.val_inj] at *
-      simp at h; assumption
-    resp_rel := Iff.rfl
-    isInitial := by
-      intro a b
-      simp
-      intro g
-      replace g : b.val < a.val := g
-      exists ⟨b.val, ?_⟩
-      omega
-      rfl
-  }
-def natCast_lt_natCast_iff (n m: ℕ) : (n: Ordinal) < m ↔ n < m := by
-  apply lt_iff_of_le_iff
-  apply natCast_le_natCast_iff
-
-def finite_limit (o: Ordinal) : o.IsLimitOrdinal -> o < ω -> o = 0 := by
-  intro ho o_lt_omega
-  rw [lt_omega] at o_lt_omega
-  obtain ⟨n, rfl⟩ := o_lt_omega
-  cases n
-  rfl
-  rename_i n
-  have := ho.ne_succ n
-  simp [natCast_lt_natCast_iff] at this
-
-def lt_natCast (n: ℕ) (o: Ordinal) : o < n ↔ ∃i < n, o = i := by
-  apply flip Iff.intro
-  rintro ⟨i, hi, rfl⟩
-  rwa [natCast_lt_natCast_iff]
-  induction o using ind with | _ A rel =>
-  intro ⟨h⟩
-  simp at h
-  replace h := h.congr .refl (rel_ulift_eqv _)
-  have ⟨⟨top, topLt⟩, htop⟩ := h.exists_top
-  exists top
-  apply And.intro
-  exact topLt
-  have hx_lt_top (x: A) : (h x).val < top := (htop (h x)).mpr Set.mem_range'
-  have hx (x: Fin top) : ⟨x.val, (by omega)⟩ ∈ Set.range h  := (htop ⟨x.val, by omega⟩).mp x.isLt
-  replace hx := Classical.axiomOfChoice hx
-  obtain ⟨f, hf⟩ := hx
-  apply sound
-  infer_instance
-  apply RelIso.trans _ (rel_ulift_eqv _).symm
-  simp
-  exact {
-    toFun x := ⟨h x, hx_lt_top x⟩
-    invFun := f
-    leftInv := by
-      intro a
-      simp; apply h.inj
-      rw [←hf]
-    rightInv := by
-      intro x; simp
-      congr 1
-      rw [←hf]
-    resp_rel := h.resp_rel
-  }
 
 def omega_eq_sSup_natCast : ω = ⨆n: ℕ, (n: Ordinal) := by
   apply le_antisymm
