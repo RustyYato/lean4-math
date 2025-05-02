@@ -44,7 +44,7 @@ def _root_.Ordinal := Quotient pre_setoid
 def type {α: Type u} (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : Ordinal := Quotient.mk _ (Pre.mk _ rel)
 def type' {α: Type u} (rel: α -> α -> Prop) (is_well_order: Relation.IsWellOrder rel) : Ordinal := type rel
 
-@[induction_eliminator]
+@[local induction_eliminator]
 def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop) [Relation.IsWellOrder rel], motive (type rel)) (o: Ordinal) : motive o := by
   induction o using Quotient.ind with | _ o =>
   apply type
@@ -446,6 +446,8 @@ def typein_le_typein_iff {a b: α} : typein r a ≤ typein r b ↔ ¬r b a := by
 end Defs
 
 section Lattice
+
+attribute [local induction_eliminator] ind
 
 -- the minimum of two relations is the relation on pairs of elements which
 -- are in the same position as each other in their respective orders
@@ -1125,6 +1127,8 @@ end Lattice
 
 section Nat
 
+attribute [local induction_eliminator] ind
+
 def ofNat (n: ℕ) : Ordinal := type (· < (·: Fin n))
 def omega : Ordinal := type (· < (·: Nat))
 abbrev omega' : Ordinal := omega.ulift
@@ -1351,6 +1355,29 @@ def lt_omega {o: Ordinal} : o < ω ↔ ∃n: ℕ, o = n := by
   rintro ⟨n, rfl⟩
   apply natCast_lt_omega
 
+def lt_succ_self (o: Ordinal) : o < o + 1 := by
+  rw [←succ_eq_add_one]
+  induction o with | _ A rel =>
+  refine ⟨?_⟩
+  simp; exact {
+    Embedding.optionSome with
+    resp_rel := by
+      intro x y
+      simp
+      apply Iff.intro
+      apply succ_rel.some
+      intro h; cases h
+      assumption
+    exists_top := by
+      exists .none
+      intro a
+      apply Iff.intro
+      intro h ; cases h
+      apply Set.mem_range'
+      rintro ⟨x, rfl⟩
+      apply succ_rel.none
+  }
+
 end Nat
 
 section Limit
@@ -1378,6 +1405,40 @@ instance : IsSuccLimitOrdinal ω where
     have := natCast_lt_omega 0
     rw [h] at this
     exact lt_irrefl this
+
+noncomputable def transfiniteRecursion'
+  {motive : Ordinal -> Sort*}
+  (limit: ∀o, IsLimitOrdinal o -> (∀x < o, motive x) -> motive o)
+  (succ: ∀o, motive o -> motive (o + 1)) (o: Ordinal) : motive o :=
+  open scoped Classical in
+  if h:∃x, x + 1 = o then
+    let x := Classical.choose h
+    have hx : x + 1 = o := Classical.choose_spec h
+    hx ▸ (succ x (transfiniteRecursion' limit succ x))
+  else
+    limit _ { ne_succ x hx g := by exact h ⟨_, succ_eq_add_one _ ▸ g⟩} (fun x hx => transfiniteRecursion' limit succ x)
+termination_by o
+decreasing_by
+  · show x < o
+    rw [←hx]
+    apply lt_succ_self
+  · assumption
+
+@[induction_eliminator]
+noncomputable def transfiniteRecursion
+  {motive : Ordinal -> Sort*}
+  (zero: motive 0)
+  (limit: ∀o, IsSuccLimitOrdinal o -> (∀x < o, motive x) -> motive o)
+  (succ: ∀o, motive o -> motive (o + 1)) (o: Ordinal) : motive o :=
+  transfiniteRecursion' (motive := motive)
+    (fun o _ ih =>
+      open scoped Classical in
+      if h:o = 0 then
+        h ▸ zero
+      else
+        have : NeZero o := ⟨h⟩
+        limit _ ⟨⟩ ih)
+    succ o
 
 end Limit
 
