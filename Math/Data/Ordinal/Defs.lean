@@ -210,10 +210,10 @@ def rel_rank_hom (top: α) : rel_rank rel top ≺i rel where
 instance : Relation.IsWellOrder (rel_rank rel top) :=
   (rel_rank_hom rel top).toRelEmbedding.lift_wo
 
-def rank (top: α) := Ordinal.type (rel_rank rel top)
-def rank' (rel: α -> α -> Prop) (h: Relation.IsWellOrder rel) (top: α) := rank rel top
+def rank (a: α) := Ordinal.type (rel_rank rel a)
+def rank' (rel: α -> α -> Prop) (h: Relation.IsWellOrder rel) (a: α) := rank rel a
 
-def rank_surj : ∀o < type rel, ∃top, o = rank rel top := by
+def rank_surj : ∀o < type rel, ∃a, o = rank rel a := by
   intro o ho
   cases o with | _ β relβ =>
   obtain ⟨ho⟩ := ho
@@ -241,7 +241,7 @@ def rank_surj : ∀o < type rel, ∃top, o = rank rel top := by
     resp_rel := ho.resp_rel
   }
 
-def rank_lt_type (top: α) : rank r top < type r := ⟨rel_rank_hom r top⟩
+def rank_lt_type (a: α) : rank r a < type r := ⟨rel_rank_hom r a⟩
 
 def rel_rank_lt_rel_rank_init (init: r ≼i s) (a: α) (b: β) (h: s (init a) b) : rel_rank r a ≺i rel_rank s b where
   toFun x := {
@@ -269,7 +269,7 @@ def rel_rank_lt_rel_rank_init (init: r ≼i s) (a: α) (b: β) (h: s (init a) b)
       apply init.resp_rel.mp
       assumption
 
-def rel_rank_rel_rank (a top: α) (h: r top a) : rel_rank (rel_rank r a) ⟨top, h⟩ ≃r rel_rank r top where
+def rel_rank_rel_rank (a b: α) (h: r b a) : rel_rank (rel_rank r a) ⟨b, h⟩ ≃r rel_rank r b where
   toFun x := {
     val := x.val.val
     property := x.property
@@ -337,7 +337,7 @@ def rank_congr (init: r ≼i s) (top: α) : rank s (init top) = rank r top := by
     resp_rel := init.resp_rel
   }
 
-def rank_rank (a top: α) (h: r top a) : rank (rel_rank r a) ⟨top, h⟩ = rank r top := by
+def rank_rel_rank (a b: α) (h: r b a) : rank (rel_rank r a) ⟨b, h⟩ = rank r b := by
   apply sound
   apply rel_rank_rel_rank
 
@@ -486,6 +486,31 @@ def ext (a b: Ordinal): (∀x, x < a ↔ x < b) -> a = b := by
   have := lt_irrefl <| (h b).mp ba
   contradiction
 
+def rank_eq_ulift (a: Ordinal.{u}) : rank (· < ·) a = ulift.{u + 1, u} a := by
+  cases a with | _ A rel =>
+  have (x: { o: Ordinal // o < type rel }) := rank_surj rel x.val x.property
+  replace this := Classical.axiomOfChoice this
+  obtain ⟨f, hf⟩ := this
+  simp at hf
+  apply sound
+  infer_instance
+  simp
+  apply RelIso.trans _ (rel_ulift_eqv _).symm
+  exact RelIso.symm {
+    toFun b := ⟨rank rel b, rank_lt_type _⟩
+    invFun := f
+    leftInv x := by
+      simp
+      apply rank_inj (r := rel)
+      symm; apply hf
+    rightInv y := by
+      simp; congr
+      symm; apply hf
+    resp_rel := by
+      intro a b
+      apply rank_lt_rank_iff.symm
+  }
+
 end Defs
 
 section Lattice
@@ -571,7 +596,7 @@ def rel_min_hom_left : rel_min relα relβ ≼i relα where
       · intro ⟨⟨_, _⟩, rfl⟩
         assumption
     exists b
-    rw [←rank_rank (r := relα) _ _ h, ←rank_rank (r := relβ)]
+    rw [←rank_rel_rank (r := relα) _ _ h, ←rank_rel_rank (r := relβ)]
     symm; apply rank_congr (InitialSegment.ofRelIso hx)
 
 def rel_min_hom_right : rel_min relα relβ ≼i relβ := by
@@ -844,7 +869,7 @@ def exists_rank_eq_of_exists_rank_le (a: α) : (∃b: β, ¬rank s b < rank r a)
   exists b
   symm; assumption
   have ⟨b', eq⟩ := rank_surj _ _ h
-  rw [rank_rank] at eq
+  rw [rank_rel_rank] at eq
   rw [eq] at h
   have := bmin b' (by rwa [rank_lt_rank_iff] at h)
   rw [eq] at this
@@ -1553,6 +1578,15 @@ def ulift_natCast (n: ℕ) : ulift.{v, u} n = n := by
   rfl
 
 def ofNat_eq_natCast (n: ℕ) : OfNat.ofNat n = (n: Ordinal) := rfl
+def natCast_eq_ulift_ofNat (n: ℕ) : (n: Ordinal) = ulift (ofNat n) := rfl
+
+def ofNat_eq_rankNat (n: ℕ) : ofNat n = rank (· < ·) n := by
+  apply sound
+  exact {
+    Equiv.fin_equiv_nat_subtype (n := n) with
+    resp_rel := Iff.rfl
+  }
+def natCast_eq_rankNat (n: ℕ) : n = ulift (rank (· < ·) n) := by rw [←ofNat_eq_rankNat]; rfl
 
 end Nat
 
@@ -1720,32 +1754,7 @@ def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{
     intro h
     have ⟨x, hx⟩ := rank_surj _ _ h
     exists x
-    cases x with | _ β relx =>
-    replace ⟨hx⟩ := exact hx
-    simp at hx
-    have (x: { o: Ordinal // o < type relx }) := rank_surj relx x.val x.property
-    replace this := Classical.axiomOfChoice this
-    obtain ⟨f, hf⟩ := this
-    simp at hf
-    apply sound
-    infer_instance
-    apply hx.trans
-    simp
-    apply RelIso.trans _ (rel_ulift_eqv _).symm
-    refine RelIso.symm {
-      toFun b := ⟨rank relx b, rank_lt_type _⟩
-      invFun := f
-      leftInv x := by
-        simp
-        apply rank_inj (r := relx)
-        symm; apply hf
-      rightInv y := by
-        simp; congr
-        symm; apply hf
-      resp_rel := by
-        intro a b
-        apply rank_lt_rank_iff.symm
-    }
+    rwa [←rank_eq_ulift]
   · rintro ⟨x, rfl⟩
     cases x with | _ α rel =>
     refine ⟨?_⟩
