@@ -79,7 +79,8 @@ def rel_ulift_hom : rel_ulift rel ↪r rel := (rel_ulift_eqv rel).toRelEmbedding
 
 instance : Relation.IsWellOrder (rel_ulift rel) := (rel_ulift_hom rel).lift_wo
 
-def ulift : Ordinal.{u} -> Ordinal.{max u v} := by
+@[pp_with_univ]
+def ulift : Ordinal.{v} -> Ordinal.{max u v} := by
   refine lift (fun α relα _ => Ordinal.type' (rel_ulift relα) ?_) ?_
   · exact (rel_ulift_hom relα).lift_wo
   · intro α β relα relβ _ _ h
@@ -442,6 +443,36 @@ def typein_le_typein_iff {a b: α} : typein r a ≤ typein r b ↔ ¬r b a := by
   rw [←not_lt]
   apply Iff.not_iff_not
   apply typein_lt_typein_iff
+
+def ulift_le_ulift (a b: Ordinal.{u}) : ulift.{v} a ≤ ulift.{v} b ↔ a ≤ b := by
+  induction a with | _ _ a =>
+  induction b with | _ _ b =>
+  apply Iff.intro
+  intro ⟨h⟩
+  refine ⟨?_⟩
+  apply h.congr
+  apply rel_ulift_eqv
+  apply rel_ulift_eqv
+  intro ⟨h⟩
+  refine ⟨?_⟩
+  apply h.congr
+  symm; apply rel_ulift_eqv
+  symm; apply rel_ulift_eqv
+
+def ulift_lt_ulift (a b: Ordinal.{u}) : ulift.{v} a < ulift.{v} b ↔ a < b := by
+  induction a with | _ _ a =>
+  induction b with | _ _ b =>
+  apply Iff.intro
+  intro ⟨h⟩
+  refine ⟨?_⟩
+  apply h.congr
+  apply rel_ulift_eqv
+  apply rel_ulift_eqv
+  intro ⟨h⟩
+  refine ⟨?_⟩
+  apply h.congr
+  symm; apply rel_ulift_eqv
+  symm; apply rel_ulift_eqv
 
 end Defs
 
@@ -1449,7 +1480,7 @@ section Ord
 -- represent those higher ordinals
 def ord : Ordinal.{u + 1} := @type Ordinal.{u} (· < ·) _
 
-def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{_, u+1} x := by
+def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{u+1} x := by
   apply Iff.intro
   · induction o using ind with | _ α rel =>
     intro h
@@ -1503,6 +1534,17 @@ def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{
         rintro ⟨x, rfl⟩
         apply typein_lt_type
     }
+
+def ord_is_minimal (o: Ordinal.{u + 1}) : (∀x: Ordinal.{u}, ulift.{u+1} x ≤ o) -> ord.{u} ≤ o := by
+  intro h
+  rw [←not_lt, lt_ord]
+  rintro ⟨x, rfl⟩
+  have := h x.succ
+  simp at this
+  rw [ulift_le_ulift] at this
+  rw [←not_lt] at this
+  apply this
+  apply lt_succ_self
 
 end Ord
 
