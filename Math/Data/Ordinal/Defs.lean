@@ -1709,7 +1709,7 @@ instance : IsSuccLimitOrdinal ord.{u} where
 
 end Ord
 
-noncomputable section ConditionallyCompleteLattice
+section ConditionallyCompleteLattice
 
 open scoped Classical
 
@@ -1724,14 +1724,14 @@ instance : Bot Ordinal where
 instance : IsLawfulBot Ordinal where
   bot_le := zero_le
 
-instance : InfSet Ordinal where
+noncomputable instance : InfSet Ordinal where
   sInf S :=
     if hS:S.Nonempty then
       S.min (· < ·) hS
     else
       0
 
-instance : SupSet Ordinal where
+noncomputable instance : SupSet Ordinal where
   sSup S := sInf S.upperBounds
 
 protected def le_csInf (S: Set Ordinal) (x: Ordinal) : S.Nonempty → x ∈ S.lowerBounds → x ≤ ⨅ S := by
