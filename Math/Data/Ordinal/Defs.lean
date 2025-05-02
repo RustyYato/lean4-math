@@ -2086,6 +2086,18 @@ def fast_zero (f: FundementalSequences) : fast f 0 = Nat.succ := transfiniteRecu
 def fast_succ (f: FundementalSequences) (o: Ordinal) : fast f (o + 1) = fun n => repeat_fun (fast f o) n n := transfiniteRecursion_succ _ _ _ _
 def fast_limit (f: FundementalSequences) (o: Ordinal) [IsSuccLimitOrdinal o] : fast f o = fun n => (fast f (f o n)) n := transfiniteRecursion_limit _ _ _ _
 
+-- the slow growing heirarchy for a given choice of fundemental sequences
+-- https://en.wikipedia.org/wiki/Slow-growing_hierarchy#Definition
+noncomputable def slow (f: FundementalSequences) : Ordinal -> ℕ -> ℕ :=
+  transfiniteRecursion (motive := fun _ => ℕ -> ℕ)
+    (fun _ => 0)
+    (fun _ ih => Nat.succ ∘ ih)
+    (fun o _ ih => fun n => ih (f o n) (IsFundementalSequence.lt_ord _) n)
+
+def slow_zero (f: FundementalSequences) : slow f 0 = fun _ => 0 := transfiniteRecursion_zero _ _ _
+def slow_succ (f: FundementalSequences) (o: Ordinal) : slow f (o + 1) = fun n => slow f o n + 1 := transfiniteRecursion_succ _ _ _ _
+def slow_limit (f: FundementalSequences) (o: Ordinal) [IsSuccLimitOrdinal o] : slow f o = fun n => (slow f (f o n)) n := transfiniteRecursion_limit _ _ _ _
+
 end FundementalSequence
 
 end Ordinal
