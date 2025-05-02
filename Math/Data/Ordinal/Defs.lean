@@ -2109,6 +2109,8 @@ def slow_natCast (f: FundementalSequences) (n: ℕ) : slow f n = fun _ => n := b
 
 end FundementalSequence
 
+section Enum
+
 instance : Relation.IsWellOrder ((· < · : Relation <| Set.Iio (type rel))) :=
   (RelEmbedding.subtype (P := fun o => o < type rel) (· < ·)).lift_wo
 
@@ -2161,5 +2163,7 @@ def enum_le_enum : ¬r (enum r a) (enum r b) ↔ b ≤ a := by
   apply Iff.not_iff_not
   show _ ↔ a < b
   rw [←enum_lt_enum]
+
+end Enum
 
 end Ordinal
