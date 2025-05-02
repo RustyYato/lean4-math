@@ -71,6 +71,10 @@ def lift₂ {A: Type w} (f: ∀(α: Type u) (β: Type v) (relα: α -> α -> Pro
   assumption
   assumption
 
+def exact : type r = type s -> Nonempty (r ≃r s) := Quotient.exact
+
+attribute [irreducible] Ordinal
+
 def rel_ulift : Relation (ULift α) := fun a b => rel a.down b.down
 def rel_ulift_eqv : rel_ulift rel ≃r rel where
   toEquiv := Equiv.ulift _
@@ -556,7 +560,7 @@ def rel_min_hom_left : rel_min relα relβ ≼i relα where
       exists ⟨⟨_, _⟩, eq⟩
     have ⟨ltα⟩ := typein_lt_type (r := relα) x₀
     have ⟨ltβ⟩ := typein_lt_type (r := relβ) x₁
-    replace ⟨hx⟩ := Quotient.exact hx
+    replace ⟨hx⟩ := exact hx
     let ha := rel_typein_lt_rel_typein_init (InitialSegment.refl relα) a x₀ h
     let b := hx ⟨a, h⟩
     have htop := PrincipalSegment.top_of_lt_of_lt_of_le ha (InitialSegment.ofRelIso hx) ⟨_, h⟩ <| by
@@ -1379,7 +1383,7 @@ def natCast_eq_ulift_natCast (n: ℕ) : n = ulift.{u, 0} n := by
 def natCast_inj : Function.Injective fun n: ℕ => (n: Ordinal) := by
   intro x y h
   simp at h
-  have ⟨h⟩ := Quotient.exact h
+  have ⟨h⟩ := exact h
   simp at h
   replace h := Equiv.trans (Equiv.trans (Equiv.ulift _).symm (h.toEquiv)) (Equiv.ulift _)
   exact Fin.eq_of_equiv h
@@ -1720,7 +1724,7 @@ def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{
     have ⟨x, hx⟩ := typein_surj _ _ h
     exists x
     cases x with | _ β relx =>
-    replace ⟨hx⟩ := Quotient.exact hx
+    replace ⟨hx⟩ := exact hx
     simp at hx
     have (x: { o: Ordinal // o < type relx }) := typein_surj relx x.val x.property
     replace this := Classical.axiomOfChoice this
