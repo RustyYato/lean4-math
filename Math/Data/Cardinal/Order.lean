@@ -1,5 +1,5 @@
 import Math.Data.Cardinal.Basic
-import Math.Data.Ordinal.Basic
+import Math.Data.Ordinal.Defs
 import Math.Data.Ordinal.WellOrdering
 import Math.Type.Antisymm
 import Math.Order.Lattice.Linear
@@ -7,11 +7,9 @@ import Math.Data.Set.Finite
 
 namespace Ordinal
 
-def card (o: Ordinal) : Cardinal := by
-  apply Quotient.liftOn o _ _
-  intro x
-  exact Cardinal.mk x.ty
-  intro a b ⟨eq⟩
+def card : Ordinal -> Cardinal := by
+  refine Ordinal.lift (fun α _ _ => #α) ?_
+  intro α β _ _ _ _ eq
   apply Cardinal.sound
   exact eq.toEquiv
 
@@ -85,14 +83,14 @@ def ord_eq (α: Type*) : ∃ (r : α → α → Prop) (_wo: Relation.IsWellOrder
   obtain ⟨⟨o, mem⟩, eq⟩ := this
   dsimp at eq
   replace mem : o.card = ⟦α⟧ := mem
-  cases o with | mk o =>
+  cases o with | _ A rela =>
   replace ⟨mem⟩ := Cardinal.exact mem
-  let rel : α -> α -> Prop := fun x y => o.rel (mem.symm x) (mem.symm y)
-  let eqv : o.rel ≃r rel := {
+  let rel : α -> α -> Prop := fun x y => rela (mem.symm x) (mem.symm y)
+  let eqv : rela ≃r rel := {
     toEquiv := mem
     resp_rel := by
       intro x y
-      show o.rel x y ↔ o.rel (mem.symm (mem _)) (mem.symm (mem _))
+      show rela x y ↔ rela (mem.symm (mem _)) (mem.symm (mem _))
       rw [mem.coe_symm, mem.coe_symm]
   }
 
@@ -116,24 +114,23 @@ def ord_inj : Function.Injective ord := by
 def ord_is_min (c: Cardinal) : ∀o < c.ord, o.card ≠ c := by
   intro o o_lt_ord
   cases c with | mk c =>
-  cases o with | mk o =>
-  show ⟦o.ty⟧ ≠ ⟦c⟧
-  replace o_lt_ord : Ordinal.mk o < iInf _ := o_lt_ord
+  replace o_lt_ord : o < iInf _ := o_lt_ord
+  cases o with | _ A rela =>
+  show ⟦A⟧ ≠ ⟦c⟧
   have := not_mem_of_lt_csInf o_lt_ord (Set.allBoundedBelow _)
   rw [Set.mem_range] at this
   intro g
   replace ⟨g⟩ := Quotient.exact g
   apply this
-  let rel : c -> c -> Prop := fun x y => o.rel (g.symm x) (g.symm y)
-  have : o.rel ≃r rel := {
+  let rel : c -> c -> Prop := fun x y => rela (g.symm x) (g.symm y)
+  have : rela ≃r rel := {
     toEquiv := g
     resp_rel := by
       intro x y
-      show o.rel x y ↔ o.rel (g.symm (g x)) (g.symm (g y))
-      rw [g.coe_symm, g.coe_symm]
+      simp [rel]
   }
   refine ⟨⟨?_, ?_⟩, ?_⟩
-  exact Ordinal.mk o
+  exact Ordinal.type rela
   apply sound
   assumption
   rfl
@@ -148,8 +145,8 @@ def ord_is_min' (c: Cardinal) : ∀o < c.ord, o.card < c := by
     rw [ord_card]
     assumption
   generalize hc':c.ord = c'
-  cases o with | mk o =>
-  cases c' with | mk c' =>
+  cases o with | _ A rela =>
+  cases c' with | _ _ c' =>
   rw [hc'] at h
   obtain ⟨h⟩ := h
   refine ⟨?_⟩

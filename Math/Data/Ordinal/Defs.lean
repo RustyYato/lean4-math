@@ -45,7 +45,7 @@ def _root_.Ordinal := Quotient pre_setoid
 def type {α: Type u} (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : Ordinal := Quotient.mk _ (Pre.mk _ rel)
 def type' {α: Type u} (rel: α -> α -> Prop) (is_well_order: Relation.IsWellOrder rel) : Ordinal := type rel
 
-@[local induction_eliminator]
+@[local induction_eliminator, cases_eliminator]
 def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop) [Relation.IsWellOrder rel], motive (type rel)) (o: Ordinal) : motive o := by
   induction o using Quotient.ind with | _ o =>
   apply type
@@ -1717,6 +1717,12 @@ def BoundedBelow (s: Set Ordinal) : s.BoundedBelow := by
   exists 0
   intro x hx
   apply zero_le
+
+instance : Bot Ordinal where
+  bot := 0
+
+instance : IsLawfulBot Ordinal where
+  bot_le := zero_le
 
 instance : InfSet Ordinal where
   sInf S :=
