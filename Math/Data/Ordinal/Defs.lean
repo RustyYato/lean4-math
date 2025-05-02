@@ -2109,4 +2109,57 @@ def slow_natCast (f: FundementalSequences) (n: ℕ) : slow f n = fun _ => n := b
 
 end FundementalSequence
 
+instance : Relation.IsWellOrder ((· < · : Relation <| Set.Iio (type rel))) :=
+  (RelEmbedding.subtype (P := fun o => o < type rel) (· < ·)).lift_wo
+
+-- the ordinals less than `type rel` are isomorphic to `rel`, which provides
+noncomputable def enum : (· < · : Relation <| Set.Iio (type rel)) ≃r rel := by
+  have (o: Set.Iio (type rel)) := rank_surj rel o.val o.property
+  replace := Classical.axiomOfChoice this
+  let f := Classical.choose this
+  have hf := Classical.choose_spec this
+  simp at hf
+  exact RelIso.symm {
+    toFun x := {
+      val := rank rel x
+      property := rank_lt_type _
+    }
+    invFun := f
+    leftInv x := by
+      simp
+      apply rank_inj (r := rel)
+      symm; apply hf
+      apply rank_lt_type
+    rightInv x := by
+      simp; symm
+      apply Subtype.val_inj
+      apply hf
+      exact x.property
+    resp_rel {a b} := (rank_lt_rank_iff (r := rel)).symm
+  }
+
+@[simp]
+def symm_apply_enum (a: α) : (enum rel).symm a = ⟨rank rel a, rank_lt_type _⟩ := rfl
+
+@[simp]
+def enum_rank : enum rel ⟨rank rel a, rank_lt_type _⟩ = a := by
+  apply (enum rel).symm.inj
+  simp
+
+def enum_lt_enum : r (enum r a) (enum r b) ↔ a < b := by
+  obtain ⟨a, ha⟩ := a
+  obtain ⟨b, hb⟩ := b
+  obtain ⟨a, rfl⟩ := rank_surj r a ha
+  obtain ⟨b, rfl⟩ := rank_surj r b hb
+  simp
+  show _ ↔ rank r a < rank r b
+  rw [rank_lt_rank_iff]
+
+def enum_le_enum : ¬r (enum r a) (enum r b) ↔ b ≤ a := by
+  show _ ↔ b.val ≤ a.val
+  rw [←not_lt]
+  apply Iff.not_iff_not
+  show _ ↔ a < b
+  rw [←enum_lt_enum]
+
 end Ordinal

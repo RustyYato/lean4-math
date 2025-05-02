@@ -155,6 +155,10 @@ def lift_wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s := {
 @[simp] def mk_call (f: α -> β) (h: ∀{a b}, r a b ↔ s (f a) (f b)) (inj: Function.Injective f):
   ({toFun := f, inj' := inj, resp_rel := h}: r ↪r s) x = f x := rfl
 
+def subtype {P: α -> Prop} (r: α -> α -> Prop) : (fun x y: Subtype P => r x y) ↪r r where
+  toEmbedding := Embedding.subtypeVal
+  resp_rel := Iff.rfl
+
 end RelEmbedding
 
 namespace RelIso
