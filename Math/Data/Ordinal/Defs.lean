@@ -1442,4 +1442,68 @@ noncomputable def transfiniteRecursion
 
 end Limit
 
+section Ord
+
+-- the ordinal representing the class of all ordinals in universe `u`
+-- NOTE: that this lives one universe higher up, so it can faithfully
+-- represent those higher ordinals
+def ord : Ordinal.{u + 1} := @type Ordinal.{u} (· < ·) _
+
+def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{_, u+1} x := by
+  apply Iff.intro
+  · induction o using ind with | _ α rel =>
+    intro h
+    have ⟨x, hx⟩ := typein_surj _ _ h
+    exists x
+    induction x using ind with | _ β relx =>
+    replace ⟨hx⟩ := Quotient.exact hx
+    simp at hx
+    have (x: { o: Ordinal // o < type relx }) := typein_surj relx x.val x.property
+    replace this := Classical.axiomOfChoice this
+    obtain ⟨f, hf⟩ := this
+    simp at hf
+    apply sound
+    infer_instance
+    apply hx.trans
+    simp
+    apply RelIso.trans _ (rel_ulift_eqv _).symm
+    refine RelIso.symm {
+      toFun b := ⟨typein relx b, typein_lt_type _⟩
+      invFun := f
+      leftInv x := by
+        simp
+        apply typein_inj (r := relx)
+        symm; apply hf
+      rightInv y := by
+        simp; congr
+        symm; apply hf
+      resp_rel := by
+        intro a b
+        apply typein_lt_typein_iff.symm
+    }
+  · rintro ⟨x, rfl⟩
+    induction x using ind with | _ α rel =>
+    refine ⟨?_⟩
+    simp
+    apply PrincipalSegment.congr
+    symm; apply rel_ulift_eqv
+    rfl
+    exact {
+      toFun := typein rel
+      inj' := typein_inj
+      resp_rel := typein_lt_typein_iff.symm
+      exists_top := by
+        exists type rel
+        intro x
+        simp
+        apply Iff.intro
+        intro h
+        obtain ⟨x, rfl⟩ := typein_surj _ _ h
+        apply Set.mem_range'
+        rintro ⟨x, rfl⟩
+        apply typein_lt_type
+    }
+
+end Ord
+
 end Ordinal
