@@ -152,6 +152,9 @@ def lift_wo (h: s ↪r r) [Relation.IsWellOrder r] : Relation.IsWellOrder s := {
   h.toRelHom.wf, h.lift_connected, h.lift_trans with
 }
 
+@[simp] def mk_call (f: α -> β) (h: ∀{a b}, r a b ↔ s (f a) (f b)) (inj: Function.Injective f):
+  ({toFun := f, inj' := inj, resp_rel := h}: r ↪r s) x = f x := rfl
+
 end RelEmbedding
 
 namespace RelIso

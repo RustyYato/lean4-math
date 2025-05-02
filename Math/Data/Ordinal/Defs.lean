@@ -954,7 +954,168 @@ instance : IsSemiLatticeMax Ordinal where
     rw [Ordinal.max_comm]
     apply Ordinal.le_max_left
   max_le := by
-    sorry
+    classical
+    suffices ∀a b k: Ordinal, a ≤ b -> b ≤ k -> a ⊔ b ≤ k by
+      intro a b k ak bk
+      cases le_total a b
+      apply this
+      assumption
+      assumption
+      show max _ _ ≤ _; rw [Ordinal.max_comm]
+      apply this
+      assumption
+      assumption
+    intro a b k
+    induction a with | _ A rela =>
+    induction b with | _ B relb =>
+    induction k with | _ K relk =>
+    intro ⟨ab⟩ ⟨bk⟩
+    simp at ab bk
+    refine ⟨?_⟩
+    simp
+    let ak := ab.trans bk
+    refine {
+      toFun
+      | .inl a ha => ak a
+      | .inr b hb => bk b
+      | .common a b h => ak a
+      inj' := ?_
+      resp_rel := ?_
+      isInitial := ?_
+    }
+    · intro x y h
+      cases x <;> cases y <;> dsimp at h
+      · rename_i a₀ b₀ h₀ a₁ b₁ h₁
+        cases ak.inj h
+        rw [h₀] at h₁
+        cases typein_inj h₁
+        rfl
+      · rename_i a₀ b₀ h₀ a₁ h₁
+        have := h₁ b₀
+        rw [←h₀] at this
+        cases ak.inj h
+        have := lt_irrefl this
+        contradiction
+      · rename_i a₀ b₀ h₀ b₁ h₁
+        have := h₁ a₀
+        rw [←typein_congr ak, ←typein_congr bk, h] at this
+        have := lt_irrefl this
+        contradiction
+      · rename_i a₁ h₁ a₀ b₀ h₀
+        have := h₁ b₀
+        rw [←typein_congr ak, ←h₀, ←typein_congr ak, h] at this
+        have := lt_irrefl this
+        contradiction
+      · rename_i h
+        cases ak.inj h
+        rfl
+      · exfalso
+        rename_i a ha b hb
+        exact maxType.not_inl_and_inr a ha b hb
+      · rename_i b₁ h₁ a₀ b₀ h₀
+        have := h₁ a₀
+        rw [←typein_congr ak, ←typein_congr bk, h] at this
+        have := lt_irrefl this
+        contradiction
+      · exfalso
+        rename_i a ha b hb
+        exact maxType.not_inl_and_inr b hb a ha
+      · rename_i h
+        cases bk.inj h
+        rfl
+    · intro a b
+      cases a <;> cases b <;> simp
+      · erw [ak.resp_rel.symm]
+        apply Iff.intro
+        intro h; cases h; assumption
+        apply rel_max.common
+      · erw [ak.resp_rel.symm]
+        apply Iff.intro
+        intro h; clear h
+        rename_i a₀ b₀ h₀ a₁ h₁
+        have := h₁ b₀; rw [←h₀] at this
+        rwa [typein_lt_typein_iff] at this
+        intro; apply rel_max.common_inl
+      · show _ ↔ relk (bk (ab _)) _
+        erw [bk.resp_rel.symm]
+        rename_i a₀ b₀ h₀ b₁ h₁
+        apply Iff.intro
+        intro h
+        clear h
+        rw [←typein_lt_typein_init_iff ab]
+        apply h₁
+        intro; apply rel_max.common_inr
+      · erw [ak.resp_rel.symm]
+        rename_i a₁ ha a₀ b₀ h
+        apply Iff.intro nofun
+        intro g
+        rw [←typein_lt_typein_iff (r := rela), h] at g
+        have := lt_asymm (ha b₀)
+        contradiction
+      · erw [ak.resp_rel.symm]
+        apply Iff.intro
+        intro h; cases h; assumption
+        apply rel_max.inl
+      · rename_i a ha b hb
+        have := maxType.not_inl_and_inr a ha b hb
+        contradiction
+      · erw [bk.resp_rel.symm]
+        rename_i b₁ hb a₀ b₀ h
+        apply Iff.intro nofun
+        intro g
+        rw [←typein_lt_typein_iff (r := relb)] at g
+        simp at g
+        rw [typein_congr ab] at g
+        have := lt_asymm (hb a₀)
+        contradiction
+      · rename_i a ha b hb
+        have := maxType.not_inl_and_inr a ha b hb
+        contradiction
+      · erw [bk.resp_rel.symm]
+        apply Iff.intro
+        intro h; cases h; assumption
+        apply rel_max.inr
+    · intro x k
+      cases x <;> simp
+      · intro lt; rename_i a b h
+        obtain ⟨a', rfl⟩ := ak.isInitial _ _ lt
+        simp at *
+        erw [ak.resp_rel.symm, ←typein_lt_typein_iff (r := rela)] at lt
+        rw [h] at lt
+        have ⟨b', hb⟩ := exists_typein_eq_of_exists_typein_le (r := rela) (s := relb) a'
+          ⟨b, by
+            apply lt_asymm
+            assumption⟩
+        obtain ⟨lt⟩ := lt
+        simp at lt
+        exact ⟨.common a' b' hb, rfl⟩
+      · rename_i a ha
+        intro h
+        obtain ⟨a', rfl⟩ := ak.isInitial _ _ h
+        simp at *
+        refine if ha':typein rela a' < type relb then ?_ else ?_
+        have ⟨b', hb'⟩ := typein_surj _ _ ha'
+        exists .common a' b' hb'
+        refine ⟨.inl a' ?_, rfl⟩
+        intro b
+        apply lt_of_lt_of_le
+        apply typein_lt_type
+        rwa [not_lt] at ha'
+      · rename_i a ha
+        intro h
+        obtain ⟨b', rfl⟩ := bk.isInitial _ _ h
+        simp at *
+        refine if hb':typein relb b' < type rela then ?_ else ?_
+        have ⟨a', ha'⟩ := typein_surj _ _ hb'
+        exists .common a' b' ha'.symm
+        simp
+        apply typein_inj (r := relk)
+        rwa [typein_congr, typein_congr]
+        refine ⟨.inr b' ?_, rfl⟩
+        intro b
+        apply lt_of_lt_of_le
+        apply typein_lt_type
+        rwa [not_lt] at hb'
 
 instance : IsLinearLattice Ordinal where
 
