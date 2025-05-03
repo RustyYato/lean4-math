@@ -349,6 +349,7 @@ def subsingleton_of_monomial_eq_zero [Zero P] [One P] [Mul P] [IsMulZeroClass P]
   unfold monomial
   erw [AddMonoidAlgebra.apply_single, if_pos rfl]
 
-def C_eq_algebraMap [SemiringOps P] [IsSemiring P]  : C x = algebraMap (R := P) x := rfl
+def C_eq_algebraMap [SemiringOps P] [IsSemiring P] [SemiringOps R] [IsSemiring R] [SMul R P] [AlgebraMap R P] [IsAlgebra R P] (x: R)  : C (P := P) (algebraMap x) = algebraMap (R := R) x := rfl
+def C_eq_algebraMap' [SemiringOps P] [IsSemiring P]  : C x = algebraMap (R := P) x := rfl
 
 end Poly

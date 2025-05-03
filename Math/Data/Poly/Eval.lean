@@ -173,4 +173,25 @@ def lift_X : lift (X: P[X]) x = x := by
 
 end Lift
 
+section Cast
+
+variable {R: Type*} (P: Type*) [SemiringOps P] [SemiringOps R] [SemiringOps S]
+   [IsSemiring P] [IsSemiring R] [IsCommMagma P] [IsCommMagma R] [IsSemiring S]
+  [SMul R P] [AlgebraMap R P] [IsAlgebra R P]
+  [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
+  [SMul S P] [AlgebraMap S P] [IsAlgebra S P]
+  [IsAlgebraTower S R P]
+
+def cast : R[X] →ₐ[R] P[X] := lift Poly.X
+
+@[simp] def apply_cast_C (r: R) : cast P (C r) = C (algebraMap r) := apply_lift_C _ _
+@[simp] def apply_cast_X : cast P (.X: R[X]) = .X := apply_lift_X _
+@[simp] def apply_cast_add (a b: R[X]) : cast P (a + b) = cast P a + cast P b := map_add _
+@[simp] def apply_cast_mul (a b: R[X]) : cast P (a * b) = cast P a * cast P b := map_mul _
+@[simp] def apply_cast_algebraMap (s: S) : cast P (algebraMap s: R[X]) = algebraMap s := by
+  rw [←C_eq_algebraMap, apply_cast_C, algebraMap_algebraMap]; rfl
+@[simp] def apply_cast_smul (s: S) (a: R[X]) : cast P (s • a) = s • cast P a := by simp [smul_def]
+
+end Cast
+
 end Poly
