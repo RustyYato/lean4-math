@@ -176,7 +176,7 @@ end Lift
 section Cast
 
 variable {R: Type*} (P: Type*) [SemiringOps P] [SemiringOps R] [SemiringOps S]
-   [IsSemiring P] [IsSemiring R] [IsCommMagma P] [IsCommMagma R] [IsSemiring S]
+   [IsSemiring P] [IsSemiring R] [IsCommMagma P] [IsCommMagma R] [IsSemiring S] [IsCommMagma S]
   [SMul R P] [AlgebraMap R P] [IsAlgebra R P]
   [SMul S R] [AlgebraMap S R] [IsAlgebra S R]
   [SMul S P] [AlgebraMap S P] [IsAlgebra S P]
@@ -191,6 +191,23 @@ def cast : R[X] →ₐ[R] P[X] := lift Poly.X
 @[simp] def apply_cast_algebraMap (s: S) : cast P (algebraMap s: R[X]) = algebraMap s := by
   rw [←C_eq_algebraMap, apply_cast_C, algebraMap_algebraMap]; rfl
 @[simp] def apply_cast_smul (s: S) (a: R[X]) : cast P (s • a) = s • cast P a := by simp [smul_def]
+
+@[simp] def cast_cast (x: S[X]) : cast P (cast R x) = cast P x := by
+  induction x using alg_induction with
+  | X => simp
+  | add _ _ iha ihb | mul _ _ iha ihb => simp [iha, ihb]
+  | C =>
+    simp
+    rw [algebraMap_algebraMap]
+
+@[simp] def cast_self : cast P (R := P) = .id _ := by
+  apply DFunLike.ext; intro x
+  induction x using alg_induction with
+  | C | X => simp; try rfl
+  | add _ _ iha ihb | mul _ _ iha ihb => simp [iha, ihb]
+
+instance : IsAlgebraTower S R P[X] where
+  algebraMap_algebraMap s := by rw [←C_eq_algebraMap, algebraMap_algebraMap]; rfl
 
 end Cast
 
