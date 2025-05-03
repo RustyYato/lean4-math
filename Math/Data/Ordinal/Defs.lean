@@ -2164,6 +2164,24 @@ instance : IsSuccLimitOrdinal ord.{u} where
     rw [g] at this
     exact lt_irrefl this
 
+def ord_eq_sup_ulift : ord.{u} = ⨆o: Ordinal, ulift.{u+1, u} o := by
+  apply flip le_antisymm
+  · apply csInf_le
+    apply BoundedBelow
+    rintro _ ⟨x, rfl⟩
+    apply le_of_lt; simp
+    apply (lt_ord _).mpr ⟨x, rfl⟩
+  · apply ord_is_minimal
+    intro x
+    apply le_csInf
+    exists ord
+    rintro _ ⟨x, rfl⟩
+    apply le_of_lt; simp
+    apply (lt_ord _).mpr ⟨x, rfl⟩
+    rintro _ hx
+    apply hx
+    apply Set.mem_range'
+
 end Ord
 
 end Ordinal
