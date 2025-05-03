@@ -209,6 +209,23 @@ def cast : R[X] →ₐ[R] P[X] := lift Poly.X
 instance : IsAlgebraTower S R P[X] where
   algebraMap_algebraMap s := by rw [←C_eq_algebraMap, algebraMap_algebraMap]; rfl
 
+instance (priority := 200) : AlgebraMap R[X] P[X] := AlgebraMap.ofHom (cast P).toRingHom
+instance : SMul R[X] P[X] where
+  smul r x := algebraMap r * x
+instance : IsAlgebra R[X] P[X] where
+  commutes _ _ := by rw [mul_comm]
+  smul_def _ _ := rfl
+
+instance : IsAlgebraTower S R[X] P[X] where
+  algebraMap_algebraMap s := by
+    show cast P (algebraMap s: R[X]) = _
+    simp
+
+instance : IsAlgebraTower S[X] R[X] P[X] where
+  algebraMap_algebraMap s := by
+    show cast P (cast R s) = cast P s
+    simp
+
 end Cast
 
 end Poly
