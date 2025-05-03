@@ -10,7 +10,10 @@ def toCardinal : Ordinal -> Cardinal := by
   apply Cardinal.sound
   exact eq.toEquiv
 
--- a monotone homomorphism from the ordinals to the cardinalss
+-- a monotone homomorphism from the ordinals to the cardinals
+-- this doesn't map relations backwards since `ω+1` and `ω`
+-- have the same cardinality, so if it mapped relations backwards
+-- it would allow proving that `ω+1 ≤ ω`
 def card : Ordinal →≤ Cardinal where
   toFun := toCardinal
   monotone a b := by
@@ -155,6 +158,25 @@ noncomputable def initseg_ord : @InitialSegment Cardinal Ordinal (· < ·) (· <
 def ord_card (c: Cardinal) : c.ord.card = c := by
   apply toOrdinal_card
 
+instance : @Relation.IsWellOrder Cardinal (· < ·) := remb_ord_lt.lift_wo
+
+def initseg_ord_le_ord (c: Cardinal) : initseg_ord c ≤ ord c := by
+  rw [←not_lt]
+  intro h
+  induction c using Relation.wfInduction (· < ·: Relation Cardinal) with
+  | h c ih =>
+  have ⟨x, hx⟩ := initseg_ord.isInitial _ _ h
+  simp at hx
+  have x_lt_c := h
+  rw [hx] at x_lt_c
+  replace x_lt_c := initseg_ord.resp_rel.mpr x_lt_c
+  apply ih x x_lt_c
+  rw [←hx]
+  rw [←not_le]
+  intro h; have := (Cardinal.ord.map_le _ _).mpr h
+  rw [←not_lt] at this
+  contradiction
+
 end Cardinal
 
 namespace Ordinal
@@ -162,5 +184,74 @@ namespace Ordinal
 def card_ord (o: Ordinal) : o.card.ord ≤ o := by
   rw [←not_lt]; intro h
   exact lt_irrefl (Cardinal.ord_is_min o.card _ h)
+
+namespace Omega
+
+def IsInitial (o: Ordinal) : Prop := o.card.ord = o
+
+noncomputable def initEquivCard : Subtype IsInitial ≃o Cardinal where
+  toFun x := x.val.card
+  invFun x := ⟨x.ord, by
+    unfold IsInitial
+    rw [Cardinal.ord_card]⟩
+  leftInv x := by simp; congr; rw [x.property]
+  rightInv x := by
+    simp
+    rw [Cardinal.ord_card]
+  map_le := by
+    intro a b
+    apply Iff.intro
+    apply card.monotone
+    intro h
+    show a.val ≤ b.val
+    rw [←a.property, ←b.property]
+    apply (Cardinal.ord.map_le _ _).mp
+    assumption
+
+def type_init_eq_type_card : type (Relation.subtype_rel (· < ·) IsInitial) = type (· < ·: Relation Cardinal) := by
+  apply sound
+  exact {
+    initEquivCard with
+    resp_rel := by
+      intro x y
+      simp
+      show x.val < y.val ↔ _
+      erw [←not_le, ←not_le, ←initEquivCard.map_le]
+      rfl
+  }
+
+-- noncomputable def preOmega.{u} : Ordinal.{u} ↪o Ordinal.{u} where
+--   toFun o :=
+--     enum (Relation.subtype_rel (· < ·) IsInitial) {
+--       val := ulift.{u+1} o
+--       property := by
+--         simp
+--         rw [type_init_eq_type_card, ←rank_eq_ulift]
+--         let c: Cardinal.{u} := (2: Cardinal) ^ o.card
+--         apply flip lt_of_le_of_lt
+--         apply rank_lt_type c
+--         rw [←rank_congr Cardinal.initseg_ord]
+--         rw [rank_le_rank_iff]
+--         rw [not_lt]
+--         show o ≤ Cardinal.initseg_ord (2 ^ card o)
+--         clear c
+--         sorry
+--     }
+--   inj' := by
+--     intro x y h
+--     replace h := (Subtype.mk.inj ((enum _).inj (Subtype.val_inj h)))
+--     rw [←rank_eq_ulift, ←rank_eq_ulift] at h
+--     exact rank_inj h
+--   map_le := by
+--     intro a b
+--     rw [←not_lt, ←rank_le_rank_iff (a := a)]
+--     rw (occs := [1]) [rank_eq_ulift, rank_eq_ulift]
+--     rw [←not_lt, ←not_lt]
+--     apply Iff.not_iff_not
+--     show _ ↔ (enum (Relation.subtype_rel (· < ·) IsInitial) _) < (enum (Relation.subtype_rel (· < ·) IsInitial) _)
+--     apply Iff.trans _ (enum _).resp_rel
+--     rfl
+
+end Omega
 
 end Ordinal

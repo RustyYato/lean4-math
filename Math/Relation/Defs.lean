@@ -121,7 +121,7 @@ instance : @IsEquiv α (· = ·) where
 
 variable (eqv: α -> α -> Prop) [IsEquiv eqv]
 
-class CongrEquiv (eqv: α -> α -> Prop) [IsEquiv eqv]: Prop where
+class CongrEquiv (eqv: α -> α -> Prop): Prop where
   congr_eqv: eqv a c -> eqv b d -> rel a b -> rel c d
 export CongrEquiv (congr_eqv)
 
@@ -131,7 +131,7 @@ instance : CongrEquiv rel (· = ·) where
 instance [IsEquiv rel] : CongrEquiv rel rel where
   congr_eqv h g r := trans (symm h) (trans r g)
 
-class IsAntisymmBy (eqv: outParam <| α -> α -> Prop) [IsEquiv eqv]: Prop extends CongrEquiv rel eqv where
+class IsAntisymmBy (eqv: outParam <| α -> α -> Prop): Prop extends CongrEquiv rel eqv where
   antisymm_by: rel a b -> rel b a -> eqv a b
 export IsAntisymmBy (antisymm_by)
 
@@ -443,7 +443,6 @@ instance : CongrEquiv (or_eqv rel eqv) eqv where
     assumption
     right; apply congr_eqv h g
     assumption
-    assumption
 
 instance : IsLawfulStrict rel (strict rel) where
   is_lawful_strict _ _ := Iff.rfl
@@ -498,6 +497,70 @@ instance [IsAntisymmBy rel eqv] [IsLawfulStrict rel srel] [IsRefl rel] : IsLawfu
 
 instance : IsLawfulNonstrict (or_eqv rel eqv) rel eqv where
   is_lawful_nonstrict _ _ := Iff.rfl
+
+section subtype_rel
+
+variable {P: α -> Prop}
+
+def subtype_rel (rel: α -> α -> Prop) (P: α -> Prop) : Subtype P -> Subtype P -> Prop := fun a b => rel a b
+
+def subtype_rel_to_rel : subtype_rel rel P a b -> rel a b := id
+def subtype_rel_of_rel { a b: Subtype P } : rel a b -> subtype_rel rel P a b := id
+
+instance [Relation.IsTrans rel] : Relation.IsTrans (subtype_rel rel P) where
+  trans h g := subtype_rel_of_rel <| trans (subtype_rel_to_rel h) (subtype_rel_to_rel g)
+
+instance [Relation.CongrEquiv rel eqv] : Relation.CongrEquiv (subtype_rel rel P) (subtype_rel eqv P)  where
+  congr_eqv := by
+    intro a b c d h g r
+    exact congr_eqv (rel := rel) (eqv := eqv) h g r
+
+instance [Relation.IsAntisymmBy rel eqv] : Relation.IsAntisymmBy (subtype_rel rel P) (subtype_rel eqv P)  where
+  antisymm_by := Relation.antisymm_by (rel := rel)
+
+instance [Relation.IsAntisymm rel] : Relation.IsAntisymm (subtype_rel rel P) where
+  antisymm_by {a b} h g := by
+    have := antisymm rel h g
+    cases a; congr
+
+instance [Relation.IsRefl rel] : Relation.IsRefl (subtype_rel rel P) where
+  refl _ := Relation.refl (rel := rel) _
+
+instance [Relation.IsConnectedBy rel eqv] : Relation.IsConnectedBy (subtype_rel rel P) (subtype_rel eqv P) where
+  connected_by a b := Relation.connected_by rel eqv a.val b.val
+
+instance [Relation.IsConnected rel] : Relation.IsConnected (subtype_rel rel P) where
+  connected_by a b := by
+    rcases Relation.connected rel a.val b.val with h | h | h
+    left; assumption
+    right; left; cases a; congr
+    right; right; assumption
+
+instance [Relation.IsTotal rel] : Relation.IsTotal (subtype_rel rel P) where
+  total a b := by
+    rcases Relation.total rel a.val b.val with h | h
+    left; assumption
+    right; assumption
+
+instance [Relation.IsWellFounded rel] : Relation.IsWellFounded (subtype_rel rel P) where
+  wf := by
+    apply WellFounded.intro
+    intro ⟨a, h⟩
+    induction a using Relation.wfInduction rel with
+    | h a ih =>
+    apply Acc.intro
+    intro ⟨b, hb⟩ r
+    apply ih b r hb
+
+instance [Relation.IsIrrefl rel] : Relation.IsIrrefl (subtype_rel rel P) where
+  irrefl h := Relation.irrefl (rel := rel) h
+
+instance [Relation.IsAsymm rel] : Relation.IsAsymm (subtype_rel rel P) where
+  asymm h := Relation.asymm (rel := rel) h
+
+end subtype_rel
+
+section quot_rel
 
 def quot_rel (rel eqv: α -> α -> Prop) [IsEquiv eqv] [CongrEquiv rel eqv] : Quotient (Relation.setoid eqv) -> Quotient (Relation.setoid eqv) -> Prop := by
   refine Quotient.lift₂ rel ?_
@@ -572,6 +635,8 @@ instance quot_rel.instIsLawfulNonstrict [IsLawfulNonstrict rel srel eqv] [CongrE
     apply Iff.intro
     intro h; apply Quotient.sound h
     intro h; apply Quotient.exact h
+
+end quot_rel
 
 instance (priority := 500) [LE α] [LT α] [IsLawfulLT α] : @IsLawfulStrict α (· ≤ ·) (· < ·) where
   is_lawful_strict _ _ := lt_iff_le_and_not_le
