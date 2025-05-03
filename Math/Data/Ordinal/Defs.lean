@@ -1878,72 +1878,6 @@ def finite_limit (o: Ordinal) : o.IsLimitOrdinal -> o < ω -> o = 0 := by
 
 end Limit
 
-section Ord
-
--- the ordinal representing the class of all ordinals in universe `u`
--- NOTE: that this lives one universe higher up, since this is a proper class
-def ord : Ordinal.{u + 1} := @type Ordinal.{u} (· < ·) _
-
-def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{u+1} x := by
-  apply Iff.intro
-  · cases o with | _ α rel =>
-    intro h
-    have ⟨x, hx⟩ := rank_surj _ _ h
-    exists x
-    rwa [←rank_eq_ulift]
-  · rintro ⟨x, rfl⟩
-    cases x with | _ α rel =>
-    refine ⟨?_⟩
-    simp
-    apply PrincipalSegment.congr
-    symm; apply rel_ulift_eqv
-    rfl
-    exact {
-      toFun := rank rel
-      inj' := rank_inj
-      resp_rel := rank_lt_rank_iff.symm
-      exists_top := by
-        exists type rel
-        intro x
-        simp
-        apply Iff.intro
-        intro h
-        obtain ⟨x, rfl⟩ := rank_surj _ _ h
-        apply Set.mem_range'
-        rintro ⟨x, rfl⟩
-        apply rank_lt_type
-    }
-
-def ord_is_minimal (o: Ordinal.{u + 1}) : (∀x: Ordinal.{u}, ulift.{u+1} x ≤ o) -> ord.{u} ≤ o := by
-  intro h
-  rw [←not_lt, lt_ord]
-  rintro ⟨x, rfl⟩
-  have := h x.succ
-  simp at this
-  rw [ulift_le_ulift] at this
-  rw [←not_lt] at this
-  apply this
-  apply lt_succ_self
-
-instance : IsSuccLimitOrdinal ord.{u} where
-  ne_succ := by
-    intro x h
-    rw [lt_ord] at h
-    obtain ⟨x, rfl⟩ := h
-    rw [ulift_succ]
-    intro h
-    have : ulift.{u+1} x.succ < ord.{u} := by rw [lt_ord]; exists x.succ
-    rw [h] at this
-    exact lt_irrefl this
-  out := by
-    intro h
-    have g : ulift.{u + 1, u} 0 = ord.{u} := by rw [ofNat_eq_natCast, ulift_natCast, ←ofNat_eq_natCast, h]
-    have : ulift.{u+1, u} 0 < ord.{u} := by rw [lt_ord]; exists 0
-    rw [g] at this
-    exact lt_irrefl this
-
-end Ord
-
 section ConditionallyCompleteLattice
 
 open scoped Classical
@@ -2165,5 +2099,71 @@ def enum_le_enum : ¬r (enum r a) (enum r b) ↔ b ≤ a := by
   rw [←enum_lt_enum]
 
 end Enum
+
+section Ord
+
+-- the ordinal representing the class of all ordinals in universe `u`
+-- NOTE: that this lives one universe higher up, since this is a proper class
+def ord : Ordinal.{u + 1} := @type Ordinal.{u} (· < ·) _
+
+def lt_ord (o: Ordinal.{u + 1}) : o < ord.{u} ↔ ∃x: Ordinal.{u}, o = ulift.{u+1} x := by
+  apply Iff.intro
+  · cases o with | _ α rel =>
+    intro h
+    have ⟨x, hx⟩ := rank_surj _ _ h
+    exists x
+    rwa [←rank_eq_ulift]
+  · rintro ⟨x, rfl⟩
+    cases x with | _ α rel =>
+    refine ⟨?_⟩
+    simp
+    apply PrincipalSegment.congr
+    symm; apply rel_ulift_eqv
+    rfl
+    exact {
+      toFun := rank rel
+      inj' := rank_inj
+      resp_rel := rank_lt_rank_iff.symm
+      exists_top := by
+        exists type rel
+        intro x
+        simp
+        apply Iff.intro
+        intro h
+        obtain ⟨x, rfl⟩ := rank_surj _ _ h
+        apply Set.mem_range'
+        rintro ⟨x, rfl⟩
+        apply rank_lt_type
+    }
+
+def ord_is_minimal (o: Ordinal.{u + 1}) : (∀x: Ordinal.{u}, ulift.{u+1} x ≤ o) -> ord.{u} ≤ o := by
+  intro h
+  rw [←not_lt, lt_ord]
+  rintro ⟨x, rfl⟩
+  have := h x.succ
+  simp at this
+  rw [ulift_le_ulift] at this
+  rw [←not_lt] at this
+  apply this
+  apply lt_succ_self
+
+instance : IsSuccLimitOrdinal ord.{u} where
+  ne_succ := by
+    intro x h
+    rw [lt_ord] at h
+    obtain ⟨x, rfl⟩ := h
+    rw [ulift_succ]
+    intro h
+    have : ulift.{u+1} x.succ < ord.{u} := by rw [lt_ord]; exists x.succ
+    rw [h] at this
+    exact lt_irrefl this
+  out := by
+    intro h
+    have g : ulift.{u + 1, u} 0 = ord.{u} := by rw [ofNat_eq_natCast, ulift_natCast, ←ofNat_eq_natCast, h]
+    have : ulift.{u+1, u} 0 < ord.{u} := by rw [lt_ord]; exists 0
+    rw [g] at this
+    exact lt_irrefl this
+
+end Ord
 
 end Ordinal
