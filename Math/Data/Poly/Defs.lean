@@ -12,8 +12,10 @@ instance [Zero P] : Zero P[X] :=
   inferInstanceAs (Zero (AddMonoidAlgebra _ _ _))
 instance [SemiringOps P] [IsSemiring P] : Add P[X] :=
   inferInstanceAs (Add (AddMonoidAlgebra _ _ _))
+instance [SemiringOps P] [IsSemiring P] [SMul R P] [IsSMulZeroClass R P] : SMul R P[X] :=
+  inferInstanceAs (SMul R (AddMonoidAlgebra _ _ _))
 instance [SemiringOps P] [IsSemiring P] : SMul ℕ P[X] :=
-  inferInstanceAs (SMul ℕ (AddMonoidAlgebra _ _ _))
+  inferInstance
 instance [SemiringOps P] [IsSemiring P] : IsAddMonoid P[X] :=
   inferInstanceAs (IsAddMonoid (AddMonoidAlgebra _ _ _))
 
@@ -22,7 +24,7 @@ instance [RingOps P] [IsRing P] : Sub P[X] :=
 instance [RingOps P] [IsRing P] : Neg P[X] :=
   inferInstanceAs (Neg (AddMonoidAlgebra _ _ _))
 instance [RingOps P] [IsRing P] : SMul ℤ P[X] :=
-  inferInstanceAs (SMul ℤ (AddMonoidAlgebra _ _ _))
+  inferInstance
 instance instIsAddGroup [RingOps P] [IsRing P] : IsAddGroup P[X] :=
   inferInstanceAs (IsAddGroup (AddMonoidAlgebra _ _ _))
 
@@ -202,11 +204,14 @@ instance [SemiringOps P] [IsSemiring P] : IsSemiring P[X] := IsSemiring.inst
 instance [RingOps P] [IsRing P] : IsRing P[X] := IsRing.inst
 
 instance [SemiringOps P] [IsSemiring P] : SMul P P[X] :=
-  inferInstanceAs (SMul P (AddMonoidAlgebra ℕ P ℕ))
+  inferInstance
 instance [SemiringOps P] [IsSemiring P] : IsModule P P[X] :=
   inferInstanceAs (IsModule P (AddMonoidAlgebra ℕ P ℕ))
 
-def smul_eq_C_mul [SemiringOps P] [IsSemiring P] (r: P) (p: P[X]) : r • p = C r * p := by
+def smul_eq_C_mul [SemiringOps P] [IsSemiring P]
+  [SemiringOps R] [IsSemiring R]
+  [AlgebraMap R P] [SMul R P] [IsAlgebra R P]
+  (r: R) (p: P[X]) : r • p = C (algebraMap r) * p := by
   rw [AddMonoidAlgebra.mul_def, AddMonoidAlgebra.mul']
   unfold C AddMonoidAlgebra.single
   erw [Finsupp.single_sum]
@@ -216,28 +221,33 @@ def smul_eq_C_mul [SemiringOps P] [IsSemiring P] (r: P) (p: P[X]) : r • p = C 
   }
   apply AddMonoidAlgebra.toFinsupp_inj
   ext i
-  show r * p.toFinsupp i = _
+  show r • p.toFinsupp i = _
   rw [AddMonoidAlgebra.sum_toFinsupp (h₁ := by
     intro i eq
     show Finsupp.singleHom _ _ = _
     rw [eq, mul_zero, map_zero])]
-  simp
+  simp [←smul_def]
   let g : ZeroHom P P := {
-    toFun := (r * ·)
-    map_zero := mul_zero _
+    toFun := (r • ·)
+    map_zero := smul_zero _
   }
   show _ = Finsupp.applyHom _ _
   rw [Finsupp.map_sum]
-  show r * p.toFinsupp i = p.toFinsupp.sum (fun i₀ a => (Finsupp.single (S := ℕ) i₀ (g a)) i) _
+  show r • p.toFinsupp i = p.toFinsupp.sum (fun i₀ a => (Finsupp.single (S := ℕ) i₀ (g a)) i) _
   rw [Finsupp.sum_apply_single]
   rfl
 
-instance [SemiringOps P] [IsSemiring P] : AlgebraMap P P[X] := ⟨C.toRingHom⟩
-instance [SemiringOps P] [IsSemiring P] [IsCommMagma P] : IsAlgebra P P[X] where
+def smul_eq_C_mul' [SemiringOps P] [IsSemiring P] [IsCommMagma P] (r: P) (p: P[X]) : r • p = C r * p :=
+  smul_eq_C_mul r p
+
+instance [SemiringOps P] [IsSemiring P] [SemiringOps R] [IsSemiring R] [AlgebraMap R P] : AlgebraMap R P[X] := ⟨C.toRingHom.comp algebraMap⟩
+instance [SemiringOps P] [IsSemiring P] [IsCommMagma P] [SemiringOps R] [IsSemiring R] [SMul R P] [AlgebraMap R P] [IsAlgebra R P] : IsAlgebra R P[X] where
   commutes := by
     intro r x
     rw [mul_comm]
   smul_def := smul_eq_C_mul
+
+instance (priority := 2000) [SemiringOps P] [IsSemiring P] [IsCommMagma P] : IsAlgebra P P[X] := inferInstance
 
 def Xpow_eq_monomial [SemiringOps P] [IsSemiring P] : (X: P[X]) ^ n = monomial n := by
   induction n with

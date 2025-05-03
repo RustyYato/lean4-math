@@ -457,7 +457,7 @@ def div_mod_unique (a q r: P[X]) (hr: r.degree < p.degree) : a = q * p + r -> q 
       clear ih
       apply And.intro
       · rw [←qeq]; clear qeq req
-        rw [←smul_eq_C_mul, div_mod_unique_helper₀, div_mod_unique_helper₂]
+        rw [←smul_eq_C_mul', div_mod_unique_helper₀, div_mod_unique_helper₂]
         rw [sub_add_cancel]
         iterate 3 assumption
       · assumption

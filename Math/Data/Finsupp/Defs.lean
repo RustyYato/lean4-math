@@ -119,7 +119,7 @@ instance [Zero β] [Neg β] [IsNegZeroClass β] : Neg (Finsupp α β S) where
       }
   }
 
-instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (Finsupp α β S) where
+instance [Zero β] [SMul R β] [IsSMulZeroClass R β] : SMul R (Finsupp α β S) where
   smul n f := {
     toFun x := n • f x
     spec := do
@@ -130,12 +130,15 @@ instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (Finsupp α β S) where
           classical
           replace ne : n • f x ≠ 0 := ne
           by_cases f x = 0 <;> rename_i h
-          rw [h, nsmul_zero (α := β) (a := n)] at ne
+          rw [h, smul_zero] at ne
           contradiction
           apply hf
           assumption
       }
   }
+
+instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (Finsupp α β S) :=
+  inferInstance
 
 instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (Finsupp α β S) where
   sub f g := {
@@ -164,41 +167,11 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (Finsupp
       }
   }
 
-instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (Finsupp α β S) where
-  smul n f := {
-    toFun x := n • f x
-    spec := do
-      let ⟨fs, hf⟩←f.spec
-      return {
-        val := fs
-        property x ne := by
-          classical
-          replace ne : n • f x ≠ 0 := ne
-          by_cases f x = 0 <;> rename_i h
-          rw [h, zsmul_zero (α := β) (a := n)] at ne
-          contradiction
-          apply hf
-          assumption
-      }
-  }
 
-instance [Zero β] [Mul β] [IsMulZeroClass β] : SMul β (Finsupp α β S) where
-  smul n f := {
-    toFun x := n * f x
-    spec := do
-      let ⟨fs, hf⟩←f.spec
-      return {
-        val := fs
-        property x ne := by
-          classical
-          replace ne : n * f x ≠ 0 := ne
-          by_cases f x = 0 <;> rename_i h
-          rw [h, mul_zero] at ne
-          contradiction
-          apply hf
-          assumption
-      }
-  }
+instance [AddGroupOps β] [IsSubNegMonoid β] [IsNegZeroClass β] : SMul ℤ (Finsupp α β S) :=
+  inferInstance
+instance [Zero β] [Mul β] [IsMulZeroClass β] : SMul β (Finsupp α β S) :=
+  inferInstance
 
 @[simp] def apply_add [Zero β] [Add β] [IsAddZeroClass β] (f g: Finsupp α β S) (x: α) : (f + g) x = f x + g x := rfl
 

@@ -49,17 +49,15 @@ instance [Zero β] [Add β] [IsAddZeroClass β] : Add (AddMonoidAlgebra α β S)
 instance [Zero β] [Neg β] [IsNegZeroClass β] : Neg (AddMonoidAlgebra α β S) where
   neg f := ⟨-f.toFinsupp⟩
 
-instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (AddMonoidAlgebra α β S) where
+instance [Zero β] [SMul R β] [IsSMulZeroClass R β] : SMul R (AddMonoidAlgebra α β S) where
   smul n f := ⟨n • f.toFinsupp⟩
 
 instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (AddMonoidAlgebra α β S) where
   sub f g := ⟨f.toFinsupp - g.toFinsupp⟩
 
-instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (AddMonoidAlgebra α β S) where
-  smul n f := ⟨n • f.toFinsupp⟩
-
-instance [Zero β] [Mul β] [IsMulZeroClass β] : SMul β (AddMonoidAlgebra α β S) where
-  smul n f := ⟨n • f.toFinsupp⟩
+instance [AddMonoidOps β] [IsAddMonoid β] : SMul ℕ (AddMonoidAlgebra α β S) := inferInstance
+instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : SMul ℤ (AddMonoidAlgebra α β S) := inferInstance
+instance [Zero β] [Mul β] [IsMulZeroClass β] : SMul β (AddMonoidAlgebra α β S)  := inferInstance
 
 @[simp]
 def single_zero [DecidableEq α] [Zero β] (a: α) : single (S := S) a (0: β) = 0 := by

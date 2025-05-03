@@ -8,12 +8,20 @@ class IsMulAction (R M: Type*) [SMul R M] [MonoidOps R] [IsMonoid R]: Prop where
 @[simp] def one_smul [MonoidOps R] [SMul R M] [IsMonoid R] [IsMulAction R M]: ∀a: M, (1: R) • a = a := IsMulAction.one_smul
 def mul_smul [MonoidOps R] [SMul R M] [IsMonoid R] [IsMulAction R M]: ∀x y: R, ∀b: M, (x * y) • b = x • y • b := IsMulAction.mul_smul
 
-class IsDistribMulAction (R M: Type*) [SMul R M] [MonoidOps R] [AddMonoidOps M] [IsMonoid R] [IsAddMonoid M] : Prop extends IsMulAction R M where
+class IsSMulZeroClass (R M: Type*) [Zero M] [SMul R M] : Prop where
   smul_zero: ∀a: R, a • (0: M) = 0
+
+@[simp] def smul_zero [Zero M] [SMul R M] [IsSMulZeroClass R M]: ∀a: R, a • (0: M) = 0 := IsSMulZeroClass.smul_zero
+
+class IsDistribMulAction (R M: Type*) [SMul R M] [MonoidOps R] [AddMonoidOps M] [IsMonoid R] [IsAddMonoid M] : Prop extends IsMulAction R M, IsSMulZeroClass R M where
   smul_add: ∀a: R, ∀x y: M, a • (x + y) = a • x + a • y
 
-@[simp] def smul_zero [MonoidOps R] [AddMonoidOps M] [SMul R M] [IsMonoid R] [IsAddMonoid M] [IsDistribMulAction R M]: ∀a: R, a • (0: M) = 0 := IsDistribMulAction.smul_zero
 def smul_add [MonoidOps R] [AddMonoidOps M] [SMul R M] [IsMonoid R] [IsAddMonoid M] [IsDistribMulAction R M]: ∀a: R, ∀x y: M, a • (x + y) = a • x + a • y := IsDistribMulAction.smul_add
+
+class IsZeroSMulClass (R M: Type*) [Zero R] [Zero M] [SMul R M] : Prop where
+ zero_smul (m: M): (0: R) • m = 0
+
+@[simp] def zero_smul [Zero R] [Zero M] [SMul R M] [IsZeroSMulClass R M]: ∀x: M, (0: R) • x = 0 := IsZeroSMulClass.zero_smul
 
 class IsSMulComm (R S A: Type*) [SMul R A] [SMul S A]: Prop where
   smul_comm: ∀(r: R) (s: S) (x: A), r • s • x = s • r • x
@@ -91,3 +99,21 @@ def neg_smul' [SMul R M] [MonoidOps R] [AddGroupOps M] [IsMonoid R] [IsAddGroup 
 
 instance [MonoidOps R] [IsMonoid R] [SMul R M] [IsMulAction R M] : IsScalarTower R R M where
   smul_assoc r a b := by rw [smul_eq_mul, mul_smul]
+
+instance [Zero M] [Mul M] [IsMulZeroClass M] : IsSMulZeroClass M M where
+  smul_zero := by simp
+
+instance [AddMonoidOps M] [IsAddMonoid M] : IsSMulZeroClass ℕ M where
+  smul_zero := by simp
+
+instance [AddGroupOps M] [IsSubNegMonoid M] [IsNegZeroClass M] : IsSMulZeroClass ℤ M where
+  smul_zero := by simp
+
+instance [Zero M] [Mul M] [IsMulZeroClass M] : IsZeroSMulClass M M where
+  zero_smul := by simp
+
+instance [AddMonoidOps M] [IsAddMonoid M] : IsZeroSMulClass ℕ M where
+  zero_smul := by simp
+
+instance [AddGroupOps M] [IsSubNegMonoid M] : IsZeroSMulClass ℤ M where
+  zero_smul := by simp
