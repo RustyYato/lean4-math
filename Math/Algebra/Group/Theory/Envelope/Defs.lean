@@ -120,4 +120,24 @@ def liftHom [Mul α] [One α] [IsMulOneClass α] : (α →* G) ≃ (GroupEnvolop
     show lift (lift.symm x) = x
     simp
 
+def apply_liftHom_ι [Mul α] [One α] [IsMulOneClass α] (f: α →*  G) : liftHom f (ι x) = f x := by apply apply_lift_ι
+
+def equivGroup : GroupEnvolope G ≃* G := {
+  liftHom (GroupHom.id _) with
+  invFun := ιHom
+  leftInv x := by
+    simp; rw [←ι_eq_ιHom]
+    induction x with
+    | one => rw [map_one, map_one]
+    | ι a =>
+      rw [apply_liftHom_ι]
+      rfl
+    | inv a ih => rw [map_inv, map_inv, ih]
+    | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
+  rightInv x := by
+    simp
+    rw [←ι_eq_ιHom, apply_liftHom_ι]
+    rfl
+}
+
 end GroupEnvolope
