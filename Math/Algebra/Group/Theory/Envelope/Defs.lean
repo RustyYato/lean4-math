@@ -126,3 +126,13 @@ def liftHom [Mul α] [One α] [IsMulOneClass α] : (α →* G) ≃ (GroupEnvolop
     simp
 
 end GroupEnvolope
+
+-- every homomorphism to a group that preserves products also preserves the unit
+instance [Mul α] [One α] [IsMulOneClass α] [GroupOps β] [IsGroup β] [FunLike F α β] [IsMulHom F α β] : IsOneHom F α β where
+  map_one f := by
+    let h : MulHom α β ≃ (α →* β) := GroupEnvolope.lift.trans GroupEnvolope.liftHom.symm
+    have : (f: α -> β) = h (toMulHom f) := by
+      show (f: α -> β) = GroupEnvolope.lift.symm (GroupEnvolope.lift (toMulHom f))
+      simp
+      rfl
+    rw [this, map_one]
