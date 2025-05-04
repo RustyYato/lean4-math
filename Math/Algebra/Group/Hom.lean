@@ -91,3 +91,19 @@ def map_div_to_sub
   [IsGroup α] [IsAddGroup β]
   (f: F) (x y: α) : f (x / y) = f x - f y  :=
   map_sub (α := AddOfMul α) (β := β) f x y
+
+variable [Mul α] [One α] [IsMulOneClass α] [GroupOps β] [IsGroup β]
+
+-- every homomorphism to a group that preserves products also preserves the unit
+instance [FunLike F α β] [IsMulHom F α β] : IsOneHom F α β where
+  map_one f := by
+    rw [←inv_mul_cancel (f 1)]
+    apply mul_left_cancel (k := f 1)
+    rw [←map_mul, ←mul_assoc, mul_inv_cancel, one_mul, one_mul]
+
+def GroupHom.ofMulHom (f: MulHom α β) : α →* β := {
+    f with
+    map_one := map_one f
+}
+
+def GroupHom.apply_ofMulHom (f: MulHom α β) (x: α) : GroupHom.ofMulHom f x = f x := rfl
