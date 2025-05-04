@@ -94,13 +94,6 @@ def apply_lift_ι [Mul α] (f: MulHom α G) : lift f (ι x) = f x := by apply pr
 
 attribute [irreducible] GroupEnvolope lift instGroupOps ι
 
-def ιHom [Mul α] [One α] [IsMulOneClass α] : α →* GroupEnvolope α := {
-  ι with
-  map_one := map_one ι
-}
-
-def ι_eq_ιHom [Mul α] [One α] [IsMulOneClass α]: (ι: α -> _) = (ιHom: α -> _) := rfl
-
 def liftHom [Mul α] [One α] [IsMulOneClass α] : (α →* G) ≃ (GroupEnvolope α →* G) where
   toFun f := lift f
   invFun f := {
@@ -110,7 +103,7 @@ def liftHom [Mul α] [One α] [IsMulOneClass α] : (α →* G) ≃ (GroupEnvolop
       rw [lift]
       simp
       show f (ι 1) = _
-      rw [ι_eq_ιHom, map_one, map_one]
+      rw [map_one, map_one]
   }
   leftInv x := by
     simp
@@ -124,9 +117,9 @@ def apply_liftHom_ι [Mul α] [One α] [IsMulOneClass α] (f: α →*  G) : lift
 
 def equivGroup : GroupEnvolope G ≃* G := {
   liftHom (GroupHom.id _) with
-  invFun := ιHom
+  invFun := ι
   leftInv x := by
-    simp; rw [←ι_eq_ιHom]
+    simp
     induction x with
     | one => rw [map_one, map_one]
     | ι a =>
@@ -136,7 +129,7 @@ def equivGroup : GroupEnvolope G ≃* G := {
     | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
   rightInv x := by
     simp
-    rw [←ι_eq_ιHom, apply_liftHom_ι]
+    rw [apply_liftHom_ι]
     rfl
 }
 
