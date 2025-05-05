@@ -241,10 +241,17 @@ def smul_eq_C_mul' [SemiringOps P] [IsSemiring P] [IsCommMagma P] (r: P) (p: P[X
   smul_eq_C_mul r p
 
 instance [SemiringOps P] [IsSemiring P] [SemiringOps R] [IsSemiring R] [AlgebraMap R P] : AlgebraMap R P[X] := ⟨C.toRingHom.comp algebraMap⟩
-instance [SemiringOps P] [IsSemiring P] [IsCommMagma P] [SemiringOps R] [IsSemiring R] [SMul R P] [AlgebraMap R P] [IsAlgebra R P] : IsAlgebra R P[X] where
+instance [SemiringOps P] [IsSemiring P] [SemiringOps R] [IsSemiring R] [SMul R P] [AlgebraMap R P] [IsAlgebra R P] : IsAlgebra R P[X] where
   commutes := by
     intro r x
-    rw [mul_comm]
+    show C (algebraMap _) * _ = _ * C (algebraMap _)
+    induction x with
+    | C a => rw [←map_mul, ←map_mul, commutes]
+    | monomial p n ih =>
+      rw [npow_succ, ←mul_assoc _ _ X, ←mul_assoc, ih,
+        mul_assoc, ←X_mul_eq_mul_X, ←mul_assoc]
+    | add a b iha ihb =>
+      rw [mul_add, add_mul, iha, ihb]
   smul_def := smul_eq_C_mul
 
 instance (priority := 2000) [SemiringOps P] [IsSemiring P] [IsCommMagma P] : IsAlgebra P P[X] := inferInstance
