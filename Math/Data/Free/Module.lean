@@ -53,6 +53,12 @@ def ι_inj [IsNontrivial R] : Function.Injective (ι R (M := M)) := by
   assumption
   exact (zero_ne_one R this).elim
 
+instance [Subsingleton R] : Subsingleton (FreeModule R M) where
+  allEq a b := by
+    apply Finsupp.ext
+    intro m
+    apply Subsingleton.allEq
+
 private def preLift (f: M -> N) : FreeModule R M →ₗ[R] N where
   toFun := toFreeModuleHom f
   map_add {x y} := by
