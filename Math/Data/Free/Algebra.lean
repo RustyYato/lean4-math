@@ -523,7 +523,7 @@ theorem ι_ne_zero [IsNontrivial R] (x : X) : ι R x ≠ 0 :=
 theorem ι_ne_one [IsNontrivial R] (x : X) : ι R x ≠ 1 :=
   ι_ne_algebraMap x _
 
-attribute [irreducible] ι
+attribute [irreducible] FreeAlgebra lift ι
 
 instance [Subsingleton R] : Subsingleton (FreeAlgebra R X) :=
   subsingleton_of_trivial <| by

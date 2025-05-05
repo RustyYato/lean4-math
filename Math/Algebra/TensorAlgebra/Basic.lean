@@ -138,7 +138,11 @@ private def algebraMapInv : TensorAlgebra R M →ₐ[R] R :=
   }
 
 unseal RingQuot.liftAlgHom in
-private def algebraMap_leftInverse : Function.IsLeftInverse algebraMapInv (algebraMap (R := R) (α := TensorAlgebra R M)) := fun _ => rfl
+private def algebraMap_leftInverse : Function.IsLeftInverse algebraMapInv (algebraMap (R := R) (α := TensorAlgebra R M)) := by
+  intro r
+  unfold algebraMapInv
+  rw [map_algebraMap]
+  rfl
 
 def algebraMap_inj : Function.Injective (algebraMap (R := R) (α := TensorAlgebra R M)) := algebraMap_leftInverse.Injective
 
