@@ -77,14 +77,15 @@ private def eval_mul_X (x: M) (a: P[X]) : eval x (a * X) = eval x a * x := by
     split <;> rfl
   · intro; simp
 
-instance (x: M) (a: P[X]) : IsCommutes x (eval x a) where
+instance (x y: M) (p: P[X]) [IsCommutes y x] : IsCommutes (eval y p) x where
   mul_commutes := by
-    induction a with
+    induction p generalizing y with
     | C a => rw [eval_C, commutes]
-    | monomial p n ih => rw [npow_succ, ←mul_assoc, eval_mul_X, ←mul_assoc, ih]
+    | monomial p n ih => rw [npow_succ, ←mul_assoc, eval_mul_X, ←mul_assoc,
+      mul_assoc, mul_comm y, ←mul_assoc, ih]
     | add a b iha ihb => rw [eval_add, add_mul, mul_add, iha, ihb]
 
-instance (x: M) (a: P[X]) : IsCommutes (eval x a) x :=
+instance (x y: M) (a: P[X]) [IsCommutes x y] : IsCommutes x (eval y a) :=
   inferInstance
 
 def eval_mul (x: M) (a b: P[X]) : eval x (a * b) = eval x a * eval x b := by
@@ -162,12 +163,7 @@ def evalWith_add (x: M) (a b: P[X]) : evalWith f x (a + b) = evalWith f x a + ev
 def evalWith_mul (x: M) (a b: P[X]) : evalWith f x (a * b) = evalWith f x a * evalWith f x b :=
   eval_mul (M := ofHom P M f) _ _ _
 
-def evalWithHom (x: M) : P[X] →+* M where
-  toFun := evalWith f x
-  map_zero := evalWith_zero _ _
-  map_one := evalWith_one _ _
-  map_add := evalWith_add _ _ _ _
-  map_mul := evalWith_mul _ _ _ _
+def evalWithHom (x: M) : P[X] →+* M := toRingHom (evalHom (M := ofHom P M f) x)
 
 def evalWithHom_C (x: M) (p: P) : evalWithHom f x (C p) = f p := evalWith_C _ _ _
 def evalWithHom_X (x: M) : evalWithHom f x (X: P[X]) = x := evalWith_X _ _
