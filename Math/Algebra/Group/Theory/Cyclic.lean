@@ -29,7 +29,7 @@ variable {n: ℕ}
 instance : GroupOps (Cyclic n) := GroupQuot.instGroupOps
 instance : IsGroup (Cyclic n) := GroupQuot.instIsGroup
 
-def unit (n: ℕ) : Cyclic n := GroupQuot.mk _ (FreeGroup.of ())
+def unit (n: ℕ) : Cyclic n := GroupQuot.mk _ (FreeGroup.ι ())
 
 def npow_n_eq_one (a: Cyclic n) : a ^ n = 1 := by
   induction a using GroupQuot.ind with | mk a =>
@@ -62,8 +62,8 @@ def toZMod (n: ℕ) : Cyclic n →ₘ+ ZMod n := GroupQuot.lift_log {
       rw [map_npow_to_nsmul, map_one_to_zero]
       induction a with
       | one => rw [map_one_to_zero, nsmul_zero]
-      | of x =>
-        rw [FreeGroup.lift_log_of, ZMod.n_nsmul_eq_zero]
+      | ι x =>
+        rw [FreeGroup.lift_log_ι, ZMod.n_nsmul_eq_zero]
       | inv _ ih => rw [map_inv_to_neg, nsmul_neg, ih, neg_zero]
       | mul a b iha ihb => rw [map_mul_to_add, nsmul_add, iha, ihb, add_zero]
   }
@@ -80,7 +80,7 @@ def ofZMod (n: ℕ) : ZMod n →ₐ* Cyclic n := ZMod.lift_exp n {
 
 def toZMod_unit : toZMod n (unit n) = 1 := by
   show GroupQuot.lift_log _ _ = _
-  rw [unit, GroupQuot.lift_log_mk_apply, FreeGroup.lift_log_of]
+  rw [unit, GroupQuot.lift_log_mk_apply, FreeGroup.lift_log_ι]
 
 def apply_ofZMod (n: ℕ) (x: ZMod n) : ofZMod n x = unit n ^ ZMod.toInt x := by
   rw [ofZMod, ZMod.apply_lift_exp]
@@ -94,7 +94,7 @@ def ofZMod_toZMod (n: ℕ) (c: Cyclic n) : ofZMod n (toZMod n c) = c := by
   induction c using GroupQuot.ind with | mk c =>
   induction c with
   | one => simp [map_one, map_one_to_zero, map_zero_to_one]
-  | of => rw [←unit, toZMod_unit, apply_ofZMod, ←map_one (ZMod.ofInt n),
+  | ι => rw [←unit, toZMod_unit, apply_ofZMod, ←map_one (ZMod.ofInt n),
       ZMod.toInt_ofInt, zpow_emod, zpow_one]
   | inv a ih => rw [map_inv, map_inv_to_neg, map_neg_to_inv, ih]
   | mul a b iha ihb => rw [map_mul, map_mul_to_add, map_add_to_mul, iha, ihb]

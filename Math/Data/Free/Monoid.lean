@@ -29,18 +29,18 @@ instance : IsMulCancel (FreeMonoid α) where
   mul_left_cancel := List.append_cancel_left
   mul_right_cancel := List.append_cancel_right
 
-def of : α ↪ FreeMonoid α where
+def ι : α ↪ FreeMonoid α where
   toFun a := .ofList [a]
   inj' := by
     intro x y h
     exact (List.cons.inj h).left
 
 @[simp] def one_toList : toList (1: FreeMonoid α) = [] := rfl
-@[simp] def of_toList (a: α) : toList (.of a) = [a] := rfl
+@[simp] def ι_toList (a: α) : toList (.ι a) = [a] := rfl
 @[simp] def mul_toList (a b: FreeMonoid α) : toList (a * b) = a.toList ++ b.toList := rfl
 
 @[simp] def one_ofList : ofList ([]: List α) = 1 := rfl
-@[simp] def of_ofList (a: α) : ofList [a] = .of a := rfl
+@[simp] def ι_ofList (a: α) : ofList [a] = .ι a := rfl
 @[simp] def mul_ofList (a b: List α) : ofList (a ++ b) = ofList a * ofList b := rfl
 
 def reverse (a: FreeMonoid α) : FreeMonoid α := .ofList a.toList.reverse
@@ -56,8 +56,8 @@ def reverseEquiv : FreeMonoid α ≃* (FreeMonoid α)ᵐᵒᵖ where
     apply List.reverse_append
 
 @[simp] def reverse_one : (reverse 1: FreeMonoid α) = 1 := rfl
-@[simp] def reverse_of : reverse (of a) = of a := rfl
-def reverseEquiv_of : reverseEquiv (of a) = of a := rfl
+@[simp] def reverse_ι : reverse (ι a) = ι a := rfl
+def reverseEquiv_ι : reverseEquiv (ι a) = ι a := rfl
 
 def reverse_mul {a b : FreeMonoid α} : reverse (a * b) = reverse b * reverse a := by
   apply List.reverse_append
@@ -65,31 +65,31 @@ def reverse_mul {a b : FreeMonoid α} : reverse (a * b) = reverse b * reverse a 
 @[induction_eliminator]
 def induction {motive: FreeMonoid α -> Prop}
   (one: motive 1)
-  (of_mul: ∀a b, motive b -> motive (.of a * b)) :
+  (ι_mul: ∀a b, motive b -> motive (.ι a * b)) :
   ∀a, motive a := by
   intro a
   induction a with
   | nil => apply one
   | cons a as ih =>
-    apply of_mul
+    apply ι_mul
     assumption
 
 @[cases_eliminator]
 def cases {motive: FreeMonoid α -> Prop}
   (one: motive 1)
-  (of_mul: ∀a b, motive (.of a * b)) :
+  (ι_mul: ∀a b, motive (.ι a * b)) :
   ∀a, motive a := by
   intro a
   cases a with
   | nil => apply one
   | cons a as =>
-    apply of_mul
+    apply ι_mul
 
 def map (a: FreeMonoid α) (f: α -> β) : FreeMonoid β :=
   .ofList (a.toList.map f)
 
 @[simp]
-def of_map (a: α) (f: α -> β) : map (.of a) f  = .of (f a) := rfl
+def ι_map (a: α) (f: α -> β) : map (.ι a) f  = .ι (f a) := rfl
 
 @[simp]
 def mul_map (a b: FreeMonoid α) (f: α -> β) : (a * b).map f = (a.map f) * (b.map f) :=
@@ -99,10 +99,10 @@ def length (a: FreeMonoid α) : Nat :=
   a.toList.length
 
 @[simp] def one_length : length (1: FreeMonoid α) = 0 := rfl
-@[simp] def of_length : length (of a) = 1 := rfl
+@[simp] def ι_length : length (ι a) = 1 := rfl
 @[simp] def mul_length : length (a * b) = a.length + b.length := List.length_append
 
--- lift any assignment of variables to a monoid into a group homomorphism from the
+-- lift any assignment ι variables to a monoid into a group homomorphism from the
 -- free monoid to the given monoid
 def lift [MonoidOps M] [IsMonoid M] : (α -> M) ≃ (FreeMonoid α →* M) where
   toFun f := {
@@ -118,7 +118,7 @@ def lift [MonoidOps M] [IsMonoid M] : (α -> M) ≃ (FreeMonoid α →* M) where
       | nil => simp
       | cons x xs ih => simp [ih, mul_assoc]
   }
-  invFun f a := f (.of a)
+  invFun f a := f (.ι a)
   leftInv := by
     intro  f
     simp
@@ -131,14 +131,14 @@ def lift [MonoidOps M] [IsMonoid M] : (α -> M) ≃ (FreeMonoid α →* M) where
     show List.foldr _ _ a.toList = f a
     induction a with
     | one => rw [map_one]; rfl
-    | of_mul a as ih =>
+    | ι_mul a as ih =>
       show List.foldr _ _ (a :: as.toList) = _
       rw [List.foldr_cons, ih, map_mul]
 
-@[simp] def lift_of [MonoidOps M] [IsMonoid M] (f: α -> M) (a: α) : lift f (.of a) = f a := by
+@[simp] def lift_ι [MonoidOps M] [IsMonoid M] (f: α -> M) (a: α) : lift f (.ι a) = f a := by
   apply mul_one
 
-def one_ne_of (a: α) : 1 ≠ of a := nofun
+def one_ne_ι (a: α) : 1 ≠ ι a := nofun
 
 instance : Nonempty (FreeMonoid α) := inferInstance
 instance [IsEmpty α] : Subsingleton (FreeMonoid α) where
@@ -154,32 +154,32 @@ instance [h: Nonempty α] : IsNontrivial (FreeMonoid α) where
   exists_ne := by
     obtain ⟨a⟩ := h
     exists 1
-    exists .of a
-    apply one_ne_of
+    exists .ι a
+    apply one_ne_ι
 
-def lift_of' (a : FreeMonoid α) : lift of a = a := by
+def lift_ι' (a : FreeMonoid α) : lift ι a = a := by
   induction a with
   | one => simp [map_one]
-  | of_mul => rw [map_mul, lift_of]; congr
+  | ι_mul => rw [map_mul, lift_ι]; congr
 
 def lift_assoc {x: FreeMonoid α} (f: α -> FreeMonoid β) (g: β -> FreeMonoid γ) :
   (lift g) ((lift f) x) = (lift fun x => (lift g) (f x)) x := by
   show lift _ (lift _ _) = lift (fun x => lift _ _) _
   induction x with
     | one => simp [map_one]
-    | of_mul => simp [map_mul]; congr
+    | ι_mul => simp [map_mul]; congr
 
 instance : Monad FreeMonoid where
-  pure := of
+  pure := ι
   bind a b := lift b a
 
 instance : LawfulMonad FreeMonoid := by
   apply LawfulMonad.mk'
   case id_map =>
-    apply lift_of'
+    apply lift_ι'
   case pure_bind =>
     intro α β x f
-    apply lift_of
+    apply lift_ι
   case bind_assoc =>
     intro α β γ x f g
     apply lift_assoc
@@ -188,18 +188,18 @@ instance : LawfulMonad FreeMonoid := by
 end FreeMonoid
 
 def Equiv.congrFreeMonoid (h: α ≃ β) : FreeMonoid α ≃ FreeMonoid β where
-  toFun a := FreeMonoid.lift (fun a => .of (h a)) a
-  invFun a := FreeMonoid.lift (fun a => .of (h.symm a)) a
+  toFun a := FreeMonoid.lift (fun a => .ι (h a)) a
+  invFun a := FreeMonoid.lift (fun a => .ι (h.symm a)) a
   leftInv a := by
     simp
     rw [FreeMonoid.lift_assoc]
     simp
-    apply FreeMonoid.lift_of'
+    apply FreeMonoid.lift_ι'
   rightInv a := by
     simp
     rw [FreeMonoid.lift_assoc]
     simp
-    apply FreeMonoid.lift_of'
+    apply FreeMonoid.lift_ι'
 
 def MonoidEquiv.congrFreeMonoid (h: α ≃ β) : FreeMonoid α ≃* FreeMonoid β where
   toEquiv := Equiv.congrFreeMonoid h

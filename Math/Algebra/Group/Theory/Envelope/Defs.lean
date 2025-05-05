@@ -1,7 +1,7 @@
 import Math.Data.Free.Group
 
 inductive GroupEnvolope.Rel (α: Type*) [Mul α] : FreeGroup α -> FreeGroup α -> Prop where
-| intro (a b: α) : Rel α (.of (a * b)) (.of a * .of b)
+| intro (a b: α) : Rel α (.ι (a * b)) (.ι a * .ι b)
 
 def GroupEnvolope (α: Type*) [Mul α] := GroupQuot (GroupEnvolope.Rel α)
 
@@ -13,9 +13,9 @@ instance [Mul α] : IsGroup (GroupEnvolope α) := inferInstanceAs (IsGroup (Grou
 structure ιType (α: Type*) where
 
 def ι [Mul α] : MulHom α (GroupEnvolope α) where
-  toFun := GroupQuot.mk _ ∘ FreeGroup.of
+  toFun := GroupQuot.mk _ ∘ FreeGroup.ι
   map_mul {a b} := by
-    simp; rw [←map_mul (GroupQuot.mk (Rel α)) (x := FreeGroup.of a) (y := FreeGroup.of b)]
+    simp; rw [←map_mul (GroupQuot.mk (Rel α)) (x := FreeGroup.ι a) (y := FreeGroup.ι b)]
     apply GroupQuot.mk_rel
     apply Rel.intro
 
@@ -30,7 +30,7 @@ def induction [Mul α] {motive: GroupEnvolope α -> Prop}
    induction g using GroupQuot.ind with | mk g =>
    induction g with
    | one => rw [map_one]; apply one
-   | of => apply ι
+   | ι => apply ι
    | inv =>
       rw [map_inv]
       apply inv
@@ -66,12 +66,12 @@ private def preLift [Mul α] (f: MulHom α G) : GroupEnvolope α →* G := Group
   val := FreeGroup.lift f
   property {a b} h := by
     cases h
-    simp [FreeGroup.lift_of, map_mul]
+    simp [FreeGroup.lift_ι, map_mul]
 }
 
 private def preLift_ι [Mul α] (f: MulHom α G) : preLift f (ι x) = f x := by
-  show GroupEnvolope.preLift f (GroupQuot.mk _ (FreeGroup.of x)) = _
-  erw [GroupQuot.lift_mk_apply, FreeGroup.lift_of]
+  show GroupEnvolope.preLift f (GroupQuot.mk _ (.ι x)) = _
+  erw [GroupQuot.lift_mk_apply, FreeGroup.lift_ι]
 
 def lift [Mul α] : MulHom α G ≃ (GroupEnvolope α →* G) where
   toFun := preLift
