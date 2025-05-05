@@ -172,9 +172,10 @@ end EvalWith
 
 section Lift
 
-variable [SemiringOps P] [SemiringOps A] [FunLike F P A]
-  [IsSemiring P] [IsSemiring A] [IsCommMagma P]
-  [DecidableEq σ] [SMul P A] [AlgebraMap P A] [IsAlgebra P A]
+variable
+  [SemiringOps P] [SemiringOps A] [FunLike F P A]
+  [IsSemiring P] [IsSemiring A]
+  [SMul P A] [AlgebraMap P A] [IsAlgebra P A]
 
 -- show that P[X] is the free commutative P-algebra over a single variable
 def lift : A ≃ (P[X] →ₐ[P] A) where
@@ -195,8 +196,8 @@ def lift : A ≃ (P[X] →ₐ[P] A) where
 def apply_lift_C (x: A) (p: P) : lift x (C p) = algebraMap p := eval_C _ _
 def apply_lift_X (x: A) : lift x (X: P[X]) = x := eval_X _
 
-def lift_X : lift (X: P[X]) x = x := by
-  induction x using alg_induction with
+def lift_X (p: P[X]) [IsCommMagma P] : lift (X: P[X]) p = p := by
+  induction p using alg_induction with
   | C a => rw [apply_lift_C]; rfl
   | X => rw [apply_lift_X]
   | add a b iha ihb => rw [map_add, iha, ihb]
