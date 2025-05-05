@@ -483,6 +483,11 @@ def ι_inj [IsNontrivial R] : Function.Injective (ι R (X := X)) := by
   rw [eq, h₁] at h₀
   exact zero_ne_one _ h₀
 
+instance [Subsingleton R] : Subsingleton (FreeAlgebra R X) := by
+  refine subsingleton_of_trivial ?_
+  apply Quotient.sound
+  rw [Subsingleton.allEq (α := R) 0 1]
+
 @[simp]
 def lift_symm_apply (F : FreeAlgebra R X →ₐ[R] A) : (lift R).symm F = F ∘ ι R := rfl
 
