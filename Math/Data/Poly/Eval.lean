@@ -77,11 +77,15 @@ private def eval_mul_X (x: M) (a: P[X]) : eval x (a * X) = eval x a * x := by
     split <;> rfl
   · intro; simp
 
-def eval_comm_x (x: M) (a: P[X]) : x * eval x a = eval x a * x := by
-  induction a with
-  | C a => rw [eval_C, commutes]
-  | monomial p n ih => rw [npow_succ, ←mul_assoc, eval_mul_X, ←mul_assoc, ih]
-  | add a b iha ihb => rw [eval_add, add_mul, mul_add, iha, ihb]
+instance (x: M) (a: P[X]) : IsCommutes x (eval x a) where
+  mul_commutes := by
+    induction a with
+    | C a => rw [eval_C, commutes]
+    | monomial p n ih => rw [npow_succ, ←mul_assoc, eval_mul_X, ←mul_assoc, ih]
+    | add a b iha ihb => rw [eval_add, add_mul, mul_add, iha, ihb]
+
+instance (x: M) (a: P[X]) : IsCommutes (eval x a) x :=
+  inferInstance
 
 def eval_mul (x: M) (a b: P[X]) : eval x (a * b) = eval x a * eval x b := by
   induction a generalizing b with
@@ -99,7 +103,7 @@ def eval_mul (x: M) (a b: P[X]) : eval x (a * b) = eval x a * eval x b := by
   | monomial a n ih =>
     rw [npow_succ, mul_assoc, mul_assoc, X_mul_eq_mul_X,
       ←mul_assoc, ←mul_assoc, eval_mul_X, ih, ←mul_assoc, eval_mul_X,
-        mul_assoc, mul_assoc, eval_comm_x]
+        mul_assoc, mul_assoc, mul_comm x]
 
 def evalHom (x: M) : P[X] →ₐ[P] M where
   toFun := eval x
