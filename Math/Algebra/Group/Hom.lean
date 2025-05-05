@@ -93,13 +93,18 @@ def map_div_to_sub
   map_sub (α := AddOfMul α) (β := β) f x y
 
 variable [Mul α] [One α] [IsMulOneClass α] [GroupOps β] [IsGroup β]
+  [Add α] [Zero α] [IsAddZeroClass α] [AddGroupOps β] [IsAddGroup β]
 
 -- every homomorphism to a group that preserves products also preserves the unit
-instance [FunLike F α β] [IsMulHom F α β] : IsOneHom F α β where
+instance instOneHomOfMulHom [FunLike F α β] [IsMulHom F α β] : IsOneHom F α β where
   map_one f := by
     rw [←inv_mul_cancel (f 1)]
     apply mul_left_cancel (k := f 1)
     rw [←map_mul, ←mul_assoc, mul_inv_cancel, one_mul, one_mul]
+
+-- every homomorphism to a group that preserves products also preserves the unit
+instance instZeroHomOfAddHom [FunLike F α β] [IsAddHom F α β] : IsZeroHom F α β where
+  map_zero := instOneHomOfMulHom.map_one (α := MulOfAdd α) (β := MulOfAdd β)
 
 def GroupHom.ofMulHom (f: MulHom α β) : α →* β := {
     f with
@@ -107,3 +112,10 @@ def GroupHom.ofMulHom (f: MulHom α β) : α →* β := {
 }
 
 def GroupHom.apply_ofMulHom (f: MulHom α β) (x: α) : GroupHom.ofMulHom f x = f x := rfl
+
+def AddGroupHom.ofAddHom (f: AddHom α β) : α →+ β := {
+    f with
+    map_zero := map_zero f
+}
+
+def AddGroupHom.apply_ofAddHom (f: AddHom α β) (x: α) : AddGroupHom.ofAddHom f x = f x := rfl
