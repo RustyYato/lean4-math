@@ -470,6 +470,22 @@ def lift
       simp [map_mul]
       congr
 
+instance [SemiringOps R] [IsSemiring R] [IsCommMagma R] [Subsingleton X] : IsCommMagma (FreeAlgebra R X) where
+  mul_comm a b := by
+    induction a generalizing b with
+    | grade0 a => rw [commutes]; assumption
+    | grade1 a =>
+      induction b with
+      | grade0 a => rw [commutes]; assumption
+      | grade1 b => congr <;> apply Subsingleton.allEq
+      | add b₀ b₁ ih₀ ih₁ =>
+        rw [mul_add, add_mul, ih₀, ih₁]
+      | mul b₀ b₁ ih₀ ih₁ =>
+        rw [←mul_assoc, ih₀, mul_assoc, ih₁, mul_assoc]
+    | add a₀ a₁ ih₀ ih₁ => rw [add_mul, mul_add, ih₀, ih₁]
+    | mul a₀ a₁ ih₀ ih₁  =>
+      rw [mul_assoc, ih₁, ←mul_assoc, ih₀, mul_assoc]
+
 end FreeAlgebra
 
 namespace FreeAlgebra
