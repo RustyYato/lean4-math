@@ -180,15 +180,12 @@ variable
 -- show that P[X] is the free commutative P-algebra over a single variable
 def lift : A ≃ (P[X] →ₐ[P] A) where
   toFun := evalHom
-  invFun x := x X
-  leftInv f := by simp [evalHom_X]
+  invFun f := f X
+  leftInv x := by simp [evalHom_X]
   rightInv f := by
-    ext p
-    simp
+    ext p; dsimp
     induction p using alg_induction with
-    | C p =>
-      show _ = f (algebraMap p)
-      rw [evalHom_C, map_algebraMap]
+    | C p => rw [evalHom_C, C_eq_algebraMap', map_algebraMap]
     | X => simp [evalHom_X]
     | add a b iha ihb => simp [iha, ihb, map_add]
     | mul a b iha ihb => simp [iha, ihb, map_mul]
