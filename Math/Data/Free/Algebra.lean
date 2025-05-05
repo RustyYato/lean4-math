@@ -32,34 +32,43 @@ local instance [One R] : One (Algebra.Pre R X) := ⟨.scalar 1⟩
 variable (R X: Type*) [Zero R] [One R] [Add R] [Mul R]
 
 inductive Rel: Pre R X -> Pre R X -> Prop where
+-- ensure that this relation is an equivalence relation
 | refl : Rel x x
 | symm : Rel x y -> Rel y x
 | trans : Rel x y -> Rel y z -> Rel x z
 
+-- ensure that the scalar is a central scalar
 | add_scalar {r s: R} : Rel (↑(r + s)) (r + s)
 | mul_scalar {r s: R} : Rel (↑(r * s)) (r * s)
 | central_scalar {r: R} {x: Pre R X} : Rel (r * x) (x * r)
 
+-- ensure that smul is consistent with addition
 | zero_nsmul : Rel (0 • x) 0
 | succ_nsmul : Rel ((n + 1) • x) (n • x + x)
 
+-- ensure that npow is consistent with multiplication
 | npow_zero : Rel (x ^ 0) 1
 | npow_succ : Rel (x ^ (n + 1)) (x ^ n * x)
 
+-- ensure that addition is a commutative monoid
 | add_assoc {a b c: Pre R X} : Rel (a + b + c) (a + (b + c))
 | add_comm {a b: Pre R X} : Rel (a + b) (b + a)
 | add_zero {a: Pre R X} : Rel (a + 0) a
 
+-- ensure that multiplication is a monoid
 | mul_assoc {a b c: Pre R X} : Rel (a * b * c) (a * (b * c))
 | one_mul {a: Pre R X} : Rel (1 * a) a
 | mul_one {a: Pre R X} : Rel (a * 1) a
 
+-- ensure that zero plays well with multiplication
 | zero_mul {a: Pre R X} : Rel (0 * a) 0
 | mul_zero {a: Pre R X} : Rel (a * 0) 0
 
+-- ensure that multiplication distributes over addition
 | mul_add {a b k: Pre R X} : Rel (k * (a + b)) (k * a + k * b)
 | add_mul {a b k: Pre R X} : Rel ((a + b) * k) (a * k + b * k)
 
+-- ensure that addition and multiplication play well with the equivalence relation
 | add_congr {a b c d: Pre R X} : Rel a c -> Rel b d -> Rel (a + b) (c + d)
 | mul_congr {a b c d: Pre R X} : Rel a c -> Rel b d -> Rel (a * b) (c * d)
 
@@ -158,8 +167,10 @@ instance [SemiringOps R] : SemiringOps (FreeAlgebra R X) where
       assumption
       assumption
 
+private def ofScalar [SemiringOps R] (r: R) : FreeAlgebra R X := ⟦.scalar r⟧
+
 instance [SemiringOps R] : AlgebraMap R (FreeAlgebra R X) where
-  toFun := (⟦.scalar ·⟧)
+  toFun := ofScalar
   map_zero := rfl
   map_one := rfl
   map_add := by
@@ -472,8 +483,8 @@ def ι_comp_lift (f : X → A) : (lift R f : FreeAlgebra R X → A) ∘ ι R = f
 @[simp]
 def lift_ι_apply (f : X → A) (x) : lift R f (ι R x) = f x := rfl
 
-open Classical in
 def ι_inj [IsNontrivial R] : Function.Injective (ι R (X := X)) := by
+  open Classical in
   intro x y eq
   apply byContradiction
   intro h
@@ -523,12 +534,12 @@ theorem ι_ne_zero [IsNontrivial R] (x : X) : ι R x ≠ 0 :=
 theorem ι_ne_one [IsNontrivial R] (x : X) : ι R x ≠ 1 :=
   ι_ne_algebraMap x _
 
-attribute [irreducible] FreeAlgebra lift ι
+attribute [irreducible] FreeAlgebra lift ι ofScalar
 
 instance [Subsingleton R] : Subsingleton (FreeAlgebra R X) :=
   subsingleton_of_trivial <| by
-    show algebraMap (0: R) = (algebraMap (1: R): FreeAlgebra R X)
-    rw [Subsingleton.allEq 0 1]
+    rw [←map_zero (algebraMap (R := R)), ←map_one (algebraMap (R := R)),
+      Subsingleton.allEq 0 1]
 
 end FreeAlgebra
 

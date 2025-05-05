@@ -20,7 +20,8 @@ variable (R: Type*) {V: Type*} [SemiringOps R] [IsSemiring R] [IsCommMagma R] [A
 
 
 def ι : V -> ExteriorAlgebra R V := CliffordAlgebra.ι 0
-@[simp] def ι_sq_zero (v: V): ι R v * ι R v = 0 := CliffordAlgebra.ι_sq_scalar 0 v
+@[simp] def ι_sq_zero (v: V): ι R v * ι R v = 0 := by
+  erw [CliffordAlgebra.ι_sq_scalar 0 v, map_zero]
 
 def lift [SMul R A] [SemiringOps A] [AlgebraMap R A] [IsSemiring A] [IsAlgebra R A] :
     { f : V →ₗ[R] A // ∀ m, f m * f m = 0 } ≃ (ExteriorAlgebra R V →ₐ[R] A) :=
