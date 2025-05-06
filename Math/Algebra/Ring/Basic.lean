@@ -1,6 +1,7 @@
 import Math.Algebra.Algebra.Defs
 import Math.Algebra.Semiring.Char
 import Math.Algebra.GroupWithZero.Defs
+import Math.Algebra.Ring.Hom
 
 instance [AddGroupWithOneOps R] [IsAddGroupWithOne R] [IsAddCommMagma R] : IsModule ℤ R where
   one_smul := one_zsmul
@@ -16,6 +17,13 @@ instance (priority := 500) [RingOps R] [IsRing R] : AlgebraMap ℤ R where
   map_one := intCast_one
   map_add := (intCast_add _ _).symm
   map_mul := (intCast_mul _ _).symm
+
+instance [RingOps R] [IsRing R] : Subsingleton (AlgebraMap ℤ R) where
+  allEq := by
+    intro a b
+    cases a with | mk a =>
+    cases b with | mk b =>
+    congr; apply Subsingleton.allEq
 
 instance [RingOps R] [IsRing R] : IsAlgebra ℤ R where
   commutes r x := by
