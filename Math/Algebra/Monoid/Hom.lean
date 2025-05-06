@@ -54,3 +54,9 @@ def npowHom₀ [MonoidOps α] [Zero α] [IsMonoid α] [IsCommMagma α] [IsMulZer
     cases n; contradiction
     rw [zero_npow_succ]
 }
+
+instance
+  [AddMonoidOps α] [IsAddMonoid α]
+  [AddMonoidOps β] [IsAddMonoid β]
+  [FunLike F α β] [IsAddHom F α β] [IsZeroHom F α β] : IsSMulHom F ℕ α β where
+  map_smul := map_nsmul

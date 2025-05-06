@@ -92,6 +92,8 @@ def map_div_to_sub
   (f: F) (x y: α) : f (x / y) = f x - f y  :=
   map_sub (α := AddOfMul α) (β := β) f x y
 
+section
+
 variable [Mul α] [One α] [IsMulOneClass α] [GroupOps β] [IsGroup β]
   [Add α] [Zero α] [IsAddZeroClass α] [AddGroupOps β] [IsAddGroup β]
 
@@ -119,3 +121,12 @@ def AddGroupHom.ofAddHom (f: AddHom α β) : α →+ β := {
 }
 
 def AddGroupHom.apply_ofAddHom (f: AddHom α β) (x: α) : AddGroupHom.ofAddHom f x = f x := rfl
+
+end
+
+instance
+  {F α β}
+  [AddGroupOps α] [IsAddGroup α]
+  [AddGroupOps β] [IsAddGroup β]
+  [FunLike F α β] [IsAddHom F α β] : IsSMulHom F ℤ α β where
+  map_smul := map_zsmul
