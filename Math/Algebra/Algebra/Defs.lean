@@ -155,10 +155,10 @@ instance : IsScalarTower R A A where
     rw [mul_assoc]
 
 instance : IsCentralScalar R A where
-  op_smul_eq_smul _ _ := rfl
+  rsmul_eq_lsmul _ _ := rfl
 
 instance : IsCentralScalar Rᵐᵒᵖ A where
-  op_smul_eq_smul _ _ := rfl
+  rsmul_eq_lsmul _ _ := rfl
 
 end
 

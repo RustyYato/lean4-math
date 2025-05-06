@@ -86,6 +86,12 @@ instance [SemiringOps R] [SMul R α] [SMul R β] [IsSemiring R]
 @[simp] def fst_smul [SMul S R] [SMul S M] (s: S) (a: TrivSqZeroExt R M) : fst (s • a) = s • fst a := rfl
 @[simp] def snd_smul [SMul S R] [SMul S M] (s: S) (a: TrivSqZeroExt R M) : snd (s • a) = s • snd a := rfl
 
+@[simp] def fst_lsmul [SMul S R] [SMul S M] (s: S) (a: TrivSqZeroExt R M) : fst (s •> a) = s •> fst a := rfl
+@[simp] def snd_lsmul [SMul S R] [SMul S M] (s: S) (a: TrivSqZeroExt R M) : snd (s •> a) = s •> snd a := rfl
+
+@[simp] def fst_rsmul [SMul (MulOpp S) R] [SMul (MulOpp S) M] (s: S) (a: TrivSqZeroExt R M) : fst (a <• s) = fst a <• s := rfl
+@[simp] def snd_rsmul [SMul (MulOpp S) R] [SMul (MulOpp S) M] (s: S) (a: TrivSqZeroExt R M) : snd (a <• s) = snd a <• s := rfl
+
 def inl_zero [Zero R] [Zero M] : inl (M := M) 0 = 0 := rfl
 def inr_zero [Zero R] [Zero M] : inr (R := R) 0 = 0 := rfl
 def inl_fst_add_inr_snd_eq [Zero R] [Zero M] [Add R] [Add M] [IsAddZeroClass R] [IsAddZeroClass M] (x: TrivSqZeroExt R M) :
@@ -135,7 +141,7 @@ instance [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
 instance [One R] [Zero M] : One (TrivSqZeroExt R M) := ⟨inl 1⟩
 
 instance [Mul R] [Add M] [SMul R M] [SMul Rᵐᵒᵖ M] : Mul (TrivSqZeroExt R M) where
-  mul a b := (a.fst * b.fst, a.fst • b.snd + MulOpp.mk b.fst • a.snd)
+  mul a b := (a.fst * b.fst, a.fst •> b.snd + a.snd <• b.fst)
 
 @[simp] def fst_one [One R] [Zero M] : fst (R := R) (M := M) 1 = 1 := rfl
 @[simp] def snd_one [One R] [Zero M] : snd (R := R) (M := M) 1 = 0 := rfl
@@ -143,7 +149,7 @@ instance [Mul R] [Add M] [SMul R M] [SMul Rᵐᵒᵖ M] : Mul (TrivSqZeroExt R M
 @[simp] def fst_mul [Mul R] [Add M] [SMul R M] [SMul Rᵐᵒᵖ M] (a b: TrivSqZeroExt R M) :
   fst (R := R) (M := M) (a * b) = a.fst * b.fst := rfl
 @[simp] def snd_mul [Mul R] [Add M] [SMul R M] [SMul Rᵐᵒᵖ M] (a b: TrivSqZeroExt R M) :
-  snd (R := R) (M := M) (a * b) = a.fst • b.snd + MulOpp.mk b.fst • a.snd := rfl
+  snd (R := R) (M := M) (a * b) = a.fst •> b.snd + a.snd <• b.fst := rfl
 
 @[simp] def inl_one [One R] [Zero M] : inl (M := M) 1 = 1 := rfl
 
@@ -158,15 +164,15 @@ def inl_mul_inl [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M]
 @[simp]
 def inl_mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsDistribMulAction R M] [IsDistribMulAction Rᵐᵒᵖ M]
-    (r: R) (m: M) : inl r * inr m = inr (r • m) := by
+    (r: R) (m: M) : inl r * inr m = inr (r •> m) := by
   ext
-  simp [mul_zero]
-  simp
+  simp [mul_zero, lsmul_eq_smul]
+  simp [lsmul_eq_smul]
 
 @[simp]
 def inr_mul_inl [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsDistribMulAction R M] [IsDistribMulAction Rᵐᵒᵖ M]
-    (r: R) (m: M) : inr m * inl r = inr (MulOpp.mk r • m) := by
+    (r: R) (m: M) : inr m * inl r = inr (m <• r) := by
   ext
   simp [zero_mul]
   simp
@@ -182,15 +188,15 @@ def inr_mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
 @[simp]
 def inr_mul [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsAddCommMagma M] [IsModule R M] [IsModule Rᵐᵒᵖ M]
-  (x: TrivSqZeroExt R M) (r: R) : x * inl r = MulOpp.mk r • x := by
+  (x: TrivSqZeroExt R M) (r: R) : x * inl r = x <• r := by
   ext <;> simp
   rfl
 
 @[simp]
 def mul_inr [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsAddCommMagma M] [IsModule R M] [h: IsModule Rᵐᵒᵖ M]
-  (x: TrivSqZeroExt R M) (r: R) : inl r  * x = r • x := by
-  ext <;> simp
+  (x: TrivSqZeroExt R M) (r: R) : inl r  * x = r •> x := by
+  ext <;> simp; rfl
 
 instance instMulOneClass [MonoidOps R] [IsMonoid R] [AddMonoidOps M] [IsAddMonoid M]
   [SMul R M] [SMul Rᵐᵒᵖ M] [IsDistribMulAction R M] [IsDistribMulAction Rᵐᵒᵖ M] : IsMulOneClass (TrivSqZeroExt R M) where
@@ -245,13 +251,16 @@ private def fst_npow' (x: TrivSqZeroExt R M) (n: ℕ) : fst (npow' n x) = x.fst 
   | zero => simp [npow_zero]
   | succ n ih => simp [npow_succ, ih]
 
-private def smul_list_sum (r: R) (as: List M) : r • as.sum = (as.map (fun a => r • a)).sum := by
+private def lsmul_list_sum (r: R) (as: List M) : r •> as.sum = (as.map (fun a => r •> a)).sum := by
   induction as with
   | nil => simp [List.sum_nil, smul_zero]
-  | cons a as ih => simp [List.sum_cons, ih, smul_add]
+  | cons a as ih => simp [List.sum_cons, ih, lsmul_add]
+
+private def rsmul_list_sum (r: R) (as: List M) : as.sum <• r = (as.map (fun a => a <• r)).sum :=
+  lsmul_list_sum (MulOpp.mk r) as
 
 @[simp]
-private def snd_npow' (x: TrivSqZeroExt R M) (n: ℕ) : snd (npow' n x) = ((List.range n).map fun i => MulOpp.mk (x.fst ^ i) • (x.fst ^ (n.pred - i) • x.snd)).sum := by
+private def snd_npow' (x: TrivSqZeroExt R M) (n: ℕ) : snd (npow' n x) = ((List.range n).map fun i => (x.fst ^ (n.pred - i) • x.snd) <• (x.fst ^ i)).sum := by
   induction n with
   | zero => simp [npow_zero]
   | succ n ih =>
@@ -260,12 +269,12 @@ private def snd_npow' (x: TrivSqZeroExt R M) (n: ℕ) : snd (npow' n x) = ((List
     congr
     dsimp [Function.comp_def]
     clear ih
-    rw [smul_list_sum]
+    rw [rsmul_list_sum]
     simp
     congr
     ext i
-    simp [←mul_smul, ←MulOpp.mk_mul, ←npow_succ]
-    congr 3
+    simp [←mul_rsmul, ←MulOpp.mk_mul, ←npow_succ]
+    congr 1
     rw [Nat.add_comm, Nat.sub_add_eq]
 
 private def npowFast' [IsDistribMulAction R M] (n: Nat) (x: TrivSqZeroExt R M): TrivSqZeroExt R M :=
@@ -288,12 +297,13 @@ def npow'_eq_npowFast' : @npow' = @npowFast' := by
 instance : Pow (TrivSqZeroExt R M) ℕ := ⟨flip npow'⟩
 
 instance monoid : IsMonoid (TrivSqZeroExt R M) where
-    mul_assoc a b c := by
-      ext <;> simp
-      rw [mul_assoc]
-      simp [mul_smul, smul_add, add_assoc]
-      congr 1
-      rw [smul_comm]
+  mul_assoc a b c := by
+    ext <;> simp
+    rw [mul_assoc]
+    simp [mul_rsmul, lsmul_add, add_assoc, mul_lsmul, rsmul_add]
+    congr 2
+    simp [rsmul_eq_smul, lsmul_eq_smul]
+    rw [smul_comm]
 
 @[simp]
 def fst_npow (x: TrivSqZeroExt R M) (n: ℕ) : fst (x ^ n) = x.fst ^ n := fst_npow' x n
@@ -310,10 +320,10 @@ instance [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddC
     zero_mul a := by ext <;> simp [zero_mul, zero_smul, smul_zero, add_zero]
     mul_zero a := by ext <;> simp [mul_zero, zero_smul, smul_zero, add_zero]
     mul_add k a b := by
-      ext <;> simp [mul_add, smul_add, add_smul]
+      ext <;> simp [mul_add, rsmul_add, add_rsmul, lsmul_add, add_lsmul]
       ac_rfl
     add_mul a b k := by
-      ext <;> simp [add_mul, smul_add, add_smul]
+      ext <;> simp [add_mul, rsmul_add, add_rsmul, lsmul_add, add_lsmul]
       ac_rfl
   }
 
@@ -332,7 +342,7 @@ def inlHom [SemiringOps R] [IsSemiring R]
     ext <;> simp [add_zero]
   map_mul := by
     intro a b
-    ext <;> simp [smul_zero]
+    ext <;> simp
     rfl
 
 end Mul
@@ -396,7 +406,7 @@ instance
   commutes r x := by
     ext <;> simp [algebraMap_eq_inl]
     apply mul_comm r x.fst
-    rw [op_smul_eq_smul]
-  smul_def r x := by ext <;> simp [algebraMap_eq_inl]
+    rw [rsmul_eq_lsmul]
+  smul_def r x := by ext <;> (simp [algebraMap_eq_inl]; rfl)
 
 end TrivSqZeroExt

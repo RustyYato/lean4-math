@@ -6,6 +6,8 @@ class IsModule (R M: Type*) [SMul R M] [SemiringOps R] [AddMonoidOps M] [IsSemir
   add_smul: ∀r s: R, ∀x: M, (r + s) • x = r • x + s • x
 
 def add_smul [SemiringOps R] [AddMonoidOps M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsSemiring R] [IsModule R M]: ∀r s: R, ∀x: M, (r + s) • x = r • x + s • x := IsModule.add_smul
+def add_lsmul [SemiringOps R] [AddMonoidOps M] [SMul R M] [IsAddCommMagma M] [IsAddMonoid M] [IsSemiring R] [IsModule R M]: ∀r s: R, ∀x: M, (r + s) •> x = r •> x + s •> x := IsModule.add_smul
+def add_rsmul [SemiringOps R] [AddMonoidOps M] [SMul (MulOpp R) M] [IsAddCommMagma M] [IsAddMonoid M] [IsSemiring R] [IsModule (MulOpp R) M]: ∀r s: R, ∀x: M, x <• (r + s) = x <• r + x <• s := IsModule.add_smul (R := MulOpp R)
 
 def neg_smul [SMul R M] [RingOps R] [AddGroupOps M] [IsRing R] [IsAddGroup M] [IsAddCommMagma M] [IsModule R M]
   (r: R) (x: M) : (-r) • x = -(r • x) := by

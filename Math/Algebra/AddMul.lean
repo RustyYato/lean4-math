@@ -205,3 +205,12 @@ def cases {motive: αᵐᵒᵖ -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 @[simp] def mk_get (a: α) : (mk a).get = a := rfl
 
 end MulOpp
+
+def lsmul [SMul R A] (r: R) (a: A) := r • a
+def rsmul [SMul (MulOpp R) A] (a: A) (r: R) := MulOpp.mk r • a
+
+infixr:73 " •> " => lsmul
+infixl:73 " <• " => rsmul
+
+def lsmul_eq_smul [SMul R A] (r: R) (a: A) : r •> a = r • a := rfl
+def rsmul_eq_smul [SMul (MulOpp R) A] (r: R) (a: A) : a <• r = MulOpp.mk r • a := rfl
