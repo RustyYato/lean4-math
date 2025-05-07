@@ -241,7 +241,7 @@ instance AlgQuotient.instAdd [Add α] [IsAddCon C] (c: C) : Add (AlgQuotient c) 
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a + b))
     intro w x y z wy xz
     apply Quotient.sound
-    apply IsAddCon.resp_add
+    apply resp_add
     assumption
     assumption
 
@@ -250,7 +250,7 @@ instance AlgQuotient.instMul [Mul α] [IsMulCon C] (c: C) : Mul (AlgQuotient c) 
     apply Quotient.lift₂ (fun a b => IsCon.mkQuot c (a * b))
     intro w x y z wy xz
     apply Quotient.sound
-    apply IsMulCon.resp_mul
+    apply resp_mul
     assumption
     assumption
 
@@ -259,17 +259,12 @@ instance AlgQuotient.instSMul [SMul R α] [IsSMulCon C R] (c: C) : SMul R (AlgQu
     apply Quotient.lift (fun a => IsCon.mkQuot c (r • a))
     intro x y h
     apply Quotient.sound
-    apply IsSMulCon.resp_smul
+    apply resp_smul
     assumption
 
 variable [IsCon C] (c: C)
 
-instance : Relation.IsRefl c where
-  refl := (IsCon.toEquivalence c).refl
-instance : Relation.IsSymmetric c where
-  symm := (IsCon.toEquivalence c).symm
-instance : Relation.IsTrans c where
-  trans := (IsCon.toEquivalence c).trans
+instance : Relation.IsEquiv c := { IsCon.toEquivalence c with }
 
 instance AlgQuotient.instZero [Zero α] : Zero (AlgQuotient c) where
   zero := IsCon.mkQuot _ 0

@@ -116,6 +116,10 @@ section
 
 variable [SemiringOps R] [IsSemiring R] [SemiringOps A] [IsSemiring A] [AlgebraMap R A] [SMul R A] [IsAlgebra R A]
 
+instance (r: R) (a: A) : IsCommutes (algebraMap r) a where
+  mul_commutes := commutes _ _
+instance (r: R) (a: A) : IsCommutes a (algebraMap r) := inferInstance
+
 instance (priority := 500) : AlgebraMap Rᵐᵒᵖ A where
   toFun r := algebraMap r.get
   map_zero := map_zero algebraMap
@@ -136,9 +140,10 @@ instance (priority := 500) : IsAlgebra Rᵐᵒᵖ A where
 instance : IsScalarTower R Rᵐᵒᵖ A where
   smul_assoc := by
     intro x y z
-    show (.mk x * y ) • z = _
+    show (y * .mk x) • z = _
     simp only [smul_def]
     rw [map_mul, mul_assoc]
+    rw [mul_left_comm]
     rfl
 
 instance : IsScalarTower Rᵐᵒᵖ R A where

@@ -78,8 +78,7 @@ instance [Pow α ℤ] : Pow αᵃᵒᵖ ℤ where
 instance [Mul α] : Mul αᵃᵒᵖ := ⟨(.mk <| ·.get * ·.get)⟩
 instance [Inv α] : Inv αᵃᵒᵖ := ⟨(.mk <| ·.get⁻¹)⟩
 instance [Div α] : Div αᵃᵒᵖ := ⟨(.mk <| ·.get / ·.get)⟩
-instance [SMul Nat α] : SMul Nat αᵃᵒᵖ := ⟨(.mk <| · • ·.get)⟩
-instance [SMul Int α] : SMul Int αᵃᵒᵖ := ⟨(.mk <| · • ·.get)⟩
+instance [SMul R α] : SMul R αᵃᵒᵖ := ⟨(.mk <| · • ·.get)⟩
 
 instance [NatCast α] : NatCast αᵃᵒᵖ := ⟨(.mk ·)⟩
 instance [IntCast α] : IntCast αᵃᵒᵖ := ⟨(.mk ·)⟩
@@ -114,8 +113,7 @@ instance [Mul α] : SMul α αᵐᵒᵖ where
 instance [Add α] : Add αᵐᵒᵖ := ⟨(.mk <| ·.get + ·.get)⟩
 instance [Sub α] : Sub αᵐᵒᵖ := ⟨(.mk <| ·.get - ·.get)⟩
 instance [Neg α] : Neg αᵐᵒᵖ := ⟨(.mk <| -·.get)⟩
-instance [SMul Nat α] : SMul Nat αᵐᵒᵖ := ⟨(.mk <| · • ·.get)⟩
-instance [SMul Int α] : SMul Int αᵐᵒᵖ := ⟨(.mk <| · • ·.get)⟩
+instance [SMul R α] : SMul R αᵐᵒᵖ := ⟨(.mk <| · • ·.get)⟩
 
 instance [NatCast α] : NatCast αᵐᵒᵖ := ⟨(.mk ·)⟩
 instance [IntCast α] : IntCast αᵐᵒᵖ := ⟨(.mk ·)⟩

@@ -265,9 +265,7 @@ private def min_le_left (a b: Cauchy γ) : a ⊓ b ≤ a := by
   apply le_of_not_le
   assumption
 
-instance : IsLinearLattice (Cauchy γ) := {
-  inferInstanceAs (IsPartialOrder (Cauchy γ)),
-  inferInstanceAs (IsLinearOrder (Cauchy γ)) with
+instance : IsLattice (Cauchy γ) where
   le_max_left := le_max_left
   le_max_right a b := max_comm a b ▸ le_max_left b a
   max_le := by
@@ -284,7 +282,8 @@ instance : IsLinearLattice (Cauchy γ) := {
     split
     assumption
     assumption
-}
+
+instance : IsLinearLattice (Cauchy γ) where
 
 end Cauchy
 
