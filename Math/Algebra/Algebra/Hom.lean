@@ -61,4 +61,35 @@ def AlgHom.toLinearMap
 protected def AlgHom.toRingHom (f: A →ₐ[R] B) : A →+* B :=
   toRingHom f
 
+variable [SMul R A] [SMul R B]
+  [IsSemiring R] [IsSemiring A] [IsSemiring B]
+  [IsAlgebra R A] [IsAlgebra R B]
+
+def AlgEquiv.congrHomMulOpp : (A →ₐ[R] B) ≃ (Aᵐᵒᵖ →ₐ[R] Bᵐᵒᵖ) where
+  toFun f := {
+    toFun a := MulOpp.mk (f a.get)
+    map_add := by simp [map_add]
+    map_mul := by simp [map_mul]
+    map_algebraMap r := by
+      show MulOpp.mk (f (algebraMap r: A)) = MulOpp.mk (algebraMap r: B)
+      rw [map_algebraMap]
+  }
+  invFun f := {
+    toFun a := (f (MulOpp.mk a)).get
+    map_add := by simp [map_add]
+    map_mul := by simp [map_mul]
+    map_algebraMap r := by
+      show (f (algebraMap r)).get = _
+      rw [map_algebraMap]
+      rfl
+  }
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+def AlgEquiv.mulopp_hom_eqv_hom_mul_opp : (Aᵐᵒᵖ →ₐ[R] B) ≃ (A →ₐ[R] Bᵐᵒᵖ) :=
+  AlgEquiv.congrHomMulOpp (A := Aᵐᵒᵖ) (B := B)
+
+@[simp] def AlgHom.toLinearMap_eq_coe (f: A →ₐ[R] B) : (f.toLinearMap: _ -> _) = f := rfl
+@[simp] def AlgEquiv.toAlgHom_eq_coe (f: A ≃ₐ[R] B) : (f.toAlgHom: _ -> _) = f := rfl
+
 end

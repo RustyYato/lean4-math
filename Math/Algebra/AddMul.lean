@@ -1,4 +1,5 @@
 import Math.Algebra.Notation
+import Math.Logic.Equiv.Defs
 import Math.Data.Nat.Cast
 
 def AddOfMul (α: Sort u) := α
@@ -153,7 +154,7 @@ def cases {motive: MulOfAdd α -> Sort _} (mk: ∀x: α, motive (mk x)) : ∀x, 
 @[simp] def get_nsmul [Pow α ℕ] (n: ℕ) (a: AddOfMul α) : get (n • a) = (get a) ^ n := rfl
 @[simp] def get_zsmul [Pow α ℤ] (n: ℤ) (a: AddOfMul α) : get (n • a) = (get a) ^ n := rfl
 
-@[simp] def mk_one [One α] : (mk 1: α) = 0 := rfl
+@[simp] def mk_one [One α] : (mk 1: AddOfMul α) = 0 := rfl
 @[simp] def mk_mul [Mul α] (a b: α) : mk (a * b) = mk a + mk b := rfl
 @[simp] def mk_inv [Inv α] (a: α) : mk a⁻¹ = -mk a := rfl
 @[simp] def mk_npow [Pow α ℕ] (n: ℕ) (a: α) : mk (a ^ n) = n • mk a := rfl
@@ -212,3 +213,39 @@ infixl:73 " <• " => rsmul
 
 def lsmul_eq_smul [SMul R A] (r: R) (a: A) : r •> a = r • a := rfl
 def rsmul_eq_smul [SMul (MulOpp R) A] (r: R) (a: A) : a <• r = MulOpp.mk r • a := rfl
+
+namespace Equiv
+
+attribute [local irreducible] MulOpp AddOpp AddOfMul MulOfAdd
+
+protected def MulOfAdd : α ≃ MulOfAdd α where
+  toFun := MulOfAdd.mk
+  invFun := MulOfAdd.get
+  leftInv _ := rfl
+  rightInv _ := rfl
+protected def AddOfMul : α ≃ AddOfMul α where
+  toFun := AddOfMul.mk
+  invFun := AddOfMul.get
+  leftInv _ := rfl
+  rightInv _ := rfl
+protected def MulOpp : α ≃ αᵐᵒᵖ where
+  toFun := MulOpp.mk
+  invFun := MulOpp.get
+  leftInv _ := rfl
+  rightInv _ := rfl
+protected def AddOpp : α ≃ αᵃᵒᵖ where
+  toFun := AddOpp.mk
+  invFun := AddOpp.get
+  leftInv _ := rfl
+  rightInv _ := rfl
+
+@[simp] def apply_mul_of_add : Equiv.MulOfAdd (α := α) = MulOfAdd.mk (α := α) := rfl
+@[simp] def symm_apply_mul_of_add : Equiv.MulOfAdd.symm (α := α) = MulOfAdd.get (α := α) := rfl
+@[simp] def apply_add_of_mul : Equiv.AddOfMul (α := α) = AddOfMul.mk (α := α) := rfl
+@[simp] def symm_apply_add_of_mul : Equiv.AddOfMul.symm (α := α) = AddOfMul.get (α := α) := rfl
+@[simp] def apply_add_opp : Equiv.AddOpp (α := α) = AddOpp.mk (α := α) := rfl
+@[simp] def symm_apply_add_opp : Equiv.AddOpp.symm (α := α) = AddOpp.get (α := α) := rfl
+@[simp] def apply_mul_opp : Equiv.MulOpp (α := α) = MulOpp.mk (α := α) := rfl
+@[simp] def symm_apply_mul_opp : Equiv.MulOpp.symm (α := α) = MulOpp.get (α := α) := rfl
+
+end Equiv

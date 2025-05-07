@@ -137,6 +137,28 @@ instance (priority := 500) : IsAlgebra Rᵐᵒᵖ A where
   commutes := commutes (R := R)
   smul_def := smul_def (R := R)
 
+instance : AlgebraMap R Aᵐᵒᵖ where
+  toFun r := MulOpp.mk (algebraMap r)
+  map_zero := by rw [map_zero]; rfl
+  map_add {a b} := by rw [map_add]; rfl
+  map_one := by rw [map_one]; rfl
+  map_mul := by
+    intro x y
+    rw [map_mul, ←MulOpp.mk_mul, mul_comm]
+
+instance : SMul R Aᵐᵒᵖ where
+  smul r a := MulOpp.mk (r • a.get)
+
+instance : IsAlgebra R Aᵐᵒᵖ where
+  commutes r x := by
+    cases x with | mk x =>
+    show MulOpp.mk (algebraMap (α := A) r) * MulOpp.mk _ = MulOpp.mk _ * MulOpp.mk (algebraMap (α := A) r)
+    rw [←MulOpp.mk_mul, ←MulOpp.mk_mul, mul_comm]
+  smul_def r a := by
+    show MulOpp.mk (r • a.get) = _
+    rw [smul_def, mul_comm, MulOpp.mk_mul]
+    rfl
+
 instance : IsScalarTower R Rᵐᵒᵖ A where
   smul_assoc := by
     intro x y z

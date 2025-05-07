@@ -1606,6 +1606,7 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 @[simp] def GroupWithOneHom.toFun_eq_coe (f: α →*₀ β) : f.toFun = f := rfl
 @[simp] def ExpHom.toFun_eq_coe (f: α →ₐ* β) : f.toFun = f := rfl
 @[simp] def LogHom.toFun_eq_coe (f: α →ₘ+ β) : f.toFun = f := rfl
+@[simp] def LinearEquiv.toLinearMap_eq_coe (f: α ≃ₗ[R] β) : (f.toLinearMap: α -> β) = f := rfl
 
 @[simp] def AddGroupHom.toZeroHom_eq_coe (f: α →+ β) : (f.toZeroHom: _ -> _) = f := rfl
 @[simp] def GroupHom.toOneHom_eq_coe (f: α →* β) : (f.toOneHom: _ -> _) = f := rfl
@@ -1621,6 +1622,13 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 @[simp] def GroupEquiv.of_log_exp_hom (g: α ≃ₘ+ β) (f: β ≃ₐ* α) : GroupHom.of_log_exp f.toHom g.toHom = (GroupEquiv.of_log_exp g f).toHom := rfl
 @[simp] def AddGroupEquiv.of_exp_log_hom (f: α ≃ₘ+ β) (g: β ≃ₐ* α) : AddGroupHom.of_exp_log f.toHom g.toHom = (AddGroupEquiv.of_exp_log g f).toHom := rfl
 
+def LinearEquiv.MulOpp (α: Type*) [SMul R α] [Add α] : α ≃ₗ[R] αᵐᵒᵖ where
+  toEquiv := Equiv.MulOpp
+  map_add := rfl
+  map_smul := rfl
+
+@[simp] def LinearEquiv.apply_mul_opp : LinearEquiv.MulOpp (R := R) α = MulOpp.mk (α := α) := rfl
+@[simp] def LinearEquiv.symm_apply_mul_opp : (LinearEquiv.MulOpp (R := R) α).symm = MulOpp.get (α := α) := rfl
 
 namespace Equiv
 
