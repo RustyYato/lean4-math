@@ -1419,6 +1419,15 @@ def LogEquiv.toHom (h: α ≃ₘ+ β) : α →ₘ+ β := h
 @[simp] def LogEquiv.trans_symm (h: α ≃ₘ+ β) : GroupEquiv.of_log_exp h h.symm = .refl := by hom_equiv_trans_symm_impl h
 @[simp] def LogEquiv.symm_trans (h: α ≃ₘ+ β) : AddGroupEquiv.of_exp_log h.symm h = .refl := by hom_equiv_trans_symm_impl h
 
+@[simp] def AddGroupEquiv.trans_symm' (h: α ≃+ β) (g: β ≃+ γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+@[simp] def AddGroupWithOneEquiv.trans_symm' (h: α ≃+₁ β) (g: β ≃+₁ γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+@[simp] def GroupEquiv.trans_symm' (h: α ≃* β) (g: β ≃* γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+@[simp] def GroupWithZeroEquiv.trans_symm' (h: α ≃*₀ β) (g: β ≃*₀ γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+@[simp] def RingEquiv.trans_symm' (h: α ≃+* β) (g: β ≃+* γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+@[simp] def RngEquiv.trans_symm' (h: α ≃+*₀ β) (g: β ≃+*₀ γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+@[simp] def LinearEquiv.trans_symm' (h: α ≃ₗ[R] β) (g: β ≃ₗ[R] γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+@[simp] def AlgEquiv.trans_symm' (h: α ≃ₐ[R] β) (g: β ≃ₐ[R] γ) : (h.trans g).symm = g.symm.trans h.symm := rfl
+
 protected def ExpEquiv.MulOfAdd (α: Type*) [Zero α] [Add α] : α ≃ₐ* MulOfAdd α where
   toFun := MulOfAdd.mk
   invFun := MulOfAdd.get

@@ -47,8 +47,8 @@ private def reverseEquiv (Q: QuadraticForm R V) : CliffordAlgebra Q ≃ₐ[R] (C
 
 private def apply_reverseEquiv : reverseEquiv Q c = preReverse Q c := rfl
 
-def reverse (Q: QuadraticForm R V) : CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q :=
-  (LinearEquiv.MulOpp _).symm.toLinearMap.comp (reverseEquiv Q).toLinearMap
+def reverse (Q: QuadraticForm R V) : CliffordAlgebra Q ≃ₗ[R] CliffordAlgebra Q :=
+  (reverseEquiv Q).toLinearEquiv.trans (LinearEquiv.MulOpp _).symm
 
 @[simp]
 def reverse_ι : reverse Q (ι Q v) = ι Q v := by
@@ -59,8 +59,7 @@ def reverse_ι : reverse Q (ι Q v) = ι Q v := by
 
 @[simp]
 def reverse_algebraMap (r: R) : reverse Q (algebraMap r) = algebraMap r := by
-  rw [reverse]
-  simp
+  simp [reverse]
   rw [map_algebraMap]
   rfl
 
@@ -82,6 +81,12 @@ def reverse_smul (r: R) (a: CliffordAlgebra Q) : reverse Q (r • a) = r • rev
 def reverse_reverse : Function.IsInvolutive (reverse Q) :=
   (reverseEquiv Q).leftInv
 
+@[simp]
+def reverse_symm : (reverse Q).symm = reverse Q := by
+  ext a
+  symm; apply Equiv.eq_symm_of_coe_eq
+  apply reverse_reverse
+
 attribute [irreducible] reverse
 
 end
@@ -99,12 +104,24 @@ private def preInvolute (Q: QuadraticForm R V) : { f: V →ₗ[R] CliffordAlgebr
     rw [LinearMap.apply_neg, neg_mul, mul_neg,
       neg_neg, ι_sq_scalar]
 
-def involute (Q: QuadraticForm R V) : CliffordAlgebra Q →ₐ[R] CliffordAlgebra Q :=
-  lift Q (preInvolute Q)
+def involute (Q: QuadraticForm R V) : CliffordAlgebra Q ≃ₐ[R] CliffordAlgebra Q := {
+  lift Q (preInvolute Q), Equiv.ofInvolut (lift Q (preInvolute Q)) (by
+    intro x
+    induction x with
+    | algebraMap x => rw [map_algebraMap, map_algebraMap]
+    | add a b iha ihb => rw [map_add, map_add, iha, ihb]
+    | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
+    | ι x =>
+      rw [lift_ι_apply]
+      show lift Q _ (-ι Q x) = _
+      rw [map_neg, lift_ι_apply]
+      apply neg_neg) with
+}
 
 @[simp]
 def involute_ι (v: V) : involute Q (ι Q v) = -ι Q v := by
-  rw [involute, lift_ι_apply]
+  show lift Q (preInvolute Q) _ = _
+  rw [lift_ι_apply]
   rfl
 
 @[simp]
@@ -121,14 +138,16 @@ def involute_mul (a b: CliffordAlgebra Q) : involute Q (a * b) = involute Q a * 
 
 @[simp]
 def involute_involute (x: CliffordAlgebra Q) : involute Q (involute Q x) = x := by
-  induction x with
-  | algebraMap x => rw [map_algebraMap, map_algebraMap]
-  | add a b iha ihb => rw [map_add, map_add, iha, ihb]
-  | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
-  | ι x => rw [involute_ι, map_neg, involute_ι, neg_neg]
+  apply (involute Q).leftInv
 
-def involute_comp_involute : (involute Q).comp (involute Q) = AlgHom.id _ := by
+def involute_comp_involute : (involute Q).trans (involute Q) = AlgEquiv.refl := by
   ext x; simp
+
+@[simp]
+def involute_symm : (involute Q).symm = involute Q := by
+  ext a
+  symm; apply Equiv.eq_symm_of_coe_eq
+  apply involute_involute
 
 def reverse_involute_comm (a: CliffordAlgebra Q) : reverse Q (involute Q a) = involute Q (reverse Q a) := by
   induction a with
@@ -137,10 +156,13 @@ def reverse_involute_comm (a: CliffordAlgebra Q) : reverse Q (involute Q a) = in
   | add _ _ ih₀ ih₁ => simp [ih₀, ih₁]
   | mul _ _ ih₀ ih₁ => simp [ih₀, ih₁]
 
+def reverse_trans_involute_comm : (reverse Q).trans (involute Q).toLinearEquiv = (involute Q).toLinearEquiv.trans (reverse Q) := by
+  ext; symm; apply reverse_involute_comm
+
 attribute [irreducible] involute
 
-def conj (Q: QuadraticForm R V) : CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q :=
-  (reverse Q).comp (involute Q).toLinearMap
+def conj (Q: QuadraticForm R V) : CliffordAlgebra Q ≃ₗ[R] CliffordAlgebra Q :=
+  (involute Q).toLinearEquiv.trans (reverse Q)
 
 @[simp]
 def conj_ι : conj Q (ι Q v) = -ι Q v := by
@@ -162,22 +184,18 @@ def conj_add (a b: CliffordAlgebra Q) : conj Q (a + b) = conj Q a + conj Q b := 
 def conj_smul (r: R) (a: CliffordAlgebra Q) : conj Q (r • a) = r • conj Q a := by
   rw [map_smul]
 
+def conj_eq_involute_reverse : conj Q = (involute Q).toLinearEquiv.trans (reverse Q) := rfl
+
+@[simp]
+def symm_conj : (conj Q).symm = conj Q := by
+  simp [conj_eq_involute_reverse, reverse_trans_involute_comm]
+  rw [←reverse_trans_involute_comm]
+  congr
+  show (involute Q).symm.toLinearEquiv = _
+  simp
+
 def conj_conj : Function.IsInvolutive (conj Q) := by
-  intro a
-  induction a with
-  | algebraMap => simp
-  | ι => simp [map_neg]
-  | add _ _ ih₀ ih₁
-  | mul _ _ ih₀ ih₁ => simp [ih₀, ih₁]
-
-def conjEquiv (Q: QuadraticForm R V) : CliffordAlgebra Q ≃ₗ[R] CliffordAlgebra Q := {
-  conj Q, Equiv.ofInvolut _ (conj_conj (Q := Q)) with
-}
-
-@[simp] def symm_conjEquiv : (conjEquiv Q).symm = conjEquiv Q := rfl
-@[simp] def apply_conjEquiv : (conjEquiv Q: _ -> _) = conj Q := rfl
-
-def conj_eq_involute_reverse : conj Q = (reverse Q).comp (involute Q).toLinearMap := rfl
+  intro a; rw (occs := [1]) [←symm_conj, LinearEquiv.coe_symm]
 
 attribute [irreducible] conj
 

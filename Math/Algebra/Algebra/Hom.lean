@@ -65,6 +65,14 @@ variable [SMul R A] [SMul R B]
   [IsSemiring R] [IsSemiring A] [IsSemiring B]
   [IsAlgebra R A] [IsAlgebra R B]
 
+def AlgEquiv.toLinearEquiv
+  [SMul R A] [SMul R B]
+  [IsSemiring R] [IsSemiring A] [IsSemiring B]
+  [IsAlgebra R A] [IsAlgebra R B]
+  (h: A ≃ₐ[R] B) : A ≃ₗ[R] B := {
+    h.toLinearMap, h with
+  }
+
 def AlgEquiv.congrHomMulOpp : (A →ₐ[R] B) ≃ (Aᵐᵒᵖ →ₐ[R] Bᵐᵒᵖ) where
   toFun f := {
     toFun a := MulOpp.mk (f a.get)
@@ -91,5 +99,6 @@ def AlgEquiv.mulopp_hom_eqv_hom_mul_opp : (Aᵐᵒᵖ →ₐ[R] B) ≃ (A →ₐ
 
 @[simp] def AlgHom.toLinearMap_eq_coe (f: A →ₐ[R] B) : (f.toLinearMap: _ -> _) = f := rfl
 @[simp] def AlgEquiv.toAlgHom_eq_coe (f: A ≃ₐ[R] B) : (f.toAlgHom: _ -> _) = f := rfl
+@[simp] def AlgEquiv.toLinearEquiv_eq_coe (f: A ≃ₐ[R] B) : (f.toLinearEquiv: _ -> _) = f := rfl
 
 end
