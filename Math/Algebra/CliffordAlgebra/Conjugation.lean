@@ -174,6 +174,13 @@ def conjEquiv (Q: QuadraticForm R V) : CliffordAlgebra Q ≃ₗ[R] CliffordAlgeb
   conj Q, Equiv.ofInvolut _ (conj_conj (Q := Q)) with
 }
 
+@[simp] def symm_conjEquiv : (conjEquiv Q).symm = conjEquiv Q := rfl
+@[simp] def apply_conjEquiv : (conjEquiv Q: _ -> _) = conj Q := rfl
+
+def conj_eq_involute_reverse : conj Q = (reverse Q).comp (involute Q).toLinearMap := rfl
+
+attribute [irreducible] conj
+
 end
 
 end CliffordAlgebra
