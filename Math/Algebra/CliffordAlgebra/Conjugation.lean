@@ -4,47 +4,10 @@ namespace CliffordAlgebra
 
 section
 
-variable [RingOps R] [IsRing R] [IsCommMagma R] [AddGroupOps V]
-  [IsAddGroup V] [IsAddCommMagma V] [SMul R V] [IsModule R V]
+variable [SemiringOps R] [IsSemiring R] [IsCommMagma R] [AddMonoidOps V]
+  [IsAddMonoid V] [IsAddCommMagma V] [SMul R V] [IsModule R V]
 
 variable {Q: QuadraticForm R V}
-
-private def preInvolute (Q: QuadraticForm R V) : { f: V →ₗ[R] CliffordAlgebra Q // ∀ (m : V), f m * f m = algebraMap (Q m) } where
-  val := -CliffordAlgebra.ι Q
-  property v := by
-    rw [LinearMap.apply_neg, neg_mul, mul_neg,
-      neg_neg, ι_sq_scalar]
-
-def involute (Q: QuadraticForm R V) : CliffordAlgebra Q →ₐ[R] CliffordAlgebra Q :=
-  lift Q (preInvolute Q)
-
-@[simp]
-def involute_ι (v: V) : involute Q (ι Q v) = -ι Q v := by
-  rw [involute, lift_ι_apply]
-  rfl
-
-@[simp]
-def involute_algebraMap (r: R) : involute Q (algebraMap r) = algebraMap r := by
-  rw [map_algebraMap]
-
-@[simp]
-def involute_add (a b: CliffordAlgebra Q) : involute Q (a + b) = involute Q a + involute Q b := by
-  rw [map_add]
-
-@[simp]
-def involute_mul (a b: CliffordAlgebra Q) : involute Q (a * b) = involute Q a * involute Q b := by
-  rw [map_mul]
-
-@[simp]
-def involute_involute (x: CliffordAlgebra Q) : involute Q (involute Q x) = x := by
-  induction x with
-  | algebraMap x => rw [map_algebraMap, map_algebraMap]
-  | add a b iha ihb => rw [map_add, map_add, iha, ihb]
-  | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
-  | ι x => rw [involute_ι, map_neg, involute_ι, neg_neg]
-
-def involute_comp_involute : (involute Q).comp (involute Q) = AlgHom.id _ := by
-  ext x; simp
 
 private def preReverse (Q: QuadraticForm R V) : CliffordAlgebra Q →ₐ[R] (CliffordAlgebra Q)ᵐᵒᵖ :=
   CliffordAlgebra.lift Q {
@@ -119,12 +82,62 @@ def reverse_smul (r: R) (a: CliffordAlgebra Q) : reverse Q (r • a) = r • rev
 def reverse_reverse : Function.IsInvolutive (reverse Q) :=
   (reverseEquiv Q).leftInv
 
+attribute [irreducible] reverse
+
+end
+
+section
+
+variable [RingOps R] [IsRing R] [IsCommMagma R] [AddGroupOps V]
+  [IsAddGroup V] [IsAddCommMagma V] [SMul R V] [IsModule R V]
+
+variable {Q: QuadraticForm R V}
+
+private def preInvolute (Q: QuadraticForm R V) : { f: V →ₗ[R] CliffordAlgebra Q // ∀ (m : V), f m * f m = algebraMap (Q m) } where
+  val := -CliffordAlgebra.ι Q
+  property v := by
+    rw [LinearMap.apply_neg, neg_mul, mul_neg,
+      neg_neg, ι_sq_scalar]
+
+def involute (Q: QuadraticForm R V) : CliffordAlgebra Q →ₐ[R] CliffordAlgebra Q :=
+  lift Q (preInvolute Q)
+
+@[simp]
+def involute_ι (v: V) : involute Q (ι Q v) = -ι Q v := by
+  rw [involute, lift_ι_apply]
+  rfl
+
+@[simp]
+def involute_algebraMap (r: R) : involute Q (algebraMap r) = algebraMap r := by
+  rw [map_algebraMap]
+
+@[simp]
+def involute_add (a b: CliffordAlgebra Q) : involute Q (a + b) = involute Q a + involute Q b := by
+  rw [map_add]
+
+@[simp]
+def involute_mul (a b: CliffordAlgebra Q) : involute Q (a * b) = involute Q a * involute Q b := by
+  rw [map_mul]
+
+@[simp]
+def involute_involute (x: CliffordAlgebra Q) : involute Q (involute Q x) = x := by
+  induction x with
+  | algebraMap x => rw [map_algebraMap, map_algebraMap]
+  | add a b iha ihb => rw [map_add, map_add, iha, ihb]
+  | mul a b iha ihb => rw [map_mul, map_mul, iha, ihb]
+  | ι x => rw [involute_ι, map_neg, involute_ι, neg_neg]
+
+def involute_comp_involute : (involute Q).comp (involute Q) = AlgHom.id _ := by
+  ext x; simp
+
 def reverse_involute_comm (a: CliffordAlgebra Q) : reverse Q (involute Q a) = involute Q (reverse Q a) := by
   induction a with
   | algebraMap => simp
   | ι => simp [map_neg]
   | add _ _ ih₀ ih₁ => simp [ih₀, ih₁]
   | mul _ _ ih₀ ih₁ => simp [ih₀, ih₁]
+
+attribute [irreducible] involute
 
 def conj (Q: QuadraticForm R V) : CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q :=
   (reverse Q).comp (involute Q).toLinearMap
@@ -160,8 +173,6 @@ def conj_conj : Function.IsInvolutive (conj Q) := by
 def conjEquiv (Q: QuadraticForm R V) : CliffordAlgebra Q ≃ₗ[R] CliffordAlgebra Q := {
   conj Q, Equiv.ofInvolut _ (conj_conj (Q := Q)) with
 }
-
-attribute [irreducible] reverse involute
 
 end
 
