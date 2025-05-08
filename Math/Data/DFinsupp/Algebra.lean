@@ -8,7 +8,7 @@ variable {α : ι -> Type*} [FiniteSupport S ι]
 
 section
 
-variable [∀i, Zero (α i)] [∀i (a: α i), Decidable (a = 0)]
+variable [∀i, Zero (α i)]
 
 def sum [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: DFinsupp α S) (g: ∀i, α i -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0) : γ := by
   refine f.spec.lift (?_) ?_
@@ -40,6 +40,8 @@ def sum [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: DFinsupp α S
   have := Classical.not_not.mp <| (Iff.not_iff_not (DFinsupp.mem_support (f := f) (x := i))).mp (ha' i · i_mem)
   rw [resp _ this] at eq
   symm; assumption
+
+variable [∀i (a: α i), Decidable (a = 0)]
 
 def sum_eq_support_sum [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: DFinsupp α S) (g: ∀i, α i -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0):
    f.sum g resp = (f.support.val.map (fun i => g i (f i))).sum := by

@@ -234,7 +234,7 @@ def induction {motive: (⊕i, α i) -> Prop} (zero: motive 0) (ι: ∀i a, motiv
     apply ι
     assumption
 
-variable [∀i (a: α i), Decidable (a = 0)] [IsAddCommMagma A]
+variable [IsAddCommMagma A]
 
 private def preEval (f: ∀i, α i →+ A) (s: ⊕i, α i) : A :=
   s.toFinsupp.sum (f ·) (by
@@ -249,6 +249,7 @@ def eval : (∀i, α i →+ A) →+ (⊕i, α i) →+ A where
       unfold preEval
       erw [DFinsupp.zero_sum]
     map_add {x y} := by
+      classical
       unfold preEval
       apply DFinsupp.add_sum
       intro i a b
@@ -261,11 +262,13 @@ def eval : (∀i, α i →+ A) →+ (⊕i, α i) →+ A where
     rw [DFinsupp.sum_eq_zero]
     rfl; intro; rfl
   map_add {a b} := by
+    classical
     ext s
     show preEval _ _ = preEval a _ + preEval b _
     symm; apply DFinsupp.sum_pairwise
 
 def eval_ι (f: ∀i, α i →+ A) (a: α i) : eval f (ι i a) = f i a := by
+  classical
   show preEval _ (ι i a) = f i a
   unfold preEval
   erw [DFinsupp.single_sum]
@@ -280,6 +283,7 @@ def lift : (∀i, α i →+ A) ≃+ (⊕i, α i) →+ A := {
     simp
     rw [eval_ι]
   rightInv f := by
+    classical
     simp; ext s
     show preEval _ _ = _
     show s.toFinsupp.sum (fun i a => _) _ = _
@@ -300,6 +304,8 @@ def lift : (∀i, α i →+ A) ≃+ (⊕i, α i) →+ A := {
 }
 
 def lift_ι (f: ∀i, α i →+ A) : lift f (ι i a) = f i a := eval_ι _ _
+
+attribute [irreducible] ι eval
 
 end
 

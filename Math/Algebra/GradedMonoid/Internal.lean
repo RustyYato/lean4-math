@@ -5,10 +5,10 @@ namespace SetLike
 
 variable {S: Type*} [SetLike S R] (A: ι -> S)
 
-class GradedOne [One R] [Zero ι] where
+class GradedOne [One R] [Zero ι] : Prop where
   mem_one: 1 ∈ A 0
 
-class GradedMul [Mul R] [Add ι] where
+class GradedMul [Mul R] [Add ι] : Prop where
   mem_mul: ∀{i₀ i₁: ι} (a b: R),
     a ∈ A i₀ -> b ∈ A i₁ ->
     a * b ∈ A (i₀ + i₁)

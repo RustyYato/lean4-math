@@ -77,4 +77,21 @@ instance [Zero α] [Add α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma �
     map_add {a b} := by simp [map_add]; rw [add_assoc, add_left_comm (f b), ←add_assoc]
   }
 
+instance [Zero α] [Add α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] : SMul ℕ (α →+ β) where
+  smul n f := {
+    toFun i := n • f i
+    map_zero := by simp [map_zero]
+    map_add {a b} := by simp [map_add, nsmul_add]
+  }
+
+instance [Zero α] [Add α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] : IsAddCommMagma (α →+ β) where
+  add_comm _ _ := by ext; apply add_comm
+
+instance [Zero α] [Add α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] : IsAddMonoid (α →+ β) where
+  add_assoc _ _ _ := by ext; apply add_assoc
+  add_zero _ := by ext; apply add_zero
+  zero_add _ := by ext; apply zero_add
+  zero_nsmul _ := by ext; apply zero_nsmul
+  succ_nsmul _ _ := by ext; apply succ_nsmul
+
 end
