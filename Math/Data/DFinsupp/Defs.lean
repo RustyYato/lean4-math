@@ -9,11 +9,11 @@ structure DFinsupp (α: ι -> Type*) (S: Type*) [FiniteSupportOps S ι] [∀i, Z
 
 namespace DFinsupp
 
-variable {α: ι -> Type*} [DecidableEq ι]
+variable {α: ι -> Type*}
 
 section Basics
 
-variable [∀i, Zero (α i)] [FiniteSupportOps S ι]
+variable [∀i, Zero (α i)] [FiniteSupportOps S ι] [DecidableEq ι]
 
 instance : DFunLike (DFinsupp α S) ι α where
   coe f x := f.toFun x
@@ -51,7 +51,7 @@ section
 
 variable [FiniteSupport S ι]
 
-def single [∀i, Zero (α i)] (i: ι) (a: α i) : DFinsupp α S where
+def single [DecidableEq ι] [∀i, Zero (α i)] (i: ι) (a: α i) : DFinsupp α S where
   toFun j :=
     if h:i = j then
       cast (by rw [h]) a
@@ -67,7 +67,7 @@ def single [∀i, Zero (α i)] (i: ι) (a: α i) : DFinsupp α S where
   }
 
 @[simp]
-def apply_single [∀i, Zero (α i)] (i j: ι) (a: α i) : single (S := S) i a j = if h:i = j then cast (by rw [h]) a else 0 := rfl
+def apply_single [DecidableEq ι] [∀i, Zero (α i)] (i j: ι) (a: α i) : single (S := S) i a j = if h:i = j then cast (by rw [h]) a else 0 := rfl
 
 def copy [∀i, Zero (α i)] (f: DFinsupp α S) (g: ∀i, α i) (h: f = g) : DFinsupp α S where
   toFun := g
@@ -190,10 +190,7 @@ instance [∀i, AddGroupOps (α i)] [∀i, IsSubNegMonoid (α i)] [∀i, IsNegZe
     ext i
     symm; apply sub_eq_add_neg)
 
-instance (priority := 900)
-  [MonoidOps R] [IsMonoid R] [∀i, SMul R (α i)]
-  [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)]
-  [∀i, IsDistribMulAction R (α i)] : SMul R (DFinsupp α S) where
+instance (priority := 900) [∀i, SMul R (α i)] [∀i, Zero (α i)] [∀i, IsSMulZeroClass R (α i)] : SMul R (DFinsupp α S) where
   smul n f := {
     toFun i := n • f i
     spec := do
@@ -281,6 +278,105 @@ instance
   [∀i, IsModule R (α i)] : IsModule R (DFinsupp α S) where
   add_smul _ _ _ := by ext; apply add_smul
   zero_smul _ := by ext; apply zero_smul
+
+def erase [DecidableEq ι] [∀i, Zero (α i)] (a: ι) (f: DFinsupp α S) : DFinsupp α S where
+  toFun x := if x = a then 0 else f x
+  spec := do
+    let ⟨fs, hf⟩←f.spec
+    return {
+      val := FiniteSupport.remove a fs
+      property x ne := by
+        split at ne
+        contradiction
+        have := hf x ne
+        apply FiniteSupport.mem_remove
+        assumption
+        symm; assumption
+    }
+
+def apply_erase [DecidableEq ι] [∀i, Zero (α i)] (f: DFinsupp α S) (a x: ι) :
+  f.erase a x = if x = a then 0 else f x := rfl
+
+variable [∀i, Zero (α i)] [dec: ∀i (x: α i), Decidable (x = 0)]
+
+def support (f: DFinsupp α S) : Finset ι :=
+  f.spec.lift (fun s => (s.val: Finset ι).filter fun x => decide (f x ≠ 0)) <| by
+    intro ⟨a, ha⟩ ⟨b, hb⟩
+    dsimp
+    ext x
+    simp [Finset.mem_filter]
+    intro h
+    apply Iff.intro <;> intro
+    apply hb; assumption
+    apply ha; assumption
+
+def mem_support {f: DFinsupp α S} :
+  ∀{x}, x ∈ f.support ↔ f x ≠ 0 := by
+  intro x
+  cases f with | mk f h =>
+  induction h with | mk h =>
+  obtain ⟨s, h⟩ := h
+  unfold support
+  show x ∈ Finset.filter (fun x => f x ≠ 0) s ↔ f x ≠ 0
+  simp [Finset.mem_filter]
+  apply h
+
+def eq_support_union [∀i, Zero (α i)] [∀i (x: α i), Decidable (x = 0)] (f: DFinsupp α S)
+  (supp: Finset ι) (supp_spec: ∀ (x : ι), f x ≠ 0 → x ∈ supp) :
+  ∃rest, ∃h, supp = f.support.union_disjoint rest h := by
+  classical
+  refine ⟨supp \ f.support, ?_, ?_⟩
+  intro x h g
+  rw [Finset.mem_sdiff] at g
+  exact g.right h
+  ext x
+  simp [Finset.mem_sdiff, Finset.mem_union_disjoint]
+  apply Iff.intro
+  intro h
+  simp [h]
+  apply Classical.em
+  intro h
+  rcases h with h | ⟨h, h₀⟩
+  apply supp_spec
+  apply mem_support.mp
+  assumption
+  assumption
+
+def support_single [DecidableEq ι] : (single a b: DFinsupp α S).support ⊆ {a} := by
+ intro i h
+ rw [Finset.mem_singleton,]
+ rw [mem_support] at h
+ unfold single at h
+ rw [←toFun_eq_coe] at h
+ simp at h
+ obtain ⟨rfl, h⟩ := h
+ rfl
+
+def support_add [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)] [DecidableEq ι] (f g: DFinsupp α S) :
+  (f + g).support ⊆ f.support ∪ g.support := by
+  intro i
+  simp [mem_support, Finset.mem_union]
+  rw [←Classical.not_and_iff_not_or_not, Classical.contrapositive]
+  intro ⟨ha, hb⟩
+  rw [ha, hb, add_zero]
+
+def support_zero [Zero β] [∀b: β, Decidable (b = 0)] : support (S := S) (α := α) 0 = ∅ := by
+  ext
+  simp [mem_support]
+  apply Finset.not_mem_empty
+
+def support_erase [DecidableEq ι] [∀i, DecidableEq (α i)] (f: DFinsupp α S) : (f.erase x).support = f.support.erase x := by
+  ext a
+  simp [mem_support, Finset.mem_erase, apply_erase]
+  rw [And.comm]
+
+def support_smul [∀i, Zero (α i)] [∀i, SMul R (α i)] [∀i, IsSMulZeroClass R (α i)] [∀i (a: α i), Decidable (a = 0)] [DecidableEq ι] (x: R) (f: DFinsupp α S) :
+  (x • f).support ⊆ f.support := by
+  intro i
+  simp [mem_support, Finset.mem_union]
+  intro h g; apply h
+  show x • f i = 0
+  rw [g, smul_zero]
 
 end Algebra
 

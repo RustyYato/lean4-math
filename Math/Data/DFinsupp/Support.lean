@@ -75,16 +75,16 @@ end
 
 namespace FiniteSupport
 
-variable [FiniteSupport S ι] [DecidableEq ι]
+variable [FiniteSupport S ι]
 
-def coe_max_sub_max_coe (a b: S) : (a ⊔ b: Finset ι) ≤ ((a ⊔ b: S): Finset ι) := by
+def coe_max_sub_max_coe [DecidableEq ι] (a b: S) : (a ⊔ b: Finset ι) ≤ ((a ⊔ b: S): Finset ι) := by
   apply max_le
   apply FiniteSupport.le_spec.mp
   apply le_max_left
   apply FiniteSupport.le_spec.mp
   apply le_max_right
 
-def min_coe_sub_coe_min (a b: S) : ((a ⊓ b: S): Finset ι) ≤ (a ⊓ b: Finset ι) := by
+def min_coe_sub_coe_min [DecidableEq ι] (a b: S) : ((a ⊓ b: S): Finset ι) ≤ (a ⊓ b: Finset ι) := by
   apply le_min
   apply FiniteSupport.le_spec.mp
   apply min_le_left
