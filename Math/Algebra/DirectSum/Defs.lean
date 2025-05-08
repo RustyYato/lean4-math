@@ -110,4 +110,123 @@ instance : IsModule R (⊕i, α i) where
 
 end
 
+section
+
+variable [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)]
+
+def of (i: ι) : α i →+ ⊕i, α i where
+  toFun a := ⟨.single i a⟩
+  map_zero := by
+    ext j
+    simp; show DFinsupp.single _ _ _ = _
+    rw [DFinsupp.apply_single]
+    simp; rintro rfl
+    rfl
+  map_add {x y} := by
+    ext j
+    show DFinsupp.single _ _ _ = DFinsupp.single i x j + DFinsupp.single _ _ _
+    simp
+    split
+    subst j; rfl
+    rw [add_zero]
+
+def apply_of (i j: ι) (a: α i) : of i a j = if h:i = j then cast (by rw [h]) a else 0 := rfl
+
+def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of_add: ∀i a b, motive b -> motive (of i a + b)) : ∀a, motive a := by
+  intro ⟨f, hf⟩
+  obtain ⟨⟨domain, domain_nodup⟩, hf⟩ := hf
+  rename_i h; clear h
+  induction domain generalizing f with
+  | nil =>
+    apply cast _ zero
+    congr
+    ext i; show 0 = f i
+    apply Classical.byContradiction
+    intro h
+    have := hf i (Ne.symm h)
+    contradiction
+  | cons i domain ih =>
+    let f₀ : ⊕i, α i := {
+      toFinsupp := ⟨f, Trunc.mk ⟨⟨i::ₘdomain, domain_nodup⟩, hf⟩⟩
+    }
+    let frest : ⊕i, α i := ⟨f₀.toFinsupp.erase i⟩
+    let f' : ⊕i, α i := of i (f i) + frest
+
+    show motive f₀
+    classical
+    refine if hi:f i = 0 then ?_ else ?_
+    have := ih frest domain_nodup.tail ?_
+    apply cast _ this
+    intro j hj
+    have : j ∈ i::ₘdomain := hf j (by
+      intro h; apply hj
+      show DFinsupp.erase _ _ _ = _
+      rw [DFinsupp.apply_erase]
+      split; rfl
+      assumption)
+    simp at this
+    rcases this with rfl | this
+    exfalso; apply hj
+    show DFinsupp.erase _ _ _ = _
+    rw [DFinsupp.apply_erase]
+    split; rfl
+    assumption
+    assumption
+    congr 3
+    · ext j
+      show DFinsupp.erase _ _ _ = _
+      rw [DFinsupp.apply_erase]
+      split; subst j
+      symm; assumption
+      rfl
+    apply Subsingleton.helim
+    · congr; ext s
+      show (∀i, DFinsupp.erase _ _ _ ≠ 0 -> _) ↔ _
+      simp [DFinsupp.apply_erase]
+      apply Iff.intro
+      intro h j hj
+      apply h
+      rintro rfl; contradiction
+      assumption
+      intro h j hj hj'
+      apply h
+      assumption
+    apply cast _ (of_add i (f i) frest ?_)
+    congr; ext j
+    show of i (f i) j + DFinsupp.erase _ _ _ = _
+    simp [apply_of, DFinsupp.apply_erase, Eq.comm (a := j)]
+    split; subst j
+    simp; rfl
+    simp; rfl
+    apply cast _ (ih frest domain_nodup.tail ?_)
+    intro j hj
+    have : j ∈ i::ₘdomain := hf j (by
+      intro h; apply hj
+      show DFinsupp.erase _ _ _ = _
+      rw [DFinsupp.apply_erase]
+      split; rfl
+      assumption)
+    simp at this
+    rcases this with rfl | this
+    exfalso; apply hj
+    show DFinsupp.erase _ _ _ = _
+    rw [DFinsupp.apply_erase]
+    rw [if_pos rfl]
+    assumption
+    congr 3
+    simp [Functor.map]
+    apply Subsingleton.allEq
+
+@[induction_eliminator]
+def induction {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of: ∀i a, motive (of i a)) (add: ∀a b, motive a -> motive b -> motive (a + b)): ∀a, motive a := by
+  intro f
+  induction f using ind with
+  | zero => assumption
+  | of_add i a as ih =>
+    apply add
+    apply of
+    assumption
+
+end
+
 end DirectSum
