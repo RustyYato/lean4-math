@@ -133,6 +133,22 @@ def single_sum
   rw [sum_eq_support_sup_sum (h := DFinsupp.support_single)]
   simp
 
+def map_sum
+  [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)]
+  [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  [AddMonoidOps γ'] [IsAddCommMagma γ'] [IsAddMonoid γ']
+  [FunLike F γ γ'] [IsZeroHom F γ γ'] [IsAddHom F γ γ']
+  (f: DFinsupp α S) (g: ∀i, α i -> γ) {h} (f₀: F) : f₀ (f.sum g h) = f.sum (fun i a => f₀ (g i a)) (by
+    intro i eq
+    dsimp
+    rw [h _ eq, map_zero]) := by
+    cases f with | mk f spec =>
+    induction spec with | mk spec =>
+    apply Eq.trans
+    apply Multiset.map_sum
+    rw [Multiset.map_map]
+    rfl
+
 end
 
 def smul_sum
@@ -154,5 +170,43 @@ def smul_sum
     Multiset.smul_sum, Multiset.map_map, Function.comp_def]
   congr; ext i
   apply map_smul
+
+def sum_single [DecidableEq ι] [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)] [∀i, IsAddCommMagma (α i)]
+  [∀i (a: α i), Decidable (a = 0)]
+  (f: DFinsupp α S) : f.sum (single (S := S)) (by
+    intro i eq
+    rw [eq]; ext i ; rw [apply_single]; split; subst i; rfl; rfl) = f := by
+    ext i
+    let f' : DFinsupp α S →+ α i := {
+      toFun x := x i
+      map_zero := rfl
+      map_add := rfl
+    }
+    show f' _ = _
+    rw [map_sum]
+    show f.sum (fun x a => single (S := S) x a i) _ = _
+    by_cases h:f i = 0
+    rw [sum_eq_zero, h]
+    intro i'
+    rw [apply_single]; split
+    subst i; assumption; rfl
+    classical
+    rw [sum_eq_support_sum]
+    have : i ∈ f.support.val := by
+      apply mem_support.mpr
+      assumption
+    rw [Multiset.mem_spec] at this
+    obtain ⟨as, eq⟩ := this
+    rw [eq]
+    rw [Multiset.map_cons, Multiset.sum_cons, Multiset.sum_eq_zero, add_zero, apply_single, dif_pos rfl]
+    rfl
+    intro i₀ h₀
+    rw [Multiset.mem_map] at h₀
+    obtain ⟨i₀, h₀, rfl⟩ := h₀
+    rw [apply_single, dif_neg]
+    rintro rfl
+    have : (i₀::ₘas).Nodup := by rw [←eq]; apply f.support.property
+    have := this.head
+    contradiction
 
 end DFinsupp

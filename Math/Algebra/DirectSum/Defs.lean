@@ -1,4 +1,5 @@
 import Math.Data.DFinsupp.Algebra
+import Math.Algebra.AddMonoidWithOne.Impls.Pi
 
 structure DirectSum (α: ι -> Type*) [∀i, Zero (α i)] where
   ofFinsupp :: toFinsupp : DFinsupp α (Finset ι)
@@ -113,6 +114,12 @@ end
 section
 
 variable [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)]
+  [AddMonoidOps A] [IsAddMonoid A]
+
+def ofFinsuppHom : (DFinsupp α (Finset ι)) →+ ⊕i, α i where
+  toFun f := { toFinsupp := f }
+  map_zero := rfl
+  map_add := rfl
 
 def of (i: ι) : α i →+ ⊕i, α i where
   toFun a := ⟨.single i a⟩
@@ -226,6 +233,73 @@ def induction {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of: ∀i a, motiv
     apply add
     apply of
     assumption
+
+variable [∀i (a: α i), Decidable (a = 0)] [IsAddCommMagma A]
+
+private def preEval (f: ∀i, α i →+ A) (s: ⊕i, α i) : A :=
+  s.toFinsupp.sum (f ·) (by
+    intro i h
+    rw [h]
+    simp [map_zero])
+
+def eval : (∀i, α i →+ A) →+ (⊕i, α i) →+ A where
+  toFun f := {
+    toFun s := s.preEval f
+    map_zero := by
+      unfold preEval
+      erw [DFinsupp.zero_sum]
+    map_add {x y} := by
+      unfold preEval
+      apply DFinsupp.add_sum
+      intro i a b
+      rw [map_add]
+  }
+  map_zero := by
+    ext s
+    show preEval _ _ = _
+    unfold preEval
+    rw [DFinsupp.sum_eq_zero]
+    rfl; intro; rfl
+  map_add {a b} := by
+    ext s
+    show preEval _ _ = preEval a _ + preEval b _
+    symm; apply DFinsupp.sum_pairwise
+
+def eval_of (f: ∀i, α i →+ A) (a: α i) : eval f (of i a) = f i a := by
+  show preEval _ (of i a) = f i a
+  unfold preEval
+  erw [DFinsupp.single_sum]
+
+variable [∀i, IsAddCommMagma (α i)]
+
+def lift : (∀i, α i →+ A) ≃+ (⊕i, α i) →+ A := {
+  eval with
+  invFun f i := f.comp (of i)
+  leftInv := by
+    intro f; ext i  a
+    simp
+    rw [eval_of]
+  rightInv f := by
+    simp; ext s
+    show preEval _ _ = _
+    show s.toFinsupp.sum (fun i a => _) _ = _
+    simp
+    rw [←DFinsupp.map_sum (h := by
+      intro i h
+      rw [h, map_zero])]
+    congr
+    show s.toFinsupp.sum (fun i a => ofFinsuppHom (DFinsupp.single i a)) _ = s
+    rw [←DFinsupp.map_sum (h := by
+      intro i h
+      rw [h]
+      ext j; rw [DFinsupp.apply_single]
+      split; subst j; rfl
+      rfl)]
+    rw [DFinsupp.sum_single]
+    rfl
+}
+
+def lift_of (f: ∀i, α i →+ A) : lift f (of i a) = f i a := eval_of _ _
 
 end
 

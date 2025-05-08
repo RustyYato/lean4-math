@@ -60,3 +60,21 @@ instance
   [AddMonoidOps β] [IsAddMonoid β]
   [FunLike F α β] [IsAddHom F α β] [IsZeroHom F α β] : IsSMulHom F ℕ α β where
   map_smul := map_nsmul
+
+section
+
+instance [Zero α] [Add α] [Zero β] [Add β] [IsAddZeroClass β] : Zero (α →+ β) where
+  zero := {
+    toFun i := 0
+    map_zero := by simp [map_zero]
+    map_add {a b} := by simp [map_add]
+  }
+
+instance [Zero α] [Add α] [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β] : Add (α →+ β) where
+  add f g := {
+    toFun i := f i + g i
+    map_zero := by simp [map_zero]
+    map_add {a b} := by simp [map_add]; rw [add_assoc, add_left_comm (f b), ←add_assoc]
+  }
+
+end
