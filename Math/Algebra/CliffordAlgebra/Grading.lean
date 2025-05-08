@@ -11,7 +11,6 @@ variable [SemiringOps R] [IsSemiring R] [IsCommMagma R] [AddMonoidOps V]
 variable (Q: QuadraticForm R V)
 
 inductive Grading : ZMod 2 -> CliffordAlgebra Q -> Prop where
-| zero : Grading i 0
 | scalar (x: R) : Grading 0 (algebraMap x)
 | vector (x: V) : Grading 1 (ι Q x)
 | mul (i j: ZMod 2) (a b: CliffordAlgebra Q) :
@@ -21,7 +20,16 @@ inductive Grading : ZMod 2 -> CliffordAlgebra Q -> Prop where
 
 def grading (i: ZMod 2) : Submodule R (CliffordAlgebra Q) where
   carrier := Set.mk (Grading Q i)
-  mem_zero := Grading.zero
+  mem_zero := by
+    match i with
+    | 0 =>
+      show Grading Q 0 0
+      rw [←map_zero (algebraMap (R := R) (α := CliffordAlgebra Q))]
+      apply Grading.scalar
+    | 1 =>
+      show Grading Q 1 0
+      rw [←map_zero (ι Q)]
+      apply Grading.vector
   mem_add := by
     intro a b
     apply Grading.add i
