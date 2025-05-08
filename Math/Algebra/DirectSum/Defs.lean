@@ -20,7 +20,7 @@ macro "⊕ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders `
 end Syntax
 namespace DirectSum
 
-variable {α: ι -> Type*} [DecidableEq ι]
+variable {γ} {α: γ -> Type*} [DecidableEq γ]
 
 section
 
@@ -29,13 +29,13 @@ variable [∀i, Zero (α i)]
 instance : Zero (⊕i, α i) where
   zero := ⟨0⟩
 
-instance : DFunLike (⊕i, α i) ι α where
+instance : DFunLike (⊕i, α i) γ α where
   coe f := f.toFinsupp
 
 @[ext]
 def ext (a b: ⊕i, α i) : (∀i, a i = b i) -> a = b := DFunLike.ext _ _
 
-@[simp] def apply_zero (i: ι) : (0: ⊕i, α i) i = 0 := rfl
+@[simp] def apply_zero (i: γ) : (0: ⊕i, α i) i = 0 := rfl
 
 end
 
@@ -116,12 +116,12 @@ section
 variable [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)]
   [AddMonoidOps A] [IsAddMonoid A]
 
-def ofFinsuppHom : (DFinsupp α (Finset ι)) →+ ⊕i, α i where
+def ofFinsuppHom : (DFinsupp α (Finset γ)) →+ ⊕i, α i where
   toFun f := { toFinsupp := f }
   map_zero := rfl
   map_add := rfl
 
-def of (i: ι) : α i →+ ⊕i, α i where
+def ι (i: γ) : α i →+ ⊕i, α i where
   toFun a := ⟨.single i a⟩
   map_zero := by
     ext j
@@ -137,9 +137,9 @@ def of (i: ι) : α i →+ ⊕i, α i where
     subst j; rfl
     rw [add_zero]
 
-def apply_of (i j: ι) (a: α i) : of i a j = if h:i = j then cast (by rw [h]) a else 0 := rfl
+def apply_ι (i j: γ) (a: α i) : DirectSum.ι i a j = if h:i = j then cast (by rw [h]) a else 0 := rfl
 
-def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of_add: ∀i a b, motive b -> motive (of i a + b)) : ∀a, motive a := by
+def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (ι_add: ∀i a b, motive b -> motive (ι i a + b)) : ∀a, motive a := by
   intro ⟨f, hf⟩
   obtain ⟨⟨domain, domain_nodup⟩, hf⟩ := hf
   rename_i h; clear h
@@ -157,7 +157,7 @@ def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of_add: ∀i a b, motiv
       toFinsupp := ⟨f, Trunc.mk ⟨⟨i::ₘdomain, domain_nodup⟩, hf⟩⟩
     }
     let frest : ⊕i, α i := ⟨f₀.toFinsupp.erase i⟩
-    let f' : ⊕i, α i := of i (f i) + frest
+    let f' : ⊕i, α i := ι i (f i) + frest
 
     show motive f₀
     classical
@@ -198,10 +198,10 @@ def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of_add: ∀i a b, motiv
       intro h j hj hj'
       apply h
       assumption
-    apply cast _ (of_add i (f i) frest ?_)
+    apply cast _ (ι_add i (f i) frest ?_)
     congr; ext j
-    show of i (f i) j + DFinsupp.erase _ _ _ = _
-    simp [apply_of, DFinsupp.apply_erase, Eq.comm (a := j)]
+    show ι i (f i) j + DFinsupp.erase _ _ _ = _
+    simp [apply_ι, DFinsupp.apply_erase, Eq.comm (a := j)]
     split; subst j
     simp; rfl
     simp; rfl
@@ -225,13 +225,13 @@ def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of_add: ∀i a b, motiv
     apply Subsingleton.allEq
 
 @[induction_eliminator]
-def induction {motive: (⊕i, α i) -> Prop} (zero: motive 0) (of: ∀i a, motive (of i a)) (add: ∀a b, motive a -> motive b -> motive (a + b)): ∀a, motive a := by
+def induction {motive: (⊕i, α i) -> Prop} (zero: motive 0) (ι: ∀i a, motive (ι i a)) (add: ∀a b, motive a -> motive b -> motive (a + b)): ∀a, motive a := by
   intro f
   induction f using ind with
   | zero => assumption
-  | of_add i a as ih =>
+  | ι_add i a as ih =>
     apply add
-    apply of
+    apply ι
     assumption
 
 variable [∀i (a: α i), Decidable (a = 0)] [IsAddCommMagma A]
@@ -265,8 +265,8 @@ def eval : (∀i, α i →+ A) →+ (⊕i, α i) →+ A where
     show preEval _ _ = preEval a _ + preEval b _
     symm; apply DFinsupp.sum_pairwise
 
-def eval_of (f: ∀i, α i →+ A) (a: α i) : eval f (of i a) = f i a := by
-  show preEval _ (of i a) = f i a
+def eval_ι (f: ∀i, α i →+ A) (a: α i) : eval f (ι i a) = f i a := by
+  show preEval _ (ι i a) = f i a
   unfold preEval
   erw [DFinsupp.single_sum]
 
@@ -274,11 +274,11 @@ variable [∀i, IsAddCommMagma (α i)]
 
 def lift : (∀i, α i →+ A) ≃+ (⊕i, α i) →+ A := {
   eval with
-  invFun f i := f.comp (of i)
+  invFun f i := f.comp (ι i)
   leftInv := by
     intro f; ext i  a
     simp
-    rw [eval_of]
+    rw [eval_ι]
   rightInv f := by
     simp; ext s
     show preEval _ _ = _
@@ -299,7 +299,7 @@ def lift : (∀i, α i →+ A) ≃+ (⊕i, α i) →+ A := {
     rfl
 }
 
-def lift_of (f: ∀i, α i →+ A) : lift f (of i a) = f i a := eval_of _ _
+def lift_ι (f: ∀i, α i →+ A) : lift f (ι i a) = f i a := eval_ι _ _
 
 end
 
