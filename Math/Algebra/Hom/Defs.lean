@@ -43,12 +43,12 @@ class IsGroupWithZeroHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsMu
 class IsRngHom: Prop extends IsZeroHom F α β, IsAddHom F α β, IsMulHom F α β where
 class IsRingHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsAddHom F α β, IsMulHom F α β where
 
-instance (priority := 900) [IsZeroHom F α β] [IsAddHom F α β] : IsAddGroupHom F α β where
-instance (priority := 900) [IsOneHom F α β ] [IsMulHom F α β] : IsGroupHom F α β where
-instance (priority := 900) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] : IsAddGroupWithOneHom F α β where
-instance (priority := 900) [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β] : IsGroupWithZeroHom F α β where
-instance (priority := 900) [IsZeroHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRngHom F α β where
-instance (priority := 900) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRingHom F α β where
+instance (priority := 400) [IsZeroHom F α β] [IsAddHom F α β] : IsAddGroupHom F α β where
+instance (priority := 400) [IsOneHom F α β ] [IsMulHom F α β] : IsGroupHom F α β where
+instance (priority := 400) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] : IsAddGroupWithOneHom F α β where
+instance (priority := 400) [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β] : IsGroupWithZeroHom F α β where
+instance (priority := 400) [IsZeroHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRngHom F α β where
+instance (priority := 400) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRingHom F α β where
 
 end
 
@@ -267,6 +267,8 @@ structure AddGroupEquiv extends α ≃ β, AddGroupHom α β, ZeroEquiv α β, A
 
 instance : EquivLike (AddGroupEquiv α β) α β where
 instance : IsAddGroupHom (AddGroupEquiv α β) α β where
+instance : IsZeroHom (AddGroupEquiv α β) α β where
+instance : IsAddHom (AddGroupEquiv α β) α β where
 
 structure AddGroupWithOneEquiv extends α ≃ β, AddGroupWithOneHom α β, AddGroupEquiv α β, OneEquiv α β where
 
@@ -1616,6 +1618,10 @@ def GroupHom.apply_congrMulOpp (f: α →* β) : GroupHom.congrMulOpp f a = .mk 
 @[simp] def ExpHom.toFun_eq_coe (f: α →ₐ* β) : f.toFun = f := rfl
 @[simp] def LogHom.toFun_eq_coe (f: α →ₘ+ β) : f.toFun = f := rfl
 @[simp] def LinearEquiv.toLinearMap_eq_coe (f: α ≃ₗ[R] β) : (f.toLinearMap: α -> β) = f := rfl
+@[simp] def AddGroupWithOneHom.toAddGroupHom_eq_coe (f: α →+₁ β) : (f.toAddGroupHom: α -> β) = f := rfl
+@[simp] def RingHom.toAddGroupWithOneHom_eq_coe (f: α →+* β) : (f.toAddGroupWithOneHom: α -> β) = f := rfl
+@[simp] def AddGroupEquiv.toAddGroupHom_eq_coe (f: α ≃+ β) : (f.toAddGroupHom: α -> β) = f := rfl
+-- AddGroupHom
 
 @[simp] def AddGroupHom.toZeroHom_eq_coe (f: α →+ β) : (f.toZeroHom: _ -> _) = f := rfl
 @[simp] def GroupHom.toOneHom_eq_coe (f: α →* β) : (f.toOneHom: _ -> _) = f := rfl

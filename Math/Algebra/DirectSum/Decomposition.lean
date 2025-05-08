@@ -28,25 +28,25 @@ protected class Decomposition where
   leftInv : Function.IsLeftInverse get decompose'
   rightInv : Function.IsRightInverse get decompose'
 
-def Decomposition.decompose {A: γ -> σ} (d: DirectSum.Decomposition A) : M ≃+ ⊕i, A i := AddGroupEquiv.symm {
+def _root_.decompose {A: γ -> σ} (d: DirectSum.Decomposition A) : M ≃+ ⊕i, A i := AddGroupEquiv.symm {
   get with
   invFun := d.decompose'
   leftInv := d.rightInv
   rightInv := d.leftInv
 }
 
-def Decomposition.apply_decompose (d: DirectSum.Decomposition A) : d.decompose = d.decompose' := rfl
-def Decomposition.symm_apply_decompose (d: DirectSum.Decomposition A) : d.decompose.symm = get (A := A) := rfl
+def Decomposition.apply_decompose (d: DirectSum.Decomposition A) : decompose d = d.decompose' := rfl
+def Decomposition.symm_apply_decompose (d: DirectSum.Decomposition A) : ((decompose d).symm: _ -> _) = get (A := A) := rfl
 
 instance : Subsingleton (DirectSum.Decomposition A) where
   allEq a b := by
-    have : a.decompose = b.decompose := by
+    have : decompose a = decompose b := by
       apply DFunLike.ext; intro m
-      apply a.decompose.symm.inj
+      apply (decompose a).symm.inj
       simp
-      show _ = b.decompose.symm _
+      show _ = (decompose b).symm _
       simp
-    have : (a.decompose: _ -> _) = (b.decompose) := by rw [this]
+    have : (decompose a: _ -> _) = (decompose b) := by rw [this]
     rw [Decomposition.apply_decompose, Decomposition.apply_decompose] at this
     obtain ⟨a⟩ := a
     obtain ⟨b⟩ := b

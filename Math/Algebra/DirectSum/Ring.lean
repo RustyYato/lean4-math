@@ -75,6 +75,9 @@ def mulHom_ι (a: A i) (b: A j) : mulHom (ι i a) (ι j b) = ι (i + j) (GMul.gM
 instance : Mul (⊕i, A i) where
   mul a b := mulHom a b
 
+def mul_ι (a: A i) (b: A j) : (ι i a) * (ι j b) = ι (i + j) (GMul.gMul a b) := by
+  apply mulHom_ι
+
 attribute [irreducible] mulHom
 
 def mul_eq_mulHom (a b: ⊕i, A i) : a * b = mulHom a b := rfl
@@ -239,6 +242,57 @@ def intCast_eq (n: ℤ) : n = ι 0 (GRingOps.intCast n: A 0) := rfl
 instance : IsRing (⊕i, A i) where
   intCast_ofNat n := by rw [intCast_eq, natCast_eq, IsGRing.intCast_ofNat]
   intCast_negSucc n := by rw [intCast_eq, natCast_eq, IsGRing.intCast_negSucc, map_neg]
+
+end
+
+section
+
+variable [AddMonoidOps γ] [IsAddMonoid γ] [∀i, AddMonoidOps (A i)] [GSemiringOps A] [IsGSemiring A]
+  [SemiringOps R] [IsSemiring R]
+
+def evalRing (f: ∀i, A i →+ R) (hone: f 0 GOne.gOne = 1) (hmul: ∀{i j} (a b), f _ (GMul.gMul a b) = f i a * f j b) : (⊕i, A i) →+* R := {
+    eval f with
+    map_one := by
+      simp [one_eq]
+      rw [eval_ι]
+      apply hone
+    map_mul {a b} := by
+      simp
+      induction a with
+      | zero => simp [map_zero]
+      | add =>
+          rw [add_mul, map_add, map_add, add_mul]
+          congr
+      | ι i a =>
+        induction b with
+        | zero => simp [map_zero]
+        | add =>
+          rw [mul_add, map_add, map_add, mul_add]
+          congr
+        | ι j b => rw [mul_ι, eval_ι, eval_ι, eval_ι, hmul]
+  }
+
+def evalRing_ι (f: ∀i, A i →+ R) (hone hmul) : evalRing f hone hmul (ι i a) = f i a := eval_ι _ _
+
+def liftRing : { f: ∀i, A i →+ R // f 0 GOne.gOne = 1 ∧ ∀{i j} (a b), f _ (GMul.gMul a b) = f i a * f j b } ≃ ((⊕i, A i) →+* R):= {
+  toFun f := evalRing f.1 f.property.1 f.property.2
+  invFun f := ⟨fun i => f.toAddGroupHom.comp (ι i), by
+    apply map_one f, by
+    intro i j a b
+    simp; rw [←mul_ι, map_mul f]⟩
+  leftInv f := by
+    simp; congr; ext i a
+    simp
+    rw [evalRing_ι]
+  rightInv f := by
+    ext a
+    show lift (lift.symm f.toAddGroupHom) _ = f a
+    simp
+}
+
+def liftRing_ι (f) : liftRing (A := A) (R := R) f (ι i a) = f.val i a := evalRing_ι _ f.property.1 f.property.2
+
+def apply_lift_eq_apply_liftRing (f: ∀i, A i →+ R) (hone hmul) : lift f a = liftRing ⟨f, hone, hmul⟩ a := sorry
 
 end
 

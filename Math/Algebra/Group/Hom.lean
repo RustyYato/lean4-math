@@ -98,14 +98,14 @@ variable [Mul α] [One α] [IsMulOneClass α] [GroupOps β] [IsGroup β]
   [Add α] [Zero α] [IsAddZeroClass α] [AddGroupOps β] [IsAddGroup β]
 
 -- every homomorphism to a group that preserves products also preserves the unit
-instance instOneHomOfMulHom [FunLike F α β] [IsMulHom F α β] : IsOneHom F α β where
+instance (priority := 500) instOneHomOfMulHom [FunLike F α β] [IsMulHom F α β] : IsOneHom F α β where
   map_one f := by
     rw [←inv_mul_cancel (f 1)]
     apply mul_left_cancel (k := f 1)
     rw [←map_mul, ←mul_assoc, mul_inv_cancel, one_mul, one_mul]
 
 -- every homomorphism to a group that preserves products also preserves the unit
-instance instZeroHomOfAddHom [FunLike F α β] [IsAddHom F α β] : IsZeroHom F α β where
+instance (priority := 500) instZeroHomOfAddHom [FunLike F α β] [IsAddHom F α β] : IsZeroHom F α β where
   map_zero := instOneHomOfMulHom.map_one (α := MulOfAdd α) (β := MulOfAdd β)
 
 def GroupHom.ofMulHom (f: MulHom α β) : α →* β := {
