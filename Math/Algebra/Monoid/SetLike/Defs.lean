@@ -34,15 +34,7 @@ namespace Submonoid
 variable [Mul α] [One α]
 
 instance : SetLike (Submonoid α) α where
-  coe a := a.carrier
-  coe_inj := by
-    intro a b eq; cases a; congr
-    apply SetLike.coe_inj
-    assumption
-
 instance : IsSubmonoid (Submonoid α) where
-  mem_mul a := a.mem_mul
-  mem_one a := a.mem_one
 
 @[ext]
 def ext (a b: Submonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -57,6 +49,11 @@ def generate (U: Set α) : Submonoid α where
   mem_mul := Generate.mul
   mem_one := Generate.one
 
+def copy (s: Submonoid α) (U: Set α) (h: s = U) : Submonoid α := {
+  s.toSubsemigroup.copy U h with
+  mem_one := h ▸ mem_one s
+}
+
 end Submonoid
 
 namespace AddSubmonoid
@@ -64,15 +61,7 @@ namespace AddSubmonoid
 variable [Add α] [Zero α]
 
 instance : SetLike (AddSubmonoid α) α where
-  coe a := a.carrier
-  coe_inj := by
-    intro a b eq; cases a; congr
-    apply SetLike.coe_inj
-    assumption
-
 instance : IsAddSubmonoid (AddSubmonoid α) where
-  mem_add a := a.mem_add
-  mem_zero a := a.mem_zero
 
 @[ext]
 def ext (a b: AddSubmonoid α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -86,5 +75,10 @@ def generate (U: Set α) : AddSubmonoid α where
   carrier := Set.mk (Generate U)
   mem_add := Generate.add
   mem_zero := Generate.zero
+
+def copy (s: AddSubmonoid α) (U: Set α) (h: s = U) : AddSubmonoid α := {
+  s.toAddSubsemigroup.copy U h with
+  mem_zero := h ▸ mem_zero s
+}
 
 end AddSubmonoid

@@ -44,4 +44,8 @@ def generate (U: Set α) : Subring α where
   mem_zero := Generate.zero
   mem_one := Generate.one
 
+def copy (s: Subring α) (U: Set α) (h: s = U) : Subring α := {
+  s.toAddSubgroupWithOne.copy U h, s.toSubsemigroup.copy U h with
+}
+
 end Subring

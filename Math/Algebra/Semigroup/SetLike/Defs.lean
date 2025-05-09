@@ -40,12 +40,7 @@ namespace Subsemigroup
 variable [Mul α]
 
 instance : SetLike (Subsemigroup α) α where
-  coe := Subsemigroup.carrier
-  coe_inj := by
-    intro a b eq; cases a; congr
-
 instance : IsMulMem (Subsemigroup α) where
-  mem_mul := Subsemigroup.mem_mul
 
 @[ext]
 def ext (a b: Subsemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -58,6 +53,10 @@ def generate (U: Set α) : Subsemigroup α where
   carrier := Set.mk (Generate U)
   mem_mul := Generate.mul
 
+def copy (s: Subsemigroup α) (U: Set α) (h: s = U) : Subsemigroup α where
+  carrier := U
+  mem_mul := h ▸ mem_mul s
+
 end Subsemigroup
 
 namespace AddSubsemigroup
@@ -65,12 +64,7 @@ namespace AddSubsemigroup
 variable [Add α]
 
 instance : SetLike (AddSubsemigroup α) α where
-  coe := AddSubsemigroup.carrier
-  coe_inj := by
-    intro a b eq; cases a; congr
-
 instance : IsAddMem (AddSubsemigroup α) where
-  mem_add := AddSubsemigroup.mem_add
 
 @[ext]
 def ext (a b: AddSubsemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -82,5 +76,9 @@ inductive Generate (U: Set α) : α -> Prop where
 def generate (U: Set α) : AddSubsemigroup α where
   carrier := Set.mk (Generate U)
   mem_add := Generate.add
+
+def copy (s: AddSubsemigroup α) (U: Set α) (h: s = U) : AddSubsemigroup α where
+  carrier := U
+  mem_add := h ▸ mem_add s
 
 end AddSubsemigroup

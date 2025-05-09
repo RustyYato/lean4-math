@@ -12,17 +12,7 @@ namespace AddSubgroupWithOne
 variable [Add α] [Neg α] [Zero α] [One α]
 
 instance : SetLike (AddSubgroupWithOne α) α where
-  coe a := a.carrier
-  coe_inj := by
-    intro a b eq; cases a; congr
-    apply SetLike.coe_inj
-    assumption
-
 instance : IsAddSubgroupWithOne (AddSubgroupWithOne α) where
-  mem_add a := a.mem_add
-  mem_neg a := a.mem_neg
-  mem_zero a := a.mem_zero
-  mem_one a := a.mem_one
 
 @[ext]
 def ext (a b: AddSubgroupWithOne α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -40,5 +30,9 @@ def generate (U: Set α) : AddSubgroupWithOne α where
   mem_neg := Generate.neg
   mem_zero := Generate.zero
   mem_one := Generate.one
+
+def copy (s: AddSubgroupWithOne α) (U: Set α) (h: s = U) : AddSubgroupWithOne α := {
+  s.toAddSubmonoidWithOne.copy U h, s.toAddSubgroup.copy U h with
+}
 
 end AddSubgroupWithOne

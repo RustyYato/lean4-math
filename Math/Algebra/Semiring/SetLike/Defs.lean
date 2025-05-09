@@ -40,4 +40,8 @@ def generate (U: Set α) : Subsemiring α where
   mem_zero := Generate.zero
   mem_one := Generate.one
 
+def copy (s: Subsemiring α) (U: Set α) (h: s = U) : Subsemiring α := {
+  s.toAddSubmonoidWithOne.copy U h, s.toSubsemigroup.copy U h with
+}
+
 end Subsemiring

@@ -61,4 +61,9 @@ def generate (U: Set α) : Subalgebra R α where
   mem_mul := Generate.mul
   mem_algebraMap := Generate.algebraMap
 
+def copy (s: Subalgebra R α) (U: Set α) (h: s = U) : Subalgebra R α := {
+  s.toAddSubsemigroup.copy U h, s.toSubsemigroup.copy U h with
+  mem_algebraMap := h ▸ mem_algebraMap _ s
+}
+
 end

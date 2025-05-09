@@ -4,12 +4,12 @@ import Math.Algebra.Notation
 variable (S: Type*) {α: Type*} [SetLike S α]
 
 class IsInvMem [Inv α] : Prop where
-  mem_inv (s: S) {a: α} (h: a ∈ s) : a⁻¹ ∈ s
+  mem_inv (s: S) {a: α} (h: a ∈ s) : a⁻¹ ∈ s := by intro s; exact s.mem_inv
 
 def mem_inv {S α: Type*} [SetLike S α] [Inv α] [IsInvMem S] (s: S) {a: α} (h: a ∈ s) : a⁻¹ ∈ s := IsInvMem.mem_inv s h
 
 class IsNegMem [Neg α] : Prop where
-  mem_neg (s: S) {a: α} (h: a ∈ s) : -a ∈ s
+  mem_neg (s: S) {a: α} (h: a ∈ s) : -a ∈ s := by intro s; exact s.mem_neg
 
 def mem_neg {S α: Type*} [SetLike S α] [Neg α] [IsNegMem S] (s: S) {a: α} (h: a ∈ s) : -a ∈ s := IsNegMem.mem_neg s h
 
@@ -32,16 +32,7 @@ namespace Subgroup
 variable [Mul α] [Inv α] [One α]
 
 instance : SetLike (Subgroup α) α where
-  coe a := a.carrier
-  coe_inj := by
-    intro a b eq; cases a; congr
-    apply SetLike.coe_inj
-    assumption
-
 instance : IsSubgroup (Subgroup α) where
-  mem_mul a := a.mem_mul
-  mem_one a := a.mem_one
-  mem_inv a := a.mem_inv
 
 @[ext]
 def ext [Mul α] [Inv α] [One α] (a b: Subgroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -58,6 +49,11 @@ def generate (U: Set α) : Subgroup α where
   mem_one := Generate.one
   mem_inv := Generate.inv
 
+def copy (s: Subgroup α) (U: Set α) (h: s = U) : Subgroup α := {
+  s.toSubmonoid.copy U h with
+  mem_inv := h ▸ mem_inv s
+}
+
 end Subgroup
 
 namespace AddSubgroup
@@ -65,16 +61,7 @@ namespace AddSubgroup
 variable [Add α] [Neg α] [Zero α]
 
 instance : SetLike (AddSubgroup α) α where
-  coe a := a.carrier
-  coe_inj := by
-    intro a b eq; cases a; congr
-    apply SetLike.coe_inj
-    assumption
-
 instance : IsAddSubgroup (AddSubgroup α) where
-  mem_add a := a.mem_add
-  mem_zero a := a.mem_zero
-  mem_neg a := a.mem_neg
 
 @[ext]
 def ext [Add α] [Neg α] [Zero α] (a b: AddSubgroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -90,5 +77,10 @@ def generate (U: Set α) : AddSubgroup α where
   mem_add := Generate.add
   mem_zero := Generate.zero
   mem_neg := Generate.neg
+
+def copy (s: AddSubgroup α) (U: Set α) (h: s = U) : AddSubgroup α := {
+  s.toAddSubmonoid.copy U h with
+  mem_neg := h ▸ mem_neg s
+}
 
 end AddSubgroup
