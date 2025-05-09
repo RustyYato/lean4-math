@@ -1,6 +1,8 @@
-import Math.Data.Cardinal.Defs
+import Math.Data.Cardinal.Order
 import Math.Data.Fin.Basic
 import Math.Data.Fintype.Card
+import Math.Algebra.Semiring.Char
+import Math.Algebra.Algebra.Defs
 
 namespace Cardinal
 
@@ -225,5 +227,40 @@ instance : IsAddMonoidWithOne Cardinal where
 instance : IsSemiring Cardinal where
   npow_succ := npow_succ
   npow_zero := npow_zero
+
+def natCast_strictmonotone : StrictMonotone (fun n: ℕ => (n: Cardinal)) := by
+  intro n m h
+  simp
+  rw [←not_le]
+  intro ⟨h⟩
+  replace h := Equiv.congrEmbed (Equiv.ulift _) (Equiv.ulift _) h
+  have := Fin.le_of_emebd h
+  rw [←not_lt] at this
+  apply this
+  assumption
+
+def ord_natCast.{u} (n: ℕ) : ord.{u} n = n := by
+  rcases lt_trichotomy (n: Ordinal) (ord n) with h | h | h
+  · have := lt_irrefl (ord_is_min n n h)
+    contradiction
+  · symm; assumption
+  · exfalso
+    induction n using Nat.strongRecOn with
+    | _ n ih =>
+    rw [Ordinal.lt_natCast] at h
+    obtain ⟨m, hm, eq⟩ := h
+    apply ih m hm
+    rw [←eq, ←not_le, ←map_le ord, not_le]
+    apply natCast_strictmonotone
+    assumption
+
+instance : HasChar Cardinal 0 := HasChar.of_ring_emb {
+  algebraMap (R := ℕ) (α := Cardinal) with
+  inj' x y h := by
+    replace h : Nat.cast x = Nat.cast y := h
+    obtain ⟨h⟩ := exact h
+    replace h := Equiv.congrEquiv (Equiv.ulift _) (Equiv.ulift _) h
+    exact Fin.eq_of_equiv h
+}
 
 end Cardinal
