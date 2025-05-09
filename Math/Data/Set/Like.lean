@@ -1,8 +1,8 @@
 import Math.Data.Set.Basic
 
 class SetLike (S: Type*) (α: outParam Type*) where
-  coe : S -> Set α
-  coe_inj: Function.Injective coe
+  coe : S -> Set α := by intro s; exact s.carrier
+  coe_inj: Function.Injective coe := by intro a b h; cases a; cases b; congr; try (apply SetLike.coe_inj; assumption)
 
 attribute [coe] SetLike.coe
 

@@ -4,13 +4,13 @@ import Math.Algebra.AddMul
 variable (S: Type*) {α: Type*} [SetLike S α]
 
 class IsMulMem [Mul α] : Prop where
-  mem_mul (s: S) {a b: α} : a ∈ s -> b ∈ s -> a * b ∈ s
+  mem_mul (s: S) {a b: α} : a ∈ s -> b ∈ s -> a * b ∈ s := by intro s; exact s.mem_mul
 
 def mem_mul {S α: Type*} [SetLike S α] [Mul α] [IsMulMem S]
   (s: S) {a b: α} : a ∈ s -> b ∈ s -> a * b ∈ s := IsMulMem.mem_mul s
 
 class IsAddMem [Add α] : Prop where
-  mem_add (s: S) {a b: α} : a ∈ s -> b ∈ s -> a + b ∈ s
+  mem_add (s: S) {a b: α} : a ∈ s -> b ∈ s -> a + b ∈ s := by intro s; exact s.mem_add
 
 def mem_add {S α: Type*} [SetLike S α] [Add α] [IsAddMem S]
   (s: S) {a b: α} : a ∈ s -> b ∈ s -> a + b ∈ s := IsAddMem.mem_add s

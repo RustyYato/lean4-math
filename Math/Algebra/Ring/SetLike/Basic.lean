@@ -11,7 +11,5 @@ instance : RingOps s := {
 }
 instance : IsRing s := IsRing.inst
 
-instance (s: Subring α) : RingOps s := {
-  instSemiringOpsElem s with
-}
+instance (s: Subring α) : RingOps s := inferInstance
 instance (s: Subring α) : IsRing s := inferInstance

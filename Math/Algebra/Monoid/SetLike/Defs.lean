@@ -4,13 +4,13 @@ import Math.Algebra.Notation
 variable (S: Type*) {α: Type*} [SetLike S α]
 
 class IsOneMem [One α] : Prop where
-  mem_one (s: S) : 1 ∈ s
+  mem_one (s: S) : 1 ∈ s := by intro s; exact s.mem_one
 
 def mem_one {S α: Type*} [SetLike S α] [One α] [IsOneMem S]
   (s: S) : 1 ∈ s := IsOneMem.mem_one s
 
 class IsZeroMem [Zero α] : Prop where
-  mem_zero (s: S) : 0 ∈ s
+  mem_zero (s: S) : 0 ∈ s := by intro s; exact s.mem_zero
 
 def mem_zero {S α: Type*} [SetLike S α] [Zero α] [IsZeroMem S]
   (s: S) : 0 ∈ s := IsZeroMem.mem_zero s
