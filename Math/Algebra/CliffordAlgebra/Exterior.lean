@@ -56,66 +56,66 @@ variable {Q: QuadraticForm R V}
 -- set_option trace.Meta.synthInstance true in
 -- set_option trace.Meta.synthInstance.resume false in
 
-def pre_vector_wedge (v: V) : CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q where
-  toFun x := ⅟(2: R) • (ι Q v * x + involute Q x * ι Q v)
-  map_add {x y} := by
-    rw [map_add (involute Q)]
-    rw [←smul_add]
-    congr 1
-    simp only [mul_add, add_mul]
-    repeat rw [←add_assoc]
-    rw [add_comm_right _ ((ι Q v) * y)]
-  map_smul := by
-    intro r x
-    rw [map_smul, smul_def r, ←mul_assoc, ←commutes, mul_assoc,
-      smul_def r, mul_assoc, ←smul_def, ←smul_def, ←smul_add,
-      smul_comm]
+-- def pre_vector_wedge (v: V) : CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q where
+--   toFun x := ⅟(2: R) • (ι Q v * x + involute Q x * ι Q v)
+--   map_add {x y} := by
+--     rw [map_add (involute Q)]
+--     rw [←smul_add]
+--     congr 1
+--     simp only [mul_add, add_mul]
+--     repeat rw [←add_assoc]
+--     rw [add_comm_right _ ((ι Q v) * y)]
+--   map_smul := by
+--     intro r x
+--     rw [map_smul, smul_def r, ←mul_assoc, ←commutes, mul_assoc,
+--       smul_def r, mul_assoc, ←smul_def, ←smul_def, ←smul_add,
+--       smul_comm]
 
-def apply_pre_vector_wedge (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v x = ⅟(2: R) • (ι Q v * x + involute Q x * ι Q v) := rfl
+-- def apply_pre_vector_wedge (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v x = ⅟(2: R) • (ι Q v * x + involute Q x * ι Q v) := rfl
 
-def pre_vector_wedge_sq_zero (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v (pre_vector_wedge v x) = 0 := by
-  rw [apply_pre_vector_wedge, apply_pre_vector_wedge]
-  simp [smul_def]
-  rw [←mul_assoc, ←commutes, mul_assoc, map_mul, mul_assoc,
-  map_algebraMap, ←mul_add, map_add, map_mul, involute_ι,
-  map_mul, involute_involute, involute_ι, ←mul_assoc,
-  neg_mul, mul_neg, add_mul, mul_add (ι Q v),
-  neg_mul, neg_mul, mul_assoc x,
-  ι_sq_scalar, ←mul_assoc, ι_sq_scalar]
-  rw [commutes _ x, add_assoc, ←add_assoc _ (-_), ←mul_assoc,
-  add_neg_cancel, zero_add, add_neg_cancel, mul_zero]
+-- def pre_vector_wedge_sq_zero (v: V) (x: CliffordAlgebra Q) : pre_vector_wedge v (pre_vector_wedge v x) = 0 := by
+--   rw [apply_pre_vector_wedge, apply_pre_vector_wedge]
+--   simp [smul_def]
+--   rw [←mul_assoc, ←commutes, mul_assoc, map_mul, mul_assoc,
+--   map_algebraMap, ←mul_add, map_add, map_mul, involute_ι,
+--   map_mul, involute_involute, involute_ι, ←mul_assoc,
+--   neg_mul, mul_neg, add_mul, mul_add (ι Q v),
+--   neg_mul, neg_mul, mul_assoc x,
+--   ι_sq_scalar, ←mul_assoc, ι_sq_scalar]
+--   rw [commutes _ x, add_assoc, ←add_assoc _ (-_), ←mul_assoc,
+--   add_neg_cancel, zero_add, add_neg_cancel, mul_zero]
 
-def vector_wedge (Q: QuadraticForm R V) : V →ₗ[R] CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q where
-  toFun := pre_vector_wedge
-  map_add {x y} := by
-    ext a
-    rw [LinearMap.apply_add]; simp [apply_pre_vector_wedge]
-    rw [map_add, add_mul, mul_add, ←smul_add]; congr 1
-    ac_rfl
-  map_smul := by
-    intro r x
-    ext a
-    rw [LinearMap.apply_smul]; simp [apply_pre_vector_wedge]
-    rw [map_smul, smul_comm]; congr 1; simp [smul_def r]
-    rw [mul_add, mul_assoc]; congr 1
-    rw [←mul_assoc, ←mul_assoc, commutes]
+-- def vector_wedge (Q: QuadraticForm R V) : V →ₗ[R] CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q where
+--   toFun := pre_vector_wedge
+--   map_add {x y} := by
+--     ext a
+--     rw [LinearMap.apply_add]; simp [apply_pre_vector_wedge]
+--     rw [map_add, add_mul, mul_add, ←smul_add]; congr 1
+--     ac_rfl
+--   map_smul := by
+--     intro r x
+--     ext a
+--     rw [LinearMap.apply_smul]; simp [apply_pre_vector_wedge]
+--     rw [map_smul, smul_comm]; congr 1; simp [smul_def r]
+--     rw [mul_add, mul_assoc]; congr 1
+--     rw [←mul_assoc, ←mul_assoc, commutes]
 
-def apply_vector_wedge (Q: QuadraticForm R V) : vector_wedge Q v = pre_vector_wedge v := rfl
+-- def apply_vector_wedge (Q: QuadraticForm R V) : vector_wedge Q v = pre_vector_wedge v := rfl
 
-def vector_wedge_sq_zero (v: V) (x: CliffordAlgebra Q) : vector_wedge Q v (vector_wedge Q v x) = 0 := by
-  apply pre_vector_wedge_sq_zero
+-- def vector_wedge_sq_zero (v: V) (x: CliffordAlgebra Q) : vector_wedge Q v (vector_wedge Q v x) = 0 := by
+--   apply pre_vector_wedge_sq_zero
 
-def ext_to_cliff_end (Q: QuadraticForm R V) : ExteriorAlgebra R V →ₐ[R] (CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q) :=
-  ExteriorAlgebra.lift R {
-    val := vector_wedge Q
-    property v := by
-      ext
-      apply vector_wedge_sq_zero
-  }
+-- def ext_to_cliff_end (Q: QuadraticForm R V) : ExteriorAlgebra R V →ₐ[R] (CliffordAlgebra Q →ₗ[R] CliffordAlgebra Q) :=
+--   ExteriorAlgebra.lift R {
+--     val := vector_wedge Q
+--     property v := by
+--       ext
+--       apply vector_wedge_sq_zero
+--   }
 
-def apply_ext_to_cliff_end_ι (Q: QuadraticForm R V) (v: V) :
-  ext_to_cliff_end Q (ExteriorAlgebra.ι R v) = vector_wedge Q v :=
-  ExteriorAlgebra.apply_lift_ι _ _ _
+-- def apply_ext_to_cliff_end_ι (Q: QuadraticForm R V) (v: V) :
+--   ext_to_cliff_end Q (ExteriorAlgebra.ι R v) = vector_wedge Q v :=
+--   ExteriorAlgebra.apply_lift_ι _ _ _
 
 -- def ext_to_cliff_end_mul (a b: ExteriorAlgebra R V) :
 --   ext_to_cliff_end Q a 1 * ext_to_cliff_end Q b 1 = ext_to_cliff_end Q (a * b) 1 := by
@@ -142,14 +142,14 @@ def apply_ext_to_cliff_end_ι (Q: QuadraticForm R V) (v: V) :
 --   | ι => sorry
 
 
-def ofExteriorₗ : ExteriorAlgebra R V →ₗ[R] CliffordAlgebra Q :=
-  (ext_to_cliff_end (Q := Q)).toLinearMap.swap 1
+-- def ofExteriorₗ : ExteriorAlgebra R V →ₗ[R] CliffordAlgebra Q :=
+--   (ext_to_cliff_end (Q := Q)).toLinearMap.swap 1
 
-def lineqvExterior : ExteriorAlgebra R V ≃ₗ[R] CliffordAlgebra Q := {
-  ofExteriorₗ with
-  invFun := sorry
-  leftInv := sorry
-  rightInv := sorry
-}
+-- def lineqvExterior : ExteriorAlgebra R V ≃ₗ[R] CliffordAlgebra Q := {
+--   ofExteriorₗ with
+--   invFun := sorry
+--   leftInv := sorry
+--   rightInv := sorry
+-- }
 
 end CliffordAlgebra
