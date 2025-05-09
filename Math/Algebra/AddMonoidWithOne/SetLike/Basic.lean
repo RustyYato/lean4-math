@@ -39,3 +39,23 @@ def natRange_sub: ∀s: S, Set.range (fun n: ℕ => (n: α)) ⊆  s := by
 
 @[simp]
 def natCast_val (n: ℕ) : (n: s).val = n := rfl
+
+variable [FunLike F α β]
+   [AddMonoidWithOneOps β] [IsAddMonoidWithOne β]
+   [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β]
+
+namespace AddSubmonoidWithOne
+
+def preimage (f: F) (s: AddSubmonoidWithOne β) : AddSubmonoidWithOne α := {
+  s.toAddSubmonoid.preimage f, s.toSubOne.preimage f with
+}
+
+def image (f: F) (s: AddSubmonoidWithOne α) : AddSubmonoidWithOne β := {
+  s.toAddSubmonoid.image f, s.toSubOne.image f with
+}
+
+def range (f: F) : AddSubmonoidWithOne β := {
+  AddSubmonoid.range f, SubOne.range f with
+}
+
+end AddSubmonoidWithOne

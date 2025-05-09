@@ -55,40 +55,26 @@ instance : IsAlgebra R s := inferInstance
 
 end
 
+variable [FunLike F α β]
+
+variable [IsAddHom F α β] [IsMulHom F α β] [IsAlgebraMapHom F R α β]
+
 namespace Subalgebra
 
-def image (s: Subalgebra R α) (f: α →ₐ[R] β) : Subalgebra R β where
-  carrier := s.carrier.image f
-  mem_add := by
-    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
-    rw [←map_add]
-    apply Set.mem_image'
-    apply mem_add s
-    assumption
-    assumption
-  mem_mul := by
-    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
-    rw [←map_mul]
-    apply Set.mem_image'
-    apply mem_mul s
-    assumption
-    assumption
-  mem_algebraMap r := by
-    rw [←map_algebraMap f]
-    apply Set.mem_image'
-    apply mem_algebraMap R s r
-
-def range (f: α →ₐ[R] β) : Subalgebra R β := copy _ (image ⊤ f) (Set.range f) <| by symm; apply Set.range_eq_image
-
-def preimage (s: Subalgebra R β) (f: α →ₐ[R] β) : Subalgebra R α where
-  carrier := s.carrier.preimage f
-  mem_add := by
-    intro a b ha hb
-    show f _ ∈ s; rw [map_add]; apply mem_add <;> assumption
-  mem_mul := by
-    intro a b ha hb
-    show f _ ∈ s; rw [map_mul]; apply mem_mul <;> assumption
+def preimage (f: F) (s: Subalgebra R β) : Subalgebra R α := {
+  s.toAddSubsemigroup.preimage f, s.toSubsemigroup.preimage f with
   mem_algebraMap r := by
     show f _ ∈ s; rw [map_algebraMap]; apply mem_algebraMap
+}
+
+def image (f: F) (s: Subalgebra R α) : Subalgebra R β := {
+  s.toAddSubsemigroup.image f, s.toSubsemigroup.image f with
+  mem_algebraMap r := by
+    rw [←map_algebraMap f r]
+    apply Set.mem_image'
+    apply mem_algebraMap R s r
+}
+
+def range (f: F) : Subalgebra R β := copy _ (image f ⊤) (Set.range f) (by symm; apply Set.range_eq_image)
 
 end Subalgebra

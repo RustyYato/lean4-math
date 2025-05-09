@@ -34,3 +34,24 @@ instance : IsModule R s where
   add_smul _ _ _ := by
     apply Subtype.val_inj
     apply add_smul
+
+variable [FunLike F M N]
+
+variable [SemiringOps N] [IsSemiring N] [SMul R N]
+  [IsZeroHom F M N] [IsAddHom F M N] [IsSMulHom F R M N]
+
+namespace Submodule
+
+def preimage (f: F) (s: Submodule R N) : Submodule R M := {
+  s.toAddSubmonoid.preimage f, s.toSubMulAction.preimage f with
+}
+
+def image (f: F) (s: Submodule R M) : Submodule R N := {
+  s.toAddSubmonoid.image f, s.toSubMulAction.image f with
+}
+
+def range (f: F) : Submodule R N := {
+  AddSubmonoid.range f, SubMulAction.range f with
+}
+
+end Submodule

@@ -1,5 +1,6 @@
-import Math.Algebra.Monoid.SetLike.Defs
+import Math.Algebra.Monoid.SetLike.Lattice
 import Math.Algebra.Semigroup.SetLike.Basic
+import Math.Algebra.SetLike.Hom
 import Math.Algebra.Monoid.Defs
 import Math.Algebra.Monoid.Hom
 
@@ -68,6 +69,8 @@ instance [IsAddZeroClass α] (s: AddSubmonoid α) : IsAddZeroClass s := inferIns
 
 end
 
+section
+
 variable [MonoidOps α] [IsMonoid α] [IsSubmonoid S] [AddMonoidOps α] [IsAddMonoid α] [IsAddSubmonoid S] (s: S)
 
 instance : Pow s ℕ  where
@@ -116,3 +119,43 @@ def GroupEmbedding.subtypeVal : s ↪* α := {
 def AddGroupHom.subtypeVal : s →+ α := (AddGroupEmbedding.subtypeVal s).toAddGroupHom
 
 def GroupHom.subtypeVal : s →* α := (GroupEmbedding.subtypeVal s).toGroupHom
+
+end
+
+namespace Submonoid
+
+variable {F α β: Type*} [FunLike F α β]
+  [MonoidOps α] [MonoidOps β]
+  [IsMonoid α] [IsMonoid β]
+  [IsOneHom F α β] [IsMulHom F α β]
+
+def image (s: Submonoid α) (f: F) : Submonoid β := {
+  s.toSubsemigroup.image f, s.toSubOne.image f with
+}
+
+def preimage (s: Submonoid β) (f: F) : Submonoid α := {
+  s.toSubsemigroup.preimage f, s.toSubOne.preimage f with
+}
+
+def range (f: F) : Submonoid β := (image ⊤ f).copy (Set.range f) (by symm; apply Set.range_eq_image)
+
+end Submonoid
+
+namespace AddSubmonoid
+
+variable {F α β: Type*} [FunLike F α β]
+  [AddMonoidOps α] [AddMonoidOps β]
+  [IsAddMonoid α] [IsAddMonoid β]
+  [IsZeroHom F α β] [IsAddHom F α β]
+
+def image (s: AddSubmonoid α) (f: F) : AddSubmonoid β := {
+  s.toAddSubsemigroup.image f, s.toSubZero.image f with
+}
+
+def preimage (s: AddSubmonoid β) (f: F) : AddSubmonoid α := {
+  s.toAddSubsemigroup.preimage f, s.toSubZero.preimage f with
+}
+
+def range (f: F) : AddSubmonoid β := (image ⊤ f).copy (Set.range f) (by symm; apply Set.range_eq_image)
+
+end AddSubmonoid

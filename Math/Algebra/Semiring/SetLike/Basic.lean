@@ -16,3 +16,24 @@ instance : IsSemiring s := {
     apply Subtype.val_inj
     apply add_mul
 }
+
+variable [FunLike F α β]
+
+variable [SemiringOps β] [IsSemiring β]
+  [IsRingHom F α β]
+
+namespace Subsemiring
+
+def preimage (f: F) (s: Subsemiring β) : Subsemiring α := {
+  s.toSubmonoid.preimage f, s.toAddSubmonoidWithOne.preimage f with
+}
+
+def image (f: F) (s: Subsemiring α) : Subsemiring β := {
+  s.toSubmonoid.image f, s.toAddSubmonoidWithOne.image f with
+}
+
+def range (f: F) : Subsemiring β := {
+  Submonoid.range f, AddSubmonoidWithOne.range f with
+}
+
+end Subsemiring

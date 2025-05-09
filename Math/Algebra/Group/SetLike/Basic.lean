@@ -119,7 +119,56 @@ instance [IsNegZeroClass α] : IsNegZeroClass s where
 
 end
 
-variable [GroupOps α] [IsGroup α] [IsSubgroup S] [AddGroupOps α] [IsAddGroup α] [IsAddSubgroup S] (s: S)
+variable [FunLike F α β]
+
+namespace SubNeg
+
+variable [AddGroupOps α] [AddGroupOps β]
+  [IsAddGroup α] [IsSubtractionMonoid β]
+  [IsAddGroupHom F α β]
+
+def image (s: SubNeg α) (f: F) : SubNeg β where
+  carrier := s.carrier.image f
+  mem_neg | ⟨a, ha, _⟩ => ⟨-a, by
+    apply And.intro
+    apply mem_neg s
+    assumption
+    rw [map_neg]; congr⟩
+
+def preimage (s: SubNeg β) (f: F) : SubNeg α where
+  carrier := s.carrier.preimage f
+  mem_neg {a} ha := by show f _ ∈ s; rw [map_neg]; apply mem_neg <;> assumption
+
+def range (f: F) : SubNeg β := (image .univ f).copy (Set.range f) (by symm; apply Set.range_eq_image)
+
+end SubNeg
+
+namespace SubInv
+
+variable [GroupOps α] [GroupOps β]
+  [IsGroup α] [IsDivisionMonoid β]
+  [IsGroupHom F α β]
+
+def image (s: SubInv α) (f: F) : SubInv β where
+  carrier := s.carrier.image f
+  mem_inv | ⟨a, ha, _⟩ => ⟨a⁻¹, by
+    apply And.intro
+    apply mem_inv s
+    assumption
+    rw [map_inv]; congr⟩
+
+def preimage (s: SubInv β) (f: F) : SubInv α where
+  carrier := s.carrier.preimage f
+  mem_inv {a} ha := by show f _ ∈ s; rw [map_inv]; apply mem_inv <;> assumption
+
+def range (f: F) : SubInv β := (image .univ f).copy (Set.range f) (by symm; apply Set.range_eq_image)
+
+end SubInv
+
+section
+
+variable [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] [IsSubgroup S]
+  [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] [IsAddSubgroup S] (s: S)
 
 instance : Div s where
   div a b := ⟨a.val / b.val, mem_div _ a.property b.property⟩
@@ -132,6 +181,24 @@ instance : Pow s ℤ where
 
 instance : SMul ℤ s where
   smul n a := ⟨n • a.val, mem_zsmul _ _ a.property⟩
+
+@[simp]
+def neg_val (a: s) : (-a).val = -a.val := rfl
+
+@[simp]
+def inv_val (a: s) : (a⁻¹).val = a.val⁻¹ := rfl
+
+@[simp]
+def sub_val (a b: s) : (a - b).val = a.val - b.val := rfl
+
+@[simp]
+def div_val (a b: s) : (a / b).val = a.val / b.val := rfl
+
+@[simp]
+def zsmul_val (n: ℤ) (a: s) : (n • a).val = n • a.val := rfl
+
+@[simp]
+def zpow_val (n: ℤ) (a: s) : (a ^ n).val = a.val ^ n := rfl
 
 instance : IsGroup s where
   div_eq_mul_inv _ _ := by
@@ -164,110 +231,34 @@ instance : IsAddGroup s where
 instance (s: Subgroup α) : IsGroup s := inferInstance
 instance (s: AddSubgroup α) : IsAddGroup s := inferInstance
 
-def Subgroup.preimage [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) (s: Subgroup β) : Subgroup α where
-  carrier := Set.preimage s f
-  mem_one := by
-    rw [Set.mem_preimage, map_one]
-    apply mem_one s
-  mem_inv := by
-    intro _ ha
-    rw [Set.mem_preimage, map_inv]
-    apply mem_inv s
-    assumption
-  mem_mul := by
-    intro a b ha hb
-    rw [Set.mem_preimage, map_mul]
-    apply mem_mul s
-    assumption
-    assumption
+variable [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] [IsMulHom F α β]
 
-def AddSubgroup.preimage [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) (s: AddSubgroup β) : AddSubgroup α where
-  carrier := Set.preimage s f
-  mem_zero := by
-    rw [Set.mem_preimage, map_zero]
-    apply mem_zero s
-  mem_neg := by
-    intro _ ha
-    rw [Set.mem_preimage, map_neg]
-    apply mem_neg s
-    assumption
-  mem_add := by
-    intro a b ha hb
-    rw [Set.mem_preimage, map_add]
-    apply mem_add s
-    assumption
-    assumption
+def Subgroup.preimage (f: F) (s: Subgroup β) : Subgroup α := {
+  s.toSubmonoid.preimage f, s.toSubInv.preimage f with
+}
 
-def Subgroup.image [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) (s: Subgroup α) : Subgroup β where
-  carrier := Set.image f s
-  mem_one := by
-    rw [←map_one f]
-    apply Set.mem_image'
-    apply mem_one s
-  mem_inv := by
-    rintro _ ⟨a, ha, rfl⟩
-    rw [←map_inv]
-    apply Set.mem_image'
-    apply mem_inv s
-    assumption
-  mem_mul := by
-    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
-    rw [←map_mul]
-    apply Set.mem_image'
-    apply mem_mul s
-    assumption
-    assumption
+def AddSubgroup.preimage (f: F) (s: AddSubgroup β) : AddSubgroup α := {
+  s.toAddSubmonoid.preimage f, s.toSubNeg.preimage f with
+}
 
-def AddSubgroup.image [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) (s: AddSubgroup α) : AddSubgroup β where
-  carrier := Set.image f s
-  mem_zero := by
-    rw [←map_zero f]
-    apply Set.mem_image'
-    apply mem_zero s
-  mem_neg := by
-    rintro _ ⟨a, ha, rfl⟩
-    rw [←map_neg]
-    apply Set.mem_image'
-    apply mem_neg s
-    assumption
-  mem_add := by
-    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
-    rw [←map_add]
-    apply Set.mem_image'
-    apply mem_add s
-    assumption
-    assumption
+def Subgroup.image (f: F) (s: Subgroup α) : Subgroup β := {
+  s.toSubmonoid.image f, s.toSubInv.image f with
+}
 
-def Subgroup.range [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : Subgroup β where
-  carrier := Set.range f
-  mem_one := by
-    rw [←map_one f]
-    apply Set.mem_range'
-  mem_inv := by
-    rintro _ ⟨a, ha, rfl⟩
-    rw [←map_inv]
-    apply Set.mem_range'
-  mem_mul := by
-    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
-    rw [←map_mul]
-    apply Set.mem_range'
+def AddSubgroup.image (f: F) (s: AddSubgroup α) : AddSubgroup β := {
+  s.toAddSubmonoid.image f, s.toSubNeg.image f with
+}
 
-def AddSubgroup.range [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : AddSubgroup β where
-  carrier := Set.range f
-  mem_zero := by
-    rw [←map_zero f]
-    apply Set.mem_range'
-  mem_neg := by
-    rintro _ ⟨a, ha, rfl⟩
-    rw [←map_neg]
-    apply Set.mem_range'
-  mem_add := by
-    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
-    rw [←map_add]
-    apply Set.mem_range'
+def Subgroup.range (f: F) : Subgroup β := {
+  Submonoid.range f, SubInv.range f with
+}
 
-def Subgroup.kernel [GroupOps α] [IsGroup α] [GroupOps β] [IsGroup β] (f: α →* β) : Subgroup α := preimage f ⊥
-def AddSubgroup.kernel [AddGroupOps α] [IsAddGroup α] [AddGroupOps β] [IsAddGroup β] (f: α →+ β) : AddSubgroup α  := preimage f ⊥
+def AddSubgroup.range (f: F) : AddSubgroup β := {
+  AddSubmonoid.range f, SubNeg.range f with
+}
+
+def Subgroup.kernel (f: F) : Subgroup α := preimage f ⊥
+def AddSubgroup.kernel (f: F) : AddSubgroup α  := preimage f ⊥
 
 def Subgroup.embed (S: Subgroup α) : S ↪* α where
   toFun x := x.val
@@ -281,40 +272,8 @@ def AddSubgroup.embed (S: AddSubgroup α) : S ↪+ α where
   map_zero := rfl
   map_add := rfl
 
-def Subgroup.of_hom [GroupOps β] [IsGroup β] (h: α →* β) : Subgroup β where
-  carrier := Set.range h
-  mem_one := by
-    apply Set.mem_range.mpr
-    exists 1; rw [map_one]
-  mem_mul := by
-    rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
-    apply Set.mem_range.mpr
-    exists a * b
-    rw [map_mul]
-  mem_inv := by
-    rintro _ ⟨a, rfl⟩
-    apply Set.mem_range.mpr
-    exists a⁻¹
-    rw [map_inv]
-
-def AddSubgroup.of_hom [AddGroupOps β] [IsAddGroup β] (h: α →+ β) : AddSubgroup β where
-  carrier := Set.range h
-  mem_zero := by
-    apply Set.mem_range.mpr
-    exists 0; rw [map_zero]
-  mem_add := by
-    rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
-    apply Set.mem_range.mpr
-    exists a + b
-    rw [map_add]
-  mem_neg := by
-    rintro _ ⟨a, rfl⟩
-    apply Set.mem_range.mpr
-    exists -a
-    rw [map_neg]
-
 noncomputable
-def Subgroup.equiv_of_embed [GroupOps β] [IsGroup β] (h: α ↪* β) : α ≃* Subgroup.of_hom (toGroupHom h) where
+def Subgroup.equiv_of_embed (h: α ↪* β) : α ≃* Subgroup.range (toGroupHom h) where
   toFun a := ⟨h a, Set.mem_range'⟩
   invFun x := Classical.choose x.property
   leftInv := by
@@ -337,7 +296,7 @@ def Subgroup.equiv_of_embed [GroupOps β] [IsGroup β] (h: α ↪* β) : α ≃*
     rw [map_mul]
 
 noncomputable
-def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) : α ≃+ AddSubgroup.of_hom (toAddGroupHom h) where
+def AddSubgroup.equiv_of_embed (h: α ↪+ β) : α ≃+ AddSubgroup.range (toAddGroupHom h) where
   toFun a := ⟨h a, Set.mem_range'⟩
   invFun x := Classical.choose x.property
   leftInv := by
@@ -359,20 +318,4 @@ def AddSubgroup.equiv_of_embed [AddGroupOps β] [IsAddGroup β] (h: α ↪+ β) 
     congr
     rw [map_add]
 
-@[simp]
-def neg_val (a: s) : (-a).val = -a.val := rfl
-
-@[simp]
-def inv_val (a: s) : (a⁻¹).val = a.val⁻¹ := rfl
-
-@[simp]
-def sub_val (a b: s) : (a - b).val = a.val - b.val := rfl
-
-@[simp]
-def div_val (a b: s) : (a / b).val = a.val / b.val := rfl
-
-@[simp]
-def zsmul_val (n: ℤ) (a: s) : (n • a).val = n • a.val := rfl
-
-@[simp]
-def zpow_val (n: ℤ) (a: s) : (a ^ n).val = a.val ^ n := rfl
+end

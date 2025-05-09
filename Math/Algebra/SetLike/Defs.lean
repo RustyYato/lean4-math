@@ -36,10 +36,8 @@ end
 section
 
 variable {S R α: Type*} [SetLike S α]
-
-
-variable [Zero α] [One α] [Add α] [Mul α]
-   [Neg α] [Inv α] [CheckedInv? α] [SMul R α]
+  [Zero α] [One α] [Add α] [Mul α]
+  [Neg α] [Inv α] [CheckedInv? α] [SMul R α]
 
 def mem_zero [IsZeroMem S] (s: S): 0 ∈ s := IsZeroMem.mem_zero _
 def mem_one [IsOneMem S] (s: S): 1 ∈ s := IsOneMem.mem_one _
@@ -122,6 +120,10 @@ def copy (s: SubZero α) (U: Set α) (h: s = U) : SubZero α where
   carrier := U
   mem_zero := h ▸ s.mem_zero
 
+def univ : SubZero α where
+  carrier := ⊤
+  mem_zero := True.intro
+
 end SubZero
 
 namespace SubOne
@@ -134,6 +136,10 @@ instance : IsOneMem (SubOne α) where
 def copy (s: SubOne α) (U: Set α) (h: s = U) : SubOne α where
   carrier := U
   mem_one := h ▸ s.mem_one
+
+def univ : SubOne α where
+  carrier := ⊤
+  mem_one := True.intro
 
 end SubOne
 
@@ -148,6 +154,10 @@ def copy (s: AddSubsemigroup α) (U: Set α) (h: s = U) : AddSubsemigroup α whe
   carrier := U
   mem_add := h ▸ s.mem_add
 
+def univ : AddSubsemigroup α where
+  carrier := ⊤
+  mem_add _ _ := True.intro
+
 end AddSubsemigroup
 
 namespace Subsemigroup
@@ -160,6 +170,10 @@ instance : IsMulMem (Subsemigroup α) where
 def copy (s: Subsemigroup α) (U: Set α) (h: s = U) : Subsemigroup α where
   carrier := U
   mem_mul := h ▸ s.mem_mul
+
+def univ : Subsemigroup α where
+  carrier := ⊤
+  mem_mul _ _ := True.intro
 
 end Subsemigroup
 
@@ -174,6 +188,10 @@ def copy (s: SubNeg α) (U: Set α) (h: s = U) : SubNeg α where
   carrier := U
   mem_neg := h ▸ s.mem_neg
 
+def univ : SubNeg α where
+  carrier := ⊤
+  mem_neg _ := True.intro
+
 end SubNeg
 
 namespace SubInv
@@ -186,6 +204,10 @@ instance : IsInvMem (SubInv α) where
 def copy (s: SubInv α) (U: Set α) (h: s = U) : SubInv α where
   carrier := U
   mem_inv := h ▸ s.mem_inv
+
+def univ : SubInv α where
+  carrier := ⊤
+  mem_inv _ := True.intro
 
 end SubInv
 
@@ -200,6 +222,10 @@ def copy (s: SubInv? α) (U: Set α) (h: s = U) : SubInv? α where
   carrier := U
   mem_inv? := h ▸ s.mem_inv?
 
+def univ : SubInv? α where
+  carrier := ⊤
+  mem_inv? _ _ := True.intro
+
 end SubInv?
 
 namespace SubMulAction
@@ -212,6 +238,10 @@ instance : IsSMulMem (SubMulAction R α) R where
 def copy (s: SubMulAction R α) (U: Set α) (h: s = U) : SubMulAction R α where
   carrier := U
   mem_smul := h ▸ s.mem_smul
+
+def univ : SubMulAction R α where
+  carrier := ⊤
+  mem_smul _ _ _ := True.intro
 
 end SubMulAction
 

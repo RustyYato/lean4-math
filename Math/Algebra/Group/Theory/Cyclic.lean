@@ -533,7 +533,7 @@ def ofEmbedding [GroupOps A] [IsGroup A] [GroupOps B] [IsCyclic B] (h: A ↪* B)
     have ⟨n, ⟨g⟩⟩ := existsEquivCyclic B
     replace h := h.trans g.toEmbedding
     replace g := Subgroup.equiv_of_embed h
-    have ⟨m, ⟨g'⟩⟩ := Cyclic.subgroup_cyclic (Subgroup.of_hom h.toHom)
+    have ⟨m, ⟨g'⟩⟩ := Cyclic.subgroup_cyclic (Subgroup.range h.toHom)
     replace g := g.trans g'
     exists g.symm (.unit _)
     intro a

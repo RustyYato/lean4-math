@@ -1,5 +1,5 @@
 import Math.Algebra.GroupWithZero.SetLike.Defs
-import Math.Algebra.GroupWithZero.Defs
+import Math.Algebra.GroupWithZero.Hom
 import Math.Algebra.Monoid.SetLike.Basic
 
 variable [SetLike S α] [GroupWithZeroOps α] [IsGroupWithZero α] [IsSubgroupWithZero S]
@@ -79,3 +79,48 @@ instance [NoZeroDivisors α] : NoZeroDivisors s where
       rw [h]; rfl) with h | h
     left; apply Subtype.val_inj; assumption
     right; apply Subtype.val_inj; assumption
+
+variable [EmbeddingLike F α β]
+
+variable [GroupWithZeroOps β] [IsGroupWithZero β]
+  [IsGroupWithZeroHom F α β]
+
+namespace SubInv?
+
+def image (s: SubInv? α) (f: F) : SubInv? β where
+  carrier := s.carrier.image f
+  mem_inv? | h, ⟨a, ha, _⟩ => ⟨a⁻¹? ~(by
+    rintro rfl
+    rw [map_zero] at *
+    contradiction), by
+    apply And.intro
+    apply mem_inv? s
+    assumption
+    classical
+    rw [map_inv?]; congr⟩
+
+def preimage (s: SubInv? β) (f: F) : SubInv? α where
+  carrier := s.carrier.preimage f
+  mem_inv? {a} h ha := by
+    classical
+    show f _ ∈ s; rw [map_inv?]; apply mem_inv? <;> assumption
+
+def range (f: F) : SubInv? β := (image .univ f).copy (Set.range f) (by symm; apply Set.range_eq_image)
+
+end SubInv?
+
+namespace SubgroupWithZero
+
+def preimage (f: F) (s: SubgroupWithZero β) : SubgroupWithZero α := {
+  s.toSubmonoid.preimage f, s.toSubInv?.preimage f, s.toSubZero.preimage f with
+}
+
+def image (f: F) (s: SubgroupWithZero α) : SubgroupWithZero β := {
+  s.toSubmonoid.image f, s.toSubInv?.image f, s.toSubZero.image f with
+}
+
+def range (f: F) : SubgroupWithZero β := {
+  Submonoid.range f, SubInv?.range f, SubZero.range f with
+}
+
+end SubgroupWithZero
