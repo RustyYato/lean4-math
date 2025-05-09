@@ -153,7 +153,7 @@ def generate (U: Set α) : Ideal α where
   mem_mul_right := Generate.mul_right
 
 def of_mem_generate [SetLike S α] [IsIdeal S] (U: Set α) (s: S) :
-  (∀x ∈ U, x ∈ s) -> (generate U).carrier ⊆ s := by
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
   intro g
   intro x h
   show x ∈ s

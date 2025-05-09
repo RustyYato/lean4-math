@@ -17,6 +17,16 @@ def generate (U: Set α) : Subsemigroup α where
   carrier := Set.mk (Generate U)
   mem_mul := Generate.mul
 
+def of_mem_generate {S: Type*} [SetLike S α] [IsMulMem S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) ->  ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | mul => apply mem_mul <;> assumption
+
 end Subsemigroup
 
 namespace AddSubsemigroup
@@ -33,5 +43,15 @@ inductive Generate (U: Set α) : α -> Prop where
 def generate (U: Set α) : AddSubsemigroup α where
   carrier := Set.mk (Generate U)
   mem_add := Generate.add
+
+def of_mem_generate {S: Type*} [SetLike S α] [IsAddMem S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | add => apply mem_add <;> assumption
 
 end AddSubsemigroup

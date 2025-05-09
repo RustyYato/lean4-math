@@ -35,6 +35,17 @@ def generate (U: Set α) : Submonoid α where
   mem_mul := Generate.mul
   mem_one := Generate.one
 
+def of_mem_generate {S: Type*} [SetLike S α] [IsSubmonoid S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | one => apply mem_one <;> assumption
+  | mul => apply mem_mul <;> assumption
+
 def copy (s: Submonoid α) (U: Set α) (h: s = U) : Submonoid α := {
   s.toSubsemigroup.copy U h, s.toSubOne.copy U h with
 }
@@ -60,6 +71,17 @@ def generate (U: Set α) : AddSubmonoid α where
   carrier := Set.mk (Generate U)
   mem_add := Generate.add
   mem_zero := Generate.zero
+
+def of_mem_generate {S: Type*} [SetLike S α] [IsAddSubmonoid S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | zero => apply mem_zero <;> assumption
+  | add => apply mem_add <;> assumption
 
 def copy (s: AddSubmonoid α) (U: Set α) (h: s = U) : AddSubmonoid α := {
   s.toAddSubsemigroup.copy U h, s.toSubZero.copy U h with

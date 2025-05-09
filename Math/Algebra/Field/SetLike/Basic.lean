@@ -105,9 +105,7 @@ def image (f: α →+* β) (s: Subfield α) : Subfield β where
 
 def range (f: α →+* β) : Subfield β :=
   (Subfield.image f ⊤).copy (Set.range f) <| by
-    rw [image]
-    dsimp
-    rw [Set.range_eq_image]
+    rw [image, Set.range_eq_image]
     rfl
 
 noncomputable def equiv_range (f: α →+* β) : α ≃+* range f where

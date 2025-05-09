@@ -37,4 +37,21 @@ def generate (U: Set α) : SubgroupWithZero α where
   mem_one := Generate.one
   mem_zero := Generate.zero
 
+def of_mem_generate {S: Type*} [SetLike S α] [IsSubgroupWithZero S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | zero => apply mem_zero <;> assumption
+  | one => apply mem_one <;> assumption
+  | inv? => apply mem_inv? <;> assumption
+  | mul => apply mem_mul <;> assumption
+
+def copy (s: SubgroupWithZero α) (U: Set α) (h: s = U) : SubgroupWithZero α := {
+  s.toSubmonoid.copy U h, s.toSubInv?.copy U h, s.toSubZero.copy U h with
+}
+
 end SubgroupWithZero

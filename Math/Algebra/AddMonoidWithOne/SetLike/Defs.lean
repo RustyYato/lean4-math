@@ -28,6 +28,18 @@ def generate (U: Set α) : AddSubmonoidWithOne α where
   mem_zero := Generate.zero
   mem_one := Generate.one
 
+def of_mem_generate {S: Type*} [SetLike S α] [IsAddSubmonoidWithOne S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | zero => apply mem_zero <;> assumption
+  | one => apply mem_one <;> assumption
+  | add => apply mem_add <;> assumption
+
 def copy (s: AddSubmonoidWithOne α) (U: Set α) (h: s = U) : AddSubmonoidWithOne α := {
   s.toAddSubmonoid.copy U h, s.toSubOne.copy U h with
 }

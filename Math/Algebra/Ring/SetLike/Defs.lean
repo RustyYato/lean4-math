@@ -44,6 +44,20 @@ def generate (U: Set α) : Subring α where
   mem_zero := Generate.zero
   mem_one := Generate.one
 
+def of_mem_generate {S: Type*} [SetLike S α] [IsSubring S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | zero => apply mem_zero <;> assumption
+  | one => apply mem_one <;> assumption
+  | neg => apply mem_neg <;> assumption
+  | add => apply mem_add <;> assumption
+  | mul => apply mem_mul <;> assumption
+
 def copy (s: Subring α) (U: Set α) (h: s = U) : Subring α := {
   s.toAddSubgroupWithOne.copy U h, s.toSubsemigroup.copy U h with
 }

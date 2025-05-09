@@ -1,13 +1,14 @@
 import Math.Algebra.Ring.SetLike.Defs
+import Math.Algebra.Semifield.SetLike.Defs
 import Math.Algebra.GroupWithZero.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
 class IsSubfield [Zero α] [One α] [Neg α] [CheckedInv? α] [Add α] [Mul α]
-  : Prop extends IsSubring S, IsSubgroupWithZero S where
+  : Prop extends IsSubring S, IsSubsemifield S where
 
 structure Subfield (α: Type*) [Zero α] [One α] [Neg α] [CheckedInv? α] [Add α] [Mul α]
-  extends Subring α, SubgroupWithZero α where
+  extends Subring α, Subsemifield α where
 
 namespace Subfield
 
@@ -45,13 +46,23 @@ def generate (U: Set α) : Subfield α where
   mem_one := Generate.one
   mem_zero := Generate.zero
 
-def copy (s: Subfield α) (t: Set α) (h: t = s.carrier) : Subfield α where
-  carrier := t
-  mem_zero := by rw [h]; apply mem_zero s
-  mem_one := by rw [h]; apply mem_one s
-  mem_add := by rw [h]; intros; apply mem_add s <;> assumption
-  mem_mul := by rw [h]; intros; apply mem_mul s <;> assumption
-  mem_neg := by rw [h]; intros; apply mem_neg s <;> assumption
-  mem_inv? := by rw [h]; intros; apply mem_inv? s <;> assumption
+def of_mem_generate {S: Type*} [SetLike S α] [IsSubfield S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | zero => apply mem_zero <;> assumption
+  | one => apply mem_one <;> assumption
+  | neg => apply mem_neg <;> assumption
+  | inv? => apply mem_inv? <;> assumption
+  | add => apply mem_add <;> assumption
+  | mul => apply mem_mul <;> assumption
+
+def copy (s: Subfield α) (U: Set α) (h: s = U) : Subfield α := {
+  s.toAddSubgroupWithOne.copy U h, s.toSubgroupWithZero.copy U h with
+}
 
 end Subfield

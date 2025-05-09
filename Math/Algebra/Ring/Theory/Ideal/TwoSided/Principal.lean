@@ -131,7 +131,7 @@ def of_dvd_eq_principal (a: α) : of_dvd a = principal a := by
   rw [principal_eq_generate]
   apply flip le_antisymm
   rintro x h
-  apply of_mem_generate _ _ _ _ h
+  apply of_mem_generate _ (of_dvd a) _ _ h
   rintro x rfl
   apply dvd_refl
   rintro _ h

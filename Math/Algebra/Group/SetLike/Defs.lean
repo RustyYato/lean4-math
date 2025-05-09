@@ -37,6 +37,18 @@ def generate (U: Set α) : Subgroup α where
   mem_one := Generate.one
   mem_inv := Generate.inv
 
+def of_mem_generate {S: Type*} [SetLike S α] [IsSubgroup S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | one => apply mem_one <;> assumption
+  | inv => apply mem_inv <;> assumption
+  | mul => apply mem_mul <;> assumption
+
 def copy (s: Subgroup α) (U: Set α) (h: s = U) : Subgroup α := {
   s.toSubmonoid.copy U h, s.toSubInv.copy U h with
 }
@@ -64,6 +76,18 @@ def generate (U: Set α) : AddSubgroup α where
   mem_add := Generate.add
   mem_zero := Generate.zero
   mem_neg := Generate.neg
+
+def of_mem_generate {S: Type*} [SetLike S α] [IsAddSubgroup S] (U: Set α) (s: S) :
+  (∀x ∈ U, x ∈ s) -> ∀x ∈ generate U, x ∈ s := by
+  intro h x hx
+  show x ∈ s
+  induction hx with
+  | of =>
+    apply h
+    assumption
+  | zero => apply mem_zero <;> assumption
+  | neg => apply mem_neg <;> assumption
+  | add => apply mem_add <;> assumption
 
 def copy (s: AddSubgroup α) (U: Set α) (h: s = U) : AddSubgroup α := {
   s.toAddSubmonoid.copy U h, s.toSubNeg.copy U h with
