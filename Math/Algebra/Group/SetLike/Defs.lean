@@ -3,24 +3,12 @@ import Math.Algebra.Notation
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsInvMem [Inv α] : Prop where
-  mem_inv (s: S) {a: α} (h: a ∈ s) : a⁻¹ ∈ s := by intro s; exact s.mem_inv
-
-def mem_inv {S α: Type*} [SetLike S α] [Inv α] [IsInvMem S] (s: S) {a: α} (h: a ∈ s) : a⁻¹ ∈ s := IsInvMem.mem_inv s h
-
-class IsNegMem [Neg α] : Prop where
-  mem_neg (s: S) {a: α} (h: a ∈ s) : -a ∈ s := by intro s; exact s.mem_neg
-
-def mem_neg {S α: Type*} [SetLike S α] [Neg α] [IsNegMem S] (s: S) {a: α} (h: a ∈ s) : -a ∈ s := IsNegMem.mem_neg s h
-
 class IsSubgroup [Mul α] [One α] [Inv α] : Prop extends IsSubmonoid S, IsInvMem S where
 class IsAddSubgroup [Add α] [Zero α] [Neg α] : Prop extends IsAddSubmonoid S, IsNegMem S where
 
-structure Subgroup (α: Type*) [Mul α] [One α] [Inv α] extends Submonoid α where
-  protected mem_inv: ∀{a}, a ∈ carrier -> a⁻¹ ∈ carrier
+structure Subgroup (α: Type*) [Mul α] [One α] [Inv α] extends Submonoid α, SubInv α where
 
-structure AddSubgroup (α: Type*) [Add α] [Zero α] [Neg α] extends AddSubmonoid α where
-  protected mem_neg: ∀{a}, a ∈ carrier -> -a ∈ carrier
+structure AddSubgroup (α: Type*) [Add α] [Zero α] [Neg α] extends AddSubmonoid α, SubNeg α where
 
 instance [SetLike S α] [Add α] [Zero α] [Neg α] [IsAddSubgroup S] : IsSubgroup (MulOfAdd S) where
   mem_inv := mem_neg (S := S)
@@ -50,8 +38,7 @@ def generate (U: Set α) : Subgroup α where
   mem_inv := Generate.inv
 
 def copy (s: Subgroup α) (U: Set α) (h: s = U) : Subgroup α := {
-  s.toSubmonoid.copy U h with
-  mem_inv := h ▸ mem_inv s
+  s.toSubmonoid.copy U h, s.toSubInv.copy U h with
 }
 
 end Subgroup
@@ -79,8 +66,7 @@ def generate (U: Set α) : AddSubgroup α where
   mem_neg := Generate.neg
 
 def copy (s: AddSubgroup α) (U: Set α) (h: s = U) : AddSubgroup α := {
-  s.toAddSubmonoid.copy U h with
-  mem_neg := h ▸ mem_neg s
+  s.toAddSubmonoid.copy U h, s.toSubNeg.copy U h with
 }
 
 end AddSubgroup

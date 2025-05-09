@@ -22,7 +22,7 @@ instance : SetLike (Subsemifield α) α where
 instance : IsSubsemifield (Subsemifield α) where
   mem_zero s := s.mem_zero
   mem_one s := s.mem_one
-  mem_inv? s := s.mem_inv?'
+  mem_inv? s := s.mem_inv?
   mem_add s := s.mem_add
   mem_mul s := s.mem_mul
 
@@ -38,7 +38,7 @@ def generate (U: Set α) : Subsemifield α where
   carrier := Set.mk (Generate U)
   mem_mul := Generate.mul
   mem_add := Generate.add
-  mem_inv?' := Generate.inv?
+  mem_inv? := Generate.inv?
   mem_one := Generate.one
   mem_zero := Generate.zero
 

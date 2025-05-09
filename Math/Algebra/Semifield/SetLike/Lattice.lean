@@ -17,7 +17,7 @@ private instance builder : SetLike.LatticeBuilder (Subsemifield α) where
     mem_one := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_one s
-    mem_inv?' := by
+    mem_inv? := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_inv? s <;> assumption
     mem_add := by

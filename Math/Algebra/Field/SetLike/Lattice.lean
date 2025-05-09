@@ -22,7 +22,7 @@ private instance builder : SetLike.LatticeBuilder (Subfield α) where
     mem_neg := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_neg s <;> assumption
-    mem_inv?' := by
+    mem_inv? := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_inv? s <;> assumption
     mem_add := by

@@ -17,7 +17,7 @@ private instance builder : SetLike.LatticeBuilder (SubgroupWithZero α) where
     mem_one := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_one s
-    mem_inv?' := by
+    mem_inv? := by
       obtain ⟨s, rfl⟩ := P
       intros; apply mem_inv? s <;> assumption
     mem_mul := by
@@ -42,7 +42,7 @@ private instance builder : SetLike.LatticeBuilder (SubgroupWithZero α) where
     carrier := {0, 1}
     mem_zero := by simp
     mem_one := by simp
-    mem_inv?' := by
+    mem_inv? := by
       rintro _ _ h
       simp at *
       cases h; contradiction

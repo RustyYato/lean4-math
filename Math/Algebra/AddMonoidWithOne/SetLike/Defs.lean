@@ -4,8 +4,7 @@ variable (S: Type*) {α: Type*} [SetLike S α]
 
 class IsAddSubmonoidWithOne [Add α] [Zero α] [One α] : Prop extends IsAddSubmonoid S, IsOneMem S where
 
-structure AddSubmonoidWithOne (α: Type*) [Add α] [Zero α] [One α] extends AddSubmonoid α where
-  mem_one : 1 ∈ carrier
+structure AddSubmonoidWithOne (α: Type*) [Add α] [Zero α] [One α] extends AddSubmonoid α, SubOne α where
 
 namespace AddSubmonoidWithOne
 
@@ -30,8 +29,7 @@ def generate (U: Set α) : AddSubmonoidWithOne α where
   mem_one := Generate.one
 
 def copy (s: AddSubmonoidWithOne α) (U: Set α) (h: s = U) : AddSubmonoidWithOne α := {
-  s.toAddSubmonoid.copy U h with
-  mem_one := h ▸ mem_one s
+  s.toAddSubmonoid.copy U h, s.toSubOne.copy U h with
 }
 
 end AddSubmonoidWithOne

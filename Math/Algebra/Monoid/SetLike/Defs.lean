@@ -3,26 +3,12 @@ import Math.Algebra.Notation
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
-class IsOneMem [One α] : Prop where
-  mem_one (s: S) : 1 ∈ s := by intro s; exact s.mem_one
-
-def mem_one {S α: Type*} [SetLike S α] [One α] [IsOneMem S]
-  (s: S) : 1 ∈ s := IsOneMem.mem_one s
-
-class IsZeroMem [Zero α] : Prop where
-  mem_zero (s: S) : 0 ∈ s := by intro s; exact s.mem_zero
-
-def mem_zero {S α: Type*} [SetLike S α] [Zero α] [IsZeroMem S]
-  (s: S) : 0 ∈ s := IsZeroMem.mem_zero s
-
 class IsSubmonoid [Mul α] [One α] : Prop extends IsMulMem S, IsOneMem S where
 class IsAddSubmonoid [Add α] [Zero α] : Prop extends IsAddMem S, IsZeroMem S where
 
-structure Submonoid (α: Type*) [Mul α] [One α] extends Subsemigroup α where
-  protected mem_one: 1 ∈ carrier
+structure Submonoid (α: Type*) [Mul α] [One α] extends Subsemigroup α, SubOne α where
 
-structure AddSubmonoid (α: Type*) [Add α] [Zero α] extends AddSubsemigroup α where
-  protected mem_zero: 0 ∈ carrier
+structure AddSubmonoid (α: Type*) [Add α] [Zero α] extends AddSubsemigroup α, SubZero α where
 
 instance [SetLike S α] [Add α] [Zero α] [IsAddSubmonoid S] : IsSubmonoid (MulOfAdd S) where
   mem_one := mem_zero (S := S)
@@ -50,8 +36,7 @@ def generate (U: Set α) : Submonoid α where
   mem_one := Generate.one
 
 def copy (s: Submonoid α) (U: Set α) (h: s = U) : Submonoid α := {
-  s.toSubsemigroup.copy U h with
-  mem_one := h ▸ mem_one s
+  s.toSubsemigroup.copy U h, s.toSubOne.copy U h with
 }
 
 end Submonoid
@@ -77,8 +62,7 @@ def generate (U: Set α) : AddSubmonoid α where
   mem_zero := Generate.zero
 
 def copy (s: AddSubmonoid α) (U: Set α) (h: s = U) : AddSubmonoid α := {
-  s.toAddSubsemigroup.copy U h with
-  mem_zero := h ▸ mem_zero s
+  s.toAddSubsemigroup.copy U h, s.toSubZero.copy U h with
 }
 
 end AddSubmonoid

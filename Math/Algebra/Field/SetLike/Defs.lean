@@ -23,7 +23,7 @@ instance : IsSubfield (Subfield α) where
   mem_zero s := s.mem_zero
   mem_one s := s.mem_one
   mem_neg s := s.mem_neg
-  mem_inv? s := s.mem_inv?'
+  mem_inv? s := s.mem_inv?
   mem_add s := s.mem_add
   mem_mul s := s.mem_mul
 
@@ -40,7 +40,7 @@ def generate (U: Set α) : Subfield α where
   carrier := Set.mk (Generate U)
   mem_mul := Generate.mul
   mem_add := Generate.add
-  mem_inv?' := Generate.inv?
+  mem_inv? := Generate.inv?
   mem_neg := Generate.neg
   mem_one := Generate.one
   mem_zero := Generate.zero
@@ -52,6 +52,6 @@ def copy (s: Subfield α) (t: Set α) (h: t = s.carrier) : Subfield α where
   mem_add := by rw [h]; intros; apply mem_add s <;> assumption
   mem_mul := by rw [h]; intros; apply mem_mul s <;> assumption
   mem_neg := by rw [h]; intros; apply mem_neg s <;> assumption
-  mem_inv?' := by rw [h]; intros; apply mem_inv? s <;> assumption
+  mem_inv? := by rw [h]; intros; apply mem_inv? s <;> assumption
 
 end Subfield

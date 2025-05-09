@@ -1,46 +1,10 @@
-import Math.Data.Set.Like
-import Math.Algebra.AddMul
+import Math.Algebra.SetLike
 
 variable (S: Type*) {α: Type*} [SetLike S α]
-
-class IsMulMem [Mul α] : Prop where
-  mem_mul (s: S) {a b: α} : a ∈ s -> b ∈ s -> a * b ∈ s := by intro s; exact s.mem_mul
-
-def mem_mul {S α: Type*} [SetLike S α] [Mul α] [IsMulMem S]
-  (s: S) {a b: α} : a ∈ s -> b ∈ s -> a * b ∈ s := IsMulMem.mem_mul s
-
-class IsAddMem [Add α] : Prop where
-  mem_add (s: S) {a b: α} : a ∈ s -> b ∈ s -> a + b ∈ s := by intro s; exact s.mem_add
-
-def mem_add {S α: Type*} [SetLike S α] [Add α] [IsAddMem S]
-  (s: S) {a b: α} : a ∈ s -> b ∈ s -> a + b ∈ s := IsAddMem.mem_add s
-
-structure Subsemigroup (α: Type*) [Mul α] where
-  carrier: Set α
-  protected mem_mul {a b: α} : a ∈ carrier -> b ∈ carrier -> a * b ∈ carrier
-
-structure AddSubsemigroup (α: Type*) [Add α] where
-  carrier: Set α
-  protected mem_add {a b: α} : a ∈ carrier -> b ∈ carrier -> a + b ∈ carrier
-
-instance [h: SetLike S α] : SetLike (AddOfMul S) (AddOfMul α) where
-  coe a := (a.get: Set α)
-  coe_inj := h.coe_inj
-instance [h: SetLike S α] : SetLike (MulOfAdd S) (MulOfAdd α) where
-  coe a := (a.get: Set α)
-  coe_inj := h.coe_inj
-
-instance [SetLike S α] [Add α] [IsAddMem S] : IsMulMem (MulOfAdd S) where
-  mem_mul := mem_add (S := S)
-instance [SetLike S α] [Mul α] [IsMulMem S] : IsAddMem (AddOfMul S) where
-  mem_add := mem_mul (S := S)
 
 namespace Subsemigroup
 
 variable [Mul α]
-
-instance : SetLike (Subsemigroup α) α where
-instance : IsMulMem (Subsemigroup α) where
 
 @[ext]
 def ext (a b: Subsemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -53,18 +17,11 @@ def generate (U: Set α) : Subsemigroup α where
   carrier := Set.mk (Generate U)
   mem_mul := Generate.mul
 
-def copy (s: Subsemigroup α) (U: Set α) (h: s = U) : Subsemigroup α where
-  carrier := U
-  mem_mul := h ▸ mem_mul s
-
 end Subsemigroup
 
 namespace AddSubsemigroup
 
 variable [Add α]
-
-instance : SetLike (AddSubsemigroup α) α where
-instance : IsAddMem (AddSubsemigroup α) where
 
 @[ext]
 def ext (a b: AddSubsemigroup α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
@@ -76,9 +33,5 @@ inductive Generate (U: Set α) : α -> Prop where
 def generate (U: Set α) : AddSubsemigroup α where
   carrier := Set.mk (Generate U)
   mem_add := Generate.add
-
-def copy (s: AddSubsemigroup α) (U: Set α) (h: s = U) : AddSubsemigroup α where
-  carrier := U
-  mem_add := h ▸ mem_add s
 
 end AddSubsemigroup

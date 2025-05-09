@@ -16,7 +16,7 @@ abbrev Real.nonneg : Subsemifield ℝ where
     apply mul_nonneg (α := ℝ)
     assumption
     assumption
-  mem_inv?' := by
+  mem_inv? := by
     intro a h ha
     cases lt_or_eq_of_le (α := ℝ) ha
     apply le_of_lt (α := ℝ)

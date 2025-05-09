@@ -49,7 +49,7 @@ def preimage (f: α →+* β) (s: Subfield β) : Subfield α where
     rw [map_neg]
     apply mem_neg
     assumption
-  mem_inv?' := by
+  mem_inv? := by
     intro a h ha
     show f (a⁻¹?) ∈ s
     rw [map_inv?]
@@ -91,7 +91,7 @@ def image (f: α →+* β) (s: Subfield α) : Subfield β where
     apply mem_neg s
     assumption
     rw [map_neg]
-  mem_inv?' := by
+  mem_inv? := by
     rintro a fanez ⟨a, ha, rfl⟩
     rw [←map_zero f] at fanez
     have : a ≠ 0 := by
