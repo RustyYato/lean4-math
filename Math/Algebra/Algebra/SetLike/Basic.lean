@@ -1,4 +1,4 @@
-import Math.Algebra.Algebra.SetLike.Defs
+import Math.Algebra.Algebra.SetLike.Lattice
 import Math.Algebra.Ring.SetLike.Basic
 import Math.Algebra.Monoid.Action.SetLike.Basic
 import Math.Algebra.Algebra.Defs
@@ -11,8 +11,11 @@ instance [RingOps R] [IsRing R] [RingOps α] [IsRing α] [AlgebraMap R α] : IsS
     apply mem_algebraMap
     assumption
 
-variable [SetLike S α] [SemiringOps R] [IsSemiring R] [SemiringOps α] [IsSemiring α]
-  [AlgebraMap R α] [SMul R α] [IsAlgebra R α] [IsSubalgebra S R]
+variable [SetLike S α]
+  [SemiringOps R] [IsSemiring R]
+  [SemiringOps α] [IsSemiring α] [AlgebraMap R α] [SMul R α] [IsAlgebra R α]
+  [SemiringOps β] [IsSemiring β] [AlgebraMap R β] [SMul R β] [IsAlgebra R β]
+  [IsSubalgebra S R]
 
 section
 
@@ -51,3 +54,41 @@ instance : AlgebraMap R s := inferInstance
 instance : IsAlgebra R s := inferInstance
 
 end
+
+namespace Subalgebra
+
+def image (s: Subalgebra R α) (f: α →ₐ[R] β) : Subalgebra R β where
+  carrier := s.carrier.image f
+  mem_add := by
+    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
+    rw [←map_add]
+    apply Set.mem_image'
+    apply mem_add s
+    assumption
+    assumption
+  mem_mul := by
+    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
+    rw [←map_mul]
+    apply Set.mem_image'
+    apply mem_mul s
+    assumption
+    assumption
+  mem_algebraMap r := by
+    rw [←map_algebraMap f]
+    apply Set.mem_image'
+    apply mem_algebraMap R s r
+
+def range (f: α →ₐ[R] β) : Subalgebra R β := copy _ (image ⊤ f) (Set.range f) <| by symm; apply Set.range_eq_image
+
+def preimage (s: Subalgebra R β) (f: α →ₐ[R] β) : Subalgebra R α where
+  carrier := s.carrier.preimage f
+  mem_add := by
+    intro a b ha hb
+    show f _ ∈ s; rw [map_add]; apply mem_add <;> assumption
+  mem_mul := by
+    intro a b ha hb
+    show f _ ∈ s; rw [map_mul]; apply mem_mul <;> assumption
+  mem_algebraMap r := by
+    show f _ ∈ s; rw [map_algebraMap]; apply mem_algebraMap
+
+end Subalgebra

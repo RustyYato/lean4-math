@@ -24,7 +24,7 @@ variable (R α: Type*)
   [AlgebraMap R α] [SMul R α]
 
 class Subalgebra extends AddSubsemigroup α, Subsemigroup α where
-  mem_algebraMap (r: R) : algebraMap r ∈ carrier
+  protected mem_algebraMap (r: R) : algebraMap r ∈ carrier
 
 instance : SetLike (Subalgebra R α) α where
 instance : IsSubalgebra (Subalgebra R α) R where
