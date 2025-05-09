@@ -31,3 +31,18 @@ def decomposeRing : α ≃+* ⊕i, A i := {
     simp [←DirectSum.Decomposition.symm_apply_decompose]
     all_goals intros; rfl
 }
+
+namespace IsGradedRing
+
+def proj (i: γ) : α →+ α :=
+  (AddGroupHom.subtypeVal _).comp <|
+  (DirectSum.proj i).comp (decompose dec).toAddGroupHom
+
+variable [DecidableEq α]
+
+def mem_proj (i: γ) (a: α) : proj A i a ∈ A i :=
+  Subtype.property _
+
+def apply_proj : proj A i a = (decompose dec a i).val := rfl
+
+end IsGradedRing

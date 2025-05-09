@@ -292,7 +292,26 @@ def liftRing : { f: ∀i, A i →+ R // f 0 GOne.gOne = 1 ∧ ∀{i j} (a b), f 
 
 def liftRing_ι (f) : liftRing (A := A) (R := R) f (ι i a) = f.val i a := evalRing_ι _ f.property.1 f.property.2
 
-def apply_lift_eq_apply_liftRing (f: ∀i, A i →+ R) (hone hmul) : lift f a = liftRing ⟨f, hone, hmul⟩ a := sorry
+def apply_lift_eq_apply_liftRing (f: ∀i, A i →+ R) (hone hmul) : lift f a = liftRing ⟨f, hone, hmul⟩ a := rfl
+
+instance : One (A 0) := ⟨GOne.gOne⟩
+instance : Mul (A 0) where
+  mul a b := cast (by rw [add_zero]) (GMul.gMul a b)
+
+def ιHom : A 0 →+* ⊕i, A i := {
+  ι 0 with
+  map_one := rfl
+  map_mul {a b } := by
+    simp; rw [mul_ι]
+    let a' := GradedMonoid.mk a
+    let b' := GradedMonoid.mk b
+    let x := a' * b'
+    let y := GradedMonoid.mk (a * b)
+    show ι y.fst y.snd = ι x.fst x.snd
+    suffices x = y by rw [this]
+    ext; apply add_zero
+    symm; apply cast_heq
+}
 
 end
 

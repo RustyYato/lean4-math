@@ -15,11 +15,7 @@ private instance (a: A i) : Decidable (a = 0) :=
     rfl)
 
 def get {A: γ -> σ} : (⊕i, A i) →+ M :=
-  lift <| fun _ => {
-    toFun := Subtype.val
-    map_zero := rfl
-    map_add := rfl
-  }
+  lift <| fun _ => AddGroupHom.subtypeVal _
 
 def get_ι (a: A i) : get (A := A) (ι i a) = a.val := lift_ι _
 

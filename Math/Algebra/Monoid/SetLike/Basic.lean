@@ -1,6 +1,7 @@
 import Math.Algebra.Monoid.SetLike.Defs
 import Math.Algebra.Semigroup.SetLike.Basic
 import Math.Algebra.Monoid.Defs
+import Math.Algebra.Monoid.Hom
 
 def mem_npow
   [SetLike S α] [MonoidOps α] [IsSubmonoid S] [IsMonoid α]
@@ -99,3 +100,19 @@ def nsmul_val (n: ℕ) (a: s) : (n • a).val = n • a.val := rfl
 
 @[simp]
 def npow_val (n: ℕ) (a: s) : (a ^ n).val = a.val ^ n := rfl
+
+def AddGroupEmbedding.subtypeVal : s ↪+ α := {
+    toEmbedding := Embedding.subtypeVal
+    map_zero := rfl
+    map_add := rfl
+  }
+
+def GroupEmbedding.subtypeVal : s ↪* α := {
+    toEmbedding := Embedding.subtypeVal
+    map_one := rfl
+    map_mul := rfl
+  }
+
+def AddGroupHom.subtypeVal : s →+ α := (AddGroupEmbedding.subtypeVal s).toAddGroupHom
+
+def GroupHom.subtypeVal : s →* α := (GroupEmbedding.subtypeVal s).toGroupHom

@@ -307,6 +307,11 @@ def lift_ι (f: ∀i, α i →+ A) : lift f (ι i a) = f i a := eval_ι _ _
 
 attribute [irreducible] ι eval
 
+def proj (i: γ) : (⊕i ,α i) →+ α i where
+  toFun f := f i
+  map_zero := rfl
+  map_add := rfl
+
 end
 
 end DirectSum

@@ -20,6 +20,9 @@ def mk_get_cast (a: GradedMonoid A) (i: ι) (h: a.fst = i) : mk (a.get_cast i h)
   subst i
   rfl
 
+def mk_inj (a: A i) (b: A j) : mk a = mk b -> i = j ∧ HEq a b := by
+  intro h; cases h; trivial
+
 end GradedMonoid
 
 section Classes
