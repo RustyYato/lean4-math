@@ -1,4 +1,4 @@
-import Math.Algebra.SetLike
+import Math.Algebra.SetLike.Defs
 
 variable (S: Type*) {α: Type*} [SetLike S α]
 
