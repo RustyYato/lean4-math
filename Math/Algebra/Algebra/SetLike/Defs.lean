@@ -47,7 +47,7 @@ variable (R: Type*) {α: Type*} [SetLike S α]
 def mem_algebraMap [IsAlgebraMapMem S R] (s: S) (r: R) : algebraMap r ∈ s := IsAlgebraMapMem.mem_algebraMap _ _
 
 @[ext]
-def ext (a b: Subsemiring α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
+def ext (a b: Subalgebra R α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := SetLike.ext _ _
 
 inductive Generate (U: Set α) : α -> Prop where
 | of (a: α) : a ∈ U -> Generate U a
