@@ -33,4 +33,16 @@ noncomputable instance ops : ConditionallyCompleteLatticeOps Cardinal := inferIn
 private noncomputable instance : IsConditionallyCompleteLattice Cardinalᵒᵖ := lattice.snd
 noncomputable instance : IsConditionallyCompleteLattice Cardinal := inferInstanceAs (IsConditionallyCompleteLattice (Cardinal ᵒᵖ ᵒᵖ))
 
+instance : Bot Cardinal := ⟨0⟩
+
+instance : IsLawfulBot Cardinal where
+  bot_le c := by
+    induction c using ind with
+    | _ c =>
+    exact ⟨Embedding.empty⟩
+
+protected def BoundedBelow (S: Set Cardinal) : S.BoundedBelow := ⟨⊥, by
+  intro x hx
+  apply bot_le⟩
+
 end Cardinal
