@@ -445,4 +445,111 @@ abbrev GaloisInsertion.liftCompleteLattice
       rw [gi.choice_eq]
       apply (gi.isGLB_of_u_image (isGLB_sInf _)).right }
 
+noncomputable abbrev GaloisInsertion.liftConditionallyCompleteLattice
+  [Max α] [Min α] [SupSet α] [InfSet α] [IsConditionallyCompleteLattice α]
+  [IsPartialOrder β] (gi : GaloisInsertion l u) : Σ'_: ConditionallyCompleteLatticeOps β, IsConditionallyCompleteLattice β :=
+  let ops : ConditionallyCompleteLatticeOps β := {
+    gi.instLattice with
+    sSup := fun s => l (⨆ (s.image u))
+    sInf s :=  by
+      classical
+      refine if hS:s.Nonempty ∧ s.BoundedBelow then ?_ else ?_
+      · apply gi.choice (⨅ (s.image u))
+        apply (isGLB_csInf _ _).right
+        apply gi.gc.monotone_u.mem_lowerBounds_image
+        intro b hb
+        apply gi.gc.l_le
+        apply (isGLB_csInf _ _).left
+        apply Set.mem_image'
+        assumption
+        · obtain ⟨x, hx⟩ := hS.left
+          exists u x
+          apply Set.mem_image'
+          assumption
+        · obtain ⟨x, hx⟩ := hS.right
+          exists u x
+          rintro _ ⟨a, ha, rfl⟩
+          apply gi.gc.monotone_u
+          apply hx
+          assumption
+        · obtain ⟨x, hx⟩ := hS.left
+          exists u x
+          apply Set.mem_image'
+          assumption
+        · obtain ⟨x, hx⟩ := hS.right
+          exists u x
+          rintro _ ⟨a, ha, rfl⟩
+          apply gi.gc.monotone_u
+          apply hx
+          assumption
+      · exact l (⨅s.image u)
+  }
+  {
+    fst := ops
+    snd := {
+      le_csSup := by
+        intro S x hS hx
+        apply (gi.isLUB_of_u_image (isLUB_csSup _ _)).1
+        · assumption
+        · exists u x
+          apply Set.mem_image'
+          assumption
+        · obtain ⟨x, hx⟩ := hS
+          exists u x
+          rintro _ ⟨a, ha, rfl⟩
+          apply gi.gc.monotone_u
+          apply hx
+          assumption
+      csSup_le := by
+        intro S x hS hx
+        apply (gi.isLUB_of_u_image (isLUB_csSup _ _)).2
+        · assumption
+        · obtain ⟨y, hy⟩ := hS
+          exists u y
+          apply Set.mem_image'
+          assumption
+        · exists u x
+          rintro _ ⟨a, ha, rfl⟩
+          apply gi.gc.monotone_u
+          apply hx
+          assumption
+      csInf_le := by
+        intro S a hS ha
+        rw [sInf, ConditionallyCompleteLatticeOps.toInfSet]
+        simp [ops]
+        rw [dif_pos, gi.choice_eq]
+        apply (gi.isGLB_of_u_image (isGLB_csInf _ _)).left
+        assumption
+        · exists u a
+          apply Set.mem_image'
+          assumption
+        · obtain ⟨x, hx⟩ := hS
+          exists u x
+          rintro _ ⟨a, ha, rfl⟩
+          apply gi.gc.monotone_u
+          apply hx
+          assumption
+        apply And.intro _ hS
+        exists a
+      le_csInf := by
+        intro S x hS hx
+        rw [sInf, ConditionallyCompleteLatticeOps.toInfSet]
+        simp [ops]
+        rw [dif_pos, gi.choice_eq]
+        apply (gi.isGLB_of_u_image (isGLB_csInf _ _)).right
+        assumption
+        · obtain ⟨y, hy⟩ := hS
+          exists u y
+          apply Set.mem_image'
+          assumption
+        · exists u x
+          rintro _ ⟨a, ha, rfl⟩
+          apply gi.gc.monotone_u
+          apply hx
+          assumption
+        · apply And.intro hS
+          exists x
+    }
+  }
+
 end GaloisInsertion

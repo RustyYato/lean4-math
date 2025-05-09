@@ -220,38 +220,6 @@ def type_init_eq_type_card : type (Relation.subtype_rel (· < ·) IsInitial) = t
       rfl
   }
 
--- noncomputable def preOmega.{u} : Ordinal.{u} ↪o Ordinal.{u} where
---   toFun o :=
---     enum (Relation.subtype_rel (· < ·) IsInitial) {
---       val := ulift.{u+1} o
---       property := by
---         simp
---         rw [type_init_eq_type_card, ←rank_eq_ulift]
---         let c: Cardinal.{u} := (2: Cardinal) ^ o.card
---         apply flip lt_of_le_of_lt
---         apply rank_lt_type c
---         rw [←rank_congr Cardinal.initseg_ord]
---         rw [rank_le_rank_iff]
---         rw [not_lt]
---         show o ≤ Cardinal.initseg_ord (2 ^ card o)
---         clear c
---         sorry
---     }
---   inj' := by
---     intro x y h
---     replace h := (Subtype.mk.inj ((enum _).inj (Subtype.val_inj h)))
---     rw [←rank_eq_ulift, ←rank_eq_ulift] at h
---     exact rank_inj h
---   map_le := by
---     intro a b
---     rw [←not_lt, ←rank_le_rank_iff (a := a)]
---     rw (occs := [1]) [rank_eq_ulift, rank_eq_ulift]
---     rw [←not_lt, ←not_lt]
---     apply Iff.not_iff_not
---     show _ ↔ (enum (Relation.subtype_rel (· < ·) IsInitial) _) < (enum (Relation.subtype_rel (· < ·) IsInitial) _)
---     apply Iff.trans _ (enum _).resp_rel
---     rfl
-
 end Omega
 
 end Ordinal
