@@ -1,3 +1,5 @@
+import Math.Logic.Nontrivial
+
 namespace Nat
 
 class AtLeastTwo (n: Nat) where
@@ -29,3 +31,10 @@ def ne_zero : n ≠ 0 := by have := two_le n; omega
 def ne_one : n ≠ 1 := by have := two_le n; omega
 
 def ofNat_eq_natCast [NatCast α]: OfNat.ofNat (α := α) n = ((n: Nat): α) := rfl
+
+instance [Nat.AtLeastTwo n] : IsNontrivial (Fin n) where
+  exists_ne := ⟨⟨0, by
+    have := two_le n
+    omega⟩, ⟨1, by
+    have := two_le n
+    omega⟩, by simp⟩

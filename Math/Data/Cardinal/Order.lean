@@ -45,4 +45,66 @@ protected def BoundedBelow (S: Set Cardinal) : S.BoundedBelow := ⟨⊥, by
   intro x hx
   apply bot_le⟩
 
+def card_range_emb (f: α ↪ β) : #(Set.range f) = #α := by
+  have (x: Set.range f) : ∃a, x = f a := by exact x.property
+  replace := Classical.axiomOfChoice this
+  obtain ⟨g, hg⟩ := this
+  apply sound
+  exact {
+    toFun := g
+    invFun x := ⟨f x, Set.mem_range'⟩
+    leftInv := by
+      intro x
+      simp
+      congr; rw [←hg]
+    rightInv := by
+      intro x
+      simp
+      apply f.inj
+      rw [←hg ⟨_, _⟩]
+  }
+
+def le_sum (f: ι -> Cardinal) (i: ι) : f i ≤ sum f := by
+  rw [←type_spec (f i)]
+  refine ⟨?_⟩
+  exact {
+    toFun x := ⟨i, x⟩
+    inj' := by
+      intro x y h; cases h
+      rfl
+  }
+
+def _root_.IsNontrivial.of_card (α: Type*) (h: 2 ≤ #α) : IsNontrivial α := by
+  obtain ⟨h⟩ := h
+  exists h ⟨0⟩
+  exists h ⟨1⟩
+  intro g
+  nomatch h.inj g
+
+def lt_pow_self (a b: Cardinal) (h: 2 ≤ a) : b < a ^ b := by
+  rw [←not_le]
+  intro g
+  cases a with | mk α =>
+  cases b with | mk β =>
+  have : IsNontrivial α := IsNontrivial.of_card _ h
+  obtain ⟨g⟩ := g
+  exact Embedding.cantor _ _ g
+
+def ulift_lt_card_cardinal (c: Cardinal.{u}) : ulift.{u, u + 1} c < #Cardinal.{u} := by
+  cases c
+  rw [←not_le]
+  intro ⟨h⟩
+  replace h := Equiv.congrEmbed .rfl (Equiv.ulift _) h
+  let g := Function.invFun h
+  have left_inv := Function.leftinverse_of_invFun h.inj
+  have invFun_surj := left_inv.Surjective
+  have ⟨a, (ha : _ = g a)⟩ := invFun_surj (2 ^ sum g)
+  have := le_sum g a
+  rw [←ha] at this
+  rw [←not_lt] at this
+  apply this
+  clear this ha a
+  apply lt_pow_self
+  rfl
+
 end Cardinal

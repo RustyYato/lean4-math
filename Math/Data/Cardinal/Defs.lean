@@ -37,6 +37,19 @@ def ind₄ {motive: Cardinal -> Cardinal -> Cardinal -> Cardinal -> Prop} : (mk:
 def sound {a b: Type u} : a ≃ b -> ⟦a⟧ = ⟦b⟧ := Quotient.sound ∘ Nonempty.intro
 def exact {a b: Type u} : ⟦a⟧ = ⟦b⟧ -> Nonempty (a ≃ b) := Quotient.exact
 
+def type (c: Cardinal.{u}) : Type u := Classical.choose (Quotient.exists_rep c)
+def type_spec (c: Cardinal.{u}) : #c.type = c := Classical.choose_spec (Quotient.exists_rep c)
+noncomputable def type_eqv_of_eq (a b: Cardinal.{u}) : a = b -> a.type ≃ b.type := by
+  intro h
+  apply Classical.choice
+  apply exact
+  rw [type_spec, type_spec, h]
+noncomputable def mk_type_eqv (α: Type u) : (#α).type ≃ α := by
+  apply Classical.choice
+  apply exact
+  rw [type_spec]
+
+@[pp_with_univ]
 def ulift : Cardinal.{u} -> Cardinal.{max u v} := by
   apply Quotient.lift (mk ∘ ULift)
   intro a b ⟨eq⟩
@@ -44,6 +57,24 @@ def ulift : Cardinal.{u} -> Cardinal.{max u v} := by
   apply (Equiv.ulift _).trans
   apply Equiv.trans _ (Equiv.ulift _).symm
   assumption
+
+noncomputable def type_eqv_of_ulift_eq (a: Cardinal.{u}) (b: Cardinal.{v}) : ulift.{u, max u v} a = ulift.{v, max u v} b -> a.type ≃ b.type := by
+  intro h
+  apply Equiv.congrEquiv (Equiv.ulift.{_, max u v} _) (Equiv.ulift.{_, max u v} _) _
+  apply Classical.choice
+  apply exact
+  show ulift ⟦_⟧ = ulift ⟦_⟧
+  rw [type_spec, type_spec, h]
+noncomputable def ulift_type (a: Cardinal.{u}) : (ulift.{u, v} a).type ≃ ULift a.type := by
+  apply Classical.choice
+  apply exact
+  rw [type_spec]
+  show _ = ulift ⟦_⟧
+  rw [type_spec]
+
+def ulift_eq_self (a: Cardinal) : ulift a = a := by
+  cases a; apply sound
+  apply Equiv.ulift
 
 def ofNat (n: Nat) : Cardinal :=  ⟦Fin n⟧
 
@@ -74,6 +105,8 @@ def pow : Cardinal -> Cardinal -> Cardinal := by
   intro a b c d ⟨ac⟩ ⟨bd⟩
   apply sound
   apply Equiv.congrFunction <;> assumption
+
+def sum {ι: Type v} (f: ι -> Cardinal.{u}) : Cardinal.{max u v} := ⟦Sigma (fun i: ι => (f i).type)⟧
 
 instance : Add Cardinal := ⟨add⟩
 instance : Mul Cardinal := ⟨mul⟩
@@ -140,6 +173,22 @@ def pow_lift (a: Cardinal.{u}) (b: Cardinal.{v}) : a.pow b.ulift = (a.pow b).uli
   symm; apply Equiv.ulift
   apply Equiv.congrFunction
   apply Equiv.ulift
+  rfl
+
+def sum_lift (f: ι -> Cardinal.{u}) : sum (ulift.{u, v} ∘ f) = ulift.{u, max u v} (sum f) := by
+  apply sound
+  simp
+  apply flip Equiv.trans
+  apply (Equiv.ulift _).symm
+  apply Equiv.congrSigma .rfl
+  intro i
+  apply type_eqv_of_ulift_eq
+  simp
+  rw [ulift_eq_self]
+  generalize f i = c
+  cases c
+  apply sound
+  apply Equiv.congrEquiv (Equiv.ulift _).symm (Equiv.ulift _).symm _
   rfl
 
 @[simp]

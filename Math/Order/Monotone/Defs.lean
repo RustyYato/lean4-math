@@ -1,4 +1,5 @@
 import Math.Order.Defs
+import Math.Function.Basic
 
 variable [LE α] [LT α] [LE β] [LT β] [LE γ] [LT γ] (f: α -> β) (g: β -> γ)
 
@@ -63,3 +64,16 @@ def StrictMonotone.le_iff_le [IsLinearOrder α] [IsPreOrder β] (hf : StrictMono
 def StrictAntitone.le_iff_le [IsLinearOrder α] [IsPreOrder β] (hf : StrictAntitone f) {a b : α} : f a ≤ f b ↔ b ≤ a := by
   rw [strict_antitone_iff_strict_monotone_opp] at hf
   apply hf.le_iff_le
+
+protected def StrictMonotone.Injective [IsLinearOrder α] [IsPreOrder β] (hf: StrictMonotone f) : Function.Injective f := by
+  intro x y h
+  rcases lt_trichotomy x y with g | g | g
+  · have := hf g
+    rw [h] at this
+    have := lt_irrefl this
+    contradiction
+  · assumption
+  · have := hf g
+    rw [h] at this
+    have := lt_irrefl this
+    contradiction

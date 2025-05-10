@@ -1764,6 +1764,12 @@ instance : IsSuccLimitOrdinal ω where
     rw [h] at this
     exact lt_irrefl this
 
+noncomputable def rec
+  {motive : Ordinal -> Sort*}
+  (ind: ∀o, (∀x < o, motive x) -> motive o)
+  (o: Ordinal) : motive o := ind o (fun x _hx => rec ind x)
+termination_by o
+
 noncomputable def transfiniteRecursion'
   {motive : Ordinal -> Sort*}
   (limit: ∀o, IsLimitOrdinal o -> (∀x < o, motive x) -> motive o)

@@ -185,8 +185,6 @@ def card_ord (o: Ordinal) : o.card.ord ≤ o := by
   rw [←not_lt]; intro h
   exact lt_irrefl (Cardinal.ord_is_min o.card _ h)
 
-namespace Omega
-
 def IsInitial (o: Ordinal) : Prop := o.card.ord = o
 
 noncomputable def initEquivCard : Subtype IsInitial ≃o Cardinal where
@@ -219,7 +217,5 @@ def type_init_eq_type_card : type (Relation.subtype_rel (· < ·) IsInitial) = t
       erw [←not_le, ←not_le, ←initEquivCard.map_le]
       rfl
   }
-
-end Omega
 
 end Ordinal

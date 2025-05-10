@@ -239,6 +239,17 @@ def natCast_strictmonotone : StrictMonotone (fun n: ℕ => (n: Cardinal)) := by
   apply this
   assumption
 
+def natCast_inj : Function.Injective (Nat.cast (R := Cardinal)) := by
+  intro x y g
+  rcases lt_trichotomy x y with h | h | h
+  have := natCast_strictmonotone h
+  simp at this; rw [g] at this
+  have := lt_irrefl this; contradiction
+  assumption
+  have := natCast_strictmonotone h
+  simp at this; rw [g] at this
+  have := lt_irrefl this; contradiction
+
 def ord_natCast.{u} (n: ℕ) : ord.{u} n = n := by
   rcases lt_trichotomy (n: Ordinal) (ord n) with h | h | h
   · have := lt_irrefl (ord_is_min n n h)
@@ -254,6 +265,27 @@ def ord_natCast.{u} (n: ℕ) : ord.{u} n = n := by
     apply natCast_strictmonotone
     assumption
 
+-- def ord_aleph₀ : ord ℵ₀ = ω := by
+--   apply Relation.eq_of_not_lt_or_gt (· < ·)
+--   · intro h
+--     rw [Ordinal.lt_omega] at h
+--     obtain ⟨n, hn⟩ := h
+--     sorry
+--   · intro h
+
+--     sorry
+
+def lt_natCast (c: Cardinal) (n: ℕ) : c < n ↔ ∃m < n, c = m := by
+  apply flip Iff.intro
+  · rintro ⟨m, hm, rfl⟩
+    apply natCast_strictmonotone
+    assumption
+  · intro h
+    rw [map_lt ord, ord_natCast, Ordinal.lt_natCast] at h
+    obtain ⟨m, hm, eq⟩ := h
+    rw [←ord_natCast, ord.inj.eq_iff] at eq
+    exists m
+
 instance : HasChar Cardinal 0 := HasChar.of_ring_emb {
   algebraMap (R := ℕ) (α := Cardinal) with
   inj' x y h := by
@@ -262,5 +294,12 @@ instance : HasChar Cardinal 0 := HasChar.of_ring_emb {
     replace h := Equiv.congrEquiv (Equiv.ulift _) (Equiv.ulift _) h
     exact Fin.eq_of_equiv h
 }
+
+def lt_two_pow_self (c: Cardinal) : c < 2 ^ c := by
+  rw [←not_le]
+  induction c using ind with | _ c =>
+  intro ⟨h⟩
+  replace h := Equiv.congrEmbed (Equiv.congrFunction .rfl (Equiv.ulift _)) .rfl h
+  exact Embedding.cantor _ _ h
 
 end Cardinal
