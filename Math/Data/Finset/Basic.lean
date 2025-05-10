@@ -493,4 +493,29 @@ def sub_union_right [DecidableEq α] (a b: Finset α) : b ⊆ a ∪ b := by
   rw [mem_union]
   exact .inr
 
+def eq_or_ne_of_mem (s: Finset α) {x y: α} (hx: x ∈ s) (hy: y ∈ s) : x = y ∨ x ≠ y := by
+  obtain ⟨s, hs⟩ := s
+  replace hx : x ∈ s := hx
+  replace hy : y ∈ s := hy
+  induction s with
+  | nil => contradiction
+  | cons a as ih =>
+    simp at hx hy
+    cases hy
+    subst a
+    cases hx
+    left; assumption
+    right; rintro rfl
+    have := hs.head
+    contradiction
+    cases hx
+    subst a
+    right; rintro rfl
+    have := hs.head
+    contradiction
+    apply ih
+    exact hs.tail
+    assumption
+    assumption
+
 end Finset

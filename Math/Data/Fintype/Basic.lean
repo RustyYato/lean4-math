@@ -159,3 +159,6 @@ def equiv_option {α: Type u} [f: Fintype α] (h: card α = n + 1) : ∃β: Type
 end Fintype
 
 @[simp] def Finset.univ_of_unique [Subsingleton α] [Inhabited α]: Finset.univ α = {default} := rfl
+
+def Fintype.eq_or_ne [Fintype α] (x y: α) : x = y ∨ x ≠ y :=
+  (Finset.univ α).eq_or_ne_of_mem (Finset.mem_univ x) (Finset.mem_univ y)
