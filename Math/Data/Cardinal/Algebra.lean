@@ -265,15 +265,14 @@ def ord_natCast.{u} (n: ℕ) : ord.{u} n = n := by
     apply natCast_strictmonotone
     assumption
 
--- def ord_aleph₀ : ord ℵ₀ = ω := by
---   apply Relation.eq_of_not_lt_or_gt (· < ·)
---   · intro h
---     rw [Ordinal.lt_omega] at h
---     obtain ⟨n, hn⟩ := h
---     sorry
---   · intro h
-
---     sorry
+instance : HasChar Cardinal 0 := HasChar.of_ring_emb {
+  algebraMap (R := ℕ) (α := Cardinal) with
+  inj' x y h := by
+    replace h : Nat.cast x = Nat.cast y := h
+    obtain ⟨h⟩ := exact h
+    replace h := Equiv.congrEquiv (Equiv.ulift _) (Equiv.ulift _) h
+    exact Fin.eq_of_equiv h
+}
 
 def lt_natCast (c: Cardinal) (n: ℕ) : c < n ↔ ∃m < n, c = m := by
   apply flip Iff.intro
@@ -286,14 +285,39 @@ def lt_natCast (c: Cardinal) (n: ℕ) : c < n ↔ ∃m < n, c = m := by
     rw [←ord_natCast, ord.inj.eq_iff] at eq
     exists m
 
-instance : HasChar Cardinal 0 := HasChar.of_ring_emb {
-  algebraMap (R := ℕ) (α := Cardinal) with
-  inj' x y h := by
-    replace h : Nat.cast x = Nat.cast y := h
-    obtain ⟨h⟩ := exact h
-    replace h := Equiv.congrEquiv (Equiv.ulift _) (Equiv.ulift _) h
-    exact Fin.eq_of_equiv h
-}
+def le_natCast (c: Cardinal) (n: ℕ) : c ≤ n ↔ ∃m ≤ n, c = m := by
+  apply Iff.intro
+  intro h
+  rcases lt_or_eq_of_le h with h | h
+  rw [lt_natCast] at h
+  obtain ⟨m, hm, eq⟩ := h
+  exists m; apply And.intro _ eq
+  apply le_of_lt
+  assumption
+  exists n
+  rintro ⟨m, le, rfl⟩
+  rw [←not_lt, lt_natCast]
+  intro ⟨k, k_lt_m, eq⟩
+  rw [←not_le] at k_lt_m
+  rw [natCast_inj.eq_iff] at eq
+  subst k
+  contradiction
+
+def natCast_lt_natCast_iff {n m: ℕ} : n < (m: Cardinal) ↔ n < m := by
+  apply Iff.intro
+  intro h
+  rw [lt_natCast] at h
+  obtain ⟨k, hk, eq⟩ := h
+  rw [natCast_inj.eq_iff] at eq
+  subst k
+  assumption
+  intro h
+  rw [lt_natCast]
+  exists n
+
+def natCast_le_natCast_iff {n m: ℕ} : n ≤ (m: Cardinal) ↔ n ≤ m := by
+  apply le_iff_of_lt_iff
+  apply natCast_lt_natCast_iff
 
 def lt_two_pow_self (c: Cardinal) : c < 2 ^ c := by
   rw [←not_le]
@@ -301,5 +325,76 @@ def lt_two_pow_self (c: Cardinal) : c < 2 ^ c := by
   intro ⟨h⟩
   replace h := Equiv.congrEmbed (Equiv.congrFunction .rfl (Equiv.ulift _)) .rfl h
   exact Embedding.cantor _ _ h
+
+def natCast_lt_aleph₀ (n: ℕ) : n < ℵ₀ := by
+  rw [←not_le, le_natCast]
+  simp; intro m hm
+  intro h; replace ⟨h⟩ := exact h
+  replace h := h.trans (Equiv.ulift _)
+  have := Equiv.congrEmbed .rfl h (Fin.embedNat (n := m + 1))
+  have := Fin.le_of_emebd this
+  omega
+
+private noncomputable def ofNat_of_embedFins (g: ∀n, Fin n ↪ α) : ℕ -> α
+| 0 => g 1 0
+| n + 1 =>
+  let prev := List.ofFn (n := n + 1) fun x => ofNat_of_embedFins g x.val
+  have := Fintype.exists_not_mem_preimage (g (prev.length + 1)) prev (by
+    rw [Fintype.card_fin]
+    simp)
+  g _ (Classical.choose this)
+
+def ofNat_of_embedFins_inj (g: ∀n, Fin n ↪ α) : Function.Injective (ofNat_of_embedFins g) := by
+  suffices ∀x y: ℕ, x < y -> ofNat_of_embedFins g x ≠ ofNat_of_embedFins g y by
+    intro x y eq
+    rcases lt_trichotomy x y with h | h | h
+    · exfalso
+      apply this
+      assumption
+      assumption
+    · assumption
+    · exfalso
+      apply this
+      assumption
+      symm
+      assumption
+  intro x y h eq
+  match y with
+  | y + 1 =>
+  conv at eq => { rhs; unfold ofNat_of_embedFins }
+  dsimp at eq
+  let prev := List.ofFn (n := y + 1) fun x => ofNat_of_embedFins g x.val
+  have := Fintype.exists_not_mem_preimage (g (prev.length + 1)) prev (by
+    rw [Fintype.card_fin]
+    simp)
+  let c := Classical.choose this
+  let hc : g _ c ∉ prev := Classical.choose_spec this
+  rw [show Classical.choose this = c from rfl] at eq
+  replace eq : ofNat_of_embedFins g x = g _ c := eq
+  exfalso; apply hc; clear hc
+  rw [←eq, List.mem_ofFn]
+  exists ⟨x, h⟩
+
+def lt_aleph₀ (c: Cardinal) : c < ℵ₀ ↔ ∃n: ℕ, c = n := by
+  apply Iff.intro
+  · intro h
+    obtain ⟨f, h⟩ := h
+    apply Classical.byContradiction
+    intro g
+    apply h; clear h
+    cases c with | mk α =>
+    simp at g
+    obtain ⟨f⟩ := f
+    replace g (n: ℕ) : n ≤ #α := by
+      rw [←not_lt]
+      rw [lt_natCast]
+      simp; intro m hm
+      apply g
+    replace g (n: ℕ) : Fin n ↪ α := Equiv.congrEmbed (Equiv.ulift _) .rfl (Classical.choice (g n))
+    refine ⟨?_, ?_⟩
+    apply ofNat_of_embedFins g
+    apply ofNat_of_embedFins_inj
+  · rintro ⟨n, rfl⟩
+    apply natCast_lt_aleph₀
 
 end Cardinal

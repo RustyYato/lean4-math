@@ -3,18 +3,18 @@ import Math.Data.Cardinal.Order
 
 namespace Cardinal
 
-noncomputable def preAleph' (o: Ordinal.{u}) : Cardinal.{u} :=
+private noncomputable def preAleph' (o: Ordinal.{u}) : Cardinal.{u} :=
   let S : Set Cardinal := Set.mk fun c : Cardinal => ∀x < o, preAleph' x < c
   ⨅ S
 termination_by o
 
-def preAleph'_set (o: Ordinal) : Set Cardinal :=
+private def preAleph'_set (o: Ordinal) : Set Cardinal :=
   Set.mk fun c : Cardinal => ∀x < o, preAleph' x < c
 
-def preAleph'_eq : preAleph' o = ⨅ (preAleph'_set o) := by
+private def preAleph'_eq : preAleph' o = ⨅ (preAleph'_set o) := by
   rw [preAleph']; rfl
 
-def preAleph'_set_nonempty.{u} (o: Ordinal.{u}) : (preAleph'_set o).Nonempty := by
+private def preAleph'_set_nonempty.{u} (o: Ordinal.{u}) : (preAleph'_set o).Nonempty := by
   suffices ¬∀c: Cardinal, ∃x < o, c ≤ preAleph' x by
     simp [←not_lt] at this
     obtain ⟨x, hx⟩ := this
@@ -90,17 +90,17 @@ def preAleph'_set_nonempty.{u} (o: Ordinal.{u}) : (preAleph'_set o).Nonempty := 
   apply card_le_ulift
   apply ulift_lt_card_cardinal
 
-def preAleph'_mem (o: Ordinal) : preAleph' o ∈ preAleph'_set o := by
+private def preAleph'_mem (o: Ordinal) : preAleph' o ∈ preAleph'_set o := by
   rw [preAleph']
   apply csInf_mem
   apply preAleph'_set_nonempty
 
-def preAleph'_strict_monotone : StrictMonotone preAleph' := by
+private def preAleph'_strict_monotone : StrictMonotone preAleph' := by
   intro x y h
   apply preAleph'_mem y
   assumption
 
-def preAleph'_zero : preAleph' 0 = 0 := by
+private def preAleph'_zero : preAleph' 0 = 0 := by
   rw [preAleph'_eq]
   apply le_antisymm _ (bot_le _)
   apply csInf_le
@@ -110,7 +110,7 @@ def preAleph'_zero : preAleph' 0 = 0 := by
   exfalso; apply hx
   apply bot_le
 
-noncomputable def preAleph_init : (· < ·: Relation Ordinal ) ≼i (· < ·: Relation Cardinal) where
+private noncomputable def preAleph'_init : (· < ·: Relation Ordinal ) ≼i (· < ·: Relation Cardinal) where
   toFun := preAleph'
   inj' := preAleph'_strict_monotone.Injective
   resp_rel := by
@@ -136,12 +136,95 @@ noncomputable def preAleph_init : (· < ·: Relation Ordinal ) ≼i (· < ·: Re
     exists x
 
 noncomputable def preAleph : Ordinal ≃o Cardinal := {
-  preAleph_init.antisymm initseg_ord with
+  preAleph'_init.antisymm initseg_ord with
   map_le a b := by
     rw [←not_lt, ←not_lt]
     simp;
     apply Iff.not_iff_not
-    apply (preAleph_init.antisymm initseg_ord).resp_rel
+    apply (preAleph'_init.antisymm initseg_ord).resp_rel
 }
+
+def preAlephSet (o: Ordinal) : Set Cardinal where
+  Mem c := ∀x < o, preAleph x < c
+
+def preAlephSet_nonempty (o: Ordinal) : (preAlephSet o).Nonempty := by
+  apply preAleph'_set_nonempty
+
+def apply_preAleph (o: Ordinal) : preAleph o = ⨅(preAlephSet o) := by
+  show preAleph' o = _
+  rw [preAleph'_eq]
+  rfl
+
+@[simp]
+def preAleph_natCast (n: ℕ) : preAleph n = n := by
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+  cases n with
+  | zero =>
+    apply le_antisymm
+    show preAleph' 0 ≤ 0
+    erw [preAleph'_zero]
+    apply bot_le
+  | succ n =>
+    rw [apply_preAleph]
+    have : preAlephSet (n + 1 : ℕ) = Set.Ici ((n + 1: ℕ): Cardinal) := by
+      ext x; apply Iff.intro
+      intro h
+      show (n + 1: ℕ) ≤ x
+      rw [←not_lt]; intro g
+      rw [Cardinal.lt_natCast] at g
+      obtain ⟨m, hm, rfl⟩ := g
+      have := h m ((Ordinal.natCast_lt_natCast_iff m (n + 1)).mpr hm)
+      rw [ih] at this
+      exact lt_irrefl this
+      assumption
+      intro h a ha
+      replace h : (n + 1: ℕ) ≤ x := h
+      apply lt_of_lt_of_le _ h
+      rw [Ordinal.lt_natCast] at ha
+      obtain ⟨m, hm, rfl⟩ := ha
+      rw [ih]
+      refine (lt_natCast (↑m) (n + 1)).mpr ?_
+      exists m
+      assumption
+    rw [this]; clear this
+    apply le_antisymm
+    apply csInf_le
+    apply Cardinal.BoundedBelow
+    apply le_refl (α := Cardinal) (n + 1: ℕ)
+    apply le_csInf
+    exists (n + 1: ℕ)
+    apply le_refl (α := Cardinal) (n + 1: ℕ)
+    intro x h
+    apply h
+
+@[simp]
+def preAleph_omega : preAleph ω = ℵ₀ := by
+  rw [apply_preAleph]
+  apply le_antisymm
+  · apply (csInf_le_iff _ _).mpr
+    · intro c h
+      apply h
+      intro x hx
+      rw [Ordinal.lt_omega] at hx
+      obtain ⟨n, rfl⟩ := hx
+      rw [preAleph_natCast]
+      apply natCast_lt_aleph₀
+    · apply Cardinal.BoundedBelow
+    · apply preAlephSet_nonempty
+  · apply le_csInf
+    apply preAlephSet_nonempty
+    intro a ha
+    rw [preAlephSet] at ha
+    simp at ha
+    replace ha : ∀n: ℕ, n < a := by
+      intro n
+      have := ha n (Ordinal.natCast_lt_omega _)
+      simpa using this
+    rw [←not_lt, lt_aleph₀]
+    intro ⟨n, hn⟩
+    have := ha n
+    rw [hn] at this
+    exact lt_irrefl this
 
 end Cardinal

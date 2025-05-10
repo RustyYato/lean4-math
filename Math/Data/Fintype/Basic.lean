@@ -156,9 +156,41 @@ def equiv_option {α: Type u} [f: Fintype α] (h: card α = n + 1) : ∃β: Type
   have : Fintype α := Fintype.ofList (a::as) nodup complete
   infer_instance
 
+def eq_or_ne [Fintype α] (x y: α) : x = y ∨ x ≠ y :=
+  (Finset.univ α).eq_or_ne_of_mem (Finset.mem_univ x) (Finset.mem_univ y)
+
+def exists_not_mem_preimage [Fintype ι] (f: ι ↪ α) (l: List α) (h: l.length < card ι) : ∃i: ι, f i ∉ l := by
+  apply Classical.byContradiction
+  intro g; simp at g
+  rw [←Nat.not_le] at h
+  apply h; clear h
+  rename_i ft
+  induction ft using Fintype.induction with
+  | _ as nodup has =>
+  show as.length ≤ l.length
+  have (i: ι) : i ∈ as -> f i ∈ l := by intro h; apply g
+  clear has g
+  induction as generalizing l with
+  | nil => apply Nat.zero_le
+  | cons a as ih =>
+    obtain ⟨l', perm⟩ := (List.mem_iff_exists_perm_cons _ _).mp (this a (by simp))
+    rw [perm.length_eq]
+    apply Nat.succ_le_succ
+    apply ih l' nodup.tail
+    intro x hx
+    have := this x (by simp [hx])
+    rw [perm.mem_iff] at this
+    simp at this
+    rw [f.inj.eq_iff] at this
+    rcases this with rfl | h
+    have := nodup.head _ hx
+    contradiction
+    assumption
+
+def exists_not_mem [Fintype α] (l: List α) (h: l.length < card α) : ∃x, x ∉ l := by
+  apply exists_not_mem_preimage Embedding.rfl
+  assumption
+
 end Fintype
 
 @[simp] def Finset.univ_of_unique [Subsingleton α] [Inhabited α]: Finset.univ α = {default} := rfl
-
-def Fintype.eq_or_ne [Fintype α] (x y: α) : x = y ∨ x ≠ y :=
-  (Finset.univ α).eq_or_ne_of_mem (Finset.mem_univ x) (Finset.mem_univ y)
