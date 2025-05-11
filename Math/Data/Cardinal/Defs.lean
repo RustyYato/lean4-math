@@ -208,18 +208,20 @@ def ofNat_add (n m: Nat) : ofNat (n + m) = ofNat n + ofNat m := by
   exact Equiv.finSum.symm
 
 def aleph0 : Cardinal := ⟦ℕ⟧
-notation "ℵ₀" => aleph0
+def aleph0' : Cardinal := ulift ⟦ℕ⟧
+notation "ℵ₀" => aleph0'
 
 def aleph0_add_fin (n: Nat) : ℵ₀ + n = ℵ₀ := by
   apply sound
+  apply Equiv.congrEquiv' (Equiv.congrSum (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
   apply Equiv.mk _ _ _ _
   intro x
   match x with
   | .inl x => exact x + n
-  | .inr x => exact x.down.val
+  | .inr x => exact x.val
   intro x
   if h:x < n then
-    exact .inr ⟨⟨x, h⟩⟩
+    exact .inr ⟨x, h⟩
   else
     exact .inl (x - n)
   intro x
@@ -232,7 +234,7 @@ def aleph0_add_fin (n: Nat) : ℵ₀ + n = ℵ₀ := by
   dsimp
   rw [if_pos]
   rename_i x
-  exact x.down.isLt
+  exact x.isLt
   intro x
   dsimp
   by_cases h:x < n
@@ -245,10 +247,12 @@ def aleph0_add_fin (n: Nat) : ℵ₀ + n = ℵ₀ := by
 
 def aleph0_add_aleph0 : ℵ₀ + ℵ₀ = ℵ₀ := by
   apply sound
+  apply Equiv.congrEquiv' (Equiv.congrSum (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
   exact Equiv.nat_equiv_nat_sum_nat.symm
 
 def aleph0_mul_aleph0 : ℵ₀ * ℵ₀ = ℵ₀ := by
   apply sound
+  apply Equiv.congrEquiv' (Equiv.congrProd (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
   exact Equiv.nat_equiv_nat_prod_nat.symm
 
 end Cardinal

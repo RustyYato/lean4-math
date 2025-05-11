@@ -16,6 +16,12 @@ structure PrincipalSegment (r: α -> α -> Prop) (s: β -> β -> Prop) extends r
 infixl:25 " ≼i " => InitialSegment
 infixl:25 " ≺i " => PrincipalSegment
 
+abbrev init_seg_le (α β: Type*) [LE α] [LE β] := @InitialSegment α β (· ≤ ·) (· ≤ ·)
+abbrev init_seg_lt (α β: Type*) [LT α] [LT β] := @InitialSegment α β (· < ·) (· < ·)
+
+infixl:25 " ≤i " => init_seg_le
+infixl:25 " <i " => init_seg_lt
+
 instance : FunLike (InitialSegment r s) α β where
   coe f := f.toFun
   coe_inj := by

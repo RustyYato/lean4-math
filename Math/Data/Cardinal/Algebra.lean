@@ -331,7 +331,7 @@ def natCast_lt_aleph₀ (n: ℕ) : n < ℵ₀ := by
   simp; intro m hm
   intro h; replace ⟨h⟩ := exact h
   replace h := h.trans (Equiv.ulift _)
-  have := Equiv.congrEmbed .rfl h (Fin.embedNat (n := m + 1))
+  have := Equiv.congrEmbed .rfl ((Equiv.ulift _).symm.trans h) (Fin.embedNat (n := m + 1))
   have := Fin.le_of_emebd this
   omega
 
@@ -391,7 +391,7 @@ def lt_aleph₀ (c: Cardinal) : c < ℵ₀ ↔ ∃n: ℕ, c = n := by
       simp; intro m hm
       apply g
     replace g (n: ℕ) : Fin n ↪ α := Equiv.congrEmbed (Equiv.ulift _) .rfl (Classical.choice (g n))
-    refine ⟨?_, ?_⟩
+    refine ⟨Embedding.trans (Equiv.ulift _).toEmbedding ⟨?_, ?_⟩⟩
     apply ofNat_of_embedFins g
     apply ofNat_of_embedFins_inj
   · rintro ⟨n, rfl⟩
