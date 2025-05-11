@@ -237,4 +237,15 @@ def apply_aleph (o: Ordinal) : aleph o = preAleph (ω + o) := rfl
 
 def aleph0_eq_aleph₀ : aleph 0 = ℵ₀ := by simp [apply_aleph]
 
+def aleph_surj (c: Cardinal) (h: ℵ₀ ≤ c) : ∃o, c = aleph o := by
+  simp [apply_aleph]
+  let o := preAleph.symm c
+  have : ω ≤ o := by
+    apply (map_le preAleph).mpr
+    simpa [o]
+  obtain ⟨k, eq⟩ := Ordinal.exists_add_left_of_le this
+  exists k
+  rw [←eq]
+  simp [o]
+
 end Cardinal

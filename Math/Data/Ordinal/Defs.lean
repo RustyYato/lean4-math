@@ -1226,11 +1226,21 @@ inductive rel_succ : Relation (Option α) where
 | some : rel a b -> rel_succ (.some a) (.some b)
 | none : rel_succ (.some x) .none
 
+@[simp]
 def rel_succ_some_iff : rel_succ r (some a) (some b) ↔ r a b := by
   apply Iff.intro
   intro h; cases h
   assumption
   apply rel_succ.some
+
+@[simp]
+def rel_succ_some_none : rel_succ r (some a) .none := by
+  apply rel_succ.none
+
+
+@[simp]
+def rel_succ_none_some : ¬rel_succ r .none (some a) := by
+  nofun
 
 def rel_succ_eqv : rel_succ rel ≃r Sum.Lex rel (Relation.empty (α := Unit)) where
   toEquiv := (Equiv.option_equiv_unit_sum _).trans (Equiv.commSum _ _)
@@ -1522,10 +1532,6 @@ def lt_succ_self (o: Ordinal) : o < o + 1 := by
     resp_rel := by
       intro x y
       simp
-      apply Iff.intro
-      apply rel_succ.some
-      intro h; cases h
-      assumption
     exists_top := by
       exists .none
       intro a
@@ -1671,17 +1677,12 @@ def succ_le_of_lt {a b: Ordinal} (h: a < b) : a + 1 ≤ b := by
       apply Iff.intro
       exact nofun
       intro g; have := Relation.irrefl g; contradiction
-      apply Iff.intro
-      exact nofun
       intro g; rename_i x
       have := (htop (h x)).mpr Set.mem_range'
       have := Relation.asymm this
       contradiction
-      apply Iff.intro
-      intro; apply (htop _).mpr Set.mem_range'
-      intro; apply rel_succ.none
-      rw [rel_succ_some_iff, h.resp_rel]
-      rfl
+      apply (htop _).mpr Set.mem_range'
+      apply h.resp_rel
     isInitial := by
       intro a b
       cases a <;> simp
