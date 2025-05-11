@@ -61,6 +61,11 @@ def StrictMonotone.le_iff_le [IsLinearOrder α] [IsPreOrder β] (hf : StrictMono
   apply hf.toMonotone
   assumption
 
+def StrictMonotone.lt_iff_lt [IsLinearOrder α] [IsLinearOrder β] (hf : StrictMonotone f) {a b : α} : f a < f b ↔ a < b := by
+  rw [←not_le, ←not_le]
+  apply Iff.not_iff_not
+  apply hf.le_iff_le
+
 def StrictAntitone.le_iff_le [IsLinearOrder α] [IsPreOrder β] (hf : StrictAntitone f) {a b : α} : f a ≤ f b ↔ b ≤ a := by
   rw [strict_antitone_iff_strict_monotone_opp] at hf
   apply hf.le_iff_le

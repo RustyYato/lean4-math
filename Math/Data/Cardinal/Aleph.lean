@@ -1,5 +1,6 @@
 import Math.Data.Cardinal.Algebra
 import Math.Data.Cardinal.Order
+import Math.Data.Ordinal.Basic
 
 namespace Cardinal
 
@@ -226,5 +227,14 @@ def preAleph_omega : preAleph ω = ℵ₀ := by
     have := ha n
     rw [hn] at this
     exact lt_irrefl this
+
+-- the infinite cardinals indexed by the ordinals
+-- if you want to include the finite cardinals use `preAleph`
+noncomputable def aleph : Ordinal ↪o Cardinal :=
+  (Ordinal.addLeft ω).trans preAleph.toEmbedding
+
+def apply_aleph (o: Ordinal) : aleph o = preAleph (ω + o) := rfl
+
+def aleph0_eq_aleph₀ : aleph 0 = ℵ₀ := by simp [apply_aleph]
 
 end Cardinal

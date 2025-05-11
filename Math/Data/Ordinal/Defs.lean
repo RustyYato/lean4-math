@@ -1712,6 +1712,60 @@ def succ_inj : Function.Injective succ := by
     have := lt_irrefl this
     contradiction
 
+def add_left_strict_mono (k: Ordinal) : StrictMonotone (k + ·) := by
+  intro a b
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  cases k with | _ κ relκ =>
+  intro ⟨f⟩
+  simp at f
+  refine ⟨?_⟩
+  simp
+  exact {
+    toFun
+    | .inl x => .inl x
+    | .inr x => .inr (f x)
+    inj' := by
+      intro x y h
+      cases x <;> cases y <;> simp at h
+      congr
+      rw [f.inj.eq_iff] at h
+      congr
+    resp_rel := by
+      intro x y
+      cases x <;> cases y <;> simp
+      apply f.resp_rel
+    exists_top := by
+      have ⟨b, btop⟩ := f.exists_top
+      exists .inr b
+      intro x
+      cases x
+      simp
+      rw [Set.mem_range]
+      rename_i k
+      exists .inl k
+      simp
+      rw [btop]
+      apply Iff.intro
+      rintro ⟨a, rfl⟩
+      exists .inr a
+      intro ⟨a, ha⟩
+      cases a <;> simp at ha
+      subst ha
+      apply Set.mem_range'
+  }
+
+def le_iff_add_left {k a b: Ordinal} : a ≤ b ↔ k + a ≤ k + b := by
+  apply (add_left_strict_mono k).le_iff_le.symm
+
+def lt_iff_add_left {k a b: Ordinal} : a < b ↔ k + a < k + b := by
+  apply (add_left_strict_mono k).lt_iff_lt.symm
+
+def addLeft (a: Ordinal) : Ordinal ↪o Ordinal where
+  toFun x := a + x
+  inj' := (add_left_strict_mono a).Injective
+  map_le _ _ := le_iff_add_left
+
 end Nat
 
 section Limit
