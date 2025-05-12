@@ -100,7 +100,30 @@ def add_succ (a b: Ordinal) : a + (b + 1) = (a + b) + 1 := by
   }
 
 def add_limit (a b: Ordinal) (hb: IsSuccLimitOrdinal b) : a + b = ⨆b': { o // o < b }, a + b'.val := by
-  sorry
+  apply le_antisymm
+  · apply le_csInf
+    · exists a + b
+      rintro _ ⟨x, rfl⟩
+      simp
+      apply le_iff_add_left.mp
+      exact le_of_lt x.property
+    · intro x hx
+      have := hx (a + b)
+      rw [←not_lt]
+      intro h
+      have := hx (a + b)
+      rw [←not_lt] at this
+      replace this := (this · h)
+      rw [Set.mem_range] at this
+      simp at this
+
+      sorry
+  · apply csInf_le
+    apply Ordinal.BoundedBelow
+    rintro _ ⟨x, rfl⟩
+    simp
+    apply le_iff_add_left.mp
+    exact le_of_lt x.property
 
 def add_sup (a: Ordinal) (b: ι -> Ordinal) [Nonempty ι] : a + (⨆i, b i) = ⨆i, a + b i := by
   sorry
