@@ -1,7 +1,14 @@
+import Math.Logic.Equiv.Defs
+
 noncomputable
-def Quot.out {r: α -> α -> Prop} (q: Quot r) : α := Classical.choose q.exists_rep
+def Quot.out {r: α -> α -> Prop} : Quot r ↪ α where
+  toFun q := Classical.choose q.exists_rep
+  inj' := by
+    intro x y h; simp at h
+    rw [←Classical.choose_spec x.exists_rep,
+      ←Classical.choose_spec y.exists_rep, h]
 noncomputable
-def Quotient.out {s: Setoid α} (q: Quotient s) : α := Quot.out q
+def Quotient.out {s: Setoid α} : Quotient s ↪ α := Quot.out
 
 noncomputable
 def Quot.out_spec {r: α -> α -> Prop} (q: Quot r) : Quot.mk r q.out = q := Classical.choose_spec q.exists_rep
