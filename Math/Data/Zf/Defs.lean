@@ -121,6 +121,7 @@ def Equiv.refl (a: Pre) : a zf≈ a := by
     exists a₀
     apply ih
 
+@[symm]
 def Equiv.symm {a b: Pre} (h: a zf≈ b) : b zf≈ a := by
   induction h with
   | intro a b ha hb h =>
@@ -158,6 +159,7 @@ instance Pre.setoid : Setoid Pre where
     trans := Equiv.trans
   }
 
+@[pp_with_univ]
 def _root_.ZfSet := Quotient Pre.setoid
 
 def mk : Pre -> ZfSet := Quotient.mk _
@@ -177,5 +179,131 @@ noncomputable def out : ZfSet ↪ Pre := Quotient.out
 def out_spec (s: ZfSet) : mk s.out = s := Quotient.out_spec _
 
 attribute [irreducible] ZfSet
+
+-- equality of two sets modulo universes
+def eqv : ZfSet.{u} -> ZfSet.{v} -> Prop := by
+  refine lift₂ (· zf≈ ·) ?_
+  intro a b c d ac bd
+  simp
+  apply Iff.intro
+  intro h
+  apply ac.symm.trans
+  apply h.trans
+  assumption
+  intro h
+  apply ac.trans
+  apply h.trans
+  symm; assumption
+
+scoped infix:50 " zf= " => eqv
+
+@[refl]
+def eqv.refl (s: ZfSet) : s zf= s := by
+  cases s with | mk s =>
+  apply Equiv.refl
+
+@[symm]
+def eqv.symm {a b: ZfSet} (h: a zf= b) : b zf= a := by
+  cases a with | mk a =>
+  cases b with | mk b =>
+  apply Equiv.symm h
+
+def eqv.trans {a b c: ZfSet} (h: a zf= b) (g: b zf= c) : a zf= c := by
+  cases a with | mk a =>
+  cases b with | mk b =>
+  cases c with | mk c =>
+  apply Equiv.trans h g
+
+-- if two sets have the same universe then eqv is the same as equality
+def eqv_iff_eq {a b: ZfSet} : a zf= b ↔ a = b := by
+  apply flip Iff.intro
+  intro h; rw [h]
+  intro h
+  cases a with | mk a =>
+  cases b with | mk b =>
+  apply sound
+  assumption
+
+def Pre.mem (S x: Pre) : Prop := ∃s: S.Type, x zf≈ S.Mem s
+
+instance : Membership Pre Pre where
+  mem := Pre.mem
+
+def Pre.mem.spec (x y S R: Pre) (hx: x zf≈ y) (hS: S zf≈ R) : x ∈ S -> y ∈ R := by
+  intro ⟨s, h⟩
+  have ⟨r, hS⟩ := hS.left s
+  exists r
+  apply hx.symm.trans
+  apply h.trans
+  assumption
+
+def mem : ZfSet -> ZfSet -> Prop := by
+  refine lift₂ Pre.mem ?_
+  intro x S y R hx hS
+  ext; apply Iff.intro
+  apply Pre.mem.spec
+  assumption
+  assumption
+  apply Pre.mem.spec
+  symm; assumption
+  symm; assumption
+
+instance : Membership ZfSet.{u} ZfSet.{u} where
+  mem := mem
+
+instance : HasSubset ZfSet where
+  Subset a b := ∀x ∈ a, x ∈ b
+
+@[pp_with_univ]
+def Pre.ulift.{u, v} : Pre.{v} -> Pre.{max u v}
+| .intro α memα => .intro (ULift α) (fun x => ulift (memα x.down))
+
+def Pre.ulift.spec (a b: Pre) (h: a zf≈ b) : ulift a zf≈ ulift b := by
+  induction h with
+  | intro a b ha hb h =>
+  cases a with | intro α memα =>
+  cases b with | intro β memβ =>
+  apply Equiv.intro
+  · intro a₀
+    have ⟨b₀, hb, h⟩ := ha (ULift.down a₀)
+    exists ULift.up b₀
+  · intro b₀
+    have ⟨a₀, ha, h⟩ := hb (ULift.down b₀)
+    exists ULift.up a₀
+
+@[pp_with_univ]
+def ulift.{u, v} : ZfSet.{v} -> ZfSet.{max u v} := by
+  refine lift (fun s => ⟦s.ulift⟧) ?_
+  intro a b h
+  simp
+  apply sound
+  apply Pre.ulift.spec
+  assumption
+
+def ulift_eqv_self.{u, v} (a: ZfSet) : a zf= ulift.{u, v} a := by
+  cases a with | mk a =>
+  induction a with
+  | intro α memα ih =>
+  apply Equiv.intro
+  · intro a₀
+    exists ULift.up a₀
+    apply ih
+  · intro a₀
+    exists ULift.down a₀
+    apply ih
+
+def eqv_iff_ulift_eq_ulift (a: ZfSet.{u}) (b: ZfSet.{v}) : a zf= b ↔ ulift.{max u v} a = ulift.{max u v} b := by
+  cases a with | mk a =>
+  cases b with | mk b =>
+  apply Iff.intro
+  intro h
+  rw [←eqv_iff_eq]
+  apply (ulift_eqv_self _).symm.trans
+  apply eqv.trans _ (ulift_eqv_self _)
+  assumption
+  intro h
+  apply (ulift_eqv_self _).trans
+  apply eqv.trans _ (ulift_eqv_self _).symm
+  rw [h]
 
 end ZfSet
