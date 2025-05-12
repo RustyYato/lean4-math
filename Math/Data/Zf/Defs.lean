@@ -237,17 +237,21 @@ def Pre.mem.spec (x y S R: Pre) (hx: x zf≈ y) (hS: S zf≈ R) : S.mem x -> R.m
   apply hx.symm.trans
   apply h.trans
   assumption
+def Pre.mem.spec' (x y S R: Pre) (hx: x zf≈ y) (hS: S zf≈ R) : S.mem x ↔ R.mem y := by
+  apply Iff.intro
+  apply Pre.mem.spec
+  assumption
+  assumption
+  apply Pre.mem.spec
+  symm; assumption
+  symm; assumption
 
 def mem : ZfSet -> ZfSet -> Prop := by
   refine lift₂ Pre.mem ?_
   intro x S y R hx hS
-  ext; apply Iff.intro
-  apply Pre.mem.spec
+  ext; apply Pre.mem.spec'
   assumption
   assumption
-  apply Pre.mem.spec
-  symm; assumption
-  symm; assumption
 
 instance : Membership ZfSet.{u} ZfSet.{u} where
   mem := mem
@@ -750,5 +754,65 @@ def sInter_sub (U: ZfSet) : ∀u ∈ U, U.sInter ⊆ u := by
   rw [mem_sInter ⟨_, hu⟩] at hx
   apply hx
   assumption
+
+def Pre.powerset (U: Pre) : Pre :=
+  .intro (U.Type -> Prop) fun P => .intro { u // P u } fun x => U.Mem x.val
+
+@[simp]
+def Pre.mem_powerset {U: Pre} : ∀{x}, x ∈ U.powerset ↔ ∀u ∈ x, u ∈ U := by
+  intro x
+  apply Iff.intro
+  · intro h u hu
+    obtain ⟨(P: U.Type -> Prop), h⟩ := h
+    replace hu := Pre.mem.spec _ _ _ _ (.refl _) h hu
+    obtain ⟨⟨u', hu'⟩, (hu: u zf≈ U.Mem u')⟩ := hu
+    apply Pre.mem.spec
+    symm; assumption
+    rfl
+    exists u'
+  · intro h
+    exists (fun u => ∃x₀, U.Mem u zf≈ x.Mem x₀)
+    apply Equiv.intro
+    intro x₀
+    have ⟨u, hu⟩ := h (x.Mem x₀) (by exists x₀)
+    exists ⟨u, ?_⟩
+    simp
+    exists x₀
+    symm; assumption
+    assumption
+    intro ⟨u, x₀, hu⟩
+    exists x₀
+    symm; assumption
+
+def Pre.powerset.spec (a b: Pre.{u}) (h: a zf≈ b) : a.powerset zf≈ b.powerset := by
+  apply Pre.ext
+  show ∀x, x ∈ a.powerset ↔ x ∈ b.powerset
+  simp [Pre.mem_powerset]
+  conv => {
+    intro x; lhs ; intro u; rw [show u ∈ a ↔ u ∈ b from Pre.mem.spec' _ _ _ _ (.refl _) h]
+  }
+  intro; rfl
+
+def powerset : ZfSet -> ZfSet := by
+  refine lift (mk ∘ Pre.powerset) ?_
+  intro a b h
+  apply sound
+  apply Pre.powerset.spec
+  assumption
+
+@[simp] def mem_powerset {U: ZfSet} : ∀{x}, x ∈ U.powerset ↔ x ⊆ U := by
+  intro x
+  cases U; cases x
+  apply Pre.mem_powerset.trans
+  apply Iff.intro
+  intro h
+  intro x hx
+  cases x
+  apply h
+  assumption
+  intro h u
+  apply h ⟦_⟧
+
+attribute [irreducible] powerset
 
 end ZfSet
