@@ -52,6 +52,16 @@ def csSup_le_csSup' (ht : BoundedAbove t) (hs : s.Nonempty) (h : t.upperBounds �
 def csInf_le_csInf (ht : BoundedBelow t) (hs : s.Nonempty) (h : s ⊆ t) : ⨅ t ≤ ⨅ s :=
   csSup_le_csSup (α := Opposite α) ht hs h
 
+def csInf_le_csInf' (ht : t.Nonempty) (hs : s.BoundedBelow) (h : s.lowerBounds ⊆ t.lowerBounds) : ⨅ s ≤ ⨅ t := by
+  apply le_csInf
+  assumption
+  apply h
+  refine mem_lowerBounds.mpr ?_
+  intro x hx
+  apply csInf_le
+  assumption
+  assumption
+
 def le_csSup_iff (h : BoundedAbove s) (hs : s.Nonempty) :
     a ≤ ⨆ s ↔ ∀ b, b ∈ upperBounds s → a ≤ b := by
   apply Iff.intro
