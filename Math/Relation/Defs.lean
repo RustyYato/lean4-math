@@ -142,10 +142,12 @@ def _root_.antisymm (rel: α -> α -> Prop) [IsAntisymm rel] : rel a b -> rel b 
 class IsAsymm: Prop where
   asymm: ∀{a b}, rel a b -> rel b a -> False
 export IsAsymm (asymm)
+def _root_.asymm [IsAsymm rel] {a b: α} : rel a b -> rel b a -> False := IsAsymm.asymm
 
 class IsIrrefl: Prop where
   irrefl: ∀{a}, ¬rel a a
 export IsIrrefl (irrefl)
+def _root_.irrefl [IsIrrefl rel] (a: α) : ¬rel a a := IsIrrefl.irrefl
 
 instance (priority := 500) [IsAsymm rel] : IsIrrefl rel where
   irrefl {_} h := asymm h h

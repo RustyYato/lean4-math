@@ -280,8 +280,7 @@ def ulift.{u, v} : ZfSet.{v} -> ZfSet.{max u v} := by
   apply Pre.ulift.spec
   assumption
 
-def ulift_eqv_self.{u, v} (a: ZfSet) : a zf= ulift.{u, v} a := by
-  cases a with | mk a =>
+def Pre.ulift_eqv_self.{u, v} (a: Pre) : a zf≈ ulift.{u, v} a := by
   induction a with
   | intro α memα ih =>
   apply Equiv.intro
@@ -291,6 +290,10 @@ def ulift_eqv_self.{u, v} (a: ZfSet) : a zf= ulift.{u, v} a := by
   · intro a₀
     exists ULift.down a₀
     apply ih
+
+def ulift_eqv_self.{u, v} (a: ZfSet) : a zf= ulift.{u, v} a := by
+  cases a with | mk a =>
+  apply Pre.ulift_eqv_self
 
 def eqv_iff_ulift_eq_ulift (a: ZfSet.{u}) (b: ZfSet.{v}) : a zf= b ↔ ulift.{max u v} a = ulift.{max u v} b := by
   cases a with | mk a =>
@@ -319,5 +322,46 @@ instance mem_wf : @Relation.IsWellFounded ZfSet (· ∈ ·) where
     simp at hx
     rw [sound hx]
     apply ih
+
+def mem_irrefl (a: ZfSet) : ¬a ∈ a := irrefl (· ∈ ·) a
+def mem_asymm {a b: ZfSet} : a ∈ b -> ¬b ∈ a := asymm (· ∈ ·)
+
+def Pre.ext.{u, v} (a: Pre.{u}) (b: Pre.{v}) : (∀x: Pre.{max u v}, x ∈ a ↔ x ∈ b) -> a zf≈ b := by
+  intro h
+  induction a with | intro α memα ih =>
+  cases b with | intro β memβ =>
+  apply Equiv.intro
+  · intro a₀
+    have ⟨b₀, h⟩ := (h (memα a₀).ulift).mp (by
+      apply mem.spec
+      apply ulift_eqv_self
+      rfl
+      exists a₀)
+    have := (ulift_eqv_self _).trans h
+    exists b₀
+  · intro b₀
+    have ⟨a₀, h⟩ := (h (memβ b₀).ulift).mpr (by
+      apply mem.spec
+      apply ulift_eqv_self
+      rfl
+      exists b₀)
+    have := (ulift_eqv_self _).trans h
+    exists a₀
+    symm; assumption
+
+def ext_eqv.{u, v} (a: ZfSet.{u}) (b: ZfSet.{v}) : (∀x: ZfSet.{max u v}, mem a x ↔ mem b x) -> a zf= b := by
+  intro h
+  cases a with | mk a =>
+  cases b with | mk b =>
+  apply Pre.ext
+  intro x
+  apply h ⟦x⟧
+
+@[ext]
+def ext (a b: ZfSet) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
+  intro h
+  rw [←eqv_iff_eq]
+  apply ext_eqv
+  apply h
 
 end ZfSet
