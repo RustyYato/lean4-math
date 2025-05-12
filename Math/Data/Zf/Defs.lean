@@ -736,4 +736,19 @@ attribute [irreducible] ZfSet.sUnion ZfSet.sInter
     apply h; assumption
     apply g; assumption
 
+def sub_union_left (a b: ZfSet) : a ⊆ a ∪ b := le_max_left a b
+def sub_union_right (a b: ZfSet) : b ⊆ a ∪ b := le_max_right a b
+def inter_sub_left (a b: ZfSet) : a ∩ b ⊆ a := min_le_left a b
+def inter_sub_right (a b: ZfSet) : a ∩ b ⊆ b := min_le_right a b
+
+def sub_sUnion (U: ZfSet) : ∀u ∈ U, u ⊆ U.sUnion := by
+  intro u hu x hx
+  simp
+  exists u
+def sInter_sub (U: ZfSet) : ∀u ∈ U, U.sInter ⊆ u := by
+  intro u hu x hx
+  rw [mem_sInter ⟨_, hu⟩] at hx
+  apply hx
+  assumption
+
 end ZfSet
