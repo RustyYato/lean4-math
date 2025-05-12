@@ -227,10 +227,10 @@ def eqv_iff_eq {a b: ZfSet} : a zf= b ↔ a = b := by
 
 def Pre.mem (S x: Pre) : Prop := ∃s: S.Type, x zf≈ S.Mem s
 
-instance : Membership Pre Pre where
+instance : Membership Pre.{u} Pre.{u} where
   mem := Pre.mem
 
-def Pre.mem.spec (x y S R: Pre) (hx: x zf≈ y) (hS: S zf≈ R) : x ∈ S -> y ∈ R := by
+def Pre.mem.spec (x y S R: Pre) (hx: x zf≈ y) (hS: S zf≈ R) : S.mem x -> R.mem y := by
   intro ⟨s, h⟩
   have ⟨r, hS⟩ := hS.left s
   exists r
@@ -327,7 +327,7 @@ instance mem_wf : @Relation.IsWellFounded ZfSet (· ∈ ·) where
 def mem_irrefl (a: ZfSet) : ¬a ∈ a := irrefl (· ∈ ·) a
 def mem_asymm {a b: ZfSet} : a ∈ b -> ¬b ∈ a := asymm (· ∈ ·)
 
-def Pre.ext.{u, v} (a: Pre.{u}) (b: Pre.{v}) : (∀x: Pre.{max u v}, x ∈ a ↔ x ∈ b) -> a zf≈ b := by
+def Pre.ext.{u, v} (a: Pre.{u}) (b: Pre.{v}) : (∀x: Pre.{max u v}, mem a x ↔ mem b x) -> a zf≈ b := by
   intro h
   induction a with | intro α memα ih =>
   cases b with | intro β memβ =>
@@ -387,8 +387,11 @@ def Pre.nil : Pre := .intro PEmpty PEmpty.elim
 
 def nil : ZfSet := ⟦Pre.nil⟧
 
+instance : EmptyCollection ZfSet where
+  emptyCollection := nil
+
 @[simp]
-def not_mem_nil (a: ZfSet) : ¬a ∈ nil := by cases a; nofun
+def not_mem_nil (a: ZfSet) : ¬a ∈ (∅: ZfSet) := by cases a; nofun
 
 def Pre.singleton (s: Pre) : Pre := .intro PUnit (fun _ => s)
 
@@ -570,5 +573,82 @@ instance : IsLattice ZfSet where
     assumption
     apply g
     assumption
+
+protected def Nonempty (s: ZfSet) := ∃x, x ∈ s
+
+@[simp]
+def not_nonempty_iff {s: ZfSet} : ¬s.Nonempty ↔ s = ∅ := by
+  apply Iff.intro
+  intro h
+  ext x; simp; intro g
+  apply h
+  exists x
+  rintro rfl
+  intro ⟨x, h⟩
+  simp at h
+
+@[simp]
+def ne_empty_iff {s: ZfSet} : s ≠ ∅ ↔ s.Nonempty := by
+  rw [←Classical.not_not (a := s.Nonempty), Iff.comm]
+  simp
+
+protected def Pre.sUnion (U: Pre) : Pre :=
+  .intro (Σu: U.Type, (U.Mem u).Type) fun ⟨u₀, u₁⟩ => (U.Mem u₀).Mem u₁
+
+def Pre.sUnion.spec (a b: Pre) (h: a zf≈ b) : a.sUnion zf≈ b.sUnion := by
+  apply Equiv.intro
+  · intro ⟨a₀, a₁⟩
+    have ⟨b₀, h⟩ := h.left a₀
+    have ⟨b₁, h⟩ := h.left a₁
+    exists ⟨b₀, b₁⟩
+  · intro ⟨b₀, b₁⟩
+    have ⟨a₀, h⟩ := h.right b₀
+    have ⟨a₁, h⟩ := h.right b₁
+    exists ⟨a₀, a₁⟩
+
+protected def sUnion : ZfSet -> ZfSet := by
+  refine lift (mk ∘ Pre.sUnion) ?_
+  intro a b h
+  apply sound
+  apply Pre.sUnion.spec
+  assumption
+
+@[simp]
+def mem_sUnion {s: ZfSet} : ∀{x}, x ∈ s.sUnion ↔ ∃s' ∈ s, x ∈ s' := by
+  intro x
+  cases s with | mk s =>
+  cases x with | mk x =>
+  apply Iff.intro
+  · intro ⟨⟨a₀, a₁⟩, h⟩
+    exists ⟦s.Mem a₀⟧
+    apply And.intro
+    exists a₀
+    exists a₁
+  · intro ⟨s', h, g⟩
+    cases s' with | mk s' =>
+    obtain ⟨a₀, h⟩ := h
+    obtain ⟨a₁, g⟩ := g
+    have ⟨a₂, h⟩ := h.left a₁
+    apply Pre.mem.spec
+    symm; apply g
+    rfl
+    exists ⟨a₀, a₂⟩
+
+protected def sInter (U: ZfSet) : ZfSet := U.sUnion.sep (fun s => ∀u ∈ U, s ∈ u)
+
+def mem_sInter {U: ZfSet} (h: U.Nonempty) : ∀{x}, x ∈ U.sInter ↔ ∀u ∈ U, x ∈ u := by
+  intro x
+  cases U with | mk U =>
+  cases x with | mk x =>
+  simp [ZfSet.sInter]
+  intro g
+  obtain ⟨u', hu'⟩ := h
+  exists u'
+  apply And.intro
+  assumption
+  apply g
+  assumption
+
+attribute [irreducible] ZfSet.sUnion ZfSet.sInter
 
 end ZfSet
