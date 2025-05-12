@@ -101,7 +101,6 @@ def eq_of_inverses (f₀ f₁: α -> β) (g: β -> α)
   apply h₀.Injective
   rw [h₂, h₃]
 
-open Classical in
 noncomputable def invFun {α : Sort u} {β} [Nonempty α] (f : α → β) : β → α :=
   fun y => Classical.epsilon (fun x => f x = y)
 
@@ -126,6 +125,12 @@ def leftinverse_of_invFun [Nonempty α] {f: α -> β} (hf: Injective f) : IsLeft
   intro x
   apply hf
   exact apply_invFun_apply (α := α) (f := f) (a := x)
+
+def rightinverse_of_invFun [Nonempty α] {f: α -> β} (hf: Surjective f) : IsRightInverse (invFun f) f := by
+  intro x
+  rw [invFun_eq (f := f) (b := x)]
+  obtain ⟨a, rfl⟩ := hf x
+  exists a
 
 def IsLeftInverse.comp_eq_id (h: IsLeftInverse f g) : f ∘ g = id := by
   ext x
