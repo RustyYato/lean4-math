@@ -1,4 +1,5 @@
 import Math.Data.Quotient.Basic
+import Math.Data.Trunc
 import Math.Type.Notation
 import Math.Data.Set.Basic
 import Math.Relation.Defs
@@ -771,42 +772,48 @@ private def hcongrFun
   intro x y _ _ _; subst y
   rfl
 
+def mem_congr (a: Pre) (a₀: a.Type) (b: Pre) (b₀: b.Type) :
+  a = b -> HEq a₀ b₀ -> a.Mem a₀ = b.Mem b₀ := by
+  rintro rfl h
+  cases h
+  rfl
+
+def eqv_of_eq (a b: Pre) : a = b -> a zf≈ b := by
+  rintro rfl
+  rfl
+
 noncomputable
 def attach_image (s: ZfSet) (f: ∀x ∈ s, ZfSet.{u}): ZfSet.{u} := by
-  revert f
-  apply Quotient.hrecOn s (motive := fun s => _) _ _
-  intro s f
-  refine ⟦Pre.attach_image s ?_⟧
-  intro x mem
-  exact (f ⟦x⟧ mem).out
-  intro A B eq
-  apply Function.hfunext
-  rw [Quotient.sound eq]
-  intro ha hb heq
-  apply heq_of_eq
-  apply Quotient.sound
-  unfold Pre.attach_image
-  apply And.intro
-  intro a
-  have ⟨b, eqv⟩ := eq.to_left a
-  exists b
-  dsimp
-  apply Quotient.exact (s := setoid)
-  rw [Quotient.out_spec, Quotient.out_spec]
-  apply hcongrFun (f := ha) (g := hb)
-  rw [Quotient.sound eq]
-  assumption
-  exact Quotient.sound eqv
-  intro b
-  have ⟨a, eqv⟩ := eq.to_right b
-  exists a
-  dsimp
-  apply Quotient.exact (s := setoid)
-  rw [Quotient.out_spec, Quotient.out_spec]
-  apply hcongrFun (f := ha) (g := hb)
-  rw [Quotient.sound eq]
-  assumption
-  exact Quotient.sound eqv
+  let f' : ∀x ∈ s, Pre := fun x hx => (f x hx).out
+  refine (Quotient.attach s).lift ?_ ?_
+  · intro ⟨s', hs⟩
+    apply ZfSet.mk
+    apply s'.attach_image
+    intro x hx
+    apply f' (ZfSet.mk x)
+    rw [hs]
+    assumption
+  · intro ⟨⟨α, memα⟩, ha⟩ ⟨⟨β, memβ⟩, hb⟩
+    simp
+    have h := Quotient.exact (ha.symm.trans hb)
+    apply Quotient.sound
+    apply And.intro
+    · intro a
+      have ⟨b, h⟩ := h.to_left a
+      exists b
+      simp [Pre.Mem]
+      apply eqv_of_eq
+      congr 1
+      apply Quotient.sound
+      assumption
+    · intro b
+      have ⟨a, h⟩ := h.to_right b
+      exists a
+      simp [Pre.Mem]
+      apply eqv_of_eq
+      congr 1
+      apply Quotient.sound
+      assumption
 
 def mem_attach_image {s: ZfSet} {f: ∀x ∈ s, ZfSet} : ∀{x}, x ∈ s.attach_image f ↔ ∃s', ∃h: s' ∈ s, x = f s' h := by
   intro x
