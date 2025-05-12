@@ -537,6 +537,12 @@ def mem_inter {a b: ZfSet} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := by
 
 attribute [irreducible] union inter sep ulift
 
+@[simp] def union_nil (a: ZfSet) : a ∪ ∅ = a := by ext; simp
+@[simp] def nil_union (a: ZfSet) : ∅ ∪ a = a := by ext; simp
+@[simp] def sep_nil {P: ZfSet -> Prop} : sep P ∅ = ∅ := by ext; simp
+@[simp] def inter_nil (a: ZfSet) : a ∩ ∅ = ∅ := by ext; simp
+@[simp] def nil_inter (a: ZfSet) : ∅ ∩ a = ∅ := by ext; simp
+
 def min_eq_inter (a b: ZfSet) : a ⊓ b = a ∩ b := rfl
 def max_eq_union (a b: ZfSet) : a ⊔ b = a ∪ b := rfl
 
@@ -650,5 +656,8 @@ def mem_sInter {U: ZfSet} (h: U.Nonempty) : ∀{x}, x ∈ U.sInter ↔ ∀u ∈ 
   assumption
 
 attribute [irreducible] ZfSet.sUnion ZfSet.sInter
+
+@[simp] def sUnion_nil : ZfSet.sUnion ∅ = ∅ := by ext x; simp
+@[simp] def sInter_nil : ZfSet.sInter ∅ = ∅ := by simp [ZfSet.sInter]
 
 end ZfSet
