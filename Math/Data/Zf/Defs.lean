@@ -421,7 +421,7 @@ def mem_singleton {s: ZfSet} : ∀{x}, x ∈ ({s}: ZfSet) ↔ x = s := by
   intro h; rw [h]
   exists ⟨⟩
 
-def Pre.union (a b: Pre) : Pre :=
+def Pre.union (a b: Pre.{u}) : Pre :=
   .intro (a.Type ⊕ b.Type) <| fun
     | .inl x => a.Mem x
     | .inr x => b.Mem x
@@ -533,5 +533,42 @@ def mem_inter {a b: ZfSet} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := by
   apply mem_sep
 
 attribute [irreducible] union inter sep ulift
+
+def min_eq_inter (a b: ZfSet) : a ⊓ b = a ∩ b := rfl
+def max_eq_union (a b: ZfSet) : a ⊔ b = a ∪ b := rfl
+
+instance : IsLattice ZfSet where
+  le_max_left := by
+    intro a b x
+    simp [max_eq_union]
+    apply Or.inl
+  le_max_right := by
+    intro a b x
+    simp [max_eq_union]
+    apply Or.inr
+  max_le := by
+    intro S a b h g x
+    simp [max_eq_union]
+    intro h; cases h
+    apply h
+    assumption
+    apply g
+    assumption
+  min_le_left := by
+    intro a b x
+    simp [min_eq_inter]
+    intros; assumption
+  min_le_right := by
+    intro a b x
+    simp [min_eq_inter]
+  le_min := by
+    intro a b S h g x
+    simp [min_eq_inter]
+    intro
+    apply And.intro
+    apply h
+    assumption
+    apply g
+    assumption
 
 end ZfSet
