@@ -2,7 +2,7 @@ import Math.Type.Notation
 import Math.Data.List.Basic
 import Math.Function.Basic
 import Math.Relation.Defs
-import Math.Data.Quotient.Basic
+import Math.Data.Trunc
 
 def Multiset (α: Type*) := Quotient (List.isSetoid α)
 

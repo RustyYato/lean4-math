@@ -66,3 +66,13 @@ def mk_lift : lift f resp (mk x) = f x := rfl
 instance : DecidableEq (Trunc α) := fun  _ _  =>  .isTrue (Subsingleton.allEq _ _)
 
 end Trunc
+
+def Quot.attach {r: α -> α -> Prop} : ∀q: Quot r, Trunc { a // q = Quot.mk _ a } := by
+  refine Quot.rec ?_ ?_
+  intro x
+  exact Trunc.mk ⟨x, rfl⟩
+  intro a b h
+  apply Subsingleton.allEq
+
+def Quotient.attach {s: Setoid α} : ∀q: Quotient s, Trunc { a // q = Quotient.mk _ a } := by
+  apply Quot.attach

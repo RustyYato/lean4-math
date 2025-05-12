@@ -2,15 +2,6 @@ import Math.Relation.Defs
 
 namespace Setoid
 
--- relates two elements if they evaluate to the same value
-def kernel (f: α -> β) : Setoid α where
-  r a b := f a = f b
-  iseqv := {
-    refl _ := rfl
-    symm := Eq.symm
-    trans := Eq.trans
-  }
-
 def comap (f: α -> β) (s: Setoid β) : Setoid α where
   r a b := s.r (f a) (f b)
   iseqv := {
@@ -18,6 +9,13 @@ def comap (f: α -> β) (s: Setoid β) : Setoid α where
     symm := s.iseqv.symm
     trans := s.iseqv.trans
   }
+
+def eqSetoid : Setoid α where
+  r a b := a = b
+  iseqv := Relation.equiv _
+
+-- relates two elements if they evaluate to the same value
+def kernel (f: α -> β) : Setoid α := eqSetoid.comap f
 
 def forallSetoid {ι: Sort _} (α: ι -> Sort _) [∀i: ι, Setoid (α i)] : Setoid (∀i, α i) where
   r f g:= ∀i, f i ≈ g i
@@ -56,10 +54,6 @@ def subtypeSetoid (P: α -> Prop) [Setoid α] : Setoid (Subtype P) where
     symm := Relation.symm
     trans := Relation.trans'
   }
-
-def eqSetoid : Setoid α where
-  r a b := a = b
-  iseqv := Relation.equiv _
 
 end Setoid
 
