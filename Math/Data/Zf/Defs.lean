@@ -306,4 +306,18 @@ def eqv_iff_ulift_eq_ulift (a: ZfSet.{u}) (b: ZfSet.{v}) : a zf= b ↔ ulift.{ma
   apply eqv.trans _ (ulift_eqv_self _).symm
   rw [h]
 
+instance mem_wf : @Relation.IsWellFounded ZfSet (· ∈ ·) where
+  wf := by
+    apply WellFounded.intro
+    intro a
+    cases a with | mk a =>
+    induction a with | intro α memα ih =>
+    apply Acc.intro
+    intro b h
+    cases b with | mk b =>
+    obtain ⟨x, hx⟩ := h
+    simp at hx
+    rw [sound hx]
+    apply ih
+
 end ZfSet
