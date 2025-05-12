@@ -535,13 +535,17 @@ instance : Min ZfSet where
 def mem_inter {a b: ZfSet} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := by
   apply mem_sep
 
-attribute [irreducible] union inter sep ulift
+protected def insert (a b: ZfSet) := {a} ∪ b
 
-@[simp] def union_nil (a: ZfSet) : a ∪ ∅ = a := by ext; simp
-@[simp] def nil_union (a: ZfSet) : ∅ ∪ a = a := by ext; simp
-@[simp] def sep_nil {P: ZfSet -> Prop} : sep P ∅ = ∅ := by ext; simp
-@[simp] def inter_nil (a: ZfSet) : a ∩ ∅ = ∅ := by ext; simp
-@[simp] def nil_inter (a: ZfSet) : ∅ ∩ a = ∅ := by ext; simp
+instance : Insert ZfSet ZfSet where
+  insert := ZfSet.insert
+
+def insert_def (a b: ZfSet) : insert a b = {a} ∪ b := rfl
+
+@[simp]
+def mem_insert {a b: ZfSet} : ∀{x}, x ∈ insert a b ↔ x = a ∨ x ∈ b := by simp [insert_def]
+
+attribute [irreducible] union inter sep ulift ZfSet.insert
 
 def min_eq_inter (a b: ZfSet) : a ⊓ b = a ∩ b := rfl
 def max_eq_union (a b: ZfSet) : a ⊔ b = a ∪ b := rfl
@@ -580,8 +584,46 @@ instance : IsLattice ZfSet where
     apply g
     assumption
 
+instance : @Std.Associative ZfSet (· ∪ ·) := ⟨max_assoc⟩
+instance : @Std.Associative ZfSet (· ∩ ·) := ⟨min_assoc⟩
+instance : @Std.Commutative ZfSet (· ∪ ·) := ⟨max_comm⟩
+instance : @Std.Commutative ZfSet (· ∩ ·) := ⟨min_comm⟩
+
+def union_comm (a b: ZfSet) : a ∪ b = b ∪ a := max_comm _ _
+def inter_comm (a b: ZfSet) : a ∩ b = b ∩ a := min_comm _ _
+def union_assoc (a b c: ZfSet) : a ∪ b ∪ c = a ∪ (b ∪ c) := max_assoc _ _ _
+def inter_assoc (a b c: ZfSet) : a ∩ b ∩ c = a ∩ (b ∩ c) := min_assoc _ _ _
+
+@[simp] def union_nil (a: ZfSet) : a ∪ ∅ = a := by ext; simp
+@[simp] def nil_union (a: ZfSet) : ∅ ∪ a = a := by ext; simp
+@[simp] def sep_nil {P: ZfSet -> Prop} : sep P ∅ = ∅ := by ext; simp
+@[simp] def inter_nil (a: ZfSet) : a ∩ ∅ = ∅ := by ext; simp
+@[simp] def nil_inter (a: ZfSet) : ∅ ∩ a = ∅ := by ext; simp
+@[simp] def insert_nil (a: ZfSet) : insert a ∅ = ({a} :ZfSet) := by ext; simp
+
+@[simp] def union_insert (x a b: ZfSet) : a ∪ (insert x b) = insert x (a ∪ b) := by ext; simp; ac_nf
+@[simp] def insert_union (x a b: ZfSet) : (insert x a) ∪ b = insert x (a ∪ b) := by ext; simp; ac_nf
+@[simp] def insert_inter_insert (x a b: ZfSet) : (insert x a) ∩ (insert x b) = insert x (a ∩ b) := by ext; simp [or_and_left]
+@[simp] def insert_idempot (x a: ZfSet) : insert x (insert x a) = insert x a := by ext; simp
+
+@[simp] def inter_union_inter_left (k a b: ZfSet) : (k ∪ a) ∩ (k ∪ b) = k ∪ (a ∩ b) := by ext; simp [or_and_left]
+@[simp] def inter_union_inter_right (k a b: ZfSet) : (a ∪ k) ∩ (b ∪ k) = (a ∩ b) ∪ k := by simp [union_comm _ k]
+
+@[simp] def union_inter_union_left (k a b: ZfSet) :  (k ∩ a) ∪ (k ∩ b) = k ∩ (a ∪ b) := by ext; simp [and_or_left]
+@[simp] def union_inter_union_right (k a b: ZfSet) : (a ∩ k) ∪ (b ∩ k) = (a ∪ b) ∩ k := by simp [inter_comm _ k]
+
 protected def Nonempty (s: ZfSet) := ∃x, x ∈ s
 
+@[simp] def nonempty_insert (x a: ZfSet) : (insert x a).Nonempty := ⟨x, by simp⟩
+@[simp] def nonempty_singleton (x: ZfSet) : ZfSet.Nonempty {x} := ⟨x, by simp⟩
+@[simp] def nonempty_of_inter_left (a b: ZfSet) (h: (a ∩ b).Nonempty) : a.Nonempty := by
+  obtain ⟨x, h⟩ := h; simp at h; exists x; exact h.left
+@[simp] def nonempty_of_inter_right (a b: ZfSet) (h: (a ∩ b).Nonempty) : b.Nonempty := by
+  obtain ⟨x, h⟩ := h; simp at h; exists x; exact h.right
+@[simp] def nonempty_union_of_left (a b: ZfSet) (h: a.Nonempty) : (a ∪ b).Nonempty := by
+  obtain ⟨x, h⟩ := h; exists x; simp [h]
+@[simp] def nonempty_union_of_right (a b: ZfSet) (h: b.Nonempty) : (a ∪ b).Nonempty := by
+  obtain ⟨x, h⟩ := h; exists x; simp [h]
 @[simp]
 def not_nonempty_iff {s: ZfSet} : ¬s.Nonempty ↔ s = ∅ := by
   apply Iff.intro
@@ -642,6 +684,7 @@ def mem_sUnion {s: ZfSet} : ∀{x}, x ∈ s.sUnion ↔ ∃s' ∈ s, x ∈ s' := 
 
 protected def sInter (U: ZfSet) : ZfSet := U.sUnion.sep (fun s => ∀u ∈ U, s ∈ u)
 
+@[simp]
 def mem_sInter {U: ZfSet} (h: U.Nonempty) : ∀{x}, x ∈ U.sInter ↔ ∀u ∈ U, x ∈ u := by
   intro x
   cases U with | mk U =>
@@ -659,5 +702,38 @@ attribute [irreducible] ZfSet.sUnion ZfSet.sInter
 
 @[simp] def sUnion_nil : ZfSet.sUnion ∅ = ∅ := by ext x; simp
 @[simp] def sInter_nil : ZfSet.sInter ∅ = ∅ := by simp [ZfSet.sInter]
+
+@[simp] def sUnion_insert (x a: ZfSet) : ZfSet.sUnion (insert x a) = x ∪ ZfSet.sUnion a := by ext x; simp
+@[simp] def sInter_insert (x a: ZfSet) (ha: a.Nonempty) : ZfSet.sInter (insert x a) = x ∩ ZfSet.sInter a := by
+  ext x; simp [mem_sInter ha]
+@[simp] def sUnion_singleton (a: ZfSet) : ZfSet.sUnion {a} = a := by ext; simp
+@[simp] def sInter_singleton (a: ZfSet) : ZfSet.sInter {a} = a := by ext; simp
+@[simp] def sUnion_union (a b: ZfSet) : ZfSet.sUnion (a ∪ b) = ZfSet.sUnion a ∪ ZfSet.sUnion b := by
+  ext; simp [or_and_right]
+  apply Iff.intro
+  intro ⟨s', h⟩
+  rcases h with ⟨h, g⟩ | ⟨h, g⟩
+  left; exists s'
+  right; exists s'
+  intro h
+  rcases h with ⟨s', h, g⟩ | ⟨s', h, g⟩
+  exists s'; left; trivial
+  exists s'; right; trivial
+@[simp] def sInter_union (a b: ZfSet) (ha: a.Nonempty) (hb: b.Nonempty) : ZfSet.sInter (a ∪ b) = ZfSet.sInter a ∩ ZfSet.sInter b := by
+  ext; simp [ha, hb]
+  apply Iff.intro
+  · intro h
+    apply And.intro
+    intro u hu
+    apply h
+    left; assumption
+    intro u hu
+    apply h
+    right; assumption
+  · intro ⟨h, g⟩
+    intro u hu
+    cases hu
+    apply h; assumption
+    apply g; assumption
 
 end ZfSet
