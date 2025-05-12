@@ -30,7 +30,7 @@ def trans (x: ReflTransGen r a b) (y: ReflTransGen r b c) : ReflTransGen r a c :
 end Relation.ReflTransGen
 
 class IsLawfulLT (α: Type _) [LT α] [LE α]: Prop where
-  lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a
+  lt_iff_le_and_not_le: ∀{a b: α}, a < b ↔ a ≤ b ∧ ¬b ≤ a := by rfl
 
 export IsLawfulLT (lt_iff_le_and_not_le)
 def IsLawfulLT.instLT (α: Type _) [LE α] : LT α where

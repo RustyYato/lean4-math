@@ -4,6 +4,7 @@ import Math.Type.Notation
 import Math.Data.Set.Basic
 import Math.Relation.Defs
 import Math.Tactics.PPWithUniv
+import Math.Order.Defs
 
 namespace ZfSet
 
@@ -363,5 +364,174 @@ def ext (a b: ZfSet) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
   rw [←eqv_iff_eq]
   apply ext_eqv
   apply h
+
+instance : @Relation.IsPartialOrder ZfSet (· ⊆ ·) (· = ·) where
+  refl _ _ := id
+  trans h g x hx := g _ (h _ hx)
+  antisymm_by := by
+    intro a b ha hb
+    ext x
+    apply Iff.intro
+    apply ha
+    apply hb
+
+instance : LE ZfSet := ⟨(· ⊆ ·)⟩
+instance : LT ZfSet := ⟨Relation.strict (· ≤ ·)⟩
+instance : IsLawfulLT ZfSet where
+instance : IsPartialOrder ZfSet where
+  le_refl := Relation.refl (rel := (· ⊆ ·))
+  le_trans := Relation.trans' (r := (· ⊆ ·))
+  le_antisymm := antisymm (· ⊆ ·)
+
+def Pre.nil : Pre := .intro PEmpty PEmpty.elim
+
+def nil : ZfSet := ⟦Pre.nil⟧
+
+@[simp]
+def not_mem_nil (a: ZfSet) : ¬a ∈ nil := by cases a; nofun
+
+def Pre.singleton (s: Pre) : Pre := .intro PUnit (fun _ => s)
+
+def Pre.singleton.spec (a b: Pre) (h: a zf≈ b) : a.singleton zf≈ b.singleton := by
+  apply Equiv.intro
+  intro
+  exists ⟨⟩
+  intro
+  exists ⟨⟩
+
+def singleton : ZfSet -> ZfSet := by
+  refine lift (mk ∘ Pre.singleton) ?_
+  intro a b h
+  apply sound
+  apply Pre.singleton.spec
+  assumption
+
+instance : Singleton ZfSet ZfSet where
+  singleton := singleton
+
+@[simp]
+def mem_singleton {s: ZfSet} : ∀{x}, x ∈ ({s}: ZfSet) ↔ x = s := by
+  cases s with | mk s =>
+  intro x
+  cases x with | mk x =>
+  apply Iff.intro
+  intro ⟨_, h⟩
+  apply sound
+  assumption
+  intro h; rw [h]
+  exists ⟨⟩
+
+def Pre.union (a b: Pre) : Pre :=
+  .intro (a.Type ⊕ b.Type) <| fun
+    | .inl x => a.Mem x
+    | .inr x => b.Mem x
+
+def Pre.union.spec (a b c d: Pre) (ac: a zf≈ c) (bd: b zf≈ d) : a.union b zf≈ c.union d := by
+  apply Equiv.intro
+  · intro x
+    cases x with
+    | inl x =>
+      have ⟨y, hy⟩ := ac.left x
+      exists .inl y
+    | inr x =>
+      have ⟨y, hy⟩ := bd.left x
+      exists .inr y
+  · intro x
+    cases x with
+    | inl x =>
+      have ⟨y, hy⟩ := ac.right x
+      exists .inl y
+    | inr x =>
+      have ⟨y, hy⟩ := bd.right x
+      exists .inr y
+
+def union : ZfSet -> ZfSet -> ZfSet := by
+  refine lift₂ (fun a b => ⟦a.union b⟧) ?_
+  intro a b c d h g
+  apply sound
+  apply Pre.union.spec
+  assumption
+  assumption
+
+instance : Union ZfSet where
+  union := union
+
+instance : Max ZfSet where
+  max := union
+
+@[simp]
+def mem_union {a b: ZfSet} : ∀{x}, x ∈ a ∪ b ↔ x ∈ a ∨ x ∈ b := by
+  intro x
+  cases a with | mk a =>
+  cases b with | mk b =>
+  cases x with | mk x =>
+  apply Iff.intro
+  · intro ⟨z, h⟩
+    cases z with
+    | inl a₀ => left; exists a₀
+    | inr b₀ => right; exists b₀
+  · intro h
+    rcases h with ⟨z, h⟩ | ⟨z, h⟩
+    exists .inl z
+    exists .inr z
+
+def Pre.sep (P: Pre -> Prop) (a: Pre) : Pre :=
+  .intro { x: a.Type // P (a.Mem x) } (fun x => a.Mem x.val)
+
+def Pre.sep.spec (a b: Pre) (P Q: Pre -> Prop) (h: a zf≈ b) (g: ∀x y, x zf≈ y -> (P x ↔ Q y)) : a.sep P zf≈ b.sep Q := by
+  apply Equiv.intro
+  · intro ⟨a₀, ha₀⟩
+    have ⟨b₀, h⟩ := h.left a₀
+    refine ⟨⟨b₀, ?_⟩, h⟩
+    rw [←g]
+    assumption
+    assumption
+  · intro ⟨b₀, hb₀⟩
+    have ⟨a₀, h⟩ := h.right b₀
+    refine ⟨⟨a₀, ?_⟩, h⟩
+    rw [g]
+    assumption
+    assumption
+
+def sep (P: ZfSet -> Prop) : ZfSet -> ZfSet := by
+  refine lift (mk ∘ Pre.sep (P ∘ mk)) ?_
+  intro a b h
+  apply sound
+  apply Pre.sep.spec
+  assumption
+  intro x y h
+  simp
+  rw [sound h]
+
+@[simp]
+def mem_sep {P: ZfSet -> Prop} {s: ZfSet} : ∀{x}, x ∈ s.sep P ↔ x ∈ s ∧ P x := by
+  intro x
+  cases s with | mk s =>
+  cases x with | mk x =>
+  apply Iff.intro
+  intro ⟨z, hz⟩
+  apply And.intro
+  exists z.val
+  rw [sound hz]
+  exact z.property
+  intro ⟨⟨z, hz⟩, g⟩
+  exists ⟨z, ?_⟩
+  simp
+  rwa [←sound hz]
+  assumption
+
+def inter (a b: ZfSet) : ZfSet := a.sep (· ∈ b)
+
+instance : Inter ZfSet where
+  inter := inter
+
+instance : Min ZfSet where
+  min := inter
+
+@[simp]
+def mem_inter {a b: ZfSet} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := by
+  apply mem_sep
+
+attribute [irreducible] union inter sep ulift
 
 end ZfSet
