@@ -815,4 +815,74 @@ def powerset : ZfSet -> ZfSet := by
 
 attribute [irreducible] powerset
 
+noncomputable def Pre.image (f: Pre -> Pre) (s: Pre) : Pre :=
+  .intro s.Type (f ∘ s.Mem)
+
+noncomputable def image (f: ZfSet -> ZfSet) : ZfSet -> ZfSet := by
+  refine lift (mk ∘ Pre.image (out ∘ f ∘ mk)) ?_
+  intro a b h
+  apply sound
+  apply Equiv.intro
+  · intro a₀
+    have ⟨b₀, h⟩ := h.left a₀
+    exists b₀
+    simp [Pre.image]
+    rw [sound h]
+  · intro b₀
+    have ⟨a₀, h⟩ := h.right b₀
+    exists a₀
+    simp [Pre.image]
+    rw [sound h]
+
+@[simp] def mem_image {f: ZfSet -> ZfSet} {s: ZfSet} : ∀{x}, x ∈ s.image f ↔ ∃a ∈ s, x = f a := by
+  intro x
+  cases s with | mk s =>
+  cases x with | mk x =>
+  apply Iff.intro
+  · intro ⟨a₀, (h: x zf≈ (f _).out)⟩
+    exists ⟦s.Mem a₀⟧
+    apply And.intro
+    exists a₀
+    rw [sound h, out_spec]
+  · intro ⟨a, h, g⟩
+    cases a with | mk a =>
+    obtain ⟨a₀, h⟩ := h
+    exists a₀
+    show x zf≈ out _
+    simp
+    rw [←sound h]
+    apply exact
+    rw [out_spec]
+    assumption
+
+@[simp] def image_empty (f: ZfSet -> ZfSet) : image f ∅ = ∅ := by ext; simp
+@[simp] def image_insert (f: ZfSet -> ZfSet) (x s: ZfSet) : image f (insert x s) = insert (f x) (image f s) := by ext; simp
+@[simp] def image_singleton (f: ZfSet -> ZfSet) (x: ZfSet) : image f {x} = {f x} := by ext; simp
+@[simp] def image_union (f: ZfSet -> ZfSet) (a b: ZfSet) : image f (a ∪ b) = image f a ∪ image f b := by
+  ext x; simp [or_and_right]
+  apply Iff.intro
+  · intro ⟨s, h⟩
+    rcases h with ⟨h, rfl⟩ | ⟨h, rfl⟩
+    left; exists s
+    right; exists s
+  · intro h
+    rcases h with ⟨s, h, rfl⟩ | ⟨s, h, rfl⟩
+    exists s
+    left; trivial
+    exists s
+    right; trivial
+@[simp] def image_inter_sub (f: ZfSet -> ZfSet) (a b: ZfSet) : image f (a ∩ b) ⊆ image f a ∩ image f b := by
+  intro x; simp
+  · rintro s h g rfl
+    apply And.intro <;> exists s
+@[simp] def image_inter (f: ZfSet -> ZfSet) (a b: ZfSet) (hf: Function.Injective f) : image f (a ∩ b) = image f a ∩ image f b := by
+  ext x
+  apply Iff.intro
+  · apply image_inter_sub
+  · simp
+    rintro s s_in_a rfl t t_in_b eq
+    rw [hf.eq_iff] at eq
+    subst t
+    exists s
+
 end ZfSet
