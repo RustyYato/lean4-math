@@ -93,6 +93,12 @@ noncomputable
 def Nat.card (α: Type*) : Nat :=
   if _:IsFinite α then IsFinite.card α else 0
 
+noncomputable
+def Nat.card_spec (α: Type*) [IsFinite α] : α ≃ Fin (card α) := by
+  rw [card]
+  rw [dif_pos]
+  apply IsFinite.toEquiv
+
 def IsFinite.card_of_equiv (h: Nonempty (α ≃ β)) [IsFinite α] [IsFinite β] : IsFinite.card α = IsFinite.card β := by
   obtain ⟨h⟩ := h
   have := ((toEquiv β).symm.trans <| h.symm.trans (toEquiv α)).symm
