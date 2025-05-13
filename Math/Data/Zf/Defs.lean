@@ -885,4 +885,88 @@ noncomputable def image (f: ZfSet -> ZfSet) : ZfSet -> ZfSet := by
     subst t
     exists s
 
+def Pre.succ : Pre -> Pre := fun s => (singleton s).union s
+
+def Pre.succ.spec (a b: Pre) (h: a zf≈ b) : a.succ zf≈ b.succ := by
+  apply Pre.union.spec
+  apply Pre.singleton.spec
+  assumption
+  assumption
+
+def succ : ZfSet -> ZfSet := by
+  refine lift (mk ∘ Pre.succ) ?_
+  intro a b h
+  apply sound
+  apply Pre.succ.spec
+  assumption
+
+def succ_def (s: ZfSet) : succ s = insert s s := by
+  cases s with | mk s =>
+  with_unfolding_all rfl
+
+def Pre.ofNat : ℕ -> Pre
+| 0 => .nil
+| n + 1 => Pre.succ (Pre.ofNat n)
+
+def ofNat (n: ℕ) : ZfSet := ⟦Pre.ofNat n⟧
+
+instance : NatCast ZfSet where
+  natCast := ofNat
+
+instance : OfNat ZfSet n := ⟨n⟩
+
+@[simp] def natCast_zero : (0: ZfSet) = ∅ := rfl
+@[simp] def natCast_zero' : (Nat.cast 0: ZfSet) = ∅ := rfl
+@[simp] def natCast_succ (n: ℕ) : (n + 1: ℕ) = succ n := rfl
+
+@[simp] def mem_succ {s: ZfSet} : ∀{x}, x ∈ succ s ↔ x = s ∨ x ∈ s := by
+  rw [succ_def]
+  simp
+
+@[simp] def mem_natCast {n: ℕ} : ∀{x}, x ∈ (n: ZfSet) ↔ ∃m < n, x = m := by
+  intro x
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    simp
+    apply Iff.intro
+    intro h
+    · rcases h with rfl | h
+      · exists n
+        apply And.intro _ rfl
+        apply Nat.lt_succ_self
+      · obtain ⟨m, mlt, rfl⟩ := ih.mp h
+        exists m
+        apply And.intro _ rfl
+        omega
+    · rintro ⟨m, hm, rfl⟩
+      rw [Nat.lt_succ, Nat.le_iff_lt_or_eq] at hm
+      rcases hm with h | rfl
+      right; apply ih.mpr
+      exists m
+      left; rfl
+
+def omega : ZfSet := ⟦.intro (ULift ℕ) (Pre.ofNat ∘ ULift.down)⟧
+
+@[simp] def mem_omega : ∀{x}, x ∈ omega ↔ ∃n: ℕ, x = n := by
+  intro x
+  apply Iff.intro
+  · cases x with | mk x =>
+    intro ⟨⟨n⟩, eq⟩
+    exists n
+    rw [sound eq]
+    rfl
+  · rintro ⟨n, rfl⟩
+    exists ⟨n⟩
+
+def lt_succ_self (x: ZfSet) : x < x.succ := by
+  apply And.intro
+  intro y hy
+  simp [hy]
+  intro h
+  have := h x (by simp)
+  apply mem_irrefl _ this
+
+attribute [irreducible] ofNat omega
+
 end ZfSet
