@@ -969,12 +969,32 @@ def sSup_eq_iSup [SupSet α] (s: Set α) : ⨆ s = ⨆x: s, x.val := by
 @[simp]
 def bind_union (a b: Set α) (f: α -> Set β) : bind (a ∪ b) f = a.bind f ∪ b.bind f := by
   ext x; simp
-  sorry
+  apply Iff.intro
+  · intro ⟨x, h, g⟩
+    cases h
+    left; exists x
+    right; exists x
+  · intro h
+    rcases h with ⟨x, h, g⟩ | ⟨x, h, g⟩
+    exists x
+    apply And.intro _ g
+    left; assumption
+    exists x
+    apply And.intro _ g
+    right; assumption
 
 @[simp]
 def image_bind (a: Set γ) (g: γ -> α) (f: α -> Set β) : bind (a.image g) f = a.bind (f ∘ g) := by
+  ext b
   simp
-  sorry
+  apply Iff.intro
+  intro ⟨_, ⟨x, _, rfl⟩, _⟩
+  exists x
+  intro ⟨x, hx, h⟩
+  exists g x
+  apply And.intro
+  exists x
+  assumption
 
 @[simp]
 def bind_image (a: Set α) (g: β -> γ) (f: α -> Set β) : bind a ((Set.image g) ∘ f) = (a.bind f).image g := by
