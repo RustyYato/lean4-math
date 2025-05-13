@@ -9,7 +9,6 @@ instance : IsAddZeroClass Ordinal where
   zero_add a := by
     cases a with | _ a rela =>
     apply sound
-    infer_instance
     simp
     apply RelIso.trans
     apply RelIso.congrSumLex
@@ -30,7 +29,6 @@ instance : IsAddZeroClass Ordinal where
   add_zero a := by
     cases a
     apply sound
-    infer_instance
     simp
     apply RelIso.trans
     apply RelIso.congrSumLex
@@ -54,8 +52,6 @@ def add_succ (a b: Ordinal) : a + (b + 1) = (a + b) + 1 := by
   cases b with | _ β relβ =>
   rw [←succ_eq_add_one, ←succ_eq_add_one]
   apply sound
-  infer_instance
-  infer_instance
   simp
   exact {
     toFun

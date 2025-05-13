@@ -60,7 +60,7 @@ private def toOrdinal_eq (α: Type*) : ∃ (r : α → α → Prop) (_wo: Relati
   exact rel
   exact eqv.symm.toRelEmbedding.lift_wo
   rw [eq]
-  apply Ordinal.sound
+  apply Ordinal.sound'
   assumption
 
 private def toOrdinal_card (c: Cardinal) : c.toOrdinal.card = c := by

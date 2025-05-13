@@ -49,7 +49,10 @@ def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop
   induction o using Quotient.ind with | _ o =>
   apply type
 
-def sound {α β: Type u} (relα: α -> α -> Prop) (relβ: β -> β -> Prop) (hrelα: Relation.IsWellOrder relα := by infer_instance) (hrelβ: Relation.IsWellOrder relβ := by infer_instance) :
+def sound {α β: Type u} (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [hrelα: Relation.IsWellOrder relα] [hrelβ: Relation.IsWellOrder relβ] :
+  relα ≃r relβ -> type relα = type relβ := by intro h; exact Quotient.sound ⟨h⟩
+
+def sound' {α β: Type u} (relα: α -> α -> Prop) (relβ: β -> β -> Prop) (hrelα: Relation.IsWellOrder relα := by infer_instance) (hrelβ: Relation.IsWellOrder relβ := by infer_instance) :
   relα ≃r relβ -> type relα = type relβ := by intro h; exact Quotient.sound ⟨h⟩
 
 def lift {A: Type w} (f: ∀(α: Type u) (relα: α -> α -> Prop) [Relation.IsWellOrder relα], A) (hf: ∀(α β: Type u) (relα: α -> α -> Prop) (relβ: β -> β -> Prop) [Relation.IsWellOrder relα] [Relation.IsWellOrder relβ], relα ≃r relβ -> f α relα = f β relβ) : Ordinal -> A := by
@@ -493,7 +496,6 @@ def rank_eq_ulift (a: Ordinal.{u}) : rank (· < ·) a = ulift.{u + 1, u} a := by
   obtain ⟨f, hf⟩ := this
   simp at hf
   apply sound
-  infer_instance
   simp
   apply RelIso.trans _ (rel_ulift_eqv _).symm
   exact RelIso.symm {
@@ -999,8 +1001,6 @@ protected def max_comm (a b: Ordinal) : max a b = max b a := by
   cases a with | _ A rela =>
   cases b with | _ B relb =>
   apply sound
-  infer_instance
-  infer_instance
   simp
   refine {
     toFun := maxType.swap
@@ -1280,8 +1280,6 @@ def succ : Ordinal -> Ordinal := by
 
 def natCast_add (n m: ℕ) : (n + m: Ordinal) = (n + m: ℕ) := by
   apply sound
-  infer_instance
-  infer_instance
   simp
   apply flip RelIso.trans
   symm; apply rel_ulift_eqv
@@ -1314,8 +1312,6 @@ def natCast_add (n m: ℕ) : (n + m: Ordinal) = (n + m: ℕ) := by
 
 def natCast_mul (n m: ℕ) : (n * m: Ordinal) = (n * m: ℕ) := by
   apply sound
-  infer_instance
-  infer_instance
   simp
   apply flip RelIso.trans
   symm; apply rel_ulift_eqv
@@ -1365,8 +1361,6 @@ def natCast_mul (n m: ℕ) : (n * m: Ordinal) = (n * m: ℕ) := by
 def succ_eq_add_one (o: Ordinal): o.succ = o + 1 := by
   cases o with | _ α rel =>
   apply sound
-  infer_instance
-  infer_instance
   simp
   apply flip RelIso.trans
   apply RelIso.congrSumLex
@@ -1401,8 +1395,6 @@ def zero_le (o: Ordinal) : 0 ≤ o := by
 
 def natCast_eq_ulift_natCast (n: ℕ) : n = ulift.{u, 0} n := by
   apply sound
-  infer_instance
-  infer_instance
   simp
   apply RelIso.trans
   apply rel_ulift_eqv
@@ -1466,7 +1458,6 @@ def lt_natCast (n: ℕ) (o: Ordinal) : o < n ↔ ∃i < n, o = i := by
   replace hx := Classical.axiomOfChoice hx
   obtain ⟨f, hf⟩ := hx
   apply sound
-  infer_instance
   apply RelIso.trans _ (rel_ulift_eqv _).symm
   simp
   exact {
@@ -1494,7 +1485,6 @@ def of_lt_omega (o: Ordinal) : o < ω -> ∃n: ℕ, o = n := by
   obtain ⟨f, hf⟩ := this
   exists n
   apply sound
-  infer_instance
   simp
   apply flip RelIso.trans
   symm; apply rel_ulift_eqv
@@ -1546,8 +1536,6 @@ def lt_succ_self (o: Ordinal) : o < o + 1 := by
 def ulift_succ (o: Ordinal.{u}) : (ulift.{v} o).succ = ulift.{v} o.succ := by
   cases o with | _ _ r =>
   apply sound
-  infer_instance
-  infer_instance
   simp
   apply RelIso.trans _ (rel_ulift_eqv _).symm
   apply RelIso.trans
@@ -1560,8 +1548,6 @@ def ulift_add (a b: Ordinal.{u}) : (ulift.{v} a) + ulift.{v} b = ulift.{v} (a + 
   cases a with | _ _ rela =>
   cases b with | _ _ relb =>
   apply sound
-  infer_instance
-  infer_instance
   simp
   apply RelIso.trans _ (rel_ulift_eqv _).symm
   apply RelIso.trans
@@ -1572,8 +1558,6 @@ def ulift_add (a b: Ordinal.{u}) : (ulift.{v} a) + ulift.{v} b = ulift.{v} (a + 
 
 def ulift_natCast (n: ℕ) : ulift.{v, u} n = n := by
   apply sound
-  infer_instance
-  infer_instance
   simp
   apply RelIso.trans
   apply rel_ulift_eqv
