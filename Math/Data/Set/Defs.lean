@@ -236,8 +236,6 @@ instance : Coe (List α) (Set α) := ⟨ofList⟩
 
 @[simp] def mem_ofList {l : List α} : ∀{x}, x ∈ (l: Set α) ↔ x ∈ l := Iff.rfl
 
-def IsFinite (s: Set α) : Prop := ∃l: List α, s = l
-
 end Basics
 
 end Set
@@ -525,6 +523,10 @@ def is_empty (s: Set α) : IsEmpty s ↔ s = ∅ := by
 
 def empty_not_nonempty : ¬Set.Nonempty (∅: Set α) := nofun
 
+def empty_or_nonempty (s: Set α) : s = ∅ ∨ s.Nonempty := by
+  apply Classical.or_iff_not_imp_left.mpr
+  simp
+
 macro_rules
 | `(tactic|contradiction) => `(tactic|exfalso; apply empty_not_nonempty; assumption)
 
@@ -538,7 +540,7 @@ section MinElem
 variable (r: α -> α -> Prop) [Relation.IsWellFounded r]
 variable {s: Set α} (h: s.Nonempty)
 
-private def exists_min_elem : ∃x ∈ s, ∀y ∈ s, ¬r y x := by
+def exists_min_elem : ∃x ∈ s, ∀y ∈ s, ¬r y x := by
   have ⟨x, hx, h⟩ := Relation.exists_min r (nonempty_iff_exists.mp h)
   refine ⟨x, hx, ?_⟩
   intro y hy g ; apply h

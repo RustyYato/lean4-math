@@ -20,12 +20,12 @@ instance instSupSetWithTop [SupSet α] [LE α] : SupSet (WithTop α) where
   sSup s :=
     have s' := s.preimage .of
     if ⊤ ∈ s ∨ ¬Set.BoundedAbove s' then ⊤
-    else ↑(⨆ (s.preimage .of))
+    else .of (⨆ (s.preimage .of))
 
 instance instInfSetWithTop [InfSet α] [LE α] : InfSet (WithTop α) where
   sInf s :=
     if s ⊆ {⊤} ∨ ¬s.BoundedBelow then ⊤
-    else ↑(⨅ (s.preimage .of))
+    else .of (⨅ (s.preimage .of))
 
 instance instSupSetWithBot [SupSet α] [LE α] : SupSet (WithBot α) :=
   WithBot.orderIsoWithTop.instSupSet
@@ -40,7 +40,7 @@ def WithBot.sSup_def [SupSet α] [_root_.LE α] (s: Set (WithBot α)) : ⨆ s = 
 instance [SupSet α] [LE α] [IsLawfulSupSet α] : IsLawfulSupSet (WithTop α) where
   le_sSup := by
     intro s x mem
-    simp [sSup]
+    simp [sSup, SupSet.sSup]
     cases x
     rw [if_pos (.inl mem)]
     apply WithTop.LE.top
@@ -53,7 +53,7 @@ instance [SupSet α] [LE α] [IsLawfulSupSet α] : IsLawfulSupSet (WithTop α) w
 instance [InfSet α] [LE α] [IsLawfulInfSet α] : IsLawfulInfSet (WithTop α) where
   sInf_le := by
     intro s x mem
-    simp [sInf]
+    simp [sInf, InfSet.sInf]
     split <;> rename_i h
     rcases h with h | h
     cases Set.mem_singleton.mp <| h _ mem

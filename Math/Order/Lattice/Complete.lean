@@ -202,13 +202,13 @@ section
 variable [IsCompleteLattice α₀] {s t : Set α₀} {a b : α₀}
 
 @[simp]
-def sSup_univ [IsCompleteLattice α] : ⨆ (Set.univ α) = (⊤: α) := by
+def sSup_univ [IsCompleteLattice α] : ⨆ ⊤ = (⊤: α) := by
   apply le_antisymm
   apply le_top
   apply le_sSup_univ
 
 @[simp]
-def sInf_univ [IsCompleteLattice α] : ⨅ (Set.univ α) = (⊥: α) :=
+def sInf_univ [IsCompleteLattice α] : ⨅ ⊤ = (⊥: α) :=
   sSup_univ (α := Opposite α)
 
 def sInf_le_sSup (h: s.Nonempty) : ⨅ s ≤ ⨆ s := by

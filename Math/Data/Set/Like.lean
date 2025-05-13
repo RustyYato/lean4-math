@@ -26,7 +26,7 @@ class IsLawfulEmptySetLike (α: Type*) [h: Inhabited α] [SetLike α β] extends
 variable (p q : S)
 
 @[simp]
-def coe_sort_coe : (p : Set α).Elem = p := rfl
+def coe_sort_coe : ((p : Set α): Type _) = p := rfl
 
 /-- Note: implementers of `SetLike` must copy this lemma in order to tag it with `@[ext]`. -/
 def SetLike.ext (h : ∀ x, x ∈ p ↔ x ∈ q) : p = q :=

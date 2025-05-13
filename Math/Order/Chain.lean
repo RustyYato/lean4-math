@@ -57,8 +57,8 @@ namespace IsChain
 def empty : (∅: Set α).IsChain r where
   connected_by x := elim_empty x
 
-def univ [Relation.IsConnected r] : (Set.univ α).IsChain r :=
-  (Induced.embed r (Set.univ α)).lift_connected
+def univ [Relation.IsConnected r] : ⊤.IsChain r :=
+  (Induced.embed r ⊤).lift_connected
 
 def directedOn [Relation.IsRefl r] {s: Set α} (h: s.IsChain r) : s.DirectedOn r := by
   intro a ha b hb

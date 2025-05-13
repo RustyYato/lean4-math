@@ -7,7 +7,6 @@ def Set.exists_equiv_finset (s: Set α) (h: s.IsFinite) : ∃f: Finset α, ∀x,
       exists ∅
       intro x
       simp [Finset.not_mem_empty]
-      apply Set.not_mem_empty
   case cons =>
     intro a s a_notin_s s_finite ih
     replace ih := ih

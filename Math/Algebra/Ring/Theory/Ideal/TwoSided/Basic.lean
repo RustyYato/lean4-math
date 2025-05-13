@@ -9,7 +9,7 @@ variable [RingOps α] [RingOps β] [IsRing α] [IsRing β]
 
 -- the preimage of a ring homomorphism is always an ideal
 def preimage (f: α →+* β) (i: Ideal β) : Ideal α where
-  carrier := Set.preimage i.carrier f
+  carrier :=  i.carrier.preimage f
   mem_zero := by
     show f 0 ∈ i
     erw [map_zero]

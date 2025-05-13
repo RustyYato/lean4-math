@@ -61,7 +61,7 @@ abbrev IsContinuous'.mk (Tα: Topology α) (Tβ: Topology β) (f: α -> β) :
   (∀s: Set β, IsOpen s → IsOpen (s.preimage f)) ->
   IsContinuous' Tα Tβ f := (⟨·⟩)
 
-def IsOpen.univ {top: Topology α} : IsOpen[top] (Set.univ α) := Topology.univ_open
+def IsOpen.univ {top: Topology α} : IsOpen[top] ⊤ := Topology.univ_open
 def IsOpen.inter {top: Topology α} {a b: Set α} : IsOpen[top] a -> IsOpen[top] b -> IsOpen[top] (a ∩ b) := Topology.inter_open
 def IsOpen.sUnion {top: Topology α} {a: Set (Set α)} : (∀x ∈ a, IsOpen[top] x) -> IsOpen[top] (⋃a) := Topology.sUnion_open
 def IsOpen.union {top: Topology α} {a b: Set α} : IsOpen[top] a -> IsOpen[top] b -> IsOpen[top] (a ∪ b) := by
@@ -94,11 +94,11 @@ def IsOpen.empty : IsOpen (∅: Set α) := IsOpen.empty'
 
 def IsClosed.univ : IsClosed (⊤: Set α) := by
   unfold IsClosed
-  rw [Set.univ_compl]
+  simp
   exact IsOpen.empty
 def IsClosed.empty : IsClosed (∅: Set α) := by
   unfold IsClosed
-  rw [Set.empty_compl]
+  simp
   exact IsOpen.univ
 def IsClosed.preimage (f: α -> β) [IsContinuous f] : ∀s: Set β, IsClosed s → IsClosed (s.preimage f) := by
   intro s hs
@@ -107,27 +107,27 @@ def IsClosed.preimage' (f: α -> β) (hf: IsContinuous f) : ∀s: Set β, IsClos
   intro s hs
   exact IsOpen.preimage f sᶜ hs
 
-def IsClopen.univ : IsClopen (Set.univ α) := ⟨IsOpen.univ, IsClosed.univ⟩
+def IsClopen.univ : IsClopen (⊤: Set α) := ⟨IsOpen.univ, IsClosed.univ⟩
 def IsClopen.empty : IsClopen (∅: Set α) := ⟨IsOpen.empty, IsClosed.empty⟩
 
-def Interior.univ : Interior (Set.univ α) = Set.univ α := by
+def Interior.univ : Interior ⊤ = (⊤: Set α) := by
   apply Set.ext_univ
   intro x
   apply Set.mem_sUnion.mpr
-  exists Set.univ α
+  exists (⊤: Set α)
   apply And.intro
   apply And.intro
   apply IsOpen.univ
   rfl
   apply Set.mem_univ
-def Closure.univ : Closure (Set.univ α) = Set.univ α := by
+def Closure.univ : Closure ⊤ = (⊤: Set α) := by
   apply Set.ext_univ
   intro x
   apply Set.mem_sInter.mpr
   intro xs ⟨xs_closed, univ_sub_xs⟩
-  cases Set.univ_sub _ univ_sub_xs
-  apply Set.mem_univ
-def Border.univ : Border (Set.univ α) = ∅ := by
+  apply univ_sub_xs
+  trivial
+def Border.univ : Border (⊤: Set α) = ∅ := by
   apply Set.ext_empty
   intro x mem
   erw [Set.mem_sdiff, Closure.univ, Interior.univ] at mem
@@ -154,7 +154,7 @@ def Border.empty : Border (∅: Set α) = ∅ := by
   obtain ⟨_, _⟩ := mem
   contradiction
 
-def Dense.univ : Dense (Set.univ α) := by
+def Dense.univ : Dense (⊤: Set α) := by
   intro x
   rw [Closure.univ]
   apply Set.mem_univ
@@ -163,7 +163,7 @@ def Dense.univ : Dense (Set.univ α) := by
 instance IsContinuous.const (x: β) : IsContinuous (fun _: α => x) where
   isOpen_preimage s sopen := by
     by_cases h:x ∈ s
-    suffices s.preimage (fun _: α => x) = Set.univ α by
+    suffices s.preimage (fun _: α => x) = (⊤: Set α) by
       rw [this]
       apply IsOpen.univ
     apply Set.ext_univ
@@ -303,7 +303,7 @@ instance [Subsingleton α₀] : Trivial α₀ where
       obtain ⟨y', _⟩  := h
       rw [Subsingleton.allEq y y']
       assumption
-      left; exact Set.not_nonempty x h
+      left; exact Set.not_nonempty.mp h
     cases this <;> subst x
     apply Iff.intro
     intro h

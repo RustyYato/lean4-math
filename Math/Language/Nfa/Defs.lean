@@ -315,44 +315,32 @@ def seq_stepSet (a: Nfa σ α) (b: Nfa σ β) (sa: Set α) (sb: Set β) (w: σ) 
   cases x
   simp
   simp at x_in_sum
-  rw [Set.mem_bind]
   exists a'
   simp
   right
+  simp at x_in_sum
   assumption
   exists a'
   cases x
   simp; simp at x_in_sum
-  rw [Set.mem_bind]
   exists a'
   simp at x_in_sum
-  contradiction
   obtain ⟨b, b_in_sb, b₀, b₀_in_step, rfl⟩ := h
   simp [Set.mem_bind]
-  left; rw [Set.mem_bind]; exists b
+  left; exists b
   simp [stepSet, seq_step']
   cases x <;> simp
   intro h
-  left
-  rename_i a'
-  rw [Set.mem_bind]
-  simp
-  rw [Set.mem_bind] at h
-  assumption
-  intro h
   cases h
-  right; rw [←Function.comp_def, Set.bind_image]
-  apply Set.mem_image'
-  assumption
+  right; assumption
   rename_i h
   split at h
   left
   rename_i g
   obtain ⟨a', ha', ga'⟩ := g
-  rw [Set.mem_bind]
   exists a'
   apply And.intro; assumption
-  simp; rw [if_pos ga']
+  rw [if_pos ga']
   assumption
   contradiction
 

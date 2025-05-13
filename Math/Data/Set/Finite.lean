@@ -7,7 +7,7 @@ namespace Set
 open Classical
 
 -- a set is finite if there exists an embedding from elements of the set to Fin n for some n
-protected abbrev IsFinite (a: Set α): Prop := _root_.IsFinite a.Elem
+protected abbrev IsFinite (a: Set α): Prop := _root_.IsFinite a
 
 -- a set is co-finite if the complement is finite
 protected abbrev IsCoFinite (a: Set α): Prop := Set.IsFinite aᶜ
@@ -24,11 +24,10 @@ instance [ha: _root_.IsFinite α] : _root_.IsFinite (Set α) := by
   ext a
   rw [eq]
 
-def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty (a.Elem ≃ Fin card) :=
-  _root_.IsFinite.existsEquiv a.Elem
+def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty (a ≃ Fin card) :=
+  _root_.IsFinite.existsEquiv a
 
 instance Set.IsFinite.ofFin (x: Set (Fin n)) : x.IsFinite := by
-  unfold Set.IsFinite Set.Elem
   exact inferInstance
 
 def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) ≠ y.addNat n := by
@@ -44,21 +43,19 @@ def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) 
 instance [ha: Set.IsFinite a] [hb: Set.IsFinite b] : Set.IsFinite (a ∪ b) := by
   have := Fintype.ofIsFinite a
   have := Fintype.ofIsFinite b
-  unfold Set.Elem at *
-  have : Fintype ((a ∪ b).Elem) := Fintype.subtypeOr
+  have : Fintype (a ∪ b: Set _) := Fintype.subtypeOr
   infer_instance
 
 instance [ha: Set.IsFinite a] : Set.IsFinite (a ∩ b) := by
   have := Fintype.ofIsFinite a
-  unfold Set.Elem at *
-  have : Fintype ((a ∩ b).Elem) := Fintype.subtypeAnd
+  have : Fintype (a ∩ b: Set _) := Fintype.subtypeAnd
   infer_instance
 
 instance [hb: Set.IsFinite b] : Set.IsFinite (a ∩ b) := by
   rw [Set.inter_comm]
   exact inferInstance
 
-def Set.elem_val_eq_of_elem_heq (a b: Set α) (c: a.Elem) (d: b.Elem) : a = b -> HEq c d -> c.val = d.val := by
+def Set.elem_val_eq_of_elem_heq (a b: Set α) (c: a) (d: b) : a = b -> HEq c d -> c.val = d.val := by
   intro eq heq
   cases eq
   cases heq
@@ -239,8 +236,7 @@ def IsFinite.rec {motive : Set α → Sort*} (s : Set α) [h : s.IsFinite]
     if h:s = ∅ then
       h ▸ nil
     else
-      let x := Classical.choose (Set.nonempty_of_not_empty _ h)
-      have xmem: x ∈ s := Classical.choose_spec (Set.nonempty_of_not_empty _ h)
+      have ⟨x, xmem⟩  := Classical.choice (Set.ne_empty.mp h)
       have : s = insert x (s \ {x}) := by
         ext y
         simp [mem_sdiff]
