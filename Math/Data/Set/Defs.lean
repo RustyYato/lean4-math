@@ -27,8 +27,8 @@ class SupSet (α: Type*) where
 class InfSet (α: Type*) where
   sInf: Set α -> α
 
-def sSup [SupSet α] (s: Set α) : α := SupSet.sSup s
-def sInf [InfSet α] (s: Set α) : α := InfSet.sInf s
+export SupSet (sSup)
+export InfSet (sInf)
 
 end Defs
 
@@ -511,6 +511,9 @@ def not_nonempty {a: Set α} : ¬a.Nonempty ↔ a = ∅ := by
 def ne_empty {a: Set α} : a ≠ ∅ ↔ a.Nonempty := by
   apply Classical.not_iff_not.mpr
   simp
+
+def not_nonempty_iff {s: Set α} : ¬s.Nonempty ↔ ∀x, x ∉ s := by
+  rw [nonempty_iff_exists, not_exists]
 
 @[simp]
 def is_empty (s: Set α) : IsEmpty s ↔ s = ∅ := by

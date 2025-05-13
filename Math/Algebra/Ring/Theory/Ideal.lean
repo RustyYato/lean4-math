@@ -547,7 +547,7 @@ def Ideal.mkQuot_surj (i: Ideal R) : Function.Surjective i.mkQuot := by
 
 -- the kernel (preimage of 0) of a ring homomorphism generates an ideal
 def Ideal.kernel {S R: Ring α} (f: S →+* R) : Ideal S where
-  carrier := Set.preimage {0} f
+  carrier := Set.preimage f {0}
   mem_zero := map_zero _
   mem_add := by
     intro a b ha hb
@@ -567,7 +567,7 @@ def Ideal.kernel {S R: Ring α} (f: S →+* R) : Ideal S where
     rfl
 
 -- the kernel of Ideal.mkQuot is exactly the ideal itself
-def Ideal.mkQuot_kernel (i: Ideal R) : i.carrier = Set.preimage {0} i.mkQuot := by
+def Ideal.mkQuot_kernel (i: Ideal R) : i.carrier = Set.preimage i.mkQuot {0} := by
   ext x
   rw [Set.mem_preimage, Set.mem_singleton]
   apply Iff.intro

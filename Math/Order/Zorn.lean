@@ -37,7 +37,10 @@ section PreOrder
 variable [LT α] [LE α] [IsPreOrder α]
 
 def preorder (h : ∀ c : Set α, Set.IsChain (· ≤ ·) c → Set.BoundedAbove c) :
-    ∃ m : α, ∀ a, m ≤ a → a ≤ m := exists_maximal_of_chains_bounded h
+    ∃ m : α, ∀ a, m ≤ a → a ≤ m := exists_maximal_of_chains_bounded <| by
+    intro c hc
+    have ⟨ub, hub⟩  := h c hc
+    exists ub
 
 def preorder_in (U: Set α) (h : ∀c ⊆ U, Set.IsChain (· ≤ ·) c → ∃ub ∈ U, ∀x ∈ c, x ≤ ub) :
     ∃ m ∈ U, ∀a ∈ U, m ≤ a → a ≤ m := by

@@ -190,7 +190,7 @@ def induced_compose {tγ : Topology γ} {f : α → β} {g : β → γ} :
   apply propext
   apply Iff.intro
   exact fun ⟨_, ⟨s, hs, h₂⟩, h₁⟩ => h₁ ▸ h₂ ▸ ⟨s, hs, rfl⟩
-  exact fun ⟨s, hs, h⟩ => ⟨Set.preimage s g, ⟨s, hs, rfl⟩, h ▸ rfl⟩
+  exact fun ⟨s, hs, h⟩ => ⟨s.preimage g, ⟨s, hs, rfl⟩, h ▸ rfl⟩
 
 def coinduced_le_iff_le_induced {f : α → β} {tα : Topology α}
     {tβ : Topology β} : tα.coinduced f ≤ tβ ↔ tα ≤ tβ.induced f :=

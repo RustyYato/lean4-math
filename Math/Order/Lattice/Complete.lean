@@ -387,7 +387,7 @@ instance
     split <;> rename_i g
     rcases g with g | g
     exact h _ g
-    have := not_exists.mp g
+    have := Set.not_nonempty_iff.mp g
     cases k
     rfl
     rename_i k
@@ -466,7 +466,7 @@ instance {α} [LE α] [LT α] [SupSet α] [Max α] [IsCompleteSemiLatticeSup α]
     rcases g with g | g
     apply h
     assumption
-    have := not_exists.mp g
+    have := Set.not_nonempty_iff.mp g
     conv at this => {
       intro x; rw [Set.mem_upperBounds]
       conv => { arg 1; intro y; rw [Set.mem_preimage] }

@@ -31,7 +31,7 @@ theorem schroeder_bernstein
   let s : Set α := MonotoneHom.lfp F
 
   have hs : ((s.image f)ᶜ.image g)ᶜ = s := F.map_lfp
-  have hns : (s.image f)ᶜ.image g = sᶜ := Set.compl_injective (by simp [hs, Set.compl_compl])
+  have hns : (s.image f)ᶜ.image g = sᶜ := Set.compl_inj (by simp [hs, Set.compl_compl])
   let g' := Function.invFun g
   have g'g : Function.IsLeftInverse g' g := Function.leftinverse_of_invFun hg
   have hg'ns : sᶜ.image g' = (s.image f)ᶜ := by rw [← hns,

@@ -132,7 +132,7 @@ def IsContinuous.uncurry_right {f : α → β → γ} (x : β) (h : IsContinuous
 def continuous_curry {g : X × Y → Z} (x : X) (h : IsContinuous g) : IsContinuous (Function.curry g x) :=
   IsContinuous.uncurry_left x h
 
-def IsOpen.prod {s : Set X} {t : Set Y} (hs : IsOpen s) (ht : IsOpen t) : IsOpen (s.zip t) :=
+def IsOpen.prod {s : Set X} {t : Set Y} (hs : IsOpen s) (ht : IsOpen t) : IsOpen (s.prod t) :=
   (hs.preimage Prod.fst).inter (ht.preimage Prod.snd)
 
 def IsContinuous.push_discrete [Discrete α'] (f: α' × β -> γ) (hf: ∀x, IsContinuous (fun b => f (x, b))) : IsContinuous f where
@@ -143,7 +143,7 @@ def IsContinuous.push_discrete [Discrete α'] (f: α' × β -> γ) (hf: ∀x, Is
     have : ∀a, IsContinuous (f' a) := by continuity
     let pre_f' (a: α'): Set β := S.preimage (f' a)
     have pre_f'_open (a: α') : IsOpen (pre_f' a) := IsOpen.preimage (f' a) S hS
-    rw [show S.preimage f = ⨆a: α', Set.zip {a} (pre_f' a) from ?_]
+    rw [show S.preimage f = ⨆a: α', Set.prod {a} (pre_f' a) from ?_]
     apply IsOpen.sUnion
     rintro _ ⟨a, rfl⟩
     simp
@@ -156,10 +156,10 @@ def IsContinuous.push_discrete [Discrete α'] (f: α' × β -> γ) (hf: ∀x, Is
     intro hx
     refine ⟨_, ⟨?_, rfl⟩, ?_⟩
     exact x.1
-    simp [Set.mem_zip]
+    simp
     assumption
     intro ⟨_, ⟨a, rfl⟩, hx⟩
-    simp [Set.mem_zip] at hx
+    simp at hx
     obtain ⟨rfl, hx⟩ := hx
     assumption
 

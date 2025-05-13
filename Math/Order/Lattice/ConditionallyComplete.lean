@@ -80,12 +80,12 @@ def isLUB_csSup (ne : s.Nonempty) (H : BoundedAbove s) : IsLUB s (⨆ s) :=
 
 def isLUB_ciSup [Nonempty ι] {f : ι → α} (H : BoundedAbove (range f)) :
     IsLUB (range f) (⨆i, f i) :=
-  isLUB_csSup (nonempty_range f) H
+  isLUB_csSup inferInstance H
 
 def isLUB_ciSup_set {f : β → α} {s : Set β} (H : BoundedAbove (s.image f)) (Hne : s.Nonempty) :
     IsLUB (s.image f) (⨆i: s, f i) := by
   rw [← sSup_image']
-  exact isLUB_csSup (nonempty_image Hne _) H
+  exact isLUB_csSup inferInstance H
 
 def isGLB_csInf (ne : s.Nonempty) (H : BoundedBelow s) : IsGLB s (⨅ s) :=
   isLUB_csSup (α := Opposite α) ne H
@@ -127,7 +127,7 @@ def csInf_lt_of_lt : BoundedBelow s → a ∈ s → a < b → ⨅ s < b :=
 def csSup_singleton (a : α) : ⨆ {a} = a := by
   apply le_antisymm
   apply csSup_le
-  exact Set.nonempty_singleton _
+  infer_instance
   intro x h
   cases Set.mem_singleton.mp h
   rfl
@@ -157,7 +157,7 @@ def csSup_union (hs : BoundedAbove s) (sne : s.Nonempty) (ht : BoundedAbove t) (
     assumption
     assumption
   have : BoundedAbove (s ∪ t) := ⟨_, this⟩
-  have : Set.Nonempty (s ∪ t) := nonempty_union_left sne
+  have : Set.Nonempty (s ∪ t) := inferInstance
   apply le_antisymm
   apply (csSup_le_iff _ _).mpr
   intro x mem
@@ -188,7 +188,7 @@ def csInf_union (hs : BoundedBelow s) (sne : s.Nonempty) (ht : BoundedBelow t) (
 def csSup_insert {a: α} {as: Set α} (ha: BoundedAbove as) (ne: as.Nonempty) : ⨆ (insert a as) = a ⊔ ⨆ as := by
   rw [insert_eq, csSup_union, csSup_singleton]
   apply BoundedAbove.singleton
-  exact Set.nonempty_singleton _
+  infer_instance
   assumption
   assumption
 
@@ -198,7 +198,7 @@ def csInf_insert {a: α} {as: Set α} (ha: BoundedBelow as) (ne: as.Nonempty) : 
 def csSup_pair (a b : α) : ⨆ {a, b} = a ⊔ b := by
   rw [csSup_insert, csSup_singleton]
   apply BoundedAbove.singleton
-  exact Set.nonempty_singleton _
+  infer_instance
 
 def csInf_pair (a b : α) : ⨅ {a, b} = a ⊓ b :=
   csSup_pair (α := Opposite α) a b
@@ -227,7 +227,7 @@ def le_csInf_inter (hs: BoundedBelow s) (ht: BoundedBelow t) (ne : (s ∩ t).Non
   csSup_inter_le (α := Opposite α) hs ht ne
 
 def ciSup_le [Nonempty ι] {f : ι → α} {c : α} (H : ∀ x, f x ≤ c) : ⨆i, f i ≤ c :=
-  csSup_le (nonempty_range f) (by rwa [mem_upperBounds, forall_mem_range])
+  csSup_le inferInstance (by rwa [mem_upperBounds, forall_mem_range])
 
 def le_ciInf [Nonempty ι] {f : ι → α} {c : α} (H : ∀ x, c ≤ f x) : c ≤ ⨅i, f i :=
   ciSup_le (α := Opposite α) H
@@ -286,6 +286,6 @@ def csInf_mem (hs : s.Nonempty) : ⨅ s ∈ s := by
   assumption
 
 def ciInf_mem [Nonempty ι] (f : ι → α) : ⨅i, f i ∈ range f :=
-  csInf_mem (nonempty_range f)
+  csInf_mem inferInstance
 
 end

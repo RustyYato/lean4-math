@@ -57,7 +57,7 @@ namespace IsChain
 def empty : (∅: Set α).IsChain r where
   connected_by x := elim_empty x
 
-def univ [Relation.IsConnected r] : ⊤.IsChain r :=
+def univ [Relation.IsConnected r] : (⊤: Set α).IsChain r :=
   (Induced.embed r ⊤).lift_connected
 
 def directedOn [Relation.IsRefl r] {s: Set α} (h: s.IsChain r) : s.DirectedOn r := by
@@ -120,7 +120,7 @@ def sInter {t: Set (Set α)} (h: t.Nonempty) (c: ∀s ∈ t, IsChain r s) : IsCh
 def inter (cs: IsChain r s) (ct: IsChain r t) : IsChain r (s ∩ t) := by
   rw [←Set.sInter_pair]
   apply sInter
-  exact nonempty_insert
+  infer_instance
   intro x mem
   rcases Set.mem_pair.mp mem with h | h <;> subst x
   assumption
