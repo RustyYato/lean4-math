@@ -967,6 +967,29 @@ def lt_succ_self (x: ZfSet) : x < x.succ := by
   have := h x (by simp)
   apply mem_irrefl _ this
 
+def natCast_inj : Function.Injective (Nat.cast (R := ZfSet)) := by
+  intro x y h
+  rcases Nat.lt_trichotomy x y with g | g | g
+  · have : (x: ZfSet) ∈ (y: ZfSet) := by
+      rw [mem_natCast]
+      exists x
+    rw [h] at this
+    have := mem_irrefl _ this
+    contradiction
+  · assumption
+  · have : (y: ZfSet) ∈ (x: ZfSet) := by
+      rw [mem_natCast]
+      exists y
+    rw [h] at this
+    have := mem_irrefl _ this
+    contradiction
+
+@[simp] def natCast_mem_natCast {n m: ℕ} : (n: ZfSet) ∈ (m: ZfSet) ↔ n < m := by
+  simp [natCast_inj.eq_iff]
+
+@[simp] def natCast_mem_omega (n: ℕ) : (n: ZfSet) ∈ omega := by
+  simp; exists n
+
 attribute [irreducible] ofNat omega
 
 end ZfSet
