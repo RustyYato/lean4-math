@@ -45,6 +45,8 @@ instance : HasSubset (Set α) where
 @[simp]
 def mk_mem (P: α -> Prop) : ∀{x}, x ∈ mk P ↔ P x := by rfl
 
+def sub_def (a b: Set α) : (a ⊆ b) = ∀x ∈ a, x ∈ b := rfl
+
 @[ext]
 def ext (a b : Set α) : (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
   intro h;
@@ -79,6 +81,9 @@ instance : EmptyCollection (Set α) where
 instance : Bot (Set α) where
   bot := empty α
 
+instance : Inhabited (Set α) := ⟨⊥⟩
+instance : Nonempty (Set α) := inferInstance
+
 @[simp] def not_mem_empty (x: α) : ¬x ∈ (∅: Set α) := nofun
 @[simp] def not_mem_bot (x: α) : ¬x ∈ (⊥: Set α) := nofun
 
@@ -89,6 +94,15 @@ instance : Top (Set α) where
   top := univ α
 
 @[simp] def mem_univ (x: α) : x ∈ (⊤: Set α) := True.intro
+
+def ext_empty (a: Set α) : (∀x: α, ¬x ∈ a) -> a = ∅ := by
+  intro h
+  ext x
+  simp [h]
+def ext_univ (a: Set α) : (∀x: α, x ∈ a) -> a = ⊤ := by
+  intro h
+  ext x
+  simp [h]
 
 instance : Union (Set α) where
   union a b := { Mem x := x ∈ a ∨ x ∈ b }
@@ -164,7 +178,7 @@ def preimage (f: α -> β) (s: Set β) : Set α where
 instance : SetComplement (Set α) where
   scompl s := { Mem x := x ∉ s }
 
-@[simp] def mem_scompl {s: Set α} : ∀{x}, x ∈ sᶜ ↔ x ∉ s := Iff.rfl
+@[simp] def mem_compl {s: Set α} : ∀{x}, x ∈ sᶜ ↔ x ∉ s := Iff.rfl
 
 instance : SDiff (Set α) where
   sdiff a b := a ∩ bᶜ
@@ -180,6 +194,10 @@ instance : Insert α (Set α) where
   insert a s := {a} ∪ s
 
 @[simp] def mem_insert {a: α} {s: Set α} : ∀{x}, x ∈ insert a s ↔ x = a ∨ x ∈ s := Iff.rfl
+
+def sep (P: α -> Prop) (a: Set α) : Set α := mk fun x => x ∈ a ∧ P x
+
+def mem_sep {P: α -> Prop} {a: Set α} : ∀{x}, x ∈ a.sep P ↔ x ∈ a ∧ P x := Iff.refl _
 
 def support [Zero β] (f: α -> β) : Set α := (Set.preimage f {0})ᶜ
 
@@ -231,11 +249,40 @@ class IsLawfulSupSet (α: Type*) [LE α] [SupSet α] where
 class IsLawfulInfSet (α: Type*) [LE α] [InfSet α] where
   sInf_le: ∀{s: Set α} {x: α}, x ∈ s -> sInf s ≤ x
 
+-- do not use this in bounds directly, this is only meant to be used to create a LawfulSupSet
+-- for example, via `GaloisConnection`
+class LawfulSupSet (α: Type*) [LE α] extends SupSet α where
+  le_sSup: ∀{s: Set α} {x: α}, x ∈ s -> x ≤ sSup s
+-- do not use this in bounds directly, this is only meant to be used to create a LawfulInfSet
+-- for example, via `GaloisConnection`
+class LawfulInfSet (α: Type*) [LE α] extends InfSet α where
+  sInf_le: ∀{s: Set α} {x: α}, x ∈ s -> sInf s ≤ x
+
 def le_sSup [LE α] [SupSet α] [IsLawfulSupSet α]: ∀{s: Set α} {x: α}, x ∈ s -> x ≤ sSup s :=
   IsLawfulSupSet.le_sSup
 
 def sInf_le [LE α] [InfSet α] [IsLawfulInfSet α]: ∀{s: Set α} {x: α}, x ∈ s -> sInf s ≤ x :=
   IsLawfulInfSet.sInf_le
+
+instance [InfSet α] : SupSet αᵒᵖ where
+  sSup := sInf (α := α)
+instance [SupSet α] : InfSet αᵒᵖ where
+  sInf := sSup (α := α)
+
+instance [LE α] [InfSet α] [IsLawfulInfSet α] : IsLawfulSupSet αᵒᵖ where
+  le_sSup := sInf_le (α := α)
+instance [LE α] [SupSet α] [IsLawfulSupSet α] : IsLawfulInfSet αᵒᵖ where
+  sInf_le := le_sSup (α := α)
+
+instance [LE α] [h: LawfulSupSet α] : IsLawfulSupSet α where
+  le_sSup := h.le_sSup (α := α)
+instance [LE α] [h: LawfulInfSet α] : IsLawfulInfSet α where
+  sInf_le := h.sInf_le (α := α)
+
+instance [LE α] [LawfulInfSet α] : LawfulSupSet αᵒᵖ where
+  le_sSup := sInf_le (α := α)
+instance [LE α] [LawfulSupSet α] : LawfulInfSet αᵒᵖ where
+  sInf_le := le_sSup (α := α)
 
 def iSup [SupSet α] (s: ι -> α) : α := sSup (Set.range s)
 def iInf [InfSet α] (s: ι -> α) : α := sInf (Set.range s)
@@ -419,6 +466,9 @@ def exists_elem (s: Set α) [s.Nonempty] : ∃x, x ∈ s := by
 
 instance (a: α) : Set.Nonempty {a} := by exists a
 
+instance : Inhabited ({a}: Set α) where
+  default := ⟨a, rfl⟩
+
 instance (a: α) (s: Set α) : Set.Nonempty (insert a s) := by exists a; simp
 
 instance (a b: Set α) [a.Nonempty] : (a ∪ b).Nonempty := by
@@ -430,6 +480,15 @@ instance (a b: Set α) [b.Nonempty] : (a ∪ b).Nonempty := by
   have ⟨x, h⟩ := exists_elem b
   exists x
   simp [h]
+
+instance  [h : Nonempty ι] (f : ι → α) : (range f).Nonempty := by
+  obtain ⟨x⟩ := h
+  refine ⟨f x, by exists x⟩
+
+instance (s: Set α) (f: α -> β) [s.Nonempty] : (s.image f).Nonempty := by
+  have ⟨x, h⟩ := exists_elem s
+  exists f x
+  exists x
 
 def nonempty_of_inter_left (a b: Set α) [(a ∩ b).Nonempty] : a.Nonempty := by
   have ⟨x, _, _⟩ := exists_elem (a ∩ b)
@@ -506,6 +565,30 @@ def inter_comm (a b: Set α) : a ∩ b = b ∩ a := min_comm _ _
 def union_assoc (a b c: Set α) : a ∪ b ∪ c = a ∪ (b ∪ c) := max_assoc _ _ _
 def inter_assoc (a b c: Set α) : a ∩ b ∩ c = a ∩ (b ∩ c) := min_assoc _ _ _
 
+def sub_inter (a b k: Set α) : (k ⊆ a ∧ k ⊆ b) ↔ k ⊆ a ∩ b := (le_min_iff (α := Set α)).symm
+def union_sub (a b k: Set α) : (a ⊆ k ∧ b ⊆ k) ↔ a ∪ b ⊆ k := (max_le_iff (α := Set α)).symm
+
+def union_of_sub_left {a b: Set α} (h: a ⊆ b) : a ∪ b = b := by
+  apply (max_eq_right (α := Set α)).mpr
+  assumption
+
+def union_of_sub_right {a b: Set α} (h: a ⊆ b) : b ∪ a = b := by
+  apply (max_eq_left (α := Set α)).mpr
+  assumption
+
+def inter_of_sub_left {a b: Set α} (h: a ⊆ b) : a ∩ b = a := by
+  apply (min_eq_left (α := Set α)).mpr
+  assumption
+
+def inter_of_sub_right {a b: Set α} (h: a ⊆ b) : b ∩ a = a := by
+  apply (min_eq_right (α := Set α)).mpr
+  assumption
+
+instance : @Std.Commutative (Set α) (· ∩ ·) := ⟨inter_comm⟩
+instance : @Std.Associative (Set α) (· ∩ ·) := ⟨inter_assoc⟩
+instance : @Std.Commutative (Set α) (· ∪ ·) := ⟨union_comm⟩
+instance : @Std.Associative (Set α) (· ∪ ·) := ⟨union_assoc⟩
+
 def sub_union_left (a b: Set α) : a ⊆ a ∪ b := le_max_left a b
 def sub_union_right (a b: Set α) : b ⊆ a ∪ b := le_max_right a b
 def inter_sub_left (a b: Set α) : a ∩ b ⊆ a := min_le_left a b
@@ -515,6 +598,9 @@ def sub_insert (a: α) (s: Set α) : s ⊆ insert a s := sub_union_right _ _
 
 def sub_sUnion {S: Set (Set α)} {s: Set α} : s ∈ S -> s ⊆ ⋃ S := le_sSup
 def sInter_sub {S: Set (Set α)} {s: Set α} : s ∈ S -> ⋂ S ⊆ s := sInf_le
+
+def sub_sSup {S: Set (Set α)} {s: Set α} : s ∈ S -> s ⊆ ⨆ S := le_sSup
+def sInf_sub {S: Set (Set α)} {s: Set α} : s ∈ S -> ⨅ S ⊆ s := sInf_le
 
 @[simp] def sub_univ (s: Set α) : s ⊆ ⊤ := le_top (α := Set α) _
 @[simp] def univ_sub {s: Set α} : ⊤ ⊆ s ↔ s = ⊤ := top_le (α := Set α)
@@ -539,6 +625,9 @@ def range_comp {f: α -> β} {g: β -> γ} :
   exact ⟨a', eq ▸ rfl⟩
 
 @[simp] def preimage_id (s: Set α) : s.preimage id = s := rfl
+@[simp] def preimage_id' (s: Set α) (f: α -> α) (hf: ∀x, f x = x) : s.preimage f = s := by
+  rw [show f = id from ?_, preimage_id]
+  ext; apply hf
 def preimage_preimage (s: Set α) (f: γ -> β) (g: β -> α) : (s.preimage g).preimage f = s.preimage (g ∘ f) := by
   rfl
 
@@ -648,11 +737,48 @@ variable (x: α) (a b: Set α)
 @[simp] def sInter_pair : ⋂({a, b}: Set (Set _)) = a ∩ b := by simp
 @[simp] def image_insert (f: α -> β) : image f (insert x a) = insert (f x) (image f a) := by ext; simp
 @[simp] def image_singleton (f: α -> β) : image f {x} = {f x} := by ext; simp
+@[simp] def image_pair (a b: α) : ({a, b}: Set α).image f = ({f a, f b}: Set _) := by simp
 @[simp] def bind_insert (f: α -> Set β) : bind (insert x a) f = f x ∪ bind a f := by ext; simp
 
 end Insert
 
+section Specs
+
+def insert_eq (a: α) (as: Set α) : insert a as = ({a}: Set α) ∪ as := rfl
+
+def image_eq_range (f : α → β) (s : Set α) : s.image f = range fun x : s => f x := by
+  ext x
+  apply Iff.intro
+  intro ⟨x, mem, eq⟩
+  subst eq
+  rw [Set.mem_range]
+  exists  ⟨_, mem⟩
+  intro ⟨⟨x, mem⟩, eq⟩
+  subst eq
+  apply Set.mem_image'
+  assumption
+
+def range_eq_image (f : α → β) : range f = Set.image f ⊤ := by simp
+
+def sdiff_eq_inter_compl (a b: Set α) : a \ b = a ∩ bᶜ := rfl
+
+def singleton_eq_insert_empty (a: α) : {a} = insert a (∅: Set _) := by
+  ext x
+  simp [mem_singleton, mem_insert]
+
+def surjective_eq_range : Function.Surjective f ↔ ∀x, x ∈ Set.range f := Iff.rfl
+
+end Specs
+
 section Theorems
+
+@[simp] def compl_compl (s: Set α) : sᶜᶜ = s := by
+  ext x
+  apply Iff.intro
+  intro h
+  exact Classical.not_not.mp h
+  intro h g
+  exact g h
 
 def image_const_of_nonempty (a: Set α) (b: β) : a.Nonempty -> a.image (fun _ => b) = {b} := by
   intro ⟨a', ha'⟩
@@ -795,6 +921,254 @@ def sum_spec (a: Set α) (b: Set β) : a.sum b = ⋂ (Set.mk fun s: Set (α ⊕ 
     apply h (a.sum b)
     simp
     simp
+
+def univ_eq_empty_of_isempty [IsEmpty α] : ⊤ = Set.empty α := by
+  ext x
+  exact (IsEmpty.elim x).elim
+
+def sub_iSup (a: Set α) (s: ι -> Set α): a ∈ range s -> a ⊆ ⨆i, s i := by
+  intro eq
+  apply sub_trans _ (sub_sSup _)
+  exact a
+  rfl
+  assumption
+
+def iInf_sub (a: Set α) (s: ι -> Set α): a ∈ range s -> ⨅i, s i ⊆ a := by
+  intro eq
+  apply sub_trans (sInf_sub _)
+  rfl
+  assumption
+
+def sInf_eq_iInf [InfSet α] (s: Set α) : ⨅ s = ⨅x: s, x.val := by
+  congr
+  ext x
+  apply Iff.intro
+  intro h
+  apply Set.mem_range.mpr
+  exists ⟨_, h⟩
+  intro ⟨y, eq⟩; subst eq
+  exact y.property
+
+def sSup_eq_iSup [SupSet α] (s: Set α) : ⨆ s = ⨆x: s, x.val := by
+  congr
+  ext x
+  apply Iff.intro
+  intro h
+  apply Set.mem_range.mpr
+  exists ⟨_, h⟩
+  intro ⟨y, eq⟩; subst eq
+  exact y.property
+
+@[simp] def support_const_zero [Zero β] : Set.support (fun _: α => (0: β)) = ∅ := by ext; simp
+
+@[simp]
+def bind_union (a b: Set α) (f: α -> Set β) : bind (a ∪ b) f = a.bind f ∪ b.bind f := by
+  ext x; simp
+  sorry
+
+@[simp]
+def image_bind (a: Set γ) (g: γ -> α) (f: α -> Set β) : bind (a.image g) f = a.bind (f ∘ g) := by
+  simp
+  sorry
+
+@[simp]
+def bind_image (a: Set α) (g: β -> γ) (f: α -> Set β) : bind a ((Set.image g) ∘ f) = (a.bind f).image g := by
+  ext x
+  apply Iff.intro
+  rw [mem_bind]
+  rintro ⟨t, ht, hx⟩
+  obtain ⟨w, _, rfl⟩ := hx
+  apply mem_image'
+  rw [mem_bind]
+  exists t
+  simp [mem_bind, mem_image]
+  rintro b a ha hb rfl
+  exists a
+  apply And.intro
+  assumption
+  exists b
+
+@[simp]
+def sum_bind {a: Set α} {b: Set β} (f: α ⊕ β -> Set γ) : (a.sum b).bind f = a.bind (f ∘ .inl) ∪ b.bind (f ∘ .inr) := by
+  simp [sum_eq_image_union]
+
+def compl_subset_compl {s t: Set α} : sᶜ ⊆ tᶜ ↔ t ⊆ s := by
+  apply Iff.intro
+  intro h x mem
+  exact Classical.not_not.mp (h x · mem)
+  intro h x mem mem'
+  apply mem
+  apply h
+  assumption
+
+def image_subset {a b : Set α} (f : α → β) (h : a ⊆ b) : a.image f ⊆ b.image f := by
+  intro x ⟨y, mem, eq⟩
+  subst eq
+  apply Set.mem_image'
+  apply h
+  assumption
+
+def compl_inj : Function.Injective (SetComplement.scompl (α := Set α)) := by
+  open scoped Classical in
+  intro x y h
+  ext x
+  rw [Classical.not_iff_not]
+  simp [←mem_compl, h]
+
+def compl_nonempty_of_ne_top (a: Set α) : a ≠ ⊤ -> (aᶜ).Nonempty := by
+  intro h
+  rw [←ne_empty]; show ¬aᶜ = ∅
+  rw [←compl_inj.eq_iff (x := aᶜ)]
+  simpa
+
+def union_compl (s: Set α) : s ∪ sᶜ = ⊤ := by
+  ext x; classical
+  rw [Set.mem_union, Set.mem_compl]
+  apply Iff.intro <;> intro
+  trivial
+  exact Decidable.or_not_self _
+
+def sdiff_sub {a b: Set α} (h: a ⊆ b) : a \ b = ∅ := by
+  apply Set.ext_empty
+  intro x ⟨r₀, r₁⟩
+  have := h _ r₀
+  contradiction
+
+def range_comp' (g : α → β) (f : ι → α) : range (g ∘ f) = (range f).image g := by
+  ext x
+  apply Iff.intro
+  intro ⟨x, eq⟩
+  subst eq
+  apply Set.mem_image'
+  apply Set.mem_range'
+  intro ⟨_, ⟨_, eq₀⟩, eq₁⟩
+  subst eq₁; subst eq₀
+  apply Set.mem_range'
+
+def iSup_range' [SupSet α] (g : β → α) (f : ι → β) : iSup (fun b : range f => g b) = iSup (fun i => g (f i)) := by
+  rw [iSup, iSup, ← image_eq_range, ←range_comp']
+  rfl
+
+def sSup_image' [SupSet α] {s : Set β} {f : β → α} : sSup (s.image f) = iSup fun a : s => f a := by
+  rw [iSup, image_eq_range]
+
+def forall_mem_range {p : α → Prop} : (∀ a ∈ range f, p a) ↔ ∀ i, p (f i) := by
+  apply Iff.intro
+  intro h x
+  apply h
+  apply Set.mem_range'
+  intro h x ⟨_, eq⟩; subst eq
+  apply h
+
+def forall_mem_image {f : α → β} {s : Set α} {p : β → Prop} :
+  (∀ y ∈ s.image f, p y) ↔ ∀ ⦃x⦄, x ∈ s → p (f x) := by
+  apply Iff.intro
+  intro h x me
+  apply h
+  apply Set.mem_image'
+  assumption
+  intro h y ⟨_, _, eq⟩; subst eq
+  apply h
+  assumption
+
+def inter_eq_empty_iff {a b: Set α} : a ∩ b = ∅ ↔ ∀x, x ∈ a -> x ∈ b -> False := by
+  apply Iff.intro
+  intro h x ha hb
+  have : x ∈ a ∩ b := ⟨ha, hb⟩
+  rw [h] at this
+  contradiction
+  intro h
+  apply ext_empty
+  intro x ⟨ha, hb⟩
+  apply h x <;> assumption
+
+def compl_inter (s t: Set α) : (s ∩ t)ᶜ = sᶜ ∪ tᶜ := by
+  ext
+  simp [mem_inter, mem_compl, mem_union, ←Classical.not_and_iff_not_or_not]
+
+def compl_union (s t: Set α) : (s ∪ t)ᶜ = sᶜ ∩ tᶜ := by
+  ext
+  simp [mem_inter, mem_compl, mem_union]
+
+def insert_sdiff (a: Set α) (x: α) (hx: x ∉ a) : (insert x a) \ {x} = a := by
+  ext y
+  simp [mem_insert, mem_sdiff]
+  apply Iff.intro
+  intro ⟨h, g⟩
+  exact h.resolve_left g
+  intro
+  apply And.intro
+  right; assumption
+  rintro rfl
+  contradiction
+
+def inter_union_right (a b k: Set α) : (a ∪ b) ∩ k = a ∩ k ∪ b ∩ k := by
+  ext x
+  simp  [mem_union, mem_inter, or_and_right]
+
+def inter_union_left (a b k: Set α) : k ∩ (a ∪ b) = k ∩ a ∪ k ∩ b := by
+  simp [inter_comm k, inter_union_right]
+
+def union_inter_right (a b k: Set α) : (a ∩ b) ∪ k = (a ∪ k) ∩ (b ∪ k) := by
+  ext x
+  simp  [mem_union, mem_inter, and_or_right]
+
+def union_inter_left (a b k: Set α) : k ∪ (a ∩ b) = (k ∪ a) ∩ (k ∪ b) := by
+  simp [union_comm k, union_inter_right]
+
+def singleton_sub (a: α) (b: Set α) : {a} ⊆ b ↔ a ∈ b := by
+  simp [sub_def, mem_singleton]
+
+def range_iff_surjective (f: α -> β) : Set.range f = ⊤ ↔ Function.Surjective f := by
+  rw [surjective_eq_range]
+  apply Iff.intro
+  intro h
+  simp [h]
+  intro h;
+  ext; simp [h]
+
+@[simp] def sInter_union (a b: Set (Set α)) : ⋂(a ∪ b) = ⋂a ∩ ⋂b := by
+  ext x
+  simp [mem_sInter, mem_union, mem_inter]
+  apply Iff.intro
+  intro h
+  apply And.intro
+  intro y mem
+  apply h
+  left; assumption
+  intro y mem
+  apply h
+  right; assumption
+  intro ⟨ha, hb⟩ y mem
+  cases mem
+  apply ha; assumption
+  apply hb; assumption
+
+@[simp] def sUnion_union (a b: Set (Set α)) : ⋃(a ∪ b) = ⋃a ∪ ⋃b := by
+  ext x
+  simp [mem_sUnion, mem_union]
+  apply Iff.intro
+  intro ⟨x', h, mem⟩
+  cases h
+  left
+  exists x'
+  right
+  exists x'
+  intro h
+  rcases h with ⟨x', _, h⟩ | ⟨x', _, h⟩ <;>(
+    exists x'
+    apply And.intro _ h)
+  left; assumption
+  right; assumption
+
+def inter_sub_inter (a b c d: Set α) : a ⊆ c -> b ⊆ d -> a ∩ b ⊆ c ∩ d := by
+  intro ac bd
+  intro x
+  simp [mem_inter]
+  intro ha hb
+  apply And.intro
+  apply ac; assumption
+  apply bd; assumption
 
 end Theorems
 
