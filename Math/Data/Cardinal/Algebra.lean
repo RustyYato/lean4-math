@@ -3,6 +3,7 @@ import Math.Data.Fin.Basic
 import Math.Data.Fintype.Card
 import Math.Algebra.Semiring.Char
 import Math.Algebra.Algebra.Defs
+import Math.Type.Finite
 
 namespace Cardinal
 
@@ -396,5 +397,18 @@ def lt_aleph₀ (c: Cardinal) : c < ℵ₀ ↔ ∃n: ℕ, c = n := by
     apply ofNat_of_embedFins_inj
   · rintro ⟨n, rfl⟩
     apply natCast_lt_aleph₀
+
+protected def IsFinite (α: Type*) : #α < ℵ₀ ↔ IsFinite α := by
+  rw [lt_aleph₀]
+  apply Iff.intro
+  intro ⟨n, eq⟩
+  replace ⟨eq⟩ := exact eq
+  replace eq := eq.trans (Equiv.ulift _)
+  exists n
+  intro ⟨n, h⟩
+  exists n
+  apply sound
+  apply h.trans
+  symm; apply Equiv.ulift
 
 end Cardinal

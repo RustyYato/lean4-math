@@ -138,6 +138,10 @@ def IsFinite.ofEmbed {α: Sort*} (β: Sort*) [hb: IsFinite β] (h: α ↪ β) : 
   apply IsFinite.ofEmbedding (limit := limit)
   exact Equiv.congrEmbed .rfl hb h
 
+def Nat.not_is_finite : ¬IsFinite ℕ := by
+  intro h
+  exact (Fintype.ofIsFinite ℕ).nat_not_fintype
+
 instance (α: Sort*) [IsFinite α] : IsFinite (PLift α) :=
   IsFinite.ofEquiv (Equiv.plift _)
 instance (α: Type*) [IsFinite α] : IsFinite (ULift α) :=
