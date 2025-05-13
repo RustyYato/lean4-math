@@ -11,7 +11,6 @@ def not_disjoint_iff_nonempty_inter {a b: Set α} :
   simp [Disjoint] at h
   obtain ⟨t, tsuba, tsubb, tnonempty⟩ := h
   rcases t.empty_or_nonempty with rfl | ⟨x, hx⟩
-  have := tnonempty (le_refl _)
   contradiction
   exists x
   apply And.intro

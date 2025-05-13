@@ -440,9 +440,7 @@ instance {α} [LE α] [LT α] [InfSet α] [Min α] [IsCompleteSemiLatticeMin α]
     intro k s h
     cases k
     suffices s ⊆ {⊤} by
-      simp [sInf]
-      rw [if_pos]
-      left; assumption
+      simp only [sInf, this, true_or, ↓reduceIte, le_refl]
     intro x mem
     apply le_antisymm
     apply le_top
@@ -455,7 +453,7 @@ instance {α} [LE α] [LT α] [InfSet α] [Min α] [IsCompleteSemiLatticeMin α]
     intro x mem
     cases h x mem
     assumption
-    simp [sInf]
+    simp only [sInf]
     split
     apply le_top
     rfl
