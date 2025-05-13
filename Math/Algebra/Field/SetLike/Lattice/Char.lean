@@ -172,7 +172,7 @@ private def n_prime : Nat.IsPrime n := by
 
 def Subfield.ofFinCast : Subfield F :=
   have : Nat.IsPrimeClass n := ⟨n_prime F⟩
-  Subfield.range (α := Fin n) <| {
+  Subfield.range (F := _ →+* _) (α := Fin n) <| {
     toFun a := a.val
     map_zero := by apply natCast_zero
     map_one := by

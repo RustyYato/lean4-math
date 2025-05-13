@@ -29,31 +29,6 @@ def AddSubgroup.setoid {R: Ring α} (i: AddSubgroup R) : Setoid R where
 
 namespace Subring
 
--- every ring homomorphism identifies a subring of R
-def range
-  [RingOps R] [RingOps S] [IsRing R] [IsRing S]
-  [FunLike F S R] [IsZeroHom F S R] [IsOneHom F S R] [IsAddHom F S R] [IsMulHom F S R]
-  (f: F) : Subring R where
-  carrier := Set.range f
-  mem_zero := by
-    exists 0
-    rw [map_zero]
-  mem_one := by
-    exists 1
-    rw [map_one]
-  mem_add := by
-    rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
-    rw [←map_add]
-    apply Set.mem_range'
-  mem_neg := by
-    rintro _ ⟨_, rfl⟩
-    rw [←map_neg]
-    apply Set.mem_range'
-  mem_mul := by
-    rintro _ _ ⟨_, rfl⟩ ⟨_, rfl⟩
-    rw [←map_mul]
-    apply Set.mem_range'
-
 -- there is a homomorphism between to a subring from each of it's subsets
 def Hom [RingOps R] (s t: Subring R) (h: s ⊆ t) : s ↪+* t where
   toFun x := ⟨x.val, h _ x.property⟩
