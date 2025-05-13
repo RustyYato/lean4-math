@@ -32,16 +32,16 @@ private def exists_ord (c: Cardinal.{u}) : ∃o: Ordinal, o.card = c := by
 
 instance {α: Type*} : Nonempty { r: α -> α -> Prop // Relation.IsWellOrder r } := ⟨⟨WellOrdering.order α, inferInstance⟩⟩
 
-instance : Nonempty (Set.preimage {c} Ordinal.card) := by
+instance : Nonempty (Set.preimage Ordinal.card {c}) := by
   cases c with | mk c =>
   exact ⟨Ordinal.type (WellOrdering.order c), rfl⟩
 
 -- ord is the smallest ordinal that has cardinality as c
-private noncomputable def toOrdinal (c: Cardinal): Ordinal := ⨅x: Set.preimage {c} Ordinal.card, x.val
+private noncomputable def toOrdinal (c: Cardinal): Ordinal := ⨅x: Set.preimage Ordinal.card {c}, x.val
 
 private def toOrdinal_eq (α: Type*) : ∃ (r : α → α → Prop) (_wo: Relation.IsWellOrder r), toOrdinal ⟦α⟧ = Ordinal.type r := by
   unfold toOrdinal
-  have := ciInf_mem fun r : Set.preimage {⟦α⟧} Ordinal.card => r.val
+  have := ciInf_mem fun r : Set.preimage Ordinal.card {⟦α⟧} => r.val
   obtain ⟨⟨o, mem⟩, eq⟩ := this
   dsimp at eq
   replace mem : o.card = ⟦α⟧ := mem

@@ -101,7 +101,7 @@ def connected_of_ofHom [IsConnected α] (h: α ≃ₜ β) : IsConnected β :=
 def IsPreconnected.onSet (s: Set α) (hs: IsPreconnectedOn s) : IsPreconnected s where
   univ_preconnected := by
     rintro _ _ ⟨u, hu, rfl⟩  ⟨v, hv, rfl⟩ total ha hb
-    simp at *
+    simp; simp at ha hb
     obtain ⟨a, ha⟩ := ha
     obtain ⟨b, hb⟩ := hb
     have ⟨x, hx, meminter⟩ := hs u v hu hv ?_ ⟨a.val, a.property, ha⟩ ⟨b.val, b.property, hb⟩
@@ -161,7 +161,7 @@ def IsPreconnectedOn.not_split (s a b: Set α)
 instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) where
   univ_preconnected := by
     intro U V hU hV total
-    simp [Set.univ_inter]
+    simp
     intro ⟨x, hx⟩ ⟨y, hy⟩
     rw [←Set.not_disjoint_iff_nonempty_inter]
     intro disjoint
@@ -175,14 +175,14 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       let β' := ({x}: Set α) × β
       let β'_iso_β : β' ≃ₜ β := Iso.subsing_prod_left
       exact preconnected_of_ofHom β'_iso_β.symm
-    have preconn_slice_α' : ∀x: β, IsPreconnectedOn (Set.zip (⊤: Set α) {x}) := by
+    have preconn_slice_α' : ∀x: β, IsPreconnectedOn (Set.prod (⊤: Set α) {x}) := by
       intro b₀
       apply IsPreconnected.ofSet
       apply preconnected_of_ofHom (α := α × ({b₀}: Set β))
       clear x hx y hy total disjoint hU hV U V preconn_slice_α preconn_slice_β
       refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_⟩
       intro (a, b); refine ⟨(a, b.val), ?_⟩
-      simp [Set.mem_zip, Set.mem_univ, b.property]
+      simp [Set.mem_prod, Set.mem_univ, b.property]
       intro ⟨(a, b), hb⟩; refine (a, ⟨b, ?_⟩)
       exact hb.right
       intro; rfl
@@ -197,14 +197,14 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       apply IsContinuous.comp
       apply IsContinuous.subtype_mk
       apply IsContinuous.comp
-    have preconn_slice_β' : ∀x: α, IsPreconnectedOn (Set.zip {x} (⊤: Set β)) := by
+    have preconn_slice_β' : ∀x: α, IsPreconnectedOn (Set.prod {x} (⊤: Set β)) := by
       intro a₀
       apply IsPreconnected.ofSet
       apply preconnected_of_ofHom (α := ({a₀}: Set α) × β)
       clear x hx y hy total disjoint hU hV U V preconn_slice_α preconn_slice_β
       refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_, ?_⟩
       intro (a, b); refine ⟨(a.val, b), ?_⟩
-      simp [Set.mem_zip, Set.mem_univ, a.property]
+      simp [Set.mem_prod, Set.mem_univ, a.property]
       intro ⟨(a, b), ha⟩; refine (⟨a, ?_⟩, b)
       exact ha.left
       intro; rfl
@@ -219,7 +219,7 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       apply IsContinuous.subtype_mk
       apply IsContinuous.comp
       apply IsContinuous.comp
-    have α₀ : ∀x: α, (Set.zip {x} (⊤: Set β)) ⊆ U ∨ (Set.zip {x} (⊤: Set β)) ⊆ V := by
+    have α₀ : ∀x: α, (Set.prod {x} (⊤: Set β)) ⊆ U ∨ (Set.prod {x} (⊤: Set β)) ⊆ V := by
       intro x
       apply IsPreconnectedOn.not_split
       apply preconn_slice_β'
@@ -228,7 +228,7 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       apply Set.sub_univ
       assumption
       assumption
-    have β₀: ∀x: β, (Set.zip (⊤: Set α) {x}) ⊆ U ∨ (Set.zip (⊤: Set α) {x}) ⊆ V := by
+    have β₀: ∀x: β, (Set.prod (⊤: Set α) {x}) ⊆ U ∨ (Set.prod (⊤: Set α) {x}) ⊆ V := by
       intro x
       apply IsPreconnectedOn.not_split
       apply preconn_slice_α'
@@ -237,7 +237,7 @@ instance [IsPreconnected α] [IsPreconnected β] : IsPreconnected (α × β) whe
       apply Set.sub_univ
       assumption
       assumption
-    suffices (∀x: α, Set.zip {x} (⊤: Set β) ⊆ U) ∨ (∀x: α, Set.zip {x} (⊤: Set β) ⊆ V) by
+    suffices (∀x: α, Set.prod {x} (⊤: Set β) ⊆ U) ∨ (∀x: α, Set.prod {x} (⊤: Set β) ⊆ V) by
       rcases this with h | h
       have : U = ⊤ := by
         apply Set.ext_univ

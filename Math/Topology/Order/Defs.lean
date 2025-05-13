@@ -14,7 +14,7 @@ variable [Topology α] [LE α] [IsOrderClosed α]
 
 def isClosed_le [Topology β] {f g : β → α} (hf : IsContinuous f) (hg : IsContinuous g) :
     IsClosed (Set.mk fun b => f b ≤ g b) := by
-  show IsClosed <| Set.preimage (Set.mk fun x: α × α => x.1 ≤ x.2) (fun x: β => (f x, g x))
+  show IsClosed <| (Set.mk fun x: α × α => x.1 ≤ x.2).preimage (fun x: β => (f x, g x))
   apply IsClosed.preimage
   apply isClosed_le_prod
 

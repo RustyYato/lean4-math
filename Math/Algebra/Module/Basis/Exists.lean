@@ -13,13 +13,13 @@ def existsBasis : Nonempty (Submodule.Basis R M) := by
     intro h
     simp at h
     obtain ⟨v, hv⟩ := h
-    have := spec (insert v S) (Submodule.insertLinindep _ linear_indep v hv) Set.sub_insert
+    have := spec (insert v S) (Submodule.insertLinindep _ linear_indep v hv) (Set.sub_insert _ _)
     apply hv
     rw [←this]
     apply Submodule.mem_span_of
     simp
   · intro S memS Schain
-    refine ⟨⋃S, ?_, fun _ => Set.sub_sUnion _ _⟩
+    refine ⟨⋃S, ?_, fun _ => Set.sub_sUnion⟩
     show Submodule.IsLinindep _ _
     rw [Submodule.is_linindep_iff_kernel_zero]
     rcases S.empty_or_nonempty with rfl | ⟨s, hs⟩

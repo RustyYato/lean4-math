@@ -36,7 +36,7 @@ instance : Topology.IsConnected ℝ where
     intro A B hA hB total a ha b hb a_lt_b
     rw [←Set.not_disjoint_iff_nonempty_inter]
     intro h
-    replace h := Set.of_sub_empty _  <| h (A ∩ B) (Set.inter_sub_left _ _) (Set.inter_sub_right _ _)
+    replace h := Set.sub_empty.mp <| h (A ∩ B) (Set.inter_sub_left _ _) (Set.inter_sub_right _ _)
     have disjoint : ∀x, x ∉ A ∩ B := by intro x; rw [h]; intro; contradiction
     simp [Set.mem_inter] at disjoint
 
@@ -471,7 +471,7 @@ instance : IsTopologicalAddGroup ℝ where
 
 instance : IsOrderClosed ℝ where
   isClosed_le_prod := by
-    have :  (Set.mk fun p: ℝ × ℝ => p.fst ≤ p.snd) = Set.preimage (Set.Ici 0) (fun p : ℝ × ℝ => p.snd - p.fst) := by
+    have :  (Set.mk fun p: ℝ × ℝ => p.fst ≤ p.snd) = (Set.Ici 0).preimage (fun p : ℝ × ℝ => p.snd - p.fst) := by
       ext
       simp [Set.mem_preimage, le_sub_iff_add_le]
     rw [this]

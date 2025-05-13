@@ -263,7 +263,7 @@ def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
   have defined_nonempty : (Set.mk R.defines).Nonempty := by
     apply Classical.byContradiction
     intro g
-    replace g := Set.not_nonempty _ g
+    simp at g
     have ⟨a, b, ne⟩ := h
     have := spec (fun x y => a = x ∧ b = y) {
       trans := by

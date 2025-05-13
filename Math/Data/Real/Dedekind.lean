@@ -21,7 +21,9 @@ def upper_closed_up (c: DedekindCut) : ∀x ∈ c.upper, ∀y, x ≤ y -> y ∈ 
   intro x hx y hy m
   have := c.lower_closed_down y m x hy
   contradiction
-def upper_nonempty (c: DedekindCut) : c.upper.Nonempty := c.not_univ
+def upper_nonempty (c: DedekindCut) : c.upper.Nonempty := by
+  have ⟨x, hx⟩  := c.not_univ
+  exists x
 
 def upper_eq_lower_upperbounds (c: DedekindCut) : c.upper = c.lower.upperBounds := by
   ext x
@@ -428,7 +430,7 @@ def toReal'_spec (c: DedekindCut) (a b: ℚ) (ha: a ∈ c.lower) (hb: b ∈ c.up
       assumption
       exact seq₂_snd_mem_upper c a b hb n
 
-def toReal (c: DedekindCut) : ℝ := c.toReal' (Classical.choose c.lower_nonempty) (Classical.choose c.upper_nonempty) (Classical.choose_spec c.lower_nonempty) (Classical.choose_spec c.upper_nonempty)
+def toReal (c: DedekindCut) : ℝ := c.toReal' _ _ (Classical.choose_spec (Set.nonempty_iff_exists.mp c.lower_nonempty)) (Classical.choose_spec (Set.nonempty_iff_exists.mp c.upper_nonempty))
 def toReal_spec (c: DedekindCut) : c.lower = Set.mk fun x: ℚ => x < c.toReal := by apply toReal'_spec
 
 end DedekindCut

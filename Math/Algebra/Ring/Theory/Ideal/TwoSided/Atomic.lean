@@ -106,7 +106,7 @@ instance : IsCoatomic (Ideal R) where
       apply Set.mem_image'
       assumption
     · refine ⟨⟨i, hi, le_refl _⟩, ?_⟩
-      cases Set.not_nonempty _ h
+      simp at h; cases h
       intro _ _; contradiction
 
 -- there is always a maximal ideal larger than every proper ideal

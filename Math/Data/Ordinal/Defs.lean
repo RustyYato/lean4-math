@@ -591,9 +591,9 @@ def rel_min_hom_left : rel_min relα relβ ≼i relα where
       show relα x a ↔ _
       apply Iff.intro
       · intro x_lt_a
-        refine ⟨⟨_, x_lt_a⟩, ?_⟩
+        refine ⟨_, x_lt_a, ?_⟩
         rfl
-      · intro ⟨⟨_, _⟩, rfl⟩
+      · intro ⟨_, _, rfl⟩
         assumption
     exists b
     rw [←rank_rel_rank (r := relα) _ _ h, ←rank_rel_rank (r := relβ)]
@@ -1742,7 +1742,6 @@ def add_left_strict_mono (k: Ordinal) : StrictMonotone (k + ·) := by
       intro x
       cases x
       simp
-      rw [Set.mem_range]
       rename_i k
       exists .inl k
       simp

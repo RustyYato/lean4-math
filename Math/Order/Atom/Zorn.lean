@@ -30,7 +30,7 @@ def IsCoatomic.of_isChain_bounded {α : Type*}
     assumption
     apply z_in_up
     exact lt_irrefl (c_sub _ g).right
-    cases Set.not_nonempty _ gc
+    cases Set.not_nonempty.mp gc
     exists x
     apply And.intro
     apply And.intro

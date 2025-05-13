@@ -195,12 +195,10 @@ def exists_add_left_of_le {a b: Ordinal} (h: a ≤ b) : ∃k, b = a + k := by
             simp
           · rintro _ ⟨x, rfl⟩
             simp
-            exists ⟨a + x.val, ?_⟩
             apply add_lt_limit
             infer_instance
             assumption
             exact x.property
-            rfl
         · apply csSup_le_csSup'
           · exists b
             rintro _ ⟨x, rfl⟩
