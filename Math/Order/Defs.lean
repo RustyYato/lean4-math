@@ -126,6 +126,22 @@ def lt_of_le_of_ne: a ≤ b -> a ≠ b -> a < b := by
   assumption
   contradiction
 
+@[simp] def le_bot [Bot α] [IsLawfulBot α] {a: α} : a ≤ ⊥ ↔ a = ⊥ := by
+  apply Iff.intro
+  intro h
+  apply le_antisymm
+  assumption
+  apply bot_le
+  intro h; rw [h]
+
+@[simp] def top_le [Top α] [IsLawfulTop α] {a: α} : ⊤ ≤ a ↔ a = ⊤ := by
+  apply Iff.intro
+  intro h
+  apply le_antisymm
+  apply le_top
+  assumption
+  intro h; rw [h]
+
 instance : @Relation.IsAntisymm α (· ≤ ·) where
   antisymm_by := le_antisymm
 
