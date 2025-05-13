@@ -36,13 +36,3 @@ def InjectiveOn [IsPreOrder β] (m: StrictMonotoneOn f s) : Function.InjectiveOn
   contradiction
 
 end StrictMonotoneOn
-
-namespace StrictMonotone
-
-def Injective [IsPreOrder β] (m: StrictMonotone f) : Function.Injective f := by
-  rw [←StrictMonotone.iffOnUniv] at m
-  rw [←Function.InjectiveOn_univ_iff_Injective]
-  apply StrictMonotoneOn.InjectiveOn
-  assumption
-
-end StrictMonotone
