@@ -46,7 +46,7 @@ instance neBot_atTop [hα: Nonempty α] [IsDirected α (· ≤ ·)] [IsPreOrder 
   simp
   exists 𝓟 (Set.Ici c)
   apply And.intro
-  apply Set.mem_range'
+  exists c
   apply And.intro
   iterate 2
     apply principal_le_principal
@@ -72,7 +72,7 @@ instance neBot_atBot [hα: Nonempty α] [IsDirected α (· ≥ ·)] [IsPreOrder 
   simp
   exists 𝓟 (Set.Iic c)
   apply And.intro
-  apply Set.mem_range'
+  exists c
   apply And.intro
   iterate 2
     apply principal_le_principal

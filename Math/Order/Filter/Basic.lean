@@ -181,7 +181,7 @@ inductive GenerateSets (g : Set α) : α → Prop
   | up {s t : α} : GenerateSets g s → s ≤ t → GenerateSets g t
   | min {s t : α} : GenerateSets g s → GenerateSets g t → GenerateSets g (s ⊓ t)
 
-def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : FilterBase α where
+def generate_of_nonempty (g: Set α) [ne: g.Nonempty] : FilterBase α where
   set := Set.mk (GenerateSets g)
   nonempty := by
     obtain ⟨x, ne⟩ := ne
@@ -199,10 +199,10 @@ def generate_of_nonempty (g: Set α) (ne: g.Nonempty) : FilterBase α where
     assumption
     assumption
 
-def generate [Top α] [IsLawfulTop α] (g: Set α) : FilterBase α := generate_of_nonempty (insert ⊤ g) Set.nonempty_insert
+def generate [Top α] [IsLawfulTop α] (g: Set α) : FilterBase α := generate_of_nonempty (insert ⊤ g)
 
 def generate_eq_generate_nonempty [Top α] [IsLawfulTop α] (s: Set α) (h: s.Nonempty) :
-  generate_of_nonempty s h = generate s := by
+  generate_of_nonempty s = generate s := by
   apply le_antisymm
   · intro x hx
     induction hx with
@@ -236,10 +236,10 @@ def generate_eq_generate_nonempty [Top α] [IsLawfulTop α] (s: Set α) (h: s.No
       assumption
       assumption
 
-def mem_generate_of_mem {s : Set α} {x : α} (h : x ∈ s) {h': s.Nonempty} :
-  x ∈ generate_of_nonempty s h' := GenerateSets.basic h
+def mem_generate_of_mem {s : Set α} {x : α} (h : x ∈ s) {_h': s.Nonempty} :
+  x ∈ generate_of_nonempty s := GenerateSets.basic h
 
-def le_generate_iff {s : Set α} {f : FilterBase α} {ne: s.Nonempty} : f ≤ generate_of_nonempty s ne ↔ s ⊆ f.set := by
+def le_generate_iff {s : Set α} {f : FilterBase α} {ne: s.Nonempty} : f ≤ generate_of_nonempty s ↔ s ⊆ f.set := by
   apply Iff.intro
   intro h x mem
   apply h
@@ -273,7 +273,7 @@ def le_generate_iff' [Top α] [IsLawfulTop α] {s : Set α} {f : FilterBase α} 
   apply h
   assumption
 
-def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne: s.Nonempty} {x: α} : x ∈ generate_of_nonempty s ne ↔ ∃ t ⊆ s, Set.IsFinite t ∧ ⨅ t ≤ x := by
+def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne: s.Nonempty} {x: α} : x ∈ generate_of_nonempty s ↔ ∃ t ⊆ s, Set.IsFinite t ∧ ⨅ t ≤ x := by
   apply Iff.intro
   intro mem
   induction mem with
@@ -302,7 +302,7 @@ def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne:
     assumption
   intro ⟨t, sub, fin, le⟩
   apply closed_upward _ _ le
-  show ⨅ t ∈ generate_of_nonempty s ne
+  show ⨅ t ∈ generate_of_nonempty s
   apply (closed_finite_sInf _ _).mpr
   intro x mem
   apply GenerateSets.basic
@@ -310,7 +310,7 @@ def mem_generate_iff [InfSet α] [IsCompleteSemiLatticeMin α] {s : Set α} {ne:
   assumption
 
 @[simp]
-def generate_singleton (a: Set α) : generate_of_nonempty {a} (Set.nonempty_singleton _) = 𝓟 a := by
+def generate_singleton (a: Set α) : generate_of_nonempty {a} = 𝓟 a := by
   apply le_antisymm
   intro x mem
   rw [mem_principal] at mem
@@ -570,7 +570,7 @@ section Basic
 def univ_mem (f: Filter α) : ⊤ ∈ f := FilterBase.top_mem f
 
 def map (f: α -> β) (F: Filter α) : Filter β where
-  set := F.set.preimage (Set.preimage · f)
+  set := F.set.preimage (Set.preimage f)
   nonempty := by
     exists ⊤
     simp [Set.mem_preimage]
@@ -667,7 +667,6 @@ def Eventually.frequently {f : Filter α} [f.NeBot] {p : α → Prop} (h : Event
   ext x
   simp [Set.not_mem_empty, ←Set.sdiff_eq_inter_compl,
     Set.sdiff_self]
-  intro; contradiction
 
 def Frequently.exists {p : α → Prop} {f : Filter α} (hp : Frequently p f) : ∃ x, p x := by
   apply Classical.byContradiction

@@ -176,8 +176,6 @@ instance : Topology.IsCompactSpace S₁ where
       have := this (mk 0)
       rw [Set.mem_sInter] at this
       simp at this
-      obtain ⟨_, _, _⟩ := this
-      contradiction
     | cons s U s_notin_U Ufin ih =>
       replace ih := ih Ufin
       obtain ⟨f₀, f₁, f₀_in, f₁_in, seq⟩ := U_sub s (by simp)

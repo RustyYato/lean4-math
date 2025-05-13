@@ -36,7 +36,6 @@ def lim_eq' [T2 X] (f: Filter X) [f.NeBot] (o: X) : (∀s: Set X, Topology.IsOpe
     assumption
   | basic hx =>
     rename_i x
-    simp at hx
     rcases hx with hx | hx
     subst hx
     apply Filter.univ_mem

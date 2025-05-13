@@ -48,7 +48,7 @@ instance [R1 X] : R0 X where
     suffices ∅ ∈ 𝓝 a by
       rw [mem_nhds] at this
       obtain ⟨_, h, _, _⟩ := this
-      cases Set.sub_empty _ h
+      cases Set.sub_empty.mp h
       contradiction
     rw [nbhd_eq_bot]
     trivial

@@ -35,7 +35,7 @@ def mem_nhds {a: α} : ∀{s}, s ∈ 𝓝 a ↔ ∃ t ⊆ s, IsOpen t ∧ a ∈ 
       rfl
       apply IsOpen.univ
       trivial
-      replace ⟨_, ⟨_, ⟨⟨t, ht, topen⟩, rfl⟩, rfl⟩, h⟩ := Set.mem_sUnion.mp h
+      obtain ⟨_, ⟨_, ⟨t, ⟨ha, uopen⟩, _, rfl⟩, rfl⟩, h⟩ := h
       refine ⟨t, ?_, ?_, ?_⟩
       assumption
       assumption
@@ -65,7 +65,7 @@ def mem_nhds {a: α} : ∀{s}, s ∈ 𝓝 a ↔ ∃ t ⊆ s, IsOpen t ∧ a ∈ 
       assumption
   · intro ⟨t, ht, topen, ha⟩
     apply FilterBase.GenerateSets.basic
-    simp; right
+    simp only [Set.sSup_eq_sUnion]; right
     apply Set.mem_sUnion.mpr
     refine ⟨_, ⟨_, ⟨⟨t, ?_, ?_⟩, rfl⟩, rfl⟩, ?_⟩
     assumption
@@ -89,7 +89,7 @@ instance {x: α} : NeBot (𝓝 x) where
     have := mem_nhds (a := x) (s := ∅)
     rw [h] at this
     have ⟨_, h, _, _⟩  := this.mp (by trivial)
-    cases Set.sub_empty _ h
+    cases Set.sub_empty.mp h
     contradiction
 
 -- the limit of a filter, if it exists
