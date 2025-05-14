@@ -369,9 +369,7 @@ noncomputable def IsFinite.existsEmbedding [IsFinite α] (h: ENat.card α ≤ EN
         rw [←Set.ne_empty, ←Set.compl_compl ∅]
         show ¬_
         rw [Set.compl_inj.eq_iff]
-        simp
-        rw [Set.range_eq_univ_iff_surjective]
-        intro h
+        intro h; simp [Set.range_eq_univ_iff_surjective] at h
         have ⟨h, _⟩  := Equiv.ofBij ⟨ih.inj, h⟩
         have := IsFinite.ofEquiv h.symm
         contradiction
