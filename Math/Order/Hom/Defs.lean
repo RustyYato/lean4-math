@@ -430,3 +430,6 @@ def OrderEquiv.ext (f g: α ≃o α) : (∀x, f x = g x ) -> f = g := DFunLike.e
 @[simp] def MaxEquiv.toEquiv_eq_coe (f: α ≃⊔ β) : f.toEquiv = (f: _ -> _) := rfl
 @[simp] def LatticeEquiv.toEquiv_eq_coe (f: α ≃⊓⊔ β) : f.toEquiv = (f: _ -> _) := rfl
 @[simp] def OrderEquiv.toEquiv_eq_coe (f: α ≃o β) : f.toEquiv = (f: _ -> _) := rfl
+
+@[simp] def LatticeEquiv.toOrderEquiv_eq_coe (f: α ≃⊓⊔ β) : (f.toOrderEquiv: _ -> _) = f := rfl
+@[simp] def LatticeEquiv.symm_toOrderEquiv_eq_symm (f: α ≃⊓⊔ β) : (f.toOrderEquiv.symm: _ -> _) = f.symm := rfl

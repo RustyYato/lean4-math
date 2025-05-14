@@ -296,3 +296,15 @@ instance {r: α -> α -> Prop} [IsFinite α] : IsFinite (Quot r) := by
 
 instance {s: Setoid α} [IsFinite α] : IsFinite (Quotient s) :=
   inferInstanceAs (IsFinite (Quot _))
+
+def IsFinite.subsingleton [f: IsFinite α] (h: Nat.card α ≤ 1) : Subsingleton α where
+  allEq := by
+    intro a b
+    have := Nat.card_spec α
+    apply this.inj
+    revert h this
+    generalize Nat.card α = c
+    intros
+    match c with
+    | 0 | 1 =>
+    apply Subsingleton.allEq
