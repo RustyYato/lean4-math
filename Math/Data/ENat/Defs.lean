@@ -172,7 +172,8 @@ def natCast_inj : Function.Injective (Nat.cast (R := ℕ∞)) := by
   cases h
   rfl
 
-def natCast_eq_ofNat (a: ℕ) : (a: ℕ∞) = .ofNat a := rfl
+-- def natCast_eq_ofNat (a: ℕ) : (a: ℕ∞) = .ofNat a := rfl
+@[simp] def ofNat_eq_natCast (a: ℕ) : .ofNat a = (a: ℕ∞) := rfl
 
 @[simp] def inf_add (a: ℕ∞) : ∞ + a = ∞ := by cases a <;> rfl
 @[simp] def add_inf (a: ℕ∞) : a + ∞ = ∞ := by cases a <;> rfl

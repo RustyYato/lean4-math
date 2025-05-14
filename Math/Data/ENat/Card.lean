@@ -7,6 +7,10 @@ private def toCard' : ℕ∞ -> Cardinal
 | ∞ => ℵ₀
 | (n: ℕ) => n
 
+@[simp] private def toCard'_ofNat (n: ℕ) : toCard' (.ofNat n) = n := rfl
+@[simp] private def toCard'_natCast (n: ℕ) : toCard' n = n := rfl
+@[simp] private def toCard'_inf : toCard' ∞ = ℵ₀ := rfl
+
 def toCard : ℕ∞ ↪+* Cardinal where
   toFun := toCard'
   inj' := by
@@ -34,49 +38,39 @@ def toCard : ℕ∞ ↪+* Cardinal where
   map_add := by
     intro x y
     cases x <;> cases y
-    · erw [natCast_add_natCast]
-      unfold ENat.toCard'
-      simp
+    · simp [natCast_add_natCast]
       rw [natCast_add]
-    · unfold ENat.toCard'
-      simp
+    · simp
       rw [add_comm, Cardinal.aleph0_add_fin]
-    · unfold ENat.toCard'
-      simp
+    · simp
       rw [Cardinal.aleph0_add_fin]
-    · unfold ENat.toCard'
-      simp
+    · simp
       rw [Cardinal.aleph0_add_aleph0]
   map_mul := by
     intro x y
     cases x <;> cases y
     · erw [natCast_mul_natCast]
-      unfold ENat.toCard'
       simp
       rw [natCast_mul]
     · rename_i n
       cases n
       simp
-      simp only [←ENat.natCast_zero]
-      unfold ENat.toCard'
-      simp [natCast_zero]
+      simp only [←ENat.natCast_zero, ENat.toCard'_natCast]
+      simp
       rename_i n
       erw [ENat.mul_inf (n + 1: ℕ) nofun]
-      unfold ENat.toCard'
       simp
       rw [mul_comm, Cardinal.aleph0_mul_fin]
     · rename_i n
       cases n
       simp
-      unfold ENat.toCard'
-      simp [natCast_zero]
-      unfold ENat.toCard'
+      simp only [←ENat.natCast_zero, ENat.toCard'_natCast]
       simp
-      rename_i n
-      erw [ENat.inf_mul (n + 1: ℕ) nofun]
+      erw [ENat.inf_mul]
+      simp
       rw [Cardinal.aleph0_mul_fin]
-    · unfold ENat.toCard'
-      simp
+      nofun
+    · simp
       rw [Cardinal.aleph0_mul_aleph0]
 
 end ENat
@@ -116,5 +110,21 @@ private def cases (motive: Cardinal -> Prop)
   apply natCast
   apply inf
   assumption
+
+-- noncomputable def toENat : Cardinal →+* ENat where
+--   toFun := toENat'
+--   map_zero := by
+--     rw [←natCast_zero, toENat'_natCast]; rfl
+--   map_one := by
+--     rw [←natCast_one, toENat'_natCast]; rfl
+--   map_add {x y} := by
+--     cases x using cases with
+--     | natCast x =>
+--       cases y using cases with
+--       | natCast y =>
+--         sorry
+--       | inf => sorry
+--     | inf => sorry
+--   map_mul := sorry
 
 end Cardinal

@@ -16,32 +16,28 @@ private def one_mul (a: ℕ∞) : 1 * a = a := by
   cases a
   erw [natCast_mul_natCast]
   simp; rfl
-  rfl
 
 @[simp]
 private def mul_one (a: ℕ∞) : a * 1 = a := by
   cases a
   erw [natCast_mul_natCast]
   simp; rfl
-  rfl
 
 @[simp]
 private def zero_add (a: ℕ∞) : 0 + a = a := by
   cases a
   erw [natCast_add_natCast]
   simp; rfl
-  rfl
 
 @[simp]
 private def add_zero (a: ℕ∞) : a + 0 = a := by
   cases a
   erw [natCast_add_natCast]
   simp; rfl
-  rfl
 
 instance : IsCommMagma ℕ∞ where
   mul_comm a b := by
-    cases a <;> cases b <;> simp [←natCast_eq_ofNat]
+    cases a <;> cases b <;> simp
     rw [mul_comm]
     iterate 2
       rename_i n
@@ -51,17 +47,17 @@ instance : IsCommMagma ℕ∞ where
 
 instance : IsSemiring ℕ∞ where
   add_assoc a b c := by
-    cases a <;> cases b <;> cases c <;> simp [←natCast_eq_ofNat]
+    cases a <;> cases b <;> cases c <;> simp
     rw [add_assoc]
   add_comm a b := by
-    cases a <;> cases b <;> simp [←natCast_eq_ofNat]
+    cases a <;> cases b <;> simp
     rw [add_comm]
   zero_add := by simp
   add_zero := by simp
   natCast_succ _ := rfl
   natCast_zero := rfl
   mul_assoc a b c := by
-    cases a <;> cases b <;> cases c <;> simp [←natCast_eq_ofNat]
+    cases a <;> cases b <;> cases c <;> simp
     rw [mul_assoc]
     all_goals
       rename_i n
@@ -77,7 +73,7 @@ instance : IsSemiring ℕ∞ where
   one_mul := by simp
   mul_one := by simp
   mul_add a b c := by
-    cases a <;> cases b <;> cases c <;> simp [←natCast_eq_ofNat]
+    cases a <;> cases b <;> cases c <;> simp
     rw [mul_add]
     iterate 2
       rename_i n _
@@ -90,7 +86,7 @@ instance : IsSemiring ℕ∞ where
     rename_i n m
     cases n <;> cases m <;> rfl
   add_mul a b c := by
-    cases a <;> cases b <;> cases c <;> simp [←natCast_eq_ofNat]
+    cases a <;> cases b <;> cases c <;> simp
     rw [add_mul]
     rename_i n m
     cases n <;> cases m <;> rfl
@@ -138,7 +134,7 @@ instance : IsSemiring ℕ∞ where
       simp
       rename_i h _ _ g
       cases h; cases g
-      simp; rfl
+      simp
       iterate 2
         rename_i h _ _ g _
         cases h; cases g
@@ -156,25 +152,23 @@ instance : IsOrderedCommMonoid ℕ∞ where
     simp [hc]
     cases c
     simp [hc]
-    simp
+    rename_i c
+    erw [mul_inf]
+    apply le_top
+    assumption
+    apply le_top
     cases c
-    erw [natCast_mul_natCast, natCast_mul_natCast,
-      natCast_le_natCast]
+    simp
     apply mul_le_mul_left
     assumption
-    rename_i x y  _
-    refine if hx:(x: ℕ∞) = 0 then ?_ else ?_
-    rw [hx]
+    rename_i c h
+    cases c
     simp
-    apply bot_le
-    have hy : (y: ℕ∞) ≠ 0 := by
-      symm; apply ne_of_lt
-      apply lt_of_lt_of_le
-      apply lt_of_le_of_ne _ (Ne.symm hx)
-      apply bot_le
-      rwa [natCast_le_natCast]
-    rw [inf_mul _ hy]
-    apply le_top
+    cases Nat.le_zero.mp h
+    simp
+    rw (occs := [2]) [inf_mul]
+    simp
+    nofun
 
 instance : IsStrictOrderedSemiring ℕ∞ where
   zero_le_one := by apply bot_le
