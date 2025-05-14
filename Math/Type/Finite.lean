@@ -1,6 +1,6 @@
 import Math.Order.Fin
 import Math.Data.Fin.Basic
-import Math.Data.Fintype.Basic
+import Math.Data.Fintype.Cases
 import Math.Data.ENat.Defs
 
 open Classical
@@ -332,3 +332,63 @@ def IsFinite.subsingleton' [f: IsFinite α] (h: Nat.card α ≤ 1) : Subsingleto
     match c with
     | 0 | 1 =>
     apply Subsingleton.allEq
+
+open scoped ENat
+
+noncomputable def IsFinite.existsEmbedding [IsFinite α] (h: ENat.card α ≤ ENat.card β) : α ↪ β :=
+  Classical.choice <| by
+    suffices IsFinite α -> ¬IsFinite β -> Nonempty (α ↪ β) by
+      unfold ENat.card at h
+      rw [dif_pos (inferInstanceAs (IsFinite α))] at h
+      · split at h
+        · simp at h
+          have := IsFinite.toEquiv α
+          have := IsFinite.toEquiv β
+          refine ⟨?_⟩
+          apply Equiv.congrEmbed _ _ (Fin.embedFin h)
+          symm; assumption
+          symm; assumption
+        · clear h
+          apply this
+          assumption
+          assumption
+    intro fa fb
+    clear h
+    replace fa := (Fintype.ofIsFinite α)
+    induction fa using Fintype.typeInduction with
+    | eqv α₀ α₁ h _ ih =>
+      have ⟨f⟩ := ih
+      refine ⟨?_⟩
+      apply Equiv.congrEmbed _ _ f
+      assumption
+      rfl
+    | empty => exact ⟨Embedding.empty⟩
+    | option α _ ih =>
+      obtain ⟨ih⟩ := ih
+      have : (Set.range ih)ᶜ.Nonempty := by
+        rw [←Set.ne_empty, ←Set.compl_compl ∅]
+        show ¬_
+        rw [Set.compl_inj.eq_iff]
+        simp
+        rw [Set.range_iff_surjective]
+        intro h
+        have ⟨h, _⟩  := Equiv.ofBij ⟨ih.inj, h⟩
+        have := IsFinite.ofEquiv h.symm
+        contradiction
+      obtain ⟨x, hx⟩ := this
+      refine ⟨?_⟩
+      exact {
+        toFun
+        | .none => x
+        | .some a => ih a
+        inj' := by
+          intro a b h
+          cases a <;> cases b <;> simp at h
+          rfl
+          subst x; exfalso; apply hx
+          apply Set.mem_range'
+          subst x; exfalso; apply hx
+          apply Set.mem_range'
+          rw [ih.inj.eq_iff] at h
+          rw [h]
+      }
