@@ -90,27 +90,21 @@ noncomputable
 def IsFinite.toEquiv α [IsFinite α] : α ≃ Fin (card α) :=
   Classical.choice (Classical.choose_spec (existsEquiv α))
 
-noncomputable
-def Nat.card (α: Type*) : Nat :=
-  if _:IsFinite α then IsFinite.card α else 0
-
-noncomputable
-def Nat.card_spec (α: Type*) [IsFinite α] : α ≃ Fin (card α) := by
-  rw [card]
-  rw [dif_pos]
-  apply IsFinite.toEquiv
-
-noncomputable
-def ENat.card (α: Type*) : ENat :=
+noncomputable def ENat.card (α: Type*) : ENat :=
   open scoped ENat in
   if _:IsFinite α then IsFinite.card α else ∞
 
-noncomputable
-def ENat.card_spec (α: Type*) [IsFinite α] : α ≃ Fin (card α).toNat := by
+noncomputable def ENat.card_spec (α: Type*) [IsFinite α] : α ≃ Fin (card α).toNat := by
   rw [card]
   rw [dif_pos]
   apply IsFinite.toEquiv
   assumption
+
+noncomputable def Nat.card (α: Type*) : Nat :=
+  (ENat.card α).toNat
+
+noncomputable def Nat.card_spec (α: Type*) [IsFinite α] : α ≃ Fin (card α) :=
+  ENat.card_spec _
 
 def IsFinite.card_of_equiv (h: Nonempty (α ≃ β)) [IsFinite α] [IsFinite β] : IsFinite.card α = IsFinite.card β := by
   obtain ⟨h⟩ := h
