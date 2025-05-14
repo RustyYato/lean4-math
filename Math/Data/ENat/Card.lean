@@ -57,7 +57,7 @@ def toCard : ℕ∞ ↪+* Cardinal where
     · rename_i n
       cases n
       simp
-      simp [←ENat.natCast_zero]
+      simp only [←ENat.natCast_zero]
       unfold ENat.toCard'
       simp [natCast_zero]
       rename_i n

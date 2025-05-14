@@ -86,7 +86,7 @@ instance : IsSemiring (R√d) where
   add_assoc a b c := by ext <;> apply add_assoc
   zero_add a := by ext <;> apply zero_add
   add_zero a := by ext <;> apply add_zero
-  natCast_zero := by ext <;> simp; norm_cast
+  natCast_zero := by ext <;> simp
   natCast_succ n := by ext <;> simp; norm_cast
   zero_nsmul a := by ext <;> apply zero_nsmul
   succ_nsmul n a := by ext <;> apply succ_nsmul

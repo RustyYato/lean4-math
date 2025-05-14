@@ -152,8 +152,6 @@ instance instAddMonoidWithOne [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] [
   natCast_zero := by
     ext i j
     simp
-    split
-    apply natCast_zero
     rfl
   natCast_succ n := by
     ext i j

@@ -13,14 +13,12 @@ instance : AlgebraMap ℚ α where
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
     rw [div?_eq_mul_inv?]
-    simp [intCast_zero]
+    simp
   map_one := by
     rw [ratCast_eq_ratCastRec]
     show _ /? _ ~(_) = _
     rw [div?_eq_mul_inv?]
-    simp [intCast_one]
-    apply inv?_eq_of_mul_left
-    simp [natCast_one]
+    simp
   map_add := by
     have := (inferInstanceAs (IsQAlgebra α)).toHasChar
     intro a b

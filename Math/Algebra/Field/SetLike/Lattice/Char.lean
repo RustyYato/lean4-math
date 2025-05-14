@@ -202,7 +202,7 @@ def Subfield.ofFinCast_eq_bot : Subfield.ofFinCast F = ⊥ := by
   show (x.val: F) ∈ ⊥
   rw [mem_bot_iff]
   refine ⟨⟨x.val, 1⟩, ?_, ?_⟩
-  simp; rw [natCast_one]; exact (zero_ne_one _).symm
+  simp; exact (zero_ne_one _).symm
   simp [natCast_one, intCast_ofNat]
 
 noncomputable def has_char_prime_equiv_fin : Fin n ≃+* (⊥: Subfield F) := by

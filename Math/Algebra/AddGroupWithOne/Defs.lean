@@ -35,12 +35,12 @@ def intCast_eq_zsmul_one [AddGroupWithOneOps α] [IsAddGroupWithOne α] (n: Int)
   | ofNat n => rw [intCast_ofNat, natCast_eq_nsmul_one, zsmul_ofNat]
   | negSucc n => rw [intCast_negSucc, zsmul_negSucc, natCast_eq_nsmul_one]
 
-@[norm_cast]
+@[norm_cast, simp]
 def intCast_zero [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ((0: Int): α) = 0 := by
   have : 0 = Int.ofNat 0 := rfl
   erw [this, intCast_ofNat, natCast_zero]
 
-@[norm_cast]
+@[norm_cast, simp]
 def intCast_one [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ((1: Int): α) = 1 := by
   have : 1 = Int.ofNat 1 := rfl
   erw [this, intCast_ofNat, natCast_one]

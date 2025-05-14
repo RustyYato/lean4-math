@@ -98,12 +98,12 @@ def mem_bot_iff (a: α) : a ∈ (⊥: Subfield α) ↔ ∃a': ℤ × ℕ, ∃h: 
     | of => contradiction
     | zero =>
       refine ⟨(0,1), ?_, ?_⟩
-      simp; rw [intCast_one]
+      simp
       exact (zero_ne_one _).symm
       simp [intCast_zero]
     | one =>
       refine ⟨(1,1), ?_, ?_⟩
-      simp; rw [intCast_one]
+      simp
       exact (zero_ne_one _).symm
       simp [intCast_one]
     | inv? _ _ ih =>
