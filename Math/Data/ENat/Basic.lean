@@ -1,5 +1,7 @@
 import Math.Data.ENat.Defs
 import Math.Algebra.Semiring.Order.Defs
+import Math.Algebra.Semiring.Char
+import Math.Algebra.Algebra.Defs
 
 namespace ENat
 
@@ -212,5 +214,10 @@ instance : IsStrictOrderedSemiring ℕ∞ where
       match n with
       | n + 1 =>
       apply natCast_lt_inf
+
+instance : HasChar ℕ∞ 0 := HasChar.of_ring_emb {
+  algebraMap (R := ℕ) (α := ℕ∞) with
+  inj' _ _ := ENat.ofNat.inj
+}
 
 end ENat

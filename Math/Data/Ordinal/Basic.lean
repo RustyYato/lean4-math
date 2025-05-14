@@ -6,46 +6,8 @@ namespace Ordinal
 section Algebra
 
 instance : IsAddZeroClass Ordinal where
-  zero_add a := by
-    cases a with | _ a rela =>
-    apply sound
-    simp
-    apply RelIso.trans
-    apply RelIso.congrSumLex
-    apply rel_ulift_eqv
-    rfl
-    symm
-    exact {
-      toFun := .inr
-      invFun
-      | .inl x => nomatch x
-      | .inr x => x
-      leftInv _ := rfl
-      rightInv
-      | .inl x => nomatch x
-      | .inr x => rfl
-      resp_rel := by simp [resp_rel]
-    }
-  add_zero a := by
-    cases a
-    apply sound
-    simp
-    apply RelIso.trans
-    apply RelIso.congrSumLex
-    rfl
-    apply rel_ulift_eqv
-    symm
-    exact {
-      toFun := .inl
-      invFun
-      | .inr x => nomatch x
-      | .inl x => x
-      leftInv _ := rfl
-      rightInv
-      | .inr x => nomatch x
-      | .inl x => rfl
-      resp_rel := by simp [resp_rel]
-    }
+  zero_add a := by simp
+  add_zero a := by simp
 
 def add_succ (a b: Ordinal) : a + (b + 1) = (a + b) + 1 := by
   cases a with | _ α relα =>

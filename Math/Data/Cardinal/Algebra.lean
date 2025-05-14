@@ -275,6 +275,78 @@ instance : HasChar Cardinal 0 := HasChar.of_ring_emb {
     exact Fin.eq_of_equiv h
 }
 
+instance : NoZeroDivisors Cardinal where
+  of_mul_eq_zero := by
+    intro a b h
+    cases a with | mk a =>
+    cases b with | mk b =>
+    replace ⟨h⟩  := exact h
+    apply Classical.or_iff_not_imp_left.mpr
+    intro g; apply sound
+    suffices IsEmpty b by apply Equiv.empty
+    have : IsEmpty (a × b) := by
+      exact ⟨elim_empty (β := False) ∘ h⟩
+    replace g : Nonempty a := by
+      apply Classical.byContradiction
+      intro h; apply g
+      suffices IsEmpty a by apply sound; exact Equiv.empty
+      apply IsEmpty.ofNotNonempty
+      assumption
+    obtain ⟨x⟩ := g
+    exact { elim b := elim_empty (x, b) }
+
+instance : IsOrderedCommMonoid Cardinal where
+  mul_le_mul_left a b h c := by
+    cases a with | mk a =>
+    cases b with | mk b =>
+    cases c with | mk c =>
+    obtain ⟨f⟩ := h
+    refine ⟨?_⟩
+    exact {
+      toFun x := ⟨x.1, f x.2⟩
+      inj' := by
+        intro x y h
+        have := Prod.mk.inj h
+        rw [f.inj.eq_iff] at this
+        apply Prod.ext this.1 this.2
+    }
+
+instance : IsStrictOrderedSemiring Cardinal where
+  zero_le_one := bot_le _
+  mul_nonneg _ _ _ _ := bot_le _
+  mul_le_mul_of_nonneg_left _ _ h _ _ := mul_le_mul_left _ _ h _
+  mul_le_mul_of_nonneg_right _ _ h _ _ := mul_le_mul_right _ _ h _
+  add_le_add_left := by
+    intro a b h c
+    cases a with | mk a =>
+    cases b with | mk b =>
+    cases c with | mk c =>
+    obtain ⟨f⟩ := h
+    refine ⟨?_⟩
+    exact {
+      toFun
+      | .inl x => .inl x
+      | .inr x => .inr (f x)
+      inj' := by
+        intro x y h
+        cases x <;> cases y <;> simp at h
+        rw [h]
+        rw [f.inj.eq_iff] at h
+        rw [h]
+    }
+  mul_pos a b ha hb := by
+    cases a with | mk a =>
+    cases b with | mk b =>
+    rw [←not_le] at ha hb
+    rw [←not_le]
+    intro h
+    erw [le_bot] at h
+    rcases of_mul_eq_zero h with h | h
+    rw [h] at ha
+    apply ha (by rfl)
+    rw [h] at hb
+    apply hb (by rfl)
+
 def lt_natCast (c: Cardinal) (n: ℕ) : c < n ↔ ∃m < n, c = m := by
   apply flip Iff.intro
   · rintro ⟨m, hm, rfl⟩
@@ -410,5 +482,55 @@ protected def IsFinite (α: Type*) : #α < ℵ₀ ↔ IsFinite α := by
   apply sound
   apply h.trans
   symm; apply Equiv.ulift
+
+def aleph0_add_fin (n: Nat) : ℵ₀ + n = ℵ₀ := by
+  apply sound
+  apply Equiv.congrEquiv' (Equiv.congrSum (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
+  apply Equiv.mk _ _ _ _
+  intro x
+  match x with
+  | .inl x => exact x + n
+  | .inr x => exact x.val
+  intro x
+  if h:x < n then
+    exact .inr ⟨x, h⟩
+  else
+    exact .inl (x - n)
+  intro x
+  simp
+  cases x
+  dsimp
+  rw [dif_neg, Nat.add_sub_cancel]
+  apply Nat.not_lt_of_le
+  apply Nat.le_add_left
+  dsimp
+  rw [if_pos]
+  rename_i x
+  exact x.isLt
+  intro x
+  dsimp
+  by_cases h:x < n
+  rw [dif_pos h]
+  rw [dif_neg h]
+  dsimp
+  rw [Nat.sub_add_cancel]
+  apply Nat.le_of_not_lt
+  assumption
+
+def aleph0_add_aleph0 : ℵ₀ + ℵ₀ = ℵ₀ := by
+  apply sound
+  apply Equiv.congrEquiv' (Equiv.congrSum (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
+  exact Equiv.nat_equiv_nat_sum_nat.symm
+
+def aleph0_mul_fin (n: ℕ) : ℵ₀ * (n + 1: ℕ) = ℵ₀ := by
+  induction n with
+  | zero => simp [natCast_one]
+  | succ n ih =>
+    rw [natCast_succ, mul_add, mul_one, ih, aleph0_add_aleph0]
+
+def aleph0_mul_aleph0 : ℵ₀ * ℵ₀ = ℵ₀ := by
+  apply sound
+  apply Equiv.congrEquiv' (Equiv.congrProd (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
+  exact Equiv.nat_equiv_nat_prod_nat.symm
 
 end Cardinal

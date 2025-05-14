@@ -1750,6 +1750,47 @@ def addLeft (a: Ordinal) : Ordinal ↪o Ordinal where
   inj' := (add_left_strict_mono a).Injective
   map_le _ _ := le_iff_add_left
 
+@[simp] def zero_add (a: Ordinal) : 0 + a = a := by
+  cases a with | _ a rela =>
+  apply sound
+  simp
+  apply RelIso.trans
+  apply RelIso.congrSumLex
+  apply rel_ulift_eqv
+  rfl
+  symm
+  exact {
+    toFun := .inr
+    invFun
+    | .inl x => nomatch x
+    | .inr x => x
+    leftInv _ := rfl
+    rightInv
+    | .inl x => nomatch x
+    | .inr x => rfl
+    resp_rel := by simp [resp_rel]
+  }
+@[simp] def add_zero (a: Ordinal) : a + 0 = a := by
+  cases a
+  apply sound
+  simp
+  apply RelIso.trans
+  apply RelIso.congrSumLex
+  rfl
+  apply rel_ulift_eqv
+  symm
+  exact {
+    toFun := .inl
+    invFun
+    | .inr x => nomatch x
+    | .inl x => x
+    leftInv _ := rfl
+    rightInv
+    | .inr x => nomatch x
+    | .inl x => rfl
+    resp_rel := by simp [resp_rel]
+  }
+
 end Nat
 
 section Limit

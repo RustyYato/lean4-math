@@ -167,14 +167,19 @@ def pow : ℕ∞ -> ℕ∞ -> ℕ∞
 
 instance : Pow ℕ∞ ℕ∞ := ⟨pow⟩
 
+def natCast_inj : Function.Injective (Nat.cast (R := ℕ∞)) := by
+  intro a b h
+  cases h
+  rfl
+
 def natCast_eq_ofNat (a: ℕ) : (a: ℕ∞) = .ofNat a := rfl
 
 @[simp] def inf_add (a: ℕ∞) : ∞ + a = ∞ := by cases a <;> rfl
 @[simp] def add_inf (a: ℕ∞) : a + ∞ = ∞ := by cases a <;> rfl
 @[simp] def natCast_add_natCast (a b: ℕ) : (a + b: ℕ∞) = (a + b: ℕ) := rfl
 
-@[simp] def natCast_zero : (0: ℕ) = (0: ℕ∞) := rfl
-@[simp] def natCast_one : (1: ℕ) = (1: ℕ∞) := rfl
+@[simp] protected def natCast_zero : (0: ℕ) = (0: ℕ∞) := rfl
+@[simp] protected def natCast_one : (1: ℕ) = (1: ℕ∞) := rfl
 
 @[simp] def ofNat_zero : (.ofNat 0) = (0: ℕ∞) := rfl
 @[simp] def ofNat_one : (.ofNat 1) = (1: ℕ∞) := rfl
