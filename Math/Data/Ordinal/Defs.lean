@@ -31,6 +31,8 @@ structure Pre: Type (u + 1) where
 
 instance (p: Pre) : Relation.IsWellOrder p.rel := p.well_order
 
+instance (p: Pre) : Relation.IsWellOrder (fun x y => p.rel x y) := p.well_order
+
 instance pre_setoid : Setoid Pre where
   r a b := Nonempty (a.rel ≃r b.rel)
   iseqv := {
@@ -42,7 +44,8 @@ instance pre_setoid : Setoid Pre where
 @[pp_with_univ]
 def _root_.Ordinal := Quotient pre_setoid
 
-def type {α: Type u} (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : Ordinal := Quotient.mk _ (Pre.mk _ rel)
+def ofPre : Pre -> Ordinal := Quotient.mk _
+def type {α: Type u} (rel: α -> α -> Prop) [Relation.IsWellOrder rel] : Ordinal := ofPre (Pre.mk _ rel)
 
 @[cases_eliminator]
 def ind {motive : Ordinal -> Prop} (type: ∀(α: Type u) (rel: α -> α -> Prop) [Relation.IsWellOrder rel], motive (type rel)) (o: Ordinal) : motive o := by
@@ -74,6 +77,13 @@ def lift₂ {A: Type w} (f: ∀(α: Type u) (β: Type v) (relα: α -> α -> Pro
   assumption
 
 def exact : type r = type s -> Nonempty (r ≃r s) := Quotient.exact
+
+def exists_rep (o: Ordinal) : ∃(α: Type _) (rel: α -> α -> Prop) (_hrel: Relation.IsWellOrder rel), o = type rel := by
+  obtain ⟨p, eq⟩  := Quotient.exists_rep o
+  rw [←eq]
+  exists p.ty
+  exists p.rel
+  exists p.well_order
 
 attribute [irreducible] Ordinal
 
@@ -1750,6 +1760,24 @@ def addLeft (a: Ordinal) : Ordinal ↪o Ordinal where
   inj' := (add_left_strict_mono a).Injective
   map_le _ _ := le_iff_add_left
 
+def ofPre_eq_zero_iff (p: Pre) : IsEmpty p.ty ↔ ofPre p = 0 := by
+  apply Iff.intro
+  intro h
+  apply sound
+  exact {
+    Equiv.empty with
+    resp_rel {x} := elim_empty x
+  }
+  intro h
+  have ⟨h⟩  := exact h
+  simp at h
+  exact { elim x := elim_empty (h x) }
+
+def type_eq_zero_iff : IsEmpty α ↔ type rel = 0 := ofPre_eq_zero_iff {
+  ty := α
+  rel := rel
+}
+
 @[simp] def zero_add (a: Ordinal) : 0 + a = a := by
   cases a with | _ a rela =>
   apply sound
@@ -1824,6 +1852,15 @@ def limit_ne_succ (o: Ordinal) [h: IsLimitOrdinal o] : ∀x, x + 1 ≠ o := by
   have := lt_asymm (lt_succ_self x)
   contradiction
 
+def nomax (h: IsLimitOrdinal (type rel)) : ∀x, ∃y, rel x y := by
+  intro x
+  have := succ_lt_limit (type rel) inferInstance (Ordinal.rank rel x) (rank_lt_type _)
+  replace ⟨o, ho⟩ := rank_surj rel (rank rel x + 1) this
+  exists o
+  apply rank_lt_rank_iff.mp
+  rw [←ho]
+  apply lt_succ_self
+
 instance : IsLimitOrdinal 0 where
   ne_succ x h g := by
     rw [←not_le] at h
@@ -1849,23 +1886,49 @@ noncomputable def rec
   (o: Ordinal) : motive o := ind o (fun x _hx => rec ind x)
 termination_by o
 
-noncomputable def transfiniteRecursion'
+section
+
+variable
   {motive : Ordinal -> Sort*}
   (limit: ∀o, IsLimitOrdinal o -> (∀x < o, motive x) -> motive o)
-  (succ: ∀o, motive o -> motive (o + 1)) (o: Ordinal) : motive o :=
+  (succ: ∀o, motive o -> motive (o + 1))
+
+noncomputable def transfiniteRecursion' (o: Ordinal) : motive o :=
   open scoped Classical in
   if h:∃x, x + 1 = o then
     let x := Classical.choose h
     have hx : x + 1 = o := Classical.choose_spec h
-    cast (by rw [hx]) (succ x (transfiniteRecursion' limit succ x))
+    cast (by rw [hx]) (succ x (transfiniteRecursion' x))
   else
-    limit _ { ne_succ x hx g := by exact h ⟨_, succ_eq_add_one _ ▸ g⟩} (fun x hx => transfiniteRecursion' limit succ x)
+    limit _ { ne_succ x hx g := by exact h ⟨_, succ_eq_add_one _ ▸ g⟩} (fun x hx => transfiniteRecursion' x)
 termination_by o
 decreasing_by
   · show x < o
     rw [←hx]
     apply lt_succ_self
   · assumption
+
+def transfiniteRecursion'_limit (o: Ordinal) [IsLimitOrdinal o] : transfiniteRecursion' limit succ o = limit o inferInstance (fun x _ => transfiniteRecursion' limit succ x) := by
+  rw [transfiniteRecursion']
+  simp; rw [dif_neg]
+  intro ⟨x, hx⟩
+  exact limit_ne_succ o x hx
+
+def transfiniteRecursion'_succ (o: Ordinal) : transfiniteRecursion' limit succ (o + 1) = succ o (transfiniteRecursion' limit succ o) := by
+  rw [transfiniteRecursion']
+  have : ∃ x, x + 1 = o + 1 := ⟨o, rfl⟩
+  rw [dif_pos this]
+  simp
+  apply cast_eq_of_heq
+  congr
+  apply succ_inj
+  simp;
+  rw [Classical.choose_spec this]
+  apply succ_inj
+  simp;
+  rw [Classical.choose_spec this]
+
+end
 
 section
 
@@ -1888,31 +1951,17 @@ noncomputable def transfiniteRecursion (o: Ordinal) : motive o :=
     succ o
 
 def transfiniteRecursion_zero : transfiniteRecursion zero succ limit 0 = zero := by
-  unfold transfiniteRecursion transfiniteRecursion'
-  simp; intro x h
-  have := limit_ne_succ 0 _ h
-  contradiction
+  unfold transfiniteRecursion
+  rw [transfiniteRecursion'_limit, dif_pos rfl]
 
 def transfiniteRecursion_limit (o: Ordinal) [IsSuccLimitOrdinal o] : transfiniteRecursion zero succ limit o = limit o inferInstance (fun x _ => transfiniteRecursion zero succ limit x) := by
-  rw [transfiniteRecursion, transfiniteRecursion']
-  simp; rw [dif_neg, dif_neg]
-  rfl
+  unfold transfiniteRecursion
+  rw [transfiniteRecursion'_limit, dif_neg]
   rename_i h; exact h.out
-  rename_i h; simp; exact limit_ne_succ o
 
 def transfiniteRecursion_succ (o: Ordinal) : transfiniteRecursion zero succ limit (o + 1) = succ o (transfiniteRecursion zero succ limit o) := by
-  rw [transfiniteRecursion, transfiniteRecursion']
-  have : ∃ x, x + 1 = o + 1 := ⟨o, rfl⟩
-  rw [dif_pos this]
-  simp
-  apply cast_eq_of_heq
-  congr
-  apply succ_inj
-  simp;
-  rw [Classical.choose_spec this]
-  apply succ_inj
-  simp;
-  rw [Classical.choose_spec this]
+  rw [transfiniteRecursion, transfiniteRecursion'_succ]
+  rfl
 
 end
 
