@@ -73,6 +73,10 @@ def toCard : ℕ∞ ↪+* Cardinal where
     · simp
       rw [Cardinal.aleph0_mul_aleph0]
 
+@[simp] def toCard_ofNat (n: ℕ) : toCard (.ofNat n) = n := rfl
+@[simp] def toCard_natCast (n: ℕ) : toCard n = n := rfl
+@[simp] def toCard_inf : toCard ∞ = ℵ₀ := rfl
+
 end ENat
 
 namespace Cardinal
@@ -86,7 +90,7 @@ private noncomputable def toENat' (c: Cardinal) : ENat :=
   else
     ∞
 
-private def toENat'_natCast (n: ℕ) : toENat' n = n := by
+@[simp] private def toENat'_natCast (n: ℕ) : toENat' n = n := by
   have : ∃x: ℕ, (n: Cardinal) = ↑x := ⟨n, rfl⟩
   unfold toENat'
   rw [dif_pos (natCast_lt_aleph₀ _)]
@@ -111,20 +115,122 @@ private def cases (motive: Cardinal -> Prop)
   apply inf
   assumption
 
--- noncomputable def toENat : Cardinal →+* ENat where
---   toFun := toENat'
---   map_zero := by
---     rw [←natCast_zero, toENat'_natCast]; rfl
---   map_one := by
---     rw [←natCast_one, toENat'_natCast]; rfl
---   map_add {x y} := by
---     cases x using cases with
---     | natCast x =>
---       cases y using cases with
---       | natCast y =>
---         sorry
---       | inf => sorry
---     | inf => sorry
---   map_mul := sorry
+private def rightInv' (c: Cardinal) : c.toENat'.toCard = c ⊓ ℵ₀ := by
+  cases c using cases
+  simp
+  rw [min_eq_left.mpr]
+  apply le_of_lt
+  apply natCast_lt_aleph₀
+  rename_i h
+  simp [toENat'_inf _ h]
+  rw [min_eq_right.mpr]
+  assumption
+
+private def leftInv' : Function.IsLeftInverse toENat' toCard := by
+  intro n
+  cases n
+  simp
+  simp
+  rw [toENat'_inf]
+  rfl
+
+noncomputable def toENat : Cardinal.{u} →+* ENat where
+  toFun := toENat'
+  map_zero := by
+    rw [←natCast_zero, toENat'_natCast]; rfl
+  map_one := by
+    rw [←natCast_one, toENat'_natCast]; rfl
+  map_add {x y} := by
+    apply toCard.{u}.inj
+    rw [map_add, rightInv', rightInv', rightInv']
+
+    cases x using cases with
+    | natCast x =>
+      cases y using cases with
+      | natCast y =>
+        rw [←natCast_add, min_eq_left.mpr, min_eq_left.mpr, min_eq_left.mpr]
+        rw [natCast_add]
+        all_goals
+          apply le_of_lt
+          apply natCast_lt_aleph₀
+      | inf =>
+        rw [min_eq_right.mpr, min_eq_left.mpr, min_eq_right.mpr,
+          add_comm, aleph0_add_fin]
+        assumption
+        apply le_of_lt
+        apply natCast_lt_aleph₀
+        apply le_trans
+        assumption
+        apply le_add_left
+        apply bot_le
+    | inf _ h =>
+      open scoped Classical in
+      rw [min_eq_right.mpr, min_eq_right.mpr h, min_def]
+      split
+      rw [aleph0_add_countable]
+      assumption
+      rw [aleph0_add_aleph0]
+      apply le_trans
+      assumption
+      apply le_add_right
+      apply bot_le
+  map_mul {x y} := by
+    apply toCard.{u}.inj
+    rw [map_mul, rightInv', rightInv', rightInv']
+    cases x using cases with
+    | natCast x =>
+      match x with
+      | 0 => simp [min_eq_left.mpr (show 0 ≤ ℵ₀ from bot_le _)]
+      | x + 1 =>
+      cases y using cases with
+      | natCast y =>
+        rw [←natCast_mul, min_eq_left.mpr, min_eq_left.mpr, min_eq_left.mpr]
+        rw [natCast_mul]
+        all_goals
+          apply le_of_lt
+          apply natCast_lt_aleph₀
+      | inf =>
+        rw [min_eq_right.mpr, min_eq_left.mpr, min_eq_right.mpr,
+          mul_comm, aleph0_mul_fin]
+        assumption
+        apply le_of_lt
+        apply natCast_lt_aleph₀
+        apply le_trans
+        assumption
+        apply le_mul_left
+        apply Cardinal.natCast_le_natCast_iff.mpr
+        omega
+    | inf _ h =>
+      by_cases hy:y = 0
+      subst y
+      simp [min_eq_left.mpr (show 0 ≤ ℵ₀ from bot_le _)]
+      open scoped Classical in
+      rw [min_eq_right.mpr, min_eq_right.mpr h, min_def]
+      split
+      rw [aleph0_mul_countable]
+      assumption
+      assumption
+      rw [aleph0_mul_aleph0]
+      apply le_trans
+      assumption
+      apply le_mul_right
+      cases y using cases
+      · rename_i y
+        match y with
+        | y + 1 =>
+        apply Cardinal.natCast_le_natCast_iff.mpr
+        omega
+      · apply flip le_trans
+        assumption
+        apply le_of_lt
+        apply natCast_lt_aleph₀
+
+def toENat_toCard (c: Cardinal) : c.toENat.toCard = c ⊓ ℵ₀ := rightInv' _
+
+def toENat_inf (c: Cardinal) (hc: ℵ₀ ≤ c) : c.toENat = ∞ := toENat'_inf c hc
+
+def leftInv : Function.IsLeftInverse toENat toCard := leftInv'
 
 end Cardinal
+
+def ENat.toCard_toENat (n: ℕ∞) : n.toCard.toENat = n := Cardinal.leftInv' _

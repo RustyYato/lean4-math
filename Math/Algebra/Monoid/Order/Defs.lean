@@ -191,6 +191,16 @@ def mul_lt_mul_of_lt_of_le [IsLeftCancel α] (a b c d: α) : a < c -> b ≤ d ->
 def mul_lt_mul_of_le_of_lt [IsRightCancel α] (a b c d: α) : a ≤ c -> b < d -> a * b < c * d :=
   add_lt_add_of_le_of_lt (α := AddOfMul α) _ _ _ _
 
+def le_mul_left (a b: α) (h: 1 ≤ b) : a ≤ b * a := by
+  rw (occs := [1]) [←one_mul a]
+  apply mul_le_mul_right
+  assumption
+
+def le_mul_right (a b: α) (h: 1 ≤ b) : a ≤ a * b := by
+  rw (occs := [1]) [←mul_one a]
+  apply mul_le_mul_left
+  assumption
+
 end IsOrderedCommMonoid
 
 section IsOrderedCancelCommMonoid

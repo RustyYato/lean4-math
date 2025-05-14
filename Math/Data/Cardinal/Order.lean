@@ -31,7 +31,9 @@ private noncomputable instance : ConditionallyCompleteLatticeOps Cardinalᵒᵖ 
 noncomputable instance ops : ConditionallyCompleteLatticeOps Cardinal := inferInstanceAs (ConditionallyCompleteLatticeOps (Cardinal ᵒᵖ ᵒᵖ))
 
 private noncomputable instance : IsConditionallyCompleteLattice Cardinalᵒᵖ := lattice.snd
-noncomputable instance : IsConditionallyCompleteLattice Cardinal := inferInstanceAs (IsConditionallyCompleteLattice (Cardinal ᵒᵖ ᵒᵖ))
+instance : IsConditionallyCompleteLattice Cardinal := inferInstanceAs (IsConditionallyCompleteLattice (Cardinal ᵒᵖ ᵒᵖ))
+
+instance : IsLinearLattice Cardinal where
 
 instance : Bot Cardinal := ⟨0⟩
 

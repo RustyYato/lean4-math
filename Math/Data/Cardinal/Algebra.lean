@@ -522,6 +522,14 @@ def aleph0_add_aleph0 : ℵ₀ + ℵ₀ = ℵ₀ := by
   apply Equiv.congrEquiv' (Equiv.congrSum (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
   exact Equiv.nat_equiv_nat_sum_nat.symm
 
+def aleph0_add_countable (c: Cardinal) (h: c ≤ ℵ₀) : ℵ₀ + c = ℵ₀ := by
+  rcases lt_or_eq_of_le h with h | h
+  rw [lt_aleph₀] at h
+  obtain ⟨n, rfl⟩ := h
+  rw [aleph0_add_fin]
+  subst c
+  rw [aleph0_add_aleph0]
+
 def aleph0_mul_fin (n: ℕ) : ℵ₀ * (n + 1: ℕ) = ℵ₀ := by
   induction n with
   | zero => simp [natCast_one]
@@ -533,4 +541,13 @@ def aleph0_mul_aleph0 : ℵ₀ * ℵ₀ = ℵ₀ := by
   apply Equiv.congrEquiv' (Equiv.congrProd (Equiv.ulift _).symm (Equiv.ulift _).symm) (Equiv.ulift _).symm
   exact Equiv.nat_equiv_nat_prod_nat.symm
 
+def aleph0_mul_countable (c: Cardinal) (hc: c ≠ 0) (h: c ≤ ℵ₀) : ℵ₀ * c = ℵ₀ := by
+  rcases lt_or_eq_of_le h with h | h
+  · rw [lt_aleph₀] at h
+    obtain ⟨n, rfl⟩ := h
+    match n with
+    | n + 1 =>
+    rw [aleph0_mul_fin]
+  subst c
+  rw [aleph0_mul_aleph0]
 end Cardinal
