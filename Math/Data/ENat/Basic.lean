@@ -1,5 +1,5 @@
 import Math.Data.ENat.Defs
-import Math.Algebra.Semiring.Defs
+import Math.Algebra.Semiring.Order.Defs
 
 namespace ENat
 
@@ -146,5 +146,71 @@ instance : IsSemiring ℕ∞ where
       rename_i h _ _ _ _ _
       cases h
       erw [npow_succ, natCast_mul_natCast]
+
+instance : IsOrderedCommMonoid ℕ∞ where
+  mul_le_mul_left a b h c := by
+    cases h
+    refine if hc:c = 0 then ?_ else ?_
+    simp [hc]
+    cases c
+    simp [hc]
+    simp
+    cases c
+    erw [natCast_mul_natCast, natCast_mul_natCast,
+      natCast_le_natCast]
+    apply mul_le_mul_left
+    assumption
+    rename_i x y  _
+    refine if hx:(x: ℕ∞) = 0 then ?_ else ?_
+    rw [hx]
+    simp
+    apply bot_le
+    have hy : (y: ℕ∞) ≠ 0 := by
+      symm; apply ne_of_lt
+      apply lt_of_lt_of_le
+      apply lt_of_le_of_ne _ (Ne.symm hx)
+      apply bot_le
+      rwa [natCast_le_natCast]
+    rw [inf_mul _ hy]
+    apply le_top
+
+instance : IsStrictOrderedSemiring ℕ∞ where
+  zero_le_one := by apply bot_le
+  add_le_add_left := by
+    intro a b h c
+    cases h
+    simp
+    cases c
+    apply (natCast_le_natCast _ _).mpr
+    apply add_le_add_left
+    assumption
+    rfl
+  mul_nonneg _ _ _ _ := by apply bot_le
+  mul_le_mul_of_nonneg_left _ _ _ _ _ := by
+    apply mul_le_mul_left
+    assumption
+  mul_le_mul_of_nonneg_right _ _ _ _ _ := by
+    apply mul_le_mul_right
+    assumption
+  mul_pos := by
+    intro a b h g
+    cases h
+    cases g
+    · apply natCast_lt_inf
+    · rename_i n _
+      match n with
+      | n + 1 =>
+      apply natCast_lt_inf
+    · cases b
+      erw [natCast_mul_natCast]
+      apply (natCast_lt_natCast _ _).mpr
+      apply mul_pos
+      assumption
+      rw [←natCast_lt_natCast]
+      assumption
+      rename_i n _
+      match n with
+      | n + 1 =>
+      apply natCast_lt_inf
 
 end ENat

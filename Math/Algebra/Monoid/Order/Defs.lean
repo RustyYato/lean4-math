@@ -215,3 +215,8 @@ def le_of_npow_le_npow (a b: α) (n: ℕ) (h: 0 < n) : a ^ n ≤ b ^ n -> a ≤ 
   (pow_strict_mono n h).le_iff_le.mp
 
 end IsLinearOrderedCommMonoid
+
+instance : IsOrderedCommMonoid ℕ where
+  mul_le_mul_left := by
+    intros; apply Nat.mul_le_mul_left
+    assumption

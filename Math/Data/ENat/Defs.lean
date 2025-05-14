@@ -111,6 +111,15 @@ instance : Top ℕ∞ where
 instance : Bot ℕ∞ where
   bot := 0
 
+instance : IsLawfulTop ℕ∞ where
+  le_top := le_inf
+instance : IsLawfulBot ℕ∞ where
+  bot_le a := by
+    cases a
+    apply (natCast_le_natCast _ _).mpr
+    apply bot_le
+    apply le_inf
+
 instance : @Relation.IsWellFounded ℕ∞ (· < ·) where
   wf := by
     suffices ∀n: ℕ, @Acc ℕ∞ (· < ·) n by
