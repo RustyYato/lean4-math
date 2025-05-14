@@ -111,6 +111,27 @@ def IsFinite.card_of_equiv (h: Nonempty (α ≃ β)) [IsFinite α] [IsFinite β]
   have := ((toEquiv β).symm.trans <| h.symm.trans (toEquiv α)).symm
   exact Fin.eq_of_equiv this
 
+noncomputable def IsFinite.equiv_of_card [IsFinite α] [IsFinite β] (h: IsFinite.card α = IsFinite.card β) : α ≃ β :=
+  Classical.choice <| by
+    have ha := IsFinite.toEquiv α
+    have hb := IsFinite.toEquiv β
+    rw [h] at ha
+    exact ⟨ha.trans hb.symm⟩
+
+noncomputable def ENat.equiv_of_card [IsFinite β] (h: card α = card β) : α ≃ β := by
+    unfold card at h
+    rename_i hb
+    rw [dif_pos hb] at h
+    have : IsFinite α := by
+      split at h
+      assumption
+      contradiction
+    rw [dif_pos] at h
+    apply IsFinite.equiv_of_card
+    rename_i g
+    exact ENat.natCast_inj h
+    assumption
+
 noncomputable
 def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=
   Fintype.ofEquiv (IsFinite.toEquiv α)
@@ -390,3 +411,41 @@ noncomputable def IsFinite.existsEmbedding [IsFinite α] (h: ENat.card α ≤ EN
           rw [ih.inj.eq_iff] at h
           rw [h]
       }
+
+def ENat.card_of_emebd_nat (h: ℕ ↪ α) : ENat.card α = ∞ := by
+  rw [card, dif_neg]
+  intro g
+  have := IsFinite.ofEmbed _ h
+  have := Nat.not_is_finite
+  contradiction
+
+def ENat.card_nat : ENat.card ℕ = ∞ := by
+  apply card_of_emebd_nat; rfl
+
+def ENat.card_int : ENat.card ℤ = ∞ := by
+  apply card_of_emebd_nat
+  exact {
+    toFun := Int.ofNat
+    inj' _ _ := Int.ofNat.inj
+  }
+
+def ENat.card_fin : ENat.card (Fin n) = n := by
+  unfold card
+  rw [dif_pos]
+  congr
+  symm
+  apply Fin.eq_of_equiv
+  apply IsFinite.toEquiv
+
+def ENat.card_empty : IsEmpty α ↔ ENat.card α = 0 := by
+  apply Iff.intro
+  · intro
+    rw [card, dif_pos]
+    congr; apply Fin.eq_of_equiv
+    symm; apply flip Equiv.trans
+    apply IsFinite.toEquiv
+    exact Equiv.empty
+  · intro h
+    rw [←ENat.natCast_zero, ←card_fin] at h
+    have := ENat.equiv_of_card h
+    exact { elim x := (this x).elim0 }
