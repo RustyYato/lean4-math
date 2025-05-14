@@ -2318,4 +2318,107 @@ def ord_eq_sup_ulift : ord.{u} = ⨆o: Ordinal, ulift.{u+1, u} o := by
 
 end Ord
 
+section Subtype
+
+@[simp]
+def Pre.subtype (P: α -> Prop) : Pre where
+  ty := Subtype P
+  rel x y := rel x y
+  well_order :=
+    RelEmbedding.lift_wo (r := rel) {
+      Embedding.subtypeVal with
+      resp_rel := Iff.rfl
+    }
+
+def subtype (P: α -> Prop) : Ordinal := Ordinal.ofPre (Pre.subtype rel P)
+
+def subtype_congr (h: r ≃r s) (g: ∀x, P x ↔ Q (h x)) : subtype r P = subtype s Q := by
+  apply sound'
+  apply (Pre.subtype _ _).well_order
+  apply (Pre.subtype _ _).well_order
+  refine {
+    Equiv.congrSubtype h.toEquiv ?_ with
+    resp_rel := h.resp_rel
+  }
+  assumption
+
+attribute [irreducible] Pre.subtype
+
+end Subtype
+
+section Sub
+
+def sub : Ordinal -> Ordinal -> Ordinal := by
+  let f (α: Type _) (relα: α -> α -> Prop) [Relation.IsWellOrder relα] (b: Ordinal) : Ordinal :=
+    subtype relα (fun x => rank relα x + b < type relα)
+  refine lift f ?_
+  intro α β relα relβ _ _ h
+  apply funext
+  intro o
+  apply subtype_congr h
+  intro x
+  rw [show h x = h.toInitial x from rfl, rank_congr, sound _ _ h]
+
+instance : Sub Ordinal where
+  sub := sub
+
+def sub_of_le (a b: Ordinal) (h: a ≤ b) : a - b = 0 := by
+  cases a with | _ α relα =>
+  apply (ofPre_eq_zero_iff _).mp
+  simp [Pre.subtype]
+  refine { elim | ⟨x, hx⟩ => ?_ }
+  rw [←not_le] at hx; apply hx; clear hx
+  apply le_trans
+  assumption
+  apply le_add_right
+
+end Sub
+
+section DivMod
+
+noncomputable def modFin (n: ℕ) : Ordinal -> ℕ :=
+  transfiniteRecursion' (motive := fun _ => ℕ)
+    (fun _ _ _ => 0)
+    (fun _ ih => (ih + 1) % n)
+
+noncomputable instance : HMod Ordinal ℕ ℕ where
+  hMod o n := modFin n o
+
+def divFin (n: ℕ) : Ordinal -> Ordinal := by
+  let f (α: Type _) (relα: α -> α -> Prop) [Relation.IsWellOrder relα] : Ordinal := by
+    apply subtype relα (fun x => (rank relα x % n: ℕ) = 0)
+  refine lift f ?_
+  intro α β relα relβ _ _ h
+  apply subtype_congr h
+  intro x
+  rw [show h x = h.toInitial x from rfl, rank_congr h.toInitial]
+
+noncomputable instance : HDiv Ordinal ℕ Ordinal where
+  hDiv o n := divFin n o
+
+def modFin_limit (n: ℕ) (o: Ordinal) [IsLimitOrdinal o] : (o % n: ℕ) = 0 := by
+  apply transfiniteRecursion'_limit
+
+def modFin_succ (n: ℕ) (o: Ordinal) : ((o + 1) % n: ℕ) = ((o % n: ℕ) + 1) % n := by
+  apply transfiniteRecursion'_succ
+
+noncomputable def parity (o: Ordinal) : Fin 2 :=
+  ⟨o % 2, by
+    induction o using transfiniteRecursion' with
+    | limit o ho =>
+      rw [modFin_limit]
+      trivial
+    | succ o ih =>
+      rw [modFin_succ]
+      apply Nat.mod_lt
+      trivial⟩
+
+def parity_limit (o: Ordinal) [IsLimitOrdinal o] : o.parity = 0 :=
+  (Fin.val_inj (a := ⟨_, _⟩) (b := ⟨_, _⟩)).mp (modFin_limit 2 o)
+
+def parity_succ (o: Ordinal) : (o + 1).parity = o.parity + 1 :=
+  (Fin.val_inj (a := ⟨_, _⟩) (b := ⟨_, _⟩)).mp (modFin_succ 2 _)
+
+end DivMod
+
 end Ordinal
