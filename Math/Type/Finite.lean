@@ -370,7 +370,7 @@ noncomputable def IsFinite.existsEmbedding [IsFinite α] (h: ENat.card α ≤ EN
         show ¬_
         rw [Set.compl_inj.eq_iff]
         simp
-        rw [Set.range_iff_surjective]
+        rw [Set.range_eq_univ_iff_surjective]
         intro h
         have ⟨h, _⟩  := Equiv.ofBij ⟨ih.inj, h⟩
         have := IsFinite.ofEquiv h.symm

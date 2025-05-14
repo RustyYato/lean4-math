@@ -57,7 +57,7 @@ theorem schroeder_bernstein
     obtain ⟨y',hy', rfl⟩ : y ∈ (s.image f)ᶜ.image g := by rwa [hns]
     rw [g'g, g'g] at eq
     rw [eq]
-  · rw [←Set.range_iff_surjective, Set.range_piecewise, hg'ns, Set.union_compl]
+  · rw [←Set.range_eq_univ_iff_surjective, Set.range_piecewise, hg'ns, Set.union_compl]
 
 noncomputable
 def Equiv.antisymm (h: α ↪ β) (g: β ↪ α) : α ≃ β :=

@@ -1144,7 +1144,7 @@ def union_inter_left (a b k: Set α) : k ∪ (a ∩ b) = (k ∪ a) ∩ (k ∪ b)
 def singleton_sub (a: α) (b: Set α) : {a} ⊆ b ↔ a ∈ b := by
   simp [sub_def, mem_singleton]
 
-def range_iff_surjective (f: α -> β) : Set.range f = ⊤ ↔ Function.Surjective f := by
+def range_eq_univ_iff_surjective (f: α -> β) : Set.range f = ⊤ ↔ Function.Surjective f := by
   rw [surjective_eq_range]
   apply Iff.intro
   intro h
