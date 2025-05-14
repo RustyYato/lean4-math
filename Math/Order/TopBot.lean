@@ -489,3 +489,46 @@ instance [LE α] [LT α] [Min α] [Max α] [IsLinearLattice α] : IsLinearLattic
   inferInstanceAs (IsPartialOrder (WithBot α)), inferInstanceAs (IsLinearOrder (WithBot α))
   , inferInstanceAs (IsLattice (WithBot α)) with
 }
+
+instance [LE α] [LT α] [Min α] [Max α] [IsDecidableLinearOrder α] : IsDecidableLinearOrder (WithBot α) where
+  min_def := by
+    intro a b
+    split
+    cases a
+    simp
+    cases b
+    contradiction
+    show WithBot.of _ = _
+    rw [min_eq_left.mpr]
+    rename_i h
+    cases h; assumption
+    rename_i h
+    rw [not_le] at h
+    rw [min_eq_right.mpr]
+    apply le_of_lt
+    assumption
+  max_def := by
+    intro a b
+    split
+    cases a
+    simp
+    cases b
+    contradiction
+    show WithBot.of _ = _
+    rw [max_eq_right.mpr]
+    rename_i h
+    cases h; assumption
+    rename_i h
+    rw [not_le] at h
+    rw [max_eq_left.mpr]
+    apply le_of_lt
+    assumption
+
+instance [LE α] [LT α] [Min α] [Max α] [IsDecidableLinearOrder α] : IsDecidableLinearOrder (WithTop α) :=
+  (WithTop.orderIsoWithBot (α := α)).instIsDecidableLinearOrder (by
+    intro a b
+    cases a <;> cases b
+    all_goals rfl) (by
+    intro a b
+    cases a <;> cases b
+    all_goals rfl)

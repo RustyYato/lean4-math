@@ -1,6 +1,7 @@
 import Math.Order.Fin
 import Math.Data.Fin.Basic
 import Math.Data.Fintype.Basic
+import Math.Data.ENat.Defs
 
 open Classical
 
@@ -98,6 +99,18 @@ def Nat.card_spec (α: Type*) [IsFinite α] : α ≃ Fin (card α) := by
   rw [card]
   rw [dif_pos]
   apply IsFinite.toEquiv
+
+noncomputable
+def ENat.card (α: Type*) : ENat :=
+  open scoped ENat in
+  if _:IsFinite α then IsFinite.card α else ∞
+
+noncomputable
+def ENat.card_spec (α: Type*) [IsFinite α] : α ≃ Fin (card α).toNat := by
+  rw [card]
+  rw [dif_pos]
+  apply IsFinite.toEquiv
+  assumption
 
 def IsFinite.card_of_equiv (h: Nonempty (α ≃ β)) [IsFinite α] [IsFinite β] : IsFinite.card α = IsFinite.card β := by
   obtain ⟨h⟩ := h
@@ -297,7 +310,24 @@ instance {r: α -> α -> Prop} [IsFinite α] : IsFinite (Quot r) := by
 instance {s: Setoid α} [IsFinite α] : IsFinite (Quotient s) :=
   inferInstanceAs (IsFinite (Quot _))
 
-def IsFinite.subsingleton [f: IsFinite α] (h: Nat.card α ≤ 1) : Subsingleton α where
+def IsFinite.subsingleton (h: ENat.card α ≤ 1) : Subsingleton α where
+  allEq := by
+    intro a b
+    unfold ENat.card at h
+    split at h
+    · have := IsFinite.toEquiv α
+      apply this.inj
+      cases h
+      rename_i h
+      revert h this
+      generalize IsFinite.card α = c
+      intros
+      match c with
+      | 0 | 1 =>
+      apply Subsingleton.allEq
+    · contradiction
+
+def IsFinite.subsingleton' [f: IsFinite α] (h: Nat.card α ≤ 1) : Subsingleton α where
   allEq := by
     intro a b
     have := Nat.card_spec α

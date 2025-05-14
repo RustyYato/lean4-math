@@ -101,8 +101,8 @@ def leqv : ℕ∞ ≃⊓⊔ WithTop ℕ := {
   map_min a b := by cases a <;> cases b <;> rfl
 }
 
-instance : IsLinearLattice ℕ∞ :=
-  leqv.instIsLinearLattice (by
+instance : IsDecidableLinearOrder ℕ∞ :=
+  leqv.instIsDecidableLinearOrder (by
     intro a b; simp [map_min]) (by
     intro a b; simp [map_max])
 
@@ -290,5 +290,9 @@ def pow_def (a b: ℕ∞) : a ^ b = pow a b := rfl
   rename_i h g
   cases h; cases g
   rfl
+
+def toNat : ℕ∞ -> ℕ
+| ∞ => 0
+| (n: ℕ) => n
 
 end ENat

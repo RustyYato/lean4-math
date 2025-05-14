@@ -190,9 +190,19 @@ instance (priority := 500) [LT α] [LE α] [IsLawfulLT α] [Relation.IsPartialOr
 
 instance (priority := 500) [LT α] [LE α] [IsLawfulLT α] [Relation.IsLinearOrder (α := α) (· ≤ ·) (· = ·)] : IsLinearOrder α := inferInstance
 
+
 variable [LT α] [LE α] [IsLinearOrder α] {a b c: α}
 
 def lt_or_le: ∀a b: α, a < b ∨ b ≤ a := IsLinearOrder.lt_or_le
+
+instance : IsLinearOrder αᵒᵖ where
+  le_antisymm := flip (le_antisymm (α := α))
+  le_trans h g := le_trans (α := α) g h
+  lt_or_le := by
+    intro a b
+    rcases lt_or_le b.get a.get with h | h
+    left; assumption
+    right; assumption
 
 def le_total: ∀a b: α, a ≤ b ∨ b ≤ a := by
   intro a b
@@ -698,6 +708,37 @@ def min_def [IsDecidableLinearOrder α] : ∀a b: α, min a b = if a ≤ b then 
 def max_def [IsDecidableLinearOrder α] : ∀a b: α, max a b = if a ≤ b then b else a := by
   intro a b
   rw [IsDecidableLinearOrder.max_def]
+
+instance : IsDecidableLinearOrder αᵒᵖ where
+  decLE a b := inferInstanceAs (Decidable (b.get ≤ a.get))
+  min_def a b := by
+    apply (max_def a.get b.get).trans
+    split
+    split
+    apply le_antisymm
+    assumption
+    assumption
+    rfl
+    split
+    rfl
+    rw [not_le] at *
+    rename_i h g
+    have := lt_asymm h g
+    contradiction
+  max_def a b := by
+    apply (min_def a.get b.get).trans
+    split
+    split
+    apply le_antisymm
+    assumption
+    assumption
+    rfl
+    split
+    rfl
+    rw [not_le] at *
+    rename_i h g
+    have := lt_asymm h g
+    contradiction
 
 def clamp_def (h: a ≤ b) : clamp x a b = if x < a then a else if b < x then b else x := by
   split
