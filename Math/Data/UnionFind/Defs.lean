@@ -1,5 +1,6 @@
 import Math.Type.Notation
 import Math.Data.WellFounded.Basic
+import Math.Data.Setoid.Basic
 
 namespace UnionFind.Pre
 
@@ -147,7 +148,7 @@ def Policy (uf: UnionFind) := ∀i j: ℕ, ∀(hi: i < uf.size) (hj: j < uf.size
 
 def alwaysLeft (uf: UnionFind) : uf.Policy := fun _ _ _ _ _ _ => true
 
-def mergeAtAux (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: Nat) : UnionFind × Option Bool :=
+def mergeAtAux (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: ℕ) : UnionFind × Option Bool :=
   if h:i < uf.size ∧ j < uf.size then by
     let i' := uf.findAt ⟨i, h.left⟩
     let j' := uf.findAt ⟨j, h.right⟩
@@ -160,7 +161,7 @@ def mergeAtAux (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: Nat) : UnionFin
   else
     (uf, .none)
 
-def mergeAt (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: Nat) : UnionFind :=
+def mergeAt (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: ℕ) : UnionFind :=
   (mergeAtAux uf setLeftToRight i j).fst
 
 @[simp]
@@ -174,8 +175,11 @@ def size_mergeAt (uf: UnionFind) {policy i j} : (uf.mergeAt policy i j).size = u
   simp [UnionFind.mergeRoot, size]
   rfl
 
-instance (uf: UnionFind) (i: Nat) (hi: i < uf.size) : Decidable (uf.isRoot i) := by
+instance (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : Decidable (uf.isRoot i) := by
   delta isRoot
   infer_instance
+
+def setoid (uf: UnionFind) : Setoid ℕ := Setoid.eqSetoid.comap uf.find
+def eqv (uf: UnionFind) : ℕ -> ℕ -> Prop := uf.setoid.r
 
 end UnionFind
