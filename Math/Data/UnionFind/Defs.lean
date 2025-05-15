@@ -18,16 +18,22 @@ namespace UnionFind
 
 def size (uf: UnionFind) := uf.indices.size
 
-instance : GetElem UnionFind ℕ ℕ (fun uf n => n < uf.size) where
-  getElem uf i h := uf.indices[i]
+def step (uf: UnionFind) (i: ℕ) (hi: i < uf.size := by get_elem_tactic) : Fin uf.size where
+  val := uf.indices[i]
+  isLt := by
+    apply uf.inBounds
+    apply Array.getElem_mem
+
+def isRoot (uf: UnionFind) (i: ℕ) (hi: i < uf.size := by get_elem_tactic) : Prop := uf.step i = i
+
+instance (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : Decidable (uf.isRoot i) :=
+  inferInstanceAs (Decidable (_ = _))
 
 def findAt (uf: UnionFind) (i: Fin uf.size) : Fin uf.size :=
-  if uf[i] = i then
+  if uf.isRoot i then
     i
   else
-    uf.findAt ⟨uf[i], by
-      apply uf.inBounds
-      apply Array.getElem_mem⟩
+    uf.findAt (uf.step i)
 termination_by WellFounded.wrap i (uf.wellFormed i)
 decreasing_by
   apply And.intro
@@ -51,33 +57,19 @@ def find_lt_size (i: ℕ) (uf: UnionFind) (hi: i < uf.size) : uf.find i < uf.siz
 macro_rules
 | `(tactic|get_elem_tactic) => `(tactic|apply find_lt_size <;> assumption)
 
-def isRoot (uf: UnionFind) (i: ℕ) (hi : i < uf.size := by get_elem_tactic) := uf[i] = i
-
-def findAt_root (uf: UnionFind) (i: Fin uf.size) : uf[uf.findAt i] = uf.findAt i := by
+def findAt_root (uf: UnionFind) (i: Fin uf.size) : uf.isRoot (uf.findAt i) := by
   induction i using findAt.induct uf with
   | case1 i hi =>
     simp [findAt, hi]
   | case2 i hi ih =>
     unfold findAt
-    replace hi : uf[i] ≠ i.val := hi
-    conv => { lhs; lhs; rw [if_neg hi] }
-    rw [ih]
-    rw [if_neg hi]
+    conv => { lhs; arg 1; rw [if_neg hi] }
+    assumption
 
 def find_root (i: ℕ) (uf: UnionFind) (hi: i < uf.size := by get_elem_tactic) : uf.isRoot (uf.find i) := by
-  unfold isRoot find
-  conv => { lhs; lhs; rw [dif_pos hi] }
-  conv => { rhs; rw [dif_pos hi] }
+  unfold find
+  simp [hi]
   apply findAt_root
-
-def findAt_root' (uf: UnionFind) (i: Fin uf.size) : uf.isRoot (uf.findAt i) := by
-  conv => {
-    lhs; rw [show uf.findAt i = uf.find i.val from (by
-      unfold find
-      rw [dif_pos])]
-  }
-  apply find_root
-  exact i.isLt
 
 def new (n: ℕ) : UnionFind where
   indices := Array.ofFn (n := n) Fin.val
@@ -126,14 +118,14 @@ private def mergeRoot (uf: UnionFind) (i j: ℕ)
       simp at h₂
       rw [Array.getElem_set] at h₂
       rw [if_neg] at h₂
-      replace h₂ : y = uf[j] ∧ _ := h₂
+      replace h₂ : y = uf.step j ∧ _ := h₂
       rw [gj] at h₂
       simp at h₂
       rintro rfl
       contradiction
-    · replace h₀ : y = uf[x]'_ ∧ y ≠ x := h₀
+    · replace h₀ : y = uf.step x _ ∧ y ≠ x := h₀
       cases h₀.left
-      apply ih ⟨uf[x]'_, _⟩
+      apply ih ⟨uf.step x _, _⟩
       apply And.intro
       rfl
       intro h
@@ -152,8 +144,8 @@ def mergeAtAux (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: ℕ) : UnionFin
   if h:i < uf.size ∧ j < uf.size then by
     let i' := uf.findAt ⟨i, h.left⟩
     let j' := uf.findAt ⟨j, h.right⟩
-    have hi' : uf.isRoot i' := by apply findAt_root'
-    have hj' : uf.isRoot j' := by apply findAt_root'
+    have hi' : uf.isRoot i' := by apply findAt_root
+    have hj' : uf.isRoot j' := by apply findAt_root
     refine bif setLeftToRight i' j' (by get_elem_tactic) (by get_elem_tactic) hi' hj' then
       (uf.mergeRoot i' j' (by get_elem_tactic) _ hj', true)
     else
@@ -196,16 +188,15 @@ instance (uf: UnionFind) : Relation.IsEquiv (· ≈[uf] ·) where
 @[symm]
 def eqv_symm {uf: UnionFind} {a b: ℕ} : a ≈[uf] b -> b ≈[uf] a := Relation.symm
 
-@[simp] def mk_getElem (a: Array ℕ) {b c} (i: ℕ) (hi: i < a.size) : (UnionFind.mk a b c)[i]'(hi) = a[i]'(hi) := rfl
+@[simp] def mk_step (a: Array ℕ) {b c} (i: ℕ) (hi: i < a.size) : (UnionFind.mk a b c).step i = a[i] := rfl
 
-def eqv_step (uf: UnionFind) (a: ℕ) (ha: a < uf.size := by get_elem_tactic) : a ≈[uf] uf[a] := by
-  by_cases h:uf[a] = a
+def eqv_step (uf: UnionFind) (a: ℕ) (ha: a < uf.size := by get_elem_tactic) : a ≈[uf] (uf.step a) := by
+  by_cases h:uf.step a = a
   rw [h]
   show _ = _
   simp
   unfold find
   rw [dif_pos, dif_pos, findAt, if_neg]
-  rfl
   assumption
   assumption
 
