@@ -2421,4 +2421,83 @@ def parity_succ (o: Ordinal) : (o + 1).parity = o.parity + 1 :=
 
 end DivMod
 
+section Basics
+
+instance IsSuccLimitOrdinal.add (a b: Ordinal) [hb: b.IsSuccLimitOrdinal] : IsSuccLimitOrdinal (a + b) where
+  ne_succ := by
+    intro x hx h
+    cases a with | _ α relα =>
+    cases b with | _ β relβ =>
+    cases x with | _ γ relγ =>
+    replace ⟨h⟩ := exact h
+    simp at h
+    let x := h .none
+    match hx:x with
+    | .inl a =>
+      have : Nonempty β := by
+        apply Classical.byContradiction
+        intro g
+        replace g := IsEmpty.ofNotNonempty g
+        apply hb.out
+        apply sound
+        exact {
+          Equiv.empty with
+          resp_rel {x} := elim_empty x
+        }
+      obtain ⟨b⟩ := this
+      have : Sum.Lex relα relβ (.inl a) (.inr b) := Sum.Lex.sep _ _
+      rw [←hx] at this
+      replace this := h.symm.resp_rel.mp this
+      simp [x] at this
+      nomatch this
+    | .inr top =>
+      have ⟨b, r⟩ := nomax relβ inferInstance top
+      have : Sum.Lex relα relβ (.inr top) (.inr b) := Sum.Lex.inr r
+      replace this := h.symm.resp_rel.mp this
+      simp at this
+      rw [←hx] at this
+      simp [x] at this
+      nomatch this
+  out := by
+    intro h
+    suffices b = 0 by
+      apply hb.out
+      assumption
+    cases a with | _ α relα =>
+    cases b with | _ β relβ =>
+    replace ⟨h⟩ := exact h
+    simp at h
+    have g := (h.toEquiv).trans (Equiv.ulift _)
+    apply sound
+    simp
+    apply RelIso.trans _ h
+    clear h
+    exact RelIso.symm {
+      toFun x := (g x).elim0
+      invFun x := (g (.inr x)).elim0
+      leftInv x := (g x).elim0
+      rightInv x := (g (.inr x)).elim0
+      resp_rel {x} := (g x).elim0
+    }
+
+def IsLimitOrdinal.add (a b: Ordinal) (ha: a.IsLimitOrdinal ∨ b ≠ 0) (hb: b.IsLimitOrdinal) : IsLimitOrdinal (a + b) := by
+  by_cases hb₀:b = 0
+  subst b
+  simp
+  apply ha.resolve_right
+  simp
+  have : b.IsSuccLimitOrdinal := {hb with out := hb₀}
+  infer_instance
+
+instance (a b: Ordinal) [a.IsLimitOrdinal] [b.IsLimitOrdinal] : IsLimitOrdinal (a + b) := by
+  apply IsLimitOrdinal.add
+  left; assumption
+  assumption
+
+instance (a b: Ordinal) [hb₀: NeZero b] [hb: b.IsLimitOrdinal] : IsLimitOrdinal (a + b) := by
+  have : b.IsSuccLimitOrdinal := { hb, hb₀ with }
+  infer_instance
+
+end Basics
+
 end Ordinal
