@@ -165,14 +165,18 @@ def mergeAt (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: ℕ) : UnionFind :
   (mergeAtAux uf setLeftToRight i j).fst
 
 @[simp]
+def size_mergeRoot (uf: UnionFind) {i j hi hj gj} : (uf.mergeRoot i j hi hj gj).size = uf.size := by
+  simp [UnionFind.mergeRoot, size]
+
+@[simp]
 def size_mergeAt (uf: UnionFind) {policy i j} : (uf.mergeAt policy i j).size = uf.size := by
   unfold mergeAt mergeAtAux
   split
   simp
   unfold cond
   split
-  simp [UnionFind.mergeRoot, size]
-  simp [UnionFind.mergeRoot, size]
+  simp
+  simp
   rfl
 
 instance (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : Decidable (uf.isRoot i) := by
@@ -181,5 +185,44 @@ instance (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : Decidable (uf.isRoot i) :=
 
 def setoid (uf: UnionFind) : Setoid ℕ := Setoid.eqSetoid.comap uf.find
 def eqv (uf: UnionFind) : ℕ -> ℕ -> Prop := uf.setoid.r
+
+scoped notation x:50 " ≈[" uf "] " y:51 => eqv uf x y
+
+instance (uf: UnionFind) : Relation.IsEquiv (· ≈[uf] ·) where
+  refl := uf.setoid.refl
+  symm := uf.setoid.symm
+  trans := uf.setoid.trans
+
+@[symm]
+def eqv_symm {uf: UnionFind} {a b: ℕ} : a ≈[uf] b -> b ≈[uf] a := Relation.symm
+
+@[simp] def mk_getElem (a: Array ℕ) {b c} (i: ℕ) (hi: i < a.size) : (UnionFind.mk a b c)[i]'(hi) = a[i]'(hi) := rfl
+
+def eqv_step (uf: UnionFind) (a: ℕ) (ha: a < uf.size := by get_elem_tactic) : a ≈[uf] uf[a] := by
+  by_cases h:uf[a] = a
+  rw [h]
+  show _ = _
+  simp
+  unfold find
+  rw [dif_pos, dif_pos, findAt, if_neg]
+  rfl
+  assumption
+  assumption
+
+def eqv_findAt (uf: UnionFind) (a: Fin uf.size) : a ≈[uf] uf.findAt a := by
+  induction a using findAt.induct with
+  | case1 _ h =>
+    unfold findAt
+    rw [if_pos h]
+  | case2 x h ih =>
+    rw [findAt, if_neg h]
+    apply Relation.trans' _ ih
+    apply eqv_step
+
+def eqv_find (uf: UnionFind) (a: ℕ) : a ≈[uf] uf.find a := by
+  unfold find
+  split
+  apply eqv_findAt _ ⟨_, _⟩
+  rfl
 
 end UnionFind
