@@ -147,22 +147,25 @@ def Policy (uf: UnionFind) := ∀i j: ℕ, ∀(hi: i < uf.size) (hj: j < uf.size
 
 def alwaysLeft (uf: UnionFind) : uf.Policy := fun _ _ _ _ _ _ => true
 
-def mergeAt (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: Nat) : UnionFind :=
+def mergeAtAux (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: Nat) : UnionFind × Option Bool :=
   if h:i < uf.size ∧ j < uf.size then by
     let i' := uf.findAt ⟨i, h.left⟩
     let j' := uf.findAt ⟨j, h.right⟩
     have hi' : uf.isRoot i' := by apply findAt_root'
     have hj' : uf.isRoot j' := by apply findAt_root'
     refine bif setLeftToRight i' j' (by get_elem_tactic) (by get_elem_tactic) hi' hj' then
-      uf.mergeRoot i' j' (by get_elem_tactic) _ hj'
+      (uf.mergeRoot i' j' (by get_elem_tactic) _ hj', true)
     else
-      uf.mergeRoot j' i' (by get_elem_tactic) _ hi'
+      (uf.mergeRoot j' i' (by get_elem_tactic) _ hi', false)
   else
-    uf
+    (uf, .none)
+
+def mergeAt (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: Nat) : UnionFind :=
+  (mergeAtAux uf setLeftToRight i j).fst
 
 @[simp]
 def size_mergeAt (uf: UnionFind) {policy i j} : (uf.mergeAt policy i j).size = uf.size := by
-  unfold mergeAt
+  unfold mergeAt mergeAtAux
   split
   simp
   unfold cond
