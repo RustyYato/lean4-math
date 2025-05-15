@@ -2350,14 +2350,14 @@ section Sub
 
 def sub : Ordinal -> Ordinal -> Ordinal := by
   let f (α: Type _) (relα: α -> α -> Prop) [Relation.IsWellOrder relα] (b: Ordinal) : Ordinal :=
-    subtype relα (fun x => rank relα x + b < type relα)
+    subtype relα (fun x => b ≤ rank relα x)
   refine lift f ?_
   intro α β relα relβ _ _ h
   apply funext
   intro o
   apply subtype_congr h
   intro x
-  rw [show h x = h.toInitial x from rfl, rank_congr, sound _ _ h]
+  rw [show h x = h.toInitial x from rfl, rank_congr]
 
 instance : Sub Ordinal where
   sub := sub
@@ -2367,10 +2367,73 @@ def sub_of_le (a b: Ordinal) (h: a ≤ b) : a - b = 0 := by
   apply (ofPre_eq_zero_iff _).mp
   simp [Pre.subtype]
   refine { elim | ⟨x, hx⟩ => ?_ }
-  rw [←not_le] at hx; apply hx; clear hx
-  apply le_trans
-  assumption
-  apply le_add_right
+  have := le_trans h hx
+  rw [←not_lt] at this
+  apply this
+  apply rank_lt_type
+
+def add_sub_cancel (a b: Ordinal) (h: b ≤ a) : b + (a - b) = a := by
+  classical
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  obtain ⟨f₀⟩ := h
+  simp at f₀
+  let S := Set.mk fun a => rank relα a < type relβ
+  have (a: S) : ∃b: β, a.val = f₀ b := by
+    have ⟨b, hb⟩ := rank_surj relβ (rank relα a.val) a.property
+    exists b
+    apply rank_inj (r := relα)
+    rwa [rank_congr]
+  replace := Classical.axiomOfChoice this
+  obtain ⟨f, hf⟩ := this
+  apply sound
+  simp
+  exact {
+    toFun
+    | .inl x => f₀ x
+    | .inr x => x.val
+    invFun x :=
+      if hx:rank relα x < type relβ then
+        .inl (f ⟨_, hx⟩)
+      else
+        .inr ⟨x, by rwa [not_lt] at hx⟩
+    leftInv x := by
+      cases x <;> simp
+      · rw [dif_pos]
+        congr
+        apply f₀.inj
+        rw [←hf]
+        rw [rank_congr]
+        apply rank_lt_type
+      · rw [dif_neg]
+        rw [not_lt]
+        rename_i x
+        exact x.property
+    rightInv x := by
+      simp
+      by_cases hx:rank relα x < type relβ
+      · rw [dif_pos hx]
+        simp
+        rw [←hf]
+      · rw [dif_neg hx]
+    resp_rel := by
+      intro x y
+      simp
+      cases x <;> cases y <;> simp
+      apply f₀.resp_rel
+      apply rank_lt_rank_iff.mp
+      rw [rank_congr]
+      apply lt_of_lt_of_le
+      apply rank_lt_type
+      rename_i x
+      apply x.property
+      apply rank_le_rank_iff.mp
+      rename_i x _
+      rw [rank_congr]
+      apply le_trans
+      apply le_of_lt; apply rank_lt_type
+      apply x.property
+  }
 
 end Sub
 
@@ -2418,6 +2481,9 @@ def parity_limit (o: Ordinal) [IsLimitOrdinal o] : o.parity = 0 :=
 
 def parity_succ (o: Ordinal) : (o + 1).parity = o.parity + 1 :=
   (Fin.val_inj (a := ⟨_, _⟩) (b := ⟨_, _⟩)).mp (modFin_succ 2 _)
+
+def divFin_add_modFin (n: ℕ) (o: Ordinal) : n * divFin n o + modFin n o = o := by
+  sorry
 
 end DivMod
 
