@@ -24,6 +24,33 @@ def step (uf: UnionFind) (i: ℕ) (hi: i < uf.size := by get_elem_tactic) : Fin 
     apply uf.inBounds
     apply Array.getElem_mem
 
+def stepped_from (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop :=
+  fun i j: Fin uf.size => i = uf.step j ∧ i ≠ j
+
+def lt (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop := Relation.TransGen uf.stepped_from
+
+def le (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop :=
+  Relation.ReflTransGen fun i j : Fin uf.size => i = uf.step j
+
+instance (uf: UnionFind) : Relation.IsWellFounded uf.stepped_from where
+  wf := by
+    apply WellFounded.intro
+    intro a
+    induction uf.wellFormed a with
+    | _ a h ih =>
+    apply Acc.intro
+    intro b h
+    apply ih
+    apply And.intro _ h.right
+    rw [h.left]
+    rfl
+
+instance (uf: UnionFind) : Relation.IsWellFounded uf.lt :=
+  inferInstanceAs (Relation.IsWellFounded (Relation.TransGen _))
+
+instance (uf: UnionFind) : Relation.IsStrictPartialOrder uf.lt where
+  trans := Relation.TransGen.trans
+
 def isRoot (uf: UnionFind) (i: ℕ) (hi: i < uf.size := by get_elem_tactic) : Prop := uf.step i = i
 
 instance (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : Decidable (uf.isRoot i) :=
