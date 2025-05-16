@@ -1604,7 +1604,7 @@ def le_of_lt_succ {a b: Ordinal} : a < b + 1 -> a ≤ b := by
   refine ⟨?_⟩; simp
   refine {
     toFun a := (ab a).get (ne_none a)
-    inj' a b h := ab.inj (Option.get_inj _ _ _ _ h)
+    inj' a b h := ab.inj (Option.get_inj.mp h)
     resp_rel := by
       intro a b
       simp

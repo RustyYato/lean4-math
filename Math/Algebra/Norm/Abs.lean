@@ -230,13 +230,13 @@ def abs_def [DecidableLE α] (a: α) : |a| = if 0 ≤ a then a else -a := by
 def abs_intCast (n: ℤ) : |(n: α)| = |n| := by
   cases n with
   | ofNat n =>
-    rw [intCast_ofNat, abs_eq_natAbs, Int.natAbs_ofNat,
+    rw [intCast_ofNat, abs_eq_natAbs, Int.natAbs_natCast,
       abs_natCast, intCast_ofNat]
   | negSucc n =>
     rw [Int.negSucc_eq, ←intCast_neg, abs_neg,
-      ←natCast_one, ←Int.ofNat_add, intCast_ofNat,
+      ←natCast_one, ←natCast_add, intCast_ofNat,
       abs_neg, abs_natCast, abs_eq_natAbs,
-      intCast_ofNat, Int.natAbs_ofNat]
+      intCast_ofNat, Int.natAbs_natCast]
 
 end
 

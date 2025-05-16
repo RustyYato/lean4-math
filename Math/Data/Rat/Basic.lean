@@ -68,7 +68,7 @@ def Fract.reduce.isReduced (a: Fract) : a.reduce.isReduced := by
   conv => {
     lhs; lhs
     rhs
-    rw [←Int.natAbs_ofNat (‖a.num‖.gcd a.den)]
+    rw [←Int.natAbs_natCast (‖a.num‖.gcd a.den)]
   }
   show (Int.natAbs _ * _).gcd _ = _
   rw [←Int.natAbs_mul, Int.ediv_mul_cancel, Nat.div_mul_cancel, Nat.one_mul]
@@ -108,10 +108,10 @@ def Fract.isReduced.spec (a b: Fract) : a.isReduced -> b.isReduced -> a ≈ b ->
   unfold isReduced at ared bred
   simp at *
   have sign_eq : (an * bd).sign = (bn * ad).sign := by rw [h]
-  rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero (Nat.ne_zero_of_lt adpos)
-    , Int.sign_ofNat_of_nonzero (Nat.ne_zero_of_lt bdpos), Int.mul_one, Int.mul_one] at sign_eq
+  rw [Int.sign_mul, Int.sign_mul, Int.sign_natCast_of_ne_zero (Nat.ne_zero_of_lt adpos)
+    , Int.sign_natCast_of_ne_zero (Nat.ne_zero_of_lt bdpos), Int.mul_one, Int.mul_one] at sign_eq
   have val_eq : (an * bd).natAbs = (bn * ad).natAbs := by rw [h]
-  rw [Int.natAbs_mul, Int.natAbs_mul, Int.natAbs_ofNat, Int.natAbs_ofNat] at val_eq
+  rw [Int.natAbs_mul, Int.natAbs_mul, Int.natAbs_natCast, Int.natAbs_natCast] at val_eq
   replace val_eq : ‖an‖ * bd = ‖bn‖ * ad := val_eq
   have p1 : ‖bn‖ ∣ ‖an‖ * bd := by exists ad
   replace p1 := Nat.dvd_left_of_dvd_of_gcd_eq_one _ _ _ p1 bred
@@ -133,7 +133,7 @@ def Fract.reduce.spec (a: Fract) : a ≈ a.reduce := by
   cases a with | mk n d dpos =>
   show _ * _ = _ * _
   unfold reduce
-  dsimp only [Int.ofNat_ediv]
+  dsimp only [Int.natCast_ediv]
   rw [←Int.mul_ediv_assoc, Int.mul_comm n, Int.mul_ediv_assoc, Int.mul_comm]
   apply Int.dvd_natAbs.mp
   apply Int.ofNat_dvd.mpr
@@ -411,8 +411,8 @@ def Fract.inv.spec (a b: Fract) (h₀: ¬a ≈ 0) (h₁: ¬b ≈ 0) : a ≈ b ->
     rw [←this, Int.mul_comm a.num.sign, Int.mul_assoc, Int.sign_mul_natAbs a.num]
     rw [Int.mul_comm, ←eq, Int.mul_comm]
   have : (a.num * b.den).sign = (b.num * a.den).sign := by rw [eq]
-  rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero a.den_nz,
-    Int.sign_ofNat_of_nonzero b.den_nz, Int.mul_one, Int.mul_one] at this
+  rw [Int.sign_mul, Int.sign_mul, Int.sign_natCast_of_ne_zero a.den_nz,
+    Int.sign_natCast_of_ne_zero b.den_nz, Int.mul_one, Int.mul_one] at this
   assumption
 
 instance : CheckedInv? ℚ where
@@ -458,7 +458,7 @@ def Fract.npow.spec (a b: Fract) (n: Nat) : a ≈ b -> a ^ n ≈ b ^ n := by
   intro eq
   show _ = _
   simp
-  rw [Int.pow_ofNat, Int.pow_ofNat, Int.mul_pow, Int.mul_pow, eq]
+  rw [←mul_npow, ←mul_npow, eq]
 
 instance : SMul ℕ ℚ where
   smul n a := n * a
@@ -659,7 +659,7 @@ def natCast_nonzero (n: Nat) : ((n + 1: ℕ): ℚ) ≠ 0 := by
   intro ha
   have eq : _ = _ := Quotient.exact ha
   simp at eq
-  have : (n: Int) + 1 = (n + 1: Nat) := Int.ofNat_add _ _
+  have : (n: Int) + 1 = (n + 1: Nat) := Int.natCast_add _ _
   rw [this] at eq
   nomatch eq
 

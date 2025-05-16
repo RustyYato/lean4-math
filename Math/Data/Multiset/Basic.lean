@@ -651,7 +651,7 @@ def erase_cons [DecidableEq α] (x a: α) (as: Multiset α) : (a::ₘas).erase x
   rfl
   intro h
   subst x
-  rw [LawfulBEq.rfl] at h
+  rw [BEq.rfl] at h
   contradiction
 
 def count_by_erase [DecidableEq α] (x: α) (as: Multiset α) (h: x ∉ as ∨ ¬P x) : as.MinCountBy P n ↔ (as.erase x).MinCountBy P n := by

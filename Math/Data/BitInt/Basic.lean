@@ -1300,7 +1300,7 @@ instance : IsAddGroupWithOne BitInt where
       unfold Pre.ofInt Pre.ofNat
       rw [if_neg, if_neg, if_neg nz]
       show Pre.cons (x % ((2: Nat): Int) == ((1: Nat): Int)) _ ≈ _
-      rw [←Int.ofNat_emod]
+      rw [←Int.natCast_emod]
       rcases Nat.mod_two_eq_zero_or_one x with h | h
       rw [h]
       apply rel_cons
@@ -1326,7 +1326,7 @@ instance : IsAddGroupWithOne BitInt where
       contradiction
       omega
       show Pre.cons (_ % ((2: Nat): Int) == ((1: Nat): Int)) _ ≈ _
-      rw [Int.negSucc_emod, ←Int.ofNat_emod, Nat.add_mod]
+      rw [Int.negSucc_emod, ←Int.natCast_emod, Nat.add_mod]
       rcases Nat.mod_two_eq_zero_or_one x with h | h
       rw [h]
       dsimp; apply rel_cons

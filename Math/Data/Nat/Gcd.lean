@@ -5,7 +5,7 @@ namespace Nat
 
 def dvd_left_of_dvd_of_gcd_eq_one (a b c: Nat) : a ∣ b * c -> a.gcd c = 1 -> a ∣ b := by
   intro dvd gcd_eq
-  have p1 := Nat.gcd_mul_dvd_mul_gcd a b c
+  have p1 := Nat.gcd_mul_right_dvd_mul_gcd a b c
   rw [gcd_eq, Nat.mul_one] at p1
   have p2 : a.gcd b ∣ a.gcd (b * c) := gcd_dvd_gcd_mul_right_right a b c
   have := Nat.dvd_antisymm p1 p2
@@ -438,7 +438,7 @@ private def xgcdAux_P {r r': Nat} :
     apply ih _ p
     show _ = _
     rw [Int.mul_sub, Int.mul_sub,
-      Int.ofNat_sub, oldp, Int.ofNat_mul, p]
+      Int.ofNat_sub, oldp, Int.natCast_mul, p]
     simp only [Int.sub_eq_add_neg, Int.neg_mul, Int.mul_add, Int.neg_add]
     ac_rfl
     exact div_mul_le_self oldr r

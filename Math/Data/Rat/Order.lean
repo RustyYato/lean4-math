@@ -26,8 +26,8 @@ def isNonneg : ℚ -> Prop := by
   refine Int.sign_nonneg_iff.mpr ?_
   assumption
   have : (b.num * a.den).sign = (a.num * b.den).sign := by rw [eq]
-  rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero a.den_nz,
-    Int.sign_ofNat_of_nonzero b.den_nz, Int.mul_one, Int.mul_one] at this
+  rw [Int.sign_mul, Int.sign_mul, Int.sign_natCast_of_ne_zero a.den_nz,
+    Int.sign_natCast_of_ne_zero b.den_nz, Int.mul_one, Int.mul_one] at this
   assumption
 
 def isPos : ℚ -> Prop := by
@@ -46,8 +46,8 @@ def isPos : ℚ -> Prop := by
   refine Int.sign_eq_one_iff_pos.mpr ?_
   assumption
   have : (b.num * a.den).sign = (a.num * b.den).sign := by rw [eq]
-  rw [Int.sign_mul, Int.sign_mul, Int.sign_ofNat_of_nonzero a.den_nz,
-    Int.sign_ofNat_of_nonzero b.den_nz, Int.mul_one, Int.mul_one] at this
+  rw [Int.sign_mul, Int.sign_mul, Int.sign_natCast_of_ne_zero a.den_nz,
+    Int.sign_natCast_of_ne_zero b.den_nz, Int.mul_one, Int.mul_one] at this
   assumption
 
 @[simp]
@@ -436,7 +436,6 @@ def intCast_le_intCast {a b: ℤ} : (a: ℚ) ≤ b ↔ a ≤ b := by
   show Fract.isNonneg _ ↔ _
   unfold Fract.isNonneg
   simp
-  omega
 
 @[norm_cast]
 def intCast_lt_intCast {a b: ℤ} : (a: ℚ) < b ↔ a < b := by
@@ -510,9 +509,9 @@ def Fract.floor.spec (a b: Fract) : a ≈ b -> a.floor = b.floor := by
   refine Int.ofNat_dvd.mpr ?_
   all_goals unfold g
   apply Nat.gcd_dvd_right
-  rw [←Int.natAbs_ofNat a.den]
+  rw [←Int.natAbs_natCast a.den]
   show (Int.gcd a.num a.den: ℤ) ∣ _
-  exact Int.gcd_dvd_left
+  apply Int.gcd_dvd_left
   apply Int.dvd_refl
   apply Int.dvd_refl
 
@@ -538,7 +537,8 @@ def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by
       apply Int.mul_ediv_self_le
       exact a.den_nz'
     · show 0 < _
-      simp [Fract.floor, Int.add_mul]
+      simp only [Fract.floor, Fract.sub_num, Fract.add_num, Fract.ofInt_num, Fract.ofNat_den,
+        natCast_one, mul_one, Fract.ofNat_num, Fract.ofInt_den, Int.add_mul, one_mul, Fract.add_den]
       rw (occs := [2]) [←Int.ediv_add_emod a.num a.den]
       rw [sub_eq_add_neg, neg_add_rev]
       rw [show a.num / ↑a.den * ↑a.den + ↑a.den + (-(a.num % ↑a.den) + -(↑a.den * (a.num / ↑a.den)))
@@ -563,7 +563,7 @@ def floor_spec (a: ℚ) (x: Int) : a.floor = x ↔ x ≤ a ∧ a < x + 1 := by
     rw (occs := [2]) [←one_mul (a.den: ℤ)] at g
     rw [←add_mul] at g
     replace g := Int.add_lt_add_right g a.num
-    rw [zero_add, sub_add_cancel] at g
+    replace g := Int.lt_of_add_lt_add_right g
     replace g := Int.ediv_lt_of_lt_mul (Int.ofNat_pos.mpr a.den_pos) g
     have := not_lt_of_le (Int.le_iff_lt_add_one.mpr g)
     contradiction

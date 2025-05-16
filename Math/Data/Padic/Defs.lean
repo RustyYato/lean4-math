@@ -341,7 +341,7 @@ def norm'_spec (p: ℕ) [Nat.IsPrimeClass p] (a b: Rat.Fract) (h: a ≈ b) : nor
     congr 1
     rw [←valuation'_mul, ←valuation'_mul]
     congr 1
-    rw [←Int.natAbs_ofNat b.den, ←Int.natAbs_ofNat a.den,
+    rw [←Int.natAbs_natCast b.den, ←Int.natAbs_natCast a.den,
       ←Int.natAbs_mul, ←Int.natAbs_mul, h]
     intro h
     have := Int.natAbs_eq_zero.mp h; contradiction

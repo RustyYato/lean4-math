@@ -32,14 +32,6 @@ def Classical.contrapositive {P Q: Prop}: (¬Q -> ¬P) ↔ (P -> Q) := by
   replace h := _root_.contrapositive h
   rwa [Classical.not_not, Classical.not_not] at h
 
-def Option.get_inj (a b: Option α) (ha: a.isSome) (hb: b.isSome) :
-  a.get ha = b.get hb -> a = b := by
-  intro h
-  have : some (a.get ha) = some (b.get hb) := by
-    rw [h]
-  rw [Option.some_get, Option.some_get] at this
-  assumption
-
 def cast_eq_of_heq
   {a: α}
   {b: β}

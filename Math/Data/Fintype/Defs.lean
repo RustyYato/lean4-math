@@ -85,7 +85,7 @@ private def List.nodup_getElem_idxOf [BEq α] [LawfulBEq α] (as: List α) (x: �
   apply Option.some.inj
   rw [←List.getElem?_eq_getElem]
   induction h with
-  | head => rw [List.idxOf_cons, LawfulBEq.rfl, cond_true, List.getElem?_cons_zero]
+  | head => rw [List.idxOf_cons, BEq.rfl, cond_true, List.getElem?_cons_zero]
   | tail _ _ ih =>
     rename_i a as h'
     rw [List.idxOf_cons, show (a == x) = false from ?_, cond_false, List.getElem?_cons_succ, ih]

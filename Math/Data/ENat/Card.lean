@@ -199,6 +199,7 @@ noncomputable def toENat : Cardinal.{u} →+* ENat where
         assumption
         apply le_mul_left
         apply Cardinal.natCast_le_natCast_iff.mpr
+        apply Nat.pos_iff_ne_zero.mpr
         omega
     | inf _ h =>
       by_cases hy:y = 0
@@ -219,6 +220,7 @@ noncomputable def toENat : Cardinal.{u} →+* ENat where
         match y with
         | y + 1 =>
         apply Cardinal.natCast_le_natCast_iff.mpr
+        apply Nat.pos_iff_ne_zero.mpr
         omega
       · apply flip le_trans
         assumption

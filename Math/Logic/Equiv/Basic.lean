@@ -934,10 +934,7 @@ def finSum : Fin n ⊕ Fin m ≃ Fin (n + m) where
     else
       .inr ⟨x.val - n, by omega⟩
   leftInv x := by
-    cases x
-    simp
-    simp; rw [dif_neg]; congr; omega
-    omega
+    cases x <;> simp
   rightInv x := by
     by_cases h:x.val < n
     simp [h]
@@ -1125,6 +1122,7 @@ end Equiv
 def Fin.embedNat : Fin n ↪ Nat :=
   Equiv.fin_equiv_nat_subtype.toEmbedding.trans Embedding.subtypeVal
 
+@[simp]
 def Fin.embedNat_eq_val : (Fin.embedNat: Fin n -> _) = Fin.val := rfl
 
 def Fin.embedFin (h: n ≤ m) : Fin n ↪ Fin m where

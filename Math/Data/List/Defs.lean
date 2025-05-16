@@ -126,8 +126,7 @@ def List.getElem_idxOf [BEq α] [LawfulBEq α] (as: List α) (a: α) (ha: a ∈ 
     rw [List.getElem?_cons_succ]
     apply ih
     cases ha
-    rw [LawfulBEq.rfl] at h
-    contradiction
+    simp at h
     assumption
 
 def List.nodup_map (as: List α) (f: α -> β) :

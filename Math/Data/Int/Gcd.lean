@@ -53,8 +53,6 @@ def dvd_left_of_dvd_of_gcd_eq_one (a b c: ℤ) : a ∣ b * c -> a.gcd c = 1 -> a
   assumption
   assumption
 
-def gcd_comm (a b: ℤ) : gcd a b = gcd b a := Nat.gcd_comm _ _
-
 def mul_dvd (n m: ℤ) (k: ℤ) (h: gcd n m = 1) : n ∣ k -> m ∣ k -> (n * m) ∣ k := by
   intro hn hm
   obtain ⟨q, rfl⟩ := hn

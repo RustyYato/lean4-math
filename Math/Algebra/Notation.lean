@@ -1,13 +1,5 @@
 import Math.Type.Notation
 
-class One (α) where
-  one: α
-
-instance (priority := 100) [OfNat α 1] : One α where
-  one := 1
-
-instance One.ofNat [One α] : OfNat α 1 := ⟨One.one⟩
-
 instance (priority := 100) [One α] : Nonempty α := ⟨One.one⟩
 
 variable {a b c k: a₀}

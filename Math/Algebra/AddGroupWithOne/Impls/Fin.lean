@@ -30,9 +30,11 @@ instance Fin.instIsAddGroupWithOne : IsAddGroupWithOne (Fin n) := {
     simp
     rw [Int.ofNat_sub]
     simp
-    rw [Int.max_eq_left]
-    rw [Int.sub_sub_self]
-    rw [Int.add_emod, Int.emod_emod, ←Int.add_emod, Int.add_comm]
+    rw [Int.max_eq_left, ←Int.emod_add_emod]
+    rw [Int.emod_eq_emod_iff_emod_sub_eq_zero,
+      Int.add_comm, Int.neg_sub, Int.sub_sub, Int.add_comm n,
+      ←Int.sub_sub, Int.sub_self]
+    simp
     apply Int.le_sub_left_of_add_le
     simp; rw [Int.add_comm]
     apply Int.add_one_le_iff.mpr

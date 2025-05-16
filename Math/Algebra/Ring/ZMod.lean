@@ -85,7 +85,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       show Int.toNat ((x.val: ℤ) % n) = x.val
       apply Int.ofNat.inj
       rw [Int.ofNat_eq_coe, Int.ofNat_eq_coe, Int.toNat_of_nonneg]
-      rw [←Int.ofNat_emod, Nat.mod_eq_of_lt]
+      rw [←Int.natCast_emod, Nat.mod_eq_of_lt]
       exact x.isLt
       apply Int.emod_nonneg
       have := h.out
@@ -117,7 +117,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       rw [←map_natCast mkQuot, ←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ _
-      rw [Int.ofNat_emod]
+      rw [Int.natCast_emod]
       apply int_dvd_emod_sub
     map_mul {x y} := by
       show (((x.val * y.val) % n): ZMod n) = (x.val: ZMod n) * (y.val: ZMod n)
@@ -126,7 +126,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       rw [←map_natCast mkQuot, ←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ _
-      rw [Int.ofNat_emod]
+      rw [Int.natCast_emod]
       apply int_dvd_emod_sub
   }
 
@@ -255,7 +255,7 @@ def intCast_eq_intCast {n: ℕ} {a b: ℤ} :
     rw [←map_intCast (zmod_succ_eqv_fin (n+1)).symm, ←map_intCast (zmod_succ_eqv_fin (n+1)).symm] at eq
     replace eq := Int.ofNat_inj.mpr <| Fin.mk.inj <| (zmod_succ_eqv_fin _).symm.inj eq
     rw [Int.toNat_of_nonneg, Int.toNat_of_nonneg,
-      Int.ofNat_succ, Int.emod_emod, Int.emod_emod] at eq
+      Int.natCast_succ, Int.emod_emod, Int.emod_emod] at eq
     assumption
     refine Int.emod_nonneg _ ?_
     omega
@@ -266,7 +266,7 @@ def intCast_eq_intCast {n: ℕ} {a b: ℤ} :
 def natCast_eq_natCast {a b: ℕ} :
   a % n = b % n ↔ (a: ZMod n) = (b: ZMod n) := by
   rw [←intCast_ofNat, ←intCast_ofNat b, ←intCast_eq_intCast]
-  rw [←Int.ofNat_emod, ←Int.ofNat_emod, Int.ofNat_inj]
+  rw [←Int.natCast_emod, ←Int.natCast_emod, Int.ofNat_inj]
 
 def toInt_intCast (x: ZMod n) : x.toInt = x := by
   let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot

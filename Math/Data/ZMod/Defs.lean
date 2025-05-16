@@ -60,8 +60,7 @@ def toInt_eq_zero : toInt (x: ZMod n) = 0 -> x = 0 := by
   rename_i n
   unfold toInt at h
   simp at h
-  have : (x.val: ℤ) = 0 := h
-  cases x; cases this
+  cases x; cases h
   rfl
 
 def toInt_natAbs_lt_n (x: ZMod n) (h: n ≠ 0) : toInt x < n := by
@@ -140,9 +139,6 @@ def toUnit : { x: ZMod n // Int.gcd x.toInt n = 1 } ≃ Units (ZMod n) where
       rfl
       rwa [←Int.neg_le_neg_iff, neg_neg]
     · rename_i n
-      unfold Int.gcd
-      rw [Int.natAbs_ofNat]
-      simp
       show x.val.val.gcd (n + 1) = 1
       cases n
       have : x.val = 0 := Subsingleton.allEq _ _
@@ -180,7 +176,7 @@ def toInt_ofInt (x: ℤ) : toInt (ofInt n x) = x % n := by
   erw [Int.emod_zero]; rfl
   rename_i n
   show Fin.val _ = x % (n + 1)
-  rw [apply_ofInt, ←Int.ofNat_succ]
+  rw [apply_ofInt, ←natCast_succ]
   show Fin.val ⟨Int.toNat _, _⟩ = x % (n + 1)
   simp
   rw [max_eq_left.mpr]
@@ -251,7 +247,7 @@ def toInt_add (x y: ZMod n) : ∃k, toInt (x + y) = toInt x + toInt y - k ∧ (k
     rw (occs := [2]) [←Nat.div_add_mod (x.val + y.val) (n + 1)]
     rw [natCast_add, sub_eq_add_neg, add_comm_right,
       ←sub_eq_add_neg]; rw [←mul_one (Nat.cast (n + 1)),
-        Int.ofNat_mul, ←mul_sub]
+        natCast_mul, ←mul_sub]
     rw (occs := [1]) [←zero_add ( Nat.cast _)]; congr
     rw [←mul_zero]; congr
     suffices n + 1 ≤ x.val + y.val by
@@ -279,7 +275,7 @@ private def liftHelper {n: ℕ} {A: Type*} [AddGroupOps A] [IsAddGroup A] (f: {f
       | ofNat x => apply this
       | negSucc x =>
         rw [Int.negSucc_eq, map_neg, ←zsmul_ofNat, zsmul_neg,
-          ←Int.ofNat_succ, zsmul_ofNat, this, neg_zero]
+          ←natCast_succ, zsmul_ofNat, this, neg_zero]
     intro x
     rw [←map_nsmul]
     show f.val ((n * x: ℕ)) = 0
@@ -506,7 +502,7 @@ def equiv_prod (n m: ℕ) (h: Nat.gcd n m = 1) : ZMod (n * m) ≃+ ZMod n × ZMo
     let c := Int.chinese_remainder (toInt (toProd n m x).fst) (toInt (toProd n m x).snd) ↑n ↑m
     show ofInt (n * m) c = x
     have := Int.chinese_remainder_unique c (toInt x) n m h ?_ ?_
-    rw [ofInt_emod, Int.ofNat_mul, this, ←Int.ofNat_mul, ←ofInt_emod, ofInt_toInt]
+    rw [ofInt_emod, natCast_mul, this, ←natCast_mul, ←ofInt_emod, ofInt_toInt]
     rw [Int.chinese_remainder_mod_left, apply_toProd, toInt_ofInt, Int.emod_emod]
     assumption
     rw [Int.chinese_remainder_mod_right, apply_toProd, toInt_ofInt, Int.emod_emod]
@@ -525,8 +521,8 @@ def equiv_prod (n m: ℕ) (h: Nat.gcd n m = 1) : ZMod (n * m) ≃+ ZMod n × ZMo
       ofInt_toInt, ofInt_toInt]
     assumption
     assumption
-    rw [Int.ofNat_mul]; apply Int.dvd_mul_left
-    rw [Int.ofNat_mul]; apply Int.dvd_mul_right
+    rw [natCast_mul]; apply Int.dvd_mul_left
+    rw [natCast_mul]; apply Int.dvd_mul_right
 }
 
 instance : NoZeroDivisors (ZMod 0) :=

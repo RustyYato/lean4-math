@@ -41,7 +41,7 @@ def ofNat_npow (a: Nat) (n: Nat) : ((a ^ n: Nat): Int) = (a: Int) ^ n := by
   induction n with
   | zero => rfl
   | succ n ih =>
-    rw [Int.pow_succ, Nat.pow_succ, Int.ofNat_mul, ih]
+    rw [Int.pow_succ, Nat.pow_succ, Int.natCast_mul, ih]
 
 def mul_pow (a b: Int) (n: Nat) : a ^ n * b ^ n = (a * b) ^ n := by
   induction n with
@@ -80,7 +80,7 @@ def pow_ofNat (a n: Nat) : (a ^ n: Nat) = (a: Int) ^ n := by
   induction n with
   | zero => rfl
   | succ n ih =>
-    rw [Int.pow_succ, Nat.pow_succ, Int.ofNat_mul, ih]
+    rw [Int.pow_succ, Nat.pow_succ, Int.natCast_mul, ih]
 
 def sq_nonneg (a: Int) : 0 ≤ a * a := by
   rcases Int.le_total a 0 with h | h

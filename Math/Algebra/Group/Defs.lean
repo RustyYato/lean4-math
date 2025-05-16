@@ -458,7 +458,7 @@ def zsmul_neg [IsAddGroup α] (x: ℤ) (a: α) : x • (-a) = -(x • a) := by
   cases x
   rw [zsmul_ofNat, zsmul_ofNat, nsmul_neg]
   rw [Int.negSucc_eq, neg_zsmul, neg_zsmul,
-    ←Int.ofNat_succ, zsmul_ofNat, zsmul_ofNat, nsmul_neg]
+    ←Int.natCast_succ, zsmul_ofNat, zsmul_ofNat, nsmul_neg]
 
 def zsmul_sub [IsAddGroup α] (x: ℤ) (a b: α) [IsAddCommutes a b] : x • (a - b) = x • a - x • b := by
   rw [sub_eq_add_neg, sub_eq_add_neg, zsmul_add, zsmul_neg]

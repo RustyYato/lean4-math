@@ -466,7 +466,7 @@ def cyclic_emb_of_dvd (n m: ℕ) (hn: n ≠ 0) (h: m ∣ n) : Cyclic m ↪* Cycl
     cases y with
     | negSucc y => contradiction
     | ofNat y =>
-    rw [Int.ofNat_ediv, ←Int.mul_ediv_assoc _ (Int.ofNat_dvd.mpr h), Int.mul_comm] at g
+    rw [Int.natCast_ediv, ←Int.mul_ediv_assoc _ (Int.ofNat_dvd.mpr h), Int.mul_comm] at g
     rw [←Int.dvd_iff_emod_eq_zero] at g
     obtain ⟨k, rfl⟩ := h
     rename_i src; clear src
