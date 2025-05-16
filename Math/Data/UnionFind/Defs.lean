@@ -156,6 +156,11 @@ def new (n: ℕ) : UnionFind where
     intro ⟨j, hj⟩ h
     simp at h
 
+def size_new (n: ℕ) : (new n).size = n := by simp [new]
+
+macro_rules
+| `(tactic|get_elem_tactic) => `(tactic|rw [size_new]; get_elem_tactic)
+
 private def mergeRoot (uf: UnionFind) (i j: ℕ)
   (hi: i < uf.size := by get_elem_tactic) (hj: j < uf.size := by get_elem_tactic)
   (gj: uf.isRoot j) : UnionFind where
@@ -445,5 +450,24 @@ def mergeAt_spec (uf: UnionFind) {policy} (i j: ℕ) (hi: i < uf.size) (hj: j < 
     apply find_eq_findAt
     symm
     assumption
+
+def new_root (n i: ℕ) (hi: i < n) : (UnionFind.new n).isRoot i := by
+  simp [new, isRoot]
+
+def root_spec (uf: UnionFind) (i j: ℕ) (hi: i < uf.size) (hj: j < uf.size) :
+  uf.isRoot i -> uf.isRoot j ->
+  i ≈[uf] j -> i = j := by
+  intro ri rj h
+  replace h : _ = _ := h
+  simp at h
+  unfold find findAt at h
+  simpa [hi, hj, ri, rj] using h
+
+def new_spec (n i j: ℕ) (hi: i < n) (hj: j < n) : i ≈[UnionFind.new n] j -> i = j := by
+  apply root_spec
+  apply new_root
+  assumption
+  apply new_root
+  assumption
 
 end UnionFind
