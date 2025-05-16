@@ -30,7 +30,7 @@ def stepped_from (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop :=
 def lt (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop := Relation.TransGen uf.stepped_from
 
 def le (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop :=
-  Relation.ReflTransGen fun i j : Fin uf.size => i = uf.step j
+  Relation.or_eqv uf.lt (· = ·)
 
 instance (uf: UnionFind) : Relation.IsWellFounded uf.stepped_from where
   wf := by
@@ -50,6 +50,15 @@ instance (uf: UnionFind) : Relation.IsWellFounded uf.lt :=
 
 instance (uf: UnionFind) : Relation.IsStrictPartialOrder uf.lt where
   trans := Relation.TransGen.trans
+
+instance (uf: UnionFind) : Relation.IsLawfulNonstrict uf.le uf.lt (· = ·) :=
+  inferInstanceAs (Relation.IsLawfulNonstrict (Relation.or_eqv _ _) _ _)
+
+instance (uf: UnionFind) : Relation.IsLawfulStrict uf.le uf.lt :=
+  inferInstanceAs (Relation.IsLawfulStrict (Relation.or_eqv _ _) _)
+
+instance (uf: UnionFind) : Relation.IsPartialOrder uf.le (· = ·) :=
+  inferInstanceAs (Relation.IsPartialOrder (Relation.or_eqv _ _) _)
 
 def isRoot (uf: UnionFind) (i: ℕ) (hi: i < uf.size := by get_elem_tactic) : Prop := uf.step i = i
 

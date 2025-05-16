@@ -445,6 +445,26 @@ instance : CongrEquiv (or_eqv rel eqv) eqv where
     assumption
     right; apply congr_eqv h g
     assumption
+instance [IsTrans rel] [IsAntisymmBy rel eqv] : IsAntisymmBy (or_eqv rel eqv) eqv where
+  antisymm_by := by
+    intro a b h g
+    cases h
+    cases g
+    rename_i h g
+    apply antisymm_by h g
+    apply symm
+    assumption
+    assumption
+instance [IsTrans rel] [IsAsymm rel] : IsAntisymmBy (or_eqv rel eqv) eqv where
+  antisymm_by := by
+    intro a b h g
+    cases h
+    cases g
+    rename_i h g
+    exact (asymm h g).elim
+    apply symm
+    assumption
+    assumption
 
 instance : IsLawfulStrict rel (strict rel) where
   is_lawful_strict _ _ := Iff.rfl
@@ -774,6 +794,9 @@ instance [IsLinearOrder rel eqv] : IsStrictLinearOrder (strict rel) eqv where
     right; right; assumption
     right; left; apply symm
     assumption
+
+instance [IsStrictPartialOrder rel] [CongrEquiv rel eqv] : IsPartialOrder (or_eqv rel eqv) eqv where
+instance [IsStrictLinearOrder rel eqv] [CongrEquiv rel eqv] : IsLinearOrder (or_eqv rel eqv) eqv where
 
 instance [IsWellOrder rel] : IsStrictLinearOrder rel (· = ·) where
 
