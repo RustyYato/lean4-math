@@ -245,6 +245,38 @@ instance (uf: UnionFind) : Relation.IsEquiv (· ≈[uf] ·) where
   symm := uf.setoid.symm
   trans := uf.setoid.trans
 
+def step_le (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : uf.le (uf.step i) i := by
+  refine if h:uf.isRoot i then  ?_ else ?_
+  rw [h]
+  left
+  apply Relation.TransGen.single
+  refine ⟨hi, rfl, ?_⟩
+  assumption
+
+def findAt_le (uf: UnionFind) (i: Fin uf.size) : uf.le (uf.findAt i) i := by
+  obtain ⟨i, hi⟩ := i
+  induction i using Relation.wfInduction uf.stepped_from with
+  | _ i ih =>
+  unfold findAt
+  split
+  rfl
+  suffices uf.stepped_from (uf.step i) i by
+    apply Relation.trans'
+    · apply ih
+      assumption
+    · show uf.le (uf.step i) i
+      left; apply Relation.TransGen.single
+      assumption
+  show uf.stepped_from (uf.step i) i
+  refine ⟨hi, rfl, ?_⟩
+  assumption
+
+def find_le (uf: UnionFind) (i: ℕ) : uf.le (uf.find i) i := by
+  unfold find
+  split
+  apply findAt_le
+  rfl
+
 @[symm]
 def eqv_symm {uf: UnionFind} {a b: ℕ} : a ≈[uf] b -> b ≈[uf] a := Relation.symm
 
@@ -260,20 +292,29 @@ def eqv_step (uf: UnionFind) (a: ℕ) (ha: a < uf.size := by get_elem_tactic) : 
   assumption
   assumption
 
+def eqv_of_lt (uf: UnionFind) (i j: ℕ) (h: uf.lt i j): uf.eqv i j := by
+  induction h with
+  | @single i' h =>
+    rcases h with ⟨_, rfl, _⟩
+    symm; apply eqv_step
+  | tail i h ih =>
+    apply Relation.trans' ih
+    clear ih
+    rcases h with ⟨_, rfl, _⟩
+    symm; apply eqv_step
+
+def eqv_of_le (uf: UnionFind) (i j: ℕ) (h: uf.le i j): uf.eqv i j := by
+  rcases h with h | rfl
+  · apply uf.eqv_of_lt
+    assumption
+  · rfl
+
 def eqv_findAt (uf: UnionFind) (a: Fin uf.size) : a ≈[uf] uf.findAt a := by
-  induction a using findAt.induct with
-  | case1 _ h =>
-    unfold findAt
-    rw [if_pos h]
-  | case2 x h ih =>
-    rw [findAt, if_neg h]
-    apply Relation.trans' _ ih
-    apply eqv_step
+  symm; apply eqv_of_le
+  apply findAt_le
 
 def eqv_find (uf: UnionFind) (a: ℕ) : a ≈[uf] uf.find a := by
-  unfold find
-  split
-  apply eqv_findAt _ ⟨_, _⟩
-  rfl
+  symm; apply eqv_of_le
+  apply find_le
 
 end UnionFind
