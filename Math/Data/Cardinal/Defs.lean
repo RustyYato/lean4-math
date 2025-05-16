@@ -106,7 +106,9 @@ def pow : Cardinal -> Cardinal -> Cardinal := by
   apply sound
   apply Equiv.congrFunction <;> assumption
 
-def sum {ι: Type v} (f: ι -> Cardinal.{u}) : Cardinal.{max u v} := ⟦Sigma (fun i: ι => (f i).type)⟧
+def sum {ι: Type v} (f: ι -> Cardinal.{u}) : Cardinal.{max u v} := ⟦Σi: ι, (f i).type⟧
+
+def prod {ι: Type v} (f: ι -> Cardinal.{u}) : Cardinal.{max u v} := ⟦∀i: ι, (f i).type⟧
 
 instance : Add Cardinal := ⟨add⟩
 instance : Mul Cardinal := ⟨mul⟩
@@ -181,6 +183,22 @@ def sum_lift (f: ι -> Cardinal.{u}) : sum (ulift.{u, v} ∘ f) = ulift.{u, max 
   apply flip Equiv.trans
   apply (Equiv.ulift _).symm
   apply Equiv.congrSigma .rfl
+  intro i
+  apply type_eqv_of_ulift_eq
+  simp
+  rw [ulift_eq_self]
+  generalize f i = c
+  cases c
+  apply sound
+  apply Equiv.congrEquiv (Equiv.ulift _).symm (Equiv.ulift _).symm _
+  rfl
+
+def prod_lift (f: ι -> Cardinal.{u}) : prod (ulift.{u, v} ∘ f) = ulift.{u, max u v} (prod f) := by
+  apply sound
+  simp
+  apply flip Equiv.trans
+  apply (Equiv.ulift _).symm
+  apply Equiv.congrPi .rfl
   intro i
   apply type_eqv_of_ulift_eq
   simp

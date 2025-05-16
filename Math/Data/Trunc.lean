@@ -21,7 +21,7 @@ def lift : (f: α -> β) -> (resp: ∀a b, f a = f b) -> Trunc α -> β :=
 def lift₂ : (f: α₀ -> α₁ -> β) -> (resp: ∀a b c d, f a b = f c d) -> Trunc α₀ -> Trunc α₁ -> β :=
   fun f resp => Quotient.lift₂ f (fun a b c d _ _ => resp a b c d)
 
-@[induction_eliminator]
+@[induction_eliminator, cases_eliminator]
 def ind {motive: Trunc α -> Prop} : (mk: ∀x, motive ⟦x⟧) -> ∀x, motive x := Quotient.ind
 
 instance [Inhabited α] : Inhabited (Trunc α) where
@@ -33,10 +33,10 @@ instance [h: Nonempty α] : Nonempty (Trunc α) :=
 def bind (a: Trunc α) (f: α -> Trunc β) : Trunc β :=
   a.lift f (fun _ _ => Subsingleton.allEq _ _)
 
-def map (f: α -> β) (a: Trunc α) : Trunc β := a.bind ((⟦·⟧) ∘ f)
+def map (f: α -> β) (a: Trunc α) : Trunc β := a.bind (mk ∘ f)
 
 instance : Monad Trunc where
-  pure := (⟦·⟧)
+  pure := mk
   bind := bind
   map := map
 

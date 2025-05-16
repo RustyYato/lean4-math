@@ -387,7 +387,7 @@ def subtype_equiv_psigma {α: Sort*} (P: α -> Prop) : Subtype P ≃ Σ'x, P x w
 @[simp] def liftSubtype {α β: Sort*} {P: α -> Prop} {Q: β -> Prop}: ((Σ'x, P x) ≃ Σ'x, Q x) ≃ (Subtype P ≃ Subtype Q) :=
   (congrEquiv (subtype_equiv_psigma _) (subtype_equiv_psigma _)).symm
 
-def congrSubtype { α β: Sort _ } {P: α -> Prop} {Q: β -> Prop} (h: α ≃ β) (iff: ∀{x}, P x ↔ Q (h.toFun x)) : Subtype P ≃ Subtype Q :=
+def congrSubtype { α β: Sort _ } {P: α -> Prop} {Q: β -> Prop} (h: α ≃ β) (iff: ∀{x}, P x ↔ Q (h x)) : Subtype P ≃ Subtype Q :=
   liftSubtype (congrPSigma h (fun _ => equivIff.symm iff))
 
 def fin {n m: Nat} (h: n = m) : Fin n ≃ Fin m where
