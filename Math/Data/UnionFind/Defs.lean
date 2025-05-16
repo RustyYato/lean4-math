@@ -24,6 +24,13 @@ def step (uf: UnionFind) (i: ℕ) (hi: i < uf.size := by get_elem_tactic) : Fin 
     apply uf.inBounds
     apply Array.getElem_mem
 
+@[simp] def mk_step (a: Array ℕ) {b c} (i: ℕ) (hi: i < a.size) : (UnionFind.mk a b c).step i = a[i] := rfl
+
+def step_congr (uf uf': UnionFind) (i: ℕ) (hi: i < uf.size) (h: uf = uf'):
+  uf.step i = (uf'.step i (h ▸ hi)).cast (by rw [h]) := by
+  subst h
+  rfl
+
 def stepped_from (uf: UnionFind) : ℕ -> ℕ -> Prop :=
   fun i j: ℕ => ∃hj: j < uf.size, i = uf.step j ∧ i ≠ j
 
@@ -206,10 +213,11 @@ def mergeAtAux (uf: UnionFind) (setLeftToRight: uf.Policy) (i j: ℕ) : UnionFin
     let j' := uf.findAt ⟨j, h.right⟩
     have hi' : uf.isRoot i' := by apply findAt_root
     have hj' : uf.isRoot j' := by apply findAt_root
-    refine bif setLeftToRight i' j' (by get_elem_tactic) (by get_elem_tactic) hi' hj' then
-      (uf.mergeRoot i' j' (by get_elem_tactic) _ hj', true)
+    have b := setLeftToRight i' j' (by get_elem_tactic) (by get_elem_tactic) hi' hj'
+    refine (bif b then
+      uf.mergeRoot i' j' (by get_elem_tactic) _ hj'
     else
-      (uf.mergeRoot j' i' (by get_elem_tactic) _ hi', false)
+      uf.mergeRoot j' i' (by get_elem_tactic) _ hi', b)
   else
     (uf, .none)
 
@@ -230,6 +238,9 @@ def size_mergeAt (uf: UnionFind) {policy i j} : (uf.mergeAt policy i j).size = u
   simp
   simp
   rfl
+
+macro_rules
+| `(tactic|get_elem_tactic) => `(tactic|rw [size_mergeAt]; get_elem_tactic)
 
 instance (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : Decidable (uf.isRoot i) := by
   delta isRoot
@@ -277,10 +288,72 @@ def find_le (uf: UnionFind) (i: ℕ) : uf.le (uf.find i) i := by
   apply findAt_le
   rfl
 
+def mergeAt_cond (uf: UnionFind) (policy: uf.Policy) (i j: ℕ) (hi: i < uf.size) (hj: j < uf.size) := policy (uf.findAt ⟨i, hi⟩) (uf.findAt ⟨j, hj⟩) (by simp) (by simp) (findAt_root uf ⟨i, hi⟩) (findAt_root uf ⟨j, hj⟩)
+
+def getElem_mergeAt_left (uf: UnionFind) (policy: uf.Policy) (i j: ℕ) (hi: i < uf.size) (hj: j < uf.size) (h: uf.mergeAt_cond policy i j hi hj = true) :
+  uf.mergeAt policy i j = uf.mergeRoot (uf.findAt ⟨i, hi⟩) (uf.findAt ⟨j, hj⟩) (by simp) (by simp) (findAt_root uf ⟨j, hj⟩) := by
+  unfold mergeAt mergeAtAux
+  unfold mergeAt_cond at h
+  simp [hi, hj, cond, h]
+
+def getElem_mergeAt_right (uf: UnionFind) (policy: uf.Policy) (i j: ℕ) (hi: i < uf.size) (hj: j < uf.size) (h: uf.mergeAt_cond policy i j hi hj = false) :
+  uf.mergeAt policy i j = uf.mergeRoot (uf.findAt ⟨j, hj⟩) (uf.findAt ⟨i, hi⟩) (by simp) (by simp) (findAt_root uf ⟨i, hi⟩) := by
+  unfold mergeAt mergeAtAux
+  unfold mergeAt_cond at h
+  simp [hi, hj, cond, h]
+
+def mergeAt_stepped_from (uf: UnionFind) {policy} (i j a b: ℕ) (h: uf.stepped_from a b) : (uf.mergeAt policy i j).stepped_from a b := by
+  obtain ⟨bLt, rfl, ne⟩ := h
+  refine ⟨?_, ?_, ne⟩
+  get_elem_tactic
+  refine if h:i < uf.size ∧ j < uf.size then ?_ else ?_
+  · match g:uf.mergeAt_cond policy i j h.left h.right with
+    | true =>
+      rw (occs := [2]) [step_congr _ _ _ _ (by
+        rw [getElem_mergeAt_left (h := g)])]
+      simp [UnionFind.mergeRoot]
+      rw [Array.getElem_set]
+      split
+      · subst b
+        rw [findAt_root] at ne
+        contradiction
+      · rfl
+    | false =>
+      rw (occs := [2]) [step_congr _ _ _ _ (by
+        rw [getElem_mergeAt_right (h := g)])]
+      simp [UnionFind.mergeRoot]
+      rw [Array.getElem_set]
+      split
+      · subst b
+        rw [findAt_root] at ne
+        contradiction
+      · rfl
+
+  · unfold mergeAt mergeAtAux
+    rw (occs := [2]) [step_congr _ _ _ _ (by rw [dif_neg h])]
+    simp
+
+def mergeAt_lt (uf: UnionFind) {policy} {i j a b: ℕ} (h: uf.lt a b) : (uf.mergeAt policy i j).lt a b := by
+  induction h with
+  | single =>
+    apply Relation.TransGen.single
+    apply mergeAt_stepped_from
+    assumption
+  | tail =>
+    apply Relation.TransGen.tail
+    assumption
+    apply mergeAt_stepped_from
+    assumption
+
+def mergeAt_le (uf: UnionFind) {policy} {i j a b: ℕ} (h: uf.le a b) : (uf.mergeAt policy i j).le a b := by
+  rcases h with h | rfl
+  left
+  apply mergeAt_lt
+  assumption
+  rfl
+
 @[symm]
 def eqv_symm {uf: UnionFind} {a b: ℕ} : a ≈[uf] b -> b ≈[uf] a := Relation.symm
-
-@[simp] def mk_step (a: Array ℕ) {b c} (i: ℕ) (hi: i < a.size) : (UnionFind.mk a b c).step i = a[i] := rfl
 
 def eqv_step (uf: UnionFind) (a: ℕ) (ha: a < uf.size := by get_elem_tactic) : a ≈[uf] (uf.step a) := by
   by_cases h:uf.step a = a
