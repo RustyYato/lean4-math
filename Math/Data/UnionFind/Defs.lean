@@ -76,6 +76,20 @@ def find (i: ℕ) : UnionFind -> ℕ :=
     else
       i
 
+def findAt_step (uf: UnionFind) (i: Fin uf.size) : uf.findAt i = uf.findAt (uf.step i) := by
+  conv => { lhs; unfold findAt }
+  split
+  · rename_i h
+    conv => { rhs; arg 2; rw [Fin.val_inj.mp h] }
+    unfold findAt
+    rw [if_pos h]
+  · rfl
+
+def find_step (uf: UnionFind) (i: ℕ) (hi: i < uf.size) : uf.find i = uf.find (uf.step i) := by
+  unfold find
+  rw [dif_pos hi, dif_pos (Fin.isLt _)]
+  rw [findAt_step]
+
 def find_lt_size (i: ℕ) (uf: UnionFind) (hi: i < uf.size) : uf.find i < uf.size := by
   unfold find
   rw [dif_pos hi]
