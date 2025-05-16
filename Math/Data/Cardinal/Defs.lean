@@ -209,6 +209,24 @@ def prod_lift (f: ι -> Cardinal.{u}) : prod (ulift.{u, v} ∘ f) = ulift.{u, ma
   apply Equiv.congrEquiv (Equiv.ulift _).symm (Equiv.ulift _).symm _
   rfl
 
+def sum_const (c: Cardinal) : sum (fun _: ι => c) = #ι * c := by
+  cases c with | mk α =>
+  apply sound
+  simp
+  symm; apply flip Equiv.trans
+  apply Equiv.prod_equiv_sigma
+  apply Equiv.congrProd
+  rfl
+  exact (mk_type_eqv α).symm
+
+def prod_const (c: Cardinal) : prod (fun _: ι => c) = c ^ #ι := by
+  cases c with | mk α =>
+  apply sound
+  simp
+  apply Equiv.congrFunction
+  rfl
+  exact (mk_type_eqv α)
+
 @[simp]
 def lift_lift (a: Cardinal.{u}) : (ulift.{max u v, w} (ulift.{u, v} a)) = ulift.{u, max v w} a := by
   cases a with | mk a =>
