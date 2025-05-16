@@ -24,26 +24,36 @@ def step (uf: UnionFind) (i: ℕ) (hi: i < uf.size := by get_elem_tactic) : Fin 
     apply uf.inBounds
     apply Array.getElem_mem
 
-def stepped_from (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop :=
-  fun i j: Fin uf.size => i = uf.step j ∧ i ≠ j
+def stepped_from (uf: UnionFind) : ℕ -> ℕ -> Prop :=
+  fun i j: ℕ => ∃hj: j < uf.size, i = uf.step j ∧ i ≠ j
 
-def lt (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop := Relation.TransGen uf.stepped_from
+def lt (uf: UnionFind) : ℕ -> ℕ -> Prop := Relation.TransGen uf.stepped_from
 
-def le (uf: UnionFind) : Fin uf.size -> Fin uf.size -> Prop :=
+def le (uf: UnionFind) : ℕ -> ℕ -> Prop :=
   Relation.or_eqv uf.lt (· = ·)
 
 instance (uf: UnionFind) : Relation.IsWellFounded uf.stepped_from where
   wf := by
     apply WellFounded.intro
     intro a
-    induction uf.wellFormed a with
-    | _ a h ih =>
-    apply Acc.intro
-    intro b h
-    apply ih
-    apply And.intro _ h.right
-    rw [h.left]
-    rfl
+    if ha:a < uf.size then
+      generalize ha':Fin.mk a ha = a'
+      induction uf.wellFormed a' generalizing a with
+      | _ a' _ ih =>
+      subst a'
+      apply Acc.intro
+      rintro b ⟨a_inb, rfl, ne⟩
+      apply ih ⟨_, _⟩
+      apply And.intro
+      rfl
+      intro h; apply ne
+      rw [←Fin.val_inj] at h
+      assumption
+      rfl
+    else
+      apply Acc.intro
+      intro _ ⟨_, _, _⟩
+      contradiction
 
 instance (uf: UnionFind) : Relation.IsWellFounded uf.lt :=
   inferInstanceAs (Relation.IsWellFounded (Relation.TransGen _))
