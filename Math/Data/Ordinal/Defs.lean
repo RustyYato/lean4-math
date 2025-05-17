@@ -4,6 +4,7 @@ import Math.Relation.Segments
 import Math.Order.Defs
 import Math.Data.Fin.Pairing
 import Math.Order.Lattice.ConditionallyComplete
+import Math.Data.Setoid.Basic
 
 universe u v w
 
@@ -527,6 +528,8 @@ end Defs
 
 section Lattice
 
+section Min
+
 -- the minimum of two relations is the relation on pairs of elements which
 -- are in the same position as each other in their respective orders
 -- since this puts elements in 1-1 correspondence, there can't be elements
@@ -692,510 +695,239 @@ instance : IsSemiLatticeMin Ordinal where
         symm; exact rank_inj h
     }
 
-inductive maxType where
-| common (a: α) (b: β) (h: rank relα a = rank relβ b)
-| inl (a: α) (h: ∀b: β, rank relβ b < rank relα a)
-| inr (b: β) (h: ∀a: α, rank relα a < rank relβ b)
+end Min
 
-inductive rel_max : maxType relα relβ -> maxType relα relβ -> Prop where
-| inl : relα a₀ a₁ -> rel_max (.inl a₀ h₀) (.inl a₁ h₁)
-| inr : relβ b₀ b₁ -> rel_max (.inr b₀ h₀) (.inr b₁ h₁)
-| common : relα a₀ a₁ -> rel_max (.common a₀ b₀ h₀) (.common a₁ b₁ h₁)
-| common_inl : rel_max (.common a₀ b₀ h₀) (.inl a₁ h₁)
-| common_inr : rel_max (.common a₀ b₀ h₀) (.inr b₁ h₁)
+section Max
 
-namespace maxType
+private def sumToRank : α ⊕ β -> Ordinal
+| .inl x => rank relα x
+| .inr x => rank relβ x
 
-def not_inl_and_inr
-  (a: α) (ha: ∀b₀, rank s b₀ < rank r a)
-  (b: β) (hb: ∀a₀, rank r a₀ < rank s b): False :=
-  lt_asymm (ha b) (hb a)
+@[simp] def apply_sumToRank_inl : sumToRank r s (.inl x) = rank r x := rfl
+@[simp] def apply_sumToRank_inr : sumToRank r s (.inr x) = rank s x := rfl
 
-def acc_common : Acc (rel_max relα relβ) (.common a b h) := by
-  induction a using Relation.wfInduction relα generalizing b with
-  | h a ih =>
-  apply Acc.intro
-  intro x hx
-  cases hx
-  apply ih
-  assumption
+def eqv_max : Relation (α ⊕ β) :=
+  fun x y => sumToRank relα relβ x = sumToRank relα relβ y
 
-def acc_inl : Acc (rel_max relα relβ) (.inl a h) := by
-  induction a using Relation.wfInduction relα with
-  | h a ih =>
-  apply Acc.intro
-  intro x hx
-  cases hx
-  apply ih
-  assumption
-  apply acc_common
+def setoid_max : Setoid (α ⊕ β) :=
+  Setoid.eqSetoid.comap (sumToRank relα relβ)
 
-def acc_inr : Acc (rel_max relα relβ) (.inr b h) := by
-  induction b using Relation.wfInduction relβ with
-  | h b ih =>
-  apply Acc.intro
-  intro x hx
-  cases hx
-  apply ih
-  assumption
-  apply acc_common
+def max_ty := Quotient (setoid_max relα relβ)
 
-instance : Relation.IsWellFounded (rel_max relα relβ) where
-  wf := by
-    apply WellFounded.intro
-    intro a; cases a
-    apply acc_common
-    apply acc_inl
-    apply acc_inr
+def max_ty.toRank : max_ty r s ↪ Ordinal where
+  toFun := by
+    refine Quotient.lift (sumToRank r s) ?_
+    intro a b
+    exact id
+  inj' := by
+    intro x y h
+    cases x using Quotient.ind with | _ x =>
+    cases y using Quotient.ind with | _ y =>
+    apply Quotient.sound
+    assumption
 
-instance : Relation.IsTrans (rel_max relα relβ) where
-  trans {a b c} h g := by
-    cases h <;> cases g
-    apply rel_max.inl
-    apply Relation.trans' <;> assumption
-    apply rel_max.inr
-    apply Relation.trans' <;> assumption
-    apply rel_max.common
-    apply Relation.trans' <;> assumption
-    any_goals apply rel_max.common_inl
-    all_goals apply rel_max.common_inr
+def rel_max : Relation (max_ty relα relβ) :=
+  fun a b => a.toRank < b.toRank
 
-instance : Relation.IsConnected (rel_max relα relβ) where
-  connected_by a b := by
+def rel_max_emb : rel_max r s ↪r (· < ·: Relation Ordinal) where
+  toEmbedding := max_ty.toRank
+  resp_rel := Iff.rfl
+
+def rel_max_hom (h: r ≃r t) (g: s ≃r u) : rel_max r s →r rel_max t u where
+  toFun := by
+    refine Quotient.lift (Quotient.mk _ ∘ ?_) ?_
+    · intro x
+      apply Equiv.congrSum _ _ x
+      exact h.toEquiv
+      exact g.toEquiv
+    · intro a b eqv
+      apply Quotient.sound
+      simp
+      cases a <;> cases b
+      all_goals
+        show rank _ (RelIso.toInitial _ _) = rank _ (RelIso.toInitial _ _)
+        rwa [rank_congr, rank_congr]
+  resp_rel := by
+    intro a b rel
+    induction a using Quotient.ind with | _ a =>
+    induction b using Quotient.ind with | _ b =>
+    show sumToRank _ _ _ < sumToRank _ _ _
     cases a <;> cases b
-    · rename_i a₀ b₀ h₀ a₁ b₁ h₁
-      rcases Relation.connected relα a₀ a₁ with h | h | h
-      left; apply rel_max.common; assumption
-      subst a₁
-      right; left; rw [h₀] at h₁; rw [rank_inj.eq_iff] at h₁; congr
-      right; right; apply rel_max.common; assumption
-    · left; apply rel_max.common_inl
-    · left; apply rel_max.common_inr
-    · right; right; apply rel_max.common_inl
-    · rename_i a₀ h₀ a₁ h₁
-      rcases Relation.connected relα a₀ a₁ with h | h | h
-      left; apply rel_max.inl; assumption
-      subst a₁
-      right; left; rfl
-      right; right; apply rel_max.inl; assumption
-    · rename_i b hb a ha
-      exfalso; apply not_inl_and_inr _ ha _ hb
-    · right; right; apply rel_max.common_inr
-    · rename_i b₀ hb a ha
-      exfalso; apply not_inl_and_inr _ ha _ hb
-    · rename_i b₀ h₀ b₁ h₁
-      rcases Relation.connected relβ b₀ b₁ with h | h | h
-      left; apply rel_max.inr; assumption
-      subst b₁
-      right; left; rfl
-      right; right; apply rel_max.inr; assumption
+    all_goals
+      show rank _ (RelIso.toInitial _ _) < rank _ (RelIso.toInitial _ _)
+      rwa [rank_congr, rank_congr]
 
-instance : Relation.IsWellOrder (rel_max relα relβ) where
-
-def map (ac: r ≃r t) (bd: s ≃r u) : maxType r s -> maxType t u
-| .inl a ha => .inl (ac a) <| by
-  intro d
-  erw [rank_congr ac.toInitial]
-  rw [←bd.symm_coe d]
-  erw [rank_congr bd.toInitial]
-  apply ha
-| .inr b hb => .inr (bd b) <| by
-  intro c
-  erw [rank_congr bd.toInitial]
-  rw [←ac.symm_coe c]
-  erw [rank_congr ac.toInitial]
-  apply hb
-| .common a b h => .common (ac a) (bd b) <| by
-  erw [rank_congr ac.toInitial, rank_congr bd.toInitial]
-  assumption
-
-def swap : maxType r s -> maxType s r
-| .inl a ha => .inr a ha
-| .inr b hb => .inl b hb
-| .common a b h => .common b a h.symm
-
-end maxType
-
-private def rel_max_hom (ac: r ≃r t) (bd: s ≃r u) : rel_max r s →r rel_max t u where
-  toFun x := x.map ac bd
-  resp_rel {a b} h := by
-    cases h
-    apply rel_max.inl
-    apply ac.resp_rel.mp; assumption
-    apply rel_max.inr
-    apply bd.resp_rel.mp; assumption
-    apply rel_max.common
-    apply ac.resp_rel.mp; assumption
-    apply rel_max.common_inl
-    apply rel_max.common_inr
-
-private def rel_max_swap_hom : rel_max r s →r rel_max s r where
-  toFun := maxType.swap
-  resp_rel {a b} h := by
-    cases h
-    apply rel_max.inr
-    assumption
-    apply rel_max.inl
-    assumption
-    apply rel_max.common
-    rename_i a₀ a₁ b₀ h₀ b₁ h₁ h₂
-    have : rel_min r s ⟨(a₀, b₀), h₀⟩ ⟨(a₁, b₁), h₁⟩ := h₂
-    rwa [rel_min_eq_rel_min'] at this
-    apply rel_max.common_inr
-    apply rel_max.common_inl
-
-@[simp]
-private def rel_max_hom_symm_coe (ac: r ≃r t) (bd: s ≃r u) : rel_max_hom ac.symm bd.symm (rel_max_hom ac bd x) = x := by
-  show (maxType.map _ _ _).map _ _ = _
-  cases x
-  all_goals
-    unfold maxType.map
-    simp
+instance : Relation.IsWellOrder (rel_max r s) := rel_max_emb.lift_wo
 
 def max : Ordinal -> Ordinal -> Ordinal := by
-  refine lift₂ (fun _ _ a b _ _ => type (rel_max a b)) ?_
-  intro A B C D rela relb relc reld _ _ _ _ ac bd
-  simp; apply sound
-  exact {
-    toFun := rel_max_hom ac bd
-    invFun := rel_max_hom ac.symm bd.symm
-    leftInv x := by apply rel_max_hom_symm_coe
-    rightInv x := by apply rel_max_hom_symm_coe
-    resp_rel := by
-      intro a b
-      apply Iff.intro
-      apply (rel_max_hom _ _).resp_rel
-      intro h
-      have := (rel_max_hom ac.symm bd.symm).resp_rel h
-      simpa using this
-  }
-
-def exists_rank_eq_of_exists_rank_le (a: α) : (∃b: β, ¬rank s b < rank r a) -> ∃b: β, rank r a = rank s b := by
-  intro hb
-  have hb := Relation.exists_min s hb
-  obtain ⟨b, hb, bmin⟩ := hb
-  simp at bmin
-  rcases lt_trichotomy (rank s b) (rank r a) with h | h | h
-  contradiction
-  clear hb
-  exists b
-  symm; assumption
-  have ⟨b', eq⟩ := rank_surj _ _ h
-  rw [rank_rel_rank] at eq
-  rw [eq] at h
-  have := bmin b' (by rwa [rank_lt_rank_iff] at h)
-  rw [eq] at this
-  have := lt_asymm this
-  contradiction
-
-protected def le_max_left (a b: Ordinal) : a ≤ max a b := by
-    classical
-    cases a with | _ A rela =>
-    cases b with | _ B relb =>
-    -- if there exists an `a` which is larger than all `B`s
-    by_cases h:∃a: A, ∀b: B, rank relb b < rank rela a
-    · replace h := Relation.exists_min rela h
-      obtain ⟨a₀, ha₀, a₀_min⟩ := h
-      simp at a₀_min
-      replace a₀_min (a': { a: A // rela a a₀ }) : ∃b: B, rank rela a'.val = rank relb b :=
-        exists_rank_eq_of_exists_rank_le _ (a₀_min a'.val a'.property)
-      replace a₀_min := Classical.axiomOfChoice a₀_min
-      obtain ⟨f, hf⟩ := a₀_min
-      simp at hf
-      refine ⟨?_⟩
-      dsimp; exact {
-        toFun a :=
-          if ha:rela a a₀ then
-            .common a (f ⟨a, ha⟩) (hf _ _)
-          else
-            .inl a <| by
-              intro b
-              apply lt_of_lt_of_le
-              apply ha₀
-              rwa [←rank_le_rank_iff] at ha
-        inj' := by
-          intro x y h
-          simp at h
-          split at h <;> split at h
-          exact (maxType.common.inj h).left
-          contradiction
-          contradiction
-          exact maxType.inl.inj h
-        resp_rel := by
-          intro x y
+  refine lift₂ ?_ ?_
+  · intro α β relα relβ _ _
+    exact type (rel_max relα relβ)
+  · intro A B C D rela relb relc reld _ _ _ _ ac bd
+    apply sound
+    exact {
+      toFun := rel_max_hom ac bd
+      invFun := rel_max_hom ac.symm bd.symm
+      leftInv := by
+        intro x
+        cases x using Quotient.ind with | _ x =>
+        cases x
+        all_goals
+          apply Quotient.sound
           simp
-          split <;> split
-          · apply Iff.intro
-            intro h; apply rel_max.common
-            assumption
-            intro h; cases h
-            assumption
-          · apply Iff.intro
-            intro h; apply rel_max.common_inl
-            intro; rename_i h' _ _
-            rcases Relation.connected rela y a₀ with h | h | h
-            contradiction
-            subst y; assumption
-            exact trans h' h
-          · apply Iff.intro
-            intro h
-            rename_i h' g
-            have := trans h g
-            contradiction
-            nofun
-          · apply Iff.intro
-            intro h
-            apply rel_max.inl
-            assumption
-            intro h; cases h
-            assumption
-        isInitial := by
-          intro a b h
-          replace h : rel_max rela relb b (if _:_ then _ else _) := h
-          split at h
-          cases h; rename_i h₀ a' b' eq h₁ h₂
-          rw [Set.mem_range]
-          refine ⟨a', ?_⟩
-          show _ = if _:_ then _ else _
-          rw[ dif_pos (trans h₁ h₀)]
-          congr
-          have := hf a' (trans h₁ h₀)
-          rw [eq] at this
-          exact rank_inj this
-          cases h
-          rename_i h₀ a' h₁ h₂ h₃
-          exists a'
-          show _ = if _:_ then _ else _
-          rw [dif_neg]
-          intro h
-          have := h₁ (f ⟨a', h⟩)
-          rw [hf a' h] at this
-          exact lt_irrefl this
-          rename_i h₀ a' b h₁ h₂
-          exists a'
-          show _ = if _:_ then _ else _
-          rw [dif_pos (by have := ha₀ b; rwa [←h₁, rank_lt_rank_iff] at this)]
-          congr
-          apply rank_inj (r := relb)
-          rw (occs := [1]) [←h₁]
-          apply hf
-      }
-    · simp at h
-      replace h (a': A) : ∃b: B, rank rela a' = rank relb b :=
-        exists_rank_eq_of_exists_rank_le _ (h a')
-      replace h := Classical.axiomOfChoice h
-      obtain ⟨f, hf⟩ := h
-      refine ⟨?_⟩
-      simp
-      exact {
-        toFun a := .common a (f a) (hf a)
-        inj' := by
-          intro x y h
-          simp at h
-          exact h.left
-        resp_rel := by
-          intro x y
-          apply Iff.intro
-          apply rel_max.common
-          intro h; cases h; assumption
-        isInitial := by
-          intro a b h
-          cases h
-          rename_i a' b h₀ h₁ h₂
-          exists a'
-          congr
-          symm; rwa [hf, rank_inj.eq_iff] at h₀
-      }
+          rfl
+      rightInv := by
+        intro x
+        cases x using Quotient.ind with | _ x =>
+        cases x
+        all_goals
+          apply Quotient.sound
+          simp
+          rfl
+      resp_rel := by
+        intro x y
+        apply Iff.intro
+        apply (rel_max_hom _ _).resp_rel
+        intro h
+        let f := (rel_max_hom ac bd).comp (rel_max_hom ac.symm bd.symm)
+        replace h : rel_max rela relb (f x) (f y) := (rel_max_hom ac.symm bd.symm).resp_rel h
+        simp at h
+        have : ∀x, f x = x := ?_
+        simpa [this] using h
+        clear x y h
+        intro x
+        cases x using Quotient.ind with | _ x =>
+        cases x
+        all_goals
+          apply Quotient.sound
+          simp [f]
+          rfl
+    }
 
-protected def max_comm (a b: Ordinal) : max a b = max b a := by
-  cases a with | _ A rela =>
-  cases b with | _ B relb =>
-  apply sound
+instance : Max Ordinal := ⟨max⟩
+
+protected def le_max_left (a b : Ordinal) : a ≤ a ⊔ b := by
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  refine ⟨?_⟩
   simp
-  refine {
-    toFun := maxType.swap
-    invFun := maxType.swap
-    leftInv x := by cases x <;> rfl
-    rightInv x := by cases x <;> rfl
-    resp_rel := ?_
+  exact {
+    toFun x := Quotient.mk _ (.inl x)
+    inj' := by
+      intro x y h
+      simp at h
+      replace h : _ = _ := Quotient.exact h
+      simp at h
+      exact rank_inj h
+    resp_rel := by
+      intro x y
+      show relα x y ↔ rank _ _ < rank _ _
+      rw [rank_lt_rank_iff]
+    isInitial := by
+      intro a b h
+      simp
+      simp at h
+      cases b using Quotient.ind with | _ b =>
+      replace h : _ < rank _ _ := h
+      have ⟨b', h⟩ := rank_surj relα _ (lt_trans h (rank_lt_type _))
+      exists b'
+      apply Quotient.sound
+      assumption
   }
-  intro x y
-  apply Iff.intro
-  apply rel_max_swap_hom.resp_rel
-  cases x <;> cases y <;> apply rel_max_swap_hom.resp_rel
 
-instance : Max Ordinal where
-  max := max
+protected def le_max_right (a b : Ordinal) : b ≤ a ⊔ b := by
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  refine ⟨?_⟩
+  simp
+  exact {
+    toFun x := Quotient.mk _ (.inr x)
+    inj' := by
+      intro x y h
+      simp at h
+      replace h : _ = _ := Quotient.exact h
+      simp at h
+      exact rank_inj h
+    resp_rel := by
+      intro x y
+      show relβ x y ↔ rank _ _ < rank _ _
+      rw [rank_lt_rank_iff]
+    isInitial := by
+      intro a b h
+      simp
+      simp at h
+      cases b using Quotient.ind with | _ b =>
+      replace h : _ < rank _ _ := h
+      have ⟨b', h⟩ := rank_surj relβ _ (lt_trans h (rank_lt_type _))
+      exists b'
+      apply Quotient.sound
+      assumption
+  }
 
 instance : IsSemiLatticeMax Ordinal where
-  le_max_left a b := by apply Ordinal.le_max_left
-  le_max_right a b := by
-    show b ≤ max a b
-    rw [Ordinal.max_comm]
-    apply Ordinal.le_max_left
+  le_max_left := Ordinal.le_max_left
+  le_max_right := Ordinal.le_max_right
   max_le := by
-    classical
-    suffices ∀a b k: Ordinal, a ≤ b -> b ≤ k -> a ⊔ b ≤ k by
-      intro a b k ak bk
-      cases le_total a b
-      apply this
-      assumption
-      assumption
-      show max _ _ ≤ _; rw [Ordinal.max_comm]
-      apply this
-      assumption
-      assumption
-    intro a b k
+    intro a b k ak bk
     cases a with | _ A rela =>
     cases b with | _ B relb =>
     cases k with | _ K relk =>
-    intro ⟨ab⟩ ⟨bk⟩
-    simp at ab bk
+    obtain ⟨ak⟩ := ak
+    obtain ⟨bk⟩ := bk
+    simp at ak bk
     refine ⟨?_⟩
     simp
-    let ak := ab.trans bk
-    refine {
-      toFun
-      | .inl a ha => ak a
-      | .inr b hb => bk b
-      | .common a b h => ak a
-      inj' := ?_
-      resp_rel := ?_
-      isInitial := ?_
+    exact {
+      toFun := by
+        refine Quotient.lift ?_ ?_
+        intro x
+        exact x.casesOn ak bk
+        intro a b h
+        cases a <;> cases b <;> simp
+        all_goals
+          replace h : rank _ _ = rank _ _ := h
+          apply rank_inj_initial
+          symm; rwa [rank_congr]
+      inj' := by
+        intro x y h
+        cases x using Quotient.ind with | _ x =>
+        cases y using Quotient.ind with | _ y =>
+        cases x <;> cases y
+        all_goals
+          apply Quotient.sound
+          show _ = _
+          simp
+        · replace h : ak _ = ak _ := h
+          congr
+          rwa [ak.inj.eq_iff] at h
+        · replace h : ak _ = bk _ := h
+          rw [←rank_congr ak, ←rank_congr bk, h]
+        · replace h : bk _ = ak _ := h
+          rw [←rank_congr ak, ←rank_congr bk, h]
+        · replace h : bk _ = bk _ := h
+          congr
+          rwa [bk.inj.eq_iff] at h
+      resp_rel := by
+        intro x y
+        cases x using Quotient.ind with | _ x =>
+        cases y using Quotient.ind with | _ y =>
+        show sumToRank _ _ _ < sumToRank _ _ _ ↔ relk (x.casesOn ak bk) (y.casesOn ak bk)
+        cases x <;> cases y <;> simp
+        all_goals rw [←rank_lt_rank_iff (r := relk), rank_congr, rank_congr]
+      isInitial := by
+        intro x k h
+        cases x using Quotient.ind with | _ x =>
+        replace h : relk k (x.casesOn ak bk) := h
+        cases x
+        replace h : k ∈ Set.range ak := ak.isInitial _ _ h
+        obtain ⟨k', rfl⟩ := h
+        exists Quotient.mk _ (Sum.inl k')
+        replace h : k ∈ Set.range bk := bk.isInitial _ _ h
+        obtain ⟨k', rfl⟩ := h
+        exists Quotient.mk _ (Sum.inr k')
     }
-    · intro x y h
-      cases x <;> cases y <;> dsimp at h
-      · rename_i a₀ b₀ h₀ a₁ b₁ h₁
-        cases ak.inj h
-        rw [h₀] at h₁
-        cases rank_inj h₁
-        rfl
-      · rename_i a₀ b₀ h₀ a₁ h₁
-        have := h₁ b₀
-        rw [←h₀] at this
-        cases ak.inj h
-        have := lt_irrefl this
-        contradiction
-      · rename_i a₀ b₀ h₀ b₁ h₁
-        have := h₁ a₀
-        rw [←rank_congr ak, ←rank_congr bk, h] at this
-        have := lt_irrefl this
-        contradiction
-      · rename_i a₁ h₁ a₀ b₀ h₀
-        have := h₁ b₀
-        rw [←rank_congr ak, ←h₀, ←rank_congr ak, h] at this
-        have := lt_irrefl this
-        contradiction
-      · rename_i h
-        cases ak.inj h
-        rfl
-      · exfalso
-        rename_i a ha b hb
-        exact maxType.not_inl_and_inr a ha b hb
-      · rename_i b₁ h₁ a₀ b₀ h₀
-        have := h₁ a₀
-        rw [←rank_congr ak, ←rank_congr bk, h] at this
-        have := lt_irrefl this
-        contradiction
-      · exfalso
-        rename_i a ha b hb
-        exact maxType.not_inl_and_inr b hb a ha
-      · rename_i h
-        cases bk.inj h
-        rfl
-    · intro a b
-      cases a <;> cases b <;> simp
-      · erw [ak.resp_rel.symm]
-        apply Iff.intro
-        intro h; cases h; assumption
-        apply rel_max.common
-      · erw [ak.resp_rel.symm]
-        apply Iff.intro
-        intro h; clear h
-        rename_i a₀ b₀ h₀ a₁ h₁
-        have := h₁ b₀; rw [←h₀] at this
-        rwa [rank_lt_rank_iff] at this
-        intro; apply rel_max.common_inl
-      · show _ ↔ relk (bk (ab _)) _
-        erw [bk.resp_rel.symm]
-        rename_i a₀ b₀ h₀ b₁ h₁
-        apply Iff.intro
-        intro h
-        clear h
-        rw [←rank_lt_rank_init_iff ab]
-        apply h₁
-        intro; apply rel_max.common_inr
-      · erw [ak.resp_rel.symm]
-        rename_i a₁ ha a₀ b₀ h
-        apply Iff.intro nofun
-        intro g
-        rw [←rank_lt_rank_iff (r := rela), h] at g
-        have := lt_asymm (ha b₀)
-        contradiction
-      · erw [ak.resp_rel.symm]
-        apply Iff.intro
-        intro h; cases h; assumption
-        apply rel_max.inl
-      · rename_i a ha b hb
-        have := maxType.not_inl_and_inr a ha b hb
-        contradiction
-      · erw [bk.resp_rel.symm]
-        rename_i b₁ hb a₀ b₀ h
-        apply Iff.intro nofun
-        intro g
-        rw [←rank_lt_rank_iff (r := relb)] at g
-        simp at g
-        rw [rank_congr ab] at g
-        have := lt_asymm (hb a₀)
-        contradiction
-      · rename_i a ha b hb
-        have := maxType.not_inl_and_inr a ha b hb
-        contradiction
-      · erw [bk.resp_rel.symm]
-        apply Iff.intro
-        intro h; cases h; assumption
-        apply rel_max.inr
-    · intro x k
-      cases x <;> simp
-      · intro lt; rename_i a b h
-        obtain ⟨a', rfl⟩ := ak.isInitial _ _ lt
-        simp at *
-        erw [ak.resp_rel.symm, ←rank_lt_rank_iff (r := rela)] at lt
-        rw [h] at lt
-        have ⟨b', hb⟩ := exists_rank_eq_of_exists_rank_le (r := rela) (s := relb) a'
-          ⟨b, by
-            apply lt_asymm
-            assumption⟩
-        obtain ⟨lt⟩ := lt
-        simp at lt
-        exact ⟨.common a' b' hb, rfl⟩
-      · rename_i a ha
-        intro h
-        obtain ⟨a', rfl⟩ := ak.isInitial _ _ h
-        simp at *
-        refine if ha':rank rela a' < type relb then ?_ else ?_
-        have ⟨b', hb'⟩ := rank_surj _ _ ha'
-        exists .common a' b' hb'
-        refine ⟨.inl a' ?_, rfl⟩
-        intro b
-        apply lt_of_lt_of_le
-        apply rank_lt_type
-        rwa [not_lt] at ha'
-      · rename_i a ha
-        intro h
-        obtain ⟨b', rfl⟩ := bk.isInitial _ _ h
-        simp at *
-        refine if hb':rank relb b' < type rela then ?_ else ?_
-        have ⟨a', ha'⟩ := rank_surj _ _ hb'
-        exists .common a' b' ha'.symm
-        simp
-        apply rank_inj (r := relk)
-        rwa [rank_congr, rank_congr]
-        refine ⟨.inr b' ?_, rfl⟩
-        intro b
-        apply lt_of_lt_of_le
-        apply rank_lt_type
-        rwa [not_lt] at hb'
+
+end Max
 
 instance : IsLinearLattice Ordinal where
 
@@ -2939,7 +2671,7 @@ def parity_succ (o: Ordinal) : (o + 1).parity = o.parity + 1 :=
   (Fin.val_inj (a := ⟨_, _⟩) (b := ⟨_, _⟩)).mp (modFin_succ 2 _)
 
 def divFin_add_modFin (n: ℕ) (o: Ordinal) : n * divFin n o + modFin n o = o := by
-  sorry
+    sorry
 
 end DivMod
 

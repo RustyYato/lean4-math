@@ -102,6 +102,8 @@ def comp (h: r →r s) (g: s →r t) : r →r t where
   toFun := g ∘ h
   resp_rel := g.resp_rel ∘ h.resp_rel
 
+@[simp] def apply_comp (h: r →r s) (g: s →r t) (x: α) : (h.comp g) x = g (h x) := rfl
+
 def acc (f : r →r s) (a : α) : Acc s (f a) → Acc r a := by
   generalize fa_def:f a = fa
   intro acc
