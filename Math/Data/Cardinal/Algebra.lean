@@ -123,19 +123,7 @@ instance : IsLeftDistrib Cardinal where
   mul_add k a b := by
     cases a, b, k with | mk A B K =>
     apply sound
-    apply Equiv.mk _ _ _ _
-    intro ⟨k, x⟩
-    match x with
-    | .inl x => exact .inl ⟨k, x⟩
-    | .inr x => exact .inr ⟨k, x⟩
-    intro x
-    match x with
-    | .inl ⟨k, x⟩ => exact ⟨k, .inl x⟩
-    | .inr ⟨k, x⟩ => exact ⟨k, .inr x⟩
-    intro ⟨k, x⟩
-    cases x <;> rfl
-    intro x
-    cases x <;> rfl
+    exact Equiv.prod_sum A B K
 
 instance : IsAddMonoid Cardinal where
   add_assoc a b c := by

@@ -413,22 +413,22 @@ def le_total_of_le (o: Ordinal) : ∀a b, a ≤ o -> b ≤ o -> a ≤ b ∨ b �
   left; rw [eq]
   right; apply le_of_lt; apply rank_lt_rank_iff.mpr; assumption
 
+def rel_add_of_left : r ≼i Sum.Lex r s where
+  toFun := Sum.inl
+  inj' _ _ := Sum.inl.inj
+  resp_rel {_ _} := by simp
+  isInitial := by
+    intro a b h
+    cases h
+    apply Set.mem_range'
+
+def apply_rel_add_of_left (x: α) : rel_add_of_left (r := r) (s := s) x = Sum.inl x := rfl
+
 def le_add_left (a b: Ordinal) : a ≤ a + b := by
   cases a with | _ _ a =>
   cases b with | _ _ b =>
   apply Nonempty.intro
-  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
-  exact .inl
-  apply Sum.inl.inj
-  intro x y
-  apply Iff.intro
-  exact Sum.Lex.inl
-  intro h
-  cases h
-  assumption
-  intro x y h
-  cases h
-  apply Set.mem_range'
+  apply rel_add_of_left
 
 def le_add_right (a b: Ordinal) : b ≤ a + b := by
   cases a with | _ _ a =>
@@ -1749,6 +1749,121 @@ def add_left_strict_mono (k: Ordinal) : StrictMonotone (k + ·) := by
       apply Set.mem_range'
   }
 
+def add_left_mono (k: Ordinal) : Monotone (k + ·) := by
+  intro x y
+  apply (add_left_strict_mono _).le_iff_le.mpr
+
+def add_right_mono (k: Ordinal) : Monotone (· + k) := by
+  intro a b
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  cases k with | _ κ relκ =>
+  intro ⟨f⟩
+  simp at f
+  apply InitialSegment.collapse
+  refine ⟨?_⟩
+  simp
+  exact {
+    toFun
+    | .inl x => .inl (f x)
+    | .inr x => .inr x
+    inj' := by
+      intro x y h
+      cases x <;> cases y <;> simp at h
+      congr
+      rwa [f.inj.eq_iff] at h
+      congr
+    resp_rel := by
+      intro x y
+      cases x <;> cases y <;> simp
+      apply f.resp_rel
+  }
+
+def mul_right_mono (k: Ordinal) : Monotone (· * k) := by
+  intro a b
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  cases k with | _ κ relκ =>
+  intro ⟨f⟩
+  simp at f
+  apply InitialSegment.collapse
+  refine ⟨?_⟩
+  simp
+  exact {
+    toFun x := (f x.1, x.2)
+    inj' := by
+      intro x y h
+      simp at h
+      rw [f.inj.eq_iff] at h
+      ext; exact h.left; exact h.right
+    resp_rel := by
+      intro x y
+      simp
+      apply Iff.intro
+      · intro h
+        cases h
+        apply Prod.Lex.left
+        apply f.resp_rel.mp
+        assumption
+        apply Prod.Lex.right
+        assumption
+      · generalize hx₀:f x.fst = x₀
+        generalize hy₀:f y.fst = y₀
+        intro h
+        cases h
+        apply Prod.Lex.left
+        subst x₀ y₀
+        apply f.resp_rel.mpr
+        assumption
+        subst x₀
+        obtain ⟨x₀, x₁⟩ := x
+        obtain ⟨y₀, y₁⟩ := y
+        simp at *
+        rw [f.inj.eq_iff] at hy₀
+        cases hy₀
+        apply Prod.Lex.right
+        assumption
+  }
+
+def mul_left_mono (k: Ordinal) : Monotone (k * ·) := by
+  intro a b
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  cases k with | _ κ relκ =>
+  intro ⟨f⟩
+  simp at f
+  apply InitialSegment.collapse
+  refine ⟨?_⟩
+  simp
+  exact {
+    toFun x := (x.1, f x.2)
+    inj' := by
+      intro x y h
+      simp at h
+      rw [f.inj.eq_iff] at h
+      ext; exact h.left; exact h.right
+    resp_rel := by
+      intro x y
+      simp
+      apply Iff.intro
+      · intro h
+        cases h
+        apply Prod.Lex.left
+        assumption
+        apply Prod.Lex.right
+        apply f.resp_rel.mp
+        assumption
+      · obtain ⟨x₀, x₁⟩ := x
+        obtain ⟨y₀, y₁⟩ := y
+        intro h
+        cases h
+        apply Prod.Lex.left
+        assumption
+        apply Prod.Lex.right
+        apply f.resp_rel.mpr
+        assumption
+  }
+
 def le_iff_add_left {k a b: Ordinal} : a ≤ b ↔ k + a ≤ k + b := by
   apply (add_left_strict_mono k).le_iff_le.symm
 
@@ -1820,6 +1935,232 @@ def type_eq_zero_iff : IsEmpty α ↔ type rel = 0 := ofPre_eq_zero_iff {
   }
 
 end Nat
+
+section BasicArith
+
+def add_max (a b k: Ordinal) : k + (a ⊔ b) = (k + a) ⊔ (k + b) := by
+  open scoped Classical in
+  rw [max_def, max_def]
+  split; rename_i h
+  rw [if_pos]
+  apply add_left_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  assumption
+  apply add_left_mono
+  apply le_of_not_le
+  assumption
+  rfl
+
+def mul_max (a b k: Ordinal) : k * (a ⊔ b) = (k * a) ⊔ (k * b) := by
+  open scoped Classical in
+  rw [max_def, max_def]
+  split; rename_i h
+  rw [if_pos]
+  apply mul_left_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  assumption
+  apply mul_left_mono
+  apply le_of_not_le
+  assumption
+  rfl
+
+def max_add (a b k: Ordinal) : (a ⊔ b) + k = (a + k) ⊔ (b + k) := by
+  open scoped Classical in
+  rw [max_def, max_def]
+  split; rename_i h
+  rw [if_pos]
+  apply add_right_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  assumption
+  apply add_right_mono
+  apply le_of_not_le
+  assumption
+  rfl
+
+def max_mul (a b k: Ordinal) : (a ⊔ b) * k = (a * k) ⊔ (b * k) := by
+  open scoped Classical in
+  rw [max_def, max_def]
+  split; rename_i h
+  rw [if_pos]
+  apply mul_right_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  assumption
+  apply mul_right_mono
+  apply le_of_not_le
+  assumption
+  rfl
+
+def add_min (a b k: Ordinal) : k + (a ⊓ b) = (k + a) ⊓ (k + b) := by
+  open scoped Classical in
+  rw [min_def, min_def]
+  split; rename_i h
+  rw [if_pos]
+  apply add_left_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  apply add_left_mono
+  apply le_of_not_le
+  assumption
+  assumption
+  rfl
+
+def mul_min (a b k: Ordinal) : k * (a ⊓ b) = (k * a) ⊓ (k * b) := by
+  open scoped Classical in
+  rw [min_def, min_def]
+  split; rename_i h
+  rw [if_pos]
+  apply mul_left_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  apply mul_left_mono
+  apply le_of_not_le
+  assumption
+  assumption
+  rfl
+
+def min_add (a b k: Ordinal) : (a ⊓ b) + k = (a + k) ⊓ (b + k) := by
+  open scoped Classical in
+  rw [min_def, min_def]
+  split; rename_i h
+  rw [if_pos]
+  apply add_right_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  apply add_right_mono
+  apply le_of_not_le
+  assumption
+  assumption
+  rfl
+
+def min_mul (a b k: Ordinal) : (a ⊓ b) * k = (a * k) ⊓ (b * k) := by
+  open scoped Classical in
+  rw [min_def, min_def]
+  split; rename_i h
+  rw [if_pos]
+  apply mul_right_mono
+  assumption
+  rename_i h
+  split
+  apply le_antisymm
+  apply mul_right_mono
+  apply le_of_not_le
+  assumption
+  assumption
+  rfl
+
+def add_mul (a b k: Ordinal) : (a + b) * k = a * k + b * k := by
+  cases a with | _ α rela =>
+  cases b with | _ β relb =>
+  cases k with | _ κ relk =>
+  apply sound
+  simp
+  refine {
+    Equiv.sum_prod _ _ _ with
+    resp_rel := ?_
+  }
+  intro (x, k₀) (y, k₁)
+  cases x <;> cases y <;> (simp; rename_i x y)
+  · apply Iff.intro
+    · intro h
+      cases h <;> rename_i h
+      cases h
+      apply Prod.Lex.left
+      assumption
+      apply Prod.Lex.right
+      assumption
+    · intro h
+      cases h <;> rename_i h
+      apply Prod.Lex.left
+      simpa
+      apply Prod.Lex.right
+      assumption
+  · apply Prod.Lex.left
+    apply Sum.Lex.sep
+  · nofun
+  · apply Iff.intro
+    · intro h
+      cases h <;> rename_i h
+      cases h
+      apply Prod.Lex.left
+      assumption
+      apply Prod.Lex.right
+      assumption
+    · intro h
+      cases h <;> rename_i h
+      apply Prod.Lex.left
+      simpa
+      apply Prod.Lex.right
+      assumption
+
+def add_assoc (a b c: Ordinal) : a + b + c = a + (b + c) := by
+  cases a with | _ α rela =>
+  cases b with | _ β relb =>
+  cases c with | _ γ relc =>
+  apply sound
+  simp
+  refine {
+    (Equiv.sum_assoc _ _ _).symm with
+    resp_rel := ?_
+  }
+  intro x y
+  rcases x with (x | x) | x <;> rcases y with (y | y) | y
+  all_goals simp [Equiv.sum_assoc]
+
+def mul_assoc (a b c: Ordinal) : a * b * c = a * (b * c) := by
+  cases a with | _ α rela =>
+  cases b with | _ β relb =>
+  cases c with | _ γ relc =>
+  apply sound
+  simp
+  refine {
+    (Equiv.prod_assoc _ _ _).symm with
+    resp_rel := ?_
+  }
+  intro ((_, _), _) ((_, _), _)
+  simp [Equiv.prod_assoc]
+  apply Iff.intro
+  · intro h
+    cases h <;> rename_i h
+    cases h
+    apply Prod.Lex.left
+    assumption
+    apply Prod.Lex.right
+    apply Prod.Lex.left
+    assumption
+    apply Prod.Lex.right
+    apply Prod.Lex.right
+    assumption
+  · intro h
+    cases h <;> rename_i h
+    apply Prod.Lex.left
+    apply Prod.Lex.left
+    assumption
+    cases h
+    apply Prod.Lex.left
+    apply Prod.Lex.right
+    assumption
+    apply Prod.Lex.right
+    assumption
+
+end BasicArith
 
 section Limit
 
@@ -2321,28 +2662,23 @@ end Ord
 section Subtype
 
 @[simp]
-def Pre.subtype (P: α -> Prop) : Pre where
-  ty := Subtype P
-  rel x y := rel x y
-  well_order :=
+def rel_subtype (P: α -> Prop) : Relation (Subtype P) := fun x y => rel x y
+
+instance : Relation.IsWellOrder (rel_subtype rel P) :=
     RelEmbedding.lift_wo (r := rel) {
       Embedding.subtypeVal with
       resp_rel := Iff.rfl
     }
 
-def subtype (P: α -> Prop) : Ordinal := Ordinal.ofPre (Pre.subtype rel P)
+def subtype (P: α -> Prop) : Ordinal := type (rel_subtype rel P)
 
 def subtype_congr (h: r ≃r s) (g: ∀x, P x ↔ Q (h x)) : subtype r P = subtype s Q := by
-  apply sound'
-  apply (Pre.subtype _ _).well_order
-  apply (Pre.subtype _ _).well_order
+  apply sound
   refine {
     Equiv.congrSubtype h.toEquiv ?_ with
     resp_rel := h.resp_rel
   }
   assumption
-
-attribute [irreducible] Pre.subtype
 
 end Subtype
 
@@ -2365,7 +2701,6 @@ instance : Sub Ordinal where
 def sub_of_le (a b: Ordinal) (h: a ≤ b) : a - b = 0 := by
   cases a with | _ α relα =>
   apply (ofPre_eq_zero_iff _).mp
-  simp [Pre.subtype]
   refine { elim | ⟨x, hx⟩ => ?_ }
   have := le_trans h hx
   rw [←not_lt] at this
@@ -2433,6 +2768,127 @@ def add_sub_cancel (a b: Ordinal) (h: b ≤ a) : b + (a - b) = a := by
       apply le_trans
       apply le_of_lt; apply rank_lt_type
       apply x.property
+  }
+
+def add_sub_cancel' (a b: Ordinal) : (b + a) - b = a := by
+  classical
+  cases a with | _ α relα =>
+  cases b with | _ β relβ =>
+  apply sound
+  simp
+  symm
+  exact {
+    toFun x := {
+      val := .inr x
+      property := by
+        refine ⟨?_⟩
+        simp
+        exact {
+          toFun b := {
+            val := Sum.inl b
+            property := Sum.Lex.sep _ _
+          }
+          inj' := by
+            intro x y h
+            simpa using h
+          resp_rel := by
+            intro x y
+            simp
+            simp [rel_rank]
+          isInitial := by
+            intro a ⟨y, hy⟩
+            cases hy
+            simp
+            nofun
+            simp
+        }
+    }
+    invFun
+    | ⟨x, hx⟩ =>
+      match x with
+      | .inl b => by
+        rw [←apply_rel_add_of_left, rank_congr] at hx
+        rw [←not_lt] at hx
+        have := hx (rank_lt_type _)
+        contradiction
+      | .inr a => a
+    leftInv x := rfl
+    rightInv x := by
+      obtain ⟨x, hx⟩ := x
+      simp
+      split
+      rename_i h
+      rw [←apply_rel_add_of_left, rank_congr, ←not_lt] at h
+      have := h (rank_lt_type _)
+      contradiction
+      rfl
+    resp_rel := by
+      intro a b
+      simp
+  }
+
+def sub_self (a: Ordinal) : a - a = 0 := by
+  apply sub_of_le
+  rfl
+
+def add_sub_assoc (a b c: Ordinal) (h: c ≤ a) : (a + b) - c = (a - c) + b := by
+  cases a with | _ A rela =>
+  cases b with | _ B relb =>
+  cases c with | _ C relc =>
+  obtain ⟨h⟩ := h
+  simp at h
+  have : ∀c a, rela a (h c) -> a ∈ Set.range h := h.isInitial
+  apply sound
+  simp
+  exact {
+    toFun
+    | ⟨.inl x, hx⟩ => .inl {
+      val := x
+      property := by rwa [←apply_rel_add_of_left, rank_congr] at hx
+    }
+    | ⟨.inr x, hx⟩ => .inr x
+    invFun
+    | .inl x => {
+      val := .inl x
+      property := by
+        rw [←apply_rel_add_of_left, rank_congr]
+        exact x.property
+    }
+    | .inr x => {
+      val := .inr x
+      property := by
+        apply le_trans
+        show type relc ≤ type rela
+        exact ⟨h⟩
+        refine ⟨?_⟩
+        simp
+        exact {
+          toFun a := {
+            val := .inl a
+            property := by simp
+          }
+          inj' := by
+            intro x y h
+            cases h
+            rfl
+          resp_rel := by
+            intro a₀ a₁; simp [rel_rank]
+          isInitial := by
+            intro a ⟨b, hb⟩ h
+            simp [rel_rank] at h
+            cases h
+            apply Set.mem_range'
+        }
+    }
+    leftInv := by
+      intro ⟨x, hx⟩
+      cases x <;> rfl
+    rightInv := by
+      intro x
+      cases x <;> rfl
+    resp_rel := by
+      intro ⟨x, hx⟩ ⟨y, hy⟩
+      cases x <;> cases y <;> simp
   }
 
 end Sub

@@ -875,6 +875,12 @@ def sum_assoc (α β γ: Type*) : α ⊕ β ⊕ γ ≃ (α ⊕ β) ⊕ γ where
   leftInv x := by rcases x with x | x | x <;> rfl
   rightInv x := by rcases x with (x | x) | x <;> rfl
 
+def prod_assoc (α β γ: Type*) : α × β × γ ≃ (α × β) × γ where
+  toFun x := ((x.1, x.2.1), x.2.2)
+  invFun x := (x.1.1, x.1.2, x.2)
+  leftInv _ := rfl
+  rightInv _ := rfl
+
 def option_sum_eqv : Option α ⊕ β ≃ Option (α ⊕ β) := by
   apply Equiv.trans
   exact congrSum (option_equiv_unit_sum _) .rfl
@@ -1116,6 +1122,35 @@ def symmEquiv : (α ≃ β) ≃ (β ≃ α) where
   invFun := symm
   leftInv _ := by simp
   rightInv _ := by simp
+
+def sum_prod (α β κ: Type*) : (α ⊕ β) × κ ≃ α × κ ⊕ β × κ where
+  toFun
+  | ⟨.inl x, k⟩ => .inl ⟨x, k⟩
+  | ⟨.inr x, k⟩ => .inr ⟨x, k⟩
+  invFun
+  | .inl ⟨x, k⟩ => ⟨.inl x, k⟩
+  | .inr ⟨x, k⟩ => ⟨.inr x, k⟩
+  leftInv := by
+    intro (x, k)
+    cases x <;> rfl
+  rightInv x := by cases x <;> rfl
+
+def prod_sum (α β κ: Type*) : κ × (α ⊕ β) ≃ κ × α ⊕ κ × β where
+  toFun
+  | ⟨k, .inl x⟩ => .inl ⟨k, x⟩
+  | ⟨k, .inr x⟩ => .inr ⟨k, x⟩
+  invFun
+  | .inl ⟨k, x⟩ => ⟨k, .inl x⟩
+  | .inr ⟨k, x⟩ => ⟨k, .inr x⟩
+  leftInv := by
+    intro (_, x)
+    cases x <;> rfl
+  rightInv x := by cases x <;> rfl
+
+@[simp] def apply_sum_prod_inl (a: α) (k: κ) : sum_prod α β κ (Sum.inl a, k) = Sum.inl (a, k) := rfl
+@[simp] def apply_sum_prod_inr (b: β) (k: κ) : sum_prod α β κ (Sum.inr b, k) = Sum.inr (b, k) := rfl
+@[simp] def apply_prod_sum_inl (a: α) (k: κ) : prod_sum α β κ (k, Sum.inl a) = Sum.inl (k, a) := rfl
+@[simp] def apply_prod_sum_inr (b: β) (k: κ) : prod_sum α β κ (k, Sum.inr b) = Sum.inr (k, b) := rfl
 
 end Equiv
 

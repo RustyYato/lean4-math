@@ -30,7 +30,7 @@ private noncomputable def lattice := giOrdinal.liftConditionallyCompleteLattice
 private noncomputable instance : ConditionallyCompleteLatticeOps Cardinalᵒᵖ := lattice.fst
 noncomputable instance ops : ConditionallyCompleteLatticeOps Cardinal := inferInstanceAs (ConditionallyCompleteLatticeOps (Cardinal ᵒᵖ ᵒᵖ))
 
-private noncomputable instance : IsConditionallyCompleteLattice Cardinalᵒᵖ := lattice.snd
+private instance : IsConditionallyCompleteLattice Cardinalᵒᵖ := lattice.snd
 instance : IsConditionallyCompleteLattice Cardinal := inferInstanceAs (IsConditionallyCompleteLattice (Cardinal ᵒᵖ ᵒᵖ))
 
 instance : IsLinearLattice Cardinal where
