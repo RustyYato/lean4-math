@@ -1892,6 +1892,38 @@ def mul_assoc (a b c: Ordinal) : a * b * c = a * (b * c) := by
     apply Prod.Lex.right
     assumption
 
+@[simp]
+def zero_mul (a: Ordinal) : 0 * a = 0 := by
+  cases a with | _ α relα =>
+  apply sound
+  simp
+  apply flip RelIso.trans
+  apply (rel_ulift_eqv _).symm
+  apply RelIso.trans
+  apply RelIso.congrProdLex
+  apply (rel_ulift_eqv _)
+  rfl
+  exact {
+    Equiv.empty (α := Fin 0 × α) (β := Fin 0) with
+    resp_rel {x} := elim_empty x
+  }
+
+@[simp]
+def mul_zero (a: Ordinal) : a * 0 = 0 := by
+  cases a with | _ α relα =>
+  apply sound
+  simp
+  apply flip RelIso.trans
+  apply (rel_ulift_eqv _).symm
+  apply RelIso.trans
+  apply RelIso.congrProdLex
+  rfl
+  apply (rel_ulift_eqv _)
+  exact {
+    Equiv.empty (α := α × Fin 0) (β := Fin 0) with
+    resp_rel {x} := elim_empty x
+  }
+
 end BasicArith
 
 section Limit
