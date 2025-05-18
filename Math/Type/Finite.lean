@@ -13,75 +13,39 @@ def IsFinite.existsEquiv (α: Sort*) [h: IsFinite α] : ∃card, _root_.Nonempty
   ⟨limit, ⟨eqv⟩⟩
 
 def IsFinite.ofEmbedding {limit: Nat} (emb: α ↪ Fin limit) : IsFinite α := by
-  induction limit with
-  | zero =>
-    exists 0
-    apply Equiv.mk emb Fin.elim0
-    intro x
-    exact (emb x).elim0
-    intro x
-    exact x.elim0
-  | succ limit ih =>
-    if h:Function.Surjective emb then
-      have ⟨_, _⟩ := Equiv.ofBij ⟨emb.inj, h⟩
-      exists limit.succ
-    else
-      replace ⟨missing, not_in_range⟩ := Classical.not_forall.mp h
-      replace not_in_range := not_exists.mp not_in_range
-      apply ih
-      apply Embedding.mk
-      case toFun =>
-        intro elem
-        let out := emb elem
-        if g:out ≤ missing then
-          have : out < missing := lt_of_le_of_ne g (Ne.symm (not_in_range _))
-          apply Fin.mk out.val
-          apply lt_of_lt_of_le
-          exact this
-          apply Nat.le_of_lt_succ
-          exact missing.isLt
-        else
-          replace g := lt_of_not_le g
-          apply out.pred
-          intro h
-          rw [h] at g
-          contradiction
-      case inj' =>
-        intro x y eq
-        dsimp at eq
-        split at eq <;> split at eq
-        exact emb.inj (Fin.val_inj.mp (Fin.mk.inj eq))
-        · rename_i h g
-          unfold Fin.pred Fin.subNat at eq
-          replace eq := Fin.mk.inj eq
-          have : emb x < missing := (lt_of_le_of_ne h (Ne.symm (not_in_range _)))
-          replace := Fin.lt_def.mp this
-          rw [eq] at this
-          replace this := Nat.succ_lt_succ this
-          rw [←Nat.add_one, Nat.sub_add_cancel] at this
-          have := lt_of_lt_of_le this (Nat.succ_le_of_lt (lt_of_not_le g))
-          have := lt_irrefl this
-          contradiction
-          apply Nat.succ_le_of_lt
-          apply Nat.zero_lt_of_lt
-          apply lt_of_not_le
-          assumption
-        · rename_i g h
-          unfold Fin.pred Fin.subNat at eq
-          replace eq := Fin.mk.inj eq
-          have : emb y < missing := (lt_of_le_of_ne h (Ne.symm (not_in_range _)))
-          replace := Fin.lt_def.mp this
-          rw [←eq] at this
-          replace this := Nat.succ_lt_succ this
-          rw [←Nat.add_one, Nat.sub_add_cancel] at this
-          have := lt_of_lt_of_le this (Nat.succ_le_of_lt (lt_of_not_le g))
-          have := lt_irrefl this
-          contradiction
-          apply Nat.succ_le_of_lt
-          apply Nat.zero_lt_of_lt
-          apply lt_of_not_le
-          assumption
-        · exact emb.inj (Fin.pred_inj.mp eq)
+  replace ⟨limit, ⟨emb⟩, spec⟩ := Relation.exists_min (· < ·: Relation Nat) (P := fun limit => Nonempty (α ↪ Fin limit)) ⟨_, ⟨emb⟩⟩
+  suffices Function.Surjective emb by
+    have ⟨eqv, h⟩ := Equiv.ofBij ⟨emb.inj, this⟩
+    exists limit
+  intro x
+  apply Classical.byContradiction
+  intro hx
+  simp at hx
+  match limit with
+  | limit + 1 =>
+  apply spec limit
+  apply Nat.lt_succ_self
+  let f := emb.trans ((Equiv.fin_erase x).toEmbedding)
+  suffices ∀x, (f x).isSome by
+    refine ⟨?_⟩
+    exact {
+      toFun x := (f x).get (this _)
+      inj' := by
+        intro x y h
+        exact f.inj (Option.get_inj.mp h)
+    }
+  intro a
+  simp [f]
+  rcases Nat.lt_trichotomy (emb a) x with g | g | g
+  rw[ Equiv.apply_fin_erase_of_lt]
+  rfl
+  assumption
+  exfalso
+  apply hx a
+  rw [←Fin.val_inj, g]
+  rw[ Equiv.apply_fin_erase_of_gt]
+  rfl
+  assumption
 
 noncomputable
 def IsFinite.card α [IsFinite α] : Nat :=
