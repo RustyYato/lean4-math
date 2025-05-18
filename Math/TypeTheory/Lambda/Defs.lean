@@ -152,4 +152,35 @@ instance : Decidable (Reduce a b) :=
     intro g; apply h
     exists b
 
+-- a term halts iff it reduces to a value
+def Halts (term: Term) := ∃v: Term, v.IsValue ∧ term.ReducesTo v
+
+namespace Halts
+
+def reduce {term term': Term} (h: Reduce term term') : term.Halts ↔ term'.Halts := by
+  symm; apply Iff.intro
+  · intro ⟨v, hv, g⟩
+    refine ⟨_, hv, ?_⟩
+    apply Relation.ReflTransGen.cons
+    assumption
+    assumption
+  · intro ⟨v, hv, g⟩
+    refine ⟨_, hv, ?_⟩
+    cases g
+    have := hv.notReduce _ h
+    contradiction
+    rename_i g _
+    cases (h.unique g).symm
+    assumption
+
+def reduces_to {term term': Term} (h: ReducesTo term term') : term.Halts ↔ term'.Halts := by
+  induction h with
+  | refl => rfl
+  | cons r rs ih =>
+    rw [←ih]
+    apply reduce
+    assumption
+
+end Halts
+
 end Term

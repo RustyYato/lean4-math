@@ -124,7 +124,7 @@ def reduce {term term': Term} (ht: term.IsSimplyWellTyped ctx ty) (h: term.Reduc
     apply ih
     assumption
 
-def reduce_to {term term': Term} (ht: term.IsSimplyWellTyped ctx ty) (h: term.ReducesTo term') : term'.IsSimplyWellTyped ctx ty := by
+def reduces_to {term term': Term} (ht: term.IsSimplyWellTyped ctx ty) (h: term.ReducesTo term') : term'.IsSimplyWellTyped ctx ty := by
   induction h with
   | refl => assumption
   | cons r rs ih =>
