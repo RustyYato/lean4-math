@@ -8,18 +8,22 @@ inductive SimpleLamType where
 
 abbrev TypeCtx := List SimpleLamType
 
-inductive Term.IsSimplyWellTyped : TypeCtx -> Term -> SimpleLamType -> Prop where
-| lam (ctx: TypeCtx) (body: Term) (arg_ty ret_ty: SimpleLamType) :
-  Term.IsSimplyWellTyped (arg_ty::ctx) body ret_ty ->
-  Term.IsSimplyWellTyped ctx (.lam body) (.func arg_ty ret_ty)
-| app (ctx: TypeCtx) (func arg: Term) (arg_ty ret_ty: SimpleLamType) :
-  Term.IsSimplyWellTyped ctx func (.func arg_ty ret_ty) ->
-  Term.IsSimplyWellTyped ctx arg arg_ty ->
-  Term.IsSimplyWellTyped ctx (.app func arg) ret_ty
-| var (ctx: TypeCtx) (name: ℕ) (ty: SimpleLamType) (h: name < ctx.length) :
-  ty = ctx[name] -> Term.IsSimplyWellTyped ctx (.var name) ty
+namespace Term
 
-def Term.IsSimplyWellTyped.weaken_at_level {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (level: ℕ) (new_ty: SimpleLamType) : (term.weaken_at_level level).IsSimplyWellTyped (ctx.insertIdx level new_ty) ty := by
+inductive IsSimplyWellTyped : TypeCtx -> Term -> SimpleLamType -> Prop where
+| lam (ctx: TypeCtx) (body: Term) (arg_ty ret_ty: SimpleLamType) :
+  IsSimplyWellTyped (arg_ty::ctx) body ret_ty ->
+  IsSimplyWellTyped ctx (.lam body) (.func arg_ty ret_ty)
+| app (ctx: TypeCtx) (func arg: Term) (arg_ty ret_ty: SimpleLamType) :
+  IsSimplyWellTyped ctx func (.func arg_ty ret_ty) ->
+  IsSimplyWellTyped ctx arg arg_ty ->
+  IsSimplyWellTyped ctx (.app func arg) ret_ty
+| var (ctx: TypeCtx) (name: ℕ) (ty: SimpleLamType) (h: name < ctx.length) :
+  ty = ctx[name] -> IsSimplyWellTyped ctx (.var name) ty
+
+namespace IsSimplyWellTyped
+
+def weaken_at_level {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (level: ℕ) (new_ty: SimpleLamType) : (term.weaken_at_level level).IsSimplyWellTyped (ctx.insertIdx level new_ty) ty := by
   induction ht generalizing level with
   | lam ctx body arg_ty ret_ty body_wt ih =>
     apply IsSimplyWellTyped.lam
@@ -50,10 +54,10 @@ def Term.IsSimplyWellTyped.weaken_at_level {term: Term} (ht: term.IsSimplyWellTy
     assumption
     omega
 
-def Term.IsSimplyWellTyped.weaken {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (new_ty: SimpleLamType) : term.weaken.IsSimplyWellTyped (new_ty::ctx) ty := by
+def weaken {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (new_ty: SimpleLamType) : term.weaken.IsSimplyWellTyped (new_ty::ctx) ty := by
   apply ht.weaken_at_level 0
 
-def Term.IsSimplyWellTyped.subst {term subst: Term} {var: ℕ} (hvar: var < ctx.length) (ht: term.IsSimplyWellTyped ctx ty) (hs: subst.IsSimplyWellTyped (ctx.eraseIdx var) ctx[var]) : (term.subst subst var).IsSimplyWellTyped (ctx.eraseIdx var) ty := by
+def subst {term subst: Term} {var: ℕ} (hvar: var < ctx.length) (ht: term.IsSimplyWellTyped ctx ty) (hs: subst.IsSimplyWellTyped (ctx.eraseIdx var) ctx[var]) : (term.subst subst var).IsSimplyWellTyped (ctx.eraseIdx var) ty := by
   induction ht generalizing var subst with
   | lam ctx body arg_ty ret_ty body_wt ih =>
     apply IsSimplyWellTyped.lam
@@ -91,5 +95,9 @@ def Term.IsSimplyWellTyped.subst {term subst: Term} {var: ℕ} (hvar: var < ctx.
       rw [if_pos]
       omega
       assumption
+
+end IsSimplyWellTyped
+
+end Term
 
 end SimplyTyped
