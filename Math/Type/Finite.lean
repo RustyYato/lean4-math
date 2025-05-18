@@ -376,7 +376,7 @@ noncomputable def IsFinite.existsEmbedding [IsFinite α] (h: ENat.card α ≤ EN
           rw [h]
       }
 
-def ENat.card_of_emebd_nat (h: ℕ ↪ α) : ENat.card α = ∞ := by
+def ENat.card_of_embed_nat (h: ℕ ↪ α) : ENat.card α = ∞ := by
   rw [card, dif_neg]
   intro g
   have := IsFinite.ofEmbed _ h
@@ -384,10 +384,10 @@ def ENat.card_of_emebd_nat (h: ℕ ↪ α) : ENat.card α = ∞ := by
   contradiction
 
 def ENat.card_nat : ENat.card ℕ = ∞ := by
-  apply card_of_emebd_nat; rfl
+  apply card_of_embed_nat; rfl
 
 def ENat.card_int : ENat.card ℤ = ∞ := by
-  apply card_of_emebd_nat
+  apply card_of_embed_nat
   exact {
     toFun := Int.ofNat
     inj' _ _ := Int.ofNat.inj

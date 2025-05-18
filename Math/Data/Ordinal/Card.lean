@@ -159,6 +159,7 @@ def ord_card (c: Cardinal) : c.ord.card = c := by
   apply toOrdinal_card
 
 instance : @Relation.IsWellOrder Cardinal (· < ·) := remb_ord_lt.lift_wo
+instance : IsLinearOrder Cardinal := ord.instIsLinearOrder
 
 def initseg_ord_le_ord (c: Cardinal) : initseg_ord c ≤ ord c := by
   rw [←not_lt]

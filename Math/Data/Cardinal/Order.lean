@@ -3,8 +3,6 @@ import Math.Order.GaloisConnection
 
 namespace Cardinal
 
-instance : IsLinearOrder Cardinal := ord.instIsLinearOrder
-
 noncomputable def gciOrdinal : GaloisCoinsertion ord Ordinal.card where
   gc := by
     intro c o
