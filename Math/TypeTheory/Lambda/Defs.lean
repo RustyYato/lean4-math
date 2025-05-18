@@ -22,10 +22,10 @@ def weaken_at_level (term: Term) (level: ℕ) : Term :=
 
 def weaken (term: Term) : Term := term.weaken_at_level 0
 
-def subst_at (term subst: Term) (var: ℕ) : Term :=
+def subst (term subst: Term) (var: ℕ) : Term :=
   match term with
-  | .lam body => .lam (body.subst_at subst.weaken (var + 1))
-  | .app func arg => .app (func.subst_at subst var) (arg.subst_at subst var)
+  | .lam body => .lam (body.subst subst.weaken (var + 1))
+  | .app func arg => .app (func.subst subst var) (arg.subst subst var)
   | .var name =>
     if name = var then
       subst
@@ -45,7 +45,7 @@ instance : ∀term, Decidable (IsValue term)
 
 -- the operational semantics of lambda calculus
 inductive Reduce : Term -> Term -> Prop where
-| apply (body arg) : arg.IsValue -> Reduce (.app (.lam body) arg) (body.subst_at arg 0)
+| apply (body arg) : arg.IsValue -> Reduce (.app (.lam body) arg) (body.subst arg 0)
 | app_func (func func' arg) : Reduce func func' -> Reduce (.app func arg) (.app func' arg)
 | app_arg (func arg arg') : func.IsValue -> Reduce arg arg' -> Reduce (.app func arg) (.app func arg')
 
