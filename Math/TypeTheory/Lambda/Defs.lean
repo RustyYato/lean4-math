@@ -62,22 +62,22 @@ def IsValue.notReduce (h: Term.IsValue t) : ∀t', ¬Reduce t t' := by
   cases h
   nofun
 
-instance decExistsReduction : ∀a, Decidable (∃b, Reduce a b)
-| .var _ => .isFalse nofun
-| .lam _ => .isFalse nofun
+def findReduction : ∀a, (Σ'b, Reduce a b) ⊕' ¬∃b, Reduce a b
+| .var _ => .inr nofun
+| .lam _ => .inr nofun
 | .app func arg =>
   if hf:func.IsValue then
     if ha:arg.IsValue then
       match func with
       | .lam _ =>
-      .isTrue ⟨_, .apply _ _ ha⟩
+      .inl ⟨_, .apply _ _ ha⟩
     else
-      match decExistsReduction arg with
-      | .isTrue h => .isTrue <| by
+      match findReduction arg with
+      | .inl h => .inl <| by
         obtain ⟨arg', h⟩ := h
         exact ⟨_, .app_arg _ _ _ hf h⟩
-      | .isFalse h =>
-        .isFalse <| by
+      | .inr h =>
+        .inr <| by
           intro ⟨b, g⟩
           apply h; clear h
           cases g
@@ -88,12 +88,12 @@ instance decExistsReduction : ∀a, Decidable (∃b, Reduce a b)
           rename_i h
           exact ⟨_, h⟩
   else
-    match decExistsReduction func with
-    | .isTrue h => .isTrue <| by
+    match findReduction func with
+    | .inl h => .inl <| by
       obtain ⟨func', h⟩ := h
       exact ⟨_, .app_func _ _ _ h⟩
-    | .isFalse h =>
-      .isFalse <| by
+    | .inr h =>
+      .inr <| by
         intro ⟨_, g⟩
         apply h; clear h
         cases g
@@ -102,6 +102,11 @@ instance decExistsReduction : ∀a, Decidable (∃b, Reduce a b)
         rename_i h
         exact ⟨_, h⟩
         contradiction
+
+instance decExistsReduction : Decidable (∃b, Reduce a b) :=
+  match findReduction a with
+  | .inl h => .isTrue ⟨h.1, h.2⟩
+  | .inr h => .isFalse h
 
 def Reduce.unique (h: Reduce a b) (g: Reduce a c) : b = c := by
   induction h generalizing c with
