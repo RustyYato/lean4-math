@@ -2,41 +2,50 @@ import Math.Order.Defs
 import Math.Logic.Equiv.Basic
 import Math.Relation.Defs
 
-@[irreducible]
-def Name := ℕ
-
-unseal Name in
-section
-
-instance : DecidableEq Name := inferInstanceAs (DecidableEq ℕ)
-
-def ofNat : ℕ ↪ Name := Embedding.refl _
-
-end
-
 inductive Term where
-| lam (arg: Name) (body: Term)
+| lam (body: Term)
 | app (func arg: Term)
-| var (name: Name)
+| var (name: ℕ)
 
 namespace Term
 
-def subst (term subst: Term) (var: Name) : Term :=
+def weaken_at_level (term: Term) (level: ℕ) : Term :=
   match term with
-  | .lam arg body => .lam arg (body.subst subst var)
-  | .app func arg => .app (func.subst subst var) (arg.subst subst var)
-  | .var name => if name = var then subst else .var name
+  | .lam body => .lam (body.weaken_at_level (level + 1))
+  | .app func arg => .app (func.weaken_at_level level) (arg.weaken_at_level level)
+  | .var name =>
+    .var <|
+      if name < level then
+        name
+      else
+        name + 1
+
+def weaken (term: Term) : Term := term.weaken_at_level 0
+
+def subst_at (term subst: Term) (var: ℕ) : Term :=
+  match term with
+  | .lam body => .lam (body.subst_at subst.weaken (var + 1))
+  | .app func arg => .app (func.subst_at subst var) (arg.subst_at subst var)
+  | .var name =>
+    if name = var then
+      subst
+    else
+      .var <|
+        if name < var then
+          name
+        else
+          name - 1
 
 inductive IsValue : Term -> Prop where
-| lam (arg body) : IsValue (.lam arg body)
+| lam body : IsValue (.lam body)
 
 instance : ∀term, Decidable (IsValue term)
-| .lam arg body => .isTrue (.lam arg body)
+| .lam body => .isTrue (.lam body)
 | .var _ | .app _ _ => .isFalse nofun
 
 -- the operational semantics of lambda calculus
 inductive Reduce : Term -> Term -> Prop where
-| apply (arg_name body arg) : arg.IsValue -> Reduce (.app (.lam arg_name body) arg) (body.subst arg arg_name)
+| apply (body arg) : arg.IsValue -> Reduce (.app (.lam body) arg) (body.subst_at arg 0)
 | app_func (func func' arg) : Reduce func func' -> Reduce (.app func arg) (.app func' arg)
 | app_arg (func arg arg') : func.IsValue -> Reduce arg arg' -> Reduce (.app func arg) (.app func arg')
 
@@ -55,13 +64,13 @@ def IsValue.notReduce (h: Term.IsValue t) : ∀t', ¬Reduce t t' := by
 
 instance decExistsReduction : ∀a, Decidable (∃b, Reduce a b)
 | .var _ => .isFalse nofun
-| .lam _ _ => .isFalse nofun
+| .lam _ => .isFalse nofun
 | .app func arg =>
   if hf:func.IsValue then
     if ha:arg.IsValue then
       match func with
-      | .lam _ _ =>
-      .isTrue ⟨_, .apply _ _ _ ha⟩
+      | .lam _ =>
+      .isTrue ⟨_, .apply _ _ ha⟩
     else
       match decExistsReduction arg with
       | .isTrue h => .isTrue <| by
