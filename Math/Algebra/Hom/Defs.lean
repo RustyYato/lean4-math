@@ -36,20 +36,6 @@ class IsZeroOneHom: Prop where
 class IsOneZeroHom: Prop where
   protected map_one_to_zero: ∀f: F, f 1 = 0 := by intro f; exact f.map_one_to_zero
 
-class IsAddGroupHom: Prop extends IsZeroHom F α β, IsAddHom F α β where
-class IsGroupHom: Prop extends IsOneHom F α β, IsMulHom F α β where
-class IsAddGroupWithOneHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsAddHom F α β where
-class IsGroupWithZeroHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsMulHom F α β where
-class IsRngHom: Prop extends IsZeroHom F α β, IsAddHom F α β, IsMulHom F α β where
-class IsRingHom: Prop extends IsZeroHom F α β, IsOneHom F α β, IsAddHom F α β, IsMulHom F α β where
-
-instance (priority := 400) [IsZeroHom F α β] [IsAddHom F α β] : IsAddGroupHom F α β where
-instance (priority := 400) [IsOneHom F α β ] [IsMulHom F α β] : IsGroupHom F α β where
-instance (priority := 400) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] : IsAddGroupWithOneHom F α β where
-instance (priority := 400) [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β] : IsGroupWithZeroHom F α β where
-instance (priority := 400) [IsZeroHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRngHom F α β where
-instance (priority := 400) [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β] [IsMulHom F α β] : IsRingHom F α β where
-
 end
 
 section
@@ -170,32 +156,43 @@ instance : IsOneZeroHom (OneZeroEquiv α β) α β where
 structure AddGroupHom extends ZeroHom α β, AddHom α β where
 
 instance : FunLike (AddGroupHom α β) α β where
-instance : IsAddGroupHom (AddGroupHom α β) α β where
+instance : IsZeroHom (AddGroupHom α β) α β where
+instance : IsAddHom (AddGroupHom α β) α β where
 
 structure AddGroupWithOneHom extends AddGroupHom α β, OneHom α β where
 
 instance : FunLike (AddGroupWithOneHom α β) α β where
-instance : IsAddGroupWithOneHom (AddGroupWithOneHom α β) α β where
+instance : IsZeroHom (AddGroupWithOneHom α β) α β where
+instance : IsOneHom (AddGroupWithOneHom α β) α β where
+instance : IsAddHom (AddGroupWithOneHom α β) α β where
 
 structure GroupHom extends OneHom α β, MulHom α β where
 
 instance : FunLike (GroupHom α β) α β where
-instance : IsGroupHom (GroupHom α β) α β where
+instance : IsOneHom (GroupHom α β) α β where
+instance : IsMulHom (GroupHom α β) α β where
 
 structure GroupWithZeroHom extends GroupHom α β, ZeroHom α β where
 
 instance : FunLike (GroupWithZeroHom α β) α β where
-instance : IsGroupWithZeroHom (GroupWithZeroHom α β) α β where
+instance : IsZeroHom (GroupWithZeroHom α β) α β where
+instance : IsOneHom (GroupWithZeroHom α β) α β where
+instance : IsMulHom (GroupWithZeroHom α β) α β where
 
 structure RingHom extends AddGroupWithOneHom α β, GroupWithZeroHom α β where
 
 instance : FunLike (RingHom α β) α β where
-instance : IsRingHom (RingHom α β) α β where
+instance : IsZeroHom (RingHom α β) α β where
+instance : IsOneHom (RingHom α β) α β where
+instance : IsAddHom (RingHom α β) α β where
+instance : IsMulHom (RingHom α β) α β where
 
 structure RngHom extends AddGroupHom α β, MulHom α β where
 
 instance : FunLike (RngHom α β) α β where
-instance : IsRngHom (RngHom α β) α β where
+instance : IsZeroHom (RngHom α β) α β where
+instance : IsAddHom (RngHom α β) α β where
+instance : IsMulHom (RngHom α β) α β where
 
 structure LinearMap extends AddHom α β, SMulHom R α β where
 
@@ -218,32 +215,43 @@ instance : IsOneZeroHom (LogHom α β) α β where
 structure AddGroupEmbedding extends α ↪ β, AddGroupHom α β where
 
 instance : EmbeddingLike (AddGroupEmbedding α β) α β where
-instance : IsAddGroupHom (AddGroupEmbedding α β) α β where
+instance : IsZeroHom (AddGroupEmbedding α β) α β where
+instance : IsAddHom (AddGroupEmbedding α β) α β where
 
 structure AddGroupWithOneEmbedding extends α ↪ β, AddGroupWithOneHom α β where
 
 instance : EmbeddingLike (AddGroupWithOneEmbedding α β) α β where
-instance : IsAddGroupWithOneHom (AddGroupWithOneEmbedding α β) α β where
+instance : IsZeroHom (AddGroupWithOneEmbedding α β) α β where
+instance : IsOneHom (AddGroupWithOneEmbedding α β) α β where
+instance : IsAddHom (AddGroupWithOneEmbedding α β) α β where
 
 structure GroupEmbedding extends α ↪ β, GroupHom α β where
 
 instance : EmbeddingLike (GroupEmbedding α β) α β where
-instance : IsGroupHom (GroupEmbedding α β) α β where
+instance : IsOneHom (GroupEmbedding α β) α β where
+instance : IsMulHom (GroupEmbedding α β) α β where
 
 structure GroupWithZeroEmbedding extends α ↪ β, GroupWithZeroHom α β where
 
 instance : EmbeddingLike (GroupWithZeroEmbedding α β) α β where
-instance : IsGroupWithZeroHom (GroupWithZeroEmbedding α β) α β where
+instance : IsZeroHom (GroupWithZeroEmbedding α β) α β where
+instance : IsOneHom (GroupWithZeroEmbedding α β) α β where
+instance : IsMulHom (GroupWithZeroEmbedding α β) α β where
 
 structure RingEmbedding extends α ↪ β, RingHom α β where
 
 instance : EmbeddingLike (RingEmbedding α β) α β where
-instance : IsRingHom (RingEmbedding α β) α β where
+instance : IsZeroHom (RingEmbedding α β) α β where
+instance : IsOneHom (RingEmbedding α β) α β where
+instance : IsAddHom (RingEmbedding α β) α β where
+instance : IsMulHom (RingEmbedding α β) α β where
 
 structure RngEmbedding extends α ↪ β, RngHom α β where
 
 instance : EmbeddingLike (RngEmbedding α β) α β where
-instance : IsRngHom (RngEmbedding α β) α β where
+instance : IsZeroHom (RngEmbedding α β) α β where
+instance : IsAddHom (RngEmbedding α β) α β where
+instance : IsMulHom (RngEmbedding α β) α β where
 
 structure LinearEmbedding extends α ↪ β, LinearMap R α β where
 
@@ -266,35 +274,43 @@ instance : IsOneZeroHom (LogEmbedding α β) α β where
 structure AddGroupEquiv extends α ≃ β, AddGroupHom α β, ZeroEquiv α β, AddEquiv α β where
 
 instance : EquivLike (AddGroupEquiv α β) α β where
-instance : IsAddGroupHom (AddGroupEquiv α β) α β where
 instance : IsZeroHom (AddGroupEquiv α β) α β where
 instance : IsAddHom (AddGroupEquiv α β) α β where
 
 structure AddGroupWithOneEquiv extends α ≃ β, AddGroupWithOneHom α β, AddGroupEquiv α β, OneEquiv α β where
 
 instance : EquivLike (AddGroupWithOneEquiv α β) α β where
-instance : IsAddGroupWithOneHom (AddGroupWithOneEquiv α β) α β where
+instance : IsZeroHom (AddGroupWithOneEquiv α β) α β where
+instance : IsOneHom (AddGroupWithOneEquiv α β) α β where
+instance : IsAddHom (AddGroupWithOneEquiv α β) α β where
 
 structure GroupEquiv extends α ≃ β, GroupHom α β, OneEquiv α β, MulEquiv α β where
 
 instance : EquivLike (GroupEquiv α β) α β where
-instance : IsGroupHom (GroupEquiv α β) α β where
+instance : IsOneHom (GroupEquiv α β) α β where
+instance : IsMulHom (GroupEquiv α β) α β where
 
 structure GroupWithZeroEquiv extends α ≃ β, GroupWithZeroHom α β, GroupEquiv α β, ZeroEquiv α β where
 
 instance : EquivLike (GroupWithZeroEquiv α β) α β where
-instance : IsGroupWithZeroHom (GroupWithZeroEquiv α β) α β where
+instance : IsZeroHom (GroupWithZeroEquiv α β) α β where
+instance : IsOneHom (GroupWithZeroEquiv α β) α β where
+instance : IsMulHom (GroupWithZeroEquiv α β) α β where
 
 structure RingEquiv extends α ≃ β, RingHom α β, AddGroupEquiv α β, GroupEquiv α β where
 
 instance : EquivLike (RingEquiv α β) α β where
-instance : IsRingHom (RingEquiv α β) α β where
+instance : IsZeroHom (RingEquiv α β) α β where
+instance : IsOneHom (RingEquiv α β) α β where
+instance : IsAddHom (RingEquiv α β) α β where
 instance : IsMulHom (RingEquiv α β) α β where
 
 structure RngEquiv extends α ≃ β, RngHom α β, AddGroupEquiv α β, MulEquiv α β where
 
 instance : EquivLike (RngEquiv α β) α β where
-instance : IsRngHom (RngEquiv α β) α β where
+instance : IsZeroHom (RngEquiv α β) α β where
+instance : IsAddHom (RngEquiv α β) α β where
+instance : IsMulHom (RngEquiv α β) α β where
 
 structure LinearEquiv extends α ≃ β, LinearMap R α β, AddEquiv α β, SMulEquiv R α β where
 
@@ -374,26 +390,28 @@ structure AlgHom extends AddHom α β, MulHom α β, AlgebraMapHom R α β where
 
 instance : FunLike (AlgHom R α β) α β where
 instance : IsAlgebraMapHom (AlgHom R α β) R α β where
-instance : IsRingHom (AlgHom R α β) α β := {
-  IsAlgebraMapHom.toZeroHom (AlgHom R α β) R α β,
-  IsAlgebraMapHom.toOneHom (AlgHom R α β) R α β with
-}
+instance : IsZeroHom (AlgHom R α β) α β := IsAlgebraMapHom.toZeroHom (AlgHom R α β) R α β
+instance : IsOneHom (AlgHom R α β) α β := IsAlgebraMapHom.toOneHom (AlgHom R α β) R α β
+instance : IsAddHom (AlgHom R α β) α β where
+instance : IsMulHom (AlgHom R α β) α β where
 
 structure AlgEmbedding extends α ↪ β, AlgHom R α β where
 
 instance : EmbeddingLike (AlgEmbedding R α β) α β where
 instance : IsAlgebraMapHom (AlgEmbedding R α β) R α β where
-instance : IsRingHom (AlgEmbedding R α β) α β where
-  map_zero f := IsZeroHom.map_zero f.toAlgHom
-  map_one f := IsOneHom.map_one f.toAlgHom
+instance : IsZeroHom (AlgEmbedding R α β) α β := IsAlgebraMapHom.toZeroHom (AlgEmbedding R α β) R α β
+instance : IsOneHom (AlgEmbedding R α β) α β := IsAlgebraMapHom.toOneHom (AlgEmbedding R α β) R α β
+instance : IsAddHom (AlgEmbedding R α β) α β where
+instance : IsMulHom (AlgEmbedding R α β) α β where
 
 structure AlgEquiv extends α ≃ β, AddEquiv α β, MulEquiv α β, AlgebraMapEquiv R α β, AlgHom R α β where
 
 instance : EquivLike (AlgEquiv R α β) α β where
 instance : IsAlgebraMapHom (AlgEquiv R α β) R α β where
-instance : IsRingHom (AlgEquiv R α β) α β where
-  map_zero f := IsZeroHom.map_zero f.toAlgHom
-  map_one f := IsOneHom.map_one f.toAlgHom
+instance : IsZeroHom (AlgEquiv R α β) α β := IsAlgebraMapHom.toZeroHom (AlgEquiv R α β) R α β
+instance : IsOneHom (AlgEquiv R α β) α β := IsAlgebraMapHom.toOneHom (AlgEquiv R α β) R α β
+instance : IsAddHom (AlgEquiv R α β) α β where
+instance : IsMulHom (AlgEquiv R α β) α β where
 
 infixr:25 " →+ " => AddGroupHom
 infixr:25 " →+₁ " => AddGroupWithOneHom

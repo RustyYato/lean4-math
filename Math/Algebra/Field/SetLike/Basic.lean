@@ -18,7 +18,8 @@ instance (s: Subfield α) : IsSemiring s := inferInstance
 variable [FunLike F α β]
 
 variable [FieldOps β] [IsField β]
-  [IsRingHom F α β]
+  [IsZeroHom F α β] [IsOneHom F α β]
+  [IsAddHom F α β] [IsMulHom F α β]
 
 namespace Subfield
 

@@ -20,7 +20,8 @@ instance : IsSemiring s := {
 variable [FunLike F α β]
 
 variable [SemiringOps β] [IsSemiring β]
-  [IsRingHom F α β]
+  [IsZeroHom F α β] [IsOneHom F α β]
+  [IsAddHom F α β] [IsMulHom F α β]
 
 namespace Subsemiring
 

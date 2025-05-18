@@ -17,7 +17,8 @@ instance (s: Subring α) : IsRing s := inferInstance
 variable [FunLike F α β]
 
 variable [RingOps β] [IsRing β]
-  [IsRingHom F α β]
+  [IsZeroHom F α β] [IsOneHom F α β]
+  [IsAddHom F α β] [IsMulHom F α β]
 
 namespace Subring
 

@@ -4,8 +4,9 @@ import Math.Algebra.GroupWithZero.Basic
 section
 
 variable [GroupWithZeroOps α] [GroupWithZeroOps β] [IsGroupWithZero α] [IsGroupWithZero β]
-variable [EmbeddingLike F α β] [IsGroupWithZeroHom F α β]
-  [NoZeroDivisors β]
+variable [NoZeroDivisors β] [EmbeddingLike F α β]
+  [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β]
+
 
 def map_ne_zero (f: F) : x ≠ 0 -> f x ≠ 0 :=
   fun g h => g ((f: α ↪ β).inj (h.trans (map_zero f).symm))

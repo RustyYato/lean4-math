@@ -125,7 +125,7 @@ namespace SubNeg
 
 variable [AddGroupOps α] [AddGroupOps β]
   [IsAddGroup α] [IsSubtractionMonoid β]
-  [IsAddGroupHom F α β]
+  [IsZeroHom F α β] [IsAddHom F α β]
 
 def image (s: SubNeg α) (f: F) : SubNeg β where
   carrier := s.carrier.image f
@@ -147,7 +147,7 @@ namespace SubInv
 
 variable [GroupOps α] [GroupOps β]
   [IsGroup α] [IsDivisionMonoid β]
-  [IsGroupHom F α β]
+  [IsOneHom F α β] [IsMulHom F α β]
 
 def image (s: SubInv α) (f: F) : SubInv β where
   carrier := s.carrier.image f

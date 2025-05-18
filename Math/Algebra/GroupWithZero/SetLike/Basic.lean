@@ -83,7 +83,7 @@ instance [NoZeroDivisors α] : NoZeroDivisors s where
 variable [EmbeddingLike F α β]
 
 variable [GroupWithZeroOps β] [IsGroupWithZero β]
-  [IsGroupWithZeroHom F α β]
+  [IsZeroHom F α β] [IsOneHom F α β] [IsMulHom F α β]
 
 namespace SubInv?
 

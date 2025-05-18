@@ -16,7 +16,8 @@ instance (s: Subsemifield α) : IsSemiring s := inferInstance
 variable [EmbeddingLike F α β]
 
 variable [SemifieldOps β] [IsSemifield β]
-  [IsRingHom F α β]
+  [IsZeroHom F α β] [IsOneHom F α β]
+  [IsAddHom F α β] [IsMulHom F α β]
 
 namespace Subsemifield
 
