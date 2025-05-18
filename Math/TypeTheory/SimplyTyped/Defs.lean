@@ -57,7 +57,7 @@ def weaken_at_level {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (level: ℕ
 def weaken {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (new_ty: SimpleLamType) : term.weaken.IsSimplyWellTyped (new_ty::ctx) ty := by
   apply ht.weaken_at_level 0
 
-def subst {term subst: Term} {var: ℕ} (hvar: var < ctx.length) (ht: term.IsSimplyWellTyped ctx ty) (hs: subst.IsSimplyWellTyped (ctx.eraseIdx var) ctx[var]) : (term.subst subst var).IsSimplyWellTyped (ctx.eraseIdx var) ty := by
+def subst_at {term subst: Term} {var: ℕ} (hvar: var < ctx.length) (ht: term.IsSimplyWellTyped ctx ty) (hs: subst.IsSimplyWellTyped (ctx.eraseIdx var) ctx[var]) : (term.subst subst var).IsSimplyWellTyped (ctx.eraseIdx var) ty := by
   induction ht generalizing var subst with
   | lam ctx body arg_ty ret_ty body_wt ih =>
     apply IsSimplyWellTyped.lam
@@ -95,6 +95,42 @@ def subst {term subst: Term} {var: ℕ} (hvar: var < ctx.length) (ht: term.IsSim
       rw [if_pos]
       omega
       assumption
+
+def subst {term subst: Term} (ht: term.IsSimplyWellTyped (sty::ctx) ty) (hs: subst.IsSimplyWellTyped ctx sty) : (term.subst subst 0).IsSimplyWellTyped ctx ty := by
+  apply subst_at (var := 0) _ ht hs
+  apply Nat.zero_lt_succ
+
+def reduce {term term': Term} (ht: term.IsSimplyWellTyped ctx ty) (h: term.Reduce term') : term'.IsSimplyWellTyped ctx ty := by
+  induction h generalizing ctx ty with
+  | apply =>
+    cases ht
+    rename_i ht
+    cases ht
+    rename_i ht
+    apply ht.subst
+    assumption
+  | app_func _ _ _ _ ih =>
+    cases ht
+    rename_i ht
+    apply IsSimplyWellTyped.app
+    apply ih
+    assumption
+    assumption
+  | app_arg _ _ _ _ _ ih =>
+    cases ht
+    rename_i ht
+    apply IsSimplyWellTyped.app
+    assumption
+    apply ih
+    assumption
+
+def reduce_to {term term': Term} (ht: term.IsSimplyWellTyped ctx ty) (h: term.ReducesTo term') : term'.IsSimplyWellTyped ctx ty := by
+  induction h with
+  | refl => assumption
+  | cons r rs ih =>
+    apply ih
+    apply ht.reduce
+    assumption
 
 end IsSimplyWellTyped
 
