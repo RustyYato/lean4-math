@@ -183,4 +183,12 @@ def reduces_to {term term': Term} (h: ReducesTo term term') : term.Halts ↔ ter
 
 end Halts
 
+def Reduce.halts {term term': Term} (h: Reduce term term') : term.Halts ↔ term'.Halts := by
+  apply Halts.reduce
+  assumption
+
+def ReducesTo.halts {term term': Term} (h: ReducesTo term term') : term.Halts ↔ term'.Halts := by
+  apply Halts.reduces_to
+  assumption
+
 end Term

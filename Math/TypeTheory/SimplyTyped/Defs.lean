@@ -6,7 +6,9 @@ inductive SimpleLamType where
 | void -- a type with no introduction forms
 | func (arg ret: SimpleLamType)
 
-abbrev TypeCtx := List SimpleLamType
+abbrev SimpleLamType.TypeCtx := List SimpleLamType
+
+open SimpleLamType (TypeCtx)
 
 namespace Term
 
