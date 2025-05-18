@@ -6,6 +6,7 @@ inductive Term where
 | lam (body: Term)
 | app (func arg: Term)
 | var (name: ℕ)
+deriving DecidableEq
 
 namespace Term
 
@@ -138,5 +139,17 @@ def Reduce.unique (h: Reduce a b) (g: Reduce a c) : b = c := by
     have := hf.notReduce _ g
     contradiction
     rwa [ih]
+
+instance : Decidable (Reduce a b) :=
+  match findReduction a with
+  | .inl h =>
+    if g:h.1 = b then
+      .isTrue (g ▸ h.2)
+    else
+      .isFalse fun h' =>
+        (g (Reduce.unique h.2 h')).elim
+  | .inr h => .isFalse <| by
+    intro g; apply h
+    exists b
 
 end Term
