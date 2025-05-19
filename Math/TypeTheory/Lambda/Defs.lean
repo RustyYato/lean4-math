@@ -175,6 +175,11 @@ inductive Reduce : Term -> Term -> Prop where
 -- in the operational semantics that can be taken
 def ReducesTo := Relation.ReflTransGen Reduce
 
+instance : Relation.IsRefl ReducesTo :=
+  inferInstanceAs (Relation.IsRefl (Relation.ReflTransGen _))
+instance : Relation.IsTrans ReducesTo :=
+  inferInstanceAs (Relation.IsTrans (Relation.ReflTransGen _))
+
 -- the gold standard equvialence relation which specifies
 -- when two terms reduce to the same value if they reduce to a value
 def Equiv := Relation.EquivGen Reduce
@@ -276,6 +281,41 @@ instance : Decidable (Reduce a b) :=
 -- a term halts iff it reduces to a value
 def Halts (term: Term) := ∃v: Term, v.IsValue ∧ term.ReducesTo v
 
+namespace Reduce
+
+def weaken_at_level (r: Reduce term term') : Reduce (term.weaken_at_level n) (term'.weaken_at_level n) := by
+  induction r generalizing n with
+  | apply body arg arg_value =>
+    simp [subst_at_weaken_at_level]
+    apply Reduce.apply
+    cases arg_value
+    apply IsValue.lam
+  | app_func func func' arg r ih =>
+    simp
+    apply Reduce.app_func
+    apply ih
+  | app_arg func arg arg' hf r ih =>
+    simp
+    apply Reduce.app_arg
+    cases hf
+    apply IsValue.lam
+    apply ih
+
+end Reduce
+
+namespace ReducesTo
+
+def weaken_at_level (r: ReducesTo term term') : ReducesTo (term.weaken_at_level n) (term'.weaken_at_level n) := by
+  induction r with
+  | refl => rfl
+  | cons r rs ih =>
+    apply flip Relation.trans'
+    apply ih
+    apply Relation.ReflTransGen.single
+    apply r.weaken_at_level
+
+end ReducesTo
+
 namespace Halts
 
 def reduce {term term': Term} (h: Reduce term term') : term.Halts ↔ term'.Halts := by
@@ -301,6 +341,14 @@ def reduces_to {term term': Term} (h: ReducesTo term term') : term.Halts ↔ ter
     rw [←ih]
     apply reduce
     assumption
+
+def weaken_at_level {term: Term} (h: term.Halts) : (term.weaken_at_level n).Halts := by
+  obtain ⟨v, hv, h⟩ := h
+  exists v.weaken_at_level n
+  apply And.intro
+  cases hv
+  apply IsValue.lam
+  apply h.weaken_at_level
 
 end Halts
 
