@@ -23,6 +23,14 @@ inductive IsSimplyWellTyped : TypeCtx -> Term -> SimpleLamType -> Prop where
 | var (ctx: TypeCtx) (name: ℕ) (ty: SimpleLamType) (h: name < ctx.length) :
   ty = ctx[name] -> IsSimplyWellTyped ctx (.var name) ty
 
+private def erase_mid
+  (ctx₀ ctx' ctx: List α) (ty: α)
+ : ctx₀ ++ ctx' ++ ctx = (ctx₀ ++ ty :: ctx' ++ ctx).eraseIdx (List.length ctx₀) := by
+  rw [List.eraseIdx_append_of_lt_length, List.eraseIdx_append_of_length_le]
+  simp
+  rfl
+  simp
+
 namespace IsSimplyWellTyped
 
 def weaken_at_level {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (level: ℕ) (new_ty: SimpleLamType) : (term.weaken_at_level level).IsSimplyWellTyped (ctx.insertIdx level new_ty) ty := by
@@ -199,6 +207,24 @@ def subst_at_empty_ctx {var: ℕ} {term subst: Term} (ht: term.IsSimplyWellTyped
   assumption
   apply Nat.zero_le
 
+def subst_all_empty_ctx {term: Term} {substs: List Term} (ht: term.IsSimplyWellTyped [] ty) : term.subst_all offset substs = term := by
+  induction substs generalizing term with
+  | nil => rfl
+  | cons subst substs ih =>
+    unfold subst_all
+    rw [ih]
+    rw [subst_at_empty_ctx]
+    assumption
+    rwa [subst_at_empty_ctx]
+    assumption
+
+def expand_ctx_from_empty (term: Term) (ht: term.IsSimplyWellTyped [] ty) :
+  term.IsSimplyWellTyped ctx ty := by
+  rw [←weaken_all_empty_ctx (term := term), ←List.append_nil ctx]
+  apply IsSimplyWellTyped.weaken_all
+  assumption
+  assumption
+
 inductive SubstAll : TypeCtx -> List Term -> Prop where
 | nil : SubstAll [] []
 | cons :
@@ -216,26 +242,102 @@ def length_eq (h: SubstAll ctx terms) : ctx.length = terms.length := by
 end SubstAll
 
 def subst_all {term: Term}
-  (ht: term.IsSimplyWellTyped (ctx' ++ ctx) ty)
+  (ht: term.IsSimplyWellTyped (ctx₀ ++ ctx' ++ ctx) ty)
   (substs: List Term)
   (h: SubstAll ctx' substs):
-  (term.subst_all substs).IsSimplyWellTyped ctx ty := by
+  (term.subst_all ctx₀.length substs).IsSimplyWellTyped (ctx₀ ++ ctx) ty := by
   induction h generalizing term with
-  | nil => assumption
-  | @cons ctx terms ty subst wt h ih =>
+  | nil => simpa using ht
+  | @cons ctx' terms ty subst wt h ih =>
     apply ih
     rw [←weaken_empty_ctx (term := subst)]
-    apply IsSimplyWellTyped.subst
+    rw [erase_mid ctx₀ ctx' _ ty]
+    apply IsSimplyWellTyped.subst_at
     assumption
-    rw [weaken_empty_ctx (term := subst)]
-    · rw [←weaken_all_empty_ctx (term := subst) wt]
-      rw [←List.append_nil (_ ++ _)]
-      apply weaken_all
-      assumption
+    simp
+    rw [weaken_empty_ctx]
+    apply expand_ctx_from_empty
     assumption
+    assumption
+    simp
     assumption
 
 end IsSimplyWellTyped
+
+def subst_all_var_of_ge
+  (substs: List Term)
+  (h: IsSimplyWellTyped.SubstAll ctx' substs)
+  (hname: name < substs.length)
+  (hname': offset ≤ name) :
+  (Term.var name).subst_all offset substs = substs[name - offset] := by
+  induction substs generalizing name ctx' offset with
+  | nil => contradiction
+  | cons subst substs ih =>
+    cases h with | @cons ctx' ty ty subst subst_wt h =>
+    unfold subst_all Term.subst
+    split
+    rw [IsSimplyWellTyped.subst_all_empty_ctx (term := subst)]
+    subst offset
+    simp
+    assumption
+    split
+    rename_i h
+    rw [←Nat.not_le] at h
+    contradiction
+    cases name with
+    | zero => omega
+    | succ name =>
+      conv in (name + 1 - offset) => { rw [Nat.succ_sub (by omega)] }
+      simp
+      rw [ih]
+      assumption
+      apply Nat.lt_of_succ_lt_succ
+      assumption
+      omega
+
+def subst_all_var_of_lt
+  (substs: List Term)
+  (h: IsSimplyWellTyped.SubstAll ctx' substs)
+  (hname': name < offset) :
+  (Term.var name).subst_all offset substs = Term.var name := by
+  induction substs generalizing name ctx' offset with
+  | nil => rfl
+  | cons subst substs ih =>
+    cases h
+    unfold subst_all Term.subst
+    rw [if_neg, if_pos hname']
+    rw [ih]
+    assumption
+    assumption
+    omega
+
+def susbt_all_app
+  (substs: List Term)
+  (h: IsSimplyWellTyped.SubstAll ctx' substs)
+  (func arg: Term):
+  (func.app arg).subst_all offset substs =
+  (func.subst_all offset substs).app (arg.subst_all offset substs) := by
+  induction h generalizing func arg with
+  | nil => rfl
+  | @cons ctx' substs ty' s _ _ ih =>
+    unfold subst_all
+    simp
+    rw [ih]
+
+def susbt_all_lam
+  (substs: List Term)
+  (h: IsSimplyWellTyped.SubstAll ctx' substs)
+  (body: Term) :
+  body.lam.subst_all offset substs =
+  (body.subst_all (offset + 1) substs).lam := by
+  induction h generalizing body with
+  | nil => rfl
+  | @cons ctx' substs ty' s _ _ ih =>
+    unfold subst_all
+    simp
+    rw [ih]
+    congr
+    rwa [IsSimplyWellTyped.weaken_empty_ctx]
 
 end Term
 

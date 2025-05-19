@@ -44,9 +44,9 @@ def subst (term subst: Term) (var: ℕ) : Term :=
 @[simp] def subst_lam (subst: Term) (body: Term) (var: ℕ) : body.lam.subst subst var = (body.subst subst.weaken (var + 1)).lam := rfl
 @[simp] def subst_app (subst: Term) (func arg: Term) (var: ℕ) : (func.app arg).subst subst var = (func.subst subst var).app (arg.subst subst var) := rfl
 
-def subst_all (term: Term) : List Term -> Term
+def subst_all (term: Term) (offset: ℕ) : List Term -> Term
 | [] => term
-| subst::substs => (term.subst subst 0).subst_all substs
+| subst::substs => (term.subst subst offset).subst_all offset substs
 
 def weaken_all (term: Term) : ℕ -> Term
 | 0 => term
