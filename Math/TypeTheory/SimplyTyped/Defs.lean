@@ -59,6 +59,13 @@ def weaken_at_level {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (level: ℕ
 def weaken {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (new_ty: SimpleLamType) : term.weaken.IsSimplyWellTyped (new_ty::ctx) ty := by
   apply ht.weaken_at_level 0
 
+def weaken_all {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (ctx': TypeCtx) : (term.weaken_all ctx'.length).IsSimplyWellTyped (ctx' ++ ctx) ty := by
+  induction ctx' with
+  | nil => assumption
+  | cons ty' ctx' ih =>
+    apply weaken
+    apply ih
+
 def subst_at {term subst: Term} {var: ℕ} (hvar: var < ctx.length) (ht: term.IsSimplyWellTyped ctx ty) (hs: subst.IsSimplyWellTyped (ctx.eraseIdx var) ctx[var]) : (term.subst subst var).IsSimplyWellTyped (ctx.eraseIdx var) ty := by
   induction ht generalizing var subst with
   | lam ctx body arg_ty ret_ty body_wt ih =>
@@ -160,6 +167,14 @@ def weaken_empty_ctx {term: Term} (ht: term.IsSimplyWellTyped [] ty) : term.weak
   apply weaken_at_level_empty_ctx
   assumption
 
+def weaken_all_empty_ctx {term: Term} (ht: term.IsSimplyWellTyped [] ty) : term.weaken_all n = term := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    unfold Term.weaken_all
+    rw [weaken_empty_ctx, ih]
+    rwa [ih]
+
 def subst_at_empty_ctx_aux {var: ℕ} {term subst: Term} (ht: term.IsSimplyWellTyped ctx ty) (h: ctx.length ≤ var) : term.subst subst var = term := by
   induction ht generalizing var subst with
   | lam ctx body arg_ty ret_ty wt ih =>
@@ -183,6 +198,42 @@ def subst_at_empty_ctx {var: ℕ} {term subst: Term} (ht: term.IsSimplyWellTyped
   apply subst_at_empty_ctx_aux
   assumption
   apply Nat.zero_le
+
+inductive SubstAll : TypeCtx -> List Term -> Prop where
+| nil : SubstAll [] []
+| cons :
+  term.IsSimplyWellTyped [] ty ->
+  SubstAll ctx terms ->
+  SubstAll (ty::ctx) (term::terms)
+
+namespace SubstAll
+
+def length_eq (h: SubstAll ctx terms) : ctx.length = terms.length := by
+  induction h with
+  | nil => rfl
+  | cons wt h ih => simp [ih]
+
+end SubstAll
+
+def subst_all {term: Term}
+  (ht: term.IsSimplyWellTyped (ctx' ++ ctx) ty)
+  (substs: List Term)
+  (h: SubstAll ctx' substs):
+  (term.subst_all substs).IsSimplyWellTyped ctx ty := by
+  induction h generalizing term with
+  | nil => assumption
+  | @cons ctx terms ty subst wt h ih =>
+    apply ih
+    rw [←weaken_empty_ctx (term := subst)]
+    apply IsSimplyWellTyped.subst
+    assumption
+    rw [weaken_empty_ctx (term := subst)]
+    · rw [←weaken_all_empty_ctx (term := subst) wt]
+      rw [←List.append_nil (_ ++ _)]
+      apply weaken_all
+      assumption
+    assumption
+    assumption
 
 end IsSimplyWellTyped
 
