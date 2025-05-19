@@ -6,7 +6,7 @@ inductive Term where
 | lam (body: Term)
 | app (func arg: Term)
 | var (name: ℕ)
-deriving DecidableEq
+deriving DecidableEq, Repr
 
 namespace Term
 
@@ -23,6 +23,10 @@ def weaken_at_level (term: Term) (level: ℕ) : Term :=
 
 def weaken (term: Term) : Term := term.weaken_at_level 0
 
+@[simp] def weaken_at_level_lam (body: Term) (level: ℕ) : body.lam.weaken_at_level level = (body.weaken_at_level (level + 1)).lam := rfl
+@[simp] def weaken_at_level_app (func arg: Term) (level: ℕ) : (func.app arg).weaken_at_level level =
+  (func.weaken_at_level level).app (arg.weaken_at_level level) := rfl
+
 def subst (term subst: Term) (var: ℕ) : Term :=
   match term with
   | .lam body => .lam (body.subst subst.weaken (var + 1))
@@ -36,6 +40,123 @@ def subst (term subst: Term) (var: ℕ) : Term :=
           name
         else
           name - 1
+
+@[simp] def subst_lam (subst: Term) (body: Term) (var: ℕ) : body.lam.subst subst var = (body.subst subst.weaken (var + 1)).lam := rfl
+@[simp] def subst_app (subst: Term) (func arg: Term) (var: ℕ) : (func.app arg).subst subst var = (func.subst subst var).app (arg.subst subst var) := rfl
+
+def weaken_at_level_comm (term: Term) : (term.weaken_at_level n).weaken_at_level m = (term.weaken_at_level (m - if m > n then 1 else 0)).weaken_at_level (n + if n > m then 1 else 0) := by
+  induction term generalizing n m with
+  | lam body ih =>
+    simp
+    rw [ih]
+    ac_nf
+    simp
+    congr
+    split <;> omega
+  | app func arg ihf iha =>
+    simp
+    rw [ihf, iha]
+    simp
+  | var name =>
+    rcases Nat.lt_trichotomy n m with h₀ | rfl | h₀
+    · rw [if_pos, if_neg]
+      any_goals omega
+      simp [weaken_at_level]
+      by_cases h₁:name < n
+      simp [h₁, show name < m by omega, show name < m - 1 by omega]
+      by_cases h₂:name < m - 1
+      simp [h₁, h₂, show name < m by omega, show name < m - 1 by omega]
+      omega
+      simp [h₁, h₂]
+      by_cases h₃:name + 1 < n
+      simp [h₃]
+      omega
+      simp [h₃]
+      omega
+    · simp
+    · rw [if_neg, if_pos]
+      any_goals omega
+      simp [weaken_at_level]
+      by_cases h₁:name < m
+      simp [h₁, show name < n by omega, show name < n + 1 by omega]
+      by_cases h₂:name < n
+      simp [h₁, h₂]
+      simp [h₁, h₂]
+      omega
+
+def subst_at_weaken_at_level (term subst: Term) (var level: ℕ) : (term.subst subst var).weaken_at_level level = (term.weaken_at_level (level + if var ≤ level then 1 else 0)).subst (subst.weaken_at_level level) (var + if var ≤ level then 0 else 1):= by
+  induction term generalizing subst level var with
+  | lam body ih =>
+    simp
+    rw [ih]
+    clear ih
+    congr 1
+    · ac_nf
+      simp
+    · unfold weaken
+      rw [weaken_at_level_comm]
+      simp
+    · simp
+      split <;> rfl
+  | app func arg ihf iha =>
+    simp
+    apply And.intro
+    apply ihf
+    apply iha
+  | var name =>
+    split
+    · simp [Term.subst, Term.weaken_at_level]
+      split; subst name
+      · have : var < level + 1 := by omega
+        simp [this]
+      · rename_i h₀ h₁
+        by_cases h₂ :name < level + 1
+        simp [h₂, h₁, h₀]
+        unfold weaken_at_level
+        simp
+        split
+        omega
+        omega
+        simp [h₂]
+        simp at h₂
+        have : var < name := by omega
+        rw [if_neg, if_neg, if_neg]
+        any_goals omega
+        unfold weaken_at_level
+        rw [if_neg]
+        congr
+        omega
+        omega
+    · simp [Term.subst, Term.weaken_at_level]
+      rename_i h₀
+      simp at h₀
+      by_cases h₁:name < level
+      · simp [h₁]
+        rw [if_neg, if_pos, if_neg, if_pos]
+        any_goals omega
+        unfold weaken_at_level
+        simp
+        assumption
+      · simp [h₁]
+        simp at h₁
+        by_cases h₂:name < var
+        · simp [h₂]
+          rw [if_neg, if_neg]
+          any_goals omega
+          unfold weaken_at_level
+          simp
+          assumption
+        · simp [h₂]
+          simp at h₂
+          replace h₂ := lt_or_eq_of_le h₂
+          rcases h₂ with h₂ | h₂
+          rw [if_neg, if_neg]
+          unfold weaken_at_level
+          simp
+          split
+          any_goals omega
+          subst var
+          simp
 
 inductive IsValue : Term -> Prop where
 | lam body : IsValue (.lam body)
