@@ -134,6 +134,56 @@ def reduces_to {term term': Term} (ht: term.IsSimplyWellTyped ctx ty) (h: term.R
     apply ht.reduce
     assumption
 
+def weaken_at_level_empty_ctx_aux {term: Term} (ht: term.IsSimplyWellTyped ctx ty) (h: ctx.length ≤ level) : term.weaken_at_level level = term := by
+  induction ht generalizing level with
+  | lam ctx body arg_ty ret_ty wt ih =>
+    simp
+    rw [ih]
+    apply Nat.succ_le_succ
+    assumption
+  | app ctx func arg arg_ty ret_ty func_wt arg_wt ihf iha =>
+    simp
+    rw [ihf, iha]
+    trivial
+    assumption
+    assumption
+  | var =>
+    simp [Term.weaken_at_level]
+    omega
+
+def weaken_at_level_empty_ctx {term: Term} (ht: term.IsSimplyWellTyped [] ty) : term.weaken_at_level level = term := by
+  apply weaken_at_level_empty_ctx_aux
+  assumption
+  apply Nat.zero_le
+
+def weaken_empty_ctx {term: Term} (ht: term.IsSimplyWellTyped [] ty) : term.weaken = term := by
+  apply weaken_at_level_empty_ctx
+  assumption
+
+def subst_at_empty_ctx_aux {var: ℕ} {term subst: Term} (ht: term.IsSimplyWellTyped ctx ty) (h: ctx.length ≤ var) : term.subst subst var = term := by
+  induction ht generalizing var subst with
+  | lam ctx body arg_ty ret_ty wt ih =>
+    simp
+    apply ih
+    apply Nat.succ_le_succ
+    assumption
+  | app ctx func arg arg_ty ret_ty func_wt arg_wt ihf iha =>
+    simp
+    rw [ihf, iha]
+    trivial
+    assumption
+    assumption
+  | var =>
+    simp [Term.subst]
+    rw [if_neg, if_pos]
+    omega
+    omega
+
+def subst_at_empty_ctx {var: ℕ} {term subst: Term} (ht: term.IsSimplyWellTyped [] ty) : term.subst subst var = term := by
+  apply subst_at_empty_ctx_aux
+  assumption
+  apply Nat.zero_le
+
 end IsSimplyWellTyped
 
 end Term
