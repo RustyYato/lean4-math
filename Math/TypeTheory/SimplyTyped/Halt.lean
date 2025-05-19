@@ -66,4 +66,62 @@ def ReducesTo.hered_halts (r: ReducesTo term term') (wt: IsSimplyWellTyped [] te
   apply HeredHalts.reduces_to
   assumption
 
+inductive HeredHalts.SubstAll : TypeCtx -> List Term -> Prop where
+| nil : SubstAll [] []
+| cons (wt: term.IsSimplyWellTyped [] ty) :
+  term.HeredHalts wt ->
+  SubstAll ctx terms ->
+  SubstAll (ty::ctx) (term::terms)
+
+protected def HeredHalts.SubstAll.well_typed (h: HeredHalts.SubstAll ctx terms) : IsSimplyWellTyped.SubstAll ctx terms := by
+  induction h with
+  | nil => apply IsSimplyWellTyped.SubstAll.nil
+  | cons => apply IsSimplyWellTyped.SubstAll.cons <;> assumption
+
+protected def HeredHalts.SubstAll.HeredHalts (h: HeredHalts.SubstAll ctx terms) (hi: i < terms.length) : terms[i].HeredHalts (h.well_typed.wt hi) := by
+  induction h generalizing i with
+  | nil => contradiction
+  | cons _ _ _ ih =>
+    cases i
+    assumption
+    apply ih
+
+def HeredHalts.subst_all
+  (term: Term) (substs: List Term)
+  (h: HeredHalts.SubstAll ctx substs)
+  (wt: term.IsSimplyWellTyped ctx ty) :
+  (term.subst_all 0 substs).HeredHalts (by
+    apply IsSimplyWellTyped.subst_all (ctx₀ := [])
+    simp
+    assumption
+    apply h.well_typed) := by
+  induction wt with
+  | app ctx func arg arg_ty ret_ty func_wt arg_wt ihf iha =>
+    conv => { lhs; rw [susbt_all_app (h := h.well_typed)] }
+    apply (ihf _).right
+    apply iha
+    assumption
+    assumption
+  | var _ name ty =>
+    conv => {
+      lhs; rw [subst_all_var_of_ge (h := h.well_typed) (hname := by
+        rwa [←h.well_typed.length_eq]) (hname' := by
+        apply Nat.zero_le)]
+    }
+    subst ty
+    apply h.HeredHalts (i := name)
+  | lam ctx body ih =>
+    apply And.intro
+    exists (body.subst_all 1 substs).lam
+    apply And.intro
+    apply IsValue.lam
+    rw [susbt_all_lam]
+    apply h.well_typed
+    intro arg arg_wt ha
+    sorry
+
+-- every term which is well typed in the empty context eventually halts!
+protected def IsSimplyWellTyped.Halts {term: Term} (wt: term.IsSimplyWellTyped [] ty) : term.Halts :=
+  (HeredHalts.subst_all term [] .nil wt).Halts
+
 end Term

@@ -239,6 +239,14 @@ def length_eq (h: SubstAll ctx terms) : ctx.length = terms.length := by
   | nil => rfl
   | cons wt h ih => simp [ih]
 
+protected def wt (h: SubstAll ctx terms) (hi: i < terms.length) : terms[i].IsSimplyWellTyped [] (ctx[i]'(by rwa [h.length_eq])) := by
+  induction h generalizing i with
+  | nil => contradiction
+  | cons wt h ih =>
+    cases i
+    assumption
+    apply ih
+
 end SubstAll
 
 def subst_all {term: Term}
