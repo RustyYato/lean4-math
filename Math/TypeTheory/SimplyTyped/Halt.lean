@@ -95,10 +95,10 @@ def HeredHalts.subst_all
     simp
     assumption
     apply h.well_typed) := by
-  induction wt with
+  induction wt generalizing substs with
   | app ctx func arg arg_ty ret_ty func_wt arg_wt ihf iha =>
     conv => { lhs; rw [susbt_all_app (h := h.well_typed)] }
-    apply (ihf _).right
+    apply (ihf _ _).right
     apply iha
     assumption
     assumption
@@ -110,7 +110,7 @@ def HeredHalts.subst_all
     }
     subst ty
     apply h.HeredHalts (i := name)
-  | lam ctx body ih =>
+  | lam ctx body arg_ty ret_ty wt ih =>
     apply And.intro
     exists (body.subst_all 1 substs).lam
     apply And.intro
@@ -118,7 +118,39 @@ def HeredHalts.subst_all
     rw [susbt_all_lam]
     apply h.well_typed
     intro arg arg_wt ha
-    sorry
+    conv => { lhs; rw [susbt_all_lam (h := h.well_typed)] }
+    obtain ⟨a', a'_val, red⟩ := ha.Halts
+    apply (HeredHalts.reduces_to (term' := (body.subst_all 1 substs).lam.app a') _ _).mpr
+    apply (HeredHalts.reduce (term' := (body.subst_all 1 substs).subst a' 0) _ _).mpr
+    · suffices (body.subst_all (0 + 1) substs).subst a' 0 = body.subst_all 0 (a'::substs) by
+        conv => {
+          lhs; rw [this]
+        }
+        apply ih
+        apply SubstAll.cons
+        apply (HeredHalts.reduces_to red _).mp
+        assumption
+        assumption
+      · apply subst_all_subst_succ (ctx₀ := []) (subst_ty := arg_ty) (ctx' := ctx)
+        simpa
+        apply IsSimplyWellTyped.SubstAll.cons
+        apply IsSimplyWellTyped.reduces_to
+        assumption
+        assumption
+        apply h.well_typed
+    · simp
+      clear ha arg_wt
+      induction red with
+      | refl => rfl
+      | cons _ _ ih =>
+        apply Relation.ReflTransGen.cons
+        apply Reduce.app_arg
+        apply IsValue.lam
+        assumption
+        apply ih
+        assumption
+    · apply Reduce.apply
+      assumption
 
 -- every term which is well typed in the empty context eventually halts!
 protected def IsSimplyWellTyped.Halts {term: Term} (wt: term.IsSimplyWellTyped [] ty) : term.Halts :=

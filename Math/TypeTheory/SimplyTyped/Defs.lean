@@ -275,7 +275,7 @@ end IsSimplyWellTyped
 def subst_all_var_of_ge
   (substs: List Term)
   (h: IsSimplyWellTyped.SubstAll ctx' substs)
-  (hname: name < substs.length)
+  (hname: name - offset < substs.length)
   (hname': offset ≤ name) :
   (Term.var name).subst_all offset substs = substs[name - offset] := by
   induction substs generalizing name ctx' offset with
@@ -298,8 +298,6 @@ def subst_all_var_of_ge
       conv in (name + 1 - offset) => { rw [Nat.succ_sub (by omega)] }
       simp
       rw [ih]
-      assumption
-      apply Nat.lt_of_succ_lt_succ
       assumption
       omega
 
@@ -346,6 +344,83 @@ def susbt_all_lam
     rw [ih]
     congr
     rwa [IsSimplyWellTyped.weaken_empty_ctx]
+
+def subst_all_subst_succ
+  (term subst: Term) (wt: term.IsSimplyWellTyped (ctx₀ ++ subst_ty::ctx') ty)
+  (h: IsSimplyWellTyped.SubstAll (subst_ty::ctx') (subst::substs)) :
+  (term.subst_all (ctx₀.length + 1) substs).subst subst ctx₀.length = term.subst_all ctx₀.length (subst::substs) := by
+  have subst_wt := h.wt (i := 0) (hi := Nat.zero_lt_succ _)
+  simp at subst_wt
+  induction term generalizing ctx₀ ty with
+  | lam body ih =>
+    cases wt
+    rename_i arg_ty ret_ty wt
+    rw [susbt_all_lam, susbt_all_lam, subst_lam]
+    rw [IsSimplyWellTyped.weaken_empty_ctx (term := subst)]
+    replace ih := ih (ctx₀ := arg_ty::ctx₀) (ty := ret_ty)
+    simp at ih
+    rw [ih]
+    assumption
+    assumption
+    assumption
+    cases h
+    assumption
+  | app func arg ihf iha =>
+    cases wt
+    rw [susbt_all_app, susbt_all_app]
+    simp
+    rw [ihf, iha]
+    apply And.intro <;> rfl
+    assumption
+    assumption
+    assumption
+    cases h
+    assumption
+  | var name =>
+    cases wt
+    rename_i hn _
+    simp at hn
+
+    rcases lt_trichotomy name ctx₀.length with hn' | hn' | hn'
+    · rw [subst_all_var_of_lt _ (by assumption) hn', subst_all_var_of_lt _ (by cases h; assumption) (by omega)]
+      unfold Term.subst
+      simp [hn']
+      intro; omega
+    · subst name
+      rw [subst_all_var_of_lt, subst_all_var_of_ge]
+      simp
+      unfold Term.subst
+      simp
+      assumption
+      simp
+      rfl
+      cases h
+      assumption
+      apply Nat.lt_succ_self
+    · cases h
+      rename_i h
+      rw [subst_all_var_of_ge (hname := by
+        rename_i h₀
+        rw [←h₀.length_eq]
+        omega), subst_all_var_of_ge (hname := (by
+        simp
+        rename_i h₀
+        rw [←h₀.length_eq]
+        omega))]
+      rw [IsSimplyWellTyped.subst_at_empty_ctx]
+      cases name
+      contradiction
+      simp
+      rename_i name _ _
+      conv in (name + 1 - _) => { rw [Nat.succ_sub (by omega)] }
+      simp
+      apply h.wt
+      apply IsSimplyWellTyped.SubstAll.cons
+      assumption
+      assumption
+      omega
+      assumption
+      omega
 
 end Term
 
