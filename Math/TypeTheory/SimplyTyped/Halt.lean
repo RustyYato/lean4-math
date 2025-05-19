@@ -157,3 +157,80 @@ protected def IsSimplyWellTyped.Halts {term: Term} (wt: term.IsSimplyWellTyped [
   (HeredHalts.subst_all term [] .nil wt).Halts
 
 end Term
+
+structure SimplyWellTypedTerm (ty: SimpleLamType) where
+  term: Term
+  prf: term.IsSimplyWellTyped [] ty
+
+instance : WellFoundedRelation (SimplyWellTypedTerm ty) where
+  rel a b := Term.Reduce b.term a.term
+  wf := by
+    apply WellFounded.intro
+    intro ⟨a, ha⟩
+    have ⟨val, hval, red⟩ := ha.Halts
+    induction red with
+    | refl =>
+      apply Acc.intro
+      intro y red
+      have := hval.notReduce _ red
+      contradiction
+    | @cons term₀ term₁ term₂ red₀₁ red₁₂ ih =>
+      have := ih (by
+        apply Term.IsSimplyWellTyped.reduce
+        assumption
+        assumption) hval
+      apply Acc.intro
+      intro ⟨y, hy⟩ h
+      simp at h
+      have := red₀₁.unique h
+      subst y
+      assumption
+
+-- evaluate a term which is simply well typed in the empty context to a value of the same type
+def SimplyWellTypedTerm.eval (term: SimplyWellTypedTerm ty) : Σ' term': SimplyWellTypedTerm ty, term'.term.IsValue :=
+  match term.term.findReduction with
+  | .inl ⟨b, hb⟩ =>
+    let term' : SimplyWellTypedTerm ty := {
+      term := b
+      prf := by
+        apply Term.IsSimplyWellTyped.reduce
+        exact term.prf
+        assumption
+    }
+    term'.eval
+  | .inr no_red => {
+    fst := term
+    snd := by
+      obtain ⟨term, wt⟩ := term
+      simp at *
+      rw [←not_exists] at no_red
+      induction term generalizing ty with
+      | lam => apply Term.IsValue.lam
+      | var =>
+        cases wt
+        contradiction
+      | app func arg ihf iha =>
+        cases wt
+        rename_i arg_ty arg_Wt func_wt
+        exfalso
+        apply no_red; clear no_red
+        if h₀:∃x, func.Reduce x then
+          obtain ⟨_, red⟩ := h₀
+          exact ⟨_, .app_func _ _ _ red⟩
+        else
+        have : func.IsValue := by
+          apply ihf
+          assumption
+          assumption
+        if h₀:∃x, arg.Reduce x then
+          obtain ⟨_, red⟩ := h₀
+          refine ⟨_, .app_arg _ _ _ ?_ red⟩
+          assumption
+        else
+          cases this
+          refine ⟨_, .apply _ _ ?_⟩
+          apply iha
+          assumption
+          assumption
+  }
+termination_by term

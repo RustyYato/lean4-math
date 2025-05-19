@@ -183,6 +183,20 @@ inductive Reduce : Term -> Term -> Prop where
 -- in the operational semantics that can be taken
 def ReducesTo := Relation.ReflTransGen Reduce
 
+-- term `a` reduces to term `b` if there are 0 or more steps
+-- in the operational semantics that can be taken
+def StrictReducesTo := Relation.TransGen Reduce
+
+protected def StrictReducesTo.exists_reduce (h: StrictReducesTo term term') : ∃term₀, Reduce term term₀ := by
+  induction h
+  rename_i term₀ _
+  exists term₀
+  assumption
+
+def ReducesTo.eq_or_strict (h: ReducesTo term term') : term = term' ∨ StrictReducesTo term term' := by
+  apply Relation.ReflTransGen.eq_or_transgen
+  assumption
+
 instance : Relation.IsRefl ReducesTo :=
   inferInstanceAs (Relation.IsRefl (Relation.ReflTransGen _))
 instance : Relation.IsTrans ReducesTo :=

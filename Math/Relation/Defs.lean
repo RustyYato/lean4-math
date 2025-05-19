@@ -12,6 +12,22 @@ inductive Relation.EquivGen (r: α -> α -> Prop) : α -> α -> Prop where
 | symm : EquivGen r a b -> EquivGen r b a
 | trans : EquivGen r a b -> EquivGen r b c -> EquivGen r a c
 
+namespace Relation.TransGen
+
+def of_refltransgen (h: r a b) (g: Relation.ReflTransGen r b c) : Relation.TransGen r a c := by
+  induction g generalizing a with
+  | refl =>
+    apply Relation.TransGen.single
+    assumption
+  | cons _ _ ih =>
+    apply Relation.TransGen.trans
+    apply Relation.TransGen.single
+    assumption
+    apply ih
+    assumption
+
+end Relation.TransGen
+
 namespace Relation.ReflTransGen
 
 def single (x: r a b) : ReflTransGen r a b := by
@@ -25,6 +41,14 @@ def trans (x: ReflTransGen r a b) (y: ReflTransGen r b c) : ReflTransGen r a c :
     apply ReflTransGen.cons
     assumption
     apply ih
+    assumption
+
+def eq_or_transgen (h: Relation.ReflTransGen r a b) : a = b ∨ Relation.TransGen r a b := by
+  cases h with
+  | refl => left; rfl
+  | cons r h =>
+    right; apply Relation.TransGen.of_refltransgen
+    assumption
     assumption
 
 end Relation.ReflTransGen
