@@ -173,6 +173,64 @@ instance : ∀term, Decidable (IsValue term)
 | .lam body => .isTrue (.lam body)
 | .var _ | .app _ _ => .isFalse nofun
 
+inductive IsClosedUnder : Term -> ℕ -> Prop where
+| lam (body: Term) : IsClosedUnder body (n + 1) -> IsClosedUnder (.lam body) n
+| app (func arg: Term) : IsClosedUnder func n -> IsClosedUnder arg n -> IsClosedUnder (.app func arg) n
+| var (name: ℕ) : name < n -> IsClosedUnder (.var name) n
+
+def IsClosed (term: Term) := term.IsClosedUnder 0
+
+def closed_under_weaken_at_level {term: Term} (h: term.IsClosedUnder n) (g: n ≤ m) : term.weaken_at_level m = term := by
+  induction h generalizing m with
+  | @lam n body h ih =>
+    unfold weaken_at_level
+    congr; apply ih
+    apply Nat.succ_le_succ
+    assumption
+  | app func arg _ _ ihf iha =>
+    unfold weaken_at_level
+    congr; apply ihf
+    assumption
+    apply iha
+    assumption
+  | var name =>
+    unfold weaken_at_level
+    rw [if_pos]
+    omega
+
+def closed_weaken_at_level {term: Term} (h: term.IsClosed) : term.weaken_at_level n = term := by
+  apply closed_under_weaken_at_level
+  assumption
+  apply Nat.zero_le
+
+def closed_weaken {term: Term} (h: term.IsClosed) : term.weaken = term := by
+  apply closed_weaken_at_level
+  assumption
+
+def closed_under_subst {term subst: Term} (h: term.IsClosedUnder n) (g: n ≤ m) : term.subst subst m = term := by
+  induction h generalizing m subst with
+  | @lam n body h ih =>
+    unfold Term.subst
+    congr; apply ih
+    apply Nat.succ_le_succ
+    assumption
+  | app func arg _ _ ihf iha =>
+    unfold Term.subst
+    congr; apply ihf
+    assumption
+    apply iha
+    assumption
+  | var name =>
+    unfold Term.subst
+    rw [if_neg, if_pos]
+    omega
+    omega
+
+def closed_subst {term subst: Term} (h: term.IsClosed) : term.subst subst m = term := by
+  apply closed_under_subst
+  assumption
+  apply Nat.zero_le
+
 -- the operational semantics of lambda calculus
 inductive Reduce : Term -> Term -> Prop where
 | apply (body arg) : arg.IsValue -> Reduce (.app (.lam body) arg) (body.subst arg 0)

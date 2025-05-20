@@ -104,11 +104,14 @@ def weaken_term_at_level (term: SystemF.Term) (level: ℕ) : SystemF.Term :=
       else
         name + 1
 
+def weaken_term (term: SystemF.Term) : SystemF.Term := term.weaken_term_at_level 0
+def weaken_type (term: SystemF.Term) : SystemF.Term := term.weaken_type_at_level 0
+
 def subst_term  (term subst: SystemF.Term) (target: ℕ) : SystemF.Term :=
   match term with
-  | .lam arg_ty body => .lam arg_ty (body.subst_term subst (target + 1))
+  | .lam arg_ty body => .lam arg_ty (body.subst_term subst.weaken_term (target + 1))
   | .app func arg => .app (func.subst_term subst target) (arg.subst_term subst target)
-  | .type_lam body => .type_lam (body.subst_term subst target)
+  | .type_lam body => .type_lam (body.subst_term subst.weaken_type target)
   | .type_app func arg => .type_app (func.subst_term subst target) arg
   | .var name =>
     if name = target then
@@ -120,9 +123,25 @@ def subst_type  (term: SystemF.Term) (subst: SystemF.Type) (target: ℕ) : Syste
   match term with
   | .lam arg_ty body => .lam (arg_ty.subst subst target) (body.subst_type subst (target + 1))
   | .app func arg => .app (func.subst_type subst target) (arg.subst_type subst target)
-  | .type_lam body => .type_lam (body.subst_type subst target)
+  | .type_lam body => .type_lam (body.subst_type subst.weaken target)
   | .type_app func arg => .type_app (func.subst_type subst target) (arg.subst subst target)
   | .var name => .var name
+
+inductive IsValue : SystemF.Term -> Prop where
+| lam arg_ty body : IsValue (.lam arg_ty body)
+| type_lam body : IsValue (.type_lam body)
+
+instance : ∀term, Decidable (IsValue term)
+| .lam arg_ty body => .isTrue (.lam arg_ty body)
+| .type_lam body => .isTrue (.type_lam body)
+| .var _ | .app _ _ | .type_app _ _ => .isFalse nofun
+
+inductive Reduce : SystemF.Term -> SystemF.Term -> Prop where
+| apply_term (body arg) : arg.IsValue -> Reduce (.app (.lam arg_ty body) arg) (body.subst_term arg 0)
+| apply_type (body arg) : Reduce (.type_app (.type_lam body) arg) (body.subst_type arg 0)
+| app_func (func func' arg) : Reduce func func' -> Reduce (.app func arg) (.app func' arg)
+| app_arg (func arg arg') : func.IsValue -> Reduce arg arg' -> Reduce (.app func arg) (.app func arg')
+| type_app_func (func func' arg) : Reduce func func' -> Reduce (.type_app func arg) (.type_app func' arg)
 
 end SystemF.Term
 
