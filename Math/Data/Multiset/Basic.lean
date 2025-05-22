@@ -1249,6 +1249,56 @@ def fold (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ 
     | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
     | swap => simp [List.foldr, h]
 
+def fold_nonempty
+  (f: α -> β -> β)
+  (start: α -> β)
+  (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b))
+  (g: ∀a₀ a₁: α, f a₀ (start a₁) = f a₁ (start a₀))
+  (as: Multiset α) : Option β :=
+  as.lift (fun as =>
+    match as with
+    | [] => .none
+    | a::as => .some (as.foldr f (start a))
+    ) <| by
+    intro as bs perm
+    dsimp
+    induction perm with
+    | nil => rfl
+    | @cons x as bs h₀ ih =>
+      cases as
+      cases h₀.nil_eq
+      rfl
+      rename_i a as
+      cases bs
+      nomatch h₀.eq_nil
+      rename_i b bs
+      simp at *
+      rw [←List.foldr_cons (f := f), ←List.foldr_cons (f := f)]
+      show fold f _ h (Multiset.mk (a::as)) = fold f _ h (Multiset.mk (b::bs))
+      congr 1; exact Quotient.sound h₀
+    | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
+    | swap x y l =>
+      simp
+      induction l with
+      | nil => apply g
+      | cons l ls ih =>
+        rw [List.foldr_cons, List.foldr_cons, h, ih, h]
+
+def fold_nonempty_nil
+  (f: α -> β -> β)
+  (start: α -> β)
+  (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b))
+  (g: ∀a₀ a₁: α, f a₀ (start a₁) = f a₁ (start a₀))
+   : fold_nonempty f start h g ∅ = .none := rfl
+
+def fold_nonempty_eq_fold_cons
+  (f: α -> β -> β)
+  (start: α -> β)
+  (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b))
+  (g: ∀a₀ a₁: α, f a₀ (start a₁) = f a₁ (start a₀))
+  (a: α) (as: Multiset α) : (a::ₘas).fold_nonempty f start h g = as.fold f (start a) h := by
+  cases as; rfl
+
 nonrec def pmap {p : α → Prop} (f : ∀ a, p a → β) (s : Multiset α) : (∀ a ∈ s, p a) → Multiset β :=
   Quot.recOn s (fun l H => Multiset.mk (List.pmap f l H)) fun l₁ l₂ (pp : l₁ ≈ l₂) =>
     funext fun H₂ : ∀ a ∈ l₂, p a =>
@@ -1531,5 +1581,41 @@ def map_const_eq_replicate (m: Multiset α) (x: β) :
   induction m with
   | nil => rfl
   | cons a as ih => simp [ih]
+
+def cons_inv {x: α} {as bs: Multiset α} : x::ₘas = x::ₘbs ↔ as = bs := by
+  cases as
+  cases bs
+  apply Iff.intro
+  intro h
+  apply Quotient.sound
+  exact (Quotient.exact h).cons_inv
+  intro h; rw [h]
+
+def map_eq_empty {as: Multiset α} {f: α -> β} : as.map f = ∅ ↔ as = ∅ := by
+  apply flip Iff.intro
+  rintro rfl
+  rfl
+  intro h
+  induction as
+  rfl
+  simp at h
+  have := empty_ne_cons h.symm
+  contradiction
+
+def map_eq_cons {b: β} {as: Multiset α} {bs: Multiset β} {f: α -> β} : as.map f = b::ₘbs ↔ ∃(a: α) (as': Multiset α), as = a::ₘas' ∧ b = f a ∧ bs = as'.map f := by
+  apply flip Iff.intro
+  rintro ⟨a, as', rfl, rfl, rfl⟩
+  simp
+  intro h
+  have : b ∈ as.map f := by simp [h]
+  rw [mem_map] at this
+  obtain ⟨a, ha, rfl⟩ := this
+  rw [Multiset.mem_spec] at ha
+  obtain ⟨as, rfl⟩ := ha
+  simp [cons_inv] at h
+  exists a
+  exists as
+  refine ⟨rfl, rfl, ?_⟩
+  symm; assumption
 
 end Multiset

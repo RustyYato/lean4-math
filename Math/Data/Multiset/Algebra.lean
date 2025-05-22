@@ -11,16 +11,10 @@ variable [Zero α] [Add α] [IsAddCommMagma α] [IsAddSemigroup α]
 variable [One α] [Mul α] [IsCommMagma α] [IsSemigroup α]
 
 def sum (s: Multiset α) : α := by
-  refine s.lift ?_ ?_
-  apply List.sum
-  intro a b eq
-  induction eq with
-  | nil => rfl
-  | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
-  | cons _ _ ih => rw [List.sum_cons, List.sum_cons, ih]
-  | swap a b =>
-    rw [List.sum_cons, List.sum_cons, List.sum_cons, List.sum_cons,
-      ←add_assoc, add_comm b a, add_assoc]
+  apply s.fold (· + ·) 0
+  intro a b c
+  simp
+  ac_nf
 
 def prod (s: Multiset α): α :=
   sum (α := AddOfMul α) s
