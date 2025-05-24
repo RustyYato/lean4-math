@@ -619,7 +619,7 @@ def empty_not_equiv_nonempty (α β: Sort*) [IsEmpty α] [g: Nonempty β] : α �
   obtain ⟨b⟩ := g
   exact elim_empty (h.symm b)
 
-def erase {α: Type*} [DecidableEq α] (a: α) : α ≃ Option { x // x ≠ a } where
+def erase {α: Type*} (a: α) [∀x, Decidable (x = a)] : α ≃ Option { x // x ≠ a } where
   toFun x := if h:x = a then .none else .some ⟨x, h⟩
   invFun
   | .none => a

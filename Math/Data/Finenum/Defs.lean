@@ -253,18 +253,22 @@ instance [IsEmpty α] : Finenum α where
     }
   }
 
+@[simp]
 def card_fin (n: ℕ) {f: Finenum (Fin n)} : card (Fin n) = n := by
   rw [Subsingleton.allEq f (instFin (n := n))]
   rfl
 
+@[simp]
 def card_bool {f: Finenum Bool} : card Bool = 2 := by
   rw [Subsingleton.allEq f instBool]
   rfl
 
+@[simp]
 def card_prop {f: Finenum Prop} : card Prop = 2 := by
   rw [Subsingleton.allEq f instProp]
   rfl
 
+@[simp]
 def card_sum' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
   rw [Subsingleton.allEq h instSum]
   rfl
@@ -272,6 +276,7 @@ def card_sum' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α ⊕
 def card_sum (α β: Type*) [Finenum α] [Finenum β] {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
   apply card_sum'
 
+@[simp]
 def card_prod' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α × β)} : card (α × β) = card α * card β := by
   rw [Subsingleton.allEq h instProd]
   rfl
@@ -279,10 +284,12 @@ def card_prod' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α ×
 def card_prod (α β: Type*) [Finenum α] [Finenum β] {h: Finenum (α × β)} : card (α × β) = card α * card β := by
   apply card_prod'
 
+@[simp]
 def card_unique (α: Type*) {f: Finenum α} [Inhabited α] [Subsingleton α] : card α = 1 := by
   rw [Subsingleton.allEq f instOfInhabitedOfSubsingleton]
   rfl
 
+@[simp]
 def card_empty (α: Type*) {f: Finenum α} [IsEmpty α] : card α = 0 := by
   rw [Subsingleton.allEq f instOfIsEmpty]
   rfl
@@ -355,6 +362,7 @@ def card_eq_of_equiv [Finenum α] [Finenum β] (h: α ≃ β) : card α = card �
 
 instance [Finenum α] : Finenum (Option α) := ofEquiv (Equiv.option_equiv_unit_sum α)
 
+@[simp]
 def card_option' {fα: Finenum α} {f: Finenum (Option α)} : card (Option α) = card α + 1 := by
   rw [Nat.add_comm, ←card_unique Unit, card_eq_of_equiv (Equiv.option_equiv_unit_sum α)]
   apply card_sum
