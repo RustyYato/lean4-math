@@ -261,25 +261,25 @@ def card_prop {f: Finenum Prop} : card Prop = 2 := by
   rw [Subsingleton.allEq f instProp]
   rfl
 
-def card_sum' {f: Finenum α} {g: Finenum β} {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
+def card_sum' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
   rw [Subsingleton.allEq h instSum]
   rfl
 
-def card_sum [Finenum α] [Finenum β] {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
+def card_sum (α β: Type*) [Finenum α] [Finenum β] {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
   apply card_sum'
 
-def card_prod' {f: Finenum α} {g: Finenum β} {h: Finenum (α × β)} : card (α × β) = card α * card β := by
+def card_prod' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α × β)} : card (α × β) = card α * card β := by
   rw [Subsingleton.allEq h instProd]
   rfl
 
-def card_prod [Finenum α] [Finenum β] {h: Finenum (α × β)} : card (α × β) = card α * card β := by
+def card_prod (α β: Type*) [Finenum α] [Finenum β] {h: Finenum (α × β)} : card (α × β) = card α * card β := by
   apply card_prod'
 
-def card_unique {f: Finenum α} [Inhabited α] [Subsingleton α] : card α = 1 := by
+def card_unique (α: Type*) {f: Finenum α} [Inhabited α] [Subsingleton α] : card α = 1 := by
   rw [Subsingleton.allEq f instOfInhabitedOfSubsingleton]
   rfl
 
-def card_empty {f: Finenum α} [IsEmpty α] : card α = 0 := by
+def card_empty (α: Type*) {f: Finenum α} [IsEmpty α] : card α = 0 := by
   rw [Subsingleton.allEq f instOfIsEmpty]
   rfl
 
@@ -345,6 +345,18 @@ def ofEquiv [Finenum β] (h: α ≃ β) : Finenum α := ofEquiv' h.symm
 def card_eq_of_equiv' {fα: Finenum α} {fβ: Finenum β} (h: α ≃ β) : card α = card β := by
   rw [Subsingleton.allEq fα (ofEquiv h)]
   rfl
+
+def card_eq_of_equiv [Finenum α] [Finenum β] (h: α ≃ β) : card α = card β := by
+  apply card_eq_of_equiv' h
+
+instance [Finenum α] : Finenum (Option α) := ofEquiv (Equiv.option_equiv_unit_sum α)
+
+def card_option' {fα: Finenum α} {f: Finenum (Option α)} : card (Option α) = card α + 1 := by
+  rw [Nat.add_comm, ←card_unique Unit, card_eq_of_equiv (Equiv.option_equiv_unit_sum α)]
+  apply card_sum
+
+def card_option [Finenum α] [Finenum (Option α)] : card (Option α) = card α + 1 := by
+  apply card_option'
 
 def card_ne_zero_iff_nonempty [f: Finenum α] : card α ≠ 0 ↔ Nonempty α := by
   induction f with | _ card r =>
