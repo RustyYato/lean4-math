@@ -319,4 +319,150 @@ def axiomOfChoice [DecidableEq ι] [Finenum ι] {α: ι -> Sort*} (f: ∀i, None
   have ⟨f⟩ := axiomOfChoice' (fun i: Fin (card ι) => f (eqv i))
   exact ⟨fun i => cast (by simp) (f (eqv.symm i))⟩
 
+def ofEquiv' [f: Finenum α] (h: α ≃ β) : Finenum β where
+  card_thunk := card α
+  toRepr := f.toRepr.recOnSubsingleton fun r => Trunc.mk <| {
+    decode x := h (r.decode x)
+    bij := by
+      apply And.intro
+      · apply Function.Injective.comp
+        exact h.inj
+        exact r.bij.Injective
+      · intro b
+        have ⟨i, h⟩ := r.bij.Surjective (h.symm b)
+        exists i
+        simp [←h]
+    encode :=
+      r.encode.map fun e =>  {
+        val := e.val ∘ h.symm
+        property := by
+          intro x; simp
+          rw [e.property, Equiv.symm_coe]
+      }
+  }
+def ofEquiv [Finenum β] (h: α ≃ β) : Finenum α := ofEquiv' h.symm
+
+def card_eq_of_equiv' {fα: Finenum α} {fβ: Finenum β} (h: α ≃ β) : card α = card β := by
+  rw [Subsingleton.allEq fα (ofEquiv h)]
+  rfl
+
+def card_ne_zero_iff_nonempty [f: Finenum α] : card α ≠ 0 ↔ Nonempty α := by
+  induction f with | _ card r =>
+  show card.get ≠ 0 ↔ _
+  revert r; generalize card.get = card
+  rename_i c; clear c
+  intro r
+  induction r with | _ r =>
+  cases card
+  · simp; intro ⟨a⟩
+    nomatch r.bij.Surjective a
+  · simp
+    exact ⟨r.decode 0⟩
+
+def card_eq_zero_iff_empty [f: Finenum α] : card α = 0 ↔ IsEmpty α := by
+  apply flip Iff.intro
+  intro; rw [card_empty]
+  intro h
+  refine { elim x := ?_ }
+  induction f with | _ card_thunk r =>
+  induction r with | _ r =>
+  replace h : card_thunk.get = 0 := h
+  rw [h] at r
+  nomatch r.bij.Surjective x
+
+def Fintype.subsingleton [f: Finenum α] (h: card α ≤ 1) : Subsingleton α where
+  allEq a b := by
+    induction f using ind with | @ind card r =>
+    have ⟨i, hi⟩ := r.bij.Surjective a
+    have ⟨j, hj⟩ := r.bij.Surjective b
+    rw [hi, hj]
+    congr
+    have := i.pos
+    replace h : card ≤ 1 := h
+    replace h : card = 1 := by omega
+    subst card
+    apply Subsingleton.allEq
+
+private def pull_fold_spec
+  (f: α -> β -> β)
+  (dec: Fin (n + 1) -> α)
+  (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b))
+  (i: Fin (n + 1)) :
+  Fin.foldr (n + 1) (fun a => f (dec a)) start = (Fin.foldr n (fun a => f (dec (Embedding.fin_erase i a))) (f (dec i) start)) := by
+  induction n generalizing start with
+  | zero =>
+    simp [Fin.foldr_succ]
+    congr; apply Subsingleton.allEq (α := Fin 1)
+  | succ n ih =>
+    cases i using Fin.lastCases with
+    | last =>
+      rw [Fin.foldr_succ_last]
+      simp [Embedding.apply_fin_erase_of_lt]
+    | cast i =>
+      rw [Fin.foldr_succ_last, ih (fun i => dec i.castSucc) i]
+      rw [Fin.foldr_succ_last]
+      congr 1
+      · ext j b
+        refine if h:j.val < i.val then ?_ else ?_
+        rw [Embedding.apply_fin_erase_of_lt _ _ h, Embedding.apply_fin_erase_of_lt i.castSucc _ h]
+        simp at h
+        rw [Embedding.apply_fin_erase_of_ge _ _ h, Embedding.apply_fin_erase_of_ge i.castSucc j.castSucc h]
+        rfl
+      · rw [h, Embedding.apply_fin_erase_of_ge]; rfl
+        simp
+        omega
+
+private def fold_spec
+  (f: α -> β -> β)
+  (dec₀ dec₁: Fin n -> α)
+  (h₀: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b))
+  (h₁: ∀x: α, (∃i, x = dec₀ i) -> (∃i, x = dec₁ i))
+  (h₂: Function.Injective dec₀)
+  (h₃: Function.Injective dec₁) :
+  Fin.foldr n (fun a => f (dec₀ a)) start = Fin.foldr n (fun a => f (dec₁ a)) start := by
+  induction n generalizing start with
+  | zero => rfl
+  | succ n ih =>
+    have ⟨i, hi⟩ := (h₁ (dec₀ (Fin.last _))) ⟨_, rfl⟩
+    rw [Fin.foldr_succ_last, pull_fold_spec f dec₁ h₀ i, ←hi]
+    apply ih
+    · rintro a ⟨i₀, rfl⟩
+      have ⟨j, hj⟩ := h₁ (dec₀ i₀.castSucc) ⟨_, rfl⟩
+      rw [hj]
+      rcases Nat.lt_trichotomy i j with h | h | h
+      · exists ⟨j.val - 1, ?_⟩
+        omega
+        rw [Embedding.apply_fin_erase_of_ge]
+        congr; simp [←Fin.val_inj]
+        omega
+        simp; omega
+      · rw [Fin.val_inj] at h
+        subst j
+        rw [←hi, h₂.eq_iff, ←Fin.val_inj] at hj
+        simp at hj
+        omega
+      · exists ⟨j, ?_⟩
+        omega
+        rw [Embedding.apply_fin_erase_of_lt]
+        simp
+        assumption
+    · apply Function.Injective.comp
+      assumption
+      intro _ _
+      apply Fin.castSucc_inj.mp
+    · apply Function.Injective.comp
+      assumption
+      apply Embedding.inj
+
+def fold [fα: Finenum α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b)) : β :=
+  fα.toRepr.lift (fun rα : Repr (card α) α => Fin.foldr (card α) (fun a acc => f (rα.decode a) acc) start) <| by
+    intro a b
+    dsimp
+    apply fold_spec (f := f)
+    assumption
+    intro x
+    intro; apply b.bij.Surjective
+    apply a.bij.Injective
+    apply b.bij.Injective
+
 end Finenum
