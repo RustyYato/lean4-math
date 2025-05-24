@@ -26,7 +26,7 @@ def card_eq (a: Repr card₀ α) (b: Repr card₁ α) : card₀ = card₁ := by
   have ⟨h₁, _⟩ := Equiv.ofBij b.bij
   exact Fin.eq_of_equiv (h₀.trans h₁.symm)
 
-def findIdx [DecidableEq α] {card: ℕ} (f: Fin card -> α) (a: α) (h: ∃i, a = f i) : Σ'x: Fin card, a = f x :=
+def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h: ∃i, a = f i) : Σ'x: Fin card, a = f x :=
   match card with
   | 0 => False.elim <| nomatch h
   | card + 1 =>
@@ -61,6 +61,10 @@ def toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : Fin card ≃ α :=
       simp
       rw [←(findIdx f.decode x _).snd]
   }
+
+def apply_toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : f.toEquiv = f.decode := by
+  unfold toEquiv
+  split <;> rfl
 
 end Repr
 
@@ -358,6 +362,9 @@ def card_option' {fα: Finenum α} {f: Finenum (Option α)} : card (Option α) =
 def card_option [Finenum α] [Finenum (Option α)] : card (Option α) = card α + 1 := by
   apply card_option'
 
+def trunc_of_card_ne_zero [f: Finenum α] (h: card α ≠ 0) : Trunc α :=
+  f.toRepr.map fun r : Repr (card α) α => r.decode ⟨0, by omega⟩
+
 def card_ne_zero_iff_nonempty [f: Finenum α] : card α ≠ 0 ↔ Nonempty α := by
   induction f with | _ card r =>
   show card.get ≠ 0 ↔ _
@@ -476,5 +483,119 @@ def fold [fα: Finenum α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α
     intro; apply b.bij.Surjective
     apply a.bij.Injective
     apply b.bij.Injective
+
+def cast_card (f: Finenum α) (h: n = card α) : Finenum α where
+  card_thunk := n
+  toRepr :=
+    f.toRepr.map fun r => {
+      decode x := r.decode (x.cast h)
+      bij := by
+        apply And.intro
+        intro x y g
+        simpa [r.bij.Injective.eq_iff, Fin.cast, Fin.val_inj] using g
+        intro x
+        have ⟨i, g⟩ := r.bij.Surjective x
+        exists i.cast h.symm
+      encode := .none
+    }
+
+def fold_empty [IsEmpty α] (f: α -> β -> β) (start: β) (h) : fold f start h = start := by rfl
+def fold_option [Finenum α] (f: Option α -> β -> β) (start: β) (h) : fold f start h =
+  f .none (fold (f ∘ Option.some) start (by intro x y z; apply h)) := by
+  rename_i fα
+  rw [Subsingleton.allEq (instOption (α := α)) (Finenum.cast_card (instOption (α := α)) (n := card α + 1) (by rw [card_option]))]
+  induction fα using ind with | _ r =>
+  rename_i card
+  show Fin.foldr (card + 1) _ start = f _ (Fin.foldr _ _ _)
+  rw [Fin.foldr_succ]
+  rfl
+
+private instance (priority := 10) [f: Finenum (Option α)] : Finenum α where
+  card_thunk := Thunk.mk fun _ => card (Option α) - 1
+  toRepr := f.toRepr.map (β := Repr (card (Option α) - 1) _) fun r : Repr (card (Option α)) _ =>
+    have : 0 < card (Option α) := by
+      rw [Nat.pos_iff_ne_zero, card_ne_zero_iff_nonempty]
+      exact ⟨.none⟩
+    have (o: Option α) : Decidable (.none = o) := decidable_of_bool o.isNone <| by
+      simp; apply Eq.comm
+    have ⟨noneIdx, hnoneIdx⟩ := Repr.findIdx r.decode none (by
+      apply r.bij.Surjective)
+    let emb := Embedding.fin_erase (noneIdx.cast (by rw [Nat.sub_add_cancel]; omega))
+    {
+      encode := none
+      decode x :=
+        Option.get (r.decode <| (Embedding.fin_erase (noneIdx.cast (by omega)) x).cast <| by omega) <| by
+          rw [Option.isSome_iff_ne_none]
+          rw [hnoneIdx]
+          simp; rw [r.bij.Injective.eq_iff, ←Fin.val_inj]
+          simp
+          show ¬(Embedding.fin_erase _) x = (noneIdx.cast (m := card (Option α) - 1 + 1) (by omega)).val
+          rw [Fin.val_inj]
+          apply Embedding.fin_erase_not_eq
+      bij := by
+        apply And.intro
+        · intro x y h
+          simp at h
+          rw [Option.get_inj, r.bij.Injective.eq_iff, ←Fin.val_inj] at h
+          simp at h
+          rwa [Fin.val_inj, (Embedding.inj _).eq_iff] at h
+        · intro x
+          have ⟨i, hi⟩ := r.bij.Surjective x
+          simp
+          refine if h:i.val <  noneIdx.val then ?_ else ?_
+          exists ⟨i, by omega⟩
+          apply Option.some.inj
+          rw [hi]; simp; congr
+          rw [←Fin.val_inj]
+          simp
+          rw [Embedding.apply_fin_erase_of_lt]
+          rfl
+          simpa
+          simp at h
+          have : noneIdx.val < i.val := by
+            rcases Nat.lt_or_eq_of_le h with h | h
+            assumption
+            rw [Fin.val_inj] at h
+            subst i
+            rw [←hnoneIdx] at hi
+            contradiction
+          exists ⟨i - 1, ?_⟩
+          omega
+          apply Option.some.inj
+          simp; rw [hi]
+          congr; rw [←Fin.val_inj]
+          simp
+          rw [Embedding.apply_fin_erase_of_ge]
+          simp; omega
+          simp; omega
+    }
+
+@[induction_eliminator]
+def indType
+  {motive: ∀α: Type u, Finenum α -> Prop}
+  (empty: motive PEmpty inferInstance)
+  (option: ∀(α: Type u) [Finenum α], motive α inferInstance -> motive (Option α) inferInstance)
+  (eqv: ∀(α β: Type u) [Finenum α] [Finenum β], α ≃ β -> motive α inferInstance -> motive β inferInstance)
+  {α: Type u} (f: Finenum α)
+  : motive α f := by
+  classical
+  induction h:card α generalizing α with
+  | zero =>
+    rw [card_eq_zero_iff_empty] at h
+    apply eqv PEmpty
+    apply Equiv.empty
+    apply empty
+  | succ n ih =>
+    induction trunc_of_card_ne_zero (α := α) (by omega) with | mk x =>
+    let instOpt := Finenum.ofEquiv (Equiv.erase x).symm
+    apply eqv _ _ (Equiv.erase x).symm
+    rw [Subsingleton.allEq instOpt instOption]
+    apply option
+    apply ih
+    apply Nat.succ.inj
+    rw [Nat.succ_eq_add_one, Nat.succ_eq_add_one]
+    rw [←card_option]
+    rwa [card_eq_of_equiv (β := α)]
+    symm; apply Equiv.erase
 
 end Finenum

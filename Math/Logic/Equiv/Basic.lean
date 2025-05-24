@@ -45,6 +45,18 @@ def apply_fin_erase_of_lt (i: Fin (n + 1)) (x: Fin n) (h: x.val < i.val) :
 def apply_fin_erase_of_ge (i: Fin (n + 1)) (x: Fin n) (h: i.val ≤ x.val) :
   fin_erase i x = x.succ := by simp [fin_erase, h]; intro; omega
 
+def fin_erase_not_eq (i: Fin (n + 1)) : ∀j, fin_erase i j ≠ i := by
+  intro j h
+  by_cases j.val < i.val
+  rw [apply_fin_erase_of_lt] at h
+  rw [←Fin.val_inj] at h
+  simp at h; omega
+  assumption
+  rw [apply_fin_erase_of_ge] at h
+  rw [←Fin.val_inj] at h
+  simp at h; omega
+  omega
+
 def empty [IsEmpty α] : α ↪ β where
   toFun := elim_empty
   inj' x := elim_empty x
@@ -606,6 +618,18 @@ def empty_not_equiv_nonempty (α β: Sort*) [IsEmpty α] [g: Nonempty β] : α �
   intro h
   obtain ⟨b⟩ := g
   exact elim_empty (h.symm b)
+
+def erase {α: Type*} [DecidableEq α] (a: α) : α ≃ Option { x // x ≠ a } where
+  toFun x := if h:x = a then .none else .some ⟨x, h⟩
+  invFun
+  | .none => a
+  | .some ⟨x, _⟩ => x
+  leftInv x := by by_cases h:x = a <;> simp [h]
+  rightInv x := by
+    cases x
+    simp
+    rename_i x
+    simp [x.property]
 
 -- maps a = b, and preserves as much of the other structure as possible
 def set (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)] : α ≃ β where
