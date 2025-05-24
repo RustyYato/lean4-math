@@ -1,5 +1,4 @@
 import Math.Data.Finenum.Choice
-import Math.Data.Nat.Find
 
 namespace Finenum
 
