@@ -17,7 +17,7 @@ def eqSetoid : Setoid α where
 -- relates two elements if they evaluate to the same value
 def kernel (f: α -> β) : Setoid α := eqSetoid.comap f
 
-def forallSetoid {ι: Sort _} (α: ι -> Sort _) [∀i: ι, Setoid (α i)] : Setoid (∀i, α i) where
+instance forallSetoid {ι: Sort _} (α: ι -> Sort _) [∀i: ι, Setoid (α i)] : Setoid (∀i, α i) where
   r f g:= ∀i, f i ≈ g i
   iseqv := {
     refl x _ := by rfl
