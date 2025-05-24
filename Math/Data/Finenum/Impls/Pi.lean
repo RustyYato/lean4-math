@@ -126,7 +126,7 @@ private def extract_encode (f: Fin n -> ℕ) (g: ∀i: Fin n, Fin (f i)) :
       simp
       exact (g _).pos
 
-instance[DecidableEq ι] {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] : Finenum (∀i, α i) :=
+instance [DecidableEq ι] {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] : Finenum (∀i, α i) :=
   fι.toRepr.recOnSubsingleton fun rι : Repr (card ι) ι =>
   (Quotient.finChoice (S := fun _ => Setoid.trueSetoid _) (fun i => (fα i).toRepr)).recOnSubsingleton fun rα : ∀i, Repr (card (α i)) (α i) =>
   let eqv := rι.toEquiv

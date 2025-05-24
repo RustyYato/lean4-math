@@ -249,6 +249,40 @@ instance [IsEmpty α] : Finenum α where
     }
   }
 
+def card_fin (n: ℕ) {f: Finenum (Fin n)} : card (Fin n) = n := by
+  rw [Subsingleton.allEq f (instFin (n := n))]
+  rfl
+
+def card_bool {f: Finenum Bool} : card Bool = 2 := by
+  rw [Subsingleton.allEq f instBool]
+  rfl
+
+def card_prop {f: Finenum Prop} : card Prop = 2 := by
+  rw [Subsingleton.allEq f instProp]
+  rfl
+
+def card_sum' {f: Finenum α} {g: Finenum β} {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
+  rw [Subsingleton.allEq h instSum]
+  rfl
+
+def card_sum [Finenum α] [Finenum β] {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
+  apply card_sum'
+
+def card_prod' {f: Finenum α} {g: Finenum β} {h: Finenum (α × β)} : card (α × β) = card α * card β := by
+  rw [Subsingleton.allEq h instProd]
+  rfl
+
+def card_prod [Finenum α] [Finenum β] {h: Finenum (α × β)} : card (α × β) = card α * card β := by
+  apply card_prod'
+
+def card_unique {f: Finenum α} [Inhabited α] [Subsingleton α] : card α = 1 := by
+  rw [Subsingleton.allEq f instOfInhabitedOfSubsingleton]
+  rfl
+
+def card_empty {f: Finenum α} [IsEmpty α] : card α = 0 := by
+  rw [Subsingleton.allEq f instOfIsEmpty]
+  rfl
+
 instance {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∃i, P i) :=
   f.toRepr.recOnSubsingleton fun f =>
   decidable_of_iff (∃(x: ℕ) (h: x < card ι), P (f.decode ⟨x, h⟩)) <| by
@@ -269,5 +303,20 @@ def ind {motive: Finenum α -> Prop}
   obtain ⟨c, f⟩ := f
   induction f
   apply @ind c.get
+
+private def axiomOfChoice' {α: Fin n -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) :=
+  match n with
+  | 0 => ⟨nofun⟩
+  | _ + 1 =>
+    have ⟨a⟩ := f 0
+    have ⟨g⟩ := axiomOfChoice' (fun i => f i.succ)
+    ⟨fun
+      | 0 => a
+      | ⟨i + 1, h⟩ => g ⟨i, Nat.lt_of_succ_lt_succ h⟩⟩
+
+def axiomOfChoice [DecidableEq ι] [Finenum ι] {α: ι -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) := by
+  induction toEquiv ι with | _ eqv =>
+  have ⟨f⟩ := axiomOfChoice' (fun i: Fin (card ι) => f (eqv i))
+  exact ⟨fun i => cast (by simp) (f (eqv.symm i))⟩
 
 end Finenum
