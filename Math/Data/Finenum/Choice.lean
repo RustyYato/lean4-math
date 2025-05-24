@@ -14,7 +14,7 @@ private unsafe def fin_ilift'
 -- for every closed term of `Fin n` it is either defeq or not equal
 -- which means that `f` can only take on one value per `Fin n`
 @[implemented_by fin_ilift']
-private def fin_ilift
+def fin_ilift
   {α: Fin n -> Type*}
   {S: ∀i, Setoid (α i)}
   (f: (∀i, α i) -> β) (resp: ∀a b: ∀i, α i, (∀i, a i ≈ b i) -> f a = f b)
@@ -44,7 +44,7 @@ private def fin_ilift
         apply h) (fun i => q i.succ)
 
 @[simp]
-private def fin_ilift_mk
+def fin_ilift_mk
   {α: Fin n -> Type*}
   {S: ∀i, Setoid (α i)}
   (f: (∀i, α i) -> β) (resp: ∀a b: ∀i, α i, (∀i, a i ≈ b i) -> f a = f b)
@@ -62,7 +62,7 @@ private def fin_ilift_mk
     rfl
     rfl
 
-private def fin_ind {α: Fin n -> Type*} [S: ∀i, Setoid (α i)] {motive: (∀i, Quotient (S i)) -> Prop}
+def fin_ind {α: Fin n -> Type*} [S: ∀i, Setoid (α i)] {motive: (∀i, Quotient (S i)) -> Prop}
   (mk: ∀f: ∀i, α i, motive (fun i => Quotient.mk _ (f i)))
   (q: ∀i, Quotient (S i)) : motive q := by
   induction n with
