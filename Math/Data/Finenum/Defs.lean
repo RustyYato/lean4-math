@@ -509,6 +509,13 @@ def fold_option [Finenum α] (f: Option α -> β -> β) (start: β) (h) : fold f
   show Fin.foldr (card + 1) _ start = f _ (Fin.foldr _ _ _)
   rw [Fin.foldr_succ]
   rfl
+def fold_eqv [Finenum α] [Finenum β] (f: β -> γ -> γ) (start: γ) (eqv: α ≃ β) (h) : fold f start h = fold (fun a => f (eqv a)) start (by
+    intro a b start
+    apply h) := by
+    rename_i fα fβ
+    rw [Subsingleton.allEq fβ (ofEquiv' eqv)]
+    induction fα using ind with | _ r =>
+    rfl
 
 private instance (priority := 10) [f: Finenum (Option α)] : Finenum α where
   card_thunk := Thunk.mk fun _ => card (Option α) - 1
@@ -597,5 +604,39 @@ def indType
     rw [←card_option]
     rwa [card_eq_of_equiv (β := α)]
     symm; apply Equiv.erase
+
+private def natMax [Finenum ι] (f: ι -> ℕ) : ℕ :=
+  fold (fun i => max (f i)) 0 <| by
+    intro i j b
+    simp
+    ac_rfl
+
+private def le_natMax [fι: Finenum ι] (f: ι -> ℕ) : ∀i, f i ≤ natMax f := by
+  induction fι with
+  | empty => intro i; contradiction
+  | option α ih =>
+    intro o
+    rw [Finenum.natMax]
+    rw [fold_option]
+    simp
+    show _ ≤ max _ (natMax (f ∘ some))
+    cases o with
+    | none => apply Nat.le_max_left
+    | some o =>
+      apply flip Nat.le_trans
+      apply Nat.le_max_right
+      apply ih (f ∘ some)
+  | eqv α β h ih =>
+    intro i
+    rw [Finenum.natMax, fold_eqv (eqv := h)]
+    show f i ≤ natMax (f ∘ h)
+    rw [←h.symm_coe i]
+    apply ih (f ∘ h)
+
+def nat_not_finenum : Finenum Nat -> False := by
+  intro
+  let m := natMax id
+  have : m + 1 ≤ m := le_natMax id (m + 1)
+  omega
 
 end Finenum
