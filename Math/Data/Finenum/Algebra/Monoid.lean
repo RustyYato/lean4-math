@@ -88,6 +88,11 @@ def sum_sum (f: ι₀ -> ι₁ -> α) : ∑i j, f i j = ∑i: ι₀ × ι₁, f 
     rw [sum_eqv h, ih, sum_eqv (Equiv.congrProd h .rfl)]
     rfl
 
+def sum_eq_of_equiv
+  (f: ι₀ -> α) (g: ι₁ -> α) (h: ι₀ ≃ ι₁) (eq: ∀i, f i = g (h i)) : ∑i, f i = ∑i, g i := by
+  rw [sum_eqv h, sum_congr]
+  assumption
+
 def sum_eq_zero (f: ι -> α) (hf: ∀i, f i = 0) : ∑i, f i = 0 := by
   rename_i fι _ _ _
   induction fι with
@@ -128,6 +133,11 @@ def prod_sumty (f: ι₀ ⊕ ι₁ -> α) : ∏i, f i = (∏i, f (.inl i)) * ∏
    sum_sumty (α := AddOfMul α) _
 def prod_prod (f: ι₀ -> ι₁ -> α) : ∏i j, f i j = ∏i: ι₀ × ι₁, f i.1 i.2 :=
   sum_sum (α := AddOfMul α) _
+
+def prod_eq_of_equiv
+  (f: ι₀ -> α) (g: ι₁ -> α) (h: ι₀ ≃ ι₁) (eq: ∀i, f i = g (h i)) : ∏i, f i = ∏i, g i := by
+  rw [prod_eqv h, prod_congr]
+  assumption
 
 def prod_eq_one (f: ι -> α) (hf: ∀i, f i = 1) : ∏i, f i = 1 :=
   sum_eq_zero (α := AddOfMul α) _ hf
