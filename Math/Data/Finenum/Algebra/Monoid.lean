@@ -159,6 +159,20 @@ def sum_select [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [∀i: ι,
   intro i
   simp [i.property]
 
+def sum_select_unique [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι -> α) (i₀: ι) [∀i: ι, Decidable (i = i₀)] (fi: ι -> Prop) [decfi: DecidablePred fi]
+  (fi_spec: ∀i, fi i ↔ i = i₀) :
+  (∑i, if fi i then f i else 0) = f i₀ := by
+  have := Finenum.ofEquiv' (Equiv.remove i₀)
+  rw [sum_eqv (h := (Equiv.remove i₀).symm), sum_option, sum_eq_zero, add_zero]
+  rw [if_pos]
+  rfl
+  show fi i₀
+  exact (fi_spec _).mpr rfl
+  intro ⟨i, hi⟩
+  simp; intro g
+  rw [fi_spec] at g
+  contradiction
+
 def map_sum
   [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
   [AddMonoidOps β] [IsAddMonoid β] [IsAddCommMagma β]
