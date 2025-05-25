@@ -1,4 +1,5 @@
 import Math.Data.«Fintype-old».Basic
+import Math.Data.«Fintype-old».Cases
 import Math.Data.Multiset.Algebra
 import Math.Data.Nat.Factorial
 import Init.Notation
