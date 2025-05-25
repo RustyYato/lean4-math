@@ -60,11 +60,13 @@ private def extract_inj (f: Fin n -> ℕ) (x y: Fin (fin_prod f)) (h: ∀i, extr
       · rwa [Nat.div_lt_iff_lt_mul, Nat.mul_comm]
         rw [Nat.pos_iff_ne_zero]
         rintro h
-        rw [h] at xLt; omega
+        rw [h] at xLt
+        simp at xLt
       · rwa [Nat.div_lt_iff_lt_mul, Nat.mul_comm]
         rw [Nat.pos_iff_ne_zero]
         rintro h
-        rw [h] at xLt; omega
+        rw [h] at xLt
+        simp at xLt
       · intro i
         have := h i.succ
         simp [Finenum.extract, Nat.div_div_eq_div_mul, fin_prod_to]
@@ -126,7 +128,7 @@ private def extract_encode (f: Fin n -> ℕ) (g: ∀i: Fin n, Fin (f i)) :
       simp
       exact (g _).pos
 
-instance [DecidableEq ι] {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] : Finenum (∀i, α i) :=
+instance instPi [DecidableEq ι] {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] : Finenum (∀i, α i) :=
   fι.toRepr.recOnSubsingleton fun rι : Repr (card ι) ι =>
   (Quotient.finChoice (S := fun _ => Setoid.trueSetoid _) (fun i => (fα i).toRepr)).recOnSubsingleton fun rα : ∀i, Repr (card (α i)) (α i) =>
   let eqv := rι.toEquiv

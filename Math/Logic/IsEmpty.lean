@@ -61,6 +61,8 @@ instance [IsEmpty α] (β: α -> Sort*) : Subsingleton (∀x, β x) where
   allEq f g := by
     funext x
     exact elim_empty x
+instance [IsEmpty α] (β: α -> Sort*) : Inhabited (∀x, β x) where
+  default x := elim_empty x
 
 instance [IsEmpty α] : Subsingleton (α -> β) := inferInstance
 
