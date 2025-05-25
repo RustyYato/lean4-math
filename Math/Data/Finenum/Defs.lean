@@ -1,6 +1,7 @@
 import Math.Data.Trunc
 import Math.Logic.Equiv.Basic
 import Math.Data.Fin.Pairing
+import Math.AxiomBlame
 
 class Finenum.Repr (card: ℕ) (α: Type*) where
   decode : Fin card -> α
