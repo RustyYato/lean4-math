@@ -364,7 +364,7 @@ def card_empty (α: Type*) {f: Finenum α} [IsEmpty α] : card α = 0 := by
   rw [Subsingleton.allEq f instOfIsEmpty]
   rfl
 
-instance {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∃i, P i) :=
+instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∃i, P i) :=
   f.toRepr.recOnSubsingleton fun f =>
   decidable_of_iff (∃(x: ℕ) (h: x < card ι), P (f.decode ⟨x, h⟩)) <| by
     apply Iff.intro
@@ -375,7 +375,7 @@ instance {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∃i, P 
     exists i.val
     exists i.isLt
 
-instance {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∀i, P i) :=
+instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∀i, P i) :=
   decidable_of_iff (¬∃i, ¬P i) Decidable.not_exists_not
 
 def ind {motive: Finenum α -> Prop}
@@ -490,7 +490,14 @@ def card_eq_zero_iff_empty [f: Finenum α] : card α = 0 ↔ IsEmpty α := by
   rw [h] at r
   nomatch r.bij.Surjective x
 
-def Fintype.subsingleton [f: Finenum α] (h: card α ≤ 1) : Subsingleton α where
+instance {α: ι -> Sort*} [f: Finenum ι] [∀i, DecidableEq (α i)]  : DecidableEq (∀i, α i) :=
+  fun a b =>
+  if h:∀i, a i = b i then
+    .isTrue (funext h)
+  else
+    .isFalse <| fun g => h fun _ => g ▸ rfl
+
+def Fineum.subsingleton [f: Finenum α] (h: card α ≤ 1) : Subsingleton α where
   allEq a b := by
     induction f using ind with | @ind card r =>
     have ⟨i, hi⟩ := r.bij.Surjective a

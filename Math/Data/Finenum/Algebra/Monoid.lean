@@ -142,12 +142,14 @@ end
 
 variable [fι: Finenum ι] [Finenum ι₀] [Finenum ι₁]
 
+@[simp]
 def sum_const [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (a: α) : ∑_: ι, a = Finenum.card ι • a := by
   induction fι with
   | empty => simp
   | option _ ih => simp [ih, succ_nsmul, add_comm]
   | eqv _ _ h ih => rw [sum_eqv h, ih, Finenum.card_eq_of_equiv h]
 
+@[simp]
 def prod_const [MonoidOps α] [IsMonoid α] [IsCommMagma α] (a: α) : ∏_: ι, a = a ^ Finenum.card ι :=
   sum_const (α := AddOfMul α) _
 

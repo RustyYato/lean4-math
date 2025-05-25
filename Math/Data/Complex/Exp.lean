@@ -1,6 +1,6 @@
 import Math.Data.Complex.MetricSpace
 import Math.Topology.Filter.Defs
-import Math.Data.Fintype.Algebra
+import Math.Data.Finenum.Algebra.Semiring
 import Math.Data.Nat.Factorial
 import Math.Topology.Separable.Basic
 import Math.Data.Complex.Completion
@@ -43,7 +43,7 @@ def fact_gt_pow (a: ℝ): ∃N, ∀n, N < n -> a ^ n ≤ n ! := by
     leftInv := sorry
     rightInv := sorry
   }
-  rw [prod_reindex (h := eqv), prod_sumty]
+  rw [prod_eqv (h := eqv), prod_sumty]
   simp [eqv]
   rw [←fact_eq_prod]
   sorry

@@ -38,4 +38,10 @@ def card_pi' {α: ι -> Type*} {fι: Finenum ι} {fα: ∀i, Finenum (α i)} {f:
 def card_pi {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] [f: Finenum (∀i, α i)] : card (∀i, α i) = ∏i, card (α i) := by
   apply card_pi'
 
+@[simp]
+def card_function' {fα: Finenum α} {fα: Finenum β} {f: Finenum (α -> β)} : card (α -> β) = card β ^ card α := by
+  rw [card_pi, prod_const]
+def card_function [fα: Finenum α] [fα: Finenum β] [f: Finenum (α -> β)] : card (α -> β) = card β ^ card α := by
+  apply card_function'
+
 end Finenum

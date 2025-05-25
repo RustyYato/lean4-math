@@ -1,9 +1,9 @@
 import Math.Data.Cardinal.Order
 import Math.Data.Fin.Basic
-import Math.Data.Fintype.Card
 import Math.Algebra.Semiring.Char
 import Math.Algebra.Algebra.Defs
 import Math.Type.Finite
+import Math.Data.Finenum.Algebra.Card
 
 namespace Cardinal
 
@@ -34,8 +34,8 @@ def natCast_mul (n m: ℕ) : ((n * m: ℕ): Cardinal) = n * m := by
   exact Equiv.finProd.symm
 
 def natCast_pow (n m: ℕ) : ((n ^ m: ℕ): Cardinal) = (n: Cardinal) ^ (m: Cardinal) := by
-  have := Fintype.equivFin (Fin m -> Fin n)
-  simp [Fintype.card_function, Fintype.card_fin] at this
+  have := Finenum.toEquiv (Fin m -> Fin n)
+  simp [Finenum.card_fin] at this
   induction this with | _ this =>
   apply sound
   apply Equiv.trans
@@ -44,7 +44,7 @@ def natCast_pow (n m: ℕ) : ((n ^ m: ℕ): Cardinal) = (n: Cardinal) ^ (m: Card
   apply Equiv.congrFunction
   apply Equiv.ulift
   apply Equiv.ulift
-  symm; assumption
+  assumption
 
 instance : IsAddCommMagma Cardinal where
   add_comm (a b: Cardinal) := by
@@ -400,8 +400,8 @@ private noncomputable def ofNat_of_embedFins (g: ∀n, Fin n ↪ α) : ℕ -> α
 | 0 => g 1 0
 | n + 1 =>
   let prev := List.ofFn (n := n + 1) fun x => ofNat_of_embedFins g x.val
-  have := Fintype.exists_not_mem_preimage (g (prev.length + 1)) prev (by
-    rw [Fintype.card_fin]
+  have := Finenum.exists_not_mem_preimage (g (prev.length + 1)) prev (by
+    rw [Finenum.card_fin]
     simp)
   g _ (Classical.choose this)
 
@@ -425,8 +425,8 @@ def ofNat_of_embedFins_inj (g: ∀n, Fin n ↪ α) : Function.Injective (ofNat_o
   conv at eq => { rhs; unfold ofNat_of_embedFins }
   dsimp at eq
   let prev := List.ofFn (n := y + 1) fun x => ofNat_of_embedFins g x.val
-  have := Fintype.exists_not_mem_preimage (g (prev.length + 1)) prev (by
-    rw [Fintype.card_fin]
+  have := Finenum.exists_not_mem_preimage (g (prev.length + 1)) prev (by
+    rw [Finenum.card_fin]
     simp)
   let c := Classical.choose this
   let hc : g _ c ∉ prev := Classical.choose_spec this
@@ -463,13 +463,13 @@ protected def IsFinite (α: Type*) : #α < ℵ₀ ↔ IsFinite α := by
   apply Iff.intro
   intro ⟨n, eq⟩
   replace ⟨eq⟩ := exact eq
-  replace eq := eq.trans (Equiv.ulift _)
+  replace eq := (eq.trans (Equiv.ulift _)).symm
   exists n
   intro ⟨n, h⟩
+  replace eq := ((Equiv.ulift _).trans h).symm
   exists n
   apply sound
-  apply h.trans
-  symm; apply Equiv.ulift
+  assumption
 
 def aleph0_add_fin (n: Nat) : ℵ₀ + n = ℵ₀ := by
   apply sound

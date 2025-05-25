@@ -24,7 +24,7 @@ instance [ha: _root_.IsFinite α] : _root_.IsFinite (Set α) := by
   ext a
   rw [eq]
 
-def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty (a ≃ Fin card) :=
+def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty (Fin card ≃ a) :=
   _root_.IsFinite.existsEquiv a
 
 instance Set.IsFinite.ofFin (x: Set (Fin n)) : x.IsFinite := by
@@ -40,16 +40,14 @@ def Fin.castLE_ne_addNat (x: Fin n) (y: Fin m) : x.castLE (Nat.le_add_left _ _) 
   subst x
   exact Nat.not_lt_of_le (Nat.le_add_left _ _) xLt
 
-instance [ha: Set.IsFinite a] [hb: Set.IsFinite b] : Set.IsFinite (a ∪ b) := by
-  have := Fintype.ofIsFinite a
-  have := Fintype.ofIsFinite b
-  have : Fintype (a ∪ b: Set _) := Fintype.subtypeOr
+instance {a b: Set α} [ha: Set.IsFinite a] [hb: Set.IsFinite b] : Set.IsFinite (a ∪ b) := by
+  show IsFinite { x // x ∈ a ∨ x ∈ b }
   infer_instance
 
 instance [ha: Set.IsFinite a] : Set.IsFinite (a ∩ b) := by
-  have := Fintype.ofIsFinite a
-  have : Fintype (a ∩ b: Set _) := Fintype.subtypeAnd
-  infer_instance
+  show IsFinite { x // x ∈ a ∧ x ∈ b }
+  replace ha : IsFinite { x // x ∈ a } := ha
+  apply instSubtypeAndLeft
 
 instance [hb: Set.IsFinite b] : Set.IsFinite (a ∩ b) := by
   rw [Set.inter_comm]
@@ -95,7 +93,7 @@ def IsFinite.sUnion (a: Set (Set α)) [ha: Set.IsFinite a] (hx: ∀x: a, Set.IsF
 def IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, Set.IsFinite x) : Set.IsFinite (⋂ a) := by
   obtain ⟨a', a'_in_a, lim, eqv⟩ := hx
   apply IsFinite.ofEmbedding (limit := lim)
-  apply Equiv.congrEmbed (by rfl) eqv _
+  apply Equiv.congrEmbed (by rfl) eqv.symm _
   apply Embedding.mk
   case toFun =>
     intro x
@@ -110,7 +108,7 @@ def IsFinite.sInter (a: Set (Set α)) (hx: ∃x ∈ a, Set.IsFinite x) : Set.IsF
 
 instance : Set.IsFinite (∅: Set α) := by
   apply IsFinite.intro 0
-  apply Equiv.mk
+  symm; apply Equiv.mk
   case toFun => intro x; exact x.property.elim
   case invFun => intro x; exact x.elim0
   case leftInv => intro x; exact x.property.elim
@@ -118,7 +116,7 @@ instance : Set.IsFinite (∅: Set α) := by
 
 instance : Set.IsFinite ({a}: Set α) := by
   apply IsFinite.intro 1
-  apply Equiv.mk
+  symm; apply Equiv.mk
   case toFun =>
     intro
     exact 0
@@ -298,7 +296,7 @@ def IsFinite.spec (s: Set α) [h: s.IsFinite] : ∃s': List α, s'.Nodup ∧ ∀
 
 instance (n: Nat) : Set.IsFinite (Set.mk (· < n)) := by
   apply IsFinite.intro n
-  exact Equiv.fin_equiv_nat_subtype.symm
+  exact Equiv.fin_equiv_nat_subtype
 
 instance (n: Nat) : Set.IsFinite (Set.mk (· ≤ n)) := by
   suffices Set.mk (· ≤ n) = Set.mk (· < (n + 1)) by

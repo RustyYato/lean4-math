@@ -17,6 +17,16 @@ def subtypeVal {P: α -> Prop} : Subtype P ↪ α where
   inj' a b eq := by
     cases a; cases b; congr
 
+def congrSubtype {P: α -> Prop} {Q: β -> Prop} (h: α ↪ β) (g: ∀x, P x -> Q (h x)) : Subtype P ↪ Subtype Q where
+  toFun x := {
+    val := h x.val
+    property := g _ x.property
+  }
+  inj' a b eq := by
+    dsimp at eq
+    apply subtypeVal.inj
+    exact h.inj (Subtype.mk.inj eq)
+
 @[simp]
 def apply_subtypeVal {P: α -> Prop} : (subtypeVal (P := P): _ -> _) = Subtype.val := rfl
 

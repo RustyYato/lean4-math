@@ -29,7 +29,7 @@ def Nat.equivSetLikeFin : { x // x ∈ a } ≃ Fin a where
   leftInv _ := rfl
   rightInv _ := rfl
 
-instance Nat.isSetLikeFinite {a: Nat} : IsFinite { x // x ∈ a } := IsFinite.intro a Nat.equivSetLikeFin
+instance Nat.isSetLikeFinite {a: Nat} : IsFinite { x // x ∈ a } := IsFinite.intro a Nat.equivSetLikeFin.symm
 
 instance (a b: Nat) : Decidable (a ∈ b) := inferInstanceAs (Decidable (a < b))
 
