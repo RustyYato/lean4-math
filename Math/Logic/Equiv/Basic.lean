@@ -142,7 +142,6 @@ protected def IsNontrivial [IsNontrivial α] (f: α ↪ β) : IsNontrivial β wh
 end Embedding
 
 namespace Equiv
-
 def congrEquiv {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) ≃ (α₁ ≃ β₁) where
   toFun f := h.symm.trans (f.trans g)
   invFun f := h.trans (f.trans g.symm)
@@ -420,6 +419,34 @@ def fin {n m: Nat} (h: n = m) : Fin n ≃ Fin m where
 
 @[simp] def apply_fin (h: n = m) : fin h x = x.cast h := rfl
 @[simp] def symm_fin (h: n = m) : (fin h).symm = fin h.symm := rfl
+
+def fin_succ (f: Fin n ≃ Fin n) : Fin (n + 1) ≃ Fin (n + 1) where
+  toFun
+  | 0 => 0
+  | ⟨x + 1, hx⟩ => (f ⟨x, Nat.lt_of_succ_lt_succ hx⟩).succ
+  invFun
+  | 0 => 0
+  | ⟨x + 1, hx⟩ => (f.symm ⟨x, Nat.lt_of_succ_lt_succ hx⟩).succ
+  leftInv x := by
+    obtain ⟨x, hx⟩ := x
+    cases x
+    simp; rfl
+    simp [Fin.succ]
+  rightInv x := by
+    obtain ⟨x, hx⟩ := x
+    cases x
+    simp; rfl
+    simp [Fin.succ]
+
+def apply_fin_succ (f: Fin n ≃ Fin n) (x: Fin (n + 1)) : fin_succ f x = if h:x = 0 then 0 else (f (x.pred h)).succ := by
+  unfold fin_succ
+  simp; split
+  simp
+  simp
+  rfl
+
+@[simp]
+def symm_fin_succ (f: Fin n ≃ Fin n) : f.fin_succ.symm = f.symm.fin_succ := rfl
 
 def fin_cast_succ (f: Fin n ≃ Fin n) : Fin (n + 1) ≃ Fin (n + 1) where
   toFun x := if h:x.val < n then (f ⟨x.val, h⟩).castSucc else Fin.last n
@@ -712,6 +739,12 @@ def symm_set_spec (h: α ≃ β) (a: α) (b: β) [∀x, Decidable (x = a)] [∀x
 
 def swap_spec (a b: α) [∀x, Decidable (x = a)] [∀x, Decidable (x = b)]:
   Equiv.swap a b a = b := Equiv.set_spec _ _ _
+@[simp] def swap_self (a: α) [∀x, Decidable (x = a)] :
+  Equiv.swap a a = .rfl := by
+  ext i;
+  simp [swap, Equiv.apply_set]
+  split; symm; assumption
+  rfl
 
 def swap_comm [DecidableEq α] (a b: α) : swap a b = swap b a := by
   ext x

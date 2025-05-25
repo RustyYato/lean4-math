@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Basic
+import Math.Data.Finenum.Impls.Finset
 import Math.Data.Finset.Basic
 import Math.Order.Lattice.Basic
 
@@ -16,7 +16,7 @@ instance : Max (Finset α) where
 instance : Min (Finset α) where
   min a b := a ∩ b
 
-instance [Fintype α] : Top (Finset α) := ⟨.univ _⟩
+instance [Finenum α] : Top (Finset α) := ⟨.univ _⟩
 instance : Bot (Finset α) := ⟨∅⟩
 
 instance : IsLattice (Finset α) where
@@ -60,8 +60,8 @@ instance : IsLattice (Finset α) where
 instance : IsLawfulBot (Finset α) where
   bot_le a x _ := by contradiction
 
-instance [Fintype α] : IsLawfulTop (Finset α) where
-  le_top _ _ _ := mem_univ _
+instance [Finenum α] : IsLawfulTop (Finset α) where
+  le_top _ _ _ := Finset.mem_univ _ _
 
 def lt_spec {a b: Finset α} : a < b -> ∃x ∈ b, x ∉ a := by
   cases a with | mk a ha =>
@@ -106,16 +106,16 @@ instance : @Relation.IsWellFounded (Finset α) (· < ·) where
       rw [←hl]
       apply Nat.le_refl
 
-def Finset.relIso [Fintype α] [DecidableEq α] : (· > (·: Finset α)) ≃r (· < (·: Finset α)) where
+def Finset.relIso [Finenum α] [DecidableEq α] : (· > (·: Finset α)) ≃r (· < (·: Finset α)) where
   toFun x := xᶜ
   invFun x := xᶜ
   leftInv := by
     classical
     intro x
-    simp
+    simp [compl_compl]
   rightInv := by
     intro x
-    simp
+    simp [compl_compl]
   resp_rel := by
     intro a b
     dsimp
@@ -138,7 +138,7 @@ def Finset.relIso [Fintype α] [DecidableEq α] : (· > (·: Finset α)) ≃r (�
     simp [mem_compl] at this
     exact Decidable.not_not.mp (this · mem)
 
-instance [Fintype α] [DecidableEq α] : @Relation.IsWellFounded (Finset α) (· > ·) :=
+instance [Finenum α] [DecidableEq α] : @Relation.IsWellFounded (Finset α) (· > ·) :=
   Finset.relIso.toRelHom.wf
 
 end Finset
