@@ -1,6 +1,6 @@
 import Math.Data.Complex.MetricSpace
 import Math.Topology.Filter.Defs
-import Math.Data.Finenum.Algebra.Semiring
+import Math.Data.Fintype.Algebra.Semiring
 import Math.Data.Nat.Factorial
 import Math.Topology.Separable.Basic
 import Math.Data.Complex.Completion

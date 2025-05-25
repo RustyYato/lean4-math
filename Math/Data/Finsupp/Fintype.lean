@@ -1,6 +1,6 @@
 import Math.Data.Finsupp.Algebra
-import Math.Data.Finenum.Algebra.Semiring
-import Math.Data.Finenum.Impls.Finset
+import Math.Data.Fintype.Algebra.Semiring
+import Math.Data.Fintype.Impls.Finset
 
 def sum_elem [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
   (s: Finset ι) (f: ι -> α) : ∑i: s, f i.val = (s.val.map f).sum := by

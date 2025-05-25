@@ -1,6 +1,6 @@
 import Math.Order.Fin
 import Math.Data.Fin.Basic
-import Math.Data.Finenum.Basic
+import Math.Data.Fintype.Basic
 import Math.Data.ENat.Defs
 
 open Classical
@@ -115,22 +115,22 @@ noncomputable def ENat.equiv_of_card [IsFinite β] (h: card α = card β) : α �
     assumption
 
 noncomputable
-def Finenum.ofIsFinite (α: Type _) [IsFinite α] : Finenum α :=
-  Finenum.ofEquiv' (IsFinite.toEquiv α)
+def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=
+  Fintype.ofEquiv' (IsFinite.toEquiv α)
 
 def IsFinite.card_eq_card (α: Type _) [IsFinite α] :
-  IsFinite.card α = @Finenum.card α (Finenum.ofIsFinite α) := by
-  let inst := Finenum.ofIsFinite α
-  rw [Finenum.ofIsFinite, ←Finenum.card_eq_of_equiv (IsFinite.toEquiv α),
-    Finenum.card_fin]
+  IsFinite.card α = @Fintype.card α (Fintype.ofIsFinite α) := by
+  let inst := Fintype.ofIsFinite α
+  rw [Fintype.ofIsFinite, ←Fintype.card_eq_of_equiv (IsFinite.toEquiv α),
+    Fintype.card_fin]
 
-instance [f: Finenum α] : IsFinite α := by
-  induction Finenum.toEquiv α with | mk h =>
-  exists Finenum.card α
+instance [f: Fintype α] : IsFinite α := by
+  induction Fintype.toEquiv α with | mk h =>
+  exists Fintype.card α
 
 instance {α β: Type*} [IsFinite α] [IsFinite β] : IsFinite (α ⊕ β) := by
-  have := Finenum.ofIsFinite α
-  have := Finenum.ofIsFinite β
+  have := Fintype.ofIsFinite α
+  have := Fintype.ofIsFinite β
   exact inferInstance
 
 def IsFinite.ofEquiv {α β: Sort*} [hb: IsFinite β] (h: α ≃ β) : IsFinite α := by
@@ -159,7 +159,7 @@ def IsFinite.ofSurj {β: Sort*} (α: Sort*) [hb: IsFinite α] (f: α -> β) (hf:
 
 def Nat.not_is_finite : ¬IsFinite ℕ := by
   intro h
-  exact (Finenum.ofIsFinite ℕ).nat_not_finenum
+  exact (Fintype.ofIsFinite ℕ).nat_not_Fintype
 
 instance (α: Sort*) [IsFinite α] : IsFinite (PLift α) :=
   IsFinite.ofEquiv (Equiv.plift _)
@@ -175,9 +175,9 @@ instance {α β: Sort*} [ha: IsFinite α] [hb: IsFinite β] : IsFinite (α ⊕' 
   apply (Equiv.sum_equiv_psum _ _).symm
 
 instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [hb: ∀x, IsFinite (β x)] : IsFinite ((x: α) ×' β x) := by
-  have := Finenum.ofIsFinite (PLift α)
-  have : ∀x: PLift α, Finenum (PLift (β x.down)) := fun ⟨x⟩ =>
-    Finenum.ofIsFinite (PLift (β x))
+  have := Fintype.ofIsFinite (PLift α)
+  have : ∀x: PLift α, Fintype (PLift (β x.down)) := fun ⟨x⟩ =>
+    Fintype.ofIsFinite (PLift (β x))
   apply IsFinite.ofEquiv' ((x : PLift α) × PLift (β x.down))
   apply Equiv.trans  _ (Equiv.sigma_equiv_psigma _).symm
   apply Equiv.congrPSigma (Equiv.plift _).symm
@@ -190,8 +190,8 @@ instance {α: Type*} {β: α -> Type*} [IsFinite α]  [hb: ∀x, IsFinite (β x)
   exact Equiv.sigma_equiv_psigma β
 
 instance {α: Type*} {β: Type*} [IsFinite α]  [IsFinite β] : IsFinite (α × β) := by
-  have := Finenum.ofIsFinite α
-  have := Finenum.ofIsFinite β
+  have := Fintype.ofIsFinite α
+  have := Fintype.ofIsFinite β
   exact inferInstance
 
 instance {α: Sort*} {β: Sort*} [IsFinite α]  [IsFinite β] : IsFinite (α ×' β) := by
@@ -203,8 +203,8 @@ instance {α: Sort*} {β: Sort*} [IsFinite α]  [IsFinite β] : IsFinite (α ×'
   apply (Equiv.prod_equiv_pprod _ _).symm
 
 instance {α: Sort*} {β: α -> Sort*} [IsFinite α]  [∀x, IsFinite (β x)] : IsFinite (∀x, β x) := by
-  have := Finenum.ofIsFinite (PLift α)
-  have := fun x: PLift α => Finenum.ofIsFinite (PLift (β x.down))
+  have := Fintype.ofIsFinite (PLift α)
+  have := fun x: PLift α => Fintype.ofIsFinite (PLift (β x.down))
   apply IsFinite.ofEquiv' (∀x: PLift α, PLift (β x.down))
   apply Equiv.mk
   case toFun =>
@@ -262,13 +262,13 @@ instance [hs: Subsingleton α] : IsFinite α := by
     infer_instance
 
 instance [IsFinite α] : IsFinite (Option α) := by
-  have := Finenum.ofIsFinite α
+  have := Fintype.ofIsFinite α
   infer_instance
 
 def Option.card'_eq [IsFinite α] :
   IsFinite.card (Option α) = IsFinite.card α + 1 := by
-  have := Finenum.ofIsFinite α
-  rw [IsFinite.card_eq_card, IsFinite.card_eq_card, Finenum.card_option']
+  have := Fintype.ofIsFinite α
+  rw [IsFinite.card_eq_card, IsFinite.card_eq_card, Fintype.card_option']
 
 instance {r: α -> α -> Prop} [IsFinite α] : IsFinite (Quot r) := by
   apply IsFinite.ofEmbed α
@@ -337,8 +337,8 @@ noncomputable def IsFinite.existsEmbedding [IsFinite α] (h: ENat.card α ≤ EN
         assumption
     intro fa fb
     clear h
-    replace fa := (Finenum.ofIsFinite α)
-    induction fa using Finenum.indType with
+    replace fa := (Fintype.ofIsFinite α)
+    induction fa using Fintype.indType with
     | eqv α₀ α₁ h ih =>
       have ⟨f⟩ := ih
       refine ⟨?_⟩
@@ -403,7 +403,7 @@ def ENat.card_empty : IsEmpty α ↔ ENat.card α = 0 := by
   · intro
     rw [card, dif_pos]
     rw [IsFinite.card_eq_card]
-    rw [Finenum.card_empty]
+    rw [Fintype.card_empty]
     rfl
   · intro h
     rw [←ENat.natCast_zero, ←card_fin] at h

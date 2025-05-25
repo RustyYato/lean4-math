@@ -1,8 +1,8 @@
-import Math.Data.Finenum.Algebra.Monoid
+import Math.Data.Fintype.Algebra.Monoid
 import Math.Algebra.Monoid.Action.Defs
 
 def smul_sum
-  [Finenum ι]
+  [Fintype ι]
   [MonoidOps γ] [IsMonoid γ]
   [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
   [SMul γ α] [IsDistribMulAction γ α]

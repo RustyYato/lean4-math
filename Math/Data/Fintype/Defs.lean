@@ -3,7 +3,7 @@ import Math.Logic.Equiv.Basic
 import Math.Data.Fin.Pairing
 import Math.AxiomBlame
 
-class Finenum.Repr (card: ℕ) (α: Type*) where
+class Fintype.Repr (card: ℕ) (α: Type*) where
   decode : Fin card -> α
   bij: Function.Bijective decode
   encode: Option {
@@ -11,12 +11,12 @@ class Finenum.Repr (card: ℕ) (α: Type*) where
     Function.IsLeftInverse decode f
   }
 
-class Finenum (α: Type*) where
+class Fintype (α: Type*) where
   ofRepr ::
   card_thunk: Thunk ℕ
-  toRepr : Trunc (Finenum.Repr card_thunk.get α)
+  toRepr : Trunc (Fintype.Repr card_thunk.get α)
 
-namespace Finenum
+namespace Fintype
 
 attribute [local simp] Thunk.get
 
@@ -117,7 +117,7 @@ def apply_toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : f.toEquiv = f
 
 end Repr
 
-instance : Subsingleton (Finenum α) where
+instance : Subsingleton (Fintype α) where
   allEq a b := by
     cases a with | ofRepr card₀ ha =>
     cases b with | ofRepr card₁ hb =>
@@ -131,12 +131,12 @@ instance : Subsingleton (Finenum α) where
     ext
     apply ha.card_eq hb
 
-def card (α: Type*) [f: Finenum α] : ℕ := f.card_thunk.get
+def card (α: Type*) [f: Fintype α] : ℕ := f.card_thunk.get
 
-def toEquiv (α: Type*) [DecidableEq α] [f: Finenum α] : Trunc (Fin (card α) ≃ α) :=
+def toEquiv (α: Type*) [DecidableEq α] [f: Fintype α] : Trunc (Fin (card α) ≃ α) :=
   f.toRepr.recOnSubsingleton fun repr => Trunc.mk repr.toEquiv
 
-instance : Finenum (Fin n) where
+instance : Fintype (Fin n) where
   card_thunk := n
   toRepr := Trunc.mk {
     decode := id
@@ -152,7 +152,7 @@ instance : Finenum (Fin n) where
   }
 
 -- this is carefully written to ensure that no axioms are used
-instance : Finenum Bool where
+instance : Fintype Bool where
   card_thunk := Thunk.mk (fun _ => 2)
   toRepr :=
     let zero := Fin.mk (n := 2) 0 (by decide)
@@ -191,7 +191,7 @@ instance : Finenum Bool where
     }
   }
 
-instance : Finenum Prop where
+instance : Fintype Prop where
   card_thunk := Thunk.mk (fun _ => 2)
   toRepr := Trunc.mk (α := Repr 2 _) {
     decode x := x.val ≠ 0
@@ -211,7 +211,7 @@ instance : Finenum Prop where
     encode := .none
   }
 
-instance [fα: Finenum α] [fβ: Finenum β] : Finenum (α ⊕ β) where
+instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α ⊕ β) where
   card_thunk := Thunk.mk (fun _ => card α + card β)
   toRepr :=
     fα.toRepr.bind fun rα =>
@@ -254,7 +254,7 @@ instance [fα: Finenum α] [fβ: Finenum β] : Finenum (α ⊕ β) where
         }
     }
 
-instance [fα: Finenum α] [fβ: Finenum β] : Finenum (α × β) where
+instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α × β) where
   card_thunk := Thunk.mk (fun _ => card α * card β)
   toRepr :=
     fα.toRepr.bind fun rα =>
@@ -290,7 +290,7 @@ instance [fα: Finenum α] [fβ: Finenum β] : Finenum (α × β) where
         }
     }
 
-instance [Inhabited α] [Subsingleton α] : Finenum α where
+instance [Inhabited α] [Subsingleton α] : Fintype α where
   card_thunk := Thunk.mk fun _ => 1
   toRepr := Trunc.mk (α := Repr 1 _) {
     decode _ := default
@@ -307,7 +307,7 @@ instance [Inhabited α] [Subsingleton α] : Finenum α where
     }
   }
 
-instance [IsEmpty α] : Finenum α where
+instance [IsEmpty α] : Fintype α where
   card_thunk := Thunk.mk fun _ => 0
   toRepr := Trunc.mk (α := Repr 0 _) {
     decode := Fin.elim0
@@ -324,47 +324,47 @@ instance [IsEmpty α] : Finenum α where
   }
 
 @[simp]
-def card_fin (n: ℕ) {f: Finenum (Fin n)} : card (Fin n) = n := by
+def card_fin (n: ℕ) {f: Fintype (Fin n)} : card (Fin n) = n := by
   rw [Subsingleton.allEq f (instFin (n := n))]
   rfl
 
 @[simp]
-def card_bool {f: Finenum Bool} : card Bool = 2 := by
+def card_bool {f: Fintype Bool} : card Bool = 2 := by
   rw [Subsingleton.allEq f instBool]
   rfl
 
 @[simp]
-def card_prop {f: Finenum Prop} : card Prop = 2 := by
+def card_prop {f: Fintype Prop} : card Prop = 2 := by
   rw [Subsingleton.allEq f instProp]
   rfl
 
 @[simp]
-def card_sum' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
+def card_sum' (α β: Type*) {f: Fintype α} {g: Fintype β} {h: Fintype (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
   rw [Subsingleton.allEq h instSum]
   rfl
 
-def card_sum (α β: Type*) [Finenum α] [Finenum β] {h: Finenum (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
+def card_sum (α β: Type*) [Fintype α] [Fintype β] {h: Fintype (α ⊕ β)} : card (α ⊕ β) = card α + card β := by
   apply card_sum'
 
 @[simp]
-def card_prod' (α β: Type*) {f: Finenum α} {g: Finenum β} {h: Finenum (α × β)} : card (α × β) = card α * card β := by
+def card_prod' (α β: Type*) {f: Fintype α} {g: Fintype β} {h: Fintype (α × β)} : card (α × β) = card α * card β := by
   rw [Subsingleton.allEq h instProd]
   rfl
 
-def card_prod (α β: Type*) [Finenum α] [Finenum β] {h: Finenum (α × β)} : card (α × β) = card α * card β := by
+def card_prod (α β: Type*) [Fintype α] [Fintype β] {h: Fintype (α × β)} : card (α × β) = card α * card β := by
   apply card_prod'
 
 @[simp]
-def card_unique (α: Type*) {f: Finenum α} [Inhabited α] [Subsingleton α] : card α = 1 := by
+def card_unique (α: Type*) {f: Fintype α} [Inhabited α] [Subsingleton α] : card α = 1 := by
   rw [Subsingleton.allEq f instOfInhabitedOfSubsingleton]
   rfl
 
 @[simp]
-def card_empty (α: Type*) {f: Finenum α} [IsEmpty α] : card α = 0 := by
+def card_empty (α: Type*) {f: Fintype α} [IsEmpty α] : card α = 0 := by
   rw [Subsingleton.allEq f instOfIsEmpty]
   rfl
 
-instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∃i, P i) :=
+instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Fintype ι] : Decidable (∃i, P i) :=
   f.toRepr.recOnSubsingleton fun f =>
   decidable_of_iff (∃(x: ℕ) (h: x < card ι), P (f.decode ⟨x, h⟩)) <| by
     apply Iff.intro
@@ -375,12 +375,12 @@ instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : De
     exists i.val
     exists i.isLt
 
-instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Finenum ι] : Decidable (∀i, P i) :=
+instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Fintype ι] : Decidable (∀i, P i) :=
   decidable_of_iff (¬∃i, ¬P i) Decidable.not_exists_not
 
-def ind {motive: Finenum α -> Prop}
+def ind {motive: Fintype α -> Prop}
   (ind: ∀{card: ℕ} (r: Repr card α), motive (.ofRepr (Thunk.mk fun _ => card) (Trunc.mk r)))
-  (f: Finenum α) : motive f := by
+  (f: Fintype α) : motive f := by
   obtain ⟨c, f⟩ := f
   induction f
   apply @ind c.get
@@ -409,12 +409,12 @@ def Repr.axiomOfChoice' {card ι} [DecidableEq ι] (r: Repr card ι) {α: ι -> 
   have ⟨a, pa⟩ := f i
   exists a
 
-def axiomOfChoice [DecidableEq ι] [Finenum ι] {α: ι -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) := by
+def axiomOfChoice [DecidableEq ι] [Fintype ι] {α: ι -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) := by
   induction toEquiv ι with | _ eqv =>
   have ⟨f⟩ := axiomOfChoice_aux (fun i: Fin (card ι) => f (eqv i))
   exact ⟨fun i => cast (by simp) (f (eqv.symm i))⟩
 
-def axiomOfChoice' [DecidableEq ι] [Finenum ι] {α: ι -> Sort*} {P: ∀i: ι, α i -> Prop} (f: ∀i, ∃a: α i, P i a) : ∃f: ∀i:ι, α i, ∀i, P i (f i) := by
+def axiomOfChoice' [DecidableEq ι] [Fintype ι] {α: ι -> Sort*} {P: ∀i: ι, α i -> Prop} (f: ∀i, ∃a: α i, P i a) : ∃f: ∀i:ι, α i, ∀i, P i (f i) := by
   have ⟨f⟩ := axiomOfChoice (ι := ι) (α := fun i => Σ'a: α i, P i a) ?_
   exists fun i => (f i).fst
   intro i
@@ -423,7 +423,7 @@ def axiomOfChoice' [DecidableEq ι] [Finenum ι] {α: ι -> Sort*} {P: ∀i: ι,
   have ⟨a, pa⟩ := f i
   exists a
 
-def ofEquiv' [f: Finenum α] (h: α ≃ β) : Finenum β where
+def ofEquiv' [f: Fintype α] (h: α ≃ β) : Fintype β where
   card_thunk := card α
   toRepr := f.toRepr.recOnSubsingleton fun r => Trunc.mk <| {
     decode x := h (r.decode x)
@@ -444,29 +444,29 @@ def ofEquiv' [f: Finenum α] (h: α ≃ β) : Finenum β where
           rw [e.property, Equiv.symm_coe]
       }
   }
-def ofEquiv [Finenum β] (h: α ≃ β) : Finenum α := ofEquiv' h.symm
+def ofEquiv [Fintype β] (h: α ≃ β) : Fintype α := ofEquiv' h.symm
 
-def card_eq_of_equiv' {fα: Finenum α} {fβ: Finenum β} (h: α ≃ β) : card α = card β := by
+def card_eq_of_equiv' {fα: Fintype α} {fβ: Fintype β} (h: α ≃ β) : card α = card β := by
   rw [Subsingleton.allEq fα (ofEquiv h)]
   rfl
 
-def card_eq_of_equiv [Finenum α] [Finenum β] (h: α ≃ β) : card α = card β := by
+def card_eq_of_equiv [Fintype α] [Fintype β] (h: α ≃ β) : card α = card β := by
   apply card_eq_of_equiv' h
 
-instance [Finenum α] : Finenum (Option α) := ofEquiv (Equiv.option_equiv_unit_sum α)
+instance [Fintype α] : Fintype (Option α) := ofEquiv (Equiv.option_equiv_unit_sum α)
 
 @[simp]
-def card_option' {fα: Finenum α} {f: Finenum (Option α)} : card (Option α) = card α + 1 := by
+def card_option' {fα: Fintype α} {f: Fintype (Option α)} : card (Option α) = card α + 1 := by
   rw [Nat.add_comm, ←card_unique Unit, card_eq_of_equiv (Equiv.option_equiv_unit_sum α)]
   apply card_sum
 
-def card_option [Finenum α] [Finenum (Option α)] : card (Option α) = card α + 1 := by
+def card_option [Fintype α] [Fintype (Option α)] : card (Option α) = card α + 1 := by
   apply card_option'
 
-def trunc_of_card_ne_zero [f: Finenum α] (h: card α ≠ 0) : Trunc α :=
+def trunc_of_card_ne_zero [f: Fintype α] (h: card α ≠ 0) : Trunc α :=
   f.toRepr.map fun r : Repr (card α) α => r.decode ⟨0, by omega⟩
 
-def card_ne_zero_iff_nonempty [f: Finenum α] : card α ≠ 0 ↔ Nonempty α := by
+def card_ne_zero_iff_nonempty [f: Fintype α] : card α ≠ 0 ↔ Nonempty α := by
   induction f with | _ card r =>
   show card.get ≠ 0 ↔ _
   revert r; generalize card.get = card
@@ -479,7 +479,7 @@ def card_ne_zero_iff_nonempty [f: Finenum α] : card α ≠ 0 ↔ Nonempty α :=
   · simp
     exact ⟨r.decode 0⟩
 
-def card_eq_zero_iff_empty [f: Finenum α] : card α = 0 ↔ IsEmpty α := by
+def card_eq_zero_iff_empty [f: Fintype α] : card α = 0 ↔ IsEmpty α := by
   apply flip Iff.intro
   intro; rw [card_empty]
   intro h
@@ -490,14 +490,14 @@ def card_eq_zero_iff_empty [f: Finenum α] : card α = 0 ↔ IsEmpty α := by
   rw [h] at r
   nomatch r.bij.Surjective x
 
-instance {α: ι -> Sort*} [f: Finenum ι] [∀i, DecidableEq (α i)]  : DecidableEq (∀i, α i) :=
+instance {α: ι -> Sort*} [f: Fintype ι] [∀i, DecidableEq (α i)]  : DecidableEq (∀i, α i) :=
   fun a b =>
   if h:∀i, a i = b i then
     .isTrue (funext h)
   else
     .isFalse <| fun g => h fun _ => g ▸ rfl
 
-def Fineum.subsingleton [f: Finenum α] (h: card α ≤ 1) : Subsingleton α where
+def Fineum.subsingleton [f: Fintype α] (h: card α ≤ 1) : Subsingleton α where
   allEq a b := by
     induction f using ind with | @ind card r =>
     have ⟨i, hi⟩ := r.bij.Surjective a
@@ -584,7 +584,7 @@ private def fold_spec
       assumption
       apply Embedding.inj
 
-def fold [fα: Finenum α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b)) : β :=
+def fold [fα: Fintype α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ (f a₁ b) = f a₁ (f a₀ b)) : β :=
   fα.toRepr.lift (fun rα : Repr (card α) α => Fin.foldr (card α) (fun a acc => f (rα.decode a) acc) start) <| by
     intro a b
     dsimp
@@ -595,7 +595,7 @@ def fold [fα: Finenum α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α
     apply a.bij.Injective
     apply b.bij.Injective
 
-def cast_card (f: Finenum α) (h: n = card α) : Finenum α where
+def cast_card (f: Fintype α) (h: n = card α) : Fintype α where
   card_thunk := n
   toRepr :=
     f.toRepr.map fun r => {
@@ -611,16 +611,16 @@ def cast_card (f: Finenum α) (h: n = card α) : Finenum α where
     }
 
 def fold_empty [IsEmpty α] (f: α -> β -> β) (start: β) (h) : fold f start h = start := by rfl
-def fold_option [Finenum α] (f: Option α -> β -> β) (start: β) (h) : fold f start h =
+def fold_option [Fintype α] (f: Option α -> β -> β) (start: β) (h) : fold f start h =
   f .none (fold (f ∘ Option.some) start (by intro x y z; apply h)) := by
   rename_i fα
-  rw [Subsingleton.allEq (instOption (α := α)) (Finenum.cast_card (instOption (α := α)) (n := card α + 1) (by rw [card_option]))]
+  rw [Subsingleton.allEq (instOption (α := α)) (Fintype.cast_card (instOption (α := α)) (n := card α + 1) (by rw [card_option]))]
   induction fα using ind with | _ r =>
   rename_i card
   show Fin.foldr (card + 1) _ start = f _ (Fin.foldr _ _ _)
   rw [Fin.foldr_succ]
   rfl
-def fold_eqv [Finenum α] [Finenum β] (f: β -> γ -> γ) (start: γ) (eqv: α ≃ β) (h) : fold f start h = fold (fun a => f (eqv a)) start (by
+def fold_eqv [Fintype α] [Fintype β] (f: β -> γ -> γ) (start: γ) (eqv: α ≃ β) (h) : fold f start h = fold (fun a => f (eqv a)) start (by
   intro a b start
   apply h) := by
   rename_i fα fβ
@@ -628,7 +628,7 @@ def fold_eqv [Finenum α] [Finenum β] (f: β -> γ -> γ) (start: γ) (eqv: α 
   induction fα using ind with | _ r =>
   rfl
 
-private instance (priority := 10) [f: Finenum (Option α)] : Finenum α where
+private instance (priority := 10) [f: Fintype (Option α)] : Fintype α where
   card_thunk := Thunk.mk fun _ => card (Option α) - 1
   toRepr := f.toRepr.map (β := Repr (card (Option α) - 1) _) fun r : Repr (card (Option α)) _ =>
     have : 0 < card (Option α) := by
@@ -690,11 +690,11 @@ private instance (priority := 10) [f: Finenum (Option α)] : Finenum α where
 
 @[induction_eliminator]
 def indType
-  {motive: ∀α: Type u, Finenum α -> Prop}
+  {motive: ∀α: Type u, Fintype α -> Prop}
   (empty: motive PEmpty inferInstance)
-  (option: ∀(α: Type u) [Finenum α], motive α inferInstance -> motive (Option α) inferInstance)
-  (eqv: ∀(α β: Type u) [Finenum α] [Finenum β], α ≃ β -> motive α inferInstance -> motive β inferInstance)
-  {α: Type u} (f: Finenum α)
+  (option: ∀(α: Type u) [Fintype α], motive α inferInstance -> motive (Option α) inferInstance)
+  (eqv: ∀(α β: Type u) [Fintype α] [Fintype β], α ≃ β -> motive α inferInstance -> motive β inferInstance)
+  {α: Type u} (f: Fintype α)
   : motive α f := by
   classical
   induction h:card α generalizing α with
@@ -705,7 +705,7 @@ def indType
     apply empty
   | succ n ih =>
     induction trunc_of_card_ne_zero (α := α) (by omega) with | mk x =>
-    let instOpt := Finenum.ofEquiv (Equiv.erase x).symm
+    let instOpt := Fintype.ofEquiv (Equiv.erase x).symm
     apply eqv _ _ (Equiv.erase x).symm
     rw [Subsingleton.allEq instOpt instOption]
     apply option
@@ -716,18 +716,18 @@ def indType
     rwa [card_eq_of_equiv (β := α)]
     symm; apply Equiv.erase
 
-private def natMax [Finenum ι] (f: ι -> ℕ) : ℕ :=
+private def natMax [Fintype ι] (f: ι -> ℕ) : ℕ :=
   fold (fun i => max (f i)) 0 <| by
     intro i j b
     simp
     ac_rfl
 
-private def le_natMax [fι: Finenum ι] (f: ι -> ℕ) : ∀i, f i ≤ natMax f := by
+private def le_natMax [fι: Fintype ι] (f: ι -> ℕ) : ∀i, f i ≤ natMax f := by
   induction fι with
   | empty => intro i; contradiction
   | option α ih =>
     intro o
-    rw [Finenum.natMax]
+    rw [Fintype.natMax]
     rw [fold_option]
     simp
     show _ ≤ max _ (natMax (f ∘ some))
@@ -739,15 +739,15 @@ private def le_natMax [fι: Finenum ι] (f: ι -> ℕ) : ∀i, f i ≤ natMax f 
       apply ih (f ∘ some)
   | eqv α β h ih =>
     intro i
-    rw [Finenum.natMax, fold_eqv (eqv := h)]
+    rw [Fintype.natMax, fold_eqv (eqv := h)]
     show f i ≤ natMax (f ∘ h)
     rw [←h.symm_coe i]
     apply ih (f ∘ h)
 
-def nat_not_finenum : Finenum Nat -> False := by
+def nat_not_Fintype : Fintype Nat -> False := by
   intro
   let m := natMax id
   have : m + 1 ≤ m := le_natMax id (m + 1)
   omega
 
-end Finenum
+end Fintype

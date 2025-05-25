@@ -8,7 +8,7 @@ namespace Finset
 
 open Classical
 
-variable [Finenum α]
+variable [Fintype α]
 
 instance : InfSet (Finset α) where
   sInf S := (Finset.univ α).filter <| fun x => ∀f ∈ S, x ∈ f

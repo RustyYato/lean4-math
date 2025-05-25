@@ -1,9 +1,9 @@
 import Math.Data.Encodable.Basic
-import Math.Data.Finenum.Defs
+import Math.Data.Fintype.Defs
 
-def Finenum.toEncodable (α: Type*) [f: Finenum α] [DecidableEq α] : Trunc (Encodable α) :=
+def Fintype.toEncodable (α: Type*) [f: Fintype α] [DecidableEq α] : Trunc (Encodable α) :=
   f.toEquiv.map fun eqv =>
-  let c := Finenum.card α
+  let c := Fintype.card α
   {
     encode a := eqv.symm a
     decode' i :=  if h:i < c then eqv ⟨i, h⟩ else .none
@@ -17,12 +17,12 @@ namespace Encodable
 
 section
 
-variable {α : Type*} [Finenum α] [DecidableEq α] (p : α → Prop) [DecidablePred p] [h: Nonempty α]
+variable {α : Type*} [Fintype α] [DecidableEq α] (p : α → Prop) [DecidablePred p] [h: Nonempty α]
 
 -- a computable version of Hilbert's Epsilon function for fintypes, but wrapped in trunc
 -- since Fintype is subsingleton, we can't just choose an ordering
 def strongIndefiniteDescription : Trunc {x : α // (∃ y : α, p y) → p x} :=
-  (Finenum.toEncodable α).map fun enc =>
+  (Fintype.toEncodable α).map fun enc =>
     @dite _ (∃ x : α, p x) (inferInstance)
       (fun (hp : ∃ x : α, p x) =>
         show {x : α // (∃ y : α, p y) → p x} from

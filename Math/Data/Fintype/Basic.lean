@@ -1,7 +1,7 @@
-import Math.Data.Finenum.Impls.Pi
-import Math.Data.Finenum.Impls.Sigma
+import Math.Data.Fintype.Impls.Pi
+import Math.Data.Fintype.Impls.Sigma
 
-namespace Finenum
+namespace Fintype
 
 def exists_not_mem_preimage_aux (f: Fin n ↪ α) (l: List α) (h: ∀x, f x ∈ l) : n ≤ l.length := by
   induction n generalizing l with
@@ -42,7 +42,7 @@ def exists_not_mem_preimage_aux (f: Fin n ↪ α) (l: List α) (h: ∀x, f x ∈
       contradiction
       assumption
 
-def exists_not_mem_preimage [Finenum ι] (f: ι ↪ α) (l: List α) (h: l.length < card ι) : ∃i: ι, f i ∉ l := by
+def exists_not_mem_preimage [Fintype ι] (f: ι ↪ α) (l: List α) (h: l.length < card ι) : ∃i: ι, f i ∉ l := by
   classical
   apply Classical.byContradiction
   intro g; simp at g
@@ -60,4 +60,4 @@ def exists_not_mem_preimage [Finenum ι] (f: ι ↪ α) (l: List α) (h: l.lengt
   apply exists_not_mem_preimage_aux
   assumption
 
-end Finenum
+end Fintype

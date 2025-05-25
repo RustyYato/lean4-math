@@ -1,12 +1,12 @@
 import Math.Data.Finset.Basic
-import Math.Data.Finenum.Defs
+import Math.Data.Fintype.Defs
 import Math.Data.Set.Defs
 
-instance (f: Finset α) : Finenum f :=
+instance (f: Finset α) : Fintype f :=
   {
     card_thunk := f.val.length
-    toRepr := f.recOnSubsingleton (motive := fun f => Trunc (Finenum.Repr f.val.length _)) fun l h =>
-      Trunc.mk (α := Finenum.Repr l.length _) {
+    toRepr := f.recOnSubsingleton (motive := fun f => Trunc (Fintype.Repr f.val.length _)) fun l h =>
+      Trunc.mk (α := Fintype.Repr l.length _) {
         encode := .none
         decode x := {
           val := l[x]'x.isLt
@@ -166,7 +166,7 @@ def List.ofFn_perm_of_eqv (f: Fin n -> α) (g: Fin m -> α) (eqv: Fin n ≃ Fin 
     show (ofFn ((g ∘ Fin.succ) ∘ eqv')).Perm (ofFn (g ∘ Fin.succ))
     apply (ih (g ∘ Fin.succ) eqv')
 
-def Finset.univ (α: Type*) [f: Finenum α] : Finset α :=
+def Finset.univ (α: Type*) [f: Fintype α] : Finset α :=
   f.toRepr.lift (fun s => ⟨Multiset.mk (List.ofFn s.decode), by
     apply (List.nodup_ofFn _).mp
     apply s.bij.Injective⟩) <| by
@@ -180,23 +180,23 @@ def Finset.univ (α: Type*) [f: Finenum α] : Finset α :=
     apply b.toEquiv.symm
     intro i
     simp
-    rw [←Finenum.Repr.apply_toEquiv, ←Finenum.Repr.apply_toEquiv]
+    rw [←Fintype.Repr.apply_toEquiv, ←Fintype.Repr.apply_toEquiv]
     simp
 
-def Finset.mem_univ (α: Type*) [f: Finenum α] : ∀x, x ∈ univ α := by
-  induction f using Finenum.ind with | _ r =>
+def Finset.mem_univ (α: Type*) [f: Fintype α] : ∀x, x ∈ univ α := by
+  induction f using Fintype.ind with | _ r =>
   intro x
   apply List.mem_ofFn.mpr
   have ⟨i, h⟩ := r.bij.Surjective x
   exists i; symm; assumption
 
-instance [Finenum α] [DecidableEq α] : SetComplement (Finset α) where
+instance [Fintype α] [DecidableEq α] : SetComplement (Finset α) where
   scompl s := Finset.univ α \ s
 
-def Finset.mem_compl [Finenum α] [DecidableEq α] {s: Finset α} : ∀{x}, x ∈ sᶜ ↔ x ∉ s := by
+def Finset.mem_compl [Fintype α] [DecidableEq α] {s: Finset α} : ∀{x}, x ∈ sᶜ ↔ x ∉ s := by
   intro x
   show x ∈ Finset.univ α \ s ↔ _
   simp [Finset.mem_sdiff, Finset.mem_univ]
 
-def Finset.compl_compl [Finenum α] [DecidableEq α] (s: Finset α) : sᶜᶜ = s := by
+def Finset.compl_compl [Fintype α] [DecidableEq α] (s: Finset α) : sᶜᶜ = s := by
   ext; simp [mem_compl]

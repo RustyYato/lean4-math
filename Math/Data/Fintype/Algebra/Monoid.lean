@@ -1,11 +1,11 @@
-import Math.Data.Finenum.Defs
+import Math.Data.Fintype.Defs
 import Math.Algebra.Monoid.Hom
 import Math.Data.Nat.Factorial
 import Init.Notation
 
-def sum [Finenum ι] [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι -> α) : α :=
-  Finenum.fold (fun i a => f i + a) 0 (by intro a b c; dsimp; ac_rfl)
-def prod [Finenum ι] [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι -> α) : α := sum (α := AddOfMul α) f
+def sum [Fintype ι] [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α] (f: ι -> α) : α :=
+  Fintype.fold (fun i a => f i + a) 0 (by intro a b c; dsimp; ac_rfl)
+def prod [Fintype ι] [One α] [Mul α] [IsSemigroup α] [IsCommMagma α] (f: ι -> α) : α := sum (α := AddOfMul α) f
 
 section Syntax
 
@@ -34,18 +34,18 @@ section
 variable [Zero α] [Add α] [IsAddSemigroup α] [IsAddCommMagma α]
 
 @[simp]
-def sum_empty [IsEmpty ι] {fι: Finenum ι} (f: ι -> α) : ∑i, f i = 0 := by
-  rw [Subsingleton.allEq fι (Finenum.instOfIsEmpty (α := ι))]
-  apply Finenum.fold_empty
+def sum_empty [IsEmpty ι] {fι: Fintype ι} (f: ι -> α) : ∑i, f i = 0 := by
+  rw [Subsingleton.allEq fι (Fintype.instOfIsEmpty (α := ι))]
+  apply Fintype.fold_empty
 
-variable [Finenum ι] [Finenum ι₀] [Finenum ι₁] [IsAddZeroClass α]
+variable [Fintype ι] [Fintype ι₀] [Fintype ι₁] [IsAddZeroClass α]
 
 @[simp]
-def sum_option {fι: Finenum (Option ι)} (f: Option ι -> α) : ∑i, f i = f none + ∑i: ι, f i := by
-  rw [Subsingleton.allEq fι (Finenum.instOption (α := ι))]
-  apply Finenum.fold_option
+def sum_option {fι: Fintype (Option ι)} (f: Option ι -> α) : ∑i, f i = f none + ∑i: ι, f i := by
+  rw [Subsingleton.allEq fι (Fintype.instOption (α := ι))]
+  apply Fintype.fold_option
 def sum_eqv (h: ι₀ ≃ ι₁) (f: ι₁ -> α) : ∑i, f i = ∑i, f (h i) := by
-  apply Finenum.fold_eqv
+  apply Fintype.fold_eqv
 
 def sum_zero (f: Fin 0 -> α) : ∑i, f i = 0 := rfl
 def sum_succ_last (f: Fin (n + 1) -> α) : ∑i, f i = f (.last _) + ∑i: Fin n, f i.castSucc := by
@@ -111,13 +111,13 @@ section
 variable [One α] [Mul α] [IsSemigroup α] [IsCommMagma α]
 
 @[simp]
-def prod_empty [IsEmpty ι] {fι: Finenum ι} (f: ι -> α) : ∏i, f i = 1 :=
+def prod_empty [IsEmpty ι] {fι: Fintype ι} (f: ι -> α) : ∏i, f i = 1 :=
   sum_empty (α := AddOfMul α) _
 
-variable [Finenum ι] [Finenum ι₀] [Finenum ι₁] [IsMulOneClass α]
+variable [Fintype ι] [Fintype ι₀] [Fintype ι₁] [IsMulOneClass α]
 
 @[simp]
-def prod_option {fι: Finenum (Option ι)} (f: Option ι -> α) : ∏i, f i = f none * ∏i: ι, f i :=
+def prod_option {fι: Fintype (Option ι)} (f: Option ι -> α) : ∏i, f i = f none * ∏i: ι, f i :=
   sum_option (α := AddOfMul α) _
 def prod_eqv (h: ι₀ ≃ ι₁) (f: ι₁ -> α) : ∏i, f i = ∏i, f (h i) :=
   sum_eqv (α := AddOfMul α) _ _
@@ -144,28 +144,28 @@ def prod_eq_one (f: ι -> α) (hf: ∀i, f i = 1) : ∏i, f i = 1 :=
 def prod_eq_zero [Zero α] [IsMulZeroClass α] (f: ι -> α) (hf: ∃i, f i = 0) : ∏i, f i = 0 := by
   obtain ⟨i, hi⟩ := hf
   classical
-  have := Finenum.ofEquiv' (Equiv.erase i)
+  have := Fintype.ofEquiv' (Equiv.erase i)
   rw [prod_eqv (Equiv.erase i).symm, prod_option]
   simp [Equiv.erase]; rw [hi, zero_mul]
 
 end
 
-variable [fι: Finenum ι] [Finenum ι₀] [Finenum ι₁]
+variable [fι: Fintype ι] [Fintype ι₀] [Fintype ι₁]
 
 @[simp]
-def sum_const [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (a: α) : ∑_: ι, a = Finenum.card ι • a := by
+def sum_const [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (a: α) : ∑_: ι, a = Fintype.card ι • a := by
   induction fι with
   | empty => simp
   | option _ ih => simp [ih, succ_nsmul, add_comm]
-  | eqv _ _ h ih => rw [sum_eqv h, ih, Finenum.card_eq_of_equiv h]
+  | eqv _ _ h ih => rw [sum_eqv h, ih, Fintype.card_eq_of_equiv h]
 
 @[simp]
-def prod_const [MonoidOps α] [IsMonoid α] [IsCommMagma α] (a: α) : ∏_: ι, a = a ^ Finenum.card ι :=
+def prod_const [MonoidOps α] [IsMonoid α] [IsCommMagma α] (a: α) : ∏_: ι, a = a ^ Fintype.card ι :=
   sum_const (α := AddOfMul α) _
 
 def sum_select [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [∀i: ι, Decidable (i = i₀)] (f: ι -> α) :
   (∑i, if i = i₀ then f i else 0) = f i₀ := by
-  have := Finenum.ofEquiv' (Equiv.erase i₀)
+  have := Fintype.ofEquiv' (Equiv.erase i₀)
   rw [sum_eqv (Equiv.erase i₀).symm, sum_option]
   simp [Equiv.erase]; rw [sum_eq_zero, add_zero]
   intro i
@@ -174,7 +174,7 @@ def sum_select [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [∀i: ι,
 def sum_select_unique [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι -> α) (i₀: ι) [∀i: ι, Decidable (i = i₀)] (fi: ι -> Prop) [decfi: DecidablePred fi]
   (fi_spec: ∀i, fi i ↔ i = i₀) :
   (∑i, if fi i then f i else 0) = f i₀ := by
-  have := Finenum.ofEquiv' (Equiv.remove i₀)
+  have := Fintype.ofEquiv' (Equiv.remove i₀)
   rw [sum_eqv (h := (Equiv.remove i₀).symm), sum_option, sum_eq_zero, add_zero]
   rw [if_pos]
   rfl

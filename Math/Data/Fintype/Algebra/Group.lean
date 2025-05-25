@@ -1,7 +1,7 @@
-import Math.Data.Finenum.Algebra.Monoid
+import Math.Data.Fintype.Algebra.Monoid
 import Math.Algebra.Group.Defs
 
-variable [Finenum ι] [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α]
+variable [Fintype ι] [AddGroupOps α] [IsAddGroup α] [IsAddCommMagma α]
 
 def neg_sum (f: ι -> α) : -∑i, f i = ∑i, -f i := by
   let g : α →+ α := {

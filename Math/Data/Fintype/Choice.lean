@@ -1,4 +1,4 @@
-import Math.Data.Finenum.Defs
+import Math.Data.Fintype.Defs
 import Math.Data.Quotient.Basic
 import Math.Data.Setoid.Basic
 
@@ -97,7 +97,7 @@ private def cast_eqv {α β: Type u} [Sα: Setoid α] [Sβ: Setoid β]
 
 private def eqv_of_eq {α: Type*} [Sα: Setoid α] {a b: α} (h: a = b) : a ≈ b := by rw [h]
 
-variable [DecidableEq ι] [Finenum ι] {α: ι -> Type*} [S: ∀i, Setoid (α i)]
+variable [DecidableEq ι] [Fintype ι] {α: ι -> Type*} [S: ∀i, Setoid (α i)]
 
 def finInd
   {motive : (∀i, Quotient (S i)) -> Prop}
@@ -121,7 +121,7 @@ def finInd
   simp
 
 def finChoice (f: ∀i, Quotient (S i)): Quotient (Setoid.forallSetoid α) := by
-  refine (Finenum.toEquiv ι).lift ?_ ?_
+  refine (Fintype.toEquiv ι).lift ?_ ?_
   · intro eqv
     refine fin_ilift ?_ ?_ (fun i => f (eqv i))
     · intro g
@@ -151,7 +151,7 @@ def finChoice (f: ∀i, Quotient (S i)): Quotient (Setoid.forallSetoid α) := by
 def finChoice_mk (a : ∀ i, α i) : finChoice (S := S) (Quotient.mk _ <| a ·) = Quotient.mk _ a := by
   rename_i fι
   unfold finChoice
-  induction heqv:Finenum.toEquiv ι with | _ eqv =>
+  induction heqv:Fintype.toEquiv ι with | _ eqv =>
   simp
   apply Quotient.sound
   intro i

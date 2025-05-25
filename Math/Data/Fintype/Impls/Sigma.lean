@@ -1,8 +1,8 @@
-import Math.Data.Finenum.Choice
+import Math.Data.Fintype.Choice
 
-namespace Finenum
+namespace Fintype
 
-variable {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)]
+variable {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)]
 
 private def fin_sum (f: Fin n -> ℕ) : ℕ :=
   Fin.foldr n (fun x acc => acc + f x) 0
@@ -143,7 +143,7 @@ private def fin_heq_of_val_eq (h: n = m) {x: Fin n} {y: Fin m} (g: x.val = y.val
   cases h
   simp; rwa [←Fin.val_inj]
 
-instance {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] : Finenum (Σi, α i) :=
+instance {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)] : Fintype (Σi, α i) :=
   fι.toRepr.recOnSubsingleton fun rι : Repr (card ι) ι => {
     card_thunk := Thunk.mk fun _ => fin_sum (n := card ι) (fun i => card (α (rι.decode i)))
     toRepr :=
@@ -217,4 +217,4 @@ instance {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] : Finen
         (fun i => (fα (rι.decode i)).toRepr)
   }
 
-end Finenum
+end Fintype

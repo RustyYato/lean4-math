@@ -429,23 +429,23 @@ def symm_liftRing_toInt (n: ℕ) (f: ZMod n →+* A) (x: ZMod n) : ((liftRing n)
 
 end
 
-instance [h: NeZero n] : Finenum (ZMod n) :=
+instance [h: NeZero n] : Fintype (ZMod n) :=
   match n, h with
-  | n + 1, _ => inferInstanceAs (Finenum (Fin (n + 1)))
+  | n + 1, _ => inferInstanceAs (Fintype (Fin (n + 1)))
 
 instance [h: NeZero n] : IsFinite (ZMod n) := inferInstance
 
 def not_finite : ¬IsFinite (ZMod 0) := by
   intro f
-  apply Finenum.nat_not_finenum
-  apply @Finenum.ofIsFinite _ ?_
+  apply Fintype.nat_not_Fintype
+  apply @Fintype.ofIsFinite _ ?_
   apply IsFinite.ofEmbed (ZMod 0)
   refine ⟨Int.ofNat, fun {_ _} => Int.ofNat.inj⟩
 
 @[simp]
-def _root_.Finenum.card_zmod [h: NeZero n] : Finenum.card (ZMod n) = n :=
+def _root_.Fintype.card_zmod [h: NeZero n] : Fintype.card (ZMod n) = n :=
   match n, h with
-  | _ + 1, _ => Finenum.card_fin _
+  | _ + 1, _ => Fintype.card_fin _
 
 macro_rules
 | `(tactic|contradiction) => `(tactic|exfalso; apply not_finite; assumption)
@@ -472,7 +472,7 @@ def inj (h: ZMod n ≃ ZMod m) : n = m := by
   | n + 1 =>
     match m with
     | m + 1 =>
-    have := Finenum.card_eq_of_equiv h
+    have := Fintype.card_eq_of_equiv h
     simp at this
     cases this
     exact lt_irrefl g

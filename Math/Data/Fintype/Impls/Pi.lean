@@ -1,6 +1,6 @@
-import Math.Data.Finenum.Choice
+import Math.Data.Fintype.Choice
 
-namespace Finenum
+namespace Fintype
 
 private def fin_prod (f: Fin n -> ℕ) : ℕ :=
   Fin.foldr n (fun x acc => acc * f x) 1
@@ -69,11 +69,11 @@ private def extract_inj (f: Fin n -> ℕ) (x y: Fin (fin_prod f)) (h: ∀i, extr
         simp at xLt
       · intro i
         have := h i.succ
-        simp [Finenum.extract, Nat.div_div_eq_div_mul, fin_prod_to]
-        simp [Finenum.extract, fin_prod_to] at this
+        simp [Fintype.extract, Nat.div_div_eq_div_mul, fin_prod_to]
+        simp [Fintype.extract, fin_prod_to] at this
         assumption
     · have := h 0
-      simpa [Finenum.extract, Finenum.fin_prod_to] using this
+      simpa [Fintype.extract, Fintype.fin_prod_to] using this
 
 private def encode (f: Fin n -> ℕ) (g: ∀i: Fin n, Fin (f i)) : ℕ :=
   match n with
@@ -84,7 +84,7 @@ private def encode_lt (f: Fin n -> ℕ) (g: ∀i: Fin n, Fin (f i)) : encode f g
   induction n with
   | zero => apply Nat.zero_lt_succ
   | succ n ih =>
-    rw [Finenum.encode, fin_prod_succ]
+    rw [Fintype.encode, fin_prod_succ]
     have := ih (f ∘ Fin.succ) (fun i => g i.succ)
     generalize hprd: fin_prod (f ∘ Fin.succ) = prd
     cases prd with
@@ -111,13 +111,13 @@ private def extract_encode (f: Fin n -> ℕ) (g: ∀i: Fin n, Fin (f i)) :
   | succ n ih =>
     cases i using Fin.cases with
     | zero =>
-      simp [Finenum.extract, Finenum.encode, fin_prod_to]
+      simp [Fintype.extract, Fintype.encode, fin_prod_to]
       rw [←Fin.val_inj]
       simp
       rw [Nat.mod_eq_of_lt]
       simp
     | succ i =>
-      simp [Finenum.extract, Finenum.encode, fin_prod_to]
+      simp [Fintype.extract, Fintype.encode, fin_prod_to]
       rw [←Fin.val_inj]
       simp
       rw [←Nat.div_div_eq_div_mul, Nat.add_mul_div_left, Nat.div_eq_of_lt (b := f 0)]
@@ -128,7 +128,7 @@ private def extract_encode (f: Fin n -> ℕ) (g: ∀i: Fin n, Fin (f i)) :
       simp
       exact (g _).pos
 
-instance instPi [DecidableEq ι] {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i, Finenum (α i)] : Finenum (∀i, α i) :=
+instance instPi [DecidableEq ι] {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)] : Fintype (∀i, α i) :=
   fι.toRepr.recOnSubsingleton fun rι : Repr (card ι) ι =>
   (Quotient.finChoice (S := fun _ => Setoid.trueSetoid _) (fun i => (fα i).toRepr)).recOnSubsingleton fun rα : ∀i, Repr (card (α i)) (α i) =>
   let eqv := rι.toEquiv
@@ -171,4 +171,4 @@ instance instPi [DecidableEq ι] {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i,
     }
   }
 
-end Finenum
+end Fintype
