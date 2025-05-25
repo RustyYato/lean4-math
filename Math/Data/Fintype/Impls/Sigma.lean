@@ -211,7 +211,7 @@ instance {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)] : Finty
                 have ⟨_, _⟩ := find_fin_sum_spec_inj (fun x: Fin _ => card (α (rι.decode x))) i₀ x₁ i₁ x₂ gx
                 congr
 
-            encode := .none
+            encode := Thunk.mk fun _ => .none
           })
         (by intros; apply Subsingleton.allEq)
         (fun i => (fα (rι.decode i)).toRepr)

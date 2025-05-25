@@ -167,7 +167,7 @@ instance instPi [DecidableEq ι] {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i,
             rw [←Fin.val_inj]
             simp [extract_encode]
             congr; all_goals simp
-        encode := .none
+        encode := Thunk.mk fun _ => .none
     }
   }
 

@@ -7,7 +7,7 @@ instance (f: Finset α) : Fintype f :=
     card_thunk := f.val.length
     toRepr := f.recOnSubsingleton (motive := fun f => Trunc (Fintype.Repr f.val.length _)) fun l h =>
       Trunc.mk (α := Fintype.Repr l.length _) {
-        encode := .none
+        encode := Thunk.mk fun _ => .none
         decode x := {
           val := l[x]'x.isLt
           property := List.getElem_mem x.isLt

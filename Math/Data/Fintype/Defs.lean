@@ -6,10 +6,10 @@ import Math.AxiomBlame
 class Fintype.Repr (card: ℕ) (α: Type*) where
   decode : Fin card -> α
   bij: Function.Bijective decode
-  encode: Option {
+  encode: Thunk (Option {
     f : α -> Fin card //
     Function.IsLeftInverse decode f
-  }
+  })
 
 class Fintype (α: Type*) where
   ofRepr ::
@@ -90,7 +90,7 @@ def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h
       ⟨_, hx⟩
 
 def toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : Fin card ≃ α :=
-  match f.encode with
+  match f.encode.get with
   | .some g => {
     toFun := f.decode
     invFun := g.val
@@ -145,10 +145,10 @@ instance : Fintype (Fin n) where
       intro _ _
       apply id
       intro x; exists x
-    encode := .some {
+    encode := Thunk.mk (fun _ => .some {
       val := id
       property _ := rfl
-    }
+    })
   }
 
 -- this is carefully written to ensure that no axioms are used
@@ -183,12 +183,12 @@ instance : Fintype Bool where
         cases x
         exact ⟨zero, rfl⟩
         exact ⟨one, rfl⟩
-    encode := .some {
+    encode := Thunk.mk (fun _ => .some {
       val
       | false => zero
       | true => one
       property x := by cases x <;> rfl
-    }
+    })
   }
 
 instance : Fintype Prop where
@@ -208,7 +208,7 @@ instance : Fintype Prop where
         simp [h]
         exists 0
         simp [h]
-    encode := .none
+    encode := Thunk.mk (fun _ => Option.none)
   }
 
 instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α ⊕ β) where
@@ -243,7 +243,9 @@ instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α ⊕ β) where
           simp only [Equiv.coe_symm, h₀]
       encode :=
         rα.encode.bind fun eα =>
-        rβ.encode.map fun eβ => {
+        rβ.encode.map fun eβ =>
+        eα.bind fun eα =>
+        eβ.map fun eβ => {
           val
           | .inl x => Equiv.finSum (.inl (eα.val x))
           | .inr x => Equiv.finSum (.inr (eβ.val x))
@@ -278,7 +280,9 @@ instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α × β) where
           assumption
       encode :=
         rα.encode.bind fun eα =>
-        rβ.encode.map fun eβ => {
+        rβ.encode.map fun eβ =>
+        eα.bind fun eα =>
+        eβ.map fun eβ => {
           val x :=
             have x₀ := eα.val x.1
             have x₁ := eβ.val x.2
@@ -301,10 +305,10 @@ instance [Inhabited α] [Subsingleton α] : Fintype α where
       intro x
       exists 0
       apply Subsingleton.allEq
-    encode := .some <| {
+    encode := Thunk.mk (fun _ => .some <| {
       val _ := 0
       property _ := Subsingleton.allEq  _ _
-    }
+    })
   }
 
 instance [IsEmpty α] : Fintype α where
@@ -317,10 +321,10 @@ instance [IsEmpty α] : Fintype α where
       apply Subsingleton.allEq
       intro x
       exact elim_empty x
-    encode := .some <| {
+    encode := Thunk.mk (fun _ => .some <| {
       val := elim_empty
       property _ := Subsingleton.allEq  _ _
-    }
+    })
   }
 
 @[simp]
@@ -437,7 +441,8 @@ def ofEquiv' [f: Fintype α] (h: α ≃ β) : Fintype β where
         exists i
         simp [←h]
     encode :=
-      r.encode.map fun e =>  {
+      r.encode.map fun e =>
+      e.map fun e => {
         val := e.val ∘ h.symm
         property := by
           intro x; simp
@@ -607,7 +612,7 @@ def cast_card (f: Fintype α) (h: n = card α) : Fintype α where
         intro x
         have ⟨i, g⟩ := r.bij.Surjective x
         exists i.cast h.symm
-      encode := .none
+      encode := Thunk.mk fun _ => .none
     }
 
 def fold_empty [IsEmpty α] (f: α -> β -> β) (start: β) (h) : fold f start h = start := by rfl
@@ -640,7 +645,7 @@ private instance (priority := 10) [f: Fintype (Option α)] : Fintype α where
       apply r.bij.Surjective)
     let emb := Embedding.fin_erase (noneIdx.cast (by rw [Nat.sub_add_cancel]; omega))
     {
-      encode := none
+      encode := Thunk.mk fun _ => none
       decode x :=
         Option.get (r.decode <| (Embedding.fin_erase (noneIdx.cast (by omega)) x).cast <| by omega) <| by
           rw [Option.isSome_iff_ne_none]
