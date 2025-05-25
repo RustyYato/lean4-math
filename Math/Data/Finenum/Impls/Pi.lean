@@ -158,7 +158,7 @@ instance instPi [DecidableEq ι] {α: ι -> Type*} [fι: Finenum ι] [fα: ∀i,
             simp
             have (i: ι) : ∃x, f i = (rα i).decode x := by
               apply (rα _).bij.Surjective
-            replace this := Classical.axiomOfChoice this
+            replace this := rι.axiomOfChoice' this
             obtain ⟨g, hg⟩ := this
             exists ⟨encode get_card (fun i => g (eqv i)), encode_lt _ _⟩
             ext i

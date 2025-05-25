@@ -22,6 +22,18 @@ private def find_fin_sum (f: Fin n -> ℕ) (x: ℕ) : Option (Σx: Fin n, Fin (f
       | .none => .none
       | .some x => .some ⟨x.fst.succ, x.snd⟩
 
+private def Nat.sub_lt_iff_lt_add {a b k: ℕ} (h: k ≤ a) : a - k < b ↔ a < b + k := by
+  induction k generalizing a b with
+  | zero => rfl
+  | succ k ih =>
+    cases a with
+    | zero => contradiction
+    | succ a =>
+    rw [←Nat.add_assoc, Nat.succ_sub_succ, Nat.succ_lt_succ_iff]
+    apply ih
+    apply Nat.le_of_succ_le_succ
+    assumption
+
 private def find_fin_sum_spec (f: Fin n -> ℕ) (x: ℕ) (hx: x < fin_sum f) : ∃x₀ x₁, find_fin_sum f x = .some ⟨x₀, x₁⟩ ∧ x = fin_sum (n := x₀.val) (fun x => f (x.castLE (by omega))) + x₁.val := by
   induction n generalizing x with
   | zero => contradiction
@@ -32,11 +44,12 @@ private def find_fin_sum_spec (f: Fin n -> ℕ) (x: ℕ) (hx: x < fin_sum f) : �
       apply And.intro
       unfold find_fin_sum
       simp [h]
-      simp
-      rfl
+      dsimp
+      rw (occs := [1]) [Nat.add_comm, ←Nat.add_zero x]
+      congr
     · unfold find_fin_sum
       simp [h]
-      simp at h
+      rw [Nat.not_lt] at h
       have ⟨x₀, x₁, g⟩ := ih (f ∘ Fin.succ)  (x - f 0) (by
         rwa [Nat.sub_lt_iff_lt_add, Nat.add_comm, ←fin_sum_succ]
         assumption)
@@ -84,14 +97,24 @@ private def find_fin_sum_spec_inj (f: Fin n -> ℕ) (i₁ j₁: Fin n) (i₂: Fi
       | zero => simp [Fin.val_inj]
       | succ j₁ =>
         rw [fin_sum, fin_sum_succ]
-        simp
-        omega
+        intro h
+        have : i₂.val < f 0 := by apply Fin.isLt
+        simp at h
+        rw [h, ←Nat.not_le, Nat.add_assoc] at this
+        have := this (Nat.le_add_right _ _)
+        contradiction
+        -- simp
+        -- omega
     | succ i₁ =>
     cases j₁ using Fin.cases with
     | zero =>
       rw [fin_sum_succ]; rw (occs := [2]) [fin_sum]
       simp
-      omega
+      intro h
+      have : j₂.val < f 0 := by apply Fin.isLt
+      rw [←h, ←Nat.not_le, Nat.add_assoc] at this
+      have := this (Nat.le_add_right _ _)
+      contradiction
     | succ j₁ =>
       rw [fin_sum_succ, fin_sum_succ]
       simp [Nat.add_assoc]

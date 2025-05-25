@@ -22,10 +22,58 @@ attribute [local simp] Thunk.get
 
 namespace Repr
 
+private def card_eq' (f: Fin n ↪ α) (g: Fin m ↪ α) (h: ∀(x: α), (∃i, x = f i) ↔ (∃i, x = g i)) : n = m := by
+  induction n generalizing m with
+  | zero =>
+    cases m with
+    | zero => rfl
+    | succ m =>
+      nomatch (h (g 0)).mpr ⟨_, rfl⟩
+  | succ n ih =>
+    have ⟨i, hi⟩ := (h (f 0)).mp ⟨_, rfl⟩
+    cases m with
+    | zero => exact i.elim0
+    | succ m =>
+      let f' := (Embedding.finSucc _).trans f
+      let g' := (Embedding.finSucc _).trans ((Equiv.swap 0 i).toEmbedding.trans g)
+      rw [ih f' g']
+      intro x
+      apply Iff.intro
+      intro ⟨j, hj⟩
+      have ⟨j', hj'⟩ := (h x).mp ⟨_, hj⟩
+      have j'_ne_zero : (Equiv.swap 0 i j') ≠ 0 := by
+        intro j'_eq_i
+        have := Equiv.eq_symm_of_coe_eq _ j'_eq_i
+        rw [Equiv.swap_symm, Equiv.swap_comm, Equiv.swap_spec] at this
+        subst j'
+        rw [←hi, hj] at hj'
+        simp [f', f.inj.eq_iff] at hj'
+        rw [←Fin.val_inj] at hj'
+        contradiction
+      exists (Equiv.swap 0 i j').pred j'_ne_zero
+      simp [g']
+      rw (occs := [1]) [←Equiv.swap_symm]
+      rw [Equiv.swap_comm, Equiv.coe_symm]
+      assumption
+      intro ⟨j, hj⟩
+      have ⟨j', hj'⟩ := (h x).mpr ⟨_, hj⟩
+      have j'_ne_zero : j' ≠ 0 := by
+        rintro rfl
+        rw [hi, hj] at hj'
+        simp [g', g.inj.eq_iff] at hj'
+        have := Equiv.eq_symm_of_coe_eq _ hj'
+        rw [Equiv.swap_symm, Equiv.swap_spec] at this
+        rw [←Fin.val_inj] at this
+        contradiction
+      exists j'.pred j'_ne_zero
+      simp [f']
+      assumption
+
 def card_eq (a: Repr card₀ α) (b: Repr card₁ α) : card₀ = card₁ := by
-  have ⟨h₀, _⟩ := Equiv.ofBij a.bij
-  have ⟨h₁, _⟩ := Equiv.ofBij b.bij
-  exact Fin.eq_of_equiv (h₀.trans h₁.symm)
+  apply card_eq' ⟨a.decode, a.bij.Injective⟩ ⟨b.decode, b.bij.Injective⟩
+  intro; apply Iff.intro <;> intro
+  apply b.bij.Surjective
+  apply a.bij.Surjective
 
 def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h: ∃i, a = f i) : Σ'x: Fin card, a = f x :=
   match card with
@@ -103,22 +151,43 @@ instance : Finenum (Fin n) where
     }
   }
 
+-- this is carefully written to ensure that no axioms are used
 instance : Finenum Bool where
   card_thunk := Thunk.mk (fun _ => 2)
-  toRepr := Trunc.mk (α := Repr 2 _) {
-    decode x := x.val != 0
+  toRepr :=
+    let zero := Fin.mk (n := 2) 0 (by decide)
+    let one := Fin.mk (n := 2) 1 (by decide)
+    Trunc.mk (α := Repr 2 _) {
+    decode x := x.val != Fin.mk (n := 2) 0 (by decide)
     bij := by
       apply And.intro
-      decide
-      intro x
-      cases x
-      exists 0
-      exists 1
+      · intro ⟨x, hx⟩ ⟨y, hy⟩ h
+        match x with
+        | 0 =>
+          match y with
+          | 0 => rfl
+          | 1 =>
+            dsimp at h
+            contradiction
+          | y + 2 => exact (Nat.not_le_of_lt hy (Nat.le_add_left _ _)).elim
+        | 1 =>
+          match y with
+          | 0 =>
+            dsimp at h
+            contradiction
+          | 1 =>
+            rfl
+          | y + 2 => exact (Nat.not_le_of_lt hy (Nat.le_add_left _ _)).elim
+        | x + 2 => exact (Nat.not_le_of_lt hx (Nat.le_add_left _ _)).elim
+      · intro x
+        cases x
+        exact ⟨zero, rfl⟩
+        exact ⟨one, rfl⟩
     encode := .some {
       val
-      | false => 0
-      | true => 1
-      property x := by decide +revert
+      | false => zero
+      | true => one
+      property x := by cases x <;> rfl
     }
   }
 
@@ -316,20 +385,43 @@ def ind {motive: Finenum α -> Prop}
   induction f
   apply @ind c.get
 
-private def axiomOfChoice' {α: Fin n -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) :=
+private def axiomOfChoice_aux {α: Fin n -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) :=
   match n with
   | 0 => ⟨nofun⟩
   | _ + 1 =>
     have ⟨a⟩ := f 0
-    have ⟨g⟩ := axiomOfChoice' (fun i => f i.succ)
+    have ⟨g⟩ := axiomOfChoice_aux (fun i => f i.succ)
     ⟨fun
       | 0 => a
       | ⟨i + 1, h⟩ => g ⟨i, Nat.lt_of_succ_lt_succ h⟩⟩
 
+def Repr.axiomOfChoice {card ι} [DecidableEq ι] (r: Repr card ι) {α: ι -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) := by
+  let eqv := r.toEquiv
+  have ⟨f⟩ := axiomOfChoice_aux (fun i: Fin card => f (eqv i))
+  exact ⟨fun i => cast (by simp) (f (eqv.symm i))⟩
+
+def Repr.axiomOfChoice' {card ι} [DecidableEq ι] (r: Repr card ι) {α: ι -> Sort*} {P: ∀i: ι, α i -> Prop} (f: ∀i, ∃a: α i, P i a) : ∃f: ∀i:ι, α i, ∀i, P i (f i) := by
+  have ⟨f⟩ := r.axiomOfChoice (ι := ι) (α := fun i => Σ'a: α i, P i a) ?_
+  exists fun i => (f i).fst
+  intro i
+  apply (f i).snd
+  intro i
+  have ⟨a, pa⟩ := f i
+  exists a
+
 def axiomOfChoice [DecidableEq ι] [Finenum ι] {α: ι -> Sort*} (f: ∀i, Nonempty (α i)) : Nonempty (∀i, α i) := by
   induction toEquiv ι with | _ eqv =>
-  have ⟨f⟩ := axiomOfChoice' (fun i: Fin (card ι) => f (eqv i))
+  have ⟨f⟩ := axiomOfChoice_aux (fun i: Fin (card ι) => f (eqv i))
   exact ⟨fun i => cast (by simp) (f (eqv.symm i))⟩
+
+def axiomOfChoice' [DecidableEq ι] [Finenum ι] {α: ι -> Sort*} {P: ∀i: ι, α i -> Prop} (f: ∀i, ∃a: α i, P i a) : ∃f: ∀i:ι, α i, ∀i, P i (f i) := by
+  have ⟨f⟩ := axiomOfChoice (ι := ι) (α := fun i => Σ'a: α i, P i a) ?_
+  exists fun i => (f i).fst
+  intro i
+  apply (f i).snd
+  intro i
+  have ⟨a, pa⟩ := f i
+  exists a
 
 def ofEquiv' [f: Finenum α] (h: α ≃ β) : Finenum β where
   card_thunk := card α
@@ -468,7 +560,10 @@ private def fold_spec
         subst j
         rw [←hi, h₂.eq_iff, ←Fin.val_inj] at hj
         simp at hj
-        omega
+        have := i₀.isLt
+        rw [hj] at this
+        have := Nat.lt_irrefl _ this
+        contradiction
       · exists ⟨j, ?_⟩
         omega
         rw [Embedding.apply_fin_erase_of_lt]
@@ -519,12 +614,12 @@ def fold_option [Finenum α] (f: Option α -> β -> β) (start: β) (h) : fold f
   rw [Fin.foldr_succ]
   rfl
 def fold_eqv [Finenum α] [Finenum β] (f: β -> γ -> γ) (start: γ) (eqv: α ≃ β) (h) : fold f start h = fold (fun a => f (eqv a)) start (by
-    intro a b start
-    apply h) := by
-    rename_i fα fβ
-    rw [Subsingleton.allEq fβ (ofEquiv' eqv)]
-    induction fα using ind with | _ r =>
-    rfl
+  intro a b start
+  apply h) := by
+  rename_i fα fβ
+  rw [Subsingleton.allEq fβ (ofEquiv' eqv)]
+  induction fα using ind with | _ r =>
+  rfl
 
 private instance (priority := 10) [f: Finenum (Option α)] : Finenum α where
   card_thunk := Thunk.mk fun _ => card (Option α) - 1
