@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Impls.Quot
+import Math.Data.«Fintype-old».Impls.Quot
 
 namespace Pi
 

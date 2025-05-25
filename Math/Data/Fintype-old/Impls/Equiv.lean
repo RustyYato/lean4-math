@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Defs
+import Math.Data.«Fintype-old».Defs
 import Math.Logic.Equiv.Basic
 
 variable [DecidableEq α] [DecidableEq β]

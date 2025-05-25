@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Impls.Pi
+import Math.Data.«Fintype-old».Impls.Pi
 import Math.Data.ListVector.Basic
 
 instance [Fintype α] : Fintype (List.Vector α n) :=

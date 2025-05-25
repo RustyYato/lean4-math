@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Defs
+import Math.Data.«Fintype-old».Defs
 
 -- the elements of a finset is a finite type
 instance (f: Finset α) : Fintype f where

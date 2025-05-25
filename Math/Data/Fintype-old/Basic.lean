@@ -1,13 +1,13 @@
-import Math.Data.Fintype.Defs
+import Math.Data.«Fintype-old».Defs
 import Math.Data.Set.Basic
 import Math.Logic.Equiv.Basic
 import Math.Logic.IsEmpty
 
-import Math.Data.Fintype.Impls.Pi
-import Math.Data.Fintype.Impls.Subtype
-import Math.Data.Fintype.Impls.Finset
-import Math.Data.Fintype.Impls.Embed
-import Math.Data.Fintype.Impls.Equiv
+import Math.Data.«Fintype-old».Impls.Pi
+import Math.Data.«Fintype-old».Impls.Subtype
+import Math.Data.«Fintype-old».Impls.Finset
+import Math.Data.«Fintype-old».Impls.Embed
+import Math.Data.«Fintype-old».Impls.Equiv
 
 namespace Finset
 

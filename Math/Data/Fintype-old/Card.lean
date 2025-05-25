@@ -1,5 +1,5 @@
-import Math.Data.Fintype.Algebra
-import Math.Data.Fintype.Cases
+import Math.Data.«Fintype-old».Algebra
+import Math.Data.«Fintype-old».Cases
 import Math.Data.Nat.Factorial
 
 namespace Fintype

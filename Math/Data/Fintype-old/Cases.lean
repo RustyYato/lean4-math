@@ -1,4 +1,4 @@
-import Math.Data.Fintype.Basic
+import Math.Data.«Fintype-old».Basic
 
 namespace Fintype
 
