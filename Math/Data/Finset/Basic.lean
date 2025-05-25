@@ -384,6 +384,13 @@ def mem_flatMap_embed {f: α -> Finset β} {as: Finset α}
   intro x
   apply Multiset.mem_flatMap
 
+def recOnSubsingleton
+  {motive: Finset α -> Sort*}
+  [∀s, Subsingleton (motive s)]
+  (mk: ∀(l: List α) (h: l.Nodup), motive ⟨Multiset.mk l, h⟩)
+  (s: Finset α) : motive s :=
+  s.val.recOnSubsingleton (motive := fun (l: Multiset α) => ∀(h: l.Nodup), motive ⟨l, h⟩) mk s.property
+
 end Finset
 
 namespace Finset
@@ -421,6 +428,22 @@ def mem_insert_unique {f: Finset α} {a: α} {h: a ∉ f} : ∀{x}, x ∈ f.inse
   show x ∈ a::ₘf.val ↔ _
   simp
   rfl
+
+def induction
+  (motive : Finset α -> Prop)
+  (nil: motive ∅)
+  (cons: ∀x xs (h: x ∉ xs), motive xs -> motive (xs.insert_unique x h))
+  (s: Finset α) : motive s := by
+  cases s with | mk s hs =>
+  cases s with | mk s =>
+  induction s with
+  | nil => apply nil
+  | cons a as ih =>
+    replace hs : (a ::ₘ Multiset.mk as).Nodup := hs
+    apply cons a ⟨Multiset.mk as, _⟩
+    apply hs.head
+    apply ih
+    exact hs.tail
 
 def powerset (as: Finset α): Finset (Finset α) where
   val := by
@@ -519,3 +542,33 @@ def eq_or_ne_of_mem (s: Finset α) {x y: α} (hx: x ∈ s) (hy: y ∈ s) : x = y
     assumption
 
 end Finset
+
+instance : IsEmpty (∅: Finset α) where
+  elim x := nomatch x.property
+
+namespace Equiv
+
+def finset_insert_unique (x: α) [∀a: α, Decidable (x = a)] (s: Finset α) (h: x ∉ s) : s.insert_unique x h ≃ Option s where
+  toFun a := if g:x = a.val then .none else .some ⟨a.val, by
+    obtain ⟨a, ha⟩ := a
+    rw [Finset.mem_insert_unique] at ha
+    apply ha.resolve_left
+    apply Ne.symm; assumption⟩
+  invFun
+  | .none => ⟨x, by simp [Finset.mem_insert_unique]⟩
+  | .some a => ⟨a.val, by simp [Finset.mem_insert_unique, a.property]⟩
+  leftInv a := by
+    simp
+    by_cases g:x = a.val
+    simp [g]
+    rfl
+    simp [g]
+    rfl
+  rightInv a := by
+    cases a <;> simp
+    rename_i a
+    refine ⟨?_, rfl⟩
+    rintro rfl
+    exact h a.property
+
+end Equiv
