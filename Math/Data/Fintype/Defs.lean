@@ -471,19 +471,6 @@ def card_option [Fintype α] [Fintype (Option α)] : card (Option α) = card α 
 def trunc_of_card_ne_zero [f: Fintype α] (h: card α ≠ 0) : Trunc α :=
   f.toRepr.map fun r : Repr (card α) α => r.decode ⟨0, by omega⟩
 
-def card_ne_zero_iff_nonempty [f: Fintype α] : card α ≠ 0 ↔ Nonempty α := by
-  induction f with | _ card r =>
-  show card.get ≠ 0 ↔ _
-  revert r; generalize card.get = card
-  rename_i c; clear c
-  intro r
-  induction r with | _ r =>
-  cases card
-  · simp; intro ⟨a⟩
-    nomatch r.bij.Surjective a
-  · simp
-    exact ⟨r.decode 0⟩
-
 def card_eq_zero_iff_empty [f: Fintype α] : card α = 0 ↔ IsEmpty α := by
   apply flip Iff.intro
   intro; rw [card_empty]
@@ -494,6 +481,15 @@ def card_eq_zero_iff_empty [f: Fintype α] : card α = 0 ↔ IsEmpty α := by
   replace h : card_thunk.get = 0 := h
   rw [h] at r
   nomatch r.bij.Surjective x
+
+def card_ne_zero_iff_nonempty [f: Fintype α] : card α ≠ 0 ↔ Nonempty α := by
+  apply Iff.intro
+  · intro h
+    induction trunc_of_card_ne_zero (α := α) h with | mk a =>
+    exact ⟨a⟩
+  · intro ⟨a⟩ g
+    rw [card_eq_zero_iff_empty] at g
+    exact elim_empty a
 
 instance {α: ι -> Sort*} [f: Fintype ι] [∀i, DecidableEq (α i)]  : DecidableEq (∀i, α i) :=
   fun a b =>
@@ -693,15 +689,13 @@ private instance (priority := 10) [f: Fintype (Option α)] : Fintype α where
           simp; omega
     }
 
-@[induction_eliminator]
-def indType
+def indType'
   {motive: ∀α: Type u, Fintype α -> Prop}
   (empty: motive PEmpty inferInstance)
   (option: ∀(α: Type u) [Fintype α], motive α inferInstance -> motive (Option α) inferInstance)
   (eqv: ∀(α β: Type u) [Fintype α] [Fintype β], α ≃ β -> motive α inferInstance -> motive β inferInstance)
-  {α: Type u} (f: Fintype α)
+  {α: Type u} (f: Fintype α) [DecidableEq α]
   : motive α f := by
-  classical
   induction h:card α generalizing α with
   | zero =>
     rw [card_eq_zero_iff_empty] at h
@@ -720,6 +714,17 @@ def indType
     rw [←card_option]
     rwa [card_eq_of_equiv (β := α)]
     symm; apply Equiv.erase
+
+@[induction_eliminator]
+def indType
+  {motive: ∀α: Type u, Fintype α -> Prop}
+  (empty: motive PEmpty inferInstance)
+  (option: ∀(α: Type u) [Fintype α], motive α inferInstance -> motive (Option α) inferInstance)
+  (eqv: ∀(α β: Type u) [Fintype α] [Fintype β], α ≃ β -> motive α inferInstance -> motive β inferInstance)
+  {α: Type u} (f: Fintype α)
+  : motive α f := by
+  classical
+  apply indType' <;> assumption
 
 private def natMax [Fintype ι] (f: ι -> ℕ) : ℕ :=
   fold (fun i => max (f i)) 0 <| by
