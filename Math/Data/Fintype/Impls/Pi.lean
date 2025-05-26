@@ -496,4 +496,7 @@ instance instPi {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : Fintype (∀i, �
     }
   }
 
+instance instFunction {α: Type*} [fα: Fintype α] : Fintype (ι -> α) :=
+  inferInstance
+
 end Fintype
