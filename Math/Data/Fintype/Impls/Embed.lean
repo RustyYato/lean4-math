@@ -149,7 +149,7 @@ private def decode_encode (f: Fin n ↪ Fin m)  : decode (Fin.le_of_embed f) (en
   apply encode_inj
   rw [encode_decode]
 
-instance [DecidableEq α] [fα: Fintype α] [fβ: Fintype β] : Fintype (α ↪ β) :=
+instance instEmebdding [DecidableEq α] [fα: Fintype α] [fβ: Fintype β] : Fintype (α ↪ β) :=
   if h:card α ≤ card β then
     {
     card_thunk := Thunk.mk fun _ => npr (card β) (card α)
@@ -196,5 +196,17 @@ instance [DecidableEq α] [fα: Fintype α] [fβ: Fintype β] : Fintype (α ↪ 
   else
     have : IsEmpty (α ↪ β) := { elim f := h (Fintype.card_le_of_embed f) }
     inferInstanceAs (Fintype (α ↪ β))
+
+@[simp]
+def card_embed' {fα: Fintype α} {fβ: Fintype β} {f: Fintype (α ↪ β)} : card (α ↪ β) = if card α ≤ card β then npr (card β) (card α) else 0 := by
+  classical
+  rw [Subsingleton.allEq f instEmebdding]
+  rw [card]
+  unfold card_thunk instEmebdding
+  split
+  rfl
+  rfl
+
+def card_embed [fα: Fintype α] [fβ: Fintype β] [Fintype (α ↪ β)] : card (α ↪ β) = if card α ≤ card β then npr (card β) (card α) else 0 := card_embed'
 
 end Fintype

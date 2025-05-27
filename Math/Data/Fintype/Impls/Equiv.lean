@@ -116,7 +116,7 @@ private def decode_encode (f: Fin n ≃ Fin n)  : decode (encode f) = f := by
   apply encode_inj
   rw [encode_decode]
 
-instance [DecidableEq α] [DecidableEq β] [fα: Fintype α] [fβ: Fintype β] : Fintype (α ≃ β) :=
+instance instEquiv [DecidableEq α] [DecidableEq β] [fα: Fintype α] [fβ: Fintype β] : Fintype (α ≃ β) :=
   if h:card α = card β then
     {
     card_thunk := Thunk.mk fun _ => ((card α) !)
@@ -139,5 +139,17 @@ instance [DecidableEq α] [DecidableEq β] [fα: Fintype α] [fβ: Fintype β] :
   else
     have : IsEmpty (α ≃ β) := { elim f := h (Fintype.card_eq_of_equiv f) }
     inferInstance
+
+@[simp]
+def card_equiv' {fα: Fintype α} {fβ: Fintype β} {f: Fintype (α ≃ β)} : card (α ≃ β) = if card α = card β then ((card α) !) else 0 := by
+  classical
+  rw [Subsingleton.allEq f instEquiv]
+  rw [card]
+  unfold card_thunk instEquiv
+  split
+  rfl
+  rfl
+
+def card_equiv [fα: Fintype α] [fβ: Fintype β] [Fintype (α ≃ β)] : card (α ≃ β) = if card α = card β then ((card α) !) else 0 := card_equiv'
 
 end Fintype
