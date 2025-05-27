@@ -36,6 +36,10 @@ private def fract_reduce_den {a: Fract} : (‖a.num‖.gcd a.den: Int) ≠ 0 := 
   contradiction
 
 def Fract.isReduced (a: Fract) : Prop := ‖a.num‖.gcd a.den = 1
+
+instance : DecidablePred Rat.Fract.isReduced :=
+  fun _ => inferInstanceAs (Decidable (_ = _))
+
 def Fract.reduce (a: Fract) : Fract where
   num := a.num / ‖a.num‖.gcd a.den
   den := a.den / ‖a.num‖.gcd a.den
@@ -673,3 +677,34 @@ instance (q: ℚ) : Decidable (NeZero q) :=
     .isTrue ⟨h⟩
 
 end Rat
+
+def Equiv.fract_equiv_int_pnat : Rat.Fract ≃ { r: ℤ × ℕ // 0 < r.2 } where
+  toFun x := {
+    val := (x.num, x.den)
+    property := x.den_pos
+  }
+  invFun x := {
+    num := x.val.1
+    den := x.val.2
+    den_pos := x.property
+  }
+  leftInv _ := rfl
+  rightInv _ := rfl
+def Equiv.rat_equiv_reduced_fract : ℚ ≃ { r: Rat.Fract // r.isReduced } where
+  toFun x := {
+    val := x.toFract
+    property := Rat.toFract.isReduced x
+  }
+  invFun x := Rat.mk x
+  leftInv x := by
+    simp
+    induction x using Rat.ind with | mk x =>
+    apply Rat.reduce_eq (Rat.mk x)
+  rightInv x := by
+    apply Subtype.val_inj
+    simp
+    apply Rat.Fract.isReduced.spec
+    exact Rat.toFract.isReduced (Rat.mk x.val)
+    exact x.property
+    apply Rat.exact
+    apply Rat.reduce_eq (Rat.mk x.val)
