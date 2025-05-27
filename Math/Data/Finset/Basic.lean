@@ -541,6 +541,9 @@ def eq_or_ne_of_mem (s: Finset α) {x y: α} (hx: x ∈ s) (hy: y ∈ s) : x = y
     assumption
     assumption
 
+unsafe instance [Repr α] : Repr (Finset α) where
+  reprPrec s := reprPrec s.val
+
 end Finset
 
 instance : IsEmpty (∅: Finset α) where

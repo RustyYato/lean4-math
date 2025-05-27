@@ -1,5 +1,7 @@
 import Math.Data.Fintype.Impls.List
 
+namespace Fintype
+
 instance [f: Fintype α] {P: α -> Prop} [DecidablePred P] : Fintype (Subtype P) := by
   refine f.toRepr.recOnSubsingleton fun f => ?_
   refine Fintype.ofArray ?_ ?_ ?_
@@ -21,3 +23,5 @@ instance [f: Fintype α] {P: α -> Prop} [DecidablePred P] : Fintype (Subtype P)
     have ⟨i, h⟩ := f.bij.Surjective x
     exists i; symm; assumption
     rw [dif_pos]
+
+end Fintype

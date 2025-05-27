@@ -1618,4 +1618,7 @@ def map_eq_cons {b: β} {as: Multiset α} {bs: Multiset β} {f: α -> β} : as.m
   refine ⟨rfl, rfl, ?_⟩
   symm; assumption
 
+unsafe instance [Repr α] : Repr (Multiset α) where
+  reprPrec s := reprPrec (Quotient.lift id lcProof s)
+
 end Multiset
