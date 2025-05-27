@@ -1159,7 +1159,7 @@ def natCast_le_natCast_iff (n m: ℕ) : (n: Ordinal) ≤ m ↔ n ≤ m := by
   intro ⟨h⟩
   simp at h
   have h := Equiv.congrEmbed (Equiv.ulift _) (Equiv.ulift _) h.toEmbedding
-  exact Fin.le_of_emebd h
+  exact Fin.le_of_embed h
   intro h
   refine ⟨?_⟩
   simp; apply InitialSegment.congr (rel_ulift_eqv _).symm (rel_ulift_eqv _).symm

@@ -223,7 +223,7 @@ def natCast_strictmonotone : StrictMonotone (fun n: ℕ => (n: Cardinal)) := by
   rw [←not_le]
   intro ⟨h⟩
   replace h := Equiv.congrEmbed (Equiv.ulift _) (Equiv.ulift _) h
-  have := Fin.le_of_emebd h
+  have := Fin.le_of_embed h
   rw [←not_lt] at this
   apply this
   assumption
@@ -393,7 +393,7 @@ def natCast_lt_aleph₀ (n: ℕ) : n < ℵ₀ := by
   intro h; replace ⟨h⟩ := exact h
   replace h := h.trans (Equiv.ulift _)
   have := Equiv.congrEmbed .rfl ((Equiv.ulift _).symm.trans h) (Fin.embedNat (n := m + 1))
-  have := Fin.le_of_emebd this
+  have := Fin.le_of_embed this
   omega
 
 private noncomputable def ofNat_of_embedFins (g: ∀n, Fin n ↪ α) : ℕ -> α

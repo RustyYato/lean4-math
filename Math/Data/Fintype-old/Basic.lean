@@ -56,7 +56,7 @@ def card_le_of_embed [Fintype β] [Fintype α] (h: α ↪ β) : card α ≤ card
   classical
   induction equivFin α with | mk ha =>
   induction equivFin β with | mk hb =>
-  exact Fin.le_of_emebd (Equiv.congrEmbed ha hb h)
+  exact Fin.le_of_embed (Equiv.congrEmbed ha hb h)
 
 def embed_iff_card_le [Fintype β] [Fintype α] : Nonempty (α ↪ β) ↔ card α ≤ card β := by
   apply Iff.intro

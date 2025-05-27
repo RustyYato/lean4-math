@@ -217,4 +217,21 @@ def ofInvolut (f: α -> α) (h: f.IsInvolutive) : α ≃ α where
   leftInv := h
   rightInv := h
 
+def congr {f g: α ≃ β} (h: f = g) : ∀x, f x = g x := fun _ => h ▸ rfl
+
+@[simp]
+def trans_left (f: α ≃ β) (g h: β ≃ γ) : f.trans g = f.trans h ↔ g = h := by
+  apply Iff.intro
+  · intro eq; ext x
+    have := congr eq (f.symm x)
+    simpa using this
+  · intro h; rw [h]
+
+@[simp]
+def trans_right (g h: α ≃ β) (f: β ≃ γ) : g.trans f = h.trans f ↔ g = h := by
+  apply Iff.intro
+  · intro eq; ext x
+    exact f.inj (congr eq x)
+  · intro h; rw [h]
+
 end Equiv

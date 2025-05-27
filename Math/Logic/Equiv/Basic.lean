@@ -302,23 +302,30 @@ def commProd (α β: Type*) : α × β ≃ β × α :=
 @[simp] def apply_commProd : commProd α β x = (x.2, x.1) := rfl
 @[simp] def symm_commProd (α β: Type*) : (commProd α β).symm = commProd β α := rfl
 
-def congrOption {α β: Type*} (h: α ≃ β) : Option α ≃ Option β where
-  toFun
-  | .some x => .some (h x)
-  | .none => .none
-  invFun
-  | .some x => .some (h.symm x)
-  | .none => .none
-  leftInv x := by
-    cases x
-    rfl
-    dsimp
-    rw [coe_symm]
-  rightInv x := by
-    cases x
-    rfl
-    dsimp
-    rw [symm_coe]
+def congrOption {α β: Type*} : (α ≃ β) ↪ (Option α ≃ Option β) where
+  toFun h := {
+    toFun
+    | .some x => .some (h x)
+    | .none => .none
+    invFun
+    | .some x => .some (h.symm x)
+    | .none => .none
+    leftInv x := by
+      cases x
+      rfl
+      dsimp
+      rw [coe_symm]
+    rightInv x := by
+      cases x
+      rfl
+      dsimp
+      rw [symm_coe]
+  }
+  inj' := by
+    intro f g h
+    ext x
+    have := congr h x
+    simpa using this
 
 @[simp] def apply_congrOption_some (h: α ≃ β) : congrOption h (.some x) = .some (h x) := rfl
 @[simp] def apply_congrOption_none (h: α ≃ β) : congrOption h .none = .none := rfl
@@ -685,6 +692,17 @@ def apply_fin_equiv_option (x: Fin (n + 1)) : fin_equiv_option n x = if h:x.val 
   simp
   omega
   assumption
+
+@[simp]
+def apply_fin_equiv_option_castSucc (x: Fin n) : fin_equiv_option n x.castSucc = .some x := by
+  rw [apply_fin_equiv_option]
+  rw [dif_neg]
+  rfl
+  intro h
+  simp at h
+  have := x.isLt
+  rw [h] at this
+  exact Nat.lt_irrefl _ this
 
 @[simp]
 def apply_fin_equiv_option_last : fin_equiv_option n (Fin.last _) = .none := by
@@ -1298,7 +1316,7 @@ def Fin.embedFin (h: n ≤ m) : Fin n ↪ Fin m where
 
 def Fin.embedFin_eq_castLE (h: n ≤ m) : Fin.embedFin h = Fin.castLE h := rfl
 
-def Fin.le_of_emebd (h: Fin n ↪ Fin m) : n ≤ m := by
+def Fin.le_of_embed (h: Fin n ↪ Fin m) : n ≤ m := by
   induction n generalizing m with
   | zero => apply Nat.zero_le
   | succ n ih =>
@@ -1314,9 +1332,9 @@ def Fin.le_of_emebd (h: Fin n ↪ Fin m) : n ≤ m := by
 
 def Fin.eq_of_equiv (h: Fin n ≃ Fin m) : n = m := by
   apply Nat.le_antisymm
-  apply Fin.le_of_emebd
+  apply Fin.le_of_embed
   apply h.toEmbedding
-  apply Fin.le_of_emebd
+  apply Fin.le_of_embed
   apply h.symm.toEmbedding
 
 def Subtype.val_inj {P: α -> Prop} : Function.Injective (Subtype.val (p := P)) := Embedding.subtypeVal.inj

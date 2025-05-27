@@ -68,7 +68,7 @@ def decode_inj (h: n ≤ m) : Function.Injective (decode h) := by
       simpa [Fintype.decode, Equiv.symm_apply_fin_erase_none] using this
 
 def encode (f: Fin n ↪ Fin m) : Fin (npr m n) :=
-  have := Fin.le_of_emebd f
+  have := Fin.le_of_embed f
   match n with
   | 0 =>
     Fin.mk 0 (by simp [npr]; apply fact_pos)
@@ -145,7 +145,7 @@ def encode_decode (h: n ≤ m) (i: Fin (npr m n)) : encode (decode h i) = i := b
     rw [ih]
     rfl
 
-def decode_encode (f: Fin n ↪ Fin m)  : decode (Fin.le_of_emebd f) (encode f) = f := by
+def decode_encode (f: Fin n ↪ Fin m)  : decode (Fin.le_of_embed f) (encode f) = f := by
   apply encode_inj
   rw [encode_decode]
 
