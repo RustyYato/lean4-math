@@ -16,8 +16,8 @@ private def div_m (i: Fin (npr (m + 1) (n + 1))) : Fin (npr m n) where
       apply Nat.sub_le
       apply Nat.zero_lt_succ
 
-def val_mod_m (i: Fin (npr (m + 1) (n + 1))) : (mod_m i).val = i.val % (m + 1) := rfl
-def val_div_m (i: Fin (npr (m + 1) (n + 1))) : (div_m i).val = i.val / (m + 1) := rfl
+private def val_mod_m (i: Fin (npr (m + 1) (n + 1))) : (mod_m i).val = i.val % (m + 1) := rfl
+private def val_div_m (i: Fin (npr (m + 1) (n + 1))) : (div_m i).val = i.val / (m + 1) := rfl
 
 private def decode (h: n ≤ m) (i: Fin (npr m n)) : Fin n ↪ Fin m :=
   match n with
@@ -28,7 +28,7 @@ private def decode (h: n ≤ m) (i: Fin (npr m n)) : Fin n ↪ Fin m :=
     have f := decode (Nat.le_of_succ_le_succ h) (div_m i)
     Equiv.congrEmbed (Equiv.fin_equiv_option _).symm (Equiv.fin_erase (mod_m i)).symm f.congrOption
 
-def decode_inj (h: n ≤ m) : Function.Injective (decode h) := by
+private def decode_inj (h: n ≤ m) : Function.Injective (decode h) := by
   intro x y g
   induction m generalizing n with
   | zero =>
@@ -67,7 +67,7 @@ def decode_inj (h: n ≤ m) : Function.Injective (decode h) := by
       have := Embedding.congr g (Fin.last _)
       simpa [Fintype.decode, Equiv.symm_apply_fin_erase_none] using this
 
-def encode (f: Fin n ↪ Fin m) : Fin (npr m n) :=
+private def encode (f: Fin n ↪ Fin m) : Fin (npr m n) :=
   have := Fin.le_of_embed f
   match n with
   | 0 =>
@@ -96,7 +96,7 @@ def encode (f: Fin n ↪ Fin m) : Fin (npr m n) :=
         apply npr_pos
     }
 
-def encode_inj : Function.Injective (encode (n := n) (m := m)) := by
+private def encode_inj : Function.Injective (encode (n := n) (m := m)) := by
   intro f g h
   induction n generalizing m with
   | zero => apply Subsingleton.allEq
@@ -122,7 +122,7 @@ def encode_inj : Function.Injective (encode (n := n) (m := m)) := by
       rw [h₁ ]
       rw [h₀]
 
-def encode_decode (h: n ≤ m) (i: Fin (npr m n)) : encode (decode h i) = i := by
+private def encode_decode (h: n ≤ m) (i: Fin (npr m n)) : encode (decode h i) = i := by
   induction n generalizing m with
   | zero =>
     have : Subsingleton (Fin (npr m 0)) := by
@@ -145,7 +145,7 @@ def encode_decode (h: n ≤ m) (i: Fin (npr m n)) : encode (decode h i) = i := b
     rw [ih]
     rfl
 
-def decode_encode (f: Fin n ↪ Fin m)  : decode (Fin.le_of_embed f) (encode f) = f := by
+private def decode_encode (f: Fin n ↪ Fin m)  : decode (Fin.le_of_embed f) (encode f) = f := by
   apply encode_inj
   rw [encode_decode]
 

@@ -64,7 +64,7 @@ private def encode (f: Fin n ≃ Fin n) : Fin (n !) :=
           apply fact_pos
     }
 
-def decode_inj : Function.Injective (decode (n := n)) := by
+private def decode_inj : Function.Injective (decode (n := n)) := by
   intro x y h
   induction n with
   | zero => apply Subsingleton.allEq (α := Fin 1)
@@ -78,7 +78,7 @@ def decode_inj : Function.Injective (decode (n := n)) := by
     simp [decode] at h
     simpa [Equiv.symm_apply_fin_erase_none] using Equiv.congr h .none
 
-def encode_inj : Function.Injective (encode (n := n)) := by
+private def encode_inj : Function.Injective (encode (n := n)) := by
   induction n with
   | zero =>
     intro x y h
@@ -100,7 +100,7 @@ def encode_inj : Function.Injective (encode (n := n)) := by
     rw [h₀]
     rw [h₁]
 
-def encode_decode (i: Fin (n !)) : encode (decode i) = i := by
+private def encode_decode (i: Fin (n !)) : encode (decode i) = i := by
   induction n with
   | zero => apply Subsingleton.allEq (α := Fin 1)
   | succ n ih =>
@@ -112,7 +112,7 @@ def encode_decode (i: Fin (n !)) : encode (decode i) = i := by
     rw [ih]
     rfl
 
-def decode_encode (f: Fin n ≃ Fin n)  : decode (encode f) = f := by
+private def decode_encode (f: Fin n ≃ Fin n)  : decode (encode f) = f := by
   apply encode_inj
   rw [encode_decode]
 

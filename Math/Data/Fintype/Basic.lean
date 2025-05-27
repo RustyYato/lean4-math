@@ -1,5 +1,7 @@
 import Math.Data.Fintype.Impls.Pi
 import Math.Data.Fintype.Impls.Sigma
+import Math.Data.Fintype.Impls.Embed
+import Math.Data.Fintype.Impls.Equiv
 
 namespace Fintype
 
