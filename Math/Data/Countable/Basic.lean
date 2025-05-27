@@ -4,8 +4,6 @@ import Math.Logic.Equiv.Basic
 class inductive IsCountable (α: Sort u): Prop where
 | intro (x: α ↪ Nat)
 
-
-
 noncomputable section
 
 namespace IsCountable
