@@ -90,13 +90,6 @@ def fin_ind {α: Fin n -> Type*} [S: ∀i, Setoid (α i)] {motive: (∀i, Quotie
     rfl
     rfl
 
-private def cast_eqv {α β: Type u} [Sα: Setoid α] [Sβ: Setoid β]
-  (h: α = β) (g: HEq Sα Sβ) : ∀x y, cast h x ≈ cast h y ↔ x ≈ y := by
-  cases h; cases g
-  intro x y ; exact Iff.rfl
-
-private def eqv_of_eq {α: Type*} [Sα: Setoid α] {a b: α} (h: a = b) : a ≈ b := by rw [h]
-
 variable [DecidableEq ι] [Fintype ι] {α: ι -> Type*} [S: ∀i, Setoid (α i)]
 
 def finInd
@@ -115,7 +108,7 @@ def finInd
   show q' _ = _
   simp [q'', hq']
   apply Quotient.sound
-  apply eqv_of_eq
+  apply Setoid.eqv_of_eq
   symm; apply cast_eq_of_heq
   congr
   simp
@@ -134,7 +127,7 @@ def finChoice (f: ∀i, Quotient (S i)): Quotient (Setoid.forallSetoid α) := by
       intro i
       simp
       have := h (eqv.symm i)
-      rwa [cast_eqv]
+      rwa [Setoid.cast_eqv]
       rw [Equiv.symm_coe]
   · intro a b
     induction f using finInd with | mk f =>
@@ -142,7 +135,7 @@ def finChoice (f: ∀i, Quotient (S i)): Quotient (Setoid.forallSetoid α) := by
     apply Quotient.sound
     intro i
     simp
-    apply eqv_of_eq
+    apply Setoid.eqv_of_eq
     congr 1
     simp
     apply proof_irrel_heq
@@ -155,7 +148,7 @@ def finChoice_mk (a : ∀ i, α i) : finChoice (S := S) (Quotient.mk _ <| a ·) 
   simp
   apply Quotient.sound
   intro i
-  apply eqv_of_eq
+  apply Setoid.eqv_of_eq
   simp
   apply cast_eq_of_heq
   rw [Equiv.symm_coe]

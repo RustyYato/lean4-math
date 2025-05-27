@@ -55,6 +55,28 @@ def subtypeSetoid (P: α -> Prop) [Setoid α] : Setoid (Subtype P) where
     trans := Relation.trans'
   }
 
+def cast_eqv₀ {α β γ: Type u} {Sα: Setoid α} {Sβ: Setoid β} {Sγ: Setoid γ}
+  (h₀: α = γ)
+  (h₁: β = γ)
+  (g₀: HEq Sα Sγ)
+  (g₁: HEq Sβ Sγ)
+  (a: α) (b: β)
+  (x y: γ)
+  (hx: HEq a x)
+  (hy: HEq b y)
+   : cast h₀ a ≈ cast h₁ b ↔ x ≈ y := by
+  subst h₀ h₁ g₀ g₁ hx hy
+  rfl
+
+def cast_eqv' {α β: Type u} {Sα: Setoid α} {Sβ: Setoid β} (h: α = β) (g: HEq Sα Sβ) : ∀x y, cast h x ≈ cast h y ↔ x ≈ y := by
+  cases h; cases g
+  intro x y ; exact Iff.rfl
+
+def cast_eqv {α β: Type u} [Sα: Setoid α] [Sβ: Setoid β] (h: α = β) (g: HEq Sα Sβ) : ∀x y, cast h x ≈ cast h y ↔ x ≈ y := by
+  apply cast_eqv' <;> assumption
+
+def eqv_of_eq {α: Type u} [Sα: Setoid α] {a b: α} (h: a = b) : a ≈ b := by rw [h]
+
 end Setoid
 
 def Quotient.apply
