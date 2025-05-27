@@ -1,5 +1,6 @@
 import Math.Logic.Equiv.Basic
 import Math.Data.Nat.Find
+import Math.Data.Nat.Pairing
 import Math.Function.Basic
 
 class Encodable (α: Type*) where
@@ -67,6 +68,13 @@ def Embedding [Encodable α] : α ↪ Nat where
   toFun := encode
   inj' := encode_inj
 
+def ofEquiv' [Encodable α] (h: α ≃ β) : Encodable β where
+  encode x := encode (h.symm x)
+  decode' x := (decode' x).map h
+  spec x := by simp [spec]
+
+def ofEquiv [Encodable β] (h: α ≃ β) : Encodable α := ofEquiv' h.symm
+
 instance : Encodable Nat where
   encode := id
   decode' := .some
@@ -105,6 +113,51 @@ instance {P: α -> Prop} [DecidablePred P] [Encodable α] : Encodable (Subtype P
     cases h
     have := hx x.property
     contradiction
+
+instance : Encodable Bool where
+  encode
+  | false => 0
+  | true => 1
+  decode'
+  | 0 => .some false
+  | 1 => .some true
+  | _ => .none
+  spec
+  | false => rfl
+  | true => rfl
+
+instance [Encodable α] : Encodable (Option α) where
+  encode
+  | .none => 0
+  | .some x => encode x + 1
+  decode'
+  | 0 => .some .none
+  | x+1 => (decode' x).map .some
+  spec
+  | .none => rfl
+  | .some x => by
+    dsimp
+    rw [decode'_spec]
+    rfl
+
+instance [eα: Encodable α] [eβ: Encodable β] : Encodable (α ⊕ β) where
+  encode x := Equiv.nat_equiv_nat_sum_nat.symm (Sum.map eα.encode eβ.encode x)
+  decode' n :=
+    match (Equiv.nat_equiv_nat_sum_nat n).map eα.decode' eβ.decode' with
+    | .inl .none | .inr .none => .none
+    | .inl (.some x) => .some (.inl x)
+    | .inr (.some x) => .some (.inr x)
+  spec x := by cases x <;> simp [eα.spec, eβ.spec, Sum.map]
+
+instance {α: ι -> Type*} [eι: Encodable ι] [eα: ∀i, Encodable (α i)] : Encodable (Σi, α i) where
+  encode x := Equiv.nat_equiv_nat_prod_nat.symm (eι.encode x.1, (eα _).encode x.2)
+  decode' x :=
+    have x := Equiv.nat_equiv_nat_prod_nat x
+    (eι.decode' x.1).bind fun i => ((eα i).decode' x.2).map fun a => ⟨i, a⟩
+  spec x := by simp [eι.spec, (eα _).spec]
+
+instance [eα: Encodable α] [eβ: Encodable β] : Encodable (α × β) := Encodable.ofEquiv (Equiv.prod_equiv_sigma _ _)
+instance : Encodable Int := Encodable.ofEquiv Equiv.int_equiv_nat_sum_nat
 
 -- a computable choice function for Encodable types
 def choice {α: Type*} [Encodable α] (h: Nonempty α) : α :=
@@ -157,54 +210,3 @@ def Quot.rep_spec {r: α -> α -> Prop} [Encodable α] [DecidableEq (Quot r)] (a
 
 def Quotient.rep_spec [s: Setoid α] [Encodable α] [@DecidableRel α α (· ≈ ·)] (a: Quotient s) : Quotient.mk _ a.rep = a :=
   Encodable.choose_spec a.exists_rep
-
-instance : Encodable Bool where
-  encode
-  | false => 0
-  | true => 1
-  decode'
-  | 0 => .some false
-  | 1 => .some true
-  | _ => .none
-  spec
-  | false => rfl
-  | true => rfl
-
-instance [Encodable α] : Encodable (Option α) where
-  encode
-  | .none => 0
-  | .some x => encode x + 1
-  decode'
-  | 0 => .some .none
-  | x+1 => (decode' x).map .some
-  spec
-  | .none => rfl
-  | .some x => by
-    dsimp
-    rw [decode'_spec]
-    rfl
-
-instance [Encodable α] [Encodable β] : Encodable (α ⊕ β) where
-  encode
-  | .inl x => 2 * encode x
-  | .inr x => 2 * encode x + 1
-  decode' x :=
-    if x % 2 = 0 then
-      (decode' (x / 2)).map .inl
-    else
-      (decode' (x / 2)).map .inr
-  spec
-  | .inl x => by
-    dsimp
-    rw [if_pos, Nat.mul_comm, Nat.mul_div_cancel, decode'_spec]
-    rfl
-    decide
-    rw [Nat.mul_mod_right]
-  | .inr x => by
-    dsimp
-    rw [if_neg, Nat.mul_add_div, Nat.div_eq, if_neg, Nat.add_zero, decode'_spec]
-    rfl
-    decide
-    decide
-    rw [Nat.add_mod,  Nat.mul_mod_right, Nat.zero_add]
-    decide
