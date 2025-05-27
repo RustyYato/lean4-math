@@ -64,6 +64,14 @@ def copy (f: α ↪ β) (g: α -> β) (h: f = g) : α ↪ β where
 
 @[simp] def apply_trans (f: α ↪ β) (g: β ↪ γ) (x: α) : f.trans g x = g (f x) := rfl
 
+def congr {f g: α ↪ β} (h: f = g) : ∀x, f x = g x := fun _ => h ▸ rfl
+
+def trans_assoc {h₀: α₀ ↪ α₁} {h₁: α₁ ↪ α₂} {h₂: α₂ ↪ α₃} :
+  (h₀.trans h₁).trans h₂ = h₀.trans (h₁.trans h₂) := by rfl
+
+@[simp] def rfl_trans {h₀: α₀ ↪ α₁} : Embedding.rfl.trans h₀ = h₀ := by rfl
+@[simp] def trans_rfl {h₀: α₀ ↪ α₁} : h₀.trans Embedding.rfl = h₀ := by rfl
+
 end Embedding
 
 namespace Equiv
@@ -109,6 +117,9 @@ def inj (h: α ≃ b) : Function.Injective h := h.leftInv.Injective
 def toEmbedding (h: α ≃ β) : α ↪ β where
   toFun := h
   inj' := inj h
+
+@[simp]
+def toEmbedding_trans (h: α ≃ β) (g: β ≃ γ) : h.toEmbedding.trans g.toEmbedding = (h.trans g).toEmbedding := rfl
 
 def copy (f: α ≃ β) (g₀: α -> β) (g₁: β -> α) (h₀: f = g₀) (h₁: f.symm = g₁) : α ≃ β where
   toFun := g₀
@@ -190,6 +201,15 @@ protected def Nonempty [g: Nonempty α] (h: α ≃ β) : Nonempty β :=
 
 @[simp] def apply_refl : Equiv.refl _ x = x := rfl
 @[simp] def apply_rfl : Equiv.rfl x = x := rfl
+
+def symm.inj : Function.Injective (Equiv.symm (α := α) (β := β)) := by
+  intro x y h
+  ext a
+  rw (occs := [2]) [←x.coe_symm a]
+  rw [h]; simp
+
+@[simp]
+def refl_toEmbedding : (Equiv.rfl : α ≃ α).toEmbedding = .rfl := rfl
 
 def ofInvolut (f: α -> α) (h: f.IsInvolutive) : α ≃ α where
   toFun := f

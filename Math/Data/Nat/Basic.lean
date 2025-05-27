@@ -110,4 +110,15 @@ def of_le_pred_self (n: Nat) (h: n ≤ n.pred) : n = 0 := by
   have := Nat.not_lt_of_le h (Nat.lt_succ_self _)
   contradiction
 
+def of_mul_add_lt {a b c d n: ℕ} (h: b < n) (g: d < n) (eq: n * a + b = n * c + d) : a = c ∧ b = d := by
+  have : (n * a + b) % n = (n * c + d) % n := by rw [eq]
+  rw [Nat.mul_add_mod, Nat.mul_add_mod, Nat.mod_eq_of_lt h, Nat.mod_eq_of_lt g] at this
+  subst d
+  simp at eq
+  apply And.intro _ rfl
+  have : (n * a) / n = (n * c) / n := by rw [eq]
+  rwa [Nat.mul_div_cancel_left, Nat.mul_div_cancel_left] at this
+  omega
+  omega
+
 end Nat

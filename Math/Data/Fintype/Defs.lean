@@ -89,6 +89,10 @@ def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h
         rename_i i; exists i)
       ⟨_, hx⟩
 
+def toEmbed {card: ℕ} (f: Repr card α) : Fin card ↪ α where
+  toFun := f.decode
+  inj' := f.bij.Injective
+
 def toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : Fin card ≃ α :=
   match f.encode.get with
   | .some g => {
@@ -759,5 +763,34 @@ def nat_not_Fintype : Fintype Nat -> False := by
   let m := natMax id
   have : m + 1 ≤ m := le_natMax id (m + 1)
   omega
+
+def card_le_of_embed' {fα: Fintype α} {fβ: Fintype β} (h: α ↪ β) : card α ≤ card β := by
+  induction fα generalizing β with
+  | empty => simp
+  | option α ih =>
+    simp
+    induction fβ with
+    | empty =>
+      have := h .none
+      contradiction
+    | option β ih =>
+      clear ih
+      replace h := Embedding.of_option_embed_option h
+      simp
+      apply ih
+      assumption
+    | eqv α₀ α₁ eqv ih =>
+      rw [←card_eq_of_equiv' eqv]
+      apply ih
+      apply Equiv.congrEmbed .rfl _ h
+      symm; assumption
+  | eqv α₀ α₁ eqv ih =>
+    rw [←card_eq_of_equiv' eqv]
+    apply ih
+    apply Equiv.congrEmbed _ .rfl h
+    symm; assumption
+
+def card_le_of_embed [Fintype α] [Fintype β] (h: α ↪ β) : card α ≤ card β := by
+  apply card_le_of_embed' h
 
 end Fintype

@@ -71,6 +71,30 @@ def empty [IsEmpty α] : α ↪ β where
   toFun := elim_empty
   inj' x := elim_empty x
 
+def congrOption : (α ↪ β) ↪ (Option α ↪ Option β) where
+  toFun f := {
+    toFun
+    | .none => .none
+    | .some x => .some (f x)
+    inj' := by
+      intro x y h
+      cases x <;> cases y <;> dsimp at h
+      rfl
+      contradiction
+      contradiction
+      rw [f.inj (Option.some.inj h)]
+  }
+  inj' := by
+    intro f g h
+    dsimp at h
+    replace h := Embedding.congr h
+    ext a
+    have := h a
+    simpa using this
+
+@[simp] def apply_congrOption_some (f: α ↪ β) (x: α) : congrOption f (some x) = some (f x) := rfl
+@[simp] def apply_congrOption_none (f: α ↪ β) : congrOption f .none = .none := rfl
+
 def of_option_embed_option (emb: Option α ↪ Option β) : α ↪ β where
   toFun a :=
     match h:emb a with
@@ -96,6 +120,42 @@ def of_option_embed_option (emb: Option α ↪ Option β) : α ↪ β where
     have := emb.inj h₁; contradiction
     rename_i h₀ h₁
     exact Option.some.inj <| emb.inj (h₀.trans h₁.symm)
+
+@[simp]
+def congrOption_of_option_embed_option (f: α ↪ β) : (congrOption f).of_option_embed_option = f := by
+  ext a
+  simp [congrOption, of_option_embed_option]
+
+@[simp]
+def of_option_embed_option_congrOption (f: Option α ↪ Option β) (h: f .none = .none) : f.of_option_embed_option.congrOption = f := by
+  apply Embedding.ext
+  intro a
+  cases a <;> simp [congrOption, of_option_embed_option]
+  rw [h]
+  split
+  symm; assumption
+  rename_i g
+  rw [←h, f.inj.eq_iff] at g
+  contradiction
+
+def of_option_embed_option_inj (f g: Option α ↪ Option β) (hf: f .none = .none) (hg: g .none = .none) :
+  f.of_option_embed_option = g.of_option_embed_option -> f = g := by
+  intro h
+  apply Embedding.ext
+  intro x
+  cases x
+  rw [hf, hg]
+  rename_i x
+  have := Embedding.congr h x
+  simp [of_option_embed_option] at this
+  split at this; split at this
+  rename_i h₀ _ h₁; rw [h₀, h₁]; congr
+  rename_i h₀ h₁
+  rw [←hg, g.inj.eq_iff] at h₁
+  contradiction
+  rename_i h₀
+  rw [←hf, f.inj.eq_iff] at h₀
+  contradiction
 
 private def cantorProp (α: Sort*) : ((α -> Prop) ↪ α) -> False := by
   intro h
@@ -532,6 +592,10 @@ def congrEmbed {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β�
   intro i x y eq
   rw [←coe_symm h x, ←coe_symm h y] at eq
   exact h.inj (i eq)
+
+@[simp]
+def apply_congrEmebd {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) (f: α₀ ↪ β₀) :
+  congrEmbed h g f = h.symm.toEmbedding.trans (f.trans g.toEmbedding) := rfl
 
 def eqv_equiv_subtype (α β: Type*) : (α ≃ β) ≃ { fg: (α -> β) × (β -> α) // Function.IsRightInverse fg.1 fg.2 ∧ Function.IsLeftInverse fg.1 fg.2 } where
   toFun x := ⟨⟨x.1, x.2⟩, x.3, x.4⟩
@@ -1329,3 +1393,12 @@ def Embedding.option_emb_equiv_prod_emb [_root_.DecidableEq α] [_root_.Decidabl
     simp at h
     apply Option.some.inj
     rw [Option.some_get]; symm; assumption
+
+instance [IsEmpty α] : Subsingleton (α ↪ β) where
+  allEq a b := by ext x; exact elim_empty x
+instance [IsEmpty β] : Subsingleton (α ↪ β) where
+  allEq a b := by ext x; exact elim_empty (a x)
+instance [IsEmpty α] : Subsingleton (α ≃ β) where
+  allEq a b := by ext x; exact elim_empty x
+instance [IsEmpty β] : Subsingleton (α ≃ β) where
+  allEq a b := by ext x; exact elim_empty (a x)
