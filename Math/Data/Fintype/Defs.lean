@@ -76,7 +76,7 @@ def card_eq (a: Repr card₀ α) (b: Repr card₁ α) : card₀ = card₁ := by
   apply b.bij.Surjective
   apply a.bij.Surjective
 
-def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h: ∃i, a = f i) : Σ'x: Fin card, a = f x :=
+private def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h: ∃i, a = f i) : Σ'x: Fin card, a = f x :=
   match card with
   | 0 => False.elim <| nomatch h
   | card + 1 =>
@@ -116,6 +116,7 @@ def toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : Fin card ≃ α :=
       rw [←(findIdx f.decode x _).snd]
   }
 
+def apply_toEmbed {card: ℕ} (f: Repr card α) : f.toEmbed = f.decode := rfl
 def apply_toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : f.toEquiv = f.decode := by
   unfold toEquiv
   split <;> rfl
@@ -137,6 +138,9 @@ instance : Subsingleton (Fintype α) where
     apply ha.card_eq hb
 
 def card (α: Type*) [f: Fintype α] : ℕ := f.card_thunk.get
+
+def toEmbed (α: Type*) [f: Fintype α] : Trunc (Fin (card α) ↪ α) :=
+  f.toRepr.recOnSubsingleton fun repr => Trunc.mk repr.toEmbed
 
 def toEquiv (α: Type*) [DecidableEq α] [f: Fintype α] : Trunc (Fin (card α) ≃ α) :=
   f.toRepr.recOnSubsingleton fun repr => Trunc.mk repr.toEquiv
@@ -601,7 +605,7 @@ def fold [fα: Fintype α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α
     apply a.bij.Injective
     apply b.bij.Injective
 
-def cast_card (f: Fintype α) (h: n = card α) : Fintype α where
+private def cast_card (f: Fintype α) (h: n = card α) : Fintype α where
   card_thunk := n
   toRepr :=
     f.toRepr.map fun r => {
