@@ -4,7 +4,7 @@ import Math.Data.Fin.Pairing
 import Math.Data.List.Defs
 import Math.AxiomBlame
 
-class Fintype.Repr (card: ℕ) (α: Type*) where
+structure Fintype.Repr (card: ℕ) (α: Type*) where
   decode : Fin card -> α
   bij: Function.Bijective decode
   encode: Thunk (Option {

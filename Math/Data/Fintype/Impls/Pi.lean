@@ -437,7 +437,7 @@ instance instPi {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : Fintype (∀i, �
                 dsimp only
                 rw [←rι.apply_toEquiv]
                 conv => {
-                  rhs; arg 1
+                  rhs; arg 2
                   rw [decode_encode_function (n := card_out) (by
                     have := (g i).pos
                     rw [cardα] at this
