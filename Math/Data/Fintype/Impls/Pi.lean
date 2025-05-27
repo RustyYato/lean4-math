@@ -130,7 +130,7 @@ private def extract_encode (f: Fin n -> ℕ) (g: ∀i: Fin n, Fin (f i)) :
 
 variable (ι: Type*) [DecidableEq ι]
 
-def detect_card_step (α: ι -> Type*) [fα: ∀i, Fintype (α i)] (i: ι) (acc: Bool ⊕ ℕ) : Bool ⊕ ℕ :=
+private def detect_card_step (α: ι -> Type*) [fα: ∀i, Fintype (α i)] (i: ι) (acc: Bool ⊕ ℕ) : Bool ⊕ ℕ :=
     let c := card (α i)
     match acc with
     | .inl false => .inr c
@@ -141,7 +141,7 @@ def detect_card_step (α: ι -> Type*) [fα: ∀i, Fintype (α i)] (i: ι) (acc:
       else
         .inl true
 
-def detect_card (α: ι -> Type*) [fι: Fintype ι] [fα: ∀i, Fintype (α i)] :=
+private def detect_card (α: ι -> Type*) [fι: Fintype ι] [fα: ∀i, Fintype (α i)] :=
   Fintype.fold (α := ι) (β := Bool ⊕ Nat) (detect_card_step ι α) (.inl false) (by
         simp [detect_card_step]
         intro i j b
@@ -160,25 +160,25 @@ def detect_card (α: ι -> Type*) [fι: Fintype ι] [fα: ∀i, Fintype (α i)] 
           rw [if_neg]
           subst b; assumption)
 
-def detect_card_empty (α: ι -> Type*) [IsEmpty ι] [f: Fintype ι] [fα: ∀i, Fintype (α i)] :
+private def detect_card_empty (α: ι -> Type*) [IsEmpty ι] [f: Fintype ι] [fα: ∀i, Fintype (α i)] :
   detect_card ι α = .inl false := by
   rw [detect_card, Subsingleton.allEq f]
   rw [fold_empty]
 
 variable [fι: Fintype ι] [fι₀: Fintype ι₀] [fι₁: Fintype ι₁]
 
-def detect_card_option (α: Option ι -> Type*) [fα: ∀i, Fintype (α i)] :
+private def detect_card_option (α: Option ι -> Type*) [fα: ∀i, Fintype (α i)] :
   detect_card (Option ι) α = detect_card_step (Option ι) α .none (detect_card ι (fun i => α (some i))) := by
   rw [detect_card]
   rw [fold_option]
   rfl
 
-def detect_card_eqv (α: ι₁ -> Type*) (h: ι₀ ≃ ι₁) [fα: ∀i, Fintype (α i)] :
+private def detect_card_eqv (α: ι₁ -> Type*) (h: ι₀ ≃ ι₁) [fα: ∀i, Fintype (α i)] :
   detect_card ι₁ α = detect_card ι₀ (fun i => α (h i)) := by
   rw [detect_card]
   apply fold_eqv
 
-def detect_card_eq_inl_false {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : detect_card ι α = .inl false -> IsEmpty ι := by
+private def detect_card_eq_inl_false {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : detect_card ι α = .inl false -> IsEmpty ι := by
   intro h
   induction fι using indType' with
   | empty => infer_instance
@@ -197,7 +197,7 @@ def detect_card_eq_inl_false {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : det
     have := ih h
     apply Function.isEmpty eqv.symm
 
-def detect_card_eq_inr_false {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : detect_card ι α = .inr card' -> ∀i, card (α i) = card' := by
+private def detect_card_eq_inr_false {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : detect_card ι α = .inr card' -> ∀i, card (α i) = card' := by
   intro hc i
   have : DecidableEq ι := inferInstance
   · induction fι using indType' generalizing card' with
@@ -233,17 +233,17 @@ def detect_card_eq_inr_false {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : det
       apply this
       assumption
 
-def decode_function (h: n ≠ 0) (data: Fin (n ^ m)) (i: Fin m) : Fin n where
+private def decode_function (h: n ≠ 0) (data: Fin (n ^ m)) (i: Fin m) : Fin n where
   val := (data.val / (n ^ i.val)) % n
   isLt := by
     apply Nat.mod_lt
     omega
 
-def encode_function (n: ℕ) (f: Fin m -> ℕ) : ℕ :=
+private def encode_function (n: ℕ) (f: Fin m -> ℕ) : ℕ :=
   Fin.foldr m (fun i acc => acc + f i * n ^ i.val) 0
 
-def encode_function_zero (n: ℕ) (f: Fin 0 -> ℕ) : encode_function n f = 0 := rfl
-def encode_function_succ (n: ℕ) (f: Fin (m + 1) -> ℕ) : encode_function n f = encode_function n (f ∘ Fin.succ) * n + f 0 := by
+private def encode_function_zero (n: ℕ) (f: Fin 0 -> ℕ) : encode_function n f = 0 := rfl
+private def encode_function_succ (n: ℕ) (f: Fin (m + 1) -> ℕ) : encode_function n f = encode_function n (f ∘ Fin.succ) * n + f 0 := by
   unfold encode_function
   rw [Fin.foldr_succ]
   show _ + _ * 1 = _
@@ -263,7 +263,7 @@ def encode_function_succ (n: ℕ) (f: Fin (m + 1) -> ℕ) : encode_function n f 
     rw [ih (fun i => f i.succ * n)]
     congr; ext i acc
     rw [Nat.mul_assoc, Nat.pow_succ']
-def encode_function_lt (f: Fin m -> Fin n) : encode_function n (fun i => f i) < n ^ m := by
+private def encode_function_lt (f: Fin m -> Fin n) : encode_function n (fun i => f i) < n ^ m := by
   induction m with
   | zero => simp [encode_function_zero]
   | succ m ih =>
@@ -291,7 +291,7 @@ def encode_function_lt (f: Fin m -> Fin n) : encode_function n (fun i => f i) < 
     · rw [Nat.succ_le]
       apply Fin.isLt
 
-def Nat.pow_pos_iff : ∀ {a n : ℕ}, 0 < a ^ n ↔ 0 < a ∨ n = 0 := by
+private def Nat.pow_pos_iff : ∀ {a n : ℕ}, 0 < a ^ n ↔ 0 < a ∨ n = 0 := by
   intro a b
   cases a with
   | zero =>
@@ -315,7 +315,7 @@ def Nat.pow_pos_iff : ∀ {a n : ℕ}, 0 < a ^ n ↔ 0 < a ∨ n = 0 := by
       assumption
       apply Nat.zero_lt_succ
 
-def decode_function_add_succ (h: n ≠ 0) (data: Fin (n ^ m)) (data₀: Fin n) (i: Fin m) :
+private def decode_function_add_succ (h: n ≠ 0) (data: Fin (n ^ m)) (data₀: Fin n) (i: Fin m) :
   decode_function h ⟨data.val * n + data₀, by
     match n with
     | n + 1 =>
@@ -336,7 +336,7 @@ def decode_function_add_succ (h: n ≠ 0) (data: Fin (n ^ m)) (data₀: Fin n) (
       Nat.div_eq_of_lt data₀.isLt, Nat.add_zero]
     exact data₀.pos
 
-def decode_encode_function (h: n ≠ 0) (f: Fin m -> Fin n) (i: Fin m) : decode_function (n := n) (m := m) h ⟨encode_function n _, encode_function_lt f⟩ i = f i := by
+private def decode_encode_function (h: n ≠ 0) (f: Fin m -> Fin n) (i: Fin m) : decode_function (n := n) (m := m) h ⟨encode_function n _, encode_function_lt f⟩ i = f i := by
   induction m with
   | zero => exact i.elim0
   | succ m ih =>
