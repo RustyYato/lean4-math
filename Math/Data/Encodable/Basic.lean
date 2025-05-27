@@ -64,6 +64,37 @@ instance (priority := 100) [Encodable α] : DecidableEq α :=
 -- the type of natural numbers which are in the range of `encode`
 def Encoding (α: Type*) [Encodable α] := { x: Nat // ∃a: α, encode a = x }
 
+def equivEncoding (α: Type*) [Encodable α] : α ≃ Encoding α where
+  toFun x := {
+    val := encode x
+    property := ⟨_, rfl⟩
+  }
+  invFun x :=
+    match h:decode' x.val with
+    | .none => False.elim <| by
+      have ⟨i, g⟩ := x.property
+      rw [←g] at h
+      rw [spec] at h
+      contradiction
+    | .some x => x
+  leftInv x := by
+    dsimp; split <;> rename_i h
+    simp [spec] at h
+    simp [spec] at h
+    symm; assumption
+  rightInv x := by
+    simp
+    apply Subtype.val_inj
+    simp
+    split
+    contradiction
+    obtain ⟨x, hx⟩ := x
+    rename_i a h
+    dsimp at *
+    obtain ⟨x, rfl⟩ := hx
+    simp [spec] at h
+    rw [h]
+
 def Embedding [Encodable α] : α ↪ Nat where
   toFun := encode
   inj' := encode_inj
