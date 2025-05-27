@@ -341,37 +341,3 @@ def choose [e: Encodable α] {P: α -> Prop} [DecidablePred P] (h: ∃a, P a) : 
     exists x
 
 end Encodable
-
-
--- instance {α: ι -> Type*} [eι: Encodable ι] [eα: ∀i, Encodable (α i)] : Encodable (Σi, α i) where
---   toRepr :=
---     eα.toRepr.map
---     fun eα => {
---     encode x := eα x.val
---     decode i :=
---       match eα.decode i with
---       | .none => .none
---       | .some a =>
---         if p:P a then
---           .some ⟨_, p⟩
---         else
---           .none
---     encode_decode x := by simp; exact x.property
---     spec i := by
---       simp
---       cases h:eα.decode i
---       simp
---       rintro x hx rfl
---       simp at h
---       simp
---       rename_i a
---       apply Iff.intro
---       intro p
---       exists a
---       apply And.intro
---       assumption
---       exact (eα.of_decode_eq_some _ _ h).symm
---       rintro ⟨_, _, rfl⟩
---       simp at h
---       subst a; assumption
---   }
