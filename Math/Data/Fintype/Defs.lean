@@ -1,6 +1,7 @@
 import Math.Data.Trunc
 import Math.Logic.Equiv.Basic
 import Math.Data.Fin.Pairing
+import Math.Data.List.Defs
 import Math.AxiomBlame
 
 class Fintype.Repr (card: ℕ) (α: Type*) where
@@ -764,31 +765,46 @@ def nat_not_Fintype : Fintype Nat -> False := by
   have : m + 1 ≤ m := le_natMax id (m + 1)
   omega
 
-def card_le_of_embed' {fα: Fintype α} {fβ: Fintype β} (h: α ↪ β) : card α ≤ card β := by
-  induction fα generalizing β with
-  | empty => simp
-  | option α ih =>
-    simp
-    induction fβ with
-    | empty =>
-      have := h .none
-      contradiction
-    | option β ih =>
-      clear ih
-      replace h := Embedding.of_option_embed_option h
-      simp
-      apply ih
-      assumption
-    | eqv α₀ α₁ eqv ih =>
-      rw [←card_eq_of_equiv' eqv]
-      apply ih
-      apply Equiv.congrEmbed .rfl _ h
-      symm; assumption
-  | eqv α₀ α₁ eqv ih =>
-    rw [←card_eq_of_equiv' eqv]
+private def Repr.list_nodup_length_le (as bs: List α) (nodup: as.Nodup) (h: ∀x ∈ as, x ∈ bs) : as.length ≤ bs.length := by
+  induction as generalizing bs with
+  | nil => apply Nat.zero_le
+  | cons a as ih =>
+    have := h a (List.Mem.head _)
+    rw [List.mem_iff_append] at this
+    obtain ⟨s, t, rfl⟩ := this
+    simp [←Nat.add_assoc]
+    rw [←List.length_append]
     apply ih
-    apply Equiv.congrEmbed _ .rfl h
-    symm; assumption
+    exact nodup.tail
+    intro x hx
+    replace h := h x (List.Mem.tail _ hx)
+    simp at h; simp
+    rcases h with h | rfl | h
+    left; assumption
+    have := nodup.head _ hx
+    contradiction
+    right; assumption
+
+def card_le_of_embed' {fα: Fintype α} {fβ: Fintype β} (f: α ↪ β) : card α ≤ card β := by
+  induction fα using ind with | @ind cα rα =>
+  induction fβ using ind with | @ind cβ rβ =>
+  let range := List.ofFn (n := cα) (f ∘ rα.decode)
+  have range_nodup : range.Nodup := (List.nodup_ofFn _).mp (by
+    apply Function.Injective.comp
+    exact f.inj
+    exact rα.bij.Injective)
+  have range_len : range.length = cα := by rw [List.length_ofFn]
+  show cα ≤ cβ
+  rw [←range_len]
+  let all := List.ofFn rβ.decode
+  have all_len : all.length = cβ := by rw [List.length_ofFn]
+  rw [←all_len]
+  apply Repr.list_nodup_length_le
+  assumption
+  intro x hx
+  rw [List.mem_ofFn]
+  have ⟨i, h⟩ := rβ.bij.Surjective x
+  exists i; symm; assumption
 
 def card_le_of_embed [Fintype α] [Fintype β] (h: α ↪ β) : card α ≤ card β := by
   apply card_le_of_embed' h

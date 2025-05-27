@@ -632,7 +632,8 @@ def fin_erase (i: Fin (n + 1)) : Fin (n + 1) ≃ Option (Fin n) where
     by_cases h:x.val < i.val
     simp [h]
     by_cases g:x.val = i.val
-    simp [h, g]
+    simp only [g, Nat.lt_irrefl, ↓reduceIte, Nat.add_eq_left, Nat.succ_ne_self, ↓reduceDIte,
+      Nat.add_one_sub_one]
     rw [dif_neg]
     congr 2; symm; assumption
     omega
