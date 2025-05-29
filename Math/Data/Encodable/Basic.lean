@@ -221,7 +221,7 @@ def axiomOfChoice {α : Sort u}
   [∀x, Encodable (β x)]
   [∀x, DecidablePred (r x)]
   (h : ∀ x, ∃ y, r x y) :
-  ∃ (f : ∀ x, β x), ∀ x, r x (f x) :=
+  Subtype fun (f : ∀ x, β x) => ∀ x, r x (f x) :=
   ⟨_, fun x => choose_spec (h x)⟩
 
 def cantor_diag : Encodable (Nat -> Bool) -> False := by
