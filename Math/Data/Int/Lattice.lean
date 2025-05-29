@@ -5,7 +5,7 @@ import Math.Data.Nat.Find
 
 noncomputable section
 
-open Classical
+open scoped Classical
 
 namespace Int
 
@@ -65,13 +65,13 @@ def exists_min_of_bounded_below (S: Set Int) (h: S.Nonempty) (hbdd: S.BoundedBel
 instance : SupSet Int where
   sSup S :=
     if h:S.Nonempty ∧ S.BoundedAbove then
-      choose (exists_max_of_bounded_above _ h.left h.right)
+      Classical.choose (exists_max_of_bounded_above _ h.left h.right)
     else
       0
 instance : InfSet Int where
   sInf S :=
     if h:S.Nonempty ∧ S.BoundedBelow then
-      choose (exists_min_of_bounded_below _ h.left h.right)
+      Classical.choose (exists_min_of_bounded_below _ h.left h.right)
     else
       0
 

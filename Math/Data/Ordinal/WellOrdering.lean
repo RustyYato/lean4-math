@@ -351,9 +351,7 @@ def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
       apply h.left
       assumption
 
-open Classical
-
-def order (α: Type*): init_seg_rel α := choose (exists_wo α)
-instance : Relation.IsWellOrder (order α) := choose_spec (exists_wo α)
+def order (α: Type*): init_seg_rel α := Classical.choose (exists_wo α)
+instance : Relation.IsWellOrder (order α) := Classical.choose_spec (exists_wo α)
 
 end WellOrdering

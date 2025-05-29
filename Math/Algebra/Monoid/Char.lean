@@ -2,8 +2,6 @@ import Math.Algebra.Monoid.Defs
 import Math.Algebra.Monoid.Hom
 import Math.Logic.Equiv.Basic
 
-open Classical
-
 variable (α: Type*) [AddMonoidOps α] [IsAddMonoid α]
 
 class HasChar (n: outParam <| Nat): Prop where

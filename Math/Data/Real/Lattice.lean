@@ -5,7 +5,8 @@ import Math.Data.Real.Dedekind
 
 noncomputable section
 
-open Classical Real
+open scoped Classical
+open Real
 
 def Real.exists_rat_lt (r: ℝ) : ∃q: ℚ, q < r := by
   induction r using Cauchy.ind with | ofSeq r =>
@@ -158,9 +159,8 @@ end
 
 namespace Real
 
-open Classical
-
 def max_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊔ b) * c = (a * c) ⊔ (b * c) := by
+  open scoped Classical in
   rw [max_def, max_def]
   split <;> rename_i h
   rw [if_pos]
@@ -176,6 +176,7 @@ def max_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊔ b) * c = (a * c) ⊔ (b * c) := 
   simp
 
 def min_mul (a b c: ℝ) (hc: 0 ≤ c) : (a ⊓ b) * c = (a * c) ⊓ (b * c) := by
+  open scoped Classical in
   rw [min_def, min_def]
   split <;> rename_i h
   rw [if_pos]

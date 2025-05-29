@@ -9,8 +9,6 @@ namespace Submodule
 
 section Defs
 
--- open Classical
-
 variable {M: Type*} (R: Type*) [SemiringOps R] [IsSemiring R] [AddMonoidOps M] [IsAddMonoid M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
   [DecidableEq M]
 

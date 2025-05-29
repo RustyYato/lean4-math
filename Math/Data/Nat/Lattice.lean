@@ -1,7 +1,7 @@
 import Math.Order.Lattice.ConditionallyComplete
 import Math.Order.Linear
 
-open Classical
+open scoped Classical
 
 instance : Max Nat := ⟨max⟩
 instance : Min Nat := ⟨min⟩

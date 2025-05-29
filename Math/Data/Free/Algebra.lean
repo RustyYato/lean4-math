@@ -500,9 +500,9 @@ def ι_comp_lift (f : X → A) : (lift R f : FreeAlgebra R X → A) ∘ ι R = f
 def lift_ι_apply (f : X → A) (x) : lift R f (ι R x) = f x := rfl
 
 def ι_inj [IsNontrivial R] : Function.Injective (ι R (X := X)) := by
-  open Classical in
+  open scoped Classical in
   intro x y eq
-  apply byContradiction
+  apply Classical.byContradiction
   intro h
   let f : FreeAlgebra R X →ₐ[R] R := lift _ <| fun z => if x = z then (1: R) else 0
   have h₀ : f (ι R x) = 1 := if_pos rfl

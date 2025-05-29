@@ -98,15 +98,14 @@ instance
     apply le_max_right
     apply dist_triangle
 
-open Classical in
-instance
-  Prod.metricMax
+instance Prod.metricMax
   [Dist α γ] [Dist β γ]
   [LE γ] [LT γ] [AddMonoidOps γ]
   [IsAddCancel γ] [IsOrderedAddCommMonoid γ]
   [Min γ] [Max γ] [IsLinearLattice γ]
   [IsMetric α] [IsMetric β] : IsMetric (α × β) where
   of_dist_eq_zero a b h := by
+    open scoped Classical in
     replace h: max _ _ = (0: γ) := h
     by_cases h₀:dist a.fst b.fst ≤ 0
     replace h₀ := of_dist_eq_zero _ _ <| le_antisymm h₀ (dist_nonneg _ _ )

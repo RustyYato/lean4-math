@@ -621,14 +621,13 @@ def succ.inj : Function.Injective succ := by
   apply le_of_lt_succ
   rw [eq]; apply lt_succ_self
 
-open Classical in
-noncomputable
-def transfiniteRecursion
+noncomputable def transfiniteRecursion
   {motive: Ordinal.{u} -> Sort v}
   (zero: motive 0)
   (succ: ∀o: Ordinal.{u}, motive o -> motive o.succ)
   (limit: ∀o: Ordinal.{u}, o.IsSuccLimit -> (∀x: Ordinal.{u}, x < o -> motive x) -> motive o)
   (o: Ordinal.{u}): motive o :=
+  open scoped Classical in
   if h:0 = o then
     h ▸ zero
   else if g:∃o': Ordinal, o = o'.succ then
@@ -719,7 +718,7 @@ def zero_lt_of_ne_zero {o: Ordinal} : o ≠ 0 -> 0 < o := by
   apply zero_le
   symm; assumption
 
-open Classical in
+open scoped Classical in
 def oSup_const : oSup o (fun _ _ => x) = if o = 0 then 0 else x := by
   unfold oSup
   dsimp

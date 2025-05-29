@@ -130,9 +130,9 @@ def cauchy_schwartz (a b c d: ℝ) : (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (
   apply Real.ofRat_le.mpr
   decide
 
-open Classical
 
 def sqrt_ne_zero (a: ℝ) (h: 0 < a) : a.sqrt ≠ 0 := by
+  open scoped Classical in
   intro g
   rw [←map_zero NNReal.embedReal] at g
   have := (NNReal.sqrt_ne_zero _ · (NNReal.embedReal.inj g))

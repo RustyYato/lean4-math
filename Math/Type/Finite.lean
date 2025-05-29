@@ -114,9 +114,13 @@ noncomputable def ENat.equiv_of_card [IsFinite β] (h: card α = card β) : α �
     exact ENat.natCast_inj h
     assumption
 
+instance (α: Type _) [f: IsFinite α] : Nonempty (Fintype α) := by
+  obtain ⟨_, eqv⟩ := f
+  exact ⟨Fintype.ofEquiv' eqv⟩
+
 noncomputable
 def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=
-  Fintype.ofEquiv' (IsFinite.toEquiv α)
+  Classical.choice inferInstance
 
 def IsFinite.card_eq_card (α: Type _) [IsFinite α] :
   IsFinite.card α = @Fintype.card α (Fintype.ofIsFinite α) := by

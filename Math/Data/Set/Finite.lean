@@ -4,7 +4,7 @@ import Math.Type.Finite
 
 namespace Set
 
-open Classical
+open scoped Classical
 
 -- a set is finite if there exists an embedding from elements of the set to Fin n for some n
 protected abbrev IsFinite (a: Set α): Prop := _root_.IsFinite a

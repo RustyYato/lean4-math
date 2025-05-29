@@ -3,7 +3,8 @@ import Math.Order.Directed.Basic
 
 namespace FilterBase
 
-open Classical Set
+open scoped Classical
+open Set
 
 variable {α : Type*} [LE α] [LT α] [Min α] [Top α] [IsLawfulTop α] [InfSet α] [IsCompleteSemiLatticeMin α]
 
@@ -64,7 +65,7 @@ def mem_iInf_of_directed {f : ι → Filter α} (h : Directed (· ≥ ·) f) [No
 def iInf_neBot_of_directed' {f : ι → Filter α} [Nonempty ι] (hd : Directed (· ≥ ·) f) :
     (∀ i, NeBot (f i)) → NeBot (⨅i, f i) :=
   Classical.contrapositive.mp <| by
-    simpa only [not_forall, not_neBot, ←bot_mem_iff_bot, mem_iInf_of_directed hd] using id
+    simpa only [Classical.not_forall, not_neBot, ←bot_mem_iff_bot, mem_iInf_of_directed hd] using id
 
 def sInf_neBot_of_directed' {s : Set (Filter α)} (hne : s.Nonempty) (hd : s.DirectedOn (· ≥ ·))
     (hbot : ⊥ ∉ s) : NeBot (⨅ s) := by

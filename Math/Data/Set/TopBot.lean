@@ -14,16 +14,16 @@ end OrderEquiv
 
 noncomputable section
 
-open Classical
-
 instance instSupSetWithTop [SupSet α] [LE α] : SupSet (WithTop α) where
   sSup s :=
+    open scoped Classical in
     have s' := s.preimage .of
     if ⊤ ∈ s ∨ ¬Set.BoundedAbove s' then ⊤
     else .of (⨆ (s.preimage .of))
 
 instance instInfSetWithTop [InfSet α] [LE α] : InfSet (WithTop α) where
   sInf s :=
+    open scoped Classical in
     if s ⊆ {⊤} ∨ ¬s.BoundedBelow then ⊤
     else .of (⨅ (s.preimage .of))
 

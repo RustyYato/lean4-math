@@ -128,9 +128,8 @@ def inter (cs: IsChain r s) (ct: IsChain r t) : IsChain r (s ∩ t) := by
 
 end IsChain
 
-open Classical in
-noncomputable
-def succChain (r: α -> α -> Prop) (s: Set α) :=
+noncomputable def succChain (r: α -> α -> Prop) (s: Set α) :=
+  open scoped Classical in
   if h:∃t, IsStrictSuperChain r s t then
     Classical.choose h
   else

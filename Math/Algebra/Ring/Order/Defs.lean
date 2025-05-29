@@ -32,8 +32,6 @@ def eq_zero_of_square_eq_zero [IsLinearOrder α] {a: α}: a ^ 2 = 0 -> a = 0 := 
   exact (lt_irrefl this).elim
   rwa [neg_lt_neg_iff, neg_neg, neg_zero]
 
-open Classical
-
 def intCast_strictmonotone : StrictMonotone (Int.cast (R := α)) := by
   intro a b h
   cases a with
@@ -65,6 +63,7 @@ def intCast_le {a b: ℤ} : (a: α) ≤ b ↔ a ≤ b :=
   intCast_strictmonotone.le_iff_le
 
 def abs_intCast_eq_intCast_abs [Max α] [Min α] [IsLinearLattice α] (a: ℤ) : (|a|: ℤ) = (|a|: α) := by
+  open scoped Classical in
   unfold abs
   apply le_antisymm
   apply le_max_iff.mpr

@@ -45,9 +45,8 @@ def singleton_attach (a: α) : Set.attach {a} = {⟨a, mem_singleton.mpr rfl⟩ 
   cases x
   simpa [mem_attach]
 
-open Classical in
-noncomputable
-def piecewise (s: Set α) (f g: α -> β) : α -> β :=
+noncomputable def piecewise (s: Set α) (f g: α -> β) : α -> β :=
+  open scoped Classical in
   fun x => if x ∈ s then f x else g x
 
 def range_piecewise (s: Set α) (f: α -> β) (g: α -> β)  :
@@ -91,8 +90,8 @@ def InjectiveOn_univ_iff_Injective :
 def SurjectiveOn (f: α -> β) (s: Set α) (t: Set β) : Prop :=
   ∀{y: β}, y ∈ t -> ∃x ∈ s, f x = y
 
-open Classical in
 noncomputable def invFun_on {α : Type u} {β} [Nonempty α] (s: Set α) (f : α → β) : β → α :=
+  open scoped Classical in
   fun y => Classical.epsilon (fun x => x ∈ s ∧ f x = y)
 
 def invFun_eq_on {s: Set α} {f: α -> β} (h : ∃a ∈ s, f a = b) :

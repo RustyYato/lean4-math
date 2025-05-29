@@ -104,7 +104,6 @@ def zpow?_ne_zero (a: α) (h: a ≠ 0) : a ^? n ≠ 0 := by
 macro_rules
 | `(tactic|invert_tactic_trivial) => `(tactic|apply zpow?_ne_zero; try invert_tactic)
 
-open Classical in
 def zpow?_def (n: ℤ) (a: α) (h: a ≠ 0 ∨ 0 ≤ n) : a ^? n = if g:0 ≤ n then
       a ^ n.natAbs
     else

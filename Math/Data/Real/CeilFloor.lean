@@ -7,7 +7,7 @@ noncomputable section
 
 namespace Real
 
-open Classical
+open scoped Classical
 
 @[norm_cast]
 def intCast_le {a b: ℤ} :  a ≤ (b: ℝ) ↔ a ≤ b := by

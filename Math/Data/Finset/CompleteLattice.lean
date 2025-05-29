@@ -6,7 +6,7 @@ noncomputable section
 
 namespace Finset
 
-open Classical
+open scoped Classical
 
 variable [Fintype α]
 

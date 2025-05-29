@@ -10,17 +10,13 @@ variable (R: Type v) [SemiringOps R] [IsSemiring R] [IsCommMagma R]
 
 open Classical
 
-
-
 def CommAlg.Free : Type u ⥤ CommAlg.{max u v, v} R where
   obj α := CommAlg.mk (Alg.mk (MvPoly R α))
   map {X Y} := MvPoly.map
   map_id {X} := AlgHom.ext _ _ (fun x => MvPoly.lift_X x)
   map_comp {X Y Z} f g := (MvPoly.map_comp_map _ _).symm
 
-
 section
-
 
 variable
   [SemiringOps R] [SemiringOps A] [SemiringOps B] [SemiringOps C]
