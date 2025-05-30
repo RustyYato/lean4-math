@@ -1,7 +1,9 @@
-import Math.Data.DFinsupp.Support
+import Math.Data.DFinsupp.NewSupport
 import Math.Data.Trunc
 import Math.Algebra.Group.Hom
 import Math.Algebra.Module.Defs
+
+open scoped LazyFinset
 
 structure Finsupp (α β S: Type*) [Zero β] [FiniteSupportOps S α] where
   toFun: α -> β
@@ -87,11 +89,11 @@ instance [Zero β] [Add β] [IsAddZeroClass β] : Add (Finsupp α β S) where
           replace ne : f x + g x ≠ 0 := ne
           by_cases x ∈ fs
           apply FiniteSupport.coe_max_sub_max_coe
-          apply Finset.mem_union.mpr
+          apply LazyFinset.mem_append.mpr
           left; assumption
           by_cases x ∈ gs
           apply FiniteSupport.coe_max_sub_max_coe
-          apply Finset.mem_union.mpr
+          apply LazyFinset.mem_append.mpr
           right; assumption
           rename_i fx gx
           have fx_eq_zero : f x = 0 := Classical.not_not.mp (Classical.contrapositive.mpr (hf x) fx)
@@ -153,11 +155,11 @@ instance [AddGroupOps β] [IsNegZeroClass β] [IsSubNegMonoid β] : Sub (Finsupp
           replace ne : f x - g x ≠ 0 := ne
           by_cases x ∈ fs
           apply FiniteSupport.coe_max_sub_max_coe
-          apply Finset.mem_union.mpr
+          apply LazyFinset.mem_append.mpr
           left; assumption
           by_cases x ∈ gs
           apply FiniteSupport.coe_max_sub_max_coe
-          apply Finset.mem_union.mpr
+          apply LazyFinset.mem_append.mpr
           right; assumption
           rename_i fx gx
           have fx_eq_zero : f x = 0 := Classical.not_not.mp (Classical.contrapositive.mpr (hf x) fx)
@@ -240,7 +242,7 @@ def update [DecidableEq α] [Zero β] (a: α) (b: β) (f: Finsupp α β S) : Fin
       val := FiniteSupport.singleton a ⊔ fs
       property x ne := by
         apply FiniteSupport.coe_max_sub_max_coe
-        apply Finset.mem_union.mpr
+        apply LazyFinset.mem_append.mpr
         split at ne
         subst x
         left; apply FiniteSupport.mem_singleton
@@ -295,12 +297,12 @@ def on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β): Finsupp α β 
 @[simp] def apply_on [Zero β] (s: S) [DecidablePred (· ∈ s)] (f: α -> β) (x: α) :
   on s f x = if x ∈ s then f x else 0 := rfl
 
-def support [Zero β] [dec: ∀x: β, Decidable (x = 0)] (f: Finsupp α β S) : Finset α :=
-  f.spec.lift (fun s => (s.val: Finset α).filter fun x => decide (f x ≠ 0)) <| by
+def support [Zero β] [dec: ∀x: β, Decidable (x = 0)] (f: Finsupp α β S) : LazyFinset α :=
+  f.spec.lift (fun s => (s.val: LazyFinset α).filter fun x => decide (f x ≠ 0)) <| by
     intro ⟨a, ha⟩ ⟨b, hb⟩
     dsimp
     ext x
-    simp [Finset.mem_filter]
+    simp [LazyFinset.mem_filter]
     intro h
     apply Iff.intro <;> intro
     apply hb; assumption
@@ -313,8 +315,8 @@ def mem_support [Zero β] [dec: ∀x: β, Decidable (x = 0)] {f: Finsupp α β S
   induction h with | mk h =>
   obtain ⟨s, h⟩ := h
   unfold support
-  show x ∈ Finset.filter (fun x => f x ≠ 0) s ↔ f x ≠ 0
-  simp [Finset.mem_filter]
+  show x ∈ LazyFinset.filter (fun x => f x ≠ 0) s ↔ f x ≠ 0
+  simp [LazyFinset.mem_filter]
   apply h
 
 def support_on_subset [Zero β] (s: S) [DecidablePred (· ∈ s)] [dec: ∀x: β, Decidable (x = 0)] (f: α -> β) :
@@ -324,9 +326,9 @@ def support_on_subset [Zero β] (s: S) [DecidablePred (· ∈ s)] [dec: ∀x: β
   intros; assumption
 
 def support_on [Zero β] (s: S) [DecidablePred (· ∈ s)] [dec: ∀x: β, Decidable (x = 0)] (f: α -> β) :
-  support (on s f) = (s: Finset α).filter (fun x => f x ≠ 0) := by
+  support (on s f) = (s: LazyFinset α).filter (fun x => f x ≠ 0) := by
   ext x
-  simp [mem_support, Finset.mem_filter]
+  simp [mem_support, LazyFinset.mem_filter]
 
 def mapRange [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: F) (f: Finsupp α β S): Finsupp α γ S where
   toFun x  := g (f x)
@@ -348,25 +350,25 @@ def mapRange_zero [Zero β] [Zero γ] [FunLike F β γ] [IsZeroHom F β γ] (g: 
   mapRange g (0: Finsupp α β S) = 0 := by
   ext x; simp [map_zero]
 
-def toFinset [DecidableEq α] [Zero β] (f: Finsupp α β S) : Finsupp α β (Finset α) where
+def toLazyFinset [DecidableEq α] [Zero β] (f: Finsupp α β S) : Finsupp α β (LazyFinset α) where
   toFun := f
   spec := f.spec.map fun ⟨s, h⟩ => {
     val := s
     property := h
   }
 
-@[simp] def toFinset_coe_eq [DecidableEq α] [Zero β] (f: Finsupp α β S) : (f.toFinset: α -> β) = f := rfl
+@[simp] def toLazyFinset_coe_eq [DecidableEq α] [Zero β] (f: Finsupp α β S) : (f.toLazyFinset: α -> β) = f := rfl
 
 def eq_support_union [Zero β] [∀b: β, Decidable (b = 0)] (f: Finsupp α β S)
-  (supp: Finset α) (supp_spec: ∀ (x : α), f x ≠ 0 → x ∈ supp) :
-  ∃rest, ∃h, supp = f.support.union_disjoint rest h := by
+  (supp: LazyFinset α) (supp_spec: ∀ (x : α), f x ≠ 0 → x ∈ supp) :
+  ∃rest, (∀x ∈ f.support, ¬x ∈ rest) ∧ supp = f.support ++ rest := by
   classical
   refine ⟨supp \ f.support, ?_, ?_⟩
   intro x h g
-  rw [Finset.mem_sdiff] at g
+  rw [LazyFinset.mem_sdiff] at g
   exact g.right h
   ext x
-  simp [Finset.mem_sdiff, Finset.mem_union_disjoint]
+  simp [LazyFinset.mem_sdiff, LazyFinset.mem_append]
   apply Iff.intro
   intro h
   simp [h]
@@ -381,7 +383,7 @@ def eq_support_union [Zero β] [∀b: β, Decidable (b = 0)] (f: Finsupp α β S
 def support_single [DecidableEq α] [Zero β] [∀b: β, Decidable (b = 0)] :
  (single a b: Finsupp α β S).support ⊆ {a} := by
  intro i h
- rw [Finset.mem_singleton,]
+ rw [LazyFinset.mem_singleton,]
  rw [mem_support] at h
  unfold single at h
  replace h : (if i = a then b else 0) ≠ (0: β) := h
@@ -400,7 +402,7 @@ def smul_single [Zero β] [Mul β] [IsMulZeroClass β] [∀b: β, Decidable (b =
 def support_smul [Zero β] [Mul β] [IsMulZeroClass β] [∀b: β, Decidable (b = 0)] [DecidableEq α] (x: β) (f: Finsupp α β S) :
   (x • f).support ⊆ f.support := by
   intro i
-  simp [mem_support, Finset.mem_union]
+  simp [mem_support, LazyFinset.mem_append]
   intro h g; apply h
   show x * f i = 0
   rw [g, mul_zero]
@@ -408,7 +410,7 @@ def support_smul [Zero β] [Mul β] [IsMulZeroClass β] [∀b: β, Decidable (b 
 def support_add [Zero β] [Add β] [IsAddZeroClass β] [∀b: β, Decidable (b = 0)] [DecidableEq α] (f g: Finsupp α β S) :
   (f + g).support ⊆ f.support ∪ g.support := by
   intro i
-  simp [mem_support, Finset.mem_union]
+  simp [mem_support, LazyFinset.mem_append]
   rw [←Classical.not_and_iff_not_or_not, Classical.contrapositive]
   intro ⟨ha, hb⟩
   rw [ha, hb, add_zero]
@@ -416,11 +418,10 @@ def support_add [Zero β] [Add β] [IsAddZeroClass β] [∀b: β, Decidable (b =
 def support_zero [Zero β] [∀b: β, Decidable (b = 0)] : support (S := S) (β := β) 0 = ∅ := by
   ext
   simp [mem_support]
-  apply Finset.not_mem_empty
 
 def support_erase [Zero β] [DecidableEq α] [DecidableEq β] (f: Finsupp α β S) : (f.erase x).support = f.support.erase x := by
   ext a
-  simp [mem_support, Finset.mem_erase, apply_erase]
+  simp [mem_support, LazyFinset.mem_erase, apply_erase]
   rw [And.comm]
 
 def induction [Zero β] [Add β] [IsAddZeroClass β] [DecidableEq α]
@@ -436,28 +437,40 @@ def induction [Zero β] [Add β] [IsAddZeroClass β] [DecidableEq α]
   ∀f, motive f := by
   intro f
   classical
-  cases h:f.support with
-  | mk supp suppnodup =>
-  replace h : f.support.val = supp := by rw [h]
-  clear suppnodup
-  induction supp generalizing f with
+
+  -- cases h:f.support with
+  -- | mk supp suppnodup =>
+  -- replace h : f.support.val = supp := by rw [h]
+  -- clear suppnodup
+  induction h:f.support generalizing f with
   | nil =>
     rw [show f = 0 from ?_]
     assumption
     ext x
     apply Classical.byContradiction
     intro g
-    have : x ∈ f.support.val := mem_support.mpr g
+    have := f.mem_support.mpr g
     rw [h] at this
     contradiction
-  | cons a as ih =>
+  | cons a as ne ih =>
     obtain ⟨supp'⟩ := f.spec
     rw [show f = Finsupp.single a (f a) + f.erase a from ?_]
     apply add
     apply single
     apply ih
-    · simp [support_erase f, Finset.erase, h]
-      rw [Multiset.erase_cons_head]
+    · simp [support_erase f, h]
+      ext x
+      simp
+      apply Iff.intro
+      intro ⟨h₀, h₁⟩
+      rcases h₀
+      contradiction
+      assumption
+      intro g
+      apply And.intro
+      right; assumption
+      rintro rfl
+      contradiction
     · intro x h
       simp [apply_erase, apply_single] at h
       simp only [apply_erase, apply_single]

@@ -14,8 +14,8 @@ class FiniteSupport (S: Type*) (ι: outParam Type*) extends
   FiniteSupportOps S ι, LatticeOps S, IsLattice S where
   singleton: ι -> S
   mem_singleton: ∀i, i ∈ singleton i
-  remove: ι -> S -> S
-  mem_remove:  ∀(s: S) (x i: ι), x ∈ s -> i ≠ x -> x ∈ remove i s
+  remove [DecidableEq ι]: ι -> S -> S
+  mem_remove [DecidableEq ι]:  ∀(s: S) (x i: ι), x ∈ s -> i ≠ x -> x ∈ remove i s
   le_spec {a b: S}: a ≤ b ↔ (a: Finset ι) ⊆ (b: Finset ι)
   mem_min: ∀{a b: S} {x}, x ∈ a -> x ∈ b -> x ∈ a ⊓ b
 
@@ -29,7 +29,7 @@ instance [DecidableEq ι] : FiniteSupport (Finset ι) ι where
   mem_singleton _ := Finset.mem_singleton.mpr rfl
   remove := Finset.erase
   mem_remove := by
-    intro s x i hx ne
+    intro _ s x i hx ne
     apply Finset.mem_erase.mpr
     apply And.intro hx
     symm; assumption
@@ -50,7 +50,7 @@ instance : FiniteSupport Nat Nat where
   mem_singleton _ := by rw [Nat.mem_iff_lt]; apply Nat.lt_succ_self
   remove i s := if i + 1 = s then i else s
   mem_remove := by
-    intro s x i hx ne
+    intro _ s x i hx ne
     simp [Nat.mem_iff_lt] at*
     split
     subst s; apply lt_of_le_of_ne

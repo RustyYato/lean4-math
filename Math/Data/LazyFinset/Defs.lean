@@ -311,15 +311,22 @@ def toMultiset_ofMultiset [DecidableEq α] (as: Multiset α) : (ofMultiset as).t
 
 @[simp] def mem_ofMultiset {as: Multiset α} : ∀{x}, x ∈ (ofMultiset as) ↔ x ∈ as := by rfl
 
-def erase [DecidableEq α] (a: α) : LazyFinset α -> LazyFinset α := by
+def filter (f: α -> Bool) : LazyFinset α -> LazyFinset α := by
   refine lift ?_ ?_
-  intro s; exact ofMultiset (s.filter (· ≠ a))
+  intro s; exact ofMultiset (s.filter f)
   intro a₀ as
   ext; simp [Multiset.mem_filter]
 
+@[simp] def mem_filter {f: α -> Bool} {as: LazyFinset α} : ∀{x}, x ∈ as.filter f ↔ x ∈ as ∧ f x := by
+  induction as using ind with | _ as =>
+  apply Multiset.mem_filter
+
+def erase [DecidableEq α] (a: α) : LazyFinset α -> LazyFinset α :=
+  filter (· ≠ a)
+
 @[simp] def mem_erase [DecidableEq α] {a: α} {as: LazyFinset α} : ∀{x}, x ∈ as.erase a ↔ x ∈ as ∧ x ≠ a := by
   induction as using ind with | _ as =>
-  simp [erase, Multiset.mem_filter]
+  simp [erase]
 
 def Elem (s: LazyFinset α) := { x // x ∈ s }
 
@@ -332,5 +339,26 @@ instance {P: α -> Prop} [DecidablePred P] (s: LazyFinset α) : Decidable (∃x 
 instance {P: α -> Prop} [DecidablePred P] (s: LazyFinset α) : Decidable (∀x ∈ s, P x) :=
   s.recOnSubsingleton fun s =>
   inferInstanceAs (Decidable (∀x ∈ s, P x))
+
+instance [DecidableEq α] (x: α) (as: LazyFinset α) : Decidable (x ∈ as) :=
+  as.recOnSubsingleton fun as =>
+  inferInstanceAs (Decidable (x ∈ as))
+
+instance [DecidableEq α] : SDiff (LazyFinset α) where
+  sdiff a b := a.filter (· ∉ b)
+
+def mem_sdiff [DecidableEq α] {a b: LazyFinset α} : ∀{x}, x ∈ a \ b ↔ x ∈ a ∧ x ∉ b := by
+  simp [SDiff.sdiff]
+
+instance [DecidableEq α] : Inter (LazyFinset α) where
+  inter a b := a.filter (· ∈ b)
+
+def mem_inter [DecidableEq α] {a b: LazyFinset α} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := by
+  simp [Inter.inter]
+
+instance : Union (LazyFinset α) where
+  union a b := a ++ b
+
+@[simp] def union_eq_append (a b: LazyFinset α) : a ∪ b = a ++ b := rfl
 
 end LazyFinset

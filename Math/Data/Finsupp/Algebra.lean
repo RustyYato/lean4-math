@@ -8,16 +8,15 @@ variable [FiniteSupport S ι]
 def sum [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0) : γ := by
   refine f.spec.lift (?_) ?_
   intro ⟨fs, hf⟩
-  let _ : FinsetLike S ι := inferInstance
-  let fs : Finset ι := fs
-  exact (fs.val.map (fun a => g a (f a))).sum
+  let fs : LazyFinset ι := fs
+  exact (fs.toMultiset.map (fun a => g a (f a))).sum
   intro ⟨a, ha⟩ ⟨b, hb⟩
   dsimp
   classical
   obtain ⟨a', ha', eqa'⟩ := Finsupp.eq_support_union f a ha
   obtain ⟨b', hb', eqb'⟩ := Finsupp.eq_support_union f b hb
   rw [eqa', eqb']
-  unfold Finset.union_disjoint
+  unfold LazyFinset.union_disjoint
   simp [Multiset.map_append]
   rw [Multiset.sum_append]
   rw [Multiset.sum_append]
@@ -79,7 +78,7 @@ def sum_eq_support_sum
    dsimp [DFunLike.coe]
    obtain ⟨rest, disjoint, eq⟩ := Finsupp.eq_support_union ⟨f, Trunc.mk spec⟩ spec.val spec.property
    rw [eq]
-   rw [Finset.union_disjoint,Multiset.map_append, Multiset.sum_append]
+   rw [LazyFinset.union_disjoint,Multiset.map_append, Multiset.sum_append]
    conv => { rhs; rw [←add_zero (Multiset.sum _)] }
    congr
    rw [Multiset.sum_eq_zero]
@@ -91,12 +90,12 @@ def sum_eq_support_sum
 
 def sum_eq_support_max_sum
    [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0)
-   (s: Finset ι) (h: f.support ⊆ s):
+   (s: LazyFinset ι) (h: f.support ⊆ s):
    f.sum g resp = (s.val.map (fun i => g i (f i))).sum := by
    rw [sum_eq_support_sum]
    classical
-   obtain ⟨s, hs, rfl⟩ := Finset.exists_union_eq_of_sub h
-   rw [Finset.union_disjoint, Multiset.map_append, Multiset.sum_append]
+   obtain ⟨s, hs, rfl⟩ := LazyFinset.exists_union_eq_of_sub h
+   rw [LazyFinset.union_disjoint, Multiset.map_append, Multiset.sum_append]
    conv => { lhs; rw [←add_zero (Multiset.sum _)] }
    congr
    rw [Multiset.sum_eq_zero]
@@ -117,8 +116,8 @@ def add_sum
   sum (f₀ + f₁) g eq₂ = sum f₀ g eq₀ + sum f₁ g eq₁ := by
   classical
   rw [sum_eq_support_max_sum (f := f₀ + f₁) (h := Finsupp.support_add f₀ f₁),
-    sum_eq_support_max_sum (f := f₀) (h := Finset.sub_union_left f₀.support f₁.support),
-    sum_eq_support_max_sum (f := f₁) (h := Finset.sub_union_right f₀.support f₁.support)]
+    sum_eq_support_max_sum (f := f₀) (h := LazyFinset.sub_union_left f₀.support f₁.support),
+    sum_eq_support_max_sum (f := f₁) (h := LazyFinset.sub_union_right f₀.support f₁.support)]
   rw [Multiset.sum_pairwise]
   congr; ext i
   apply map_add
@@ -252,9 +251,9 @@ def sum_apply_single
   show Multiset.sum _ = _
   simp
   show (Multiset.map (fun i => single i (g (f i)) j) _).sum =_
-  replace spec : ∀x: ι, f x ≠ 0 -> x ∈ (supp: Finset _) := spec
+  replace spec : ∀x: ι, f x ≠ 0 -> x ∈ (supp: LazyFinset _) := spec
   revert spec
-  generalize (supp: Finset ι) = supp'
+  generalize (supp: LazyFinset ι) = supp'
   clear supp
   cases supp' with | mk supp nodup =>
   simp
@@ -302,10 +301,10 @@ def sum_select
   show _ = g (f j)
   show Multiset.sum _ = _
   simp
-  show (Multiset.map (fun i => if i = j then g (f i) else 0) (supp: Finset ι).val).sum = _
-  replace spec : ∀x: ι, f x ≠ 0 -> x ∈ (supp: Finset _) := spec
+  show (Multiset.map (fun i => if i = j then g (f i) else 0) (supp: LazyFinset ι).val).sum = _
+  replace spec : ∀x: ι, f x ≠ 0 -> x ∈ (supp: LazyFinset _) := spec
   revert spec
-  generalize (supp: Finset ι) = supp'
+  generalize (supp: LazyFinset ι) = supp'
   clear supp
   cases supp' with | mk supp nodup =>
   simp
@@ -397,8 +396,8 @@ def sum_sum_index
       intro i h
       rw [h, h₁])]
     rw [sum_eq_support_max_sum _ _ _ _ (Finsupp.support_add x y)]
-    rw [sum_eq_support_max_sum _ _ _ _ (Finset.sub_union_left x.support y.support)]
-    rw [sum_eq_support_max_sum _ _ _ _ (Finset.sub_union_right x.support y.support)]
+    rw [sum_eq_support_max_sum _ _ _ _ (LazyFinset.sub_union_left x.support y.support)]
+    rw [sum_eq_support_max_sum _ _ _ _ (LazyFinset.sub_union_right x.support y.support)]
     generalize (x.support ∪ y.support).val = supp
     simp [map_add]
     symm; apply Multiset.sum_pairwise
@@ -416,7 +415,7 @@ def sum_eq_pairwise [Zero α] [Zero β]  [AddMonoidOps γ] [IsAddCommMagma γ] [
   rw [sum_eq_support_max_sum (s := f₀.support ∪ f₁.support),
     sum_eq_support_max_sum (s := f₀.support ∪ f₁.support)]
   congr; ext i; apply eq₀
-  exact Finset.sub_union_right f₀.support f₁.support
-  exact Finset.sub_union_left f₀.support f₁.support
+  exact LazyFinset.sub_union_right f₀.support f₁.support
+  exact LazyFinset.sub_union_left f₀.support f₁.support
 
 end Finsupp
