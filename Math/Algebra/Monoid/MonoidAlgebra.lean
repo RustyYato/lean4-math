@@ -172,7 +172,7 @@ instance [Add α] [DecidableEq α] [AddMonoidOps β] [Mul β] [IsNonUnitalNonAss
     rw [single_add, add_mul]
 
 def sum_toFinsupp
-  [FiniteSupport S ι]
+  [FiniteSupport S ι] [DecidableEq ι]
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀ h₁} :
@@ -187,7 +187,7 @@ def sum_toFinsupp
   rfl
 
 def sum_toFinsupp'
-  [FiniteSupport S ι]
+  [FiniteSupport S ι] [DecidableEq ι]
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   (f: Finsupp ι α S) (g₀: ι -> α -> AddMonoidAlgebra ι γ S) {h₀} :
@@ -350,11 +350,7 @@ def induction
   obtain ⟨f, spec⟩ := x
   induction spec with | mk spec =>
   obtain ⟨degree', spec'⟩ := spec
-  replace ⟨degree, spec⟩: Σ' s: Finset α, ∀x, f x ≠ 0 -> x ∈ s := ⟨degree', spec'⟩
-  induction degree with
-  | mk degree nodup =>
-  replace spec:  ∀x, f x ≠ 0 -> x ∈ degree := spec
-  clear nodup
+  replace ⟨degree, spec⟩: Σ' s: LazyFinset α, ∀x, f x ≠ 0 -> x ∈ s := ⟨degree', spec'⟩
   induction degree generalizing f with
   | nil =>
     rw [show ofFinsupp (.mk f _) = 0 from ?_]
@@ -364,7 +360,7 @@ def induction
     intro h
     have := spec _ h
     contradiction
-  | cons a as ih =>
+  | cons a as h ih =>
     -- replace ih := ih
     rw [show ofFinsupp (.mk f _) =
         .single a (f a) + .ofFinsupp (.mk (

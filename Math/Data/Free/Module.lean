@@ -1,7 +1,7 @@
 import Math.Algebra.Module.LinearMap.Defs
 import Math.Data.Finsupp.Algebra
 
-def FreeModule (R M: Type*) [Zero R] := Finsupp M R (Finset M)
+def FreeModule (R M: Type*) [Zero R] := Finsupp M R (LazyFinset M)
 
 namespace FreeModule
 
@@ -29,7 +29,7 @@ namespace FreeModule
 variable {R M: Type*} [SemiringOps R] [IsSemiring R] [DecidableEq M]
 
 instance : FunLike (FreeModule R M) M R :=
-  inferInstanceAs (FunLike (Finsupp M R (Finset M)) M R)
+  inferInstanceAs (FunLike (Finsupp M R (LazyFinset M)) M R)
 
 variable {α N: Type*} [AddMonoidOps N] [IsAddMonoid N] [IsAddCommMagma N] [SMul R N] [IsModule R N]
    [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [SMul R α] [IsModule R α]
