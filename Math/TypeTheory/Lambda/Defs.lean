@@ -297,6 +297,43 @@ def closed_subst {term subst: Term} (h: term.IsClosed) : term.subst subst m = te
   assumption
   apply Nat.zero_le
 
+-- if a term doesn't reference a variable, then any two substitutions are equal
+def erase {var} (term: Term) (h: ¬term.References var) : Term :=
+  match term with
+  | .lam body => .lam (body.erase (var := var + 1) (by
+    intro g; apply h
+    apply References.lam_body
+    assumption))
+  | .app func arg => .app (func.erase (var := var) (by
+    intro g; apply h
+    apply References.app_func
+    assumption)) (arg.erase (var := var) (by
+    intro g; apply h
+    apply References.app_arg
+    assumption))
+  | .var name =>
+      .var <|
+        if name < var then
+          name
+        else
+          name - 1
+
+-- if a term doesn't reference a variable, then a substitution is the same as just removing the variable
+def not_reference_subst (term subst: Term) (h: ¬term.References n) : term.subst subst n = term.erase h := by
+  induction term generalizing subst n with
+  | lam body ih =>
+    unfold Term.subst Term.erase
+    rw [ih]
+  | app func arg ihf iha =>
+    unfold Term.subst Term.erase
+    rw [ihf, iha]
+  | var =>
+    unfold Term.subst Term.erase
+    split
+    subst n; exfalso; apply h
+    apply References.var
+    rfl
+
 -- the operational semantics of lambda calculus
 inductive Reduce : Term -> Term -> Prop where
 | apply (body arg) : arg.IsValue -> Reduce (.app (.lam body) arg) (body.subst arg 0)

@@ -74,14 +74,6 @@ def cons {ty_ctx: SystemF.Type.Ctx} (wf: IsWellFormed ty_ctx ctx) {ty: SystemF.T
 
 end SystemF.Ctx.IsWellFormed
 
-private opaque SystemF.Term.type_witness' : Σ'term: Term, term.IsValue ∧ term.IsClosed := ⟨.lam (.var 0), _root_.Term.IsValue.lam _, Term.IsClosedUnder.lam _ (Term.IsClosedUnder.var _ (by decide))⟩
-
--- the type witness is an arbitrary inert value
--- which we will use to replace any types in type applications
-def SystemF.Term.type_witness : _root_.Term := type_witness'.1
-def SystemF.Term.type_witness_value : type_witness.IsValue := type_witness'.2.1
-def SystemF.Term.type_witness_closed : type_witness.IsClosed := type_witness'.2.2
-
 -- note: since we don't have type annotations baked into `Term`, we can give multiple different types
 -- to the same term. This is fine, and doesn't really change any of the analysis.
 inductive SystemF.Term.IsWellTyped : SystemF.Type.Ctx -> SystemF.Ctx -> Term -> SystemF.Type -> Prop where
@@ -108,8 +100,16 @@ inductive SystemF.Term.IsWellTyped : SystemF.Type.Ctx -> SystemF.Ctx -> Term -> 
   ¬body.References 0 ->
   IsWellTyped ty_ctx ctx (.lam body) (.lam ret_ty)
 
-| type_app {ty_ctx ctx} (arg ret_ty ty: SystemF.Type) (body: Term) :
+| type_app {ty_ctx ctx} (arg ret_ty ty: SystemF.Type) (body arg_witness: Term) :
   arg.IsWellFormed ty_ctx ->
   IsWellTyped ty_ctx ctx body (.lam ret_ty) ->
   ty = ret_ty.subst arg 0 ->
-  IsWellTyped ty_ctx ctx (.app body SystemF.Term.type_witness) ty
+  IsWellTyped ty_ctx ctx (.app body arg_witness) ty
+
+private opaque SystemF.Term.type_witness' : Σ'term: Term, term.IsValue ∧ term.IsClosed := ⟨.lam (.var 0), _root_.Term.IsValue.lam _, Term.IsClosedUnder.lam _ (Term.IsClosedUnder.var _ (by decide))⟩
+
+-- the type witness is an arbitrary inert value
+-- which we will use to replace any types in type applications
+def SystemF.Term.type_witness : _root_.Term := type_witness'.1
+def SystemF.Term.type_witness_value : type_witness.IsValue := type_witness'.2.1
+def SystemF.Term.type_witness_closed : type_witness.IsClosed := type_witness'.2.2
