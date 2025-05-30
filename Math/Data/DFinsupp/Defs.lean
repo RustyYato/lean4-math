@@ -112,25 +112,6 @@ instance [∀i, Zero (α i)]  [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)] :
       }
   }
 
--- instance [∀i, Zero (α i)]  [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] : Mul (DFinsupp α S) where
---   mul f g := {
---     toFun i := f i * g i
---     spec := do
---       let ⟨fset, fspec⟩ ← f.spec
---       let ⟨gset, gspec⟩ ← g.spec
---       return {
---         val := fset ⊓ gset
---         property i ne := by
---           apply FiniteSupport.mem_min
---           apply fspec
---           simp; intro h
---           simp [h] at ne
---           apply gspec
---           simp; intro h
---           simp [h] at ne
---       }
---   }
-
 instance (priority := 2000) [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)] : SMul ℕ (DFinsupp α S) where
   smul n f := {
     toFun i := n • f i
@@ -239,31 +220,6 @@ instance [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)] : IsAddGroup (DFin
   neg_add_cancel _ := by ext; apply neg_add_cancel
   zsmul_ofNat _ _ := by ext; apply zsmul_ofNat
   zsmul_negSucc _ _ := by ext; apply zsmul_negSucc
-
--- instance
---   [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)]
---   [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsLeftDistrib (α i)] :
---   IsLeftDistrib (DFinsupp α S) where
---   mul_add _ _ _ := by ext; apply mul_add
-
--- instance
---   [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)]
---   [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsRightDistrib (α i)] :
---   IsRightDistrib (DFinsupp α S) where
---   add_mul _ _ _ := by ext; apply add_mul
-
--- instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsSemigroup (α i)] : IsSemigroup (DFinsupp α S) where
---   mul_assoc _ _ _ := by ext; apply mul_assoc
-
--- instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] : IsMulZeroClass (DFinsupp α S) where
---   mul_zero _ := by ext; apply mul_zero
---   zero_mul _ := by ext; apply zero_mul
-
--- instance (priority := 1100) [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)]
---   [∀i, Mul (α i)] [∀i, IsNonUnitalNonAssocRing (α i)] : IsNonUnitalNonAssocRing (DFinsupp α S) where
-
--- instance (priority := 1100) [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)]
---   [∀i, Mul (α i)] [∀i, IsNonUnitalRing (α i)] : IsNonUnitalRing (DFinsupp α S) where
 
 instance
   [MonoidOps R] [IsMonoid R] [∀i, SMul R (α i)]
