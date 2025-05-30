@@ -41,7 +41,16 @@ def mem (x: α) : LazyFinset α -> Prop := by
 instance : Membership α (LazyFinset α) where
   mem s a := s.mem a
 
+instance : HasSubset (LazyFinset α) where
+  Subset a b := ∀x, x ∈ a -> x ∈ b
+
 instance : EmptyCollection (LazyFinset α) := ⟨ofMultiset ∅⟩
+instance : Inhabited (LazyFinset α) := ⟨∅⟩
+instance : Singleton α (LazyFinset α) where
+  singleton a := ofMultiset {a}
+
+@[simp] def mem_singleton {a: α} : ∀{x}, x ∈ ({a}: LazyFinset α) ↔ x = a := by
+  apply Multiset.mem_singleton
 
 def cons (x: α) : LazyFinset α -> LazyFinset α := by
   refine lift ?_ ?_
@@ -301,5 +310,27 @@ def toMultiset_ofMultiset [DecidableEq α] (as: Multiset α) : (ofMultiset as).t
   apply (Multiset.mem_dedup _ _).symm
 
 @[simp] def mem_ofMultiset {as: Multiset α} : ∀{x}, x ∈ (ofMultiset as) ↔ x ∈ as := by rfl
+
+def erase [DecidableEq α] (a: α) : LazyFinset α -> LazyFinset α := by
+  refine lift ?_ ?_
+  intro s; exact ofMultiset (s.filter (· ≠ a))
+  intro a₀ as
+  ext; simp [Multiset.mem_filter]
+
+@[simp] def mem_erase [DecidableEq α] {a: α} {as: LazyFinset α} : ∀{x}, x ∈ as.erase a ↔ x ∈ as ∧ x ≠ a := by
+  induction as using ind with | _ as =>
+  simp [erase, Multiset.mem_filter]
+
+def Elem (s: LazyFinset α) := { x // x ∈ s }
+
+instance {α: Type*} : CoeSort (LazyFinset α) (Type _) := ⟨Elem⟩
+
+instance {P: α -> Prop} [DecidablePred P] (s: LazyFinset α) : Decidable (∃x ∈ s, P x) :=
+  s.recOnSubsingleton fun s =>
+  inferInstanceAs (Decidable (∃x ∈ s, P x))
+
+instance {P: α -> Prop} [DecidablePred P] (s: LazyFinset α) : Decidable (∀x ∈ s, P x) :=
+  s.recOnSubsingleton fun s =>
+  inferInstanceAs (Decidable (∀x ∈ s, P x))
 
 end LazyFinset

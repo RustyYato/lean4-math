@@ -1,5 +1,5 @@
 import Math.Data.Fintype.Impls.Finset
-import Math.Data.Finset.Basic
+import Math.Data.LazyFinset.Basic
 import Math.Order.Lattice.Basic
 
 namespace Finset
