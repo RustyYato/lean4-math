@@ -1,49 +1,44 @@
-import Math.Data.Finset.Like
-import Math.Data.Finset.Lattice
+import Math.Data.LazyFinset.Like
+import Math.Data.LazyFinset.Lattice
 import Math.Order.Defs
 
+open scoped LazyFinset
+
 section
+
 -- we seperate out the necessary parts to define DFinsupp here
 -- so we that we don't require DecidableEq to just mention DFinsupp
-class FiniteSupportOps (S ι: Type*) extends Inhabited S, FinsetLike S ι where
-  mem_spec (s: S) (i: ι): i ∈ s ↔ i ∈ (s: Finset ι)
+class FiniteSupportOps (S ι: Type*) extends Inhabited S, LazyFinsetLike S ι where
   all (s: S): (ι -> Bool) -> Bool
   all_spec (s: S) (f: ι -> Bool) : (∀x ∈ s, f x) ↔ all s f = true
 
 class FiniteSupport (S: Type*) (ι: outParam Type*) extends
-  FiniteSupportOps S ι, LatticeOps S, IsLattice S where
+  FiniteSupportOps S ι, LE S, LT S, Max S, IsSemiLatticeMax S where
   singleton: ι -> S
   mem_singleton: ∀i, i ∈ singleton i
   remove [DecidableEq ι]: ι -> S -> S
   mem_remove [DecidableEq ι]:  ∀(s: S) (x i: ι), x ∈ s -> i ≠ x -> x ∈ remove i s
-  le_spec {a b: S}: a ≤ b ↔ (a: Finset ι) ⊆ (b: Finset ι)
-  mem_min: ∀{a b: S} {x}, x ∈ a -> x ∈ b -> x ∈ a ⊓ b
+  le_spec {a b: S}: a ≤ b ↔ a ⊆ b
 
-instance : FiniteSupportOps (Finset ι) ι where
-  mem_spec _ _ := Iff.rfl
+instance : FiniteSupportOps (LazyFinset ι) ι where
   all s f := ∀x ∈ s, f x
   all_spec s f := by simp
 
-instance [DecidableEq ι] : FiniteSupport (Finset ι) ι where
+instance : FiniteSupport (LazyFinset ι) ι where
   singleton := ({·})
-  mem_singleton _ := Finset.mem_singleton.mpr rfl
-  remove := Finset.erase
+  mem_singleton _ := LazyFinset.mem_singleton.mpr rfl
+  remove := LazyFinset.erase
   mem_remove := by
     intro _ s x i hx ne
-    apply Finset.mem_erase.mpr
+    apply LazyFinset.mem_erase.mpr
     apply And.intro hx
     symm; assumption
   le_spec := Iff.rfl
-  mem_min := by
-    intro a b x ha hb
-    apply Finset.mem_inter.mpr
-    apply And.intro <;> assumption
 
 instance : FiniteSupportOps Nat Nat where
-  mem_spec _ _ := Iff.rfl
   all n f := ∀x < n, f x
   all_spec n f := by
-    simp [Nat.mem_iff_lt]
+    simp [Nat.mem_toLazyFinset, Nat.mem_iff_lt]
 
 instance : FiniteSupport Nat Nat where
   singleton := (· + 1)
@@ -66,10 +61,6 @@ instance : FiniteSupport Nat Nat where
     intro h; rw [←not_lt]
     intro g
     exact lt_irrefl (h _ g)
-  mem_min := by
-    intro a b x ha hb
-    simp [Nat.mem_iff_lt] at *
-    omega
 
 end
 
@@ -77,25 +68,22 @@ namespace FiniteSupport
 
 variable [FiniteSupport S ι]
 
-def coe_max_sub_max_coe [DecidableEq ι] (a b: S) : (a ⊔ b: Finset ι) ≤ ((a ⊔ b: S): Finset ι) := by
+def coe_max_sub_max_coe (a b: S) : (a ⊔ b: LazyFinset ι) ≤ ((a ⊔ b: S): LazyFinset ι) := by
   apply max_le
-  apply FiniteSupport.le_spec.mp
+  rw [FiniteSupport.le_spec]
+  rw [LazyFinset.coe_sub]
+  simp [←FiniteSupport.le_spec]
   apply le_max_left
-  apply FiniteSupport.le_spec.mp
+  rw [FiniteSupport.le_spec]
+  rw [LazyFinset.coe_sub]
+  simp [←FiniteSupport.le_spec]
   apply le_max_right
-
-def min_coe_sub_coe_min [DecidableEq ι] (a b: S) : ((a ⊓ b: S): Finset ι) ≤ (a ⊓ b: Finset ι) := by
-  apply le_min
-  apply FiniteSupport.le_spec.mp
-  apply min_le_left
-  apply FiniteSupport.le_spec.mp
-  apply min_le_right
 
 def mem_max (i: ι) (a b: S) : i ∈ a -> i ∈ a ⊔ b := by
   classical
   intro h
   apply coe_max_sub_max_coe
-  apply Finset.mem_union.mpr
+  apply LazyFinset.mem_append.mpr
   left; assumption
 
 end FiniteSupport

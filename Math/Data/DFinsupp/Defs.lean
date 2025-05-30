@@ -1,4 +1,4 @@
-import Math.Data.DFinsupp.NewSupport
+import Math.Data.DFinsupp.Support
 import Math.Algebra.Group.Hom
 import Math.Algebra.Module.Defs
 import Math.Data.Trunc
