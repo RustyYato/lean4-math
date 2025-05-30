@@ -1,9 +1,11 @@
 import Math.Data.Multiset.Algebra
+import Math.Data.Fintype.Impls.LazyFinset
+import Math.Data.Fintype.Algebra.Monoid
 import Math.Data.Finsupp.Defs
 
 namespace Finsupp
 
-variable [FiniteSupport S ι]
+variable [FiniteSupport S ι] [DecidableEq ι]
 
 def sum [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0) : γ := by
   refine f.spec.lift (?_) ?_
@@ -16,24 +18,28 @@ def sum [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Fin
   obtain ⟨a', ha', eqa'⟩ := Finsupp.eq_support_union f a ha
   obtain ⟨b', hb', eqb'⟩ := Finsupp.eq_support_union f b hb
   rw [eqa', eqb']
-  unfold LazyFinset.union_disjoint
+  rw [LazyFinset.append_disjoint_toMultiset, LazyFinset.append_disjoint_toMultiset]
   simp [Multiset.map_append]
   rw [Multiset.sum_append]
   rw [Multiset.sum_append]
   congr 1
   rw [Multiset.sum_eq_zero, Multiset.sum_eq_zero]
-  intro o h
-  rw [Multiset.mem_map] at h
-  obtain ⟨i, i_mem, eq⟩ := h
-  have := Classical.not_not.mp <| (Iff.not_iff_not (Finsupp.mem_support (f := f) (x := i))).mp (hb' i · i_mem)
-  rw [resp _ this] at eq
-  symm; assumption
-  intro o h
-  rw [Multiset.mem_map] at h
-  obtain ⟨i, i_mem, eq⟩ := h
-  have := Classical.not_not.mp <| (Iff.not_iff_not (Finsupp.mem_support (f := f) (x := i))).mp (ha' i · i_mem)
-  rw [resp _ this] at eq
-  symm; assumption
+  · intro o h
+    rw [Multiset.mem_map] at h
+    obtain ⟨i, i_mem, eq⟩ := h
+    simp at i_mem
+    have := Classical.not_not.mp <| (Iff.not_iff_not (Finsupp.mem_support (f := f) (x := i))).mp (hb' i · i_mem)
+    rw [resp _ this] at eq
+    symm; assumption
+  · intro o h
+    rw [Multiset.mem_map] at h
+    obtain ⟨i, i_mem, eq⟩ := h
+    simp at i_mem
+    have := Classical.not_not.mp <| (Iff.not_iff_not (Finsupp.mem_support (f := f) (x := i))).mp (ha' i · i_mem)
+    rw [resp _ this] at eq
+    symm; assumption
+  · assumption
+  · assumption
 
 def sum_rw_proof [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp₀ resp₁: ∀i: ι, f i = 0 -> g i (f i) = 0) :
   f.sum g resp₀ = f.sum g resp₁ := rfl
@@ -68,42 +74,55 @@ def zero_prod
 
 def coe_def [Zero α] (f: Finsupp ι α S) (i: ι) : f i = f.toFun i := rfl
 
-def sum_eq_support_sum
-   [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0):
-   f.sum g resp = (f.support.val.map (fun i => g i (f i))).sum := by
-   cases f with | mk f spec =>
-   induction spec with | mk spec =>
-   unfold sum
-   show Multiset.sum _ = _
-   dsimp [DFunLike.coe]
-   obtain ⟨rest, disjoint, eq⟩ := Finsupp.eq_support_union ⟨f, Trunc.mk spec⟩ spec.val spec.property
-   rw [eq]
-   rw [LazyFinset.union_disjoint,Multiset.map_append, Multiset.sum_append]
-   conv => { rhs; rw [←add_zero (Multiset.sum _)] }
-   congr
-   rw [Multiset.sum_eq_zero]
-   intro x h
-   rw [Multiset.mem_map] at h
-   obtain ⟨i, mem_rest, rfl⟩ := h
-   have : f i = 0 := Classical.not_not.mp <| Iff.not_iff_not (Finsupp.mem_support (f := ⟨f, Trunc.mk spec⟩) (x := i)) |>.mp (disjoint _ · mem_rest)
-   exact resp _ this
+def sum_eq_support_sum [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0): f.sum g resp = (f.support.toMultiset.map (fun i => g i (f i))).sum := by
+    cases f with | mk f spec =>
+    induction spec with | mk spec =>
+    unfold sum
+    show Multiset.sum _ = _
+    dsimp [DFunLike.coe]
+    obtain ⟨rest, disjoint, eq⟩ := Finsupp.eq_support_union ⟨f, Trunc.mk spec⟩ spec.val spec.property
+    rw [eq]
+    obtain ⟨a, ha⟩ := spec
+    dsimp
+    classical
+    rw [LazyFinset.append_disjoint_toMultiset]
+    simp [Multiset.map_append]
+    rw [Multiset.sum_append]
+    conv => { rhs; rw [←add_zero (Multiset.sum _)] }
+    congr
+    rw [Multiset.sum_eq_zero]
+    intro x h
+    rw [Multiset.mem_map] at h
+    obtain ⟨i, mem_rest, rfl⟩ := h
+    apply resp
+    -- show f i = 0
+    apply Classical.byContradiction
+    intro h
+    have := disjoint i
+    rw [Finsupp.mem_support] at this
+    replace h := this h
+    simp at mem_rest
+    contradiction
+    assumption
 
 def sum_eq_support_max_sum
    [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0)
    (s: LazyFinset ι) (h: f.support ⊆ s):
-   f.sum g resp = (s.val.map (fun i => g i (f i))).sum := by
+   f.sum g resp = (s.toMultiset.map (fun i => g i (f i))).sum := by
    rw [sum_eq_support_sum]
    classical
-   obtain ⟨s, hs, rfl⟩ := LazyFinset.exists_union_eq_of_sub h
-   rw [LazyFinset.union_disjoint, Multiset.map_append, Multiset.sum_append]
+   obtain ⟨s, rfl, hs⟩ := LazyFinset.exists_append_eq_of_sub h
+   rw [LazyFinset.append_disjoint_toMultiset, Multiset.map_append, Multiset.sum_append]
    conv => { lhs; rw [←add_zero (Multiset.sum _)] }
    congr
    rw [Multiset.sum_eq_zero]
    intro x hx
    rw [Multiset.mem_map] at hx
    obtain ⟨i, mem, rfl⟩ := hx
+   simp at mem
    apply resp
    exact Classical.not_not.mp ((Iff.not_iff_not f.mem_support).mp (hs i · mem))
+   assumption
 
 def add_sum
   [Zero α] [Add α] [IsAddZeroClass α]
@@ -116,8 +135,8 @@ def add_sum
   sum (f₀ + f₁) g eq₂ = sum f₀ g eq₀ + sum f₁ g eq₁ := by
   classical
   rw [sum_eq_support_max_sum (f := f₀ + f₁) (h := Finsupp.support_add f₀ f₁),
-    sum_eq_support_max_sum (f := f₀) (h := LazyFinset.sub_union_left f₀.support f₁.support),
-    sum_eq_support_max_sum (f := f₁) (h := LazyFinset.sub_union_right f₀.support f₁.support)]
+    sum_eq_support_max_sum (f := f₀) (h := LazyFinset.sub_append_left f₀.support f₁.support),
+    sum_eq_support_max_sum (f := f₁) (h := LazyFinset.sub_append_right f₀.support f₁.support)]
   rw [Multiset.sum_pairwise]
   congr; ext i
   apply map_add
@@ -164,7 +183,6 @@ def smul_sum
   apply map_smul
 
 def single_sum
-  [DecidableEq ι]
   [Zero α] [Add α] [IsAddZeroClass α]
   [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   (f: ι -> α -> γ) {h}:
@@ -177,7 +195,6 @@ def single_sum
   rw [if_pos rfl]
 
 def single_prod
-  [DecidableEq ι]
   [Zero α] [Add α] [IsAddZeroClass α]
   [MonoidOps γ] [IsCommMagma γ] [IsMonoid γ]
   (f: ι -> α -> γ) {h}:
@@ -200,7 +217,7 @@ def map_sum
     rw [Multiset.map_map]
     rfl
 
-def sum_single [DecidableEq ι] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
+def sum_single [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α]
   (f: Finsupp ι α S) : f.sum single (by
     intro i eq
     rw [eq]; ext i ; rw [apply_single]; split <;> rfl) = f := by
@@ -220,9 +237,7 @@ def sum_single [DecidableEq ι] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMag
     subst i; assumption; rfl
     classical
     rw [sum_eq_support_sum]
-    have : i ∈ f.support.val := by
-      apply mem_support.mpr
-      assumption
+    have : i ∈ f.support.toMultiset := by simpa [mem_support]
     rw [Multiset.mem_spec] at this
     obtain ⟨as, eq⟩ := this
     rw [eq]
@@ -232,12 +247,12 @@ def sum_single [DecidableEq ι] [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMag
     obtain ⟨i₀, h₀, rfl⟩ := h₀
     rw [apply_single, if_neg]
     rintro rfl
-    have : (i::ₘas).Nodup := by rw [←eq]; apply f.support.property
+    have : (i::ₘas).Nodup := by rw [←eq]; apply f.support.toMultiset_nodup
     have := this.head
     contradiction
 
 def sum_apply_single
-  [DecidableEq ι] [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   [FunLike F α γ] [IsZeroHom F α γ]
   (f: Finsupp ι α S) (g: F):
   f.sum (fun i a => Finsupp.single (S := S) (β := γ) i (g a) j) (by
@@ -288,7 +303,7 @@ def sum_apply_single
     assumption
 
 def sum_select
-  [DecidableEq ι] [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
+  [Zero α] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ]
   [FunLike F α γ] [IsZeroHom F α γ]
   (f: Finsupp ι α S) (g: F):
   f.sum (fun i a => if i = j then g a else 0) (by
@@ -301,7 +316,7 @@ def sum_select
   show _ = g (f j)
   show Multiset.sum _ = _
   simp
-  show (Multiset.map (fun i => if i = j then g (f i) else 0) (supp: LazyFinset ι).val).sum = _
+  show (Multiset.map (fun i => if i = j then g (f i) else 0) (supp: LazyFinset ι).toMultiset).sum = _
   replace spec : ∀x: ι, f x ≠ 0 -> x ∈ (supp: LazyFinset _) := spec
   revert spec
   generalize (supp: LazyFinset ι) = supp'
@@ -341,7 +356,7 @@ def sum_select
     · assumption
 
 private def sum' [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) :=
-  (f.support.val.map (fun i => g i (f i))).sum
+  (f.support.toMultiset.map (fun i => g i (f i))).sum
 
 private def sum_eq_sum'
    [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) (resp: ∀i: ι, f i = 0 -> g i (f i) = 0):
@@ -396,9 +411,9 @@ def sum_sum_index
       intro i h
       rw [h, h₁])]
     rw [sum_eq_support_max_sum _ _ _ _ (Finsupp.support_add x y)]
-    rw [sum_eq_support_max_sum _ _ _ _ (LazyFinset.sub_union_left x.support y.support)]
-    rw [sum_eq_support_max_sum _ _ _ _ (LazyFinset.sub_union_right x.support y.support)]
-    generalize (x.support ∪ y.support).val = supp
+    rw [sum_eq_support_max_sum _ _ _ _ (LazyFinset.sub_append_left x.support y.support)]
+    rw [sum_eq_support_max_sum _ _ _ _ (LazyFinset.sub_append_right x.support y.support)]
+    generalize (x.support ++ y.support).toMultiset = supp
     simp [map_add]
     symm; apply Multiset.sum_pairwise
 
@@ -415,7 +430,7 @@ def sum_eq_pairwise [Zero α] [Zero β]  [AddMonoidOps γ] [IsAddCommMagma γ] [
   rw [sum_eq_support_max_sum (s := f₀.support ∪ f₁.support),
     sum_eq_support_max_sum (s := f₀.support ∪ f₁.support)]
   congr; ext i; apply eq₀
-  exact LazyFinset.sub_union_right f₀.support f₁.support
-  exact LazyFinset.sub_union_left f₀.support f₁.support
+  exact LazyFinset.sub_append_right f₀.support f₁.support
+  exact LazyFinset.sub_append_left f₀.support f₁.support
 
 end Finsupp

@@ -347,18 +347,61 @@ instance [DecidableEq α] (x: α) (as: LazyFinset α) : Decidable (x ∈ as) :=
 instance [DecidableEq α] : SDiff (LazyFinset α) where
   sdiff a b := a.filter (· ∉ b)
 
-def mem_sdiff [DecidableEq α] {a b: LazyFinset α} : ∀{x}, x ∈ a \ b ↔ x ∈ a ∧ x ∉ b := by
+@[simp] def mem_sdiff [DecidableEq α] {a b: LazyFinset α} : ∀{x}, x ∈ a \ b ↔ x ∈ a ∧ x ∉ b := by
   simp [SDiff.sdiff]
 
 instance [DecidableEq α] : Inter (LazyFinset α) where
   inter a b := a.filter (· ∈ b)
 
-def mem_inter [DecidableEq α] {a b: LazyFinset α} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := by
+@[simp] def mem_inter [DecidableEq α] {a b: LazyFinset α} : ∀{x}, x ∈ a ∩ b ↔ x ∈ a ∧ x ∈ b := by
   simp [Inter.inter]
 
 instance : Union (LazyFinset α) where
   union a b := a ++ b
 
 @[simp] def union_eq_append (a b: LazyFinset α) : a ∪ b = a ++ b := rfl
+
+def append_disjoint_toMultiset {_: DecidableEq α} (a b: LazyFinset α) (h: ∀x ∈ a, x ∉ b) : (a ++ b).toMultiset = a.toMultiset ++ b.toMultiset := by
+  ext x n
+  match n with
+  | 0 => simp [Multiset.MinCount.zero]
+  | 1 => simp [Multiset.MinCount.iff_mem]
+  | n + 2 =>
+    apply Iff.intro
+    intro h
+    have := Multiset.mincount_le_one_iff_nodup.mp (toMultiset_nodup _) _ _ h
+    contradiction
+    intro h
+    have := Multiset.mincount_le_one_iff_nodup.mp ?_ _ _ h
+    contradiction
+    apply Multiset.nodup_append
+    apply toMultiset_nodup
+    apply toMultiset_nodup
+    clear h
+    simpa
+
+def exists_append_eq_of_sub {a b: LazyFinset α} (h: a ⊆ b) : ∃s, b = a ++ s ∧ ∀x ∈ a, x ∉ s := by
+  classical
+  exists b \ a
+  apply And.intro
+  ext; simp
+  apply Iff.intro
+  intro h;
+  apply Classical.or_iff_not_imp_left.mpr
+  intro
+  apply And.intro <;> assumption
+  intro g
+  rcases g with g | g
+  apply h; assumption
+  exact g.left
+  intro x ha
+  simp; intro; assumption
+
+def sub_append_left (a b: LazyFinset α) : a ⊆ a ++ b := by
+  intro x; simp; exact Or.inl
+def sub_append_right (a b: LazyFinset α) : b ⊆ a ++ b := by
+  intro x; simp; exact Or.inr
+
+@[simp] def singleton_toMultiset [DecidableEq α] (a: α) : toMultiset {a} = {a} := rfl
 
 end LazyFinset
