@@ -270,11 +270,11 @@ def sum_apply_single
   revert spec
   generalize (supp: LazyFinset ι) = supp'
   clear supp
-  cases supp' with | mk supp nodup =>
-  simp
+  -- cases supp' with | mk supp nodup =>
+  -- simp
   intro h
   replace h := h j
-  induction supp with
+  induction supp' with
   | nil =>
     show 0 = _
     suffices f j = 0 by
@@ -283,22 +283,23 @@ def sum_apply_single
     intro h'
     have := h h'
     contradiction
-  | cons i supp ih =>
-    replace ih := ih nodup.tail
-    simp
-    rw [apply_single]; split
+  | cons i supp ne ih =>
+    rw [LazyFinset.cons_toMultiset _ _ ne]
+    simp; rw [apply_single]; split
     subst j
     rw [Multiset.sum_eq_zero, add_zero]
     intro x h'
     rw [Multiset.mem_map] at h'
     obtain ⟨i₀, h₀, rfl⟩ := h'
-    have := nodup.head
     rw [apply_single, if_neg]
-    rintro rfl; contradiction
+    rintro rfl;
+    simp at h₀
+    contradiction
     rw [zero_add]
     apply ih
     intro g
-    cases h g using Multiset.cases_mem_cons
+    simp [g] at h
+    rcases h with rfl | h
     contradiction
     assumption
 
@@ -321,11 +322,10 @@ def sum_select
   revert spec
   generalize (supp: LazyFinset ι) = supp'
   clear supp
-  cases supp' with | mk supp nodup =>
   simp
   intro h
   replace h := h j
-  induction supp with
+  induction supp' with
   | nil =>
     show 0 = _
     suffices f j = 0 by
@@ -334,8 +334,8 @@ def sum_select
     intro h'
     have := h h'
     contradiction
-  | cons i supp ih =>
-    replace ih := ih nodup.tail
+  | cons i supp ne ih =>
+    rw [LazyFinset.cons_toMultiset _ _ ne]
     simp
     split
     subst i
@@ -345,15 +345,16 @@ def sum_select
       obtain ⟨i', hi', eq⟩ := hx
       split at eq
       subst i'
-      have := nodup.head
+      simp at hi'
       contradiction
       symm; assumption
     rw [zero_add]
     apply ih
     intro hj
-    cases h hj using Multiset.cases_mem_cons
-    · contradiction
-    · assumption
+    simp [hj] at h
+    rcases h with rfl | h
+    contradiction
+    assumption
 
 private def sum' [Zero α] [∀a: α, Decidable (a = 0)] [AddMonoidOps γ] [IsAddCommMagma γ] [IsAddMonoid γ] (f: Finsupp ι α S) (g: ι -> α -> γ) :=
   (f.support.toMultiset.map (fun i => g i (f i))).sum

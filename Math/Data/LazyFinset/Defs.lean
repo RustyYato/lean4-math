@@ -404,4 +404,23 @@ def sub_append_right (a b: LazyFinset α) : b ⊆ a ++ b := by
 
 @[simp] def singleton_toMultiset [DecidableEq α] (a: α) : toMultiset {a} = {a} := rfl
 
+def nil_toMultiset [DecidableEq α] : toMultiset (α := α) ∅ = ∅ := rfl
+
+def cons_toMultiset [DecidableEq α] (a: α) (as: LazyFinset α) (h: a ∉ as) : (cons a as).toMultiset = a::ₘas.toMultiset := by
+  ext x n
+  match n with
+  | 0 => simp [Multiset.MinCount.zero]
+  | 1 => simp [Multiset.MinCount.iff_mem]
+  | n + 2 =>
+    apply Iff.intro
+    · intro h
+      have := Multiset.mincount_le_one_iff_nodup.mp (toMultiset_nodup _) _ _ h
+      contradiction
+    · intro h
+      have := Multiset.mincount_le_one_iff_nodup.mp ?_ _ _ h
+      contradiction
+      apply Multiset.nodup_cons
+      simpa
+      apply toMultiset_nodup
+
 end LazyFinset

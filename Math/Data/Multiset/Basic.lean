@@ -219,6 +219,13 @@ def append_assoc (as bs cs: Multiset α) : as ++ bs ++ cs = as ++ (bs ++ cs) := 
   cases as, bs, cs
   simp
 
+def nodup_cons {α} (a: α) (as : Multiset α) (ha: a ∉ as) (h: as.Nodup) : (a::ₘas).Nodup := by
+  cases as with | mk as =>
+  apply List.Pairwise.cons
+  rintro _ _  rfl
+  contradiction
+  assumption
+
 def nodup_append {α} (as bs : Multiset α) (ha: as.Nodup) (hb: bs.Nodup) :
    (∀ (x : α), x ∈ as -> x ∈ bs -> False) -> (as ++ bs).Nodup := by
    cases as
