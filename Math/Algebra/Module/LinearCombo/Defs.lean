@@ -254,8 +254,7 @@ end LinearCombo
 
 namespace LinearCombo
 
-variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M]
-   [DecidableEq M] {s: Set M}
+variable {R M: Type*} [RingOps R] [IsRing R] [AddGroupOps M] [IsAddGroup M] [IsAddCommMagma M] [SMul R M] [IsModule R M] {s: Set M}
 
 instance : Neg (LinearCombo R s) :=
   inferInstanceAs (Neg (FreeModule _ _))

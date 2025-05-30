@@ -5,7 +5,7 @@ def FreeModule (R M: Type*) [Zero R] := Finsupp M R (LazyFinset M)
 
 namespace FreeModule
 
-variable {R M: Type*} [SemiringOps R] [IsSemiring R] [DecidableEq M]
+variable {R M: Type*} [SemiringOps R] [IsSemiring R]
 
 instance : AddMonoidOps (FreeModule R M) := inferInstanceAs (AddMonoidOps (Finsupp _ _ _))
 instance : IsAddMonoid (FreeModule R M) := inferInstanceAs (IsAddMonoid (Finsupp _ _ _))
@@ -17,7 +17,7 @@ end FreeModule
 
 namespace FreeModule
 
-variable {R M: Type*} [RingOps R] [IsRing R] [DecidableEq M]
+variable {R M: Type*} [RingOps R] [IsRing R]
 
 instance : AddGroupOps (FreeModule R M) := inferInstanceAs (AddGroupOps (Finsupp _ _ _))
 instance : IsAddGroup (FreeModule R M) := inferInstanceAs (IsAddGroup (Finsupp _ _ _))

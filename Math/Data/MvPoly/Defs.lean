@@ -50,8 +50,6 @@ instance [RingOps P] [IsRing P] : SMul ℤ (MvPoly P σ) :=
 instance instIsAddGroup [RingOps P] [IsRing P] : IsAddGroup (MvPoly P σ) :=
   inferInstanceAs (IsAddGroup (AddMonoidAlgebra _ _ _))
 
-variable [DecidableEq σ]
-
 instance [SemiringOps P] [IsSemiring P] : Mul (MvPoly P σ) :=
   inferInstanceAs (Mul (AddMonoidAlgebra (MvPoly.Vars σ) P (LazyFinset (MvPoly.Vars σ))))
 instance [SemiringOps P] [IsSemiring P] : IsSemigroup (MvPoly P σ) :=
@@ -103,6 +101,9 @@ def C [SemiringOps P] [IsSemiring P] : P ↪+* (MvPoly P σ) where
   map_mul {x y} := by rw [AddMonoidAlgebra.single_mul, add_zero]
 def monomial [Zero P] [One P] : Vars σ -> (MvPoly P σ) :=
   (AddMonoidAlgebra.single · 1)
+
+variable [DecidableEq σ]
+
 def X [Zero P] [One P] (v: σ) : (MvPoly P σ) :=
   monomial (AddMonoidAlgebra.single v 1)
 
