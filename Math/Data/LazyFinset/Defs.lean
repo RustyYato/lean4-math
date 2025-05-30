@@ -455,5 +455,7 @@ def lazy_finset_cons_unique (x: α) [∀a: α, Decidable (x = a)] (s: LazyFinset
     rintro rfl
     exact h a.property
 
+unsafe instance [Repr α] : Repr (LazyFinset α) where
+  reprPrec s := reprPrec (s.lift id lcProof)
 
 end Equiv
