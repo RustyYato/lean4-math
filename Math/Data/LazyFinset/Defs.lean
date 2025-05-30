@@ -254,4 +254,52 @@ def mem_flatMap {f: α -> LazyFinset β} {as: LazyFinset α} : ∀{x}, x ∈ as.
   | nil => simp
   | cons a as h ih => simp [ih]
 
+def toMultiset [DecidableEq α] : LazyFinset α -> Multiset α := by
+  refine lift ?_ ?_
+  · intro a
+    exact a.dedup
+  · intro a as
+    ext x n
+    apply Iff.intro
+    · intro h
+      have ha := (a::ₘa::ₘas).nodup_dedup
+      rw [Multiset.mincount_le_one_iff_nodup] at ha
+      have := ha _ _ h
+      match n with
+      | 0 => apply Multiset.MinCount.zero
+      | 1 =>
+        rw [Multiset.MinCount.iff_mem] at *
+        simp [←Multiset.mem_dedup] at *
+        assumption
+    · intro h
+      have ha := (a::ₘas).nodup_dedup
+      rw [Multiset.mincount_le_one_iff_nodup] at ha
+      have := ha _ _ h
+      match n with
+      | 0 => apply Multiset.MinCount.zero
+      | 1 =>
+        rw [Multiset.MinCount.iff_mem] at *
+        simp [←Multiset.mem_dedup] at *
+        assumption
+
+def toMultiset_nodup [DecidableEq α] (s: LazyFinset α) : s.toMultiset.Nodup := by
+  induction s using ind with | _ s =>
+  apply Multiset.nodup_dedup
+
+def toMultiset_ofMultiset [DecidableEq α] (as: Multiset α) : (ofMultiset as).toMultiset = as.dedup := rfl
+
+@[simp] def ofMultiset_toMultiset [DecidableEq α] (as: LazyFinset α) : ofMultiset as.toMultiset = as := by
+  induction as using ind with | _ s =>
+  show ofMultiset s.dedup = ofMultiset s
+  ext x;
+  show x ∈ s.dedup ↔ x ∈ s
+  rw [←Multiset.mem_dedup]
+
+@[simp] def mem_toMultiset [DecidableEq α] {as: LazyFinset α} : ∀{x}, x ∈ as.toMultiset ↔ x ∈ as := by
+  induction as using ind with | _ as =>
+  intro
+  apply (Multiset.mem_dedup _ _).symm
+
+@[simp] def mem_ofMultiset {as: Multiset α} : ∀{x}, x ∈ (ofMultiset as) ↔ x ∈ as := by rfl
+
 end LazyFinset
