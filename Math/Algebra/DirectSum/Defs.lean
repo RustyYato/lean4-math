@@ -2,7 +2,7 @@ import Math.Data.DFinsupp.Algebra
 import Math.Algebra.AddMonoidWithOne.Impls.Pi
 
 structure DirectSum (α: ι -> Type*) [∀i, Zero (α i)] where
-  ofFinsupp :: toFinsupp : DFinsupp α (Finset ι)
+  ofFinsupp :: toFinsupp : DFinsupp α (LazyFinset ι)
 
 section Syntax
 
@@ -20,7 +20,7 @@ macro "⊕ " xs:explicitBinders ", " b:term:60 : term => expandExplicitBinders `
 end Syntax
 namespace DirectSum
 
-variable {γ} {α: γ -> Type*} [DecidableEq γ]
+variable {γ} {α: γ -> Type*}
 
 section
 
@@ -114,9 +114,9 @@ end
 section
 
 variable [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)]
-  [AddMonoidOps A] [IsAddMonoid A]
+  [AddMonoidOps A] [IsAddMonoid A] [DecidableEq γ]
 
-def ofFinsuppHom : (DFinsupp α (Finset γ)) →+ ⊕i, α i where
+def ofFinsuppHom : (DFinsupp α (LazyFinset γ)) →+ ⊕i, α i where
   toFun f := { toFinsupp := f }
   map_zero := rfl
   map_add := rfl
@@ -141,7 +141,7 @@ def apply_ι (i j: γ) (a: α i) : DirectSum.ι i a j = if h:i = j then cast (by
 
 def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (ι_add: ∀i a b, motive b -> motive (ι i a + b)) : ∀a, motive a := by
   intro ⟨f, hf⟩
-  obtain ⟨⟨domain, domain_nodup⟩, hf⟩ := hf
+  obtain ⟨domain, hf⟩ := hf
   rename_i h; clear h
   induction domain generalizing f with
   | nil =>
@@ -152,9 +152,9 @@ def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (ι_add: ∀i a b, motiv
     intro h
     have := hf i (Ne.symm h)
     contradiction
-  | cons i domain ih =>
+  | cons i domain i_notin_domain ih =>
     let f₀ : ⊕i, α i := {
-      toFinsupp := ⟨f, Trunc.mk ⟨⟨i::ₘdomain, domain_nodup⟩, hf⟩⟩
+      toFinsupp := ⟨f, Trunc.mk ⟨LazyFinset.cons i domain, hf⟩⟩
     }
     let frest : ⊕i, α i := ⟨f₀.toFinsupp.erase i⟩
     let f' : ⊕i, α i := ι i (f i) + frest
@@ -162,10 +162,10 @@ def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (ι_add: ∀i a b, motiv
     show motive f₀
     classical
     refine if hi:f i = 0 then ?_ else ?_
-    have := ih frest domain_nodup.tail ?_
+    have := ih frest ?_
     apply cast _ this
     intro j hj
-    have : j ∈ i::ₘdomain := hf j (by
+    have : j ∈ LazyFinset.cons i domain := hf j (by
       intro h; apply hj
       show DFinsupp.erase _ _ _ = _
       rw [DFinsupp.apply_erase]
@@ -205,9 +205,9 @@ def ind {motive: (⊕i, α i) -> Prop} (zero: motive 0) (ι_add: ∀i a b, motiv
     split; subst j
     simp; rfl
     simp; rfl
-    apply cast _ (ih frest domain_nodup.tail ?_)
+    apply cast _ (ih frest ?_)
     intro j hj
-    have : j ∈ i::ₘdomain := hf j (by
+    have : j ∈ LazyFinset.cons i domain := hf j (by
       intro h; apply hj
       show DFinsupp.erase _ _ _ = _
       rw [DFinsupp.apply_erase]

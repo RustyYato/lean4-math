@@ -1,7 +1,9 @@
-import Math.Data.DFinsupp.Support
+import Math.Data.DFinsupp.NewSupport
 import Math.Algebra.Group.Hom
 import Math.Algebra.Module.Defs
 import Math.Data.Trunc
+
+open scoped LazyFinset
 
 structure DFinsupp (α: ι -> Type*) (S: Type*) [FiniteSupportOps S ι] [∀i, Zero (α i)] where
   toFun (i: ι): α i
@@ -110,24 +112,24 @@ instance [∀i, Zero (α i)]  [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)] :
       }
   }
 
-instance [∀i, Zero (α i)]  [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] : Mul (DFinsupp α S) where
-  mul f g := {
-    toFun i := f i * g i
-    spec := do
-      let ⟨fset, fspec⟩ ← f.spec
-      let ⟨gset, gspec⟩ ← g.spec
-      return {
-        val := fset ⊓ gset
-        property i ne := by
-          apply FiniteSupport.mem_min
-          apply fspec
-          simp; intro h
-          simp [h] at ne
-          apply gspec
-          simp; intro h
-          simp [h] at ne
-      }
-  }
+-- instance [∀i, Zero (α i)]  [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] : Mul (DFinsupp α S) where
+--   mul f g := {
+--     toFun i := f i * g i
+--     spec := do
+--       let ⟨fset, fspec⟩ ← f.spec
+--       let ⟨gset, gspec⟩ ← g.spec
+--       return {
+--         val := fset ⊓ gset
+--         property i ne := by
+--           apply FiniteSupport.mem_min
+--           apply fspec
+--           simp; intro h
+--           simp [h] at ne
+--           apply gspec
+--           simp; intro h
+--           simp [h] at ne
+--       }
+--   }
 
 instance (priority := 2000) [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)] : SMul ℕ (DFinsupp α S) where
   smul n f := {
@@ -207,7 +209,7 @@ instance (priority := 1100) [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i
 instance (priority := 1100) [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)] : AddGroupOps (DFinsupp α S) := inferInstance
 
 @[simp] def apply_add [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)] (f g: DFinsupp α S) (i: ι) : (f + g) i = f i + g i := rfl
-@[simp] def apply_mul [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] (f g: DFinsupp α S) (i: ι) : (f * g) i = f i * g i := rfl
+-- @[simp] def apply_mul [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] (f g: DFinsupp α S) (i: ι) : (f * g) i = f i * g i := rfl
 @[simp] def apply_nsmul [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)] (n: ℕ) (f: DFinsupp α S) (i: ι) : (n • f) i = n • f i := rfl
 @[simp] def apply_zsmul [∀i, AddGroupOps (α i)] [∀i, IsSubNegMonoid (α i)] [∀i, IsNegZeroClass (α i)] (n: ℤ) (f: DFinsupp α S) (i: ι) : (n • f) i = n • f i := rfl
 @[simp] def apply_neg [∀i, Zero (α i)] [∀i, Neg (α i)] [∀i, IsNegZeroClass (α i)] (f: DFinsupp α S) (i: ι) : (-f) i = -f i := rfl
@@ -221,9 +223,9 @@ instance [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)] [�
   : IsAddCommMagma (DFinsupp α S) where
   add_comm _ _ := by ext; apply add_comm
 
-instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsCommMagma (α i)]
-  : IsCommMagma (DFinsupp α S) where
-  mul_comm _ _ := by ext; apply mul_comm
+-- instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsCommMagma (α i)]
+--   : IsCommMagma (DFinsupp α S) where
+--   mul_comm _ _ := by ext; apply mul_comm
 
 instance [∀i, AddMonoidOps (α i)] [∀i, IsAddMonoid (α i)] : IsAddMonoid (DFinsupp α S) where
   add_assoc _ _ _ := by ext; apply add_assoc
@@ -238,30 +240,30 @@ instance [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)] : IsAddGroup (DFin
   zsmul_ofNat _ _ := by ext; apply zsmul_ofNat
   zsmul_negSucc _ _ := by ext; apply zsmul_negSucc
 
-instance
-  [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)]
-  [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsLeftDistrib (α i)] :
-  IsLeftDistrib (DFinsupp α S) where
-  mul_add _ _ _ := by ext; apply mul_add
+-- instance
+--   [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)]
+--   [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsLeftDistrib (α i)] :
+--   IsLeftDistrib (DFinsupp α S) where
+--   mul_add _ _ _ := by ext; apply mul_add
 
-instance
-  [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)]
-  [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsRightDistrib (α i)] :
-  IsRightDistrib (DFinsupp α S) where
-  add_mul _ _ _ := by ext; apply add_mul
+-- instance
+--   [∀i, Zero (α i)] [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)]
+--   [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsRightDistrib (α i)] :
+--   IsRightDistrib (DFinsupp α S) where
+--   add_mul _ _ _ := by ext; apply add_mul
 
-instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsSemigroup (α i)] : IsSemigroup (DFinsupp α S) where
-  mul_assoc _ _ _ := by ext; apply mul_assoc
+-- instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] [∀i, IsSemigroup (α i)] : IsSemigroup (DFinsupp α S) where
+--   mul_assoc _ _ _ := by ext; apply mul_assoc
 
-instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] : IsMulZeroClass (DFinsupp α S) where
-  mul_zero _ := by ext; apply mul_zero
-  zero_mul _ := by ext; apply zero_mul
+-- instance [∀i, Zero (α i)] [∀i, Mul (α i)] [∀i, IsMulZeroClass (α i)] : IsMulZeroClass (DFinsupp α S) where
+--   mul_zero _ := by ext; apply mul_zero
+--   zero_mul _ := by ext; apply zero_mul
 
-instance (priority := 1100) [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)]
-  [∀i, Mul (α i)] [∀i, IsNonUnitalNonAssocRing (α i)] : IsNonUnitalNonAssocRing (DFinsupp α S) where
+-- instance (priority := 1100) [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)]
+--   [∀i, Mul (α i)] [∀i, IsNonUnitalNonAssocRing (α i)] : IsNonUnitalNonAssocRing (DFinsupp α S) where
 
-instance (priority := 1100) [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)]
-  [∀i, Mul (α i)] [∀i, IsNonUnitalRing (α i)] : IsNonUnitalRing (DFinsupp α S) where
+-- instance (priority := 1100) [∀i, AddGroupOps (α i)] [∀i, IsAddGroup (α i)]
+--   [∀i, Mul (α i)] [∀i, IsNonUnitalRing (α i)] : IsNonUnitalRing (DFinsupp α S) where
 
 instance
   [MonoidOps R] [IsMonoid R] [∀i, SMul R (α i)]
@@ -299,8 +301,8 @@ def apply_erase [DecidableEq ι] [∀i, Zero (α i)] (f: DFinsupp α S) (a x: ι
 
 variable [∀i, Zero (α i)] [dec: ∀i (x: α i), Decidable (x = 0)]
 
-def support (f: DFinsupp α S) : Finset ι :=
-  f.spec.lift (fun s => (s.val: Finset ι).filter fun x => decide (f x ≠ 0)) <| by
+def support (f: DFinsupp α S) : LazyFinset ι :=
+  f.spec.lift (fun s => (s.val: LazyFinset ι).filter fun x => decide (f x ≠ 0)) <| by
     intro ⟨a, ha⟩ ⟨b, hb⟩
     dsimp
     ext x
@@ -317,17 +319,17 @@ def mem_support {f: DFinsupp α S} :
   induction h with | mk h =>
   obtain ⟨s, h⟩ := h
   unfold support
-  show x ∈ Finset.filter (fun x => f x ≠ 0) s ↔ f x ≠ 0
-  simp [Finset.mem_filter]
+  show x ∈ LazyFinset.filter (fun x => f x ≠ 0) s ↔ f x ≠ 0
+  simp
   apply h
 
 def eq_support_union [∀i, Zero (α i)] [∀i (x: α i), Decidable (x = 0)] (f: DFinsupp α S)
-  (supp: Finset ι) (supp_spec: ∀ (x : ι), f x ≠ 0 → x ∈ supp) :
-  ∃rest, ∃h, supp = f.support.union_disjoint rest h := by
+  (supp: LazyFinset ι) (supp_spec: ∀ (x : ι), f x ≠ 0 → x ∈ supp) :
+  ∃rest,  (∀x ∈ f.support, ¬x ∈ rest) ∧ supp = f.support ++ rest := by
   classical
   refine ⟨supp \ f.support, ?_, ?_⟩
   intro x h g
-  rw [Finset.mem_sdiff] at g
+  rw [LazyFinset.mem_sdiff] at g
   exact g.right h
   ext x
   simp [Finset.mem_sdiff, Finset.mem_union_disjoint]
@@ -344,7 +346,7 @@ def eq_support_union [∀i, Zero (α i)] [∀i (x: α i), Decidable (x = 0)] (f:
 
 def support_single [DecidableEq ι] : (single a b: DFinsupp α S).support ⊆ {a} := by
  intro i h
- rw [Finset.mem_singleton,]
+ rw [LazyFinset.mem_singleton]
  rw [mem_support] at h
  unfold single at h
  rw [←toFun_eq_coe] at h
@@ -363,7 +365,6 @@ def support_add [∀i, Add (α i)] [∀i, IsAddZeroClass (α i)] [DecidableEq ι
 def support_zero [Zero β] [∀b: β, Decidable (b = 0)] : support (S := S) (α := α) 0 = ∅ := by
   ext
   simp [mem_support]
-  apply Finset.not_mem_empty
 
 def support_erase [DecidableEq ι] [∀i, DecidableEq (α i)] (f: DFinsupp α S) : (f.erase x).support = f.support.erase x := by
   ext a

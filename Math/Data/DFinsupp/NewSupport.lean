@@ -5,6 +5,7 @@ import Math.Order.Defs
 open scoped LazyFinset
 
 section
+
 -- we seperate out the necessary parts to define DFinsupp here
 -- so we that we don't require DecidableEq to just mention DFinsupp
 class FiniteSupportOps (S ι: Type*) extends Inhabited S, LazyFinsetLike S ι where
