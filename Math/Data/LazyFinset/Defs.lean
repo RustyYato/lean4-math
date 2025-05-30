@@ -1,4 +1,5 @@
 import Math.Data.Multiset.Basic
+import Math.Logic.Equiv.Defs
 
 inductive LazyFinset.Rel (α: Type*) : Multiset α -> Multiset α -> Prop where
 | dedup (a: α) (as: Multiset α) : Rel α (a::ₘa::ₘas) (a::ₘas)
@@ -404,7 +405,7 @@ def sub_append_right (a b: LazyFinset α) : b ⊆ a ++ b := by
 
 @[simp] def singleton_toMultiset [DecidableEq α] (a: α) : toMultiset {a} = {a} := rfl
 
-def nil_toMultiset [DecidableEq α] : toMultiset (α := α) ∅ = ∅ := rfl
+@[simp] def nil_toMultiset [DecidableEq α] : toMultiset (α := α) ∅ = ∅ := rfl
 
 def cons_toMultiset [DecidableEq α] (a: α) (as: LazyFinset α) (h: a ∉ as) : (cons a as).toMultiset = a::ₘas.toMultiset := by
   ext x n
@@ -423,4 +424,36 @@ def cons_toMultiset [DecidableEq α] (a: α) (as: LazyFinset α) (h: a ∉ as) :
       simpa
       apply toMultiset_nodup
 
+instance : IsEmpty (∅: LazyFinset α) where
+  elim x := nomatch x.property
+
 end LazyFinset
+
+namespace Equiv
+
+def lazy_finset_cons_unique (x: α) [∀a: α, Decidable (x = a)] (s: LazyFinset α) (h: x ∉ s) : (LazyFinset.cons x s) ≃ Option s where
+  toFun a := if g:x = a.val then .none else .some ⟨a.val, by
+    obtain ⟨a, ha⟩ := a
+    simp; simp at ha
+    rcases ha with rfl | ha
+    contradiction
+    assumption⟩
+  invFun
+  | .none => ⟨x, by simp⟩
+  | .some a => ⟨a.val, by simp [a.property]⟩
+  leftInv a := by
+    simp
+    by_cases g:x = a.val
+    simp [g]
+    rfl
+    simp [g]
+    rfl
+  rightInv a := by
+    cases a <;> simp
+    rename_i a
+    refine ⟨?_, rfl⟩
+    rintro rfl
+    exact h a.property
+
+
+end Equiv
