@@ -1249,6 +1249,11 @@ def fold (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α) (b: β), f a₀ 
     | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
     | swap => simp [List.foldr, h]
 
+@[simp] def fold_nil : fold f start h ∅ = start := rfl
+@[simp] def fold_cons : fold f start h (a::ₘas) = f a (fold f start h as) := by
+  induction as using Quotient.ind with | _ as =>
+  rfl
+
 def fold_nonempty
   (f: α -> β -> β)
   (start: α -> β)

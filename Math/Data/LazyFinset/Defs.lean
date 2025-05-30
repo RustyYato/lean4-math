@@ -26,6 +26,12 @@ def lift (f: Multiset α -> β) (resp: ∀a as, f (a::ₘa::ₘas) = f (a::ₘas
   | symm _ ih => rw [ih]
   | trans _ _ ih₀ ih₁ => rw [ih₀, ih₁]
 
+def ind {motive: LazyFinset α -> Prop} (ofMultiset : ∀as, motive (ofMultiset as)) (s: LazyFinset α) : motive s := by
+  induction s using Quotient.ind with | _ as =>
+  apply ofMultiset
+
+@[simp] def lift_ofMultiset (f: Multiset α -> β) (resp) : lift f resp (ofMultiset as) = f as := rfl
+
 def mem (x: α) : LazyFinset α -> Prop := by
   refine lift ?_ ?_
   exact (x ∈ ·)
@@ -47,17 +53,17 @@ def cons (x: α) : LazyFinset α -> LazyFinset α := by
 
 @[simp] def not_mem_nil : ∀x, x ∉ (∅: LazyFinset α) := fun _ => List.not_mem_nil
 @[simp] def mem_cons {a: α} {as: LazyFinset α} : ∀{x}, x ∈ cons a as ↔ x = a ∨ x ∈ as := by
-  induction as using Quotient.ind with | _ as =>
+  induction as using ind with | _ as =>
   apply Multiset.mem_cons
 
 @[simp] def cons_ofMultiset (a: α) (as: Multiset α) : ofMultiset (a::ₘas) = cons a (ofMultiset as) := rfl
 @[simp] def dedup_cons (a: α) (as: LazyFinset α) : cons a (cons a as) = cons a as := by
-  induction as using Quotient.ind with | _ =>
+  induction as using ind with | _ =>
   apply sound
   apply Rel.dedup
 
 def cons_comm (a₀ a₁: α) (as: LazyFinset α) : cons a₀ (cons a₁ as) = cons a₁ (cons a₀ as) := by
-  induction as using Quotient.ind with | _ as =>
+  induction as using ind with | _ as =>
   show ofMultiset _ = ofMultiset _
   rw [Multiset.cons_comm]
 
@@ -70,7 +76,7 @@ private def eq_of_cons_mem (a: α) (as: Multiset α) (h: a ∈ as) : ofMultiset 
 @[induction_eliminator]
 def induction {motive: LazyFinset α -> Prop} (nil: motive ∅) (cons: ∀(a: α) (as: LazyFinset α), a ∉ as -> motive as -> motive (cons a as)) : ∀s, motive s := by
   intro s
-  induction s using Quotient.ind with | _ s =>
+  induction s using ind with | _ s =>
   show motive (ofMultiset _)
   induction s with
   | nil => apply nil
@@ -166,14 +172,86 @@ instance : Append (LazyFinset α) where
 
 @[simp] def append_ofMultiset (as bs: Multiset α) : ofMultiset (as ++ bs) = ofMultiset as ++ ofMultiset bs := rfl
 
+def append_assoc (as bs cs: LazyFinset α) : as ++ bs ++ cs = as ++ (bs ++ cs) := by
+  induction as using ind with | _ as =>
+  induction bs using ind with | _ bs =>
+  induction cs using ind with | _ cs =>
+  show ofMultiset _ = ofMultiset _
+  rw [Multiset.append_assoc]
 def append_comm (as bs: LazyFinset α) : as ++ bs = bs ++ as := by
-  induction as using Quotient.ind with | _ as =>
-  induction bs using Quotient.ind with | _ bs =>
+  induction as using ind with | _ as =>
+  induction bs using ind with | _ bs =>
   show ofMultiset _ = ofMultiset _
   rw [Multiset.append_comm]
 @[simp] def mem_append {as bs: LazyFinset α} : ∀{x}, x ∈ as ++ bs ↔ x ∈ as ∨ x ∈ bs := by
-  induction as using Quotient.ind with | _ as =>
-  induction bs using Quotient.ind with | _ bs =>
+  induction as using ind with | _ as =>
+  induction bs using ind with | _ bs =>
   apply Multiset.mem_append
+
+@[simp] def nil_append (as: LazyFinset α) : ∅ ++ as = as := by
+  induction as using ind with | _ as =>
+  show ofMultiset _ = ofMultiset _
+  rw [Multiset.nil_append]
+
+@[simp] def cons_append (a: α) (as bs: LazyFinset α) : (cons a as) ++ bs = cons a (as ++ bs) := by
+  induction as using ind with | _ as =>
+  induction bs using ind with | _ bs =>
+  show ofMultiset _ = ofMultiset _
+  rw [Multiset.cons_append]
+
+@[simp] def append_self (as: LazyFinset α) : as ++ as = as := by
+  induction as with
+  | nil => simp
+  | cons a as _ ih =>
+    rw [cons_append, append_comm, cons_append, ih]
+    simp
+
+def map (f: α -> β) : LazyFinset α -> LazyFinset β := by
+  refine lift (ofMultiset ∘ Multiset.map f) ?_
+  intro a as
+  simp
+
+@[simp] def nil_map (f: α -> β) : map f ∅ = ∅ := rfl
+@[simp] def cons_map (f: α -> β) (a: α) (as: LazyFinset α) : map f (cons a as) = cons (f a) (map f as) := by
+  induction as using ind with | _ as =>
+  show ofMultiset _ = ofMultiset _
+  simp
+
+def mem_map {f: α -> β} {s: LazyFinset α} : ∀{x}, x ∈ s.map f ↔ ∃a ∈ s, f a = x := by
+  induction s using ind with | _ s =>
+  apply Multiset.mem_map
+
+def flatten : LazyFinset (LazyFinset α) -> LazyFinset α := by
+  refine lift ?_ ?_
+  · intro h
+    refine h.fold (· ++ ·) ∅ ?_
+    intro a₀ a₁ as
+    dsimp
+    rw [←append_assoc, ←append_assoc, append_comm a₀]
+  · intro a as
+    simp;
+    rw [←append_assoc]
+    congr; simp
+
+@[simp] def nil_flatten : flatten (α := α) ∅ = ∅ := rfl
+@[simp] def cons_flatten (a: LazyFinset α) (as: LazyFinset (LazyFinset α)) : flatten (cons a as) = a ++ (flatten as) := by
+  induction as using ind with | _ as =>
+  induction a using ind with | _ a =>
+  simp [flatten]; simp [cons, -cons_ofMultiset]
+
+def mem_flatten {as: LazyFinset (LazyFinset α)} : ∀{x}, x ∈ as.flatten ↔ ∃a ∈ as, x ∈ a := by
+  induction as with
+  | nil => simp
+  | cons a as h ih => simp [ih]
+
+def flatMap (f: α -> LazyFinset β) (s: LazyFinset α) : LazyFinset β := (s.map f).flatten
+
+@[simp] def nil_flatMap (f: α -> LazyFinset β) : flatMap f ∅ = ∅ := rfl
+@[simp] def cons_flatMap (f: α -> LazyFinset β) (a: α) (as: LazyFinset α) : flatMap f (cons a as) = f a ++ (flatMap f as) := by simp [flatMap]
+
+def mem_flatMap {f: α -> LazyFinset β} {as: LazyFinset α} : ∀{x}, x ∈ as.flatMap f ↔ ∃a ∈ as, x ∈ f a := by
+  induction as with
+  | nil => simp
+  | cons a as h ih => simp [ih]
 
 end LazyFinset
