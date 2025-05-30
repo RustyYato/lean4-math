@@ -173,12 +173,78 @@ instance : ∀term, Decidable (IsValue term)
 | .lam body => .isTrue (.lam body)
 | .var _ | .app _ _ => .isFalse nofun
 
+inductive References : Term -> ℕ -> Prop where
+| lam_body : References body (n + 1) -> References (.lam body) n
+| app_func : References func n -> References (.app func arg) n
+| app_arg : References arg n -> References (.app func arg) n
+| var : References (.var n) n
+
 inductive IsClosedUnder : Term -> ℕ -> Prop where
 | lam (body: Term) : IsClosedUnder body (n + 1) -> IsClosedUnder (.lam body) n
 | app (func arg: Term) : IsClosedUnder func n -> IsClosedUnder arg n -> IsClosedUnder (.app func arg) n
 | var (name: ℕ) : name < n -> IsClosedUnder (.var name) n
 
 def IsClosed (term: Term) := term.IsClosedUnder 0
+
+def closed_under_iff_not_references : IsClosedUnder t n ↔ ∀m, n ≤ m -> ¬t.References m := by
+  apply Iff.intro
+  · intro h m g r
+    induction r generalizing n with
+    | lam_body _ ih =>
+      cases h
+      apply ih
+      assumption
+      apply Nat.succ_le_succ
+      assumption
+    | app_func _ ih =>
+      cases h
+      apply ih
+      assumption
+      assumption
+    | app_arg _ ih =>
+      cases h
+      apply ih
+      assumption
+      assumption
+    | var =>
+      cases h
+      rw [←Nat.not_lt] at g
+      contradiction
+  · intro h
+    induction t generalizing n with
+    | lam body ih  =>
+      apply IsClosedUnder.lam
+      apply ih
+      intro m hm r
+      match m with
+      | m + 1 =>
+      apply h
+      apply Nat.le_of_succ_le_succ
+      assumption
+      apply References.lam_body
+      assumption
+    | app func arg ihf iha =>
+      apply IsClosedUnder.app
+      · apply ihf
+        intro m hm r
+        apply h
+        assumption
+        apply References.app_func
+        assumption
+      · apply iha
+        intro m hm r
+        apply h
+        assumption
+        apply References.app_arg
+        assumption
+    | var name =>
+      apply IsClosedUnder.var
+      rw [←Nat.not_le]
+      intro g; apply h _ g
+      apply References.var
+
+def closed_iff_not_references : IsClosed t ↔ ∀m, ¬t.References m := by
+  simp [IsClosed, closed_under_iff_not_references]
 
 def closed_under_weaken_at_level {term: Term} (h: term.IsClosedUnder n) (g: n ≤ m) : term.weaken_at_level m = term := by
   induction h generalizing m with
