@@ -3,6 +3,8 @@ import Math.Data.Nat.Basic
 import Math.Order.TopBot
 import Math.Data.Finsupp.Fintype
 
+open scoped LazyFinset
+
 namespace Poly
 
 section

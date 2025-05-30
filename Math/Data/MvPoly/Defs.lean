@@ -3,9 +3,9 @@ import Math.Algebra.GroupWithZero.Defs
 import Math.Data.Finsupp.Fintype
 
 abbrev MvPoly.Vars (σ: Type*) :=
-  AddMonoidAlgebra σ ℕ (Finset σ)
+  AddMonoidAlgebra σ ℕ (LazyFinset σ)
 
-def MvPoly (P σ: Type*) [Zero P] := AddMonoidAlgebra (MvPoly.Vars σ) P (Finset (MvPoly.Vars σ))
+def MvPoly (P σ: Type*) [Zero P] := AddMonoidAlgebra (MvPoly.Vars σ) P (LazyFinset (MvPoly.Vars σ))
 
 namespace MvPoly
 
@@ -17,7 +17,7 @@ instance : Zero (MvPoly P σ) :=
 instance [DecidableEq P] : DecidableEq (MvPoly P σ) :=
   inferInstanceAs (DecidableEq (AddMonoidAlgebra _ _ _))
 
-def toAddMonoidAlgebra : MvPoly P σ -> AddMonoidAlgebra (MvPoly.Vars σ) P (Finset (MvPoly.Vars σ)) := id
+def toAddMonoidAlgebra : MvPoly P σ -> AddMonoidAlgebra (MvPoly.Vars σ) P (LazyFinset (MvPoly.Vars σ)) := id
 
 def coeff (p: MvPoly P σ) : Vars σ -> P := p.toAddMonoidAlgebra
 
@@ -53,7 +53,7 @@ instance instIsAddGroup [RingOps P] [IsRing P] : IsAddGroup (MvPoly P σ) :=
 variable [DecidableEq σ]
 
 instance [SemiringOps P] [IsSemiring P] : Mul (MvPoly P σ) :=
-  inferInstanceAs (Mul (AddMonoidAlgebra (MvPoly.Vars σ) P (Finset (MvPoly.Vars σ))))
+  inferInstanceAs (Mul (AddMonoidAlgebra (MvPoly.Vars σ) P (LazyFinset (MvPoly.Vars σ))))
 instance [SemiringOps P] [IsSemiring P] : IsSemigroup (MvPoly P σ) :=
   inferInstanceAs (IsSemigroup (AddMonoidAlgebra _ _ _))
 instance [SemiringOps P] [IsSemiring P] : IsNonUnitalNonAssocSemiring (MvPoly P σ) :=
@@ -149,7 +149,7 @@ private def apply_monomial [SemiringOps P] [IsSemiring P] (x: P) (i: σ) (n m: �
   simp
   rw [if_neg]
   intro g; apply h; clear h
-  have : AddMonoidAlgebra.single (S := Finset σ) i m i = AddMonoidAlgebra.single (S := Finset σ) i n i := by rw [g]
+  have : AddMonoidAlgebra.single (S := LazyFinset σ) i m i = AddMonoidAlgebra.single (S := LazyFinset σ) i n i := by rw [g]
   simpa [AddMonoidAlgebra.apply_single] using this
 
 @[induction_eliminator]
