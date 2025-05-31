@@ -1,7 +1,27 @@
 import Math.Relation.Basic
+import Math.Data.Set.Defs
+import Math.Logic.Equiv.Like
+import Math.Data.Set.Like
 
+-- Graphs are represented by their edge relations. This allows us to easily implement new graphs
+-- and a lattice struture on graphs.
 structure Graph (α: Type*) where
   Edge: α -> α -> Prop
+
+structure Subgraph (G: Graph α) where
+  carrier: Set α
+  Edge: ∀a b, a ∈ carrier -> b ∈ carrier -> Prop
+  map_edge: ∀a b ha hb, Edge a b ha hb -> G.Edge a b
+
+instance (G: Graph α) : Membership α (Subgraph G) where
+  mem S a := a ∈ S.carrier
+
+instance : CoeSort (Subgraph G) (Type _) where
+  coe s := { x // x ∈ s }
+
+@[coe]
+def Subgraph.toGraph {G: Graph α} (S: Subgraph G) : Graph S where
+  Edge a b := S.Edge a b a.property b.property
 
 namespace Graph
 
@@ -58,6 +78,8 @@ private def scc_edge_aux (G: Graph α) (a b: α) : Prop :=
   have := G.scc_setoid
   ∃a' b', a ≈ a' ∧ b ≈ b' ∧ ¬a' ≈ b' ∧ G.Edge a' b'
 
+-- the condensation of the given graph, i.e. each node in the scc corrosponds to a subgraph
+-- where every node has a path to every other node of the original. This is a naturally acyclic graph.
 def scc (G: Graph α) : Graph G.Scc where
   Edge := by
     refine Quotient.lift₂ G.scc_edge_aux ?_
@@ -147,5 +169,27 @@ def scc_acyclic (G: Graph α) : ¬G.scc.IsCyclic := by
   exact ⟨Path.single h⟩
 
 end Scc
+
+section Equiv
+
+protected class IsEmbedding (F: Type*) {α β: Type*} [EmbeddingLike F α β] (Ga: Graph α) (Gb: Graph β) : Prop where
+  protected map_edge (f: F) (a b: α) : Ga.Edge a b -> Gb.Edge (f a) (f b) := by intro f; exact f.map_edge
+
+protected structure Embedding (Ga: Graph α) (Gb: Graph β) extends α ↪ β where
+  protected map_edge (a b: α) : Ga.Edge a b -> Gb.Edge (toFun a) (toFun b)
+
+def map_edge {F α β: Type*} [EmbeddingLike F α β] (Ga: Graph α) (Gb: Graph β) [Graph.IsEmbedding F Ga Gb] (f: F) (a b: α) : Ga.Edge a b -> Gb.Edge (f a) (f b) :=
+  Graph.IsEmbedding.map_edge f a b
+
+infixr:25 " ↪g " => Graph.Embedding
+
+instance (Ga: Graph α) (Gb: Graph β) : EmbeddingLike (Ga ↪g Gb) α β where
+instance (Ga: Graph α) (Gb: Graph β) : Graph.IsEmbedding (Ga ↪g Gb) Ga Gb where
+
+def ofSubgraph {G: Graph α} (S: Subgraph G) : S.toGraph ↪g G where
+  toEmbedding := Embedding.subtypeVal
+  map_edge _ _ := by apply S.map_edge
+
+end Equiv
 
 end Graph
