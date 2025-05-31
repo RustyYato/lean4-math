@@ -12,6 +12,11 @@ inductive Relation.EquivGen (r: α -> α -> Prop) : α -> α -> Prop where
 | symm : EquivGen r a b -> EquivGen r b a
 | trans : EquivGen r a b -> EquivGen r b c -> EquivGen r a c
 
+structure Relation.SymmGen (r: α -> α -> Prop) (a b: α) : Prop where
+  intro ::
+  left : r a b
+  right : r b a
+
 namespace Relation.TransGen
 
 def of_refltransgen (h: r a b) (g: Relation.ReflTransGen r b c) : Relation.TransGen r a c := by
@@ -76,6 +81,12 @@ class IsRefl: Prop where
 export IsRefl (refl)
 attribute [refl] IsRefl.refl
 
+instance [IsRefl r] : IsRefl (Relation.SymmGen r) where
+  refl a := by
+    apply SymmGen.intro
+    rfl
+    rfl
+
 instance : IsRefl (ReflTransGen r) where
   refl _ := ReflTransGen.refl
 instance [IsRefl rel] : IsRefl (TransGen rel) where
@@ -86,6 +97,14 @@ class IsSymmetric: Prop where
 export IsSymmetric (symm)
 
 def symm_iff [IsSymmetric r] : ∀{a b}, r a b ↔ r b a := Iff.intro symm symm
+
+instance : IsSymmetric (Relation.SymmGen r) where
+  symm := by
+    intro a b h
+    cases h
+    apply SymmGen.intro
+    assumption
+    assumption
 
 instance {r: β -> β -> Prop} (f: α -> β) [IsSymmetric r] : IsSymmetric (fun x y => r (f x) (f y)) where
   symm := symm
@@ -121,6 +140,13 @@ instance [IsSymmetric rel] : IsSymmetric (TransGen rel) where
 class IsTrans: Prop where
   trans: ∀{a b c}, rel a b -> rel b c -> rel a c
 def trans' [IsTrans r] : ∀{a b c}, r a b -> r b c -> r a c := IsTrans.trans
+
+instance [IsTrans r] : IsTrans (Relation.SymmGen r) where
+  trans h g := by
+    cases h; cases g
+    apply SymmGen.intro
+    apply trans' <;> assumption
+    apply trans' <;> assumption
 
 instance [IsTrans rel] : Trans rel rel rel where
   trans := IsTrans.trans
