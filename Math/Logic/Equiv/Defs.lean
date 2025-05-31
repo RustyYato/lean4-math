@@ -16,6 +16,16 @@ structure Equiv (α β: Sort*) where
 
 infixl:25 " ≃ " => Equiv
 
+structure Surjection (α β: Sort*) where
+  toFun: α -> β
+  surj': toFun.Surjective
+
+infixl:25 " ↠ " => Surjection
+
+structure Bijection (α β: Sort*) extends α ↪ β, α ↠ β where
+
+infixl:25 " ⇆ " => Bijection
+
 namespace Embedding
 
 @[refl]
@@ -74,6 +84,47 @@ def trans_assoc {h₀: α₀ ↪ α₁} {h₁: α₁ ↪ α₂} {h₂: α₂ ↪
 
 end Embedding
 
+namespace Surjection
+
+instance : FunLike (α ↠ β) α β where
+
+protected def refl (α: Type*) : α ↠ α where
+  toFun := id
+  surj' _ := ⟨_, rfl⟩
+
+@[refl]
+protected def rfl : α ↠ α := .refl _
+
+def trans (f: α ↠ β) (g: β ↠ γ) : α ↠ γ where
+  toFun := g ∘ f
+  surj' := Function.Surjective.comp g.surj' f.surj'
+
+def surj (f: α ↠ β) : Function.Surjective f := f.surj'
+
+end Surjection
+
+namespace Bijection
+
+instance : FunLike (α ⇆ β) α β where
+
+protected def refl (α: Type*) : α ⇆ α := {
+  Embedding.refl _, Surjection.refl _ with
+}
+
+@[refl]
+protected def rfl : α ⇆ α := .refl _
+
+def trans (f: α ⇆ β) (g: β ⇆ γ) : α ⇆ γ where
+  toFun := g ∘ f
+  surj' := Function.Surjective.comp g.surj' f.surj'
+  inj' := Function.Injective.comp g.inj' f.inj'
+
+def inj (f: α ⇆ β) : Function.Injective f := f.inj'
+def surj (f: α ⇆ β) : Function.Surjective f := f.surj'
+def bij (f: α ⇆ β) : Function.Bijective f := ⟨f.inj, f.surj⟩
+
+end Bijection
+
 namespace Equiv
 
 @[refl]
@@ -113,10 +164,23 @@ instance : FunLike (Equiv α β) α β where
     rw [a.rightInv, eq, b.rightInv]
 
 def inj (h: α ≃ b) : Function.Injective h := h.leftInv.Injective
+def surj (h: α ≃ b) : Function.Surjective h := h.rightInv.Surjective
 
 def toEmbedding (h: α ≃ β) : α ↪ β where
   toFun := h
   inj' := inj h
+
+def toSurjection (h: α ≃ β) : α ↠ β where
+  toFun := h
+  surj' := surj h
+
+def toBijection (h: α ≃ β) : α ⇆ β := {
+  h.toEmbedding, h.toSurjection with
+}
+
+@[simp] def apply_toEmbedding (h: α ≃ β) : (h.toEmbedding: α -> β) = h := rfl
+@[simp] def apply_toSurjection (h: α ≃ β) : (h.toSurjection: α -> β) = h := rfl
+@[simp] def apply_toBijection (h: α ≃ β) : (h.toBijection: α -> β) = h := rfl
 
 @[simp]
 def toEmbedding_trans (h: α ≃ β) (g: β ≃ γ) : h.toEmbedding.trans g.toEmbedding = (h.trans g).toEmbedding := rfl
@@ -235,3 +299,20 @@ def trans_right (g h: α ≃ β) (f: β ≃ γ) : g.trans f = h.trans f ↔ g = 
   · intro h; rw [h]
 
 end Equiv
+
+namespace Bijection
+
+noncomputable def toEquiv (f: α ⇆ β) : α ≃ β := Classical.choose (Equiv.ofBij f.bij)
+noncomputable def toEquiv_spec (f: α ⇆ β) : (f.toEquiv: α -> β) = f := Classical.choose_spec (Equiv.ofBij f.bij)
+
+noncomputable def symm (f: α ⇆ β) : β ⇆ α :=
+  f.toEquiv.symm.toBijection
+
+@[simp] def coe_symm (h: α ⇆ β) (x: α) : h.symm (h x) = x := by
+  rw [←h.toEquiv_spec, symm]; simp
+@[simp] def symm_coe (h: α ⇆ β) (x: β) : h (h.symm x) = x := by
+  rw [←h.toEquiv_spec, symm]; simp
+
+@[simp] def apply_trans (f: α ⇆ β) (g: β ⇆ γ) (x: α) : f.trans g x = g (f x) := rfl
+
+end Bijection

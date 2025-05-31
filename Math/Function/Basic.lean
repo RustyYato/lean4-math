@@ -31,6 +31,12 @@ def Injective.comp {f: α₀ -> α₁} {g: α₁ -> α₂} : Function.Injective 
   apply ginj
   assumption
 
+def Surjective.comp {f: α₀ -> α₁} {g: α₁ -> α₂} : Function.Surjective g ->  Function.Surjective f -> Function.Surjective (g ∘ f) := by
+  intro gsurj fsurj x
+  obtain ⟨x₀, rfl⟩ := gsurj x
+  obtain ⟨x₁, rfl⟩ := fsurj x₀
+  exists x₁
+
 def Injective.eq_iff : Function.Injective f₀ -> (∀{x y}, f₀ x = f₀ y ↔ x = y) := by
   intro inj x y
   apply Iff.intro
