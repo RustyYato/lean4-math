@@ -315,4 +315,6 @@ noncomputable def symm (f: α ⇆ β) : β ⇆ α :=
 
 @[simp] def apply_trans (f: α ⇆ β) (g: β ⇆ γ) (x: α) : f.trans g x = g (f x) := rfl
 
+@[simp] def apply_mk (f: α -> β) (h₀: f.Injective) (h₁: f.Surjective) : ({ toFun := f, inj' := h₀, surj' := h₁ }: α ⇆ β) = f := rfl
+
 end Bijection

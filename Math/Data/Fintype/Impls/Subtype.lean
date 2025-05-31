@@ -9,7 +9,7 @@ instance [f: Fintype α] {P: α -> Prop} [DecidablePred P] : Fintype (Subtype P)
   · rw [Array.toList_filterMap, Array.toList_ofFn]
     apply List.nodup_filterMap
     apply (List.nodup_ofFn _).mp
-    apply f.bij.Injective
+    apply f.decode.inj
     intro x y hx h
     split at h <;> split at h
     any_goals contradiction
@@ -20,7 +20,7 @@ instance [f: Fintype α] {P: α -> Prop} [DecidablePred P] : Fintype (Subtype P)
     exists x
     apply And.intro
     rw [Array.mem_ofFn]
-    have ⟨i, h⟩ := f.bij.Surjective x
+    have ⟨i, h⟩ := f.decode.surj x
     exists i; symm; assumption
     rw [dif_pos]
 

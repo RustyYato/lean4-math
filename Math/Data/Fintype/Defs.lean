@@ -5,8 +5,7 @@ import Math.Data.List.Defs
 import Math.AxiomBlame
 
 structure Fintype.Repr (card: ℕ) (α: Type*) where
-  decode : Fin card -> α
-  bij: Function.Bijective decode
+  decode : Fin card ⇆ α
   encode: Thunk (Option {
     f : α -> Fin card //
     Function.IsLeftInverse decode f
@@ -71,10 +70,10 @@ private def card_eq' (f: Fin n ↪ α) (g: Fin m ↪ α) (h: ∀(x: α), (∃i, 
       assumption
 
 def card_eq (a: Repr card₀ α) (b: Repr card₁ α) : card₀ = card₁ := by
-  apply card_eq' ⟨a.decode, a.bij.Injective⟩ ⟨b.decode, b.bij.Injective⟩
+  apply card_eq' ⟨a.decode, a.decode.inj⟩ ⟨b.decode, b.decode.inj⟩
   intro; apply Iff.intro <;> intro
-  apply b.bij.Surjective
-  apply a.bij.Surjective
+  apply b.decode.surj
+  apply a.decode.surj
 
 private def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h: ∃i, a = f i) : Σ'x: Fin card, a = f x :=
   match card with
@@ -92,7 +91,7 @@ private def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a 
 
 def toEmbed {card: ℕ} (f: Repr card α) : Fin card ↪ α where
   toFun := f.decode
-  inj' := f.bij.Injective
+  inj' := f.decode.inj
 
 def toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : Fin card ≃ α :=
   match f.encode.get with
@@ -102,22 +101,22 @@ def toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : Fin card ≃ α :=
     rightInv := g.property
     leftInv := by
       intro x
-      apply f.bij.Injective
+      apply f.decode.inj
       rw [g.property]
   }
   | .none => {
     toFun := f.decode
-    invFun a := (findIdx f.decode a (f.bij.Surjective a)).fst
+    invFun a := (findIdx f.decode a (f.decode.surj a)).fst
     leftInv x := by
-      apply f.bij.Injective
+      apply f.decode.inj
       rw [←(findIdx f.decode (f.decode x) _).snd]
     rightInv x := by
       simp
       rw [←(findIdx f.decode x _).snd]
   }
 
-def apply_toEmbed {card: ℕ} (f: Repr card α) : f.toEmbed = f.decode := rfl
-def apply_toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : f.toEquiv = f.decode := by
+def apply_toEmbed {card: ℕ} (f: Repr card α) : (f.toEmbed: Fin card -> α) = f.decode := rfl
+def apply_toEquiv [DecidableEq α] {card: ℕ} (f: Repr card α) : (f.toEquiv: Fin card -> α) = f.decode := by
   unfold toEquiv
   split <;> rfl
 
@@ -145,15 +144,43 @@ def toEmbed (α: Type*) [f: Fintype α] : Trunc (Fin (card α) ↪ α) :=
 def toEquiv (α: Type*) [DecidableEq α] [f: Fintype α] : Trunc (Fin (card α) ≃ α) :=
   f.toRepr.recOnSubsingleton fun repr => Trunc.mk repr.toEquiv
 
+def ofBij [f: Fintype α] (h: α ⇆ β) : Fintype β where
+  card_thunk := card α
+  toRepr := f.toRepr.recOnSubsingleton fun r => Trunc.mk <| {
+    decode := r.decode.trans h
+    encode := Thunk.mk fun () => .none
+  }
+
+def ofEquiv' [f: Fintype α] (h: α ≃ β) : Fintype β where
+  card_thunk := card α
+  toRepr := f.toRepr.recOnSubsingleton fun r => Trunc.mk <| {
+    decode := {
+      toFun x := h (r.decode x)
+      inj' := by
+        apply Function.Injective.comp
+        exact h.inj
+        exact r.decode.inj
+      surj' := by
+        apply Function.Surjective.comp
+        exact h.surj
+        exact r.decode.surj
+    }
+    encode :=
+      r.encode.map fun e =>
+      e.map fun e => {
+        val := e.val ∘ h.symm
+        property := by
+          intro x; simp
+          have := e.property
+          erw [e.property, Equiv.symm_coe]
+      }
+  }
+def ofEquiv [Fintype β] (h: α ≃ β) : Fintype α := ofEquiv' h.symm
+
 instance : Fintype (Fin n) where
   card_thunk := n
   toRepr := Trunc.mk {
-    decode := id
-    bij := by
-      apply And.intro
-      intro _ _
-      apply id
-      intro x; exists x
+    decode := .rfl
     encode := Thunk.mk (fun _ => .some {
       val := id
       property _ := rfl
@@ -167,10 +194,10 @@ instance : Fintype Bool where
     let zero := Fin.mk (n := 2) 0 (by decide)
     let one := Fin.mk (n := 2) 1 (by decide)
     Trunc.mk (α := Repr 2 _) {
-    decode x := x.val != Fin.mk (n := 2) 0 (by decide)
-    bij := by
-      apply And.intro
-      · intro ⟨x, hx⟩ ⟨y, hy⟩ h
+    decode := {
+      toFun x := x.val != Fin.mk (n := 2) 0 (by decide)
+      inj' := by
+        intro ⟨x, hx⟩ ⟨y, hy⟩ h
         match x with
         | 0 =>
           match y with
@@ -188,10 +215,12 @@ instance : Fintype Bool where
             rfl
           | y + 2 => exact (Nat.not_le_of_lt hy (Nat.le_add_left _ _)).elim
         | x + 2 => exact (Nat.not_le_of_lt hx (Nat.le_add_left _ _)).elim
-      · intro x
+      surj' := by
+        intro x
         cases x
         exact ⟨zero, rfl⟩
         exact ⟨one, rfl⟩
+    }
     encode := Thunk.mk (fun _ => .some {
       val
       | false => zero
@@ -200,56 +229,38 @@ instance : Fintype Bool where
     })
   }
 
-instance : Fintype Prop where
-  card_thunk := Thunk.mk (fun _ => 2)
-  toRepr := Trunc.mk (α := Repr 2 _) {
-    decode x := x.val ≠ 0
-    bij := by
-      apply And.intro
-      · intro x y h
-        simp at h
-        match x, y with
-        | 0, 0 | 1, 1 => rfl
-        | 0, 1 | 1, 0 => simp at h
-      · intro x
-        by_cases h:x
-        exists 1
-        simp [h]
-        exists 0
-        simp [h]
-    encode := Thunk.mk (fun _ => Option.none)
-  }
+instance : Fintype Prop := ofBij Bijection.bool_bij_prop
 
 instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α ⊕ β) where
   card_thunk := Thunk.mk (fun _ => card α + card β)
   toRepr :=
     fα.toRepr.bind fun rα =>
     fβ.toRepr.map fun rβ => {
-      decode x :=
-        match Equiv.finSum.symm x with
-        | .inl x => .inl (rα.decode x)
-        | .inr x => .inr (rβ.decode x)
-      bij := by
-        apply And.intro
-        · intro x y h
+      decode := {
+        toFun x :=
+          match Equiv.finSum.symm x with
+          | .inl x => .inl (rα.decode x)
+          | .inr x => .inr (rβ.decode x)
+        inj' := by
+          intro x y h
           simp at h
           split at h <;> split at h <;> rename_i h₀ _ _ h₁
-          simp [rα.bij.Injective.eq_iff] at h
-          subst h
+          simp at h; cases rα.decode.inj h
           rwa [←h₁, Equiv.finSum.symm.inj.eq_iff] at h₀
           contradiction
           contradiction
-          simp [rβ.bij.Injective.eq_iff] at h
-          subst h
+          simp at h; cases rβ.decode.inj h
           rwa [←h₁, Equiv.finSum.symm.inj.eq_iff] at h₀
-        · intro x
+        surj' := by
+          intro x
           cases x <;> rename_i x
-          have ⟨y₀, h₀⟩ := rα.bij.Surjective x
+          have ⟨y₀, h₀⟩ := rα.decode.surj x
           exists Equiv.finSum (.inl y₀)
           simp only [Equiv.coe_symm, h₀]
-          have ⟨y₀, h₀⟩ := rβ.bij.Surjective x
+          have ⟨y₀, h₀⟩ := rβ.decode.surj x
           exists Equiv.finSum (.inr y₀)
           simp only [Equiv.coe_symm, h₀]
+      }
       encode :=
         rα.encode.bind fun eα =>
         rβ.encode.map fun eβ =>
@@ -259,9 +270,9 @@ instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α ⊕ β) where
           | .inl x => Equiv.finSum (.inl (eα.val x))
           | .inr x => Equiv.finSum (.inr (eβ.val x))
           property := by
-            intro x; cases x <;> simp only [Equiv.coe_symm]
-            rw [eα.property]
-            rw [eβ.property]
+            intro x; cases x <;> simp only [Equiv.coe_symm, Bijection.apply_mk]
+            erw [eα.property]
+            erw [eβ.property]
         }
     }
 
@@ -270,23 +281,25 @@ instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α × β) where
   toRepr :=
     fα.toRepr.bind fun rα =>
     fβ.toRepr.map fun rβ => {
-      decode x :=
-        have (x, y) := Equiv.finProd.symm x
-        (rα.decode x, rβ.decode y)
-      bij := by
-        apply And.intro
-        · intro x y h
+      decode := {
+        toFun x :=
+          have (x, y) := Equiv.finProd.symm x
+          (rα.decode x, rβ.decode y)
+        inj' := by
+          intro x y h
           simp at h
-          rw [rα.bij.Injective.eq_iff, rβ.bij.Injective.eq_iff] at h
+          erw [rα.decode.inj.eq_iff, rβ.decode.inj.eq_iff] at h
           rw [←Fin.pair_split_eq_self x, ←Fin.pair_split_eq_self y, h.left, h.right]
-        · intro x
-          have ⟨y₀, h₀⟩ := rα.bij.Surjective x.1
-          have ⟨y₁, h₁⟩ := rβ.bij.Surjective x.2
+        surj' := by
+          intro x
+          have ⟨y₀, h₀⟩ := rα.decode.surj x.1
+          have ⟨y₁, h₁⟩ := rβ.decode.surj x.2
           exists Equiv.finProd (y₀, y₁)
           simp
           ext
           assumption
           assumption
+      }
       encode :=
         rα.encode.bind fun eα =>
         rβ.encode.map fun eβ =>
@@ -298,22 +311,24 @@ instance [fα: Fintype α] [fβ: Fintype β] : Fintype (α × β) where
             Equiv.finProd (x₀, x₁)
           property := by
             intro x
-            simp
-            rw [eα.property, eβ.property]
+            simp [Equiv.finProd]
+            erw [eα.property, eβ.property]
         }
     }
 
 instance [Inhabited α] [Subsingleton α] : Fintype α where
   card_thunk := Thunk.mk fun _ => 1
   toRepr := Trunc.mk (α := Repr 1 _) {
-    decode _ := default
-    bij := by
-      apply And.intro
-      intro x y h
-      apply Subsingleton.allEq
-      intro x
-      exists 0
-      apply Subsingleton.allEq
+    decode := {
+      toFun _ := default
+      inj' := by
+        intro x y h
+        apply Subsingleton.allEq
+      surj' := by
+        intro x
+        exists 0
+        apply Subsingleton.allEq
+    }
     encode := Thunk.mk (fun _ => .some <| {
       val _ := 0
       property _ := Subsingleton.allEq  _ _
@@ -323,13 +338,15 @@ instance [Inhabited α] [Subsingleton α] : Fintype α where
 instance [IsEmpty α] : Fintype α where
   card_thunk := Thunk.mk fun _ => 0
   toRepr := Trunc.mk (α := Repr 0 _) {
-    decode := Fin.elim0
-    bij := by
-      apply And.intro
-      intro x y h
-      apply Subsingleton.allEq
-      intro x
-      exact elim_empty x
+    decode := {
+      toFun := Fin.elim0
+      inj' := by
+        intro x y h
+        apply Subsingleton.allEq
+      surj' := by
+        intro x
+        exact elim_empty x
+    }
     encode := Thunk.mk (fun _ => .some <| {
       val := elim_empty
       property _ := Subsingleton.allEq  _ _
@@ -384,7 +401,7 @@ instance (priority := 50) {P: ι -> Prop} [DecidablePred P] [f: Fintype ι] : De
     intro ⟨x, hx, h⟩
     refine ⟨_, h⟩
     intro ⟨i, h⟩
-    obtain ⟨i, rfl⟩ := f.bij.Surjective i
+    obtain ⟨i, rfl⟩ := f.decode.surj i
     exists i.val
     exists i.isLt
 
@@ -436,30 +453,6 @@ def axiomOfChoice' [DecidableEq ι] [Fintype ι] {α: ι -> Sort*} {P: ∀i: ι,
   have ⟨a, pa⟩ := f i
   exists a
 
-def ofEquiv' [f: Fintype α] (h: α ≃ β) : Fintype β where
-  card_thunk := card α
-  toRepr := f.toRepr.recOnSubsingleton fun r => Trunc.mk <| {
-    decode x := h (r.decode x)
-    bij := by
-      apply And.intro
-      · apply Function.Injective.comp
-        exact h.inj
-        exact r.bij.Injective
-      · intro b
-        have ⟨i, h⟩ := r.bij.Surjective (h.symm b)
-        exists i
-        simp [←h]
-    encode :=
-      r.encode.map fun e =>
-      e.map fun e => {
-        val := e.val ∘ h.symm
-        property := by
-          intro x; simp
-          rw [e.property, Equiv.symm_coe]
-      }
-  }
-def ofEquiv [Fintype β] (h: α ≃ β) : Fintype α := ofEquiv' h.symm
-
 def card_eq_of_equiv' {fα: Fintype α} {fβ: Fintype β} (h: α ≃ β) : card α = card β := by
   rw [Subsingleton.allEq fα (ofEquiv h)]
   rfl
@@ -489,7 +482,7 @@ def card_eq_zero_iff_empty [f: Fintype α] : card α = 0 ↔ IsEmpty α := by
   induction r with | _ r =>
   replace h : card_thunk.get = 0 := h
   rw [h] at r
-  nomatch r.bij.Surjective x
+  nomatch r.decode.surj x
 
 def card_ne_zero_iff_nonempty [f: Fintype α] : card α ≠ 0 ↔ Nonempty α := by
   apply Iff.intro
@@ -510,8 +503,8 @@ instance {α: ι -> Sort*} [f: Fintype ι] [∀i, DecidableEq (α i)]  : Decidab
 def Fineum.subsingleton [f: Fintype α] (h: card α ≤ 1) : Subsingleton α where
   allEq a b := by
     induction f using ind with | @ind card r =>
-    have ⟨i, hi⟩ := r.bij.Surjective a
-    have ⟨j, hj⟩ := r.bij.Surjective b
+    have ⟨i, hi⟩ := r.decode.surj a
+    have ⟨j, hj⟩ := r.decode.surj b
     rw [hi, hj]
     congr
     have := i.pos
@@ -601,22 +594,25 @@ def fold [fα: Fintype α] (f: α -> β -> β) (start: β) (h: ∀(a₀ a₁: α
     apply fold_spec (f := f)
     assumption
     intro x
-    intro; apply b.bij.Surjective
-    apply a.bij.Injective
-    apply b.bij.Injective
+    intro; apply b.decode.surj
+    apply a.decode.inj
+    apply b.decode.inj
 
 private def cast_card (f: Fintype α) (h: n = card α) : Fintype α where
   card_thunk := n
   toRepr :=
     f.toRepr.map fun r => {
-      decode x := r.decode (x.cast h)
-      bij := by
-        apply And.intro
-        intro x y g
-        simpa [r.bij.Injective.eq_iff, Fin.cast, Fin.val_inj] using g
-        intro x
-        have ⟨i, g⟩ := r.bij.Surjective x
-        exists i.cast h.symm
+      decode := {
+        toFun x := r.decode (x.cast h)
+        inj' := by
+          intro x y g
+          simp at g; replace g := r.decode.inj g
+          simpa [Fin.cast, Fin.val_inj] using g
+        surj' := by
+          intro x
+          have ⟨i, g⟩ := r.decode.surj x
+          exists i.cast h.symm
+      }
       encode := Thunk.mk fun _ => .none
     }
 
@@ -647,28 +643,29 @@ private instance (priority := 10) [f: Fintype (Option α)] : Fintype α where
     have (o: Option α) : Decidable (.none = o) := decidable_of_bool o.isNone <| by
       simp; apply Eq.comm
     have ⟨noneIdx, hnoneIdx⟩ := Repr.findIdx r.decode none (by
-      apply r.bij.Surjective)
+      apply r.decode.surj)
     let emb := Embedding.fin_erase (noneIdx.cast (by rw [Nat.sub_add_cancel]; omega))
     {
       encode := Thunk.mk fun _ => none
-      decode x :=
-        Option.get (r.decode <| (Embedding.fin_erase (noneIdx.cast (by omega)) x).cast <| by omega) <| by
+      decode := {
+        toFun x :=
+          Option.get (r.decode <| (Embedding.fin_erase (noneIdx.cast (by omega)) x).cast <| by omega) <| by
           rw [Option.isSome_iff_ne_none]
           rw [hnoneIdx]
-          simp; rw [r.bij.Injective.eq_iff, ←Fin.val_inj]
+          simp; rw [r.decode.inj.eq_iff, ←Fin.val_inj]
           simp
           show ¬(Embedding.fin_erase _) x = (noneIdx.cast (m := card (Option α) - 1 + 1) (by omega)).val
           rw [Fin.val_inj]
           apply Embedding.fin_erase_not_eq
-      bij := by
-        apply And.intro
-        · intro x y h
+        inj' := by
+          intro x y h
           simp at h
-          rw [Option.get_inj, r.bij.Injective.eq_iff, ←Fin.val_inj] at h
+          rw [Option.get_inj, r.decode.inj.eq_iff, ←Fin.val_inj] at h
           simp at h
           rwa [Fin.val_inj, (Embedding.inj _).eq_iff] at h
-        · intro x
-          have ⟨i, hi⟩ := r.bij.Surjective x
+        surj' := by
+          intro x
+          have ⟨i, hi⟩ := r.decode.surj x
           simp
           refine if h:i.val <  noneIdx.val then ?_ else ?_
           exists ⟨i, by omega⟩
@@ -696,6 +693,7 @@ private instance (priority := 10) [f: Fintype (Option α)] : Fintype α where
           rw [Embedding.apply_fin_erase_of_ge]
           simp; omega
           simp; omega
+      }
     }
 
 def indType'
@@ -796,7 +794,7 @@ def card_le_of_embed' {fα: Fintype α} {fβ: Fintype β} (f: α ↪ β) : card 
   have range_nodup : range.Nodup := (List.nodup_ofFn _).mp (by
     apply Function.Injective.comp
     exact f.inj
-    exact rα.bij.Injective)
+    exact rα.decode.inj)
   have range_len : range.length = cα := by rw [List.length_ofFn]
   show cα ≤ cβ
   rw [←range_len]
@@ -807,7 +805,7 @@ def card_le_of_embed' {fα: Fintype α} {fβ: Fintype β} (f: α ↪ β) : card 
   assumption
   intro x hx
   rw [List.mem_ofFn]
-  have ⟨i, h⟩ := rβ.bij.Surjective x
+  have ⟨i, h⟩ := rβ.decode.surj x
   exists i; symm; assumption
 
 def card_le_of_embed [Fintype α] [Fintype β] (h: α ↪ β) : card α ≤ card β := by

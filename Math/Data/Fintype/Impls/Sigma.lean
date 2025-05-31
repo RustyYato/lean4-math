@@ -136,7 +136,7 @@ private def of_decode_heq
   cases rα.card_eq rβ
   cases hr
   simp at h
-  rw [rα.bij.Injective.eq_iff] at h
+  rw [rα.decode.inj.eq_iff] at h
   congr
 
 private def fin_heq_of_val_eq (h: n = m) {x: Fin n} {y: Fin m} (g: x.val = y.val) : HEq x y := by
@@ -151,15 +151,15 @@ instance {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)] : Finty
         (n := card ι)
         (f := fun rα : ∀i: Fin (card ι), Repr (card (α (rι.decode i))) (α (rι.decode i)) =>
           Trunc.mk (α := Repr (fin_sum (fun i => card (α (rι.decode i)))) _) <| {
-            decode x :=
-              have x := (find_fin_sum (fun x: Fin (card ι) => card (α (rι.decode x))) x).get (find_fin_sum_isSome _ _ x.isLt)
-              {
-                fst := rι.decode x.fst
-                snd := (rα _).decode x.snd
-              }
-            bij := by
-              apply And.intro
-              · intro ⟨x, xLt⟩ ⟨y, yLt⟩ h
+            decode := {
+              toFun x :=
+                have x := (find_fin_sum (fun x: Fin (card ι) => card (α (rι.decode x))) x).get (find_fin_sum_isSome _ _ x.isLt)
+                {
+                  fst := rι.decode x.fst
+                  snd := (rα _).decode x.snd
+                }
+              inj' := by
+                intro ⟨x, xLt⟩ ⟨y, yLt⟩ h
                 dsimp at h
                 let x₀ := (find_fin_sum (fun x => card (α (rι.decode x))) x).get (find_fin_sum_isSome _ _ xLt)
                 let y₀ := (find_fin_sum (fun x => card (α (rι.decode x))) y).get (find_fin_sum_isSome _ _ yLt)
@@ -182,7 +182,7 @@ instance {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)] : Finty
                   cases this
                   rfl
                 simp at h
-                rw [rι.bij.Injective.eq_iff] at h
+                rw [rι.decode.inj.eq_iff] at h
                 obtain ⟨h₀, h₁⟩ := h
                 have := of_decode_heq (by congr) h₁ (by congr)
                 ext
@@ -190,9 +190,10 @@ instance {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)] : Finty
                 apply fin_heq_of_val_eq
                 congr
                 assumption
-              · simp; intro ⟨i, ai⟩
-                obtain ⟨i₀, rfl⟩ := rι.bij.Surjective i
-                obtain ⟨i₁, rfl⟩ := (rα i₀).bij.Surjective ai
+              surj' := by
+                simp; intro ⟨i, ai⟩
+                obtain ⟨i₀, rfl⟩ := rι.decode.surj i
+                obtain ⟨i₁, rfl⟩ := (rα i₀).decode.surj ai
                 let x₀ := fin_sum (n := i₀.val) (fun x => (fun x => card (α (rι.decode x))) (x.castLE (by omega))) + i₁.val
                 have x₀Lt: x₀ < fin_sum fun x => card (α (rι.decode x)) := by
                   apply find_fin_sum_spec_lt (fun x => card (α (rι.decode x)))
@@ -210,7 +211,7 @@ instance {α: ι -> Type*} [fι: Fintype ι] [fα: ∀i, Fintype (α i)] : Finty
                 rw [this]; clear X this
                 have ⟨_, _⟩ := find_fin_sum_spec_inj (fun x: Fin _ => card (α (rι.decode x))) i₀ x₁ i₁ x₂ gx
                 congr
-
+            }
             encode := Thunk.mk fun _ => .none
           })
         (by intros; apply Subsingleton.allEq)

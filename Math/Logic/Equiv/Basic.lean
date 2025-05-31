@@ -216,6 +216,20 @@ def quotientMk (s: Setoid α) : α ↠ Quotient s where
 
 end Surjection
 
+namespace Bijection
+
+def bool_bij_prop : Bool ⇆ Prop where
+  toFun x := x
+  inj' := by simp
+  surj' x := by
+    by_cases x
+    exists true
+    simpa
+    exists false
+    simpa
+
+end Bijection
+
 namespace Equiv
 
 def congrEquiv {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) ≃ (α₁ ≃ β₁) where

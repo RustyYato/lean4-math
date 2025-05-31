@@ -376,21 +376,21 @@ instance instPi {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : Fintype (∀i, �
     {
       card_thunk := Thunk.mk fun _ => card_out ^ card ι
       toRepr := Trunc.mk (α := Repr (card_out ^ card ι) _) {
-          decode data i :=
-            (rα _).decode <| Fin.cast (cardα _).symm (
-              decode_function (by
-                    have := data.pos
-                    rintro  rfl
-                    rw [Nat.zero_pow] at this
-                    contradiction
-                    omega) data (rι.toEquiv.symm i))
-          bij := by
-            apply And.intro
-            · intro x y h
+          decode := {
+            toFun data i :=
+              (rα _).decode <| Fin.cast (cardα _).symm (
+                decode_function (by
+                      have := data.pos
+                      rintro  rfl
+                      rw [Nat.zero_pow] at this
+                      contradiction
+                      omega) data (rι.toEquiv.symm i))
+            inj' := by
+              intro x y h
               simp at h
               replace h := fun i =>
                 propext Fin.val_inj ▸
-                (propext (rα i).bij.Injective.eq_iff ▸ (congrFun h) i)
+                (propext (rα i).decode.inj.eq_iff ▸ (congrFun h) i)
               simp at h
               replace h: ∀(i : Fin (card ι)), ↑x / card_out ^ i.val % card_out = ↑y / card_out ^ i.val % card_out := by
                 intro i
@@ -426,9 +426,10 @@ instance instPi {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : Fintype (∀i, �
                 omega
                 have := h 0
                 simpa using this
-            · intro f
+            surj' := by
+              intro f
               have (i: ι) : ∃x: Fin (card (α i)), f i = (rα i).decode x := by
-                apply (rα _).bij.Surjective
+                apply (rα _).decode.surj
               replace := axiomOfChoice' this
               obtain ⟨g, hg⟩ := this
               exists ⟨encode_function card_out (fun i => (g (rι.decode i)).cast (cardα _)), ?_⟩
@@ -449,6 +450,7 @@ instance instPi {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : Fintype (∀i, �
                 rw [←Fin.val_inj]
                 simp
                 rw [Equiv.symm_coe]
+          }
           encode := Thunk.mk fun _ => .none
       }
     }
@@ -461,28 +463,29 @@ instance instPi {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : Fintype (∀i, �
   {
     card_thunk := Thunk.mk fun _ => fin_prod get_card
     toRepr := Trunc.mk (α := Repr (fin_prod get_card) _) {
-        decode data i :=
-          (rα _).decode <| (extract get_card data (eqv.symm i)).cast (by
+        decode := {
+          toFun data i :=
+            (rα _).decode <| (extract get_card data (eqv.symm i)).cast (by
             simp [get_card]; rw [Equiv.symm_coe])
-        bij := by
-          apply And.intro
-          · intro x y
+          inj' := by
+            intro x y
             simp
             intro h
             replace h := congrFun h
             conv at h => {
               intro i
-              rw [(rα i).bij.Injective.eq_iff, ←Fin.val_inj]
+              rw [(rα i).decode.inj.eq_iff, ←Fin.val_inj]
             }
             simp [Fin.val_inj] at h
             exact extract_inj get_card x y (by
               intro i
               rw [←eqv.coe_symm i]
               apply h)
-          · intro f
+          surj' := by
+            intro f
             simp
             have (i: ι) : ∃x, f i = (rα i).decode x := by
-              apply (rα _).bij.Surjective
+              apply (rα _).decode.surj
             replace this := rι.axiomOfChoice' this
             obtain ⟨g, hg⟩ := this
             exists ⟨encode get_card (fun i => g (eqv i)), encode_lt _ _⟩
@@ -492,6 +495,7 @@ instance instPi {α: ι -> Type*} [fα: ∀i, Fintype (α i)] : Fintype (∀i, �
             rw [←Fin.val_inj]
             simp [extract_encode]
             congr; all_goals simp
+        }
         encode := Thunk.mk fun _ => .none
     }
   }

@@ -17,17 +17,17 @@ def LazyFinset.univ (α: Type*) [f: Fintype α] : LazyFinset α :=
     simp
     apply Iff.intro
     · rintro _
-      have ⟨i, h⟩ := b.bij.Surjective x
+      have ⟨i, h⟩ := b.decode.surj x
       exact ⟨_, h.symm⟩
     · rintro _
-      have ⟨i, h⟩ := a.bij.Surjective x
+      have ⟨i, h⟩ := a.decode.surj x
       exact ⟨_, h.symm⟩
 
 def LazyFinset.mem_univ (α: Type*) [f: Fintype α] : ∀x, x ∈ univ α := by
   induction f using Fintype.ind with | _ r =>
   intro x
   apply List.mem_ofFn.mpr
-  have ⟨i, h⟩ := r.bij.Surjective x
+  have ⟨i, h⟩ := r.decode.surj x
   exists i; symm; assumption
 
 instance [Fintype α] [DecidableEq α] : SetComplement (LazyFinset α) where

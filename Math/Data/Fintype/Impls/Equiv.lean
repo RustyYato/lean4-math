@@ -125,15 +125,17 @@ instance instEquiv [DecidableEq α] [DecidableEq β] [fα: Fintype α] [fβ: Fin
         fβ.toRepr.map (β := Repr ((card α) !) _) fun rβ: Repr (card β) _ =>
         {
           encode := Thunk.mk fun _ => .none
-          decode x := Equiv.congrEquiv rα.toEquiv rβ.toEquiv ((Fintype.decode x).trans (Equiv.fin h))
-          bij := by
-            apply And.intro
-            · intro x y h
+          decode := {
+            toFun x := Equiv.congrEquiv rα.toEquiv rβ.toEquiv ((Fintype.decode x).trans (Equiv.fin h))
+            inj' := by
+              intro x y h
               simp at h
               exact decode_inj h
-            · intro f
+            surj' := by
+              intro f
               exists encode <| (Equiv.congrEquiv rα.toEquiv.symm rβ.toEquiv.symm f).trans (Equiv.fin h.symm)
               ext x; simp [decode_encode]
+          }
         }
     }
   else

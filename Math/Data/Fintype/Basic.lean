@@ -54,7 +54,7 @@ def exists_not_mem_preimage [Fintype ι] (f: ι ↪ α) (l: List α) (h: l.lengt
   induction fι using ind generalizing l with
   | @ind card rι =>
   show card ≤ _
-  have decode : Fin card ↪ ι := ⟨rι.decode, rι.bij.Injective⟩
+  have decode : Fin card ↪ ι := ⟨rι.decode, rι.decode.inj⟩
   let f' := decode.trans f
   replace g : ∀i, f' i ∈ l := by
     intro i

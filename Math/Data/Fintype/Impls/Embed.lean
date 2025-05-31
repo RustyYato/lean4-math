@@ -158,12 +158,12 @@ instance instEmebdding [DecidableEq α] [fα: Fintype α] [fβ: Fintype β] : Fi
         fβ.toRepr.map (β := Repr (npr _ _) _) fun rβ: Repr (card β) _ =>
         {
           encode := Thunk.mk fun _ => .none
-          decode x :=
-            let f := Fintype.decode h x
-            rα.toEquiv.symm.toEmbedding.trans (f.trans rβ.toEmbed)
-          bij := by
-            apply And.intro
-            · intro x y g
+          decode := {
+            toFun x :=
+              let f := Fintype.decode h x
+              rα.toEquiv.symm.toEmbedding.trans (f.trans rβ.toEmbed)
+            inj' := by
+              intro x y g
               dsimp at g
               replace g := Embedding.congr g
               simp [rβ.toEmbed.inj.eq_iff] at g
@@ -173,10 +173,11 @@ instance instEmebdding [DecidableEq α] [fα: Fintype α] [fβ: Fintype β] : Fi
               apply decode_inj h
               apply Embedding.ext
               assumption
-            · intro f
+            surj' := by
+              intro f
               dsimp
               let f' := rα.toEquiv.toEmbedding.trans f
-              have (i: Fin (card α)) : ∃j, f' i = rβ.decode j := rβ.bij.Surjective _
+              have (i: Fin (card α)) : ∃j, f' i = rβ.decode j := rβ.decode.surj _
               replace this := axiomOfChoice' this
               obtain ⟨g, hg⟩ := this
               let g' : Fin (card α) ↪ Fin (card β) := {
@@ -191,6 +192,7 @@ instance instEmebdding [DecidableEq α] [fα: Fintype α] [fβ: Fintype β] : Fi
               rw [decode_encode]
               ext i
               simp [g', Repr.toEmbed, ←hg, f']
+          }
         }
     }
   else

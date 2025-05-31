@@ -8,20 +8,22 @@ instance (f: Finset α) : Fintype f :=
     toRepr := f.recOnSubsingleton (motive := fun f => Trunc (Fintype.Repr f.val.length _)) fun l h =>
       Trunc.mk (α := Fintype.Repr l.length _) {
         encode := Thunk.mk fun _ => .none
-        decode x := {
-          val := l[x]'x.isLt
-          property := List.getElem_mem x.isLt
-        }
-        bij := by
-          apply And.intro
-          · intro x y g
+        decode := {
+          toFun x := {
+            val := l[x]'x.isLt
+            property := List.getElem_mem x.isLt
+          }
+          inj' := by
+            intro x y g
             dsimp at g
             rw [←Fin.val_inj]
             exact l.nodup_getElem_inj h (Subtype.mk.inj g)
-          · intro ⟨x, hx⟩
+          surj' := by
+            intro ⟨x, hx⟩
             have ⟨i, h, _⟩ := List.getElem_of_mem hx
             exists ⟨i, h⟩
             congr; symm; assumption
+        }
       }
   }
 
@@ -169,7 +171,7 @@ def List.ofFn_perm_of_eqv (f: Fin n -> α) (g: Fin m -> α) (eqv: Fin n ≃ Fin 
 def Finset.univ (α: Type*) [f: Fintype α] : Finset α :=
   f.toRepr.lift (fun s => ⟨Multiset.mk (List.ofFn s.decode), by
     apply (List.nodup_ofFn _).mp
-    apply s.bij.Injective⟩) <| by
+    apply s.decode.inj⟩) <| by
     intro a b
     simp
     congr 1
@@ -187,7 +189,7 @@ def Finset.mem_univ (α: Type*) [f: Fintype α] : ∀x, x ∈ univ α := by
   induction f using Fintype.ind with | _ r =>
   intro x
   apply List.mem_ofFn.mpr
-  have ⟨i, h⟩ := r.bij.Surjective x
+  have ⟨i, h⟩ := r.decode.surj x
   exists i; symm; assumption
 
 instance [Fintype α] [DecidableEq α] : SetComplement (Finset α) where
