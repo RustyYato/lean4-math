@@ -201,7 +201,23 @@ protected def IsNontrivial [IsNontrivial α] (f: α ↪ β) : IsNontrivial β wh
 
 end Embedding
 
+namespace Surjection
+
+def quotMk (r: α -> α -> Prop) : α ↠ Quot r where
+  toFun := Quot.mk _
+  surj' := Quot.mkSurj
+
+def quotientMk (s: Setoid α) : α ↠ Quotient s where
+  toFun := Quotient.mk _
+  surj' := Quot.mkSurj
+
+@[simp] def apply_quotMk (r: α -> α -> Prop) : quotMk r = Quot.mk r := rfl
+@[simp] def apply_quotientMk (s: Setoid α) : quotientMk s = Quotient.mk s := rfl
+
+end Surjection
+
 namespace Equiv
+
 def congrEquiv {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ≃ β₀) ≃ (α₁ ≃ β₁) where
   toFun f := h.symm.trans (f.trans g)
   invFun f := h.trans (f.trans g.symm)
@@ -603,6 +619,38 @@ def congrEmbed {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β�
 @[simp]
 def apply_congrEmebd {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) (f: α₀ ↪ β₀) :
   congrEmbed h g f = h.symm.toEmbedding.trans (f.trans g.toEmbedding) := rfl
+
+def surjection_equiv_subtype (α β: Sort*) : (α ↠ β) ≃ { f: α -> β // f.Surjective } where
+  toFun f := ⟨f.1, f.2⟩
+  invFun f := ⟨f.1, f.2⟩
+  leftInv x := by rfl
+  rightInv x := by rfl
+
+@[simp] def liftSurjection {α₀ α₁ β₀ β₁} :
+  ({ f: α₀ -> β₀ // Function.Surjective f } ≃ { f: α₁ -> β₁ // Function.Surjective f }) ≃
+  ((α₀ ↠ β₀) ≃ (α₁ ↠ β₁)) :=
+  (congrEquiv (surjection_equiv_subtype _ _) (surjection_equiv_subtype _ _)).symm
+
+def congrSurjection {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) : (α₀ ↠ β₀) ≃ (α₁ ↠ β₁) := by
+  apply liftSurjection (congrSubtype (congrFunction h g) ?_)
+  intro f
+  unfold congrFunction congrPi
+  dsimp
+  show _ ↔ Function.Surjective (g ∘ f ∘ _)
+  apply Iff.intro
+  · intro hf x
+    have ⟨x, hx⟩ := hf (g.symm x)
+    cases Equiv.eq_coe_of_symm_eq _ hx
+    exists h x
+    simp
+  · intro hf x
+    have ⟨x, hx⟩ := (hf (g x))
+    cases g.inj hx
+    exists h.symm x
+
+@[simp]
+def apply_congrSurjection {α₀ α₁ β₀ β₁} (h: α₀ ≃ α₁) (g: β₀ ≃ β₁) (f: α₀ ↠ β₀) :
+  congrSurjection h g f = h.symm.toSurjection.trans (f.trans g.toSurjection) := rfl
 
 def eqv_equiv_subtype (α β: Type*) : (α ≃ β) ≃ { fg: (α -> β) × (β -> α) // Function.IsRightInverse fg.1 fg.2 ∧ Function.IsLeftInverse fg.1 fg.2 } where
   toFun x := ⟨⟨x.1, x.2⟩, x.3, x.4⟩
@@ -1329,6 +1377,43 @@ def Fin.le_of_embed (h: Fin n ↪ Fin m) : n ≤ m := by
       apply Equiv.congrEmbed _ _ h
       apply Equiv.fin_equiv_option
       apply Equiv.fin_equiv_option
+
+private def Fin.le_of_surj_aux (l: List (Fin n)) (h: ∀x, x ∈ l) : n ≤ l.length := by
+  induction n with
+  | zero => apply Nat.zero_le
+  | succ n ih =>
+    let l' := l.filterMap (Equiv.fin_equiv_option n)
+    rw [Nat.succ_le]
+    apply Nat.lt_of_le_of_lt
+    refine ih l' ?_
+    · intro x
+      rw [List.mem_filterMap]
+      have := h x.castSucc
+      exists x.castSucc
+      apply And.intro
+      assumption
+      simp
+    · rw [List.length_filterMap_lt_length_iff_exists]
+      refine ⟨Fin.last _, ?_, ?_⟩
+      apply h
+      simp
+
+def Fin.le_of_surj (h: Fin n ↠ Fin m) : m ≤ n := by
+  let l := List.ofFn h
+  have : l.length = n := by rw [List.length_ofFn]
+  rw [←this]
+  apply Fin.le_of_surj_aux
+  intro x
+  rw [List.mem_ofFn]
+  obtain ⟨i, rfl⟩ := h.surj x
+  exists i
+
+def Fin.eq_of_bijection (h: Fin n ⇆ Fin m) : n = m := by
+  apply Nat.le_antisymm
+  apply Fin.le_of_embed
+  apply h.toEmbedding
+  apply Fin.le_of_surj
+  apply h.toSurjection
 
 def Fin.eq_of_equiv (h: Fin n ≃ Fin m) : n = m := by
   apply Nat.le_antisymm
