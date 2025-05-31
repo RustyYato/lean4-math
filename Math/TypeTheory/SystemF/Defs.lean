@@ -76,7 +76,7 @@ end SystemF.Ctx.IsWellFormed
 
 -- note: since we don't have type annotations baked into `Term`, we can give multiple different types
 -- to the same term. This is fine, and doesn't really change any of the analysis.
-inductive SystemF.Term.IsWellTyped : SystemF.Type.Ctx -> SystemF.Ctx -> Term -> SystemF.Type -> Prop where
+inductive SystemF.IsWellTyped : SystemF.Type.Ctx -> SystemF.Ctx -> Term -> SystemF.Type -> Prop where
 | var {ty_ctx ctx} (name: ℕ) (ty: SystemF.Type) (hname: name < ctx.length) :
   ty = ctx[name] ->
   ty.IsWellFormed ty_ctx ->
