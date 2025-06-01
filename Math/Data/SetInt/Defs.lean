@@ -218,8 +218,7 @@ def equiv_int : SetInt ≃+* ℤ := RingEquiv.symm {
     induction x using ind
     simp
     rw [←intCast_sub, intCast_ofNat, intCast_ofNat, sub_eq_add_neg]
-    rename_i a b
-    show mk (a + 0) (0 + b) = _
+    show mk (_ + 0) (0 + _) = _
     simp
 }
 

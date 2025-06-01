@@ -1,5 +1,5 @@
 import Math.Algebra.Hom.Defs
-import Math.Algebra.Ring.Defs
+import Math.Algebra.Ring.Hom
 import Math.Function.Basic
 import Math.Data.Int.Basic
 
@@ -1864,14 +1864,11 @@ instance : IsMonoid BitInt where
 
 instance : IsRing BitInt := IsRing.inst'
 
-def equivInt : Int ≃+* BitInt where
-  toFun n := n
+def equivInt : BitInt ≃+* ℤ := RingEquiv.symm {
+  RingHom.intCast with
   invFun n := n.toInt
   leftInv := intCast_toInt
   rightInv := toInt_intCast
-  map_zero := rfl
-  map_one := rfl
-  map_add := (intCast_add _ _).symm
-  map_mul := (intCast_mul _ _).symm
+}
 
 end BitInt
