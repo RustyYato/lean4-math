@@ -1,116 +1,116 @@
-import Math.TypeTheory.SystemF.Defs
-import Math.TypeTheory.Lambda.Defs
+-- import Math.TypeTheory.SystemF.Defs
+-- import Math.TypeTheory.Lambda.Defs
 
-opaque SystemF.Term.type_witness' : Σ'term: Term, term.IsValue ∧ term.IsClosed := ⟨.lam (.var 0), _root_.Term.IsValue.lam _, Term.IsClosedUnder.lam _ (Term.IsClosedUnder.var _ (by decide))⟩
+-- opaque SystemF.Term.type_witness' : Σ'term: Term, term.IsValue ∧ term.IsClosed := ⟨.lam (.var 0), _root_.Term.IsValue.lam _, Term.IsClosedUnder.lam _ (Term.IsClosedUnder.var _ (by decide))⟩
 
--- the type witness is an arbitrary inert value
--- which we will use to replace any types in type applications
-def SystemF.Term.type_witness : _root_.Term := type_witness'.1
-def SystemF.Term.type_witness_value : type_witness.IsValue := type_witness'.2.1
-def SystemF.Term.type_witness_closed : type_witness.IsClosed := type_witness'.2.2
+-- -- the type witness is an arbitrary inert value
+-- -- which we will use to replace any types in type applications
+-- def SystemF.Term.type_witness : _root_.Term := type_witness'.1
+-- def SystemF.Term.type_witness_value : type_witness.IsValue := type_witness'.2.1
+-- def SystemF.Term.type_witness_closed : type_witness.IsClosed := type_witness'.2.2
 
--- each variable needs to be offset by the number of interveaning type lambdas
--- so that they point to the correct term lambda
-def SystemF.Term.compile_with_offset (offset: ℕ) : SystemF.Term -> _root_.Term
-| .var name => .var (name + offset)
-| .lam _arg_ty body => .lam (body.compile_with_offset offset)
-| .app func arg => .app (func.compile_with_offset offset) (arg.compile_with_offset offset)
-| .type_lam body => .lam (body.compile_with_offset (offset + 1))
-| .type_app func _arg => .app (func.compile_with_offset offset) type_witness
+-- -- each variable needs to be offset by the number of interveaning type lambdas
+-- -- so that they point to the correct term lambda
+-- def SystemF.Term.compile_with_offset (offset: ℕ) : SystemF.Term -> _root_.Term
+-- | .var name => .var (name + offset)
+-- | .lam _arg_ty body => .lam (body.compile_with_offset offset)
+-- | .app func arg => .app (func.compile_with_offset offset) (arg.compile_with_offset offset)
+-- | .type_lam body => .lam (body.compile_with_offset (offset + 1))
+-- | .type_app func _arg => .app (func.compile_with_offset offset) type_witness
 
--- compile a System F term into an untyped term with the same semantics
-def SystemF.Term.compile : SystemF.Term -> _root_.Term := compile_with_offset 0
+-- -- compile a System F term into an untyped term with the same semantics
+-- def SystemF.Term.compile : SystemF.Term -> _root_.Term := compile_with_offset 0
 
-def SystemF.compile_with_offset_value (term: SystemF.Term) (h: term.IsValue) : (term.compile_with_offset offset).IsValue := by
-  cases h
-  apply _root_.Term.IsValue.lam
-  apply _root_.Term.IsValue.lam
+-- def SystemF.compile_with_offset_value (term: SystemF.Term) (h: term.IsValue) : (term.compile_with_offset offset).IsValue := by
+--   cases h
+--   apply _root_.Term.IsValue.lam
+--   apply _root_.Term.IsValue.lam
 
-def SystemF.compile_value (term: SystemF.Term) (h: term.IsValue) : term.compile.IsValue := by
-  apply SystemF.compile_with_offset_value
-  assumption
+-- def SystemF.compile_value (term: SystemF.Term) (h: term.IsValue) : term.compile.IsValue := by
+--   apply SystemF.compile_with_offset_value
+--   assumption
 
-def SystemF.compile_with_offset_weaken_term_at_level (term: SystemF.Term) (offset level: ℕ) :
-  (term.weaken_term_at_level level).compile_with_offset offset =
-  (term.compile_with_offset offset).weaken_at_level (level + offset) := by
-  induction term generalizing offset level with
-  | var =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
-    split
-    rfl
-    ac_nf
-  | lam arg_ty body ih =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
-    rw [ih]
-    congr 1
-    ac_nf
-  | app func arg ihf iha =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
-    rw [ihf, iha]
-    apply And.intro <;> rfl
-  | type_lam  body ih  =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
-    rw [ih]
-    rw [Nat.add_assoc]
-  | type_app func arg ih  =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
-    rw [ih]
-    rw [Term.closed_weaken_at_level (term := Term.type_witness)]
-    apply And.intro <;> rfl
-    apply Term.type_witness_closed
+-- def SystemF.compile_with_offset_weaken_term_at_level (term: SystemF.Term) (offset level: ℕ) :
+--   (term.weaken_term_at_level level).compile_with_offset offset =
+--   (term.compile_with_offset offset).weaken_at_level (level + offset) := by
+--   induction term generalizing offset level with
+--   | var =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
+--     split
+--     rfl
+--     ac_nf
+--   | lam arg_ty body ih =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
+--     rw [ih]
+--     congr 1
+--     ac_nf
+--   | app func arg ihf iha =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
+--     rw [ihf, iha]
+--     apply And.intro <;> rfl
+--   | type_lam  body ih  =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
+--     rw [ih]
+--     rw [Nat.add_assoc]
+--   | type_app func arg ih  =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_term_at_level]
+--     rw [ih]
+--     rw [Term.closed_weaken_at_level (term := Term.type_witness)]
+--     apply And.intro <;> rfl
+--     apply Term.type_witness_closed
 
-def SystemF.compile_with_offset_weaken_type_at_level (term: SystemF.Term) (offset level: ℕ) :
-  (term.weaken_type_at_level level).compile_with_offset offset =
-  term.compile_with_offset offset := by
-  induction term generalizing offset level with
-  | var => rfl
-  | lam arg_ty body ih =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
-    rw [ih]
-  | app func arg ihf iha =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
-    rw [ihf, iha]
-    apply And.intro <;> rfl
-  | type_lam  body ih  =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
-    rw [ih]
-  | type_app func arg ih  =>
-    simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
-    rw [ih]
+-- def SystemF.compile_with_offset_weaken_type_at_level (term: SystemF.Term) (offset level: ℕ) :
+--   (term.weaken_type_at_level level).compile_with_offset offset =
+--   term.compile_with_offset offset := by
+--   induction term generalizing offset level with
+--   | var => rfl
+--   | lam arg_ty body ih =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
+--     rw [ih]
+--   | app func arg ihf iha =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
+--     rw [ihf, iha]
+--     apply And.intro <;> rfl
+--   | type_lam  body ih  =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
+--     rw [ih]
+--   | type_app func arg ih  =>
+--     simp [Term.compile_with_offset, Term.weaken_at_level, Term.weaken_type_at_level]
+--     rw [ih]
 
-def SystemF.compile_with_offset_subst_term (term subst: SystemF.Term) (offset target: ℕ) :
-  (term.subst_term subst target).compile_with_offset offset =
-  (term.compile_with_offset offset).subst (subst.compile_with_offset offset) (target + offset) := by
-  induction term generalizing offset target subst with
-  | var =>
-    simp [Term.compile_with_offset, Term.subst, Term.subst_term]
-    split
-    rfl
-    split
-    rfl
-    simp [Term.compile_with_offset]
-    omega
-  | lam arg_ty body ih =>
-    simp [Term.compile_with_offset, Term.subst, Term.subst_term, Term.weaken_term]
-    rw [ih, compile_with_offset_weaken_term_at_level]
-    congr 1
-    · simp
-      sorry
-    ac_nf
-  | app func arg ihf iha =>
-    simp [Term.compile_with_offset, Term.subst, Term.subst_term]
-    rw [ihf, iha]
-    apply And.intro <;> rfl
-  | type_lam  body ih  =>
-    simp [Term.compile_with_offset, Term.subst, Term.subst_term]
-    rw [ih]
-    rw [Nat.add_assoc]
-    rw [Term.weaken_type, compile_with_offset_weaken_type_at_level]
-    congr
-    sorry
-  | type_app func arg ih  =>
-    simp [Term.compile_with_offset, Term.subst, Term.subst_term]
-    rw [ih]
-    rw [Term.closed_subst (term := Term.type_witness)]
-    apply And.intro <;> rfl
-    apply Term.type_witness_closed
+-- def SystemF.compile_with_offset_subst_term (term subst: SystemF.Term) (offset target: ℕ) :
+--   (term.subst_term subst target).compile_with_offset offset =
+--   (term.compile_with_offset offset).subst (subst.compile_with_offset offset) (target + offset) := by
+--   induction term generalizing offset target subst with
+--   | var =>
+--     simp [Term.compile_with_offset, Term.subst, Term.subst_term]
+--     split
+--     rfl
+--     split
+--     rfl
+--     simp [Term.compile_with_offset]
+--     omega
+--   | lam arg_ty body ih =>
+--     simp [Term.compile_with_offset, Term.subst, Term.subst_term, Term.weaken_term]
+--     rw [ih, compile_with_offset_weaken_term_at_level]
+--     congr 1
+--     · simp
+--       sorry
+--     ac_nf
+--   | app func arg ihf iha =>
+--     simp [Term.compile_with_offset, Term.subst, Term.subst_term]
+--     rw [ihf, iha]
+--     apply And.intro <;> rfl
+--   | type_lam  body ih  =>
+--     simp [Term.compile_with_offset, Term.subst, Term.subst_term]
+--     rw [ih]
+--     rw [Nat.add_assoc]
+--     rw [Term.weaken_type, compile_with_offset_weaken_type_at_level]
+--     congr
+--     sorry
+--   | type_app func arg ih  =>
+--     simp [Term.compile_with_offset, Term.subst, Term.subst_term]
+--     rw [ih]
+--     rw [Term.closed_subst (term := Term.type_witness)]
+--     apply And.intro <;> rfl
+--     apply Term.type_witness_closed
