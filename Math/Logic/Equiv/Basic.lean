@@ -1429,6 +1429,57 @@ def Fin.eq_of_bijection (h: Fin n ⇆ Fin m) : n = m := by
   apply Fin.le_of_surj
   apply h.toSurjection
 
+def Fin.eq_of_common_embedding (f: Fin n ↪ α) (g: Fin m ↪ α) (h: ∀a, (∃i, a = f i) ↔ ∃i, a = g i) : n = m := by
+  induction n generalizing m with
+  | zero =>
+    cases m; rfl
+    nomatch (h (g 0)).mpr ⟨_, rfl⟩
+  | succ n ih =>
+    have ⟨i, hi⟩ := (h (f 0)).mp ⟨_, rfl⟩
+    cases m
+    nomatch i
+    rename_i m; congr
+    let f' := (Embedding.finSucc _).trans f
+    let g' := (Embedding.finSucc _).trans ((Equiv.swap 0 i).toEmbedding.trans g)
+    apply ih f' g'
+    intro x
+    apply Iff.intro
+    intro ⟨j, hj⟩
+    have ⟨j', hj'⟩ := (h x).mp ⟨_, hj⟩
+    have j'_ne_zero : (Equiv.swap 0 i j') ≠ 0 := by
+      intro j'_eq_i
+      have := Equiv.eq_symm_of_coe_eq _ j'_eq_i
+      rw [Equiv.swap_symm, Equiv.swap_comm, Equiv.swap_spec] at this
+      subst j'
+      rw [←hi, hj] at hj'
+      simp [f', f.inj.eq_iff] at hj'
+      rw [←Fin.val_inj] at hj'
+      contradiction
+    exists (Equiv.swap 0 i j').pred j'_ne_zero
+    simp [g']
+    rw (occs := [1]) [←Equiv.swap_symm]
+    rw [Equiv.swap_comm, Equiv.coe_symm]
+    assumption
+    intro ⟨j, hj⟩
+    have ⟨j', hj'⟩ := (h x).mpr ⟨_, hj⟩
+    have j'_ne_zero : j' ≠ 0 := by
+      rintro rfl
+      rw [hi, hj] at hj'
+      simp [g', g.inj.eq_iff] at hj'
+      have := Equiv.eq_symm_of_coe_eq _ hj'
+      rw [Equiv.swap_symm, Equiv.swap_spec] at this
+      rw [←Fin.val_inj] at this
+      contradiction
+    exists j'.pred j'_ne_zero
+    simp [f']
+    assumption
+
+def Fin.eq_of_common_bijection (f: Fin n ⇆ α) (g: Fin m ⇆ α) : n = m := by
+  apply Fin.eq_of_common_embedding f.toEmbedding g.toEmbedding
+  intro a; apply Iff.intro <;> intro
+  apply g.surj
+  apply f.surj
+
 def Fin.eq_of_equiv (h: Fin n ≃ Fin m) : n = m := by
   apply Nat.le_antisymm
   apply Fin.le_of_embed

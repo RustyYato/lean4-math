@@ -22,58 +22,10 @@ attribute [local simp] Thunk.get
 
 namespace Repr
 
-private def card_eq' (f: Fin n ↪ α) (g: Fin m ↪ α) (h: ∀(x: α), (∃i, x = f i) ↔ (∃i, x = g i)) : n = m := by
-  induction n generalizing m with
-  | zero =>
-    cases m with
-    | zero => rfl
-    | succ m =>
-      nomatch (h (g 0)).mpr ⟨_, rfl⟩
-  | succ n ih =>
-    have ⟨i, hi⟩ := (h (f 0)).mp ⟨_, rfl⟩
-    cases m with
-    | zero => exact i.elim0
-    | succ m =>
-      let f' := (Embedding.finSucc _).trans f
-      let g' := (Embedding.finSucc _).trans ((Equiv.swap 0 i).toEmbedding.trans g)
-      rw [ih f' g']
-      intro x
-      apply Iff.intro
-      intro ⟨j, hj⟩
-      have ⟨j', hj'⟩ := (h x).mp ⟨_, hj⟩
-      have j'_ne_zero : (Equiv.swap 0 i j') ≠ 0 := by
-        intro j'_eq_i
-        have := Equiv.eq_symm_of_coe_eq _ j'_eq_i
-        rw [Equiv.swap_symm, Equiv.swap_comm, Equiv.swap_spec] at this
-        subst j'
-        rw [←hi, hj] at hj'
-        simp [f', f.inj.eq_iff] at hj'
-        rw [←Fin.val_inj] at hj'
-        contradiction
-      exists (Equiv.swap 0 i j').pred j'_ne_zero
-      simp [g']
-      rw (occs := [1]) [←Equiv.swap_symm]
-      rw [Equiv.swap_comm, Equiv.coe_symm]
-      assumption
-      intro ⟨j, hj⟩
-      have ⟨j', hj'⟩ := (h x).mpr ⟨_, hj⟩
-      have j'_ne_zero : j' ≠ 0 := by
-        rintro rfl
-        rw [hi, hj] at hj'
-        simp [g', g.inj.eq_iff] at hj'
-        have := Equiv.eq_symm_of_coe_eq _ hj'
-        rw [Equiv.swap_symm, Equiv.swap_spec] at this
-        rw [←Fin.val_inj] at this
-        contradiction
-      exists j'.pred j'_ne_zero
-      simp [f']
-      assumption
-
 def card_eq (a: Repr card₀ α) (b: Repr card₁ α) : card₀ = card₁ := by
-  apply card_eq' ⟨a.decode, a.decode.inj⟩ ⟨b.decode, b.decode.inj⟩
-  intro; apply Iff.intro <;> intro
-  apply b.decode.surj
-  apply a.decode.surj
+  apply Fin.eq_of_common_bijection
+  exact a.decode
+  exact b.decode
 
 private def findIdx {card: ℕ} (f: Fin card -> α) (a: α) [∀x, Decidable (a = x)] (h: ∃i, a = f i) : Σ'x: Fin card, a = f x :=
   match card with
