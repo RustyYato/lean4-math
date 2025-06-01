@@ -103,31 +103,8 @@ def ofBij [f: Fintype α] (h: α ⇆ β) : Fintype β where
     encode := Thunk.mk fun () => .none
   }
 
-def ofEquiv' [f: Fintype α] (h: α ≃ β) : Fintype β where
-  card_thunk := card α
-  toRepr := f.toRepr.recOnSubsingleton fun r => Trunc.mk <| {
-    decode := {
-      toFun x := h (r.decode x)
-      inj' := by
-        apply Function.Injective.comp
-        exact h.inj
-        exact r.decode.inj
-      surj' := by
-        apply Function.Surjective.comp
-        exact h.surj
-        exact r.decode.surj
-    }
-    encode :=
-      r.encode.map fun e =>
-      e.map fun e => {
-        val := e.val ∘ h.symm
-        property := by
-          intro x; simp
-          have := e.property
-          erw [e.property, Equiv.symm_coe]
-      }
-  }
-def ofEquiv [Fintype β] (h: α ≃ β) : Fintype α := ofEquiv' h.symm
+-- def ofEquiv' [f: Fintype α] (h: α ≃ β) : Fintype β := ofBij h.toBijection
+def ofEquiv [Fintype β] (h: α ≃ β) : Fintype α := ofBij h.symm.toBijection
 
 instance : Fintype (Fin n) where
   card_thunk := n
@@ -582,7 +559,7 @@ def fold_eqv [Fintype α] [Fintype β] (f: β -> γ -> γ) (start: γ) (eqv: α 
   intro a b start
   apply h) := by
   rename_i fα fβ
-  rw [Subsingleton.allEq fβ (ofEquiv' eqv)]
+  rw [Subsingleton.allEq fβ (ofBij eqv.toBijection)]
   induction fα using ind with | _ r =>
   rfl
 

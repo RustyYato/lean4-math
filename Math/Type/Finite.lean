@@ -116,7 +116,7 @@ noncomputable def ENat.equiv_of_card [IsFinite β] (h: card α = card β) : α �
 
 instance (α: Type _) [f: IsFinite α] : Nonempty (Fintype α) := by
   obtain ⟨_, eqv⟩ := f
-  exact ⟨Fintype.ofEquiv' eqv⟩
+  exact ⟨Fintype.ofBij eqv.toBijection⟩
 
 noncomputable
 def Fintype.ofIsFinite (α: Type _) [IsFinite α] : Fintype α :=

@@ -318,3 +318,6 @@ noncomputable def symm (f: α ⇆ β) : β ⇆ α :=
 @[simp] def apply_mk (f: α -> β) (h₀: f.Injective) (h₁: f.Surjective) : ({ toFun := f, inj' := h₀, surj' := h₁ }: α ⇆ β) = f := rfl
 
 end Bijection
+
+instance : Coe (α ≃ β) (α ⇆ β) where
+  coe f := f.toBijection

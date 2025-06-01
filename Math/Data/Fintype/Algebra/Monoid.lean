@@ -144,7 +144,7 @@ def prod_eq_one (f: ι -> α) (hf: ∀i, f i = 1) : ∏i, f i = 1 :=
 def prod_eq_zero [Zero α] [IsMulZeroClass α] (f: ι -> α) (hf: ∃i, f i = 0) : ∏i, f i = 0 := by
   obtain ⟨i, hi⟩ := hf
   classical
-  have := Fintype.ofEquiv' (Equiv.erase i)
+  have := Fintype.ofBij (Equiv.erase i).toBijection
   rw [prod_eqv (Equiv.erase i).symm, prod_option]
   simp [Equiv.erase]; rw [hi, zero_mul]
 
@@ -165,7 +165,7 @@ def prod_const [MonoidOps α] [IsMonoid α] [IsCommMagma α] (a: α) : ∏_: ι,
 
 def sum_select [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [∀i: ι, Decidable (i = i₀)] (f: ι -> α) :
   (∑i, if i = i₀ then f i else 0) = f i₀ := by
-  have := Fintype.ofEquiv' (Equiv.erase i₀)
+  have := Fintype.ofBij (Equiv.erase i₀).toBijection
   rw [sum_eqv (Equiv.erase i₀).symm, sum_option]
   simp [Equiv.erase]; rw [sum_eq_zero, add_zero]
   intro i
@@ -174,7 +174,7 @@ def sum_select [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] [∀i: ι,
 def sum_select_unique [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] (f: ι -> α) (i₀: ι) [∀i: ι, Decidable (i = i₀)] (fi: ι -> Prop) [decfi: DecidablePred fi]
   (fi_spec: ∀i, fi i ↔ i = i₀) :
   (∑i, if fi i then f i else 0) = f i₀ := by
-  have := Fintype.ofEquiv' (Equiv.remove i₀)
+  have := Fintype.ofBij (Equiv.remove i₀).toBijection
   rw [sum_eqv (h := (Equiv.remove i₀).symm), sum_option, sum_eq_zero, add_zero]
   rw [if_pos]
   rfl
