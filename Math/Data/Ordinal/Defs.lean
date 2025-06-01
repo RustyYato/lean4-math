@@ -709,25 +709,10 @@ private def sumToRank : α ⊕ β -> Ordinal
 def eqv_max : Relation (α ⊕ β) :=
   fun x y => sumToRank relα relβ x = sumToRank relα relβ y
 
-def setoid_max : Setoid (α ⊕ β) :=
-  Setoid.eqSetoid.comap (sumToRank relα relβ)
+def max_ty := Quotient (Setoid.kernel (sumToRank relα relβ))
+def max_ty.toRank : max_ty r s ↪ Ordinal := Quotient.kernel_eval
 
-def max_ty := Quotient (setoid_max relα relβ)
-
-def max_ty.toRank : max_ty r s ↪ Ordinal where
-  toFun := by
-    refine Quotient.lift (sumToRank r s) ?_
-    intro a b
-    exact id
-  inj' := by
-    intro x y h
-    cases x using Quotient.ind with | _ x =>
-    cases y using Quotient.ind with | _ y =>
-    apply Quotient.sound
-    assumption
-
-def rel_max : Relation (max_ty relα relβ) :=
-  fun a b => a.toRank < b.toRank
+def rel_max : Relation (max_ty relα relβ) := fun a b => a.toRank < b.toRank
 
 def rel_max_emb : rel_max r s ↪r (· < ·: Relation Ordinal) where
   toEmbedding := max_ty.toRank

@@ -1,4 +1,5 @@
 import Math.Relation.Defs
+import Math.Logic.Equiv.Defs
 
 namespace Setoid
 
@@ -88,3 +89,11 @@ def Quotient.apply
   intro f g eqv
   apply Quotient.sound
   apply eqv
+
+def Quotient.kernel_eval {f: α -> β}: Quotient (Setoid.kernel f) ↪ β where
+  toFun := Quotient.lift f (fun _ _ => id)
+  inj' := by
+    intro x y h
+    induction x, y using Quotient.ind₂ with | _ x y =>
+    apply Quotient.sound
+    assumption
