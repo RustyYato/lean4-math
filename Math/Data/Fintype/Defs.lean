@@ -120,30 +120,19 @@ instance : Fintype (Fin n) where
 instance : Fintype Bool where
   card_thunk := Thunk.mk (fun _ => 2)
   toRepr :=
-    let zero := Fin.mk (n := 2) 0 (by decide)
-    let one := Fin.mk (n := 2) 1 (by decide)
+    let zero : Fin 2 := ⟨0, by decide⟩
+    let one : Fin 2 := ⟨1, by decide⟩
     Trunc.mk (α := Repr 2 _) {
     decode := {
       toFun x := x.val != Fin.mk (n := 2) 0 (by decide)
-      inj' := by
-        intro ⟨x, hx⟩ ⟨y, hy⟩ h
-        match x with
-        | 0 =>
-          match y with
-          | 0 => rfl
-          | 1 =>
-            dsimp at h
-            contradiction
-          | y + 2 => exact (Nat.not_le_of_lt hy (Nat.le_add_left _ _)).elim
-        | 1 =>
-          match y with
-          | 0 =>
-            dsimp at h
-            contradiction
-          | 1 =>
-            rfl
-          | y + 2 => exact (Nat.not_le_of_lt hy (Nat.le_add_left _ _)).elim
-        | x + 2 => exact (Nat.not_le_of_lt hx (Nat.le_add_left _ _)).elim
+      inj'
+      | ⟨0, _⟩, ⟨0, _⟩, h
+      | ⟨1, _⟩, ⟨1, _⟩, h => rfl
+      | ⟨1, _⟩, ⟨0, _⟩, h
+      | ⟨0, _⟩, ⟨1, _⟩, h => nomatch h
+      | ⟨n + 2, _⟩, _, _ | _, ⟨n + 2, _⟩, _ => by
+        rename n + 2 < 2 => h
+        refine (Nat.not_le_of_lt h (Nat.le_add_left _ _)).elim
       surj' := by
         intro x
         cases x
