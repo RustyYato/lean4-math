@@ -20,10 +20,11 @@ def map_ofNat
   rw [ofNat_eq_natCast, map_natCast]
   symm; apply ofNat_eq_natCast
 
-def natCast_AddGroupHom
-  [FunLike F α β] [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : ℕ →+ α where
+def AddGroupHom.natCast [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] : ℕ →+ α where
   toFun n := n
   map_zero := natCast_zero
   map_add := by
     intro x y
     rw [natCast_add]
+
+@[simp] def AddGroupHom.apply_natCast [AddMonoidWithOneOps α] [IsAddMonoidWithOne α] (x: ℕ) : AddGroupHom.natCast (α := α) x = x := rfl

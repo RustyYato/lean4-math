@@ -13,10 +13,11 @@ def map_intCast
   | ofNat n => rw [intCast_ofNat, intCast_ofNat, map_natCast]
   | negSucc n => rw [intCast_negSucc, intCast_negSucc, map_neg, map_natCast]
 
-def intCast_AddGroupHom
-  [FunLike F α β] [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ℤ →+ α where
+def AddGroupHom.intCast [AddGroupWithOneOps α] [IsAddGroupWithOne α] : ℤ →+ α where
   toFun n := n
   map_zero := intCast_zero
   map_add := by
     intro x y
     rw [intCast_add]
+
+@[simp] def AddGroupHom.apply_intCast [AddGroupWithOneOps α] [IsAddGroupWithOne α] (x: ℤ) : AddGroupHom.intCast (α := α) x = x := rfl
