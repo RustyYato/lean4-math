@@ -532,8 +532,8 @@ section Min
 
 -- the minimum of two relations is the relation on pairs of elements which
 -- are in the same position as each other in their respective orders
--- since this puts elements in 1-1 correspondence, there can't be elements
--- than the smaller of the two relations
+-- since this puts elements in 1-1 correspondence, there can't be more
+-- elements than the smaller of the two relations
 def minType := { x: α × β // rank relα x.fst = rank relβ x.snd }
 
 def rel_min : Relation (minType relα relβ) := fun a b => relα a.val.fst b.val.fst

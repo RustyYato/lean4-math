@@ -121,4 +121,13 @@ def of_mul_add_lt {a b c d n: ℕ} (h: b < n) (g: d < n) (eq: n * a + b = n * c 
   omega
   omega
 
+def mul_add_lt (x y n: ℕ) (hx: x < n) (hy: y < m) : x * m + y < n * m := by
+  match n with
+  | n + 1 =>
+  rw [Nat.succ_mul]
+  apply Nat.add_lt_add_of_le_of_lt _ hy
+  apply Nat.mul_le_mul_right
+  apply Nat.le_of_lt_succ
+  assumption
+
 end Nat
