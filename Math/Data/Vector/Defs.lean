@@ -173,4 +173,9 @@ def flatten (v: Array.Vector (Array.Vector α m) n) : Array.Vector α (n * m) wh
 
 def flatMap (f: α -> Array.Vector β m) (v: Array.Vector α n) : Array.Vector β (n * m) := (v.map f).flatten
 
+def set (v: Array.Vector α n) (i: Fin n) (x: α) : Array.Vector α n where
+  toArray := v.toArray.set i x (v.size_eq.symm ▸ i.isLt)
+  size_eq := by rw [Array.size_set, v.size_eq]
+
+
 end Array.Vector

@@ -18,6 +18,7 @@ globs = [
     "Math.Type.+",
     "Math.Language.+",
     "Math.TypeTheory.+",
+    "Math.Game.+",
     "Math.AxiomBlame",
 ]
 
