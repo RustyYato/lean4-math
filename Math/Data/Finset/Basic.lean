@@ -574,4 +574,10 @@ def finset_insert_unique (x: α) [∀a: α, Decidable (x = a)] (s: Finset α) (h
     rintro rfl
     exact h a.property
 
+def label [DecidableEq α] (s: Multiset α) : Finset (α × ℕ) where
+  val := s.label
+  property := Multiset.nodup_label _
+
+def mem_label [DecidableEq α] (s: Multiset α) : ∀{x}, x ∈ s.label ↔ x.snd < s.count x.fst := s.mem_label
+
 end Equiv

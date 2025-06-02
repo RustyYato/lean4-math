@@ -1633,4 +1633,29 @@ def map_eq_cons {b: β} {as: Multiset α} {bs: Multiset β} {f: α -> β} : as.m
 unsafe instance [Repr α] : Repr (Multiset α) where
   reprPrec s := reprPrec (Quotient.lift id lcProof s)
 
+def countP (P: α -> Bool) : Multiset α -> ℕ := by
+  refine Quotient.lift (List.countP P) ?_
+  intro a b h
+  exact List.Perm.countP_congr h fun x => congrFun rfl
+
+def count [BEq α] (a: α) : Multiset α -> ℕ :=
+  countP (· == a)
+
+def label [DecidableEq α] : Multiset α -> Multiset (α × ℕ) := by
+  refine Quotient.lift (fun l => Multiset.mk l.label) ?_
+  intro a b h
+  apply Quotient.sound
+  apply List.perm_label
+  assumption
+
+def mem_label [DecidableEq α] (ms: Multiset α) : ∀{x}, x ∈ ms.label ↔ x.snd < ms.count x.fst := by
+  induction ms using ind
+  apply List.mem_label
+
+def nodup_label [DecidableEq α] (ms: Multiset α) : ms.label.Nodup := by
+  induction ms using ind
+  apply List.nodup_label
+
+def Elem [DecidableEq α] (ms: Multiset α) := { x // x ∈ ms.label }
+
 end Multiset

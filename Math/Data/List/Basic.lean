@@ -560,3 +560,52 @@ def List.nodup_head_sublists {as: List α} : as.Nodup -> (head_sublists as).Nodu
   simp at eq
   apply Fin.val_inj.mp
   exact nodup_getElem_inj h eq.left
+
+def List.label [DecidableEq α] : List α -> List (α × ℕ)
+| [] => []
+| x::xs => (x, xs.count x)::xs.label
+
+def List.perm_label [DecidableEq α] (as bs: List α) : as.Perm bs -> as.label.Perm bs.label := by
+  intro h
+  induction h with
+  | nil => rfl
+  | trans _ _ ih₀ ih₁ => exact ih₀.trans ih₁
+  | @cons x l₀ l₁ h ih  =>
+    unfold List.label
+    rw [show l₀.count x = l₁.count x from ?_]
+    apply List.Perm.cons
+    assumption
+    exact Perm.count_eq h x
+  | swap x y as =>
+    unfold List.label
+    unfold List.label
+    by_cases hx:x = y
+    subst y
+    apply List.Perm.cons
+    apply List.Perm.cons
+    rfl
+    rw [List.count_cons_of_ne hx, List.count_cons_of_ne (Ne.symm hx)]
+    apply List.Perm.swap
+
+def List.mem_label [DecidableEq α] {as: List α} : ∀{x}, x ∈ as.label ↔ x.2 < as.count x.1 := by
+  intro (x, n)
+  dsimp
+  induction as with
+  | nil => simp; nofun
+  | cons a as ih =>
+    simp [label, List.count_cons]
+    split
+    subst x; simp [ih]
+    rw [Nat.lt_succ, Nat.le_iff_lt_or_eq, Or.comm]
+    rename_i h; simp [Ne.symm h, ih]
+
+def List.nodup_label [DecidableEq α] (as: List α) : as.label.Nodup := by
+  induction as with
+  | nil => apply List.Pairwise.nil
+  | cons a as ih =>
+    apply List.Pairwise.cons _ ih
+    rintro _ h rfl
+    rw [List.mem_label] at h
+    simp at h
+
+#print List.count
