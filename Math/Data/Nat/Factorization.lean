@@ -134,9 +134,6 @@ def factorization (n: ℕ) : Multiset ℕ :=
   else
     factorization' n 2 h (Nat.lt_succ_self _) ∅
 
-unsafe instance [Repr α] : Repr (Multiset α) where
-  reprPrec m := reprPrec (cast (β := List ℕ) lcProof m)
-
 def factorization'_output
   (n: ℕ) (i: ℕ)
   (hn: n ≠ 0) (hi₀: 1 < i)
