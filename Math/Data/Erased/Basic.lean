@@ -52,3 +52,15 @@ noncomputable def erased (α: Sort*) : α ≃ Erased α where
   rightInv := by apply Erased.mk_out
 
 end Equiv
+
+namespace Bijection
+
+def erased (α: Sort*) : α ⇆ Erased α := {
+  Erased.mk with
+  surj' := by
+    intro a
+    induction a with | mk a =>
+    exists a
+}
+
+end Bijection
