@@ -1,4 +1,5 @@
 import Math.Type.Notation
+import Math.Logic.Equiv.Defs
 import Math.Function.Basic
 
 structure Erased (α: Sort*) where
@@ -9,19 +10,23 @@ structure Erased (α: Sort*) where
 namespace Erased
 
 noncomputable def out (a: Erased α): α := Classical.choose a.spec
-def mk (a: α): Erased α where
-  fn := fun b => a = b
-  spec := ⟨a, rfl⟩
-
-def mk_inj : Function.Injective (@mk α) := by
-  intro a b eq
-  rw [congrFun (ofFn.inj eq) b]
+def mk : α ↪ Erased α where
+  toFun a := {
+    fn := fun b => a = b
+    spec := ⟨a, rfl⟩
+  }
+  inj' := by
+    intro a b eq
+    rw [congrFun (ofFn.inj eq) b]
 
 def mk_out (a: Erased α) : mk a.out = a := by
   cases a with | ofFn a spec =>
   unfold mk out
-  congr
-  rw [←Classical.choose_spec spec]
+  rw [Embedding.mk_apply]
+  congr; apply (Classical.choose_spec spec).symm
+def out_mk (a: α) : (mk a).out = a := by
+  apply mk.inj
+  rw [mk_out]
 
 def ofNonempty (h: Nonempty α) : Erased α := mk (Classical.choice h)
 def toNonempty (h: Erased α) : Nonempty α := nonempty_of_exists h.spec
@@ -35,3 +40,15 @@ def induction {motive: Erased α -> Prop} (mk: ∀x, motive (mk x)) (e: Erased �
   apply mk
 
 end Erased
+
+namespace Equiv
+
+noncomputable def erased (α: Sort*) : α ≃ Erased α where
+  toFun := Erased.mk
+  invFun := Erased.out
+  leftInv _ := by
+    apply Erased.mk.inj
+    rw [Erased.mk_out]
+  rightInv := by apply Erased.mk_out
+
+end Equiv
