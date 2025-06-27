@@ -228,18 +228,6 @@ def lift_assoc {x: FreeGroup α} (f: α -> FreeGroup β) (g: β -> FreeGroup γ)
   | inv => simp [map_inv]
   | mul => simp [map_mul]; congr
 
-instance [IsEmpty α] : Subsingleton (FreeGroup α) where
-  allEq := by
-    suffices ∀a: FreeGroup α, a = 1 by
-      intro a b
-      rw [this a, this b]
-    intro a
-    induction a with
-    | one => rfl
-    | ι x => exact elim_empty x
-    | inv x => exact elim_empty x
-    | mul a b iha ihb =>  rwa [iha, one_mul]
-
 def exists_zpow [Subsingleton α] : ∀a: α, Function.Surjective (fun n: ℤ => (ι a) ^ n) := by
   intro a x
   induction x with
