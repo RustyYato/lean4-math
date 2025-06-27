@@ -165,14 +165,14 @@ def ι : α ↪ FreeGroup α where
   toFun := toFreeGroup
   inj' := toFreeGroup_inj
 
-@[simp] def lift_ι [GroupOps G] [IsGroup G] (f: α -> G) : lift f (ι a) = f a := lift_toFreeGroup _
-@[simp] def lift_log_ι [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift_log f (ι a) = f a := lift_log_toFreeGroup _
+@[simp] def apply_lift_ι [GroupOps G] [IsGroup G] (f: α -> G) : lift f (ι a) = f a := lift_toFreeGroup _
+@[simp] def apply_lift_log_ι [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift_log f (ι a) = f a := lift_log_toFreeGroup _
 
 def one_ne_ι (a: α) : 1 ≠ ι a := by
   intro h
   classical
   let f := lift (G := Indicator) (fun x => if x = a then true else false)
-  have : f (ι a) = true := by rw [lift_ι, if_pos rfl]
+  have : f (ι a) = true := by rw [apply_lift_ι, if_pos rfl]
   have : f 1 = true := by rw [h, this]
   simp [f, map_one] at this
 
@@ -228,6 +228,26 @@ def lift_assoc {x: FreeGroup α} (f: α -> FreeGroup β) (g: β -> FreeGroup γ)
   | inv => simp [map_inv]
   | mul => simp [map_mul]; congr
 
+instance [Subsingleton α] : IsCommMagma (FreeGroup α) where
+  mul_comm a b := by
+    induction a generalizing b with
+    | one => simp
+    | ι a =>
+      induction b with
+      | one => simp
+      | ι b => rw [Subsingleton.allEq a b]
+      | inv b => simp [Subsingleton.allEq a b]
+      | mul b₀ b₁ ih₀ ih₁ =>
+        rw [←mul_assoc, ih₀, mul_assoc, ih₁, mul_assoc]
+    | inv a ih =>
+      suffices ∀b: FreeGroup α, IsCommutes (ι a) b by
+        rw [mul_comm]
+      intro b;
+      refine ⟨?_⟩
+      apply ih
+    | mul a₀ a₁ ih₀ ih₁ =>
+        rw [mul_assoc, ih₀, mul_assoc, ih₁, mul_assoc]
+
 instance : Monad FreeGroup where
   pure := ι
   bind a b := lift b a
@@ -237,7 +257,7 @@ instance : LawfulMonad FreeGroup := by
   case id_map => apply lift_ι'
   case pure_bind =>
     intro α β x f
-    apply lift_ι
+    apply apply_lift_ι
   case bind_assoc =>
     intro α β γ x f g
     apply lift_assoc
@@ -260,12 +280,12 @@ def lift_exp [GroupOps G] [IsGroup G] : (α -> G) ≃ (FreeAddGroup α →ₐ* G
   Equiv.trans (lift (G := AddOfMul G)) Equiv.exp_hom_equiv_addgroup_hom.symm
 
 @[simp]
-def lift_ι [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift f (ι a) = f a := by
-  apply FreeGroup.lift_ι (G := MulOfAdd G)
+def apply_lift_ι [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift f (ι a) = f a := by
+  apply FreeGroup.apply_lift_ι (G := MulOfAdd G)
 
 @[simp]
-def lift_exp_ι [GroupOps G] [IsGroup G] (f: α -> G) : lift_exp f (ι a) = f a := by
-  apply FreeGroup.lift_ι (G := G)
+def apply_lift_exp_ι [GroupOps G] [IsGroup G] (f: α -> G) : lift_exp f (ι a) = f a := by
+  apply FreeGroup.apply_lift_ι (G := G)
 
 def zero_ne_ι (a: α) : 0 ≠ ι a :=
   FreeGroup.one_ne_ι _
@@ -288,6 +308,9 @@ instance [h: Nonempty α] : IsNontrivial (FreeAddGroup α) where
     exists 0
     exists .ι a
     apply zero_ne_ι
+
+instance [Subsingleton α] : IsAddCommMagma (FreeAddGroup α) :=
+  inferInstanceAs (IsAddCommMagma (AddOfMul (FreeGroup α)))
 
 attribute [irreducible] FreeAddGroup ι lift instAddGroupOps
 
@@ -315,7 +338,7 @@ instance : LawfulMonad FreeAddGroup := by
     apply lift_ι'
   case pure_bind =>
     intro α β x f
-    apply lift_ι
+    apply apply_lift_ι
   case bind_assoc =>
     intro α β γ x f g
     apply lift_assoc

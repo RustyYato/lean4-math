@@ -63,7 +63,7 @@ def toZMod (n: ℕ) : Cyclic n →ₘ+ ZMod n := GroupQuot.lift_log {
       induction a with
       | one => rw [map_one_to_zero, nsmul_zero]
       | ι x =>
-        rw [FreeGroup.lift_log_ι, ZMod.n_nsmul_eq_zero]
+        rw [FreeGroup.apply_lift_log_ι, ZMod.n_nsmul_eq_zero]
       | inv _ ih => rw [map_inv_to_neg, nsmul_neg, ih, neg_zero]
       | mul a b iha ihb => rw [map_mul_to_add, nsmul_add, iha, ihb, add_zero]
   }
@@ -80,7 +80,7 @@ def ofZMod (n: ℕ) : ZMod n →ₐ* Cyclic n := ZMod.lift_exp n {
 
 def toZMod_unit : toZMod n (unit n) = 1 := by
   show GroupQuot.lift_log _ _ = _
-  rw [unit, GroupQuot.lift_log_mk_apply, FreeGroup.lift_log_ι]
+  rw [unit, GroupQuot.lift_log_mk_apply, FreeGroup.apply_lift_log_ι]
 
 def apply_ofZMod (n: ℕ) (x: ZMod n) : ofZMod n x = unit n ^ ZMod.toInt x := by
   rw [ofZMod, ZMod.apply_lift_exp]

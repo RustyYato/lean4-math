@@ -161,11 +161,6 @@ def lin_equiv_of_equiv [DecidableEq α] [DecidableEq β] (h: α ≃ β) : FreeMo
     simp [map_comp_lift, apply_lift_ι, lift_ι, Function.comp_def]
 }
 
-instance [Subsingleton R] : Subsingleton (FreeModule R M) where
-  allEq a b := by
-    apply Finsupp.ext
-    intro; apply Subsingleton.allEq
-
 attribute [irreducible] lift
 
 end FreeModule

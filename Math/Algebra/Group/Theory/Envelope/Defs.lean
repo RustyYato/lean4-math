@@ -66,12 +66,12 @@ private def preLift [Mul α] (f: MulHom α G) : GroupEnvolope α →* G := Group
   val := FreeGroup.lift f
   property {a b} h := by
     cases h
-    simp [FreeGroup.lift_ι, map_mul]
+    simp [FreeGroup.apply_lift_ι, map_mul]
 }
 
 private def preLift_ι [Mul α] (f: MulHom α G) : preLift f (ι x) = f x := by
   show GroupEnvolope.preLift f (GroupQuot.mk _ (.ι x)) = _
-  erw [GroupQuot.lift_mk_apply, FreeGroup.lift_ι]
+  erw [GroupQuot.lift_mk_apply, FreeGroup.apply_lift_ι]
 
 def lift [Mul α] : MulHom α G ≃ (GroupEnvolope α →* G) where
   toFun := preLift

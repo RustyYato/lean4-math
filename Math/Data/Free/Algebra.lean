@@ -283,12 +283,7 @@ instance [SemiringOps R] [IsSemiring R] : IsAlgebra R (FreeAlgebra R X) where
     induction x
     apply Quotient.sound
     apply Rel.central_scalar
-  smul_def := by
-    intro r x
-    rfl
-
--- a shortcut instance to prevent timeouts
-local instance (priority := 5000) [RingOps α] [IsRing α] : IsSemiring α := IsRing.toIsSemiring
+  smul_def _ _ := rfl
 
 instance [RingOps R] [IsRing R] : IsAddGroup (FreeAlgebra R X) where
   sub_eq_add_neg _ _ := rfl
@@ -530,7 +525,7 @@ def algebraMap.leftInverse : Function.IsLeftInverse algebraMapInv (algebraMap (�
 
 def algebraMap_inj : Function.Injective (algebraMap (R := R) (α := FreeAlgebra R X)) := algebraMap.leftInverse.Injective
 
-def ι_ne_algebraMap [IsNontrivial R] (x: X) (y: R) : ι R x ≠ algebraMap y := by
+def of_ι_eq_algebraMap [IsNontrivial R] {x: X} {y: R} : ι R x = algebraMap y -> (0: R) = 1 := by
   intro h
   let f₀ : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 0)
   let f₁ : FreeAlgebra R X →ₐ[R] R := lift R (fun _ => 1)
@@ -539,8 +534,10 @@ def ι_ne_algebraMap [IsNontrivial R] (x: X) (y: R) : ι R x ≠ algebraMap y :=
   rw [h] at h₀ h₁
   replace h₀: y = 0 := h₀
   replace h₁: y = 1 := h₁
-  rw [h₀] at h₁
-  exact zero_ne_one _ h₁
+  rwa [h₀] at h₁
+
+def ι_ne_algebraMap [IsNontrivial R] (x: X) (y: R) : ι R x ≠ algebraMap y := by
+  intro h; exact zero_ne_one R (of_ι_eq_algebraMap h)
 
 @[simp]
 theorem ι_ne_zero [IsNontrivial R] (x : X) : ι R x ≠ 0 :=
