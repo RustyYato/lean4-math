@@ -9,6 +9,18 @@ class EmbeddingLike (F: Sort*) (α β: outParam Sort*) where
 
 instance[EmbeddingLike F α β] : CoeTC F (α ↪ β) := ⟨EmbeddingLike.coe⟩
 
+class SurjectionLike (F: Sort*) (α β: outParam Sort*) where
+  coe : F -> α ↠ β := by intro f; exact f.toSurjection
+  coe_inj : Function.Injective coe := by intro a b h; cases a; cases b; congr
+
+instance [SurjectionLike F α β] : CoeTC F (α ↠ β) := ⟨SurjectionLike.coe⟩
+
+class BijectionLike (F: Sort*) (α β: outParam Sort*) where
+  coe : F -> α ⇔ β := by intro f; exact f.toBijection
+  coe_inj : Function.Injective coe := by intro a b h; cases a; cases b; congr
+
+instance [BijectionLike F α β] : CoeTC F (α ⇔ β) := ⟨BijectionLike.coe⟩
+
 class EquivLike (F: Sort*) (α β: outParam Sort*) where
   coe : F -> α ≃ β := by intro f; exact f.toEquiv
   coe_inj : Function.Injective coe := by intro a b h; cases a; cases b; congr
@@ -31,16 +43,54 @@ instance [EquivLike F α β] : FunLike F α β where
     apply DFunLike.coe_inj
     apply EquivLike.coe_inj
 
-instance [EquivLike F α β] : EmbeddingLike F α β where
-  coe f := Equiv.toEmbedding f
+instance [SurjectionLike F α β] : FunLike F α β where
+  coe f := (f: α ↠ β)
   coe_inj := by
-    show Function.Injective (Equiv.toEmbedding ∘ EquivLike.coe)
+    apply Function.Injective.comp
+    apply DFunLike.coe_inj
+    apply SurjectionLike.coe_inj
+
+instance [BijectionLike F α β] : FunLike F α β where
+  coe f := (f: α ⇔ β)
+  coe_inj := by
+    apply Function.Injective.comp
+    apply DFunLike.coe_inj
+    apply BijectionLike.coe_inj
+
+instance [BijectionLike F α β] : EmbeddingLike F α β where
+  coe f := Bijection.toEmbedding f
+  coe_inj := by
+    show Function.Injective (Bijection.toEmbedding ∘ BijectionLike.coe)
+    apply Function.Injective.comp
+    · intro a b h
+      show Bijection.mk a.toEmbedding _ = Bijection.mk b.toEmbedding _
+      congr
+    apply BijectionLike.coe_inj
+
+instance [BijectionLike F α β] : SurjectionLike F α β where
+  coe f := Bijection.toSurjection f
+  coe_inj := by
+    show Function.Injective (Bijection.toSurjection ∘ BijectionLike.coe)
+    apply Function.Injective.comp
+    · intro a b h
+      show Bijection.mk ⟨a.toSurjection, _⟩ _ = Bijection.mk ⟨b.toSurjection, _⟩ _
+      congr
+      rw [h]
+    apply BijectionLike.coe_inj
+
+instance [EquivLike F α β] : BijectionLike F α β where
+  coe f := Equiv.toBijection f
+  coe_inj := by
+    show Function.Injective (Equiv.toBijection ∘ EquivLike.coe)
     apply Function.Injective.comp
     · intro a b h
       ext
-      show a.toEmbedding _ = b.toEmbedding _
+      show a.toBijection _ = b.toBijection _
       rw [h]
     apply EquivLike.coe_inj
+
+instance [EquivLike F α β] : EmbeddingLike F α β := inferInstance
+instance [EquivLike F α β] : SurjectionLike F α β := inferInstance
 
 instance [EquivLike F α β] : IsSurjective F α β where
   coe_surj f x := by

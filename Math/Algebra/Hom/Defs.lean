@@ -271,6 +271,124 @@ instance : EmbeddingLike (LogEmbedding α β) α β where
 instance : IsMulAddHom (LogEmbedding α β) α β where
 instance : IsOneZeroHom (LogEmbedding α β) α β where
 
+structure AddGroupSurjection extends α ↠ β, AddGroupHom α β where
+
+instance : SurjectionLike (AddGroupSurjection α β) α β where
+instance : IsZeroHom (AddGroupSurjection α β) α β where
+instance : IsAddHom (AddGroupSurjection α β) α β where
+
+structure AddGroupWithOneSurjection extends α ↠ β, AddGroupWithOneHom α β where
+
+instance : SurjectionLike (AddGroupWithOneSurjection α β) α β where
+instance : IsZeroHom (AddGroupWithOneSurjection α β) α β where
+instance : IsOneHom (AddGroupWithOneSurjection α β) α β where
+instance : IsAddHom (AddGroupWithOneSurjection α β) α β where
+
+structure GroupSurjection extends α ↠ β, GroupHom α β where
+
+instance : SurjectionLike (GroupSurjection α β) α β where
+instance : IsOneHom (GroupSurjection α β) α β where
+instance : IsMulHom (GroupSurjection α β) α β where
+
+structure GroupWithZeroSurjection extends α ↠ β, GroupWithZeroHom α β, GroupSurjection α β where
+
+instance : SurjectionLike (GroupWithZeroSurjection α β) α β where
+instance : IsZeroHom (GroupWithZeroSurjection α β) α β where
+instance : IsOneHom (GroupWithZeroSurjection α β) α β where
+instance : IsMulHom (GroupWithZeroSurjection α β) α β where
+
+structure RingSurjection extends α ↠ β, RingHom α β, AddGroupSurjection α β, GroupSurjection α β where
+
+instance : SurjectionLike (RingSurjection α β) α β where
+instance : IsZeroHom (RingSurjection α β) α β where
+instance : IsOneHom (RingSurjection α β) α β where
+instance : IsAddHom (RingSurjection α β) α β where
+instance : IsMulHom (RingSurjection α β) α β where
+
+structure RngSurjection extends α ↠ β, RngHom α β, AddGroupSurjection α β where
+
+instance : SurjectionLike (RngSurjection α β) α β where
+instance : IsZeroHom (RngSurjection α β) α β where
+instance : IsAddHom (RngSurjection α β) α β where
+instance : IsMulHom (RngSurjection α β) α β where
+
+structure LinearSurjection extends α ↠ β, LinearMap R α β where
+
+instance : SurjectionLike (LinearSurjection R α β) α β where
+instance : IsAddHom (LinearSurjection R α β) α β where
+instance : IsSMulHom (LinearSurjection R α β) R α β where
+
+structure ExpSurjection extends α ↠ β, ExpHom α β where
+
+instance : SurjectionLike (ExpSurjection α β) α β where
+instance : IsAddMulHom (ExpSurjection α β) α β where
+instance : IsZeroOneHom (ExpSurjection α β) α β where
+
+structure LogSurjection extends α ↠ β, LogHom α β where
+
+instance : SurjectionLike (LogSurjection α β) α β where
+instance : IsMulAddHom (LogSurjection α β) α β where
+instance : IsOneZeroHom (LogSurjection α β) α β where
+
+structure AddGroupBijection extends α ⇔ β, AddGroupHom α β where
+
+instance : BijectionLike (AddGroupBijection α β) α β where
+instance : IsZeroHom (AddGroupBijection α β) α β where
+instance : IsAddHom (AddGroupBijection α β) α β where
+
+structure AddGroupWithOneBijection extends α ⇔ β, AddGroupWithOneHom α β where
+
+instance : BijectionLike (AddGroupWithOneBijection α β) α β where
+instance : IsZeroHom (AddGroupWithOneBijection α β) α β where
+instance : IsOneHom (AddGroupWithOneBijection α β) α β where
+instance : IsAddHom (AddGroupWithOneBijection α β) α β where
+
+structure GroupBijection extends α ⇔ β, GroupHom α β where
+
+instance : BijectionLike (GroupBijection α β) α β where
+instance : IsOneHom (GroupBijection α β) α β where
+instance : IsMulHom (GroupBijection α β) α β where
+
+structure GroupWithZeroBijection extends α ⇔ β, GroupWithZeroHom α β, GroupBijection α β where
+
+instance : BijectionLike (GroupWithZeroBijection α β) α β where
+instance : IsZeroHom (GroupWithZeroBijection α β) α β where
+instance : IsOneHom (GroupWithZeroBijection α β) α β where
+instance : IsMulHom (GroupWithZeroBijection α β) α β where
+
+structure RingBijection extends α ⇔ β, RingHom α β, AddGroupBijection α β, GroupBijection α β where
+
+instance : BijectionLike (RingBijection α β) α β where
+instance : IsZeroHom (RingBijection α β) α β where
+instance : IsOneHom (RingBijection α β) α β where
+instance : IsAddHom (RingBijection α β) α β where
+instance : IsMulHom (RingBijection α β) α β where
+
+structure RngBijection extends α ⇔ β, RngHom α β, AddGroupBijection α β where
+
+instance : BijectionLike (RngBijection α β) α β where
+instance : IsZeroHom (RngBijection α β) α β where
+instance : IsAddHom (RngBijection α β) α β where
+instance : IsMulHom (RngBijection α β) α β where
+
+structure LinearBijection extends α ⇔ β, LinearMap R α β where
+
+instance : BijectionLike (LinearBijection R α β) α β where
+instance : IsAddHom (LinearBijection R α β) α β where
+instance : IsSMulHom (LinearBijection R α β) R α β where
+
+structure ExpBijection extends α ⇔ β, ExpHom α β where
+
+instance : BijectionLike (ExpBijection α β) α β where
+instance : IsAddMulHom (ExpBijection α β) α β where
+instance : IsZeroOneHom (ExpBijection α β) α β where
+
+structure LogBijection extends α ⇔ β, LogHom α β where
+
+instance : BijectionLike (LogBijection α β) α β where
+instance : IsMulAddHom (LogBijection α β) α β where
+instance : IsOneZeroHom (LogBijection α β) α β where
+
 structure AddGroupEquiv extends α ≃ β, AddGroupHom α β, ZeroEquiv α β, AddEquiv α β where
 
 instance : EquivLike (AddGroupEquiv α β) α β where
@@ -404,6 +522,24 @@ instance : IsOneHom (AlgEmbedding R α β) α β := IsAlgebraMapHom.toOneHom (Al
 instance : IsAddHom (AlgEmbedding R α β) α β where
 instance : IsMulHom (AlgEmbedding R α β) α β where
 
+structure AlgSurjection extends α ↠ β, AlgHom R α β where
+
+instance : SurjectionLike (AlgSurjection R α β) α β where
+instance : IsAlgebraMapHom (AlgSurjection R α β) R α β where
+instance : IsZeroHom (AlgSurjection R α β) α β := IsAlgebraMapHom.toZeroHom (AlgSurjection R α β) R α β
+instance : IsOneHom (AlgSurjection R α β) α β := IsAlgebraMapHom.toOneHom (AlgSurjection R α β) R α β
+instance : IsAddHom (AlgSurjection R α β) α β where
+instance : IsMulHom (AlgSurjection R α β) α β where
+
+structure AlgBijection extends α ⇔ β, AlgHom R α β where
+
+instance : BijectionLike (AlgBijection R α β) α β where
+instance : IsAlgebraMapHom (AlgBijection R α β) R α β where
+instance : IsZeroHom (AlgBijection R α β) α β := IsAlgebraMapHom.toZeroHom (AlgBijection R α β) R α β
+instance : IsOneHom (AlgBijection R α β) α β := IsAlgebraMapHom.toOneHom (AlgBijection R α β) R α β
+instance : IsAddHom (AlgBijection R α β) α β where
+instance : IsMulHom (AlgBijection R α β) α β where
+
 structure AlgEquiv extends α ≃ β, AddEquiv α β, MulEquiv α β, AlgebraMapEquiv R α β, AlgHom R α β where
 
 instance : EquivLike (AlgEquiv R α β) α β where
@@ -429,6 +565,22 @@ infixr:25 " ↪*₀ " => GroupWithZeroEmbedding
 infixr:25 " ↪+* " => RingEmbedding
 infixr:25 " ↪+*₀ " => RngEmbedding
 
+infixr:25 " ↠+ " => AddGroupSurjection
+infixr:25 " ↠+₁ " => AddGroupWithOneSurjection
+infixr:25 " ↠* " => GroupSurjection
+infixr:25 " ↠*₀ " => GroupWithZeroSurjection
+
+infixr:25 " ↠+* " => RingSurjection
+infixr:25 " ↠+*₀ " => RngSurjection
+
+infixr:25 " ⇔+ " => AddGroupBijection
+infixr:25 " ⇔+₁ " => AddGroupWithOneBijection
+infixr:25 " ⇔* " => GroupBijection
+infixr:25 " ⇔*₀ " => GroupWithZeroBijection
+
+infixr:25 " ⇔+* " => RingBijection
+infixr:25 " ⇔+*₀ " => RngBijection
+
 infixr:25 " ≃+ " => AddGroupEquiv
 infixr:25 " ≃+₁ " => AddGroupWithOneEquiv
 infixr:25 " ≃* " => GroupEquiv
@@ -439,10 +591,14 @@ infixr:25 " ≃+*₀ " => RngEquiv
 
 notation:25 A " →ₗ[" R "] " B => LinearMap R A B
 notation:25 A " ↪ₗ[" R "] " B => LinearEmbedding R A B
+notation:25 A " ↠ₗ[" R "] " B => LinearSurjection R A B
+notation:25 A " ⇔ₗ[" R "] " B => LinearBijection R A B
 notation:25 A " ≃ₗ[" R "] " B => LinearEquiv R A B
 
 notation:25 A " →ₐ[" R "] " B => AlgHom R A B
 notation:25 A " ↪ₐ[" R "] " B => AlgEmbedding R A B
+notation:25 A " ↠ₐ[" R "] " B => AlgSurjection R A B
+notation:25 A " ⇔ₐ[" R "] " B => AlgBijection R A B
 notation:25 A " ≃ₐ[" R "] " B => AlgEquiv R A B
 
 infixr:25 " →ₙₐ* " => AddMulHom
@@ -457,9 +613,13 @@ infixr:25 " ≃₁₀ " => OneZeroEquiv
 
 infixr:25 " →ₐ* " => ExpHom
 infixr:25 " ↪ₐ* " => ExpEmbedding
+infixr:25 " ↠ₐ* " => ExpSurjection
+infixr:25 " ⇔ₐ* " => ExpBijection
 infixr:25 " ≃ₐ* " => ExpEquiv
 infixr:25 " →ₘ+ " => LogHom
 infixr:25 " ↪ₘ+ " => LogEmbedding
+infixr:25 " ↠ₘ+ " => LogSurjection
+infixr:25 " ⇔ₘ+ " => LogBijection
 infixr:25 " ≃ₘ+ " => LogEquiv
 
 end
@@ -778,6 +938,70 @@ def LogEmbedding.copy (f: α ↪ₘ+ β) (g: α -> β) (h: f = g) : α ↪ₘ+ �
   f.toEmbedding.copy g h, f.toLogHom.copy g h with
 }
 
+def GroupSurjection.copy (f: α ↠* β) (g: α -> β) (h: f = g) : α ↠* β := {
+  f.toSurjection.copy g h, f.toGroupHom.copy g h with
+}
+
+def GroupWithZeroSurjection.copy (f: α ↠*₀ β) (g: α -> β) (h: f = g) : α ↠*₀ β := {
+  f.toSurjection.copy g h, f.toGroupWithZeroHom.copy g h with
+}
+
+def RngSurjection.copy (f: α ↠+*₀ β) (g: α -> β) (h: f = g) : α ↠+*₀ β := {
+  f.toSurjection.copy g h, f.toRngHom.copy g h with
+}
+
+def RingSurjection.copy (f: α ↠+* β) (g: α -> β) (h: f = g) : α ↠+* β := {
+  f.toSurjection.copy g h, f.toRingHom.copy g h with
+}
+
+def LinearSurjection.copy (f: α ↠ₗ[R] β) (g: α -> β) (h: f = g) : α ↠ₗ[R] β := {
+  f.toSurjection.copy g h, f.toLinearMap.copy g h with
+}
+
+def AlgSurjection.copy (f: α ↠ₐ[R] β) (g: α -> β) (h: f = g) : α ↠ₐ[R] β := {
+  f.toSurjection.copy g h, f.toAlgHom.copy g h with
+}
+
+def ExpSurjection.copy (f: α ↠ₐ* β ) (g: α -> β) (h: f = g) : α ↠ₐ* β := {
+  f.toSurjection.copy g h, f.toExpHom.copy g h with
+}
+
+def LogSurjection.copy (f: α ↠ₘ+ β) (g: α -> β) (h: f = g) : α ↠ₘ+ β := {
+  f.toSurjection.copy g h, f.toLogHom.copy g h with
+}
+
+def GroupBijection.copy (f: α ⇔* β) (g: α -> β) (h: f = g) : α ⇔* β := {
+  f.toBijection.copy g h, f.toGroupHom.copy g h with
+}
+
+def GroupWithZeroBijection.copy (f: α ⇔*₀ β) (g: α -> β) (h: f = g) : α ⇔*₀ β := {
+  f.toBijection.copy g h, f.toGroupWithZeroHom.copy g h with
+}
+
+def RngBijection.copy (f: α ⇔+*₀ β) (g: α -> β) (h: f = g) : α ⇔+*₀ β := {
+  f.toBijection.copy g h, f.toRngHom.copy g h with
+}
+
+def RingBijection.copy (f: α ⇔+* β) (g: α -> β) (h: f = g) : α ⇔+* β := {
+  f.toBijection.copy g h, f.toRingHom.copy g h with
+}
+
+def LinearBijection.copy (f: α ⇔ₗ[R] β) (g: α -> β) (h: f = g) : α ⇔ₗ[R] β := {
+  f.toBijection.copy g h, f.toLinearMap.copy g h with
+}
+
+def AlgBijection.copy (f: α ⇔ₐ[R] β) (g: α -> β) (h: f = g) : α ⇔ₐ[R] β := {
+  f.toBijection.copy g h, f.toAlgHom.copy g h with
+}
+
+def ExpBijection.copy (f: α ⇔ₐ* β ) (g: α -> β) (h: f = g) : α ⇔ₐ* β := {
+  f.toBijection.copy g h, f.toExpHom.copy g h with
+}
+
+def LogBijection.copy (f: α ⇔ₘ+ β) (g: α -> β) (h: f = g) : α ⇔ₘ+ β := {
+  f.toBijection.copy g h, f.toLogHom.copy g h with
+}
+
 protected def ZeroHom.id (α: Type*) [Zero α] : ZeroHom α α where
   toFun := id
   map_zero := rfl
@@ -1051,6 +1275,70 @@ def AlgEmbedding.refl : α ↪ₐ[R] α := {
   Embedding.rfl, AlgHom.id _ with
 }
 
+def AddGroupSurjection.refl : α ↠+ α := {
+  Surjection.rfl, AddGroupHom.id _ with
+}
+
+def AddGroupWithOneSurjection.refl : α ↠+₁ α := {
+  Surjection.rfl, AddGroupWithOneHom.id _ with
+}
+
+def GroupSurjection.refl : α ↠* α := {
+  Surjection.rfl, GroupHom.id _ with
+}
+
+def GroupWithZeroSurjection.refl : α ↠*₀ α := {
+  Surjection.rfl, GroupWithZeroHom.id _ with
+}
+
+def RngSurjection.refl : α ↠+*₀ α := {
+  Surjection.rfl, RngHom.id _ with
+}
+
+def RingSurjection.refl : α ↠+* α := {
+  Surjection.rfl, RingHom.id _ with
+}
+
+def LinearSurjection.refl : α ↠ₗ[R] α := {
+  Surjection.rfl, LinearMap.id _ with
+}
+
+def AlgSurjection.refl : α ↠ₐ[R] α := {
+  Surjection.rfl, AlgHom.id _ with
+}
+
+def AddGroupBijection.refl : α ⇔+ α := {
+  Bijection.rfl, AddGroupHom.id _ with
+}
+
+def AddGroupWithOneBijection.refl : α ⇔+₁ α := {
+  Bijection.rfl, AddGroupWithOneHom.id _ with
+}
+
+def GroupBijection.refl : α ⇔* α := {
+  Bijection.rfl, GroupHom.id _ with
+}
+
+def GroupWithZeroBijection.refl : α ⇔*₀ α := {
+  Bijection.rfl, GroupWithZeroHom.id _ with
+}
+
+def RngBijection.refl : α ⇔+*₀ α := {
+  Bijection.rfl, RngHom.id _ with
+}
+
+def RingBijection.refl : α ⇔+* α := {
+  Bijection.rfl, RingHom.id _ with
+}
+
+def LinearBijection.refl : α ⇔ₗ[R] α := {
+  Bijection.rfl, LinearMap.id _ with
+}
+
+def AlgBijection.refl : α ⇔ₐ[R] α := {
+  Bijection.rfl, AlgHom.id _ with
+}
+
 def AddGroupEquiv.refl : α ≃+ α := {
   Equiv.rfl, AddGroupHom.id _ with
 }
@@ -1091,6 +1379,24 @@ def AlgEquiv.refl : α ≃ₐ[R] α := {
 @[simp] def RingEmbedding.apply_refl (x: α): RingEmbedding.refl x = x := rfl
 @[simp] def LinearEmbedding.apply_refl (x: α): LinearEmbedding.refl (R := R) x = x := rfl
 @[simp] def AlgEmbedding.apply_refl (x: α): AlgEmbedding.refl (R := R) x = x := rfl
+
+@[simp] def AddGroupSurjection.apply_refl (x: α): AddGroupSurjection.refl x = x := rfl
+@[simp] def AddGroupWithOneSurjection.apply_refl (x: α): AddGroupWithOneSurjection.refl x = x := rfl
+@[simp] def GroupSurjection.apply_refl (x: α): GroupSurjection.refl x = x := rfl
+@[simp] def GroupWithZeroSurjection.apply_refl (x: α): GroupWithZeroSurjection.refl x = x := rfl
+@[simp] def RngSurjection.apply_refl (x: α): RngSurjection.refl x = x := rfl
+@[simp] def RingSurjection.apply_refl (x: α): RingSurjection.refl x = x := rfl
+@[simp] def LinearSurjection.apply_refl (x: α): LinearSurjection.refl (R := R) x = x := rfl
+@[simp] def AlgSurjection.apply_refl (x: α): AlgSurjection.refl (R := R) x = x := rfl
+
+@[simp] def AddGroupBijection.apply_refl (x: α): AddGroupBijection.refl x = x := rfl
+@[simp] def AddGroupWithOneBijection.apply_refl (x: α): AddGroupWithOneBijection.refl x = x := rfl
+@[simp] def GroupBijection.apply_refl (x: α): GroupBijection.refl x = x := rfl
+@[simp] def GroupWithZeroBijection.apply_refl (x: α): GroupWithZeroBijection.refl x = x := rfl
+@[simp] def RngBijection.apply_refl (x: α): RngBijection.refl x = x := rfl
+@[simp] def RingBijection.apply_refl (x: α): RingBijection.refl x = x := rfl
+@[simp] def LinearBijection.apply_refl (x: α): LinearBijection.refl (R := R) x = x := rfl
+@[simp] def AlgBijection.apply_refl (x: α): AlgBijection.refl (R := R) x = x := rfl
 
 @[simp] def AddGroupEquiv.apply_refl (x: α): AddGroupEquiv.refl x = x := rfl
 @[simp] def AddGroupWithOneEquiv.apply_refl (x: α): AddGroupWithOneEquiv.refl x = x := rfl
@@ -1157,6 +1463,118 @@ def AddGroupEmbedding.of_exp_log (f: α ↪ₐ* β) (g: β ↪ₘ+ γ) : α ↪+
   Embedding.trans f.toEmbedding (g: β ↪ γ), AddGroupHom.of_exp_log g.toLogHom f.toExpHom with
 }
 
+def AddGroupSurjection.trans (h: α ↠+ β) (g: β ↠+ γ) : α ↠+ γ := {
+  h.toSurjection.trans g.toSurjection, g.toAddGroupHom.comp h.toAddGroupHom with
+}
+
+def AddGroupWithOneSurjection.trans (h: α ↠+₁ β) (g: β ↠+₁ γ) : α ↠+₁ γ := {
+  h.toSurjection.trans g.toSurjection, g.toAddGroupWithOneHom.comp h.toAddGroupWithOneHom with
+}
+
+def GroupSurjection.trans (h: α ↠* β) (g: β ↠* γ) : α ↠* γ := {
+  h.toSurjection.trans g.toSurjection, g.toGroupHom.comp h.toGroupHom with
+}
+
+def GroupWithZeroSurjection.trans (h: α ↠*₀ β) (g: β ↠*₀ γ) : α ↠*₀ γ := {
+  h.toSurjection.trans g.toSurjection, g.toGroupWithZeroHom.comp h.toGroupWithZeroHom with
+}
+
+def RngSurjection.trans (h: α ↠+*₀ β) (g: β ↠+*₀ γ) : α ↠+*₀ γ := {
+  h.toSurjection.trans g.toSurjection, g.toRngHom.comp h.toRngHom with
+}
+
+def RingSurjection.trans (h: α ↠+* β) (g: β ↠+* γ) : α ↠+* γ := {
+  h.toSurjection.trans g.toSurjection, g.toRingHom.comp h.toRingHom with
+}
+
+def LinearSurjection.trans (h: α ↠ₗ[R] β) (g: β ↠ₗ[R] γ) : α ↠ₗ[R] γ := {
+  h.toSurjection.trans g.toSurjection, g.toLinearMap.comp h.toLinearMap with
+}
+
+def AlgSurjection.trans (h: α ↠ₐ[R] β) (g: β ↠ₐ[R] γ) : α ↠ₐ[R] γ := {
+  h.toSurjection.trans g.toSurjection, g.toAlgHom.comp h.toAlgHom with
+}
+
+def ExpSurjection.add_trans [SurjectionLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (f: F) (g: β ↠ₐ* γ) : α ↠ₐ* γ := {
+  Surjection.trans (f: α ↠ β) g.toSurjection, ExpHom.add_comp g.toExpHom f with
+}
+
+def ExpSurjection.trans_mul [SurjectionLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (f: α ↠ₐ* β) (g: F) : α ↠ₐ* γ := {
+  Surjection.trans f.toSurjection (g: β ↠ γ), ExpHom.comp_mul g f.toExpHom with
+}
+
+def LogSurjection.mul_trans [SurjectionLike F α β] [IsOneHom F α β] [IsMulHom F α β] (f: F) (g: β ↠ₘ+ γ) : α ↠ₘ+ γ := {
+  Surjection.trans (f: α ↠ β) g.toSurjection, LogHom.mul_comp g.toLogHom f with
+}
+
+def LogSurjection.trans_add [SurjectionLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (f: α ↠ₘ+ β) (g: F) : α ↠ₘ+ γ := {
+  Surjection.trans f.toSurjection (g: β ↠ γ), LogHom.comp_add g f.toLogHom with
+}
+
+def GroupSurjection.of_log_exp (f: α ↠ₘ+ β) (g: β ↠ₐ* γ) : α ↠* γ := {
+  Surjection.trans f.toSurjection (g: β ↠ γ), GroupHom.of_log_exp g.toExpHom f.toLogHom with
+}
+
+def AddGroupSurjection.of_exp_log (f: α ↠ₐ* β) (g: β ↠ₘ+ γ) : α ↠+ γ := {
+  Surjection.trans f.toSurjection (g: β ↠ γ), AddGroupHom.of_exp_log g.toLogHom f.toExpHom with
+}
+
+def AddGroupBijection.trans (h: α ⇔+ β) (g: β ⇔+ γ) : α ⇔+ γ := {
+  h.toBijection.trans g.toBijection, g.toAddGroupHom.comp h.toAddGroupHom with
+}
+
+def AddGroupWithOneBijection.trans (h: α ⇔+₁ β) (g: β ⇔+₁ γ) : α ⇔+₁ γ := {
+  h.toBijection.trans g.toBijection, g.toAddGroupWithOneHom.comp h.toAddGroupWithOneHom with
+}
+
+def GroupBijection.trans (h: α ⇔* β) (g: β ⇔* γ) : α ⇔* γ := {
+  h.toBijection.trans g.toBijection, g.toGroupHom.comp h.toGroupHom with
+}
+
+def GroupWithZeroBijection.trans (h: α ⇔*₀ β) (g: β ⇔*₀ γ) : α ⇔*₀ γ := {
+  h.toBijection.trans g.toBijection, g.toGroupWithZeroHom.comp h.toGroupWithZeroHom with
+}
+
+def RngBijection.trans (h: α ⇔+*₀ β) (g: β ⇔+*₀ γ) : α ⇔+*₀ γ := {
+  h.toBijection.trans g.toBijection, g.toRngHom.comp h.toRngHom with
+}
+
+def RingBijection.trans (h: α ⇔+* β) (g: β ⇔+* γ) : α ⇔+* γ := {
+  h.toBijection.trans g.toBijection, g.toRingHom.comp h.toRingHom with
+}
+
+def LinearBijection.trans (h: α ⇔ₗ[R] β) (g: β ⇔ₗ[R] γ) : α ⇔ₗ[R] γ := {
+  h.toBijection.trans g.toBijection, g.toLinearMap.comp h.toLinearMap with
+}
+
+def AlgBijection.trans (h: α ⇔ₐ[R] β) (g: β ⇔ₐ[R] γ) : α ⇔ₐ[R] γ := {
+  h.toBijection.trans g.toBijection, g.toAlgHom.comp h.toAlgHom with
+}
+
+def ExpBijection.add_trans [BijectionLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (f: F) (g: β ⇔ₐ* γ) : α ⇔ₐ* γ := {
+  Bijection.trans (f: α ⇔ β) g.toBijection, ExpHom.add_comp g.toExpHom f with
+}
+
+def ExpBijection.trans_mul [BijectionLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (f: α ⇔ₐ* β) (g: F) : α ⇔ₐ* γ := {
+  Bijection.trans f.toBijection (g: β ⇔ γ), ExpHom.comp_mul g f.toExpHom with
+}
+
+def LogBijection.mul_trans [BijectionLike F α β] [IsOneHom F α β] [IsMulHom F α β] (f: F) (g: β ⇔ₘ+ γ) : α ⇔ₘ+ γ := {
+  Bijection.trans (f: α ⇔ β) g.toBijection, LogHom.mul_comp g.toLogHom f with
+}
+
+def LogBijection.trans_add [BijectionLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (f: α ⇔ₘ+ β) (g: F) : α ⇔ₘ+ γ := {
+  Bijection.trans f.toBijection (g: β ⇔ γ), LogHom.comp_add g f.toLogHom with
+}
+
+def GroupBijection.of_log_exp (f: α ⇔ₘ+ β) (g: β ⇔ₐ* γ) : α ⇔* γ := {
+  Bijection.trans f.toBijection (g: β ⇔ γ), GroupHom.of_log_exp g.toExpHom f.toLogHom with
+}
+
+def AddGroupBijection.of_exp_log (f: α ⇔ₐ* β) (g: β ⇔ₘ+ γ) : α ⇔+ γ := {
+  Bijection.trans f.toBijection (g: β ⇔ γ), AddGroupHom.of_exp_log g.toLogHom f.toExpHom with
+}
+
 @[simp] def AddGroupEmbedding.apply_trans (a: β ↪+ γ) (b: α ↪+ β) : b.trans a x = a (b x) := rfl
 @[simp] def AddGroupWithOneEmbedding.apply_trans (a: β ↪+₁ γ) (b: α ↪+₁ β) : b.trans a x = a (b x) := rfl
 @[simp] def GroupEmbedding.apply_trans (a: β ↪* γ) (b: α ↪* β) : b.trans a x = a (b x) := rfl
@@ -1171,6 +1589,36 @@ def AddGroupEmbedding.of_exp_log (f: α ↪ₐ* β) (g: β ↪ₘ+ γ) : α ↪+
 @[simp] def LogEmbedding.apply_trans_add [EmbeddingLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (g: F) (f: α ↪ₘ+ β) : trans_add f g x = g (f x) := rfl
 @[simp] def GroupEmbedding.apply_of_log_exp (f: α ↪ₘ+ β) (g: β ↪ₐ* γ) : of_log_exp f g x = g (f x) := rfl
 @[simp] def AddGroupEmbedding.apply_of_exp_log (f: α ↪ₐ* β) (g: β ↪ₘ+ γ) : of_exp_log f g x = g (f x) := rfl
+
+@[simp] def AddGroupSurjection.apply_trans (a: β ↠+ γ) (b: α ↠+ β) : b.trans a x = a (b x) := rfl
+@[simp] def AddGroupWithOneSurjection.apply_trans (a: β ↠+₁ γ) (b: α ↠+₁ β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupSurjection.apply_trans (a: β ↠* γ) (b: α ↠* β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupWithZeroSurjection.apply_trans (a: β ↠*₀ γ) (b: α ↠*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RngSurjection.apply_trans (a: β ↠+*₀ γ) (b: α ↠+*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RingSurjection.apply_trans (a: β ↠+* γ) (b: α ↠+* β) : b.trans a x = a (b x) := rfl
+@[simp] def LinearSurjection.apply_trans (a: β ↠ₗ[R] γ) (b: α ↠ₗ[R] β) : b.trans a x = a (b x) := rfl
+@[simp] def AlgSurjection.apply_trans (a: β ↠ₐ[R] γ) (b: α ↠ₐ[R] β) : b.trans a x = a (b x) := rfl
+@[simp] def ExpSurjection.apply_add_trans [SurjectionLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (g: β ↠ₐ* γ) (f: F) : add_trans f g x = g (f x) := rfl
+@[simp] def ExpSurjection.apply_trans_mul [SurjectionLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (g: F) (f: α ↠ₐ* β) : trans_mul f g x = g (f x) := rfl
+@[simp] def LogSurjection.apply_mul_trans [SurjectionLike F α β] [IsOneHom F α β] [IsMulHom F α β] (g: β ↠ₘ+ γ) (f: F) : mul_trans f g x = g (f x) := rfl
+@[simp] def LogSurjection.apply_trans_add [SurjectionLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (g: F) (f: α ↠ₘ+ β) : trans_add f g x = g (f x) := rfl
+@[simp] def GroupSurjection.apply_of_log_exp (f: α ↠ₘ+ β) (g: β ↠ₐ* γ) : of_log_exp f g x = g (f x) := rfl
+@[simp] def AddGroupSurjection.apply_of_exp_log (f: α ↠ₐ* β) (g: β ↠ₘ+ γ) : of_exp_log f g x = g (f x) := rfl
+
+@[simp] def AddGroupBijection.apply_trans (a: β ⇔+ γ) (b: α ⇔+ β) : b.trans a x = a (b x) := rfl
+@[simp] def AddGroupWithOneBijection.apply_trans (a: β ⇔+₁ γ) (b: α ⇔+₁ β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupBijection.apply_trans (a: β ⇔* γ) (b: α ⇔* β) : b.trans a x = a (b x) := rfl
+@[simp] def GroupWithZeroBijection.apply_trans (a: β ⇔*₀ γ) (b: α ⇔*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RngBijection.apply_trans (a: β ⇔+*₀ γ) (b: α ⇔+*₀ β) : b.trans a x = a (b x) := rfl
+@[simp] def RingBijection.apply_trans (a: β ⇔+* γ) (b: α ⇔+* β) : b.trans a x = a (b x) := rfl
+@[simp] def LinearBijection.apply_trans (a: β ⇔ₗ[R] γ) (b: α ⇔ₗ[R] β) : b.trans a x = a (b x) := rfl
+@[simp] def AlgBijection.apply_trans (a: β ⇔ₐ[R] γ) (b: α ⇔ₐ[R] β) : b.trans a x = a (b x) := rfl
+@[simp] def ExpBijection.apply_add_trans [BijectionLike F α β] [IsZeroHom F α β] [IsAddHom F α β] (g: β ⇔ₐ* γ) (f: F) : add_trans f g x = g (f x) := rfl
+@[simp] def ExpBijection.apply_trans_mul [BijectionLike F β γ] [IsOneHom F β γ] [IsMulHom F β γ] (g: F) (f: α ⇔ₐ* β) : trans_mul f g x = g (f x) := rfl
+@[simp] def LogBijection.apply_mul_trans [BijectionLike F α β] [IsOneHom F α β] [IsMulHom F α β] (g: β ⇔ₘ+ γ) (f: F) : mul_trans f g x = g (f x) := rfl
+@[simp] def LogBijection.apply_trans_add [BijectionLike F β γ] [IsZeroHom F β γ] [IsAddHom F β γ] (g: F) (f: α ⇔ₘ+ β) : trans_add f g x = g (f x) := rfl
+@[simp] def GroupBijection.apply_of_log_exp (f: α ⇔ₘ+ β) (g: β ⇔ₐ* γ) : of_log_exp f g x = g (f x) := rfl
+@[simp] def AddGroupBijection.apply_of_exp_log (f: α ⇔ₐ* β) (g: β ⇔ₘ+ γ) : of_exp_log f g x = g (f x) := rfl
 
 def AddGroupEquiv.trans (h: α ≃+ β) (g: β ≃+ γ) : α ≃+ γ := {
   h.toEquiv.trans g.toEquiv, g.toAddGroupHom.comp h.toAddGroupHom with
@@ -1364,38 +1812,104 @@ def LogEquiv.symm (h: α ≃ₘ+ β) : β ≃ₐ* α := {
 @[simp] def ExpEquiv.symm_symm (a: α ≃ₐ* β) : a.symm.symm = a := rfl
 @[simp] def LogEquiv.symm_symm (a: α ≃ₘ+ β) : a.symm.symm = a := rfl
 
-def AddGroupEmbedding.toHom (h: α ↪+ β) : α →+ β := h
-def AddGroupWithOneEmbedding.toHom (h: α ↪+₁ β) : α →+₁ β := h
-def GroupEmbedding.toHom (h: α ↪* β) : α →* β := h
-def GroupWithZeroEmbedding.toHom (h: α ↪*₀ β) : α →*₀ β := h
-def RingEmbedding.toHom (h: α ↪+* β) : α →+* β := h
-def RngEmbedding.toHom (h: α ↪+*₀ β) : α →+*₀ β := h
-def LinearEmbedding.toHom (h: α ↪ₗ[R] β) : α →ₗ[R] β := h
-def AlgEmbedding.toHom (h: α ↪ₐ[R] β) : α →ₐ[R] β := h
-def ExpEmbedding.toHom (h: α ↪ₐ* β) : α →ₐ* β := h
-def LogEmbedding.toHom (h: α ↪ₘ+ β) : α →ₘ+ β := h
+@[coe] def AddGroupEmbedding.toHom (h: α ↪+ β) : α →+ β := { h with }
+@[coe] def AddGroupWithOneEmbedding.toHom (h: α ↪+₁ β) : α →+₁ β := { h with }
+@[coe] def GroupEmbedding.toHom (h: α ↪* β) : α →* β := { h with }
+@[coe] def GroupWithZeroEmbedding.toHom (h: α ↪*₀ β) : α →*₀ β := { h with }
+@[coe] def RingEmbedding.toHom (h: α ↪+* β) : α →+* β := { h with }
+@[coe] def RngEmbedding.toHom (h: α ↪+*₀ β) : α →+*₀ β := { h with }
+@[coe] def LinearEmbedding.toHom (h: α ↪ₗ[R] β) : α →ₗ[R] β := { h with }
+@[coe] def AlgEmbedding.toHom (h: α ↪ₐ[R] β) : α →ₐ[R] β := { h with }
+@[coe] def ExpEmbedding.toHom (h: α ↪ₐ* β) : α →ₐ* β := { h with }
+@[coe] def LogEmbedding.toHom (h: α ↪ₘ+ β) : α →ₘ+ β := { h with }
 
-def AddGroupEquiv.toEmbedding (h: α ≃+ β) : α ↪+ β := h
-def AddGroupWithOneEquiv.toEmbedding (h: α ≃+₁ β) : α ↪+₁ β := h
-def GroupEquiv.toEmbedding (h: α ≃* β) : α ↪* β := h
-def GroupWithZeroEquiv.toEmbedding (h: α ≃*₀ β) : α ↪*₀ β := h
-def RingEquiv.toEmbedding (h: α ≃+* β) : α ↪+* β := h
-def RngEquiv.toEmbedding (h: α ≃+*₀ β) : α ↪+*₀ β := h
-def LinearEquiv.toEmbedding (h: α ≃ₗ[R] β) : α ↪ₗ[R] β := h
-def AlgEquiv.toEmbedding (h: α ≃ₐ[R] β) : α ↪ₐ[R] β := h
-def ExpEquiv.toEmbedding (h: α ≃ₐ* β) : α ↪ₐ* β := h
-def LogEquiv.toEmbedding (h: α ≃ₘ+ β) : α ↪ₘ+ β := h
+@[coe] def AddGroupSurjection.toHom (h: α ↠+ β) : α →+ β := { h with }
+@[coe] def AddGroupWithOneSurjection.toHom (h: α ↠+₁ β) : α →+₁ β := { h with }
+@[coe] def GroupSurjection.toHom (h: α ↠* β) : α →* β := { h with }
+@[coe] def GroupWithZeroSurjection.toHom (h: α ↠*₀ β) : α →*₀ β := { h with }
+@[coe] def RingSurjection.toHom (h: α ↠+* β) : α →+* β := { h with }
+@[coe] def RngSurjection.toHom (h: α ↠+*₀ β) : α →+*₀ β := { h with }
+@[coe] def LinearSurjection.toHom (h: α ↠ₗ[R] β) : α →ₗ[R] β := { h with }
+@[coe] def AlgSurjection.toHom (h: α ↠ₐ[R] β) : α →ₐ[R] β := { h with }
+@[coe] def ExpSurjection.toHom (h: α ↠ₐ* β) : α →ₐ* β := { h with }
+@[coe] def LogSurjection.toHom (h: α ↠ₘ+ β) : α →ₘ+ β := { h with }
 
-def AddGroupEquiv.toHom (h: α ≃+ β) : α →+ β := h
-def AddGroupWithOneEquiv.toHom (h: α ≃+₁ β) : α →+₁ β := h
-def GroupEquiv.toHom (h: α ≃* β) : α →* β := h
-def GroupWithZeroEquiv.toHom (h: α ≃*₀ β) : α →*₀ β := h
-def RingEquiv.toHom (h: α ≃+* β) : α →+* β := h
-def RngEquiv.toHom (h: α ≃+*₀ β) : α →+*₀ β := h
-def LinearEquiv.toHom (h: α ≃ₗ[R] β) : α →ₗ[R] β := h
-def AlgEquiv.toHom (h: α ≃ₐ[R] β) : α →ₐ[R] β := h
-def ExpEquiv.toHom (h: α ≃ₐ* β) : α →ₐ* β := h
-def LogEquiv.toHom (h: α ≃ₘ+ β) : α →ₘ+ β := h
+@[coe] def AddGroupBijection.toHom (h: α ⇔+ β) : α →+ β := { h with }
+@[coe] def AddGroupWithOneBijection.toHom (h: α ⇔+₁ β) : α →+₁ β := { h with }
+@[coe] def GroupBijection.toHom (h: α ⇔* β) : α →* β := { h with }
+@[coe] def GroupWithZeroBijection.toHom (h: α ⇔*₀ β) : α →*₀ β := { h with }
+@[coe] def RingBijection.toHom (h: α ⇔+* β) : α →+* β := { h with }
+@[coe] def RngBijection.toHom (h: α ⇔+*₀ β) : α →+*₀ β := { h with }
+@[coe] def LinearBijection.toHom (h: α ⇔ₗ[R] β) : α →ₗ[R] β := { h with }
+@[coe] def AlgBijection.toHom (h: α ⇔ₐ[R] β) : α →ₐ[R] β := { h with }
+@[coe] def ExpBijection.toHom (h: α ⇔ₐ* β) : α →ₐ* β := { h with }
+@[coe] def LogBijection.toHom (h: α ⇔ₘ+ β) : α →ₘ+ β := { h with }
+
+@[coe] def AddGroupBijection.toEmb (h: α ⇔+ β) : α ↪+ β := { h with }
+@[coe] def AddGroupWithOneBijection.toEmb (h: α ⇔+₁ β) : α ↪+₁ β := { h with }
+@[coe] def GroupBijection.toEmb (h: α ⇔* β) : α ↪* β := { h with }
+@[coe] def GroupWithZeroBijection.toEmb (h: α ⇔*₀ β) : α ↪*₀ β := { h with }
+@[coe] def RingBijection.toEmb (h: α ⇔+* β) : α ↪+* β := { h with }
+@[coe] def RngBijection.toEmb (h: α ⇔+*₀ β) : α ↪+*₀ β := { h with }
+@[coe] def LinearBijection.toEmb (h: α ⇔ₗ[R] β) : α ↪ₗ[R] β := { h with }
+@[coe] def AlgBijection.toEmb (h: α ⇔ₐ[R] β) : α ↪ₐ[R] β := { h with }
+@[coe] def ExpBijection.toEmb (h: α ⇔ₐ* β) : α ↪ₐ* β := { h with }
+@[coe] def LogBijection.toEmb (h: α ⇔ₘ+ β) : α ↪ₘ+ β := { h with }
+
+@[coe] def AddGroupBijection.toSurj (h: α ⇔+ β) : α ↠+ β := { h with }
+@[coe] def AddGroupWithOneBijection.toSurj (h: α ⇔+₁ β) : α ↠+₁ β := { h with }
+@[coe] def GroupBijection.toSurj (h: α ⇔* β) : α ↠* β := { h with }
+@[coe] def GroupWithZeroBijection.toSurj (h: α ⇔*₀ β) : α ↠*₀ β := { h with }
+@[coe] def RingBijection.toSurj (h: α ⇔+* β) : α ↠+* β := { h with }
+@[coe] def RngBijection.toSurj (h: α ⇔+*₀ β) : α ↠+*₀ β := { h with }
+@[coe] def LinearBijection.toSurj (h: α ⇔ₗ[R] β) : α ↠ₗ[R] β := { h with }
+@[coe] def AlgBijection.toSurj (h: α ⇔ₐ[R] β) : α ↠ₐ[R] β := { h with }
+@[coe] def ExpBijection.toSurj (h: α ⇔ₐ* β) : α ↠ₐ* β := { h with }
+@[coe] def LogBijection.toSurj (h: α ⇔ₘ+ β) : α ↠ₘ+ β := { h with }
+
+@[coe] def AddGroupEquiv.toEmbedding (h: α ≃+ β) : α ↪+ β := { h with inj' := h.inj }
+@[coe] def AddGroupWithOneEquiv.toEmbedding (h: α ≃+₁ β) : α ↪+₁ β := { h with inj' := h.inj }
+@[coe] def GroupEquiv.toEmbedding (h: α ≃* β) : α ↪* β := { h with inj' := h.inj }
+@[coe] def GroupWithZeroEquiv.toEmbedding (h: α ≃*₀ β) : α ↪*₀ β := { h with inj' := h.inj }
+@[coe] def RingEquiv.toEmbedding (h: α ≃+* β) : α ↪+* β := { h with inj' := h.inj }
+@[coe] def RngEquiv.toEmbedding (h: α ≃+*₀ β) : α ↪+*₀ β := { h with inj' := h.inj }
+@[coe] def LinearEquiv.toEmbedding (h: α ≃ₗ[R] β) : α ↪ₗ[R] β := { h with inj' := h.inj }
+@[coe] def AlgEquiv.toEmbedding (h: α ≃ₐ[R] β) : α ↪ₐ[R] β := { h with inj' := h.inj }
+@[coe] def ExpEquiv.toEmbedding (h: α ≃ₐ* β) : α ↪ₐ* β := { h with inj' := h.inj }
+@[coe] def LogEquiv.toEmbedding (h: α ≃ₘ+ β) : α ↪ₘ+ β := { h with inj' := h.inj }
+
+@[coe] def AddGroupEquiv.toSurjection (h: α ≃+ β) : α ↠+ β := { h with surj' := h.surj }
+@[coe] def AddGroupWithOneEquiv.toSurjection (h: α ≃+₁ β) : α ↠+₁ β := { h with surj' := h.surj }
+@[coe] def GroupEquiv.toSurjection (h: α ≃* β) : α ↠* β := { h with surj' := h.surj }
+@[coe] def GroupWithZeroEquiv.toSurjection (h: α ≃*₀ β) : α ↠*₀ β := { h with surj' := h.surj }
+@[coe] def RingEquiv.toSurjection (h: α ≃+* β) : α ↠+* β := { h with surj' := h.surj }
+@[coe] def RngEquiv.toSurjection (h: α ≃+*₀ β) : α ↠+*₀ β := { h with surj' := h.surj }
+@[coe] def LinearEquiv.toSurjection (h: α ≃ₗ[R] β) : α ↠ₗ[R] β := { h with surj' := h.surj }
+@[coe] def AlgEquiv.toSurjection (h: α ≃ₐ[R] β) : α ↠ₐ[R] β := { h with surj' := h.surj }
+@[coe] def ExpEquiv.toSurjection (h: α ≃ₐ* β) : α ↠ₐ* β := { h with surj' := h.surj }
+@[coe] def LogEquiv.toSurjection (h: α ≃ₘ+ β) : α ↠ₘ+ β := { h with surj' := h.surj }
+
+@[coe] def AddGroupEquiv.toBijection (h: α ≃+ β) : α ⇔+ β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def AddGroupWithOneEquiv.toBijection (h: α ≃+₁ β) : α ⇔+₁ β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def GroupEquiv.toBijection (h: α ≃* β) : α ⇔* β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def GroupWithZeroEquiv.toBijection (h: α ≃*₀ β) : α ⇔*₀ β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def RingEquiv.toBijection (h: α ≃+* β) : α ⇔+* β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def RngEquiv.toBijection (h: α ≃+*₀ β) : α ⇔+*₀ β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def LinearEquiv.toBijection (h: α ≃ₗ[R] β) : α ⇔ₗ[R] β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def AlgEquiv.toBijection (h: α ≃ₐ[R] β) : α ⇔ₐ[R] β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def ExpEquiv.toBijection (h: α ≃ₐ* β) : α ⇔ₐ* β := { h with surj' := h.surj, inj' := h.inj }
+@[coe] def LogEquiv.toBijection (h: α ≃ₘ+ β) : α ⇔ₘ+ β := { h with surj' := h.surj, inj' := h.inj }
+
+@[coe] def AddGroupEquiv.toHom (h: α ≃+ β) : α →+ β := { h with }
+@[coe] def AddGroupWithOneEquiv.toHom (h: α ≃+₁ β) : α →+₁ β := { h with }
+@[coe] def GroupEquiv.toHom (h: α ≃* β) : α →* β := { h with }
+@[coe] def GroupWithZeroEquiv.toHom (h: α ≃*₀ β) : α →*₀ β := { h with }
+@[coe] def RingEquiv.toHom (h: α ≃+* β) : α →+* β := { h with }
+@[coe] def RngEquiv.toHom (h: α ≃+*₀ β) : α →+*₀ β := { h with }
+@[coe] def LinearEquiv.toHom (h: α ≃ₗ[R] β) : α →ₗ[R] β := { h with }
+@[coe] def AlgEquiv.toHom (h: α ≃ₐ[R] β) : α →ₐ[R] β := { h with }
+@[coe] def ExpEquiv.toHom (h: α ≃ₐ* β) : α →ₐ* β := { h with }
+@[coe] def LogEquiv.toHom (h: α ≃ₘ+ β) : α →ₘ+ β := { h with }
 
 @[simp] def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
 @[simp] def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _

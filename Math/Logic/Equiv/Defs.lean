@@ -101,6 +101,10 @@ def trans (f: α ↠ β) (g: β ↠ γ) : α ↠ γ where
 
 def surj (f: α ↠ β) : Function.Surjective f := f.surj'
 
+def copy (f: α ↠ β) (g: α -> β) (h: f = g) : α ↠ β where
+  toFun := g
+  surj' := h ▸ f.surj
+
 end Surjection
 
 namespace Bijection
@@ -122,6 +126,11 @@ def trans (f: α ⇔ β) (g: β ⇔ γ) : α ⇔ γ where
 def inj (f: α ⇔ β) : Function.Injective f := f.inj'
 def surj (f: α ⇔ β) : Function.Surjective f := f.surj'
 def bij (f: α ⇔ β) : Function.Bijective f := ⟨f.inj, f.surj⟩
+
+def copy (f: α ⇔ β) (g: α -> β) (h: f = g) : α ⇔ β where
+  toFun := g
+  inj' := h ▸ f.inj
+  surj' := h ▸ f.surj
 
 end Bijection
 
