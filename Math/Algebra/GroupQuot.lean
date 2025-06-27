@@ -22,6 +22,9 @@ instance instGroupOps [GroupOps α] [IsGroup α] : GroupOps (GroupQuot r) :=
 instance instIsGroup [GroupOps α] [IsGroup α] : IsGroup (GroupQuot r) :=
   AlgQuotient.instIsGroup _
 
+instance instIsCommMagma [MonoidOps α] [IsMonoid α] [IsCommMagma α] : IsCommMagma (GroupQuot r) :=
+  AlgQuotient.instIsCommMagma _
+
 end
 
 variable {r: G -> G -> Prop}
@@ -114,8 +117,11 @@ instance instIsSemiring [AddMonoidOps α] [IsAddMonoid α] : IsAddMonoid (AddGro
 
 instance instAddGroupOps [AddGroupOps α] [IsAddGroup α] : AddGroupOps (AddGroupQuot r) :=
   AlgQuotient.instAddGroupOps _
-instance instIsGroup [AddGroupOps α] [IsAddGroup α] : IsAddGroup (AddGroupQuot r) :=
+instance instIsAddGroup [AddGroupOps α] [IsAddGroup α] : IsAddGroup (AddGroupQuot r) :=
   AlgQuotient.instIsAddGroup _
+
+instance instIsAddCommMagma [AddMonoidOps α] [IsAddMonoid α] [IsAddCommMagma α] : IsAddCommMagma (AddGroupQuot r) :=
+  AlgQuotient.instIsAddCommMagma _
 
 end
 

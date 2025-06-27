@@ -28,6 +28,7 @@ variable {n: ℕ}
 
 instance : GroupOps (Cyclic n) := GroupQuot.instGroupOps
 instance : IsGroup (Cyclic n) := GroupQuot.instIsGroup
+instance : IsCommMagma (Cyclic n) := inferInstanceAs (IsCommMagma (GroupQuot _))
 
 def unit (n: ℕ) : Cyclic n := GroupQuot.mk _ (FreeGroup.ι ())
 
@@ -173,10 +174,6 @@ def of_zpow_eq_one (m: ℤ) : (unit n) ^ m = 1 -> Nat.cast n ∣ m := by
   apply Int.dvd_natAbs.mp
   apply Int.ofNat_dvd.mpr
   assumption
-
-instance : IsCommMagma (Cyclic n) where
-  mul_comm a b := by
-    rw [←pow_spec a, ←pow_spec b, ←zpow_add, ←zpow_add, Int.add_comm]
 
 private def lift_zpow_mod (G: Type*) [GroupOps G] [IsGroup G] (g: G) (hg: g ^ n = 1) (k: ℤ) :
   g ^ (k % n)  = g ^ k := by
