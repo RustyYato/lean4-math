@@ -41,26 +41,19 @@ def Hom [RingOps R] (s t: Subring R) (h: s ⊆ t) : s ↪+* t where
   map_mul := rfl
 
 def bij_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ⇔+* range f where
-  toFun s := ⟨f s, Set.mem_range'⟩
-  inj' := by
-    intro x y eq
-    apply f.inj
-    apply Subtype.mk.inj eq
-  surj' := by
-    intro ⟨_, a, rfl⟩
-    exists a
+  toBijection := Bijection.range f.toEmbedding
   map_zero := by
-    congr
-    rw [map_zero]
+    apply Subtype.val_inj
+    apply map_zero f
   map_one := by
-    congr
-    rw [map_one]
+    apply Subtype.val_inj
+    apply map_one f
   map_add {x y} := by
-    congr
-    rw [map_add]
+    apply Subtype.val_inj
+    apply map_add f
   map_mul {x y} := by
-    congr
-    rw [map_mul]
+    apply Subtype.val_inj
+    apply map_mul f
 
 noncomputable def equiv_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ≃+* range f := {
   (bij_range f).toEquiv, bij_range f with
