@@ -5,8 +5,7 @@ import Math.Relation.RelIso
 namespace Erased
 
 def relEmbed (r: α -> α -> Prop) : r ↪r Erased.liftRel r where
-  toFun := mk
-  inj' := mk_inj
+  toEmbedding := mk
   resp_rel := by
     intro a b
     apply Iff.intro

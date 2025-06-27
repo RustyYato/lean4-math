@@ -84,7 +84,7 @@ def reverse_reverse : Function.IsInvolutive (reverse Q) :=
 @[simp]
 def reverse_symm : (reverse Q).symm = reverse Q := by
   ext a
-  symm; apply Equiv.eq_symm_of_coe_eq
+  symm; show _ = Equiv.symm (reverse Q).toEquiv a; apply Equiv.eq_symm_of_coe_eq
   apply reverse_reverse
 
 attribute [irreducible] reverse
@@ -146,7 +146,7 @@ def involute_comp_involute : (involute Q).trans (involute Q) = AlgEquiv.refl := 
 @[simp]
 def involute_symm : (involute Q).symm = involute Q := by
   ext a
-  symm; apply Equiv.eq_symm_of_coe_eq
+  symm; show _ = Equiv.symm (involute Q).toEquiv a; apply Equiv.eq_symm_of_coe_eq
   apply involute_involute
 
 def reverse_involute_comm (a: CliffordAlgebra Q) : reverse Q (involute Q a) = involute Q (reverse Q a) := by

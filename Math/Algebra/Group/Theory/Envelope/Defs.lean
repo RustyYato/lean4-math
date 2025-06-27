@@ -95,7 +95,7 @@ def apply_lift_ι [Mul α] (f: MulHom α G) : lift f (ι x) = f x := by apply pr
 attribute [irreducible] GroupEnvolope lift instGroupOps ι
 
 def liftHom [Mul α] [One α] [IsMulOneClass α] : (α →* G) ≃ (GroupEnvolope α →* G) where
-  toFun f := lift f
+  toFun f := lift f.toMulHom
   invFun f := {
     lift.symm f with
     map_one := by
