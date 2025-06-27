@@ -75,11 +75,9 @@ instance : IsGroup (FreeGroup α) where
     | ι_mul a as ih =>
       simp [FreeMonoid.reverse_mul]
       iterate 4 rw [map_mul]
-      rw [mul_assoc]; rw (occs := [2]) [←mul_assoc]
-      rw [←map_mul]
-      simp
-      rw [←map_mul]
-      assumption
+      rw [mul_assoc]
+      rw (occs := [2]) [←mul_assoc]
+      simpa [←map_mul]
 
 private def toFreeGroup (a: α) : FreeGroup α := GroupQuot.mk _ (.ι (false, a))
 

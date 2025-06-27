@@ -32,8 +32,7 @@ def mk [MonoidOps G] [IsMonoid G] (r: G -> G -> Prop) : G ↠* GroupQuot r :=
 @[induction_eliminator]
 def ind [MonoidOps G] [IsMonoid G] {motive: GroupQuot r -> Prop} (mk: ∀x, motive (mk r x)) : ∀q, motive q := by
   intro q
-  induction q using AlgQuotient.ind with
-  | mk a =>
+  obtain ⟨_, rfl⟩ := (GroupQuot.mk r).surj q
   apply mk
 
 def mk_rel [MonoidOps G] [IsMonoid G] (w: r x y) : mk r x = mk r y := Quot.sound (MulCon.Generator.of w)
@@ -128,8 +127,7 @@ def mk [AddMonoidOps G] [IsAddMonoid G] (r: G -> G -> Prop) : G ↠+ AddGroupQuo
 @[induction_eliminator]
 def ind [AddMonoidOps G] [IsAddMonoid G] {motive: AddGroupQuot r -> Prop} (mk: ∀x, motive (mk r x)) : ∀q, motive q := by
   intro q
-  induction q using AlgQuotient.ind with
-  | mk a =>
+  obtain ⟨_, rfl⟩ := (AddGroupQuot.mk r).surj q
   apply mk
 
 def mk_rel [AddMonoidOps G] [IsAddMonoid G] (w: r x y) : mk r x = mk r y := Quot.sound (AddCon.Generator.of w)
