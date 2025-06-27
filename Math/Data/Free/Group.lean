@@ -228,6 +228,25 @@ def lift_assoc {x: FreeGroup α} (f: α -> FreeGroup β) (g: β -> FreeGroup γ)
   | inv => simp [map_inv]
   | mul => simp [map_mul]; congr
 
+def exists_pow [Subsingleton α] : ∀a: α, Function.Surjective (fun n: ℤ => (ι a) ^ n) := by
+  intro a x
+  induction x with
+  | one => exists 0; symm; apply zpow_zero
+  | ι b =>
+    exists 1
+    dsimp; rw [zpow_one, Subsingleton.allEq a b]
+  | inv b ih =>
+    obtain ⟨n, h⟩ := ih
+    exists -n
+    dsimp
+    rw [zpow_neg, h]
+  | mul b₀ b₁ ih₀ ih₁ =>
+    obtain ⟨n, rfl⟩ := ih₀
+    obtain ⟨m, rfl⟩ := ih₁
+    exists n + m
+    dsimp
+    rw [zpow_add]
+
 instance [Subsingleton α] : IsCommMagma (FreeGroup α) where
   mul_comm a b := by
     induction a generalizing b with
@@ -246,7 +265,7 @@ instance [Subsingleton α] : IsCommMagma (FreeGroup α) where
       refine ⟨?_⟩
       apply ih
     | mul a₀ a₁ ih₀ ih₁ =>
-        rw [mul_assoc, ih₀, mul_assoc, ih₁, mul_assoc]
+      rw [mul_assoc, ih₀, mul_assoc, ih₁, mul_assoc]
 
 instance : Monad FreeGroup where
   pure := ι
