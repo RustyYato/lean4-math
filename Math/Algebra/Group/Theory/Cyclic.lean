@@ -528,21 +528,25 @@ def exists_minimal_generator (G: Type*) [GroupOps G] [IsCyclic G] :
   have : ¬m.natAbs < k.natAbs := (hk m · hm)
   simpa using this
 
-def ofEmbedding [GroupOps A] [IsGroup A] [GroupOps B] [IsCyclic B] (h: A ↪* B) : IsCyclic A where
+def ofEmbedding
+  [EmbeddingLike F A B]
+  [GroupOps A] [IsGroup A] [GroupOps B] [IsCyclic B]
+  [IsMulHom F A B] [IsOneHom F A B]
+  (f: F) : IsCyclic A where
   exists_generator := by
     have ⟨n, ⟨g⟩⟩ := existsEquivCyclic B
-    replace h := h.trans g.toEmbedding
+    let f': A ↪* B := { (f: A ↪ B), toGroupHom f with }
+    replace h := f'.trans (g: B ↪* Cyclic n)
     replace g := Subgroup.equiv_of_embed h
-    have ⟨m, ⟨g'⟩⟩ := Cyclic.subgroup_cyclic (Subgroup.range h.toHom)
+    have ⟨m, ⟨g'⟩⟩ := Cyclic.subgroup_cyclic (Subgroup.range h)
     replace g := g.trans g'
     exists g.symm (.unit _)
     intro a
     exists (g a).pow
     rw [←map_zpow, Cyclic.pow_spec, g.coe_symm]
 
-def ofLogEmbedding [GroupOps A] [IsGroup A] [AddGroupOps B] [IsAddGroup.IsCyclic B] (h: A ↪ₘ+ B) : IsCyclic A := by
-  apply ofEmbedding (B := MulOfAdd B)
-  apply GroupEmbedding.of_log_exp h (ExpEquiv.MulOfAdd _).toEmbedding
+def ofLogEmbedding [GroupOps A] [IsGroup A] [AddGroupOps B] [IsAddGroup.IsCyclic B] (h: A ↪ₘ+ B) : IsCyclic A :=
+  ofEmbedding (B := MulOfAdd B) <| GroupEmbedding.of_log_exp h (ExpEquiv.MulOfAdd B)
 
 end IsGroup.IsCyclic
 
@@ -552,17 +556,29 @@ def exists_minimal_generator (G: Type*) [AddGroupOps G] [IsCyclic G] :
   ∃u: G, ∀g: G, ∃n: ℤ, g = n • u ∧ ∀m: ℤ, g = m • u -> n.natAbs ≤ m.natAbs :=
   IsGroup.IsCyclic.exists_minimal_generator (MulOfAdd G)
 
-def ofEmbedding [AddGroupOps A] [IsAddGroup A] [AddGroupOps B] [IsCyclic B] (h: A ↪+ B) : IsCyclic A := by
+def ofEmbedding
+  [EmbeddingLike F A B]
+  [AddGroupOps A] [IsAddGroup A] [AddGroupOps B] [IsCyclic B]
+  [IsAddHom F A B] [IsZeroHom F A B]
+  (f: F) : IsCyclic A := by
   suffices IsGroup.IsCyclic (MulOfAdd A) by
     show IsCyclic (AddOfMul (MulOfAdd A))
     infer_instance
   apply IsGroup.IsCyclic.ofLogEmbedding (B := B)
-  apply LogEmbedding.trans_add _ h
-  refine (LogEquiv.MulOfAdd A).toEmbedding
+  apply LogEmbedding.trans_add _ f
+  exact (LogEquiv.MulOfAdd A: MulOfAdd A ↪ₘ+ A)
 
-def ofLogEmbedding [AddGroupOps A] [IsAddGroup A] [GroupOps B] [IsGroup.IsCyclic B] (h: A ↪ₐ* B) : IsCyclic A := by
-  apply ofEmbedding (B := AddOfMul B)
-  apply AddGroupEmbedding.of_exp_log h (LogEquiv.AddOfMul _).toEmbedding
+def ofExpEmbedding
+  [EmbeddingLike F A B]
+  [AddGroupOps A] [IsAddGroup A] [GroupOps B] [IsGroup.IsCyclic B]
+  [IsAddMulHom F A B] [IsZeroOneHom F A B]
+  (f: F) : IsCyclic A := by
+  let f': A ↪ₐ* B := {
+    toEmbedding := f
+    map_zero_to_one := map_zero_to_one f
+    map_add_to_mul := map_add_to_mul f
+  }
+  apply ofEmbedding (B := AddOfMul B) (AddGroupEmbedding.of_exp_log f' (LogEquiv.AddOfMul B))
 
 end IsAddGroup.IsCyclic
 
@@ -574,7 +590,7 @@ instance : IsGroup.IsCyclic (Cyclic n) where
     exists i
 
 instance : IsAddGroup.IsCyclic (ZMod n) :=
-  IsAddGroup.IsCyclic.ofLogEmbedding Cyclic.equiv_zmod_add.symm.toEmbedding
+  IsAddGroup.IsCyclic.ofExpEmbedding Cyclic.equiv_zmod_add.symm
 
 namespace Cyclic
 

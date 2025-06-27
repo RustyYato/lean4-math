@@ -66,7 +66,7 @@ def HasChar.of_ring_equiv
   [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]
   [HasChar β n]
   (eqv: α ≃+* β) : HasChar α n := by
-  apply HasChar.of_ring_emb eqv.symm.toEmbedding
+  apply HasChar.of_ring_emb (eqv.symm: β ↪+* _)
 
 def char_dvd_char (α β: Type*)
    [SemiringOps α] [IsSemiring α] [SemiringOps β] [IsSemiring β]

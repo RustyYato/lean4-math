@@ -1800,28 +1800,6 @@ def LogEquiv.symm (h: α ≃ₘ+ β) : β ≃ₐ* α := {
 @[coe] def ExpBijection.toSurj (h: α ⇔ₐ* β) : α ↠ₐ* β := { h with }
 @[coe] def LogBijection.toSurj (h: α ⇔ₘ+ β) : α ↠ₘ+ β := { h with }
 
-@[coe] def AddGroupEquiv.toEmbedding (h: α ≃+ β) : α ↪+ β := { h with inj' := h.inj }
-@[coe] def AddGroupWithOneEquiv.toEmbedding (h: α ≃+₁ β) : α ↪+₁ β := { h with inj' := h.inj }
-@[coe] def GroupEquiv.toEmbedding (h: α ≃* β) : α ↪* β := { h with inj' := h.inj }
-@[coe] def GroupWithZeroEquiv.toEmbedding (h: α ≃*₀ β) : α ↪*₀ β := { h with inj' := h.inj }
-@[coe] def RingEquiv.toEmbedding (h: α ≃+* β) : α ↪+* β := { h with inj' := h.inj }
-@[coe] def RngEquiv.toEmbedding (h: α ≃+*₀ β) : α ↪+*₀ β := { h with inj' := h.inj }
-@[coe] def LinearEquiv.toEmbedding (h: α ≃ₗ[R] β) : α ↪ₗ[R] β := { h with inj' := h.inj }
-@[coe] def AlgEquiv.toEmbedding (h: α ≃ₐ[R] β) : α ↪ₐ[R] β := { h with inj' := h.inj }
-@[coe] def ExpEquiv.toEmbedding (h: α ≃ₐ* β) : α ↪ₐ* β := { h with inj' := h.inj }
-@[coe] def LogEquiv.toEmbedding (h: α ≃ₘ+ β) : α ↪ₘ+ β := { h with inj' := h.inj }
-
-@[coe] def AddGroupEquiv.toSurjection (h: α ≃+ β) : α ↠+ β := { h with surj' := h.surj }
-@[coe] def AddGroupWithOneEquiv.toSurjection (h: α ≃+₁ β) : α ↠+₁ β := { h with surj' := h.surj }
-@[coe] def GroupEquiv.toSurjection (h: α ≃* β) : α ↠* β := { h with surj' := h.surj }
-@[coe] def GroupWithZeroEquiv.toSurjection (h: α ≃*₀ β) : α ↠*₀ β := { h with surj' := h.surj }
-@[coe] def RingEquiv.toSurjection (h: α ≃+* β) : α ↠+* β := { h with surj' := h.surj }
-@[coe] def RngEquiv.toSurjection (h: α ≃+*₀ β) : α ↠+*₀ β := { h with surj' := h.surj }
-@[coe] def LinearEquiv.toSurjection (h: α ≃ₗ[R] β) : α ↠ₗ[R] β := { h with surj' := h.surj }
-@[coe] def AlgEquiv.toSurjection (h: α ≃ₐ[R] β) : α ↠ₐ[R] β := { h with surj' := h.surj }
-@[coe] def ExpEquiv.toSurjection (h: α ≃ₐ* β) : α ↠ₐ* β := { h with surj' := h.surj }
-@[coe] def LogEquiv.toSurjection (h: α ≃ₘ+ β) : α ↠ₘ+ β := { h with surj' := h.surj }
-
 @[coe] def AddGroupEquiv.toBijection (h: α ≃+ β) : α ⇔+ β := { h with surj' := h.surj, inj' := h.inj }
 @[coe] def AddGroupWithOneEquiv.toBijection (h: α ≃+₁ β) : α ⇔+₁ β := { h with surj' := h.surj, inj' := h.inj }
 @[coe] def GroupEquiv.toBijection (h: α ≃* β) : α ⇔* β := { h with surj' := h.surj, inj' := h.inj }
@@ -1843,6 +1821,93 @@ def LogEquiv.symm (h: α ≃ₘ+ β) : β ≃ₐ* α := {
 @[coe] def AlgEquiv.toHom (h: α ≃ₐ[R] β) : α →ₐ[R] β := { h with }
 @[coe] def ExpEquiv.toHom (h: α ≃ₐ* β) : α →ₐ* β := { h with }
 @[coe] def LogEquiv.toHom (h: α ≃ₘ+ β) : α →ₘ+ β := { h with }
+
+instance : Coe (α ≃+ β) (α ⇔+ β) where
+  coe f := f.toBijection
+instance : Coe (α ≃* β) (α ⇔* β) where
+  coe f := f.toBijection
+instance : Coe (α ≃+* β) (α ⇔+* β) where
+  coe f := f.toBijection
+instance : Coe (α ≃ₐ* β) (α ⇔ₐ* β) where
+  coe f := f.toBijection
+instance : Coe (α ≃ₘ+ β) (α ⇔ₘ+ β) where
+  coe f := f.toBijection
+instance : Coe (α ≃ₗ[R] β) (α ⇔ₗ[R] β) where
+  coe f := f.toBijection
+instance : Coe (α ≃ₐ[R] β) (α ⇔ₐ[R] β) where
+  coe f := f.toBijection
+
+instance : Coe (α ⇔+ β) (α ↪+ β) where
+  coe f := f.toEmb
+instance : Coe (α ⇔* β) (α ↪* β) where
+  coe f := f.toEmb
+instance : Coe (α ⇔+* β) (α ↪+* β) where
+  coe f := f.toEmb
+instance : Coe (α ⇔ₐ* β) (α ↪ₐ* β) where
+  coe f := f.toEmb
+instance : Coe (α ⇔ₘ+ β) (α ↪ₘ+ β) where
+  coe f := f.toEmb
+instance : Coe (α ⇔ₗ[R] β) (α ↪ₗ[R] β) where
+  coe f := f.toEmb
+instance : Coe (α ⇔ₐ[R] β) (α ↪ₐ[R] β) where
+  coe f := f.toEmb
+
+instance : Coe (α ⇔+ β) (α ↠+ β) where
+  coe f := f.toSurj
+instance : Coe (α ⇔* β) (α ↠* β) where
+  coe f := f.toSurj
+instance : Coe (α ⇔+* β) (α ↠+* β) where
+  coe f := f.toSurj
+instance : Coe (α ⇔ₐ* β) (α ↠ₐ* β) where
+  coe f := f.toSurj
+instance : Coe (α ⇔ₘ+ β) (α ↠ₘ+ β) where
+  coe f := f.toSurj
+instance : Coe (α ⇔ₗ[R] β) (α ↠ₗ[R] β) where
+  coe f := f.toSurj
+instance : Coe (α ⇔ₐ[R] β) (α ↠ₐ[R] β) where
+  coe f := f.toSurj
+
+instance : Coe (α ↪+ β) (α →+ β) where
+  coe f := f.toHom
+instance : Coe (α ↪* β) (α →* β) where
+  coe f := f.toHom
+instance : Coe (α ↪+* β) (α →+* β) where
+  coe f := f.toHom
+instance : Coe (α ↪ₐ* β) (α →ₐ* β) where
+  coe f := f.toHom
+instance : Coe (α ↪ₘ+ β) (α →ₘ+ β) where
+  coe f := f.toHom
+instance : Coe (α ↪ₗ[R] β) (α →ₗ[R] β) where
+  coe f := f.toHom
+instance : Coe (α ↪ₐ[R] β) (α →ₐ[R] β) where
+  coe f := f.toHom
+
+instance : Coe (α ↠+ β) (α →+ β) where
+  coe f := f.toHom
+instance : Coe (α ↠* β) (α →* β) where
+  coe f := f.toHom
+instance : Coe (α ↠+* β) (α →+* β) where
+  coe f := f.toHom
+instance : Coe (α ↠ₐ* β) (α →ₐ* β) where
+  coe f := f.toHom
+instance : Coe (α ↠ₘ+ β) (α →ₘ+ β) where
+  coe f := f.toHom
+instance : Coe (α ↠ₗ[R] β) (α →ₗ[R] β) where
+  coe f := f.toHom
+instance : Coe (α ↠ₐ[R] β) (α →ₐ[R] β) where
+  coe f := f.toHom
+
+instance : Coe (α ≃+ β) (α ≃ β) where
+  coe f := f.toEquiv
+instance : Coe (α ≃* β) (α ≃ β) where
+  coe f := f.toEquiv
+instance : Coe (α ≃+* β) (α ≃ β) where
+  coe f := f.toEquiv
+-- instance : CoeTC (α ≃ₗ[R] β) (α ≃ β) where
+--   coe f := f.toEquiv
+-- instance : CoeTC (α ≃ₐ[R] β) (α ≃ β) where
+--   coe f := f.toEquiv
+
 
 @[simp] def AddGroupEquiv.coe_symm (h: α ≃+ β) (x: α) : h.symm (h x) = x := Equiv.coe_symm _ _
 @[simp] def AddGroupEquiv.symm_coe (h: α ≃+ β) (x: β) : h (h.symm x) = x := Equiv.symm_coe _ _
