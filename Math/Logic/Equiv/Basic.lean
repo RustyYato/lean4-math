@@ -218,7 +218,7 @@ end Surjection
 
 namespace Bijection
 
-def bool_bij_prop : Bool ⇆ Prop where
+def bool_bij_prop : Bool ⇔ Prop where
   toFun x := x
   inj' := by simp
   surj' x := by
@@ -1422,7 +1422,7 @@ def Fin.le_of_surj (h: Fin n ↠ Fin m) : m ≤ n := by
   obtain ⟨i, rfl⟩ := h.surj x
   exists i
 
-def Fin.eq_of_bijection (h: Fin n ⇆ Fin m) : n = m := by
+def Fin.eq_of_bijection (h: Fin n ⇔ Fin m) : n = m := by
   apply Nat.le_antisymm
   apply Fin.le_of_embed
   apply h.toEmbedding
@@ -1474,7 +1474,7 @@ def Fin.eq_of_common_embedding (f: Fin n ↪ α) (g: Fin m ↪ α) (h: ∀a, (�
     simp [f']
     assumption
 
-def Fin.eq_of_common_bijection (f: Fin n ⇆ α) (g: Fin m ⇆ α) : n = m := by
+def Fin.eq_of_common_bijection (f: Fin n ⇔ α) (g: Fin m ⇔ α) : n = m := by
   apply Fin.eq_of_common_embedding f.toEmbedding g.toEmbedding
   intro a; apply Iff.intro <;> intro
   apply g.surj

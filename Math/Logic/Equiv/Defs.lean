@@ -24,7 +24,7 @@ infixl:25 " ↠ " => Surjection
 
 structure Bijection (α β: Sort*) extends α ↪ β, α ↠ β where
 
-infixl:25 " ⇆ " => Bijection
+infixl:25 " ⇔ " => Bijection
 
 namespace Embedding
 
@@ -105,23 +105,23 @@ end Surjection
 
 namespace Bijection
 
-instance : FunLike (α ⇆ β) α β where
+instance : FunLike (α ⇔ β) α β where
 
-protected def refl (α: Type*) : α ⇆ α := {
+protected def refl (α: Type*) : α ⇔ α := {
   Embedding.refl _, Surjection.refl _ with
 }
 
 @[refl]
-protected def rfl : α ⇆ α := .refl _
+protected def rfl : α ⇔ α := .refl _
 
-def trans (f: α ⇆ β) (g: β ⇆ γ) : α ⇆ γ where
+def trans (f: α ⇔ β) (g: β ⇔ γ) : α ⇔ γ where
   toFun := g ∘ f
   surj' := Function.Surjective.comp g.surj' f.surj'
   inj' := Function.Injective.comp g.inj' f.inj'
 
-def inj (f: α ⇆ β) : Function.Injective f := f.inj'
-def surj (f: α ⇆ β) : Function.Surjective f := f.surj'
-def bij (f: α ⇆ β) : Function.Bijective f := ⟨f.inj, f.surj⟩
+def inj (f: α ⇔ β) : Function.Injective f := f.inj'
+def surj (f: α ⇔ β) : Function.Surjective f := f.surj'
+def bij (f: α ⇔ β) : Function.Bijective f := ⟨f.inj, f.surj⟩
 
 end Bijection
 
@@ -174,7 +174,7 @@ def toSurjection (h: α ≃ β) : α ↠ β where
   toFun := h
   surj' := surj h
 
-def toBijection (h: α ≃ β) : α ⇆ β := {
+def toBijection (h: α ≃ β) : α ⇔ β := {
   h.toEmbedding, h.toSurjection with
 }
 
@@ -247,8 +247,7 @@ def eq_symm_of_coe_eq (h: α ≃ β) : h x = y -> x = h.symm y := by
 
 @[simp] def symm_symm (h: α ≃ β) : h.symm.symm = h := rfl
 
-@[simp]
-def mk_apply (f: α -> β) (g: β -> α) (h: Function.IsLeftInverse f g) (h': Function.IsRightInverse f g) (x: α) : Equiv.mk f g h' h x = f x := by rfl
+@[simp] def mk_apply (f: α -> β) (g: β -> α) (h: Function.IsLeftInverse f g) (h': Function.IsRightInverse f g) (x: α) : Equiv.mk f g h' h x = f x := by rfl
 
 protected def Nonempty [g: Nonempty α] (h: α ≃ β) : Nonempty β :=
   have ⟨x⟩ := g
@@ -302,22 +301,22 @@ end Equiv
 
 namespace Bijection
 
-noncomputable def toEquiv (f: α ⇆ β) : α ≃ β := Classical.choose (Equiv.ofBij f.bij)
-noncomputable def toEquiv_spec (f: α ⇆ β) : (f.toEquiv: α -> β) = f := Classical.choose_spec (Equiv.ofBij f.bij)
+noncomputable def toEquiv (f: α ⇔ β) : α ≃ β := Classical.choose (Equiv.ofBij f.bij)
+noncomputable def toEquiv_spec (f: α ⇔ β) : (f.toEquiv: α -> β) = f := Classical.choose_spec (Equiv.ofBij f.bij)
 
-noncomputable def symm (f: α ⇆ β) : β ⇆ α :=
+noncomputable def symm (f: α ⇔ β) : β ⇔ α :=
   f.toEquiv.symm.toBijection
 
-@[simp] def coe_symm (h: α ⇆ β) (x: α) : h.symm (h x) = x := by
+@[simp] def coe_symm (h: α ⇔ β) (x: α) : h.symm (h x) = x := by
   rw [←h.toEquiv_spec, symm]; simp
-@[simp] def symm_coe (h: α ⇆ β) (x: β) : h (h.symm x) = x := by
+@[simp] def symm_coe (h: α ⇔ β) (x: β) : h (h.symm x) = x := by
   rw [←h.toEquiv_spec, symm]; simp
 
-@[simp] def apply_trans (f: α ⇆ β) (g: β ⇆ γ) (x: α) : f.trans g x = g (f x) := rfl
+@[simp] def apply_trans (f: α ⇔ β) (g: β ⇔ γ) (x: α) : f.trans g x = g (f x) := rfl
 
-@[simp] def apply_mk (f: α -> β) (h₀: f.Injective) (h₁: f.Surjective) : ({ toFun := f, inj' := h₀, surj' := h₁ }: α ⇆ β) = f := rfl
+@[simp] def apply_mk (f: α -> β) (h₀: f.Injective) (h₁: f.Surjective) : ({ toFun := f, inj' := h₀, surj' := h₁ }: α ⇔ β) = f := rfl
 
 end Bijection
 
-instance : Coe (α ≃ β) (α ⇆ β) where
+instance : Coe (α ≃ β) (α ⇔ β) where
   coe f := f.toBijection

@@ -55,7 +55,7 @@ end Equiv
 
 namespace Bijection
 
-def erased (α: Sort*) : α ⇆ Erased α := {
+def erased (α: Sort*) : α ⇔ Erased α := {
   Erased.mk with
   surj' := by
     intro a

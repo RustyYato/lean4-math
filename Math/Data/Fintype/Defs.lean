@@ -5,7 +5,7 @@ import Math.Data.List.Defs
 import Math.AxiomBlame
 
 structure Fintype.Repr (card: ℕ) (α: Type*) where
-  decode : Fin card ⇆ α
+  decode : Fin card ⇔ α
   encode: Thunk (Option {
     f : α -> Fin card //
     Function.IsLeftInverse decode f
@@ -96,7 +96,7 @@ def toEmbed (α: Type*) [f: Fintype α] : Trunc (Fin (card α) ↪ α) :=
 def toEquiv (α: Type*) [DecidableEq α] [f: Fintype α] : Trunc (Fin (card α) ≃ α) :=
   f.toRepr.recOnSubsingleton fun repr => Trunc.mk repr.toEquiv
 
-def ofBij [f: Fintype α] (h: α ⇆ β) : Fintype β where
+def ofBij [f: Fintype α] (h: α ⇔ β) : Fintype β where
   card_thunk := card α
   toRepr := f.toRepr.recOnSubsingleton fun r => Trunc.mk <| {
     decode := r.decode.trans h
