@@ -93,10 +93,13 @@ instance (s: NormalSubgroup α) : IsGroup s.Quotient :=
 instance [IsCommMagma α] (s: NormalSubgroup α) : IsCommMagma s.Quotient :=
   inferInstanceAs (IsCommMagma (AlgQuotient s.Con))
 
-def mkQuot (s: NormalSubgroup α) : α →* s.Quotient :=
+def mkQuot (s: NormalSubgroup α) : α ↠* s.Quotient :=
   MulCon.mkQuot _
 
-def mkQuot_kernel (s: NormalSubgroup α) : s = kernel s.mkQuot := by
+@[induction_eliminator]
+def ind {s: NormalSubgroup α} {motive: s.Quotient -> Prop} (mk: ∀a, motive (s.mkQuot a)) : ∀q, motive q := AlgQuotient.ind mk
+
+def mkQuot_kernel (s: NormalSubgroup α) : s = kernel s.mkQuot.toGroupHom := by
   ext x
   apply Iff.intro
   intro h
@@ -107,7 +110,7 @@ def mkQuot_kernel (s: NormalSubgroup α) : s = kernel s.mkQuot := by
   replace h := Quotient.exact h
   rwa [←div_one x]
 
-noncomputable def image_equiv (f: α →* β) : (kernel f).Quotient ≃* Subgroup.range f where
+def kernel_bij_range (f: α →* β) : (kernel f).Quotient ⇔* Subgroup.range f where
   toFun := by
     refine Quotient.lift ?_ ?_
     intro a
@@ -116,29 +119,26 @@ noncomputable def image_equiv (f: α →* β) : (kernel f).Quotient ≃* Subgrou
     congr 1
     apply eq_of_div_eq_one
     rwa [←map_div]
-  invFun f := mkQuot _ (Classical.choose f.property)
-  leftInv := by
-    intro x
-    induction x using AlgQuotient.ind with | mk x =>
-    simp
-    apply Quotient.sound
-    show f (_ / x) = 1
-    have : f x ∈ (Subgroup.range f) := Set.mem_range'
-    rw [map_div, (Classical.choose_spec this), div_self]
-  rightInv := by
-    intro x
-    simp
-    apply Subtype.val_inj
-    show f (Classical.choose _) = x.val
-    symm; exact Classical.choose_spec x.property
   map_one := by
     apply Subtype.val_inj
     apply map_one f
-  map_mul := by
-    intro x y
-    induction x using AlgQuotient.ind with | mk x =>
-    induction y using AlgQuotient.ind with | mk y =>
+  map_mul {a b} := by
+    induction a; induction b
     apply Subtype.val_inj
     apply map_mul f
+  inj' := by
+    intro a b h
+    induction a; induction b
+    replace h := Subtype.mk.inj h
+    apply Quotient.sound
+    show f _ = _
+    rw [map_div, h, div_self]
+  surj' := by
+    intro ⟨_, a, rfl⟩
+    exact ⟨(kernel f).mkQuot a, rfl⟩
+
+noncomputable def kernel_equiv_range (f: α →* β) : (kernel f).Quotient ≃* Subgroup.range f := {
+  Bijection.toEquiv (kernel_bij_range f).toBijection, kernel_bij_range f with
+}
 
 end NormalSubgroup

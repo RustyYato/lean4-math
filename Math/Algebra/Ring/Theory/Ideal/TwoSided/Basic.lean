@@ -6,9 +6,10 @@ import Math.Algebra.Monoid.Units.Defs
 namespace Ideal
 
 variable [RingOps α] [RingOps β] [IsRing α] [IsRing β]
+variable [FunLike F α β] [IsZeroHom F α β] [IsOneHom F α β] [IsAddHom F α β ] [IsMulHom F α β]
 
 -- the preimage of a ring homomorphism is always an ideal
-def preimage (f: α →+* β) (i: Ideal β) : Ideal α where
+def preimage (f: F) (i: Ideal β) : Ideal α where
   carrier :=  i.carrier.preimage f
   mem_zero := by
     show f 0 ∈ i
@@ -40,7 +41,7 @@ def preimage (f: α →+* β) (i: Ideal β) : Ideal α where
     apply mem_mul_right
     assumption
 
-def image (f: α →+* β) (i: Ideal α) (h: Function.Surjective f) : Ideal β where
+def image (f: F) (i: Ideal α) (h: Function.Surjective f) : Ideal β where
   carrier := Set.image f i.carrier
   mem_zero := by
     rw [←map_zero f]
@@ -75,7 +76,7 @@ def image (f: α →+* β) (i: Ideal α) (h: Function.Surjective f) : Ideal β w
     apply mem_mul_right i
     assumption
 
-def range (f: α →+* β) (h: Function.Surjective f) : Ideal β where
+def range (f: F) (h: Function.Surjective f) : Ideal β where
   carrier := Set.range f
   mem_zero := by
     rw [←map_zero f]
@@ -101,7 +102,7 @@ def range (f: α →+* β) (h: Function.Surjective f) : Ideal β where
     apply Set.mem_range'
 
 -- the kernel is the preimage of the 0 ideal
-def kernel (f: α →+* β) : Ideal α := preimage f 0
+def kernel (f: F) : Ideal α := preimage f 0
 
 -- if an ideal contains any units, then it must be the universal ideal
 def eq_univ_of_mem_unit (i: Ideal α) (u: Units α) : u.val ∈ i.carrier -> i = .univ α := by

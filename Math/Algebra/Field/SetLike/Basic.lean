@@ -41,23 +41,26 @@ namespace Subfield
 
 variable [FieldOps β] [IsField β]
 
-noncomputable def equiv_range (f: α →+* β) : α ≃+* range f where
-  toFun a := ⟨f a, Set.mem_range'⟩
-  invFun a := Classical.choose a.property
-  leftInv x := by
-    simp
-    apply field_hom_inj f
-    have : ∃a, f x = f a := ⟨x, rfl⟩
-    exact (Classical.choose_spec this).symm
-  rightInv x := by
-    simp; congr
-    exact (Classical.choose_spec x.property).symm
-  map_zero := by simp [map_zero]; rfl
-  map_one := by simp [map_one]; rfl
-  map_add {_ _} := by simp [map_add]; rfl
-  map_mul {_ _} := by simp [map_mul]; rfl
+def bij_range (f: α →+* β) : α ⇔+* range f where
+  toBijection := Bijection.range ⟨f, field_hom_inj f⟩
+  map_zero := by
+    apply Subtype.val_inj
+    apply map_zero f
+  map_one := by
+    apply Subtype.val_inj
+    apply map_one f
+  map_add {_ _} := by
+    apply Subtype.val_inj
+    apply map_add f
+  map_mul {_ _} := by
+    apply Subtype.val_inj
+    apply map_mul f
 
-noncomputable def equiv_of_eq (a b: Subfield α) (eq: a = b) : a ≃+* b where
+noncomputable def equiv_range (f: α →+* β) : α ≃+* range f := {
+  (bij_range f).toEquiv, bij_range f with
+}
+
+def equiv_of_eq (a b: Subfield α) (eq: a = b) : a ≃+* b where
   toFun a := ⟨a.val, eq ▸ a.property⟩
   invFun a := ⟨a.val, eq ▸ a.property⟩
   leftInv x := rfl

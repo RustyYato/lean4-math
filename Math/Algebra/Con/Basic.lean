@@ -76,23 +76,23 @@ def LinearCon.comap (f: F) (c: LinearCon R β) : LinearCon R α := {
 
 variable [Zero α] [One α] [RelLike C α]
 
-def AddCon.mkQuot [IsAddCon C] (c: C) : α →+ AlgQuotient c where
-  toFun a := IsCon.mkQuot c a
+def AddCon.mkQuot [IsAddCon C] (c: C) : α ↠+ AlgQuotient c where
+  toSurjection := IsCon.mkQuot c
   map_zero := rfl
   map_add := rfl
-def MulCon.mkQuot [IsMulCon C] (c: C) : α →* AlgQuotient c where
-  toFun a := IsCon.mkQuot c a
+def MulCon.mkQuot [IsMulCon C] (c: C) : α ↠* AlgQuotient c where
+  toSurjection := IsCon.mkQuot c
   map_one := rfl
   map_mul := rfl
 def SMulCon.mkQuot [IsSMulCon C R] (c: C) : SMulHom R α (AlgQuotient c) where
-  toFun a := IsCon.mkQuot c a
+  toFun := IsCon.mkQuot c
   map_smul := rfl
-def LinearCon.mkQuot [IsAddCon C] [IsSMulCon C R] (c: C) : α →ₗ[R] (AlgQuotient c) where
-  toFun a := IsCon.mkQuot c a
+def LinearCon.mkQuot [IsAddCon C] [IsSMulCon C R] (c: C) : α ↠ₗ[R] (AlgQuotient c) where
+  toSurjection := IsCon.mkQuot c
   map_add := rfl
   map_smul := rfl
-def RingCon.mkQuot [IsAddCon C] [IsMulCon C] (c: C) : α →+* (AlgQuotient c) where
-  toFun a := IsCon.mkQuot c a
+def RingCon.mkQuot [IsAddCon C] [IsMulCon C] (c: C) : α ↠+* (AlgQuotient c) where
+  toSurjection := IsCon.mkQuot c
   map_zero := rfl
   map_one := rfl
   map_add := rfl

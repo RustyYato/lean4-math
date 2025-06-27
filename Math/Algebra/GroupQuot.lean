@@ -26,7 +26,7 @@ end
 
 variable {r: G -> G -> Prop}
 
-def mk [MonoidOps G] [IsMonoid G] (r: G -> G -> Prop) : G →* GroupQuot r :=
+def mk [MonoidOps G] [IsMonoid G] (r: G -> G -> Prop) : G ↠* GroupQuot r :=
   MulCon.mkQuot _
 
 @[induction_eliminator]
@@ -37,10 +37,6 @@ def ind [MonoidOps G] [IsMonoid G] {motive: GroupQuot r -> Prop} (mk: ∀x, moti
   apply mk
 
 def mk_rel [MonoidOps G] [IsMonoid G] (w: r x y) : mk r x = mk r y := Quot.sound (MulCon.Generator.of w)
-def mk_surj [MonoidOps G] [IsMonoid G] : Function.Surjective (mk r) := by
-  intro a
-  induction a with | mk a =>
-  exists a
 
 private def preLift [MonoidOps G] [IsMonoid G] [MonoidOps T] [IsMonoid T] {r : G → G → Prop} {f : G →* T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : GroupQuot r →* T where
   toFun := by
@@ -126,7 +122,7 @@ end
 
 variable {r: G -> G -> Prop}
 
-def mk [AddMonoidOps G] [IsAddMonoid G] (r: G -> G -> Prop) : G →+ AddGroupQuot r :=
+def mk [AddMonoidOps G] [IsAddMonoid G] (r: G -> G -> Prop) : G ↠+ AddGroupQuot r :=
   AddCon.mkQuot _
 
 @[induction_eliminator]
@@ -137,10 +133,6 @@ def ind [AddMonoidOps G] [IsAddMonoid G] {motive: AddGroupQuot r -> Prop} (mk: �
   apply mk
 
 def mk_rel [AddMonoidOps G] [IsAddMonoid G] (w: r x y) : mk r x = mk r y := Quot.sound (AddCon.Generator.of w)
-def mk_surj [AddMonoidOps G] [IsAddMonoid G] : Function.Surjective (mk r) := by
-  intro a
-  induction a with | mk a =>
-  exists a
 
 private def preLift [AddMonoidOps G] [IsAddMonoid G] [AddMonoidOps T] [IsAddMonoid T] {r : G → G → Prop} {f : G →+ T} (h : ∀ ⦃x y⦄, r x y → f x = f y) : AddGroupQuot r →+ T where
   toFun := by

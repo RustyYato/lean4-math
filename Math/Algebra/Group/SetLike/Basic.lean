@@ -1,5 +1,6 @@
 import Math.Algebra.Group.SetLike.Defs
 import Math.Algebra.Monoid.SetLike.Basic
+import Math.Data.Set.Equiv
 import Math.Algebra.Group.Defs
 import Math.Algebra.Group.Hom
 
@@ -272,50 +273,32 @@ def AddSubgroup.embed (S: AddSubgroup α) : S ↪+ α where
   map_zero := rfl
   map_add := rfl
 
-noncomputable
-def Subgroup.equiv_of_embed (h: α ↪* β) : α ≃* Subgroup.range (toGroupHom h) where
-  toFun a := ⟨h a, Set.mem_range'⟩
-  invFun x := Classical.choose x.property
-  leftInv := by
-    intro x
-    dsimp
-    apply h.inj
-    have : h x ∈ Set.range h := Set.mem_range'
-    exact (Classical.choose_spec this).symm
-  rightInv := by
-    intro x
-    dsimp
-    congr
-    exact (Classical.choose_spec x.property).symm
+def Subgroup.bij_of_embed (f: α ↪* β) : α ⇔* Subgroup.range f where
+  toBijection := Bijection.range f.toEmbedding
   map_one := by
-    congr
-    rw [map_one]
-  map_mul := by
-    intro a b
-    congr
-    rw [map_mul]
+    apply Subtype.val_inj
+    apply map_one f
+  map_mul {x y} := by
+    apply Subtype.val_inj
+    apply map_mul f
+
+def AddSubgroup.bij_of_embed (f: α ↪+ β) : α ⇔+ AddSubgroup.range f where
+  toBijection := Bijection.range f.toEmbedding
+  map_zero := by
+    apply Subtype.val_inj
+    apply map_zero f
+  map_add {x y} := by
+    apply Subtype.val_inj
+    apply map_add f
 
 noncomputable
-def AddSubgroup.equiv_of_embed (h: α ↪+ β) : α ≃+ AddSubgroup.range (toAddGroupHom h) where
-  toFun a := ⟨h a, Set.mem_range'⟩
-  invFun x := Classical.choose x.property
-  leftInv := by
-    intro x
-    dsimp
-    apply h.inj
-    have : h x ∈ Set.range h := Set.mem_range'
-    exact (Classical.choose_spec this).symm
-  rightInv := by
-    intro x
-    dsimp
-    congr
-    exact (Classical.choose_spec x.property).symm
-  map_zero := by
-    congr
-    rw [map_zero]
-  map_add := by
-    intro a b
-    congr
-    rw [map_add]
+def Subgroup.equiv_of_embed (f: α ↪* β) : α ≃* Subgroup.range f := {
+  Bijection.toEquiv (bij_of_embed f).toBijection, (bij_of_embed f) with
+}
+
+noncomputable
+def AddSubgroup.equiv_of_embed (f: α ↪+ β) : α ≃+ AddSubgroup.range f := {
+  Bijection.toEquiv (bij_of_embed f).toBijection, (bij_of_embed f) with
+}
 
 end

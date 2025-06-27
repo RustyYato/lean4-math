@@ -80,7 +80,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       intro x
       simp
       apply Fin.val_inj.mp
-      let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
+      let mkQuot := (Int.multiples n).mkQuot
       rw [←map_natCast mkQuot]
       show Int.toNat ((x.val: ℤ) % n) = x.val
       apply Int.ofNat.inj
@@ -94,7 +94,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
       intro x
       obtain ⟨x, rfl⟩ := (Int.multiples n).mkQuot_surj x
       dsimp
-      let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
+      let mkQuot := (Int.multiples n).mkQuot
       rw [←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ ↑(x % ↑n).toNat - x
@@ -113,7 +113,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
     map_add {x y} := by
       show (((x.val + y.val) % n): ZMod n) = (x.val: ZMod n) + (y.val: ZMod n)
       rw [←natCast_add]
-      let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
+      let mkQuot := (Int.multiples n).mkQuot
       rw [←map_natCast mkQuot, ←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ _
@@ -122,7 +122,7 @@ def zmod_succ_eqv_fin (n: Nat) [h: NeZero n] : ZMod n ≃+* Fin n :=
     map_mul {x y} := by
       show (((x.val * y.val) % n): ZMod n) = (x.val: ZMod n) * (y.val: ZMod n)
       rw [←natCast_mul]
-      let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
+      let mkQuot := (Int.multiples n).mkQuot
       rw [←map_natCast mkQuot, ←map_natCast mkQuot]
       apply Quotient.sound
       show (n: ℤ) ∣ _
@@ -269,7 +269,7 @@ def natCast_eq_natCast {a b: ℕ} :
   rw [←Int.natCast_emod, ←Int.natCast_emod, Int.ofNat_inj]
 
 def toInt_intCast (x: ZMod n) : x.toInt = x := by
-  let mkQuot : ℤ →+* ZMod n := (Int.multiples n).mkQuot
+  let mkQuot := (Int.multiples n).mkQuot
   rw [←map_intCast mkQuot]
   obtain ⟨x, rfl⟩ := (Int.multiples n).mkQuot_surj x
   apply Quotient.sound

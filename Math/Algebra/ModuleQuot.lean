@@ -38,7 +38,7 @@ end
 
 variable {r: M -> M -> Prop}
 
-def mk (R: Type*) [AddMonoidOps M] [IsAddMonoid M] [SMul R M] (r: M -> M -> Prop) : M →ₗ[R] ModuleQuot R r :=
+def mk (R: Type*) [AddMonoidOps M] [IsAddMonoid M] [SMul R M] (r: M -> M -> Prop) : M ↠ₗ[R] ModuleQuot R r :=
   LinearCon.mkQuot _
 
 @[induction_eliminator]

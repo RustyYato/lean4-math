@@ -13,7 +13,7 @@ instance instRingOps : RingOps (RMod A) := inferInstanceAs (RingOps (Ideal.toRin
 instance instRing : IsRing (RMod A) := inferInstanceAs (IsRing (Ideal.toRing _))
 instance instCommMagma : IsCommMagma (RMod A) := inferInstanceAs (IsCommMagma (Ideal.toRing _))
 instance instAlgMap : AlgebraMap α (RMod A) where
-  toRingHom := Ideal.mkQuot _
+  toRingHom := (Ideal.mkQuot _).toHom
 instance isntSMul : SMul α (RMod A) where
   smul a b := algebraMap a * b
 instance instAlgebra : IsAlgebra α (RMod A) where

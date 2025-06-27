@@ -228,7 +228,7 @@ variable {C α: Type*} [RelLike C α]
 
 def AlgQuotient [IsCon C] (c: C) : Type _ := Quotient (IsCon.toSetoid c)
 
-def IsCon.mkQuot [IsCon C] (c: C) : α -> AlgQuotient c := Quotient.mk _
+def IsCon.mkQuot [IsCon C] (c: C) : α ↠ AlgQuotient c := Surjection.mkQuotient _
 
 @[induction_eliminator]
 def AlgQuotient.ind [IsCon C] {c: C}

@@ -17,13 +17,10 @@ instance (G: Type*) [GroupOps G] [IsGroup G] : IsMonoid (Commutator G) := GroupQ
 
 variable [MonoidOps M] [IsMonoid M] [MonoidOps G] [IsMonoid G]
 
-def mk : M →* Commutator M := GroupQuot.mk _
+def mk : M ↠* Commutator M := GroupQuot.mk _
 
 @[induction_eliminator]
 def ind {motive: Commutator M -> Prop} : (mk: ∀m, motive (mk m)) -> ∀x, motive x := GroupQuot.ind
-def mk_surj : Function.Surjective (mk (M := M)) := by
-  intro x
-  induction x with | mk x => exists x
 
 instance (M: Type*) [MonoidOps M] [IsMonoid M] : IsCommMagma (Commutator M) where
   mul_comm := by
@@ -61,7 +58,7 @@ def liftComm [IsCommMagma G] : (M →* G) ≃ (Commutator M →* G) :=
 def lift_mk (f: { f: M →* G // ∀a b: M, f (a * b) = f (b * a) }) (x: M) : lift f (mk x) = f.val x :=
   GroupQuot.lift_mk_apply _ _ _
 
-def lift_comp_mk (f: { f: M →* G // ∀a b: M, f (a * b) = f (b * a) }) : (lift f).comp mk = f.val :=
+def lift_comp_mk (f: { f: M →* G // ∀a b: M, f (a * b) = f (b * a) }) : (lift f).comp (mk (M := M)) = f.val :=
   GroupHom.ext _ _ (lift_mk _)
 
 def symm_lift_mk (f: Commutator M →* G) (x: M) : (lift.symm f).val x = f (mk x) :=
@@ -70,7 +67,7 @@ def symm_lift_mk (f: Commutator M →* G) (x: M) : (lift.symm f).val x = f (mk x
 def liftComm_mk [IsCommMagma G] (f: M →* G) (x: M) : liftComm f (mk x) = f x :=
   GroupQuot.lift_mk_apply _ _ _
 
-def liftComm_comp_mk [IsCommMagma G] (f: M →* G) : (liftComm f).comp mk = f :=
+def liftComm_comp_mk [IsCommMagma G] (f: M →* G) : (liftComm f).comp (mk (M := M)) = f :=
   GroupHom.ext _ _ (lift_mk _)
 
 def symm_liftComm_mk [IsCommMagma G] (f: Commutator M →* G) (x: M) : liftComm.symm f x = f (mk x) :=

@@ -37,7 +37,7 @@ end
 
 variable {r: R -> R -> Prop}
 
-def mk [SemiringOps R] [IsSemiring R] (r: R -> R -> Prop) : R →+* RingQuot r :=
+def mk [SemiringOps R] [IsSemiring R] (r: R -> R -> Prop) : R ↠+* RingQuot r :=
   RingCon.mkQuot _
 
 @[induction_eliminator]

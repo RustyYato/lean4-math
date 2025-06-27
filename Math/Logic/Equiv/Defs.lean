@@ -105,6 +105,14 @@ def copy (f: α ↠ β) (g: α -> β) (h: f = g) : α ↠ β where
   toFun := g
   surj' := h ▸ f.surj
 
+def mkQuot (r: α -> α -> Prop) : α ↠ Quot r where
+  toFun := Quot.mk r
+  surj' := Quot.mkSurj
+
+def mkQuotient (s: Setoid α) : α ↠ Quotient s where
+  toFun := Quotient.mk s
+  surj' := Quotient.mkSurj
+
 end Surjection
 
 namespace Bijection
@@ -310,8 +318,16 @@ end Equiv
 
 namespace Bijection
 
-noncomputable def toEquiv (f: α ⇔ β) : α ≃ β := Classical.choose (Equiv.ofBij f.bij)
-noncomputable def toEquiv_spec (f: α ⇔ β) : (f.toEquiv: α -> β) = f := Classical.choose_spec (Equiv.ofBij f.bij)
+noncomputable def toEquiv (f: α ⇔ β) : α ≃ β :=
+  let bij := Classical.choose (Equiv.ofBij f.bij)
+  have h : bij = (f: α -> β) := Classical.choose_spec (Equiv.ofBij f.bij)
+  {
+    toFun := f
+    invFun := bij.symm
+    leftInv := h ▸ bij.leftInv
+    rightInv := h ▸ bij.rightInv
+  }
+noncomputable def toEquiv_spec (f: α ⇔ β) : (f.toEquiv: α -> β) = f := rfl
 
 noncomputable def symm (f: α ⇔ β) : β ⇔ α :=
   f.toEquiv.symm.toBijection
