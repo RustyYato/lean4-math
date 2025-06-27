@@ -40,12 +40,15 @@ def Hom [RingOps R] (s t: Subring R) (h: s ⊆ t) : s ↪+* t where
   map_add := rfl
   map_mul := rfl
 
-def embed_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ↪+* range f where
+def bij_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ⇔+* range f where
   toFun s := ⟨f s, Set.mem_range'⟩
   inj' := by
     intro x y eq
     apply f.inj
     apply Subtype.mk.inj eq
+  surj' := by
+    intro ⟨_, a, rfl⟩
+    exists a
   map_zero := by
     congr
     rw [map_zero]
@@ -59,24 +62,8 @@ def embed_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S
     congr
     rw [map_mul]
 
-noncomputable def equiv_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ≃+* range f where
-  toFun := embed_range f
-  invFun x := Classical.choose x.property
-  leftInv := by
-    intro s
-    dsimp
-    apply f.inj
-    have : f s ∈ range f := Set.mem_range'
-    symm; apply Classical.choose_spec this
-  rightInv := by
-    intro ⟨r, hr⟩
-    show Subtype.mk _ _ = _
-    congr
-    symm
-    exact Classical.choose_spec hr
-  map_zero := map_zero _
-  map_one := map_one _
-  map_add := map_add _
-  map_mul := map_mul _
+noncomputable def equiv_range [RingOps R] [RingOps S] [IsRing R] [IsRing S] (f: S ↪+* R) : S ≃+* range f := {
+  (bij_range f).toEquiv, bij_range f with
+}
 
 end Subring

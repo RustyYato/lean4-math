@@ -223,7 +223,7 @@ def toRing_eqv_toRing_of_eq {i j: Ideal R} (h: i = j) : i.toRing ≃+* j.toRing 
     cases b using Quot.ind
     apply map_mul
 
-def image_embed (f: R →+* S) : (kernel f).toRing ↪+* Subring.range f where
+def image_bij (f: R →+* S) : (kernel f).toRing ⇔+* Subring.range f where
   toFun := by
     refine Quotient.lift ?_ ?_
     intro a
@@ -239,6 +239,9 @@ def image_embed (f: R →+* S) : (kernel f).toRing ↪+* Subring.range f where
     apply Quotient.sound
     show f (_ - _) = 0
     rw [map_sub, this, sub_self]
+  surj' := by
+    intro ⟨_, x, rfl⟩
+    exists (kernel f).mkQuot x
   map_zero := by
     apply Subtype.val_inj
     apply map_zero f
@@ -259,22 +262,7 @@ def image_embed (f: R →+* S) : (kernel f).toRing ↪+* Subring.range f where
     apply map_mul f
 
 noncomputable def image_equiv (f: R →+* S) : (kernel f).toRing ≃+* Subring.range f := {
-  image_embed f with
-  invFun f := mkQuot _ (Classical.choose f.property)
-  leftInv := by
-    intro x
-    induction x using AlgQuotient.ind with | mk x =>
-    simp
-    apply Quotient.sound
-    show f (_ - x) = 0
-    have : f x ∈ (Subring.range f) := Set.mem_range'
-    rw [map_sub, (Classical.choose_spec this), sub_self]
-  rightInv := by
-    intro x
-    simp
-    apply Subtype.val_inj
-    show f (Classical.choose _) = x.val
-    symm; exact Classical.choose_spec x.property
+  (image_bij f).toEquiv, image_bij f with
 }
 
 end Ideal
