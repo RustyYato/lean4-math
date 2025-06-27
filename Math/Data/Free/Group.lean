@@ -228,7 +228,19 @@ def lift_assoc {x: FreeGroup α} (f: α -> FreeGroup β) (g: β -> FreeGroup γ)
   | inv => simp [map_inv]
   | mul => simp [map_mul]; congr
 
-def exists_pow [Subsingleton α] : ∀a: α, Function.Surjective (fun n: ℤ => (ι a) ^ n) := by
+instance [IsEmpty α] : Subsingleton (FreeGroup α) where
+  allEq := by
+    suffices ∀a: FreeGroup α, a = 1 by
+      intro a b
+      rw [this a, this b]
+    intro a
+    induction a with
+    | one => rfl
+    | ι x => exact elim_empty x
+    | inv x => exact elim_empty x
+    | mul a b iha ihb =>  rwa [iha, one_mul]
+
+def exists_zpow [Subsingleton α] : ∀a: α, Function.Surjective (fun n: ℤ => (ι a) ^ n) := by
   intro a x
   induction x with
   | one => exists 0; symm; apply zpow_zero
@@ -249,23 +261,13 @@ def exists_pow [Subsingleton α] : ∀a: α, Function.Surjective (fun n: ℤ => 
 
 instance [Subsingleton α] : IsCommMagma (FreeGroup α) where
   mul_comm a b := by
-    induction a generalizing b with
-    | one => simp
-    | ι a =>
-      induction b with
-      | one => simp
-      | ι b => rw [Subsingleton.allEq a b]
-      | inv b => simp [Subsingleton.allEq a b]
-      | mul b₀ b₁ ih₀ ih₁ =>
-        rw [←mul_assoc, ih₀, mul_assoc, ih₁, mul_assoc]
-    | inv a ih =>
-      suffices ∀b: FreeGroup α, IsCommutes (ι a) b by
-        rw [mul_comm]
-      intro b;
-      refine ⟨?_⟩
-      apply ih
-    | mul a₀ a₁ ih₀ ih₁ =>
-      rw [mul_assoc, ih₀, mul_assoc, ih₁, mul_assoc]
+    cases α using empty_or_nonempty
+    apply Subsingleton.allEq
+    rename_i h; obtain ⟨x⟩ := h
+    obtain ⟨n, rfl⟩ := exists_zpow x a
+    obtain ⟨m, rfl⟩ := exists_zpow x b
+    dsimp
+    rw [←zpow_add, ←zpow_add, add_comm]
 
 instance : Monad FreeGroup where
   pure := ι
@@ -327,6 +329,8 @@ instance [h: Nonempty α] : IsNontrivial (FreeAddGroup α) where
     exists 0
     exists .ι a
     apply zero_ne_ι
+
+def exists_zsmul [Subsingleton α] : ∀a: α, Function.Surjective (fun n: ℤ => n • (ι a)) := FreeGroup.exists_zpow
 
 instance [Subsingleton α] : IsAddCommMagma (FreeAddGroup α) :=
   inferInstanceAs (IsAddCommMagma (AddOfMul (FreeGroup α)))
