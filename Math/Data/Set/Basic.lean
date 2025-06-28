@@ -1,9 +1,3 @@
-import Math.Logic.IsEmpty
-import Math.Function.Basic
-import Math.Order.Notation
-import Math.Relation.Defs
-import Math.Logic.Equiv.Defs
-
 import Math.Data.Set.Defs
 
 namespace Set

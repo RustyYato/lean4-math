@@ -12,7 +12,7 @@ protected abbrev IsFinite (a: Set α): Prop := _root_.IsFinite a
 -- a set is co-finite if the complement is finite
 protected abbrev IsCoFinite (a: Set α): Prop := Set.IsFinite aᶜ
 
-instance [ha: _root_.IsFinite α] : _root_.IsFinite (Set α) := by
+instance [ha: IsFinite α] : IsFinite (Set α) := by
   apply IsFinite.ofEmbed (α -> Bool)
   refine ⟨?_, ?_⟩
   intro s a
@@ -24,7 +24,7 @@ instance [ha: _root_.IsFinite α] : _root_.IsFinite (Set α) := by
   ext a
   rw [eq]
 
-def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, _root_.Nonempty (Fin card ≃ a) :=
+protected def IsFinite.existsEquiv {a: Set α} (h: a.IsFinite) : ∃card, Nonempty (Fin card ≃ a) :=
   _root_.IsFinite.existsEquiv a
 
 instance Set.IsFinite.ofFin (x: Set (Fin n)) : x.IsFinite := by
