@@ -2,6 +2,34 @@ import Math.Data.Free.Monoid
 import Math.Algebra.GroupQuot
 import Math.Algebra.Group.Hom
 
+section Indicator
+
+private def Indicator := Bool
+
+private instance : DecidableEq Indicator := inferInstanceAs (DecidableEq Bool)
+private instance {P: Indicator -> Prop} [DecidablePred P] : Decidable (∃x, P x) := inferInstanceAs (Decidable (∃x: Bool, P x))
+private instance {P: Indicator -> Prop} [DecidablePred P] : Decidable (∀x, P x) := inferInstanceAs (Decidable (∀x: Bool, P x))
+
+private instance : One Indicator := ⟨false⟩
+private instance : Mul Indicator := ⟨xor⟩
+private instance : Inv Indicator := ⟨id⟩
+
+private instance : MonoidOps Indicator where
+  npow := _root_.flip npowRec
+private instance : GroupOps Indicator where
+  zpow := _root_.flip zpowRec
+
+private instance : IsGroup Indicator where
+  mul_assoc := by decide
+  one_mul := by decide
+  mul_one := by decide
+  div_eq_mul_inv := by decide
+  inv_mul_cancel := by decide
+  zpow_ofNat _ _ := rfl
+  zpow_negSucc _ _ := rfl
+
+end Indicator
+
 inductive FreeGroup.Rel (α: Type*) : FreeMonoid (Bool × α) -> FreeMonoid (Bool × α) -> Prop where
 | inv_mul_cancel : Rel α (.ι (!x, a) * .ι (x, a)) 1
 
@@ -128,30 +156,6 @@ private def lift_toFreeGroup [GroupOps G] [IsGroup G] (f: α -> G) : lift f (toF
 @[simp]
 private def lift_log_toFreeGroup [AddGroupOps G] [IsAddGroup G] (f: α -> G) : lift_log f (toFreeGroup a) = f a := by
   erw [GroupQuot.lift_mk_apply, FreeMonoid.lift_ι]
-
-private def Indicator := Bool
-
-private instance : DecidableEq Indicator := inferInstanceAs (DecidableEq Bool)
-private instance {P: Indicator -> Prop} [DecidablePred P] : Decidable (∃x, P x) := inferInstanceAs (Decidable (∃x: Bool, P x))
-private instance {P: Indicator -> Prop} [DecidablePred P] : Decidable (∀x, P x) := inferInstanceAs (Decidable (∀x: Bool, P x))
-
-private instance : One Indicator := ⟨false⟩
-private instance : Mul Indicator := ⟨xor⟩
-private instance : Inv Indicator := ⟨id⟩
-
-private instance : MonoidOps Indicator where
-  npow := _root_.flip npowRec
-private instance : GroupOps Indicator where
-  zpow := _root_.flip zpowRec
-
-private instance : IsGroup Indicator where
-  mul_assoc := by decide
-  one_mul := by decide
-  mul_one := by decide
-  div_eq_mul_inv := by decide
-  inv_mul_cancel := by decide
-  zpow_ofNat _ _ := rfl
-  zpow_negSucc _ _ := rfl
 
 private def toFreeGroup_inj : Function.Injective (toFreeGroup (α := α)) := by
   intro a b h
