@@ -9,43 +9,43 @@ variable {α: Type*}
 -- this second condition is needed to ensure that the chains of relations all
 -- extensions of a single ordering, and don't allow inserting new elements into the
 -- ordering before any already related element
-def init_seg_rel (α: Type*) := α -> α -> Prop
+private def init_seg_rel (α: Type*) := α -> α -> Prop
 
 namespace init_seg_rel
 
 -- does the relation define *some* relation for this object
-def defines (r: init_seg_rel α) (x: α) := (∃x', r x' x ∨ r x x')
+private def defines (r: init_seg_rel α) (x: α) := (∃x', r x' x ∨ r x x')
 
 @[ext]
-def ext (a b: init_seg_rel α) : (∀x y, a x y ↔ b x y) -> a = b := by
+private def ext (a b: init_seg_rel α) : (∀x y, a x y ↔ b x y) -> a = b := by
   simp [init_seg_rel] at *
   intro h
   ext
   apply h
 
 -- insert a new element into the top of the relation
-def insert (R: init_seg_rel α) (a: α) : init_seg_rel α := fun x y => R.defines x ∧ y = a ∨ R x y
+private def insert (R: init_seg_rel α) (a: α) : init_seg_rel α := fun x y => R.defines x ∧ y = a ∨ R x y
 
 -- merge all relations in the set, if any relation relates two items, then they are related
 -- in a chain, this the maximum element of the chain, since all smaller elements are
 -- initial segments of the maximum element
-instance : SupSet (init_seg_rel α) where
+private instance : SupSet (init_seg_rel α) where
   sSup S x y := ∃r ∈ S, r x y
 
-instance : LE (init_seg_rel α) where
+private instance : LE (init_seg_rel α) where
   le a b := (∀{x y}, a x y -> b x y) ∧ ∀{x y}, a.defines y -> b x y -> a x y
 
-instance : LT (init_seg_rel α) where
+private instance : LT (init_seg_rel α) where
   lt a b := a ≤ b ∧ ¬b ≤ a
 
-def defines_of_le {r s: init_seg_rel α} : r ≤ s -> ∀{x}, r.defines x -> s.defines x := by
+private def defines_of_le {r s: init_seg_rel α} : r ≤ s -> ∀{x}, r.defines x -> s.defines x := by
   intro le x ⟨x', h⟩
   exists x'
   rcases h with h | h
   left; apply le.left; assumption
   right; apply le.left; assumption
 
-instance : IsPartialOrder (init_seg_rel α) where
+private instance : IsPartialOrder (init_seg_rel α) where
   lt_iff_le_and_not_le := Iff.rfl
   le_refl a := ⟨id, fun _ => id⟩
   le_antisymm := by
@@ -73,10 +73,10 @@ end init_seg_rel
 -- are precisely the well ordered relations (this is proven in `exists_wo`)
 -- we only need to weaken the total ordering condition, since that is a global condition
 -- but transitivity and well foundedness are both local conditions
-class IsLocallyWellOrdered (R: init_seg_rel α): Prop extends Relation.IsWellFounded R, Relation.IsTrans R where
+private class IsLocallyWellOrdered (R: init_seg_rel α): Prop extends Relation.IsWellFounded R, Relation.IsTrans R where
   rel_defined_is_chain: (Set.mk R.defines).IsChain R
 
-def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R.defines A) : IsLocallyWellOrdered (R.insert A) where
+private def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R.defines A) : IsLocallyWellOrdered (init_seg_rel.insert R A) where
   trans := by
     intro a b c hab hbc
     rcases hab with ⟨h, rfl⟩ | h
@@ -91,7 +91,7 @@ def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R
   rel_defined_is_chain := {
     connected_by := by
       have : ∀a b: α, R.defines a -> R.defines b ->
-        R.insert A a b ∨ a = b ∨ R.insert A b a := by
+        init_seg_rel.insert R A a b ∨ a = b ∨ init_seg_rel.insert R A b a := by
         intro a b ha hb
         rcases IsLocallyWellOrdered.rel_defined_is_chain.connected_by ⟨_, ha⟩ ⟨_, hb⟩ with h | h | h
         left; right; assumption
@@ -119,7 +119,7 @@ def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R
       any_goals exists a'; right; assumption
   }
   wf := by
-    have : ∀x: α, R.defines x -> Acc (R.insert A) x := by
+    have : ∀x: α, R.defines x -> Acc (init_seg_rel.insert R A) x := by
       intro x h
       induction x using Relation.wfInduction R with
       | h x ih =>
@@ -140,7 +140,7 @@ def rel_insert_locally_wo {R: init_seg_rel α} [IsLocallyWellOrdered R] (ha: ¬R
     apply this
     exists x; right; assumption
 
-def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrdered R) (chain: S.IsChain (· ≤ ·)) : IsLocallyWellOrdered (⨆ S) where
+private def ssup_locally_wo {S: Set (init_seg_rel α)} (h: ∀R ∈ S, IsLocallyWellOrdered R) (chain: S.IsChain (· ≤ ·)) : IsLocallyWellOrdered (⨆ S) where
   rel_defined_is_chain := {
     connected_by := by
       have mem_conn : ∀s ∈ S, ∀a b: α, s.defines a -> s.defines b -> (⨆ S) a b ∨ a = b ∨ (⨆ S) b a := by
@@ -322,13 +322,13 @@ def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
     intro ha
     -- since a isn't in defined in R, we can just insert it as the greatest element
     -- which is still a locally well ordered relation
-    have := spec (R.insert a) (rel_insert_locally_wo ha)
+    have := spec (init_seg_rel.insert R a) (rel_insert_locally_wo ha)
     have R_eq_R' := this ⟨fun x => .inr x, by
       intro x y hy r
       rcases r with ⟨r, rfl⟩ | r
       contradiction
       assumption⟩
-    have : (R.insert a).defines a := by
+    have : (init_seg_rel.insert R a).defines a := by
       obtain ⟨x, hx⟩ := defined_nonempty
       exists x
       left; left; apply And.intro _ rfl
@@ -351,7 +351,7 @@ def exists_wo (α: Type*) : ∃r: α -> α -> Prop, Relation.IsWellOrder r := by
       apply h.left
       assumption
 
-def order (α: Type*): init_seg_rel α := Classical.choose (exists_wo α)
+def order (α: Type*): α -> α -> Prop := Classical.choose (exists_wo α)
 instance : Relation.IsWellOrder (order α) := Classical.choose_spec (exists_wo α)
 
 end WellOrdering

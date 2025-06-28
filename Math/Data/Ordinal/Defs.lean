@@ -1592,7 +1592,7 @@ def addLeft (a: Ordinal) : Ordinal ↪o Ordinal where
   inj' := (add_left_strict_mono a).Injective
   map_le _ _ := le_iff_add_left
 
-def ofPre_eq_zero_iff (p: Pre) : IsEmpty p.ty ↔ ofPre p = 0 := by
+private def ofPre_eq_zero_iff (p: Pre) : IsEmpty p.ty ↔ ofPre p = 0 := by
   apply Iff.intro
   intro h
   apply sound
@@ -2449,7 +2449,7 @@ instance : Sub Ordinal where
 
 def sub_of_le (a b: Ordinal) (h: a ≤ b) : a - b = 0 := by
   cases a with | _ α relα =>
-  apply (ofPre_eq_zero_iff _).mp
+  apply (type_eq_zero_iff _).mp
   refine { elim | ⟨x, hx⟩ => ?_ }
   have := le_trans h hx
   rw [←not_lt] at this
