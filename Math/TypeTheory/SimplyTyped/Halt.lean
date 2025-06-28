@@ -224,4 +224,11 @@ def eval_reduces_to (term: SimplyWellTypedTerm ty) : Term.ReducesTo term.term te
     unfold eval
     rw [g]
 
+def eval_unique (term: SimplyWellTypedTerm ty) (val: Term) (hval: val.IsValue) (hred: term.term.ReducesTo val) : term.eval.term = val := by
+  apply Term.ReducesTo.unique
+  apply eval_reduces_to
+  assumption
+  apply eval_is_value
+  assumption
+
 end SimplyWellTypedTerm

@@ -461,6 +461,23 @@ instance : Decidable (Reduce a b) :=
     intro g; apply h
     exists b
 
+def ReducesTo.unique (a v w: Term) (hav: Term.ReducesTo a v) (haw: Term.ReducesTo a w) (hv: Term.IsValue v) (hw: Term.IsValue w) : v = w := by
+  induction hav with
+  | @refl a =>
+    cases haw with
+    | refl => rfl
+    | @cons _ b _ h ih =>
+      have := hv.notReduce _ h
+      contradiction
+  | @cons a b v hab h ih =>
+    apply ih _ hv
+    cases haw
+    have := hw.notReduce _ hab
+    contradiction
+    rename_i b' hb' _
+    cases Reduce.unique hab hb'
+    assumption
+
 -- a term halts iff it reduces to a value
 def Halts (term: Term) := ∃v: Term, v.IsValue ∧ term.ReducesTo v
 
