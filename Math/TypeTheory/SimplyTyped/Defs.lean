@@ -422,6 +422,31 @@ def subst_all_subst_succ
       assumption
       omega
 
+def reduce_or_value (term: Term) (h: term.IsSimplyWellTyped [] ty) : term.IsValue ∨ ∃term': Term, term.Reduce term' := by
+  induction term generalizing ty with
+  | lam => left; apply Term.IsValue.lam
+  | app func arg ihf iha =>
+    right
+    cases h; rename_i arg_ty harg hfunc
+    rcases ihf hfunc
+    rcases iha harg <;> rename_i gfunc garg
+    cases gfunc
+    rename_i body
+    exists body.subst arg 0
+    apply Term.Reduce.apply
+    assumption
+    obtain ⟨arg', h⟩ := garg
+    exists func.app arg'
+    apply Term.Reduce.app_arg
+    assumption
+    assumption
+    rename_i gfunc
+    obtain ⟨func', h⟩ := gfunc
+    exists func'.app arg
+    apply Term.Reduce.app_func
+    assumption
+  | var => contradiction
+
 end Term
 
 end SimplyTyped

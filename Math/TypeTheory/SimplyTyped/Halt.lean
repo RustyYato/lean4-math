@@ -186,51 +186,42 @@ instance : WellFoundedRelation (SimplyWellTypedTerm ty) where
       subst y
       assumption
 
+namespace SimplyWellTypedTerm
+
 -- evaluate a term which is simply well typed in the empty context to a value of the same type
-def SimplyWellTypedTerm.eval (term: SimplyWellTypedTerm ty) : Σ' term': SimplyWellTypedTerm ty, term'.term.IsValue :=
+def eval (term: SimplyWellTypedTerm ty) : SimplyWellTypedTerm ty :=
   match term.term.findReduction with
   | .inl ⟨b, hb⟩ =>
-    let term' : SimplyWellTypedTerm ty := {
+    eval {
       term := b
       prf := by
         apply Term.IsSimplyWellTyped.reduce
         exact term.prf
         assumption
     }
-    term'.eval
-  | .inr no_red => {
-    fst := term
-    snd := by
-      obtain ⟨term, wt⟩ := term
-      simp at *
-      rw [←not_exists] at no_red
-      induction term generalizing ty with
-      | lam => apply Term.IsValue.lam
-      | var =>
-        cases wt
-        contradiction
-      | app func arg ihf iha =>
-        cases wt
-        rename_i arg_ty arg_Wt func_wt
-        exfalso
-        apply no_red; clear no_red
-        if h₀:∃x, func.Reduce x then
-          obtain ⟨_, red⟩ := h₀
-          exact ⟨_, .app_func _ _ _ red⟩
-        else
-        have : func.IsValue := by
-          apply ihf
-          assumption
-          assumption
-        if h₀:∃x, arg.Reduce x then
-          obtain ⟨_, red⟩ := h₀
-          refine ⟨_, .app_arg _ _ _ ?_ red⟩
-          assumption
-        else
-          cases this
-          refine ⟨_, .apply _ _ ?_⟩
-          apply iha
-          assumption
-          assumption
-  }
+  | .inr no_red => term
 termination_by term
+
+def eval_is_value (term: SimplyWellTypedTerm ty) : term.eval.term.IsValue := by
+  induction term using eval.induct with
+  | case1 x b h g ih =>
+    unfold eval
+    rwa [g]
+  | case2 x h g =>
+    unfold eval
+    rw [g]
+    dsimp
+    apply (Term.reduce_or_value x.term x.prf).resolve_right
+    assumption
+
+def eval_reduces_to (term: SimplyWellTypedTerm ty) : Term.ReducesTo term.term term.eval.term := by
+  induction term using eval.induct with
+  | case1 x b h g ih =>
+    unfold eval
+    rw [g]
+    apply Relation.ReflTransGen.cons <;> assumption
+  | case2 x h g =>
+    unfold eval
+    rw [g]
+
+end SimplyWellTypedTerm
