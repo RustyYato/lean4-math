@@ -38,6 +38,63 @@ def SMulCon.lift (f: F) {c: SMulCon R α} (resp: c ≤ kernel f) : AlgQuotient c
 def RingCon.lift (f: F) {c: RingCon α} (resp: c ≤ kernel f) : AlgQuotient c -> β := Quotient.lift f resp
 def LinearCon.lift (f: F) {c: LinearCon R α} (resp: c ≤ kernel f) : AlgQuotient c -> β := Quotient.lift f resp
 
+def AddCon.liftAddGroupHom [Zero α] [Zero β] [IsZeroHom F α β] (f: F) {c: AddCon α} (resp: c ≤ kernel f) : AlgQuotient c →+ β where
+  toFun := lift f resp
+  map_zero := map_zero f
+  map_add := by
+    intro a b
+    induction a with | mk a =>
+    induction b with | mk b =>
+    apply map_add
+
+def MulCon.liftGroupHom [One α] [One β] [IsOneHom F α β] (f: F) {c: MulCon α} (resp: c ≤ kernel f) : AlgQuotient c →* β where
+  toFun := lift f resp
+  map_one := map_one f
+  map_mul := by
+    intro a b
+    induction a with | mk a =>
+    induction b with | mk b =>
+    apply map_mul
+
+def MulCon.liftGroupWithZeroHom [Zero α] [Zero β] [One α] [One β] [IsZeroHom F α β] [IsOneHom F α β] (f: F) {c: MulCon α} (resp: c ≤ kernel f) : AlgQuotient c →*₀ β where
+  toFun := lift f resp
+  map_one := map_one f
+  map_zero := map_zero f
+  map_mul := by
+    intro a b
+    induction a with | mk a =>
+    induction b with | mk b =>
+    apply map_mul
+
+def RingCon.liftRngHom [Zero α] [Zero β] [IsZeroHom F α β] (f: F) {c: RingCon α} (resp: c ≤ kernel f) : AlgQuotient c →+*₀ β where
+  toFun := lift f resp
+  map_zero := map_zero f
+  map_add := by
+    intro a b
+    induction a with | mk a =>
+    induction b with | mk b =>
+    apply map_add
+  map_mul := by
+    intro a b
+    induction a with | mk a =>
+    induction b with | mk b =>
+    apply map_mul
+
+def RingCon.liftRingHom [Zero α] [Zero β] [One α] [One β] [IsZeroHom F α β] [IsOneHom F α β] (f: F) {c: RingCon α} (resp: c ≤ kernel f) : AlgQuotient c →+* β where
+  toFun := lift f resp
+  map_one := map_one f
+  map_zero := map_zero f
+  map_add := by
+    intro a b
+    induction a with | mk a =>
+    induction b with | mk b =>
+    apply map_add
+  map_mul := by
+    intro a b
+    induction a with | mk a =>
+    induction b with | mk b =>
+    apply map_mul
+
 def AddCon.comap (f: F) (c: AddCon β) : AddCon α := {
   Setoid.comap f c.toSetoid with
   resp_add := by

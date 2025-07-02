@@ -43,7 +43,7 @@ instance [One α] [Mul α] : Inv (Units α) where
     inv_mul_val := a.val_mul_inv
   }
 
-def Units.val_one [MonoidOps α] [IsMonoid α] : (1: Units α).val = 1 := rfl
+@[simp] def Units.val_one [MonoidOps α] [IsMonoid α] : (1: Units α).val = 1 := rfl
 def Units.val_mul [MonoidOps α] [IsMonoid α] (a b: Units α) : (a * b).val = a.val * b.val := rfl
 def Units.val_inv [MonoidOps α] [IsMonoid α] (a: Units α) : (a⁻¹).val = a.inv := rfl
 
