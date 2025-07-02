@@ -298,3 +298,14 @@ instance (priority := 100) [Add α] [Mul α] [IsCommMagma α] [IsRightDistrib α
   mul_add k a b := by
     iterate 3 rw [mul_comm k]
     rw [add_mul]
+
+class IsAbsorbing [Mul α] (a: α) : Prop where
+  mul_left (x: α) : x * a = a
+  mul_right (x: α) : a * x = a
+
+instance [IsMulZeroClass α]  : IsAbsorbing (0: α) where
+  mul_left _ := mul_zero _
+  mul_right _ := zero_mul _
+
+def IsAbsorbing.unique [Mul α] (a b: α) (ha: IsAbsorbing a) (hb: IsAbsorbing b) : a = b := by
+  rw [←ha.mul_right b]; rw (occs := [2]) [←hb.mul_left a]
