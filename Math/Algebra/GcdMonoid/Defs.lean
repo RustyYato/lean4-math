@@ -39,11 +39,11 @@ def normalize₀ [Zero α] [IsMulZeroClass α] : α →*₀ α := {
 def normalize_unit (a: Units α) : normalize a.val = 1 := by
   simp [apply_normalize, apply_normUnit, NormalizationMonoid.normUnit_unit a, ←Units.val_mul]
 
-def normalize_isassoc (a: α) : IsAssociates (normalize a) a := by
+def normalize_isassoc (a: α) : IsAssociated (normalize a) a := by
   exists (normUnit a)⁻¹
   simp [mul_assoc, ←Units.val_mul]
 
-def normalize_eq_of_isassoc (a b: α) (h: IsAssociates a b) : normalize a = normalize b := by
+def normalize_eq_of_isassoc (a b: α) (h: IsAssociated a b) : normalize a = normalize b := by
   obtain ⟨u, rfl⟩ := h
   rw [map_mul, normalize_unit, mul_one]
 
@@ -91,7 +91,8 @@ class IsGcdMonoid (α: Type*) [GcdMonoidOps α] extends IsMonoid α, IsCommMagma
   lcm_absorb (a b: α) (h: IsAbsorbing b) : lcm a b = b
   absorb_lcm (a b: α) (h: IsAbsorbing a) : lcm a b = a
 
-variable [GcdMonoidOps α] [IsGcdMonoid α]
+variable [GcdMonoidOps α] [IsGcdMonoid α] [IsMulCancel α]
+   [Zero α] [IsMulZeroClass α]
 
 def gcd_dvd_left (a b: α): gcd a b ∣ a := IsGcdMonoid.gcd_dvd_left _ _
 def gcd_dvd_right (a b: α): gcd a b ∣ b := IsGcdMonoid.gcd_dvd_right _ _
@@ -100,10 +101,10 @@ def lcm_absorb (a b: α) (h: IsAbsorbing b) : lcm a b = b := IsGcdMonoid.lcm_abs
 def absorb_lcm (a b: α) (h: IsAbsorbing a) : lcm a b = a := IsGcdMonoid.absorb_lcm _ _ h
 def gcd_mul_lcm (a b: α): gcd a b * lcm a b = a * b := IsGcdMonoid.gcd_mul_lcm _ _
 
-def lcm_zero [Zero α] [IsMulZeroClass α] (a: α) : lcm a 0 = 0 := lcm_absorb _ _ inferInstance
-def zero_lcm [Zero α] [IsMulZeroClass α] (a: α) : lcm 0 a = 0 := absorb_lcm _ _ inferInstance
+def lcm_zero (a: α) : lcm a 0 = 0 := lcm_absorb _ _ inferInstance
+def zero_lcm (a: α) : lcm 0 a = 0 := absorb_lcm _ _ inferInstance
 
-def gcd_comm [IsMulCancel α] (a b: α) : IsAssociates (gcd a b) (gcd b a) := by
+def IsAssociated.gcd_comm (a b: α) : IsAssociated (gcd a b) (gcd b a) := by
   apply dvd_antisymm
   apply dvd_gcd
   apply gcd_dvd_right
@@ -112,7 +113,7 @@ def gcd_comm [IsMulCancel α] (a b: α) : IsAssociates (gcd a b) (gcd b a) := by
   apply gcd_dvd_right
   apply gcd_dvd_left
 
-def gcd_assoc [IsMulCancel α] (a b c: α) : IsAssociates (gcd a (gcd b c)) (gcd (gcd a b) c) := by
+def IsAssociated.gcd_assoc (a b c: α) : IsAssociated (gcd a (gcd b c)) (gcd (gcd a b) c) := by
   apply dvd_antisymm
   apply dvd_gcd
   apply dvd_gcd
@@ -132,3 +133,37 @@ def gcd_assoc [IsMulCancel α] (a b c: α) : IsAssociates (gcd a (gcd b c)) (gcd
   apply gcd_dvd_left
   apply gcd_dvd_right
   apply gcd_dvd_right
+
+def IsAssociated.gcd_zero (a: α) : IsAssociated (gcd a 0) a := by
+  apply dvd_antisymm
+  apply gcd_dvd_left
+  apply dvd_gcd
+  rfl
+  apply dvd_zero
+
+def IsAssociated.zero_gcd (a: α) : IsAssociated (gcd 0 a) a := by
+  apply Relation.trans'
+  apply gcd_comm
+  apply gcd_zero
+
+def IsAssociated.gcd_congr (a b c d: α) (ac: IsAssociated a c) (bd: IsAssociated b d) : IsAssociated (gcd a b) (gcd c d) := by
+  apply dvd_antisymm
+  apply dvd_gcd
+  apply dvd_trans
+  apply gcd_dvd_left
+  apply dvd_of_is_associated
+  assumption
+  apply dvd_trans
+  apply gcd_dvd_right
+  apply dvd_of_is_associated
+  assumption
+
+  apply dvd_gcd
+  apply dvd_trans
+  apply gcd_dvd_left
+  apply dvd_of_is_associated
+  apply Relation.symm; assumption
+  apply dvd_trans
+  apply gcd_dvd_right
+  apply dvd_of_is_associated
+  apply Relation.symm; assumption

@@ -62,7 +62,11 @@ def dvd_trans {a b c: α} [Mul α] [IsSemigroup α] [IsLawfulDvd α] : a ∣ b -
   exists a * b
   rw [mul_assoc]
 
-def dvd_zero [Mul α] [Zero α] [IsMulZeroClass α] [IsLawfulDvd α] (a: α) : a ∣ 0 := by
+def dvd_absorb [Mul α] [IsLawfulDvd α] (a b: α) (h: IsAbsorbing b) : a ∣ b := by
   rw [dvd_iff]
-  exists 0
-  rw [mul_zero]
+  exists b
+  rw [IsAbsorbing.mul_left]
+
+def dvd_zero [Mul α] [Zero α] [IsMulZeroClass α] [IsLawfulDvd α] (a: α) : a ∣ 0 := by
+  apply dvd_absorb
+  infer_instance
