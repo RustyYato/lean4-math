@@ -36,6 +36,14 @@ instance [MonoidOps α] [IsMonoid α] : IsGroup (Units α) where
     apply Units.val.inj
     apply npow_succ
 
+instance [MonoidOps α] [AddGroupOps α] [IsMonoid α] [IsAddGroup α] [IsLeftDistrib α] [IsRightDistrib α] [IsMulZeroClass α] : Neg (Units α) where
+  neg u := {
+      val := -u.val
+      inv := -u.inv
+      val_mul_inv := by rw [mul_neg, neg_mul, neg_neg, u.val_mul_inv]
+      inv_mul_val := by rw [mul_neg, neg_mul, neg_neg, u.inv_mul_val]
+  }
+
 instance [AddMonoidOps α] [IsAddMonoid α] : SMul ℤ (AddUnits α) where
   smul := zsmulRec
 
@@ -70,3 +78,16 @@ instance [AddMonoidOps α] [IsAddMonoid α] : IsAddGroup (AddUnits α) where
     intro a n
     apply AddUnits.val.inj
     apply succ_nsmul
+
+instance [AddGroupOps α] [IsAddGroup α] [MonoidOps α] [IsMonoid α] : IsUnit (1: α) where
+  eq_unit := ⟨1, rfl⟩
+
+instance [AddGroupOps α] [IsAddGroup α] [MonoidOps α] [IsMonoid α] [IsLeftDistrib α] [IsRightDistrib α] [IsMulZeroClass α] (a: α) [IsUnit a] : IsUnit (-a: α) where
+  eq_unit := by
+    obtain ⟨a, rfl⟩ := IsUnit.eq_unit (x := a)
+    exists -a
+
+instance [AddGroupOps α] [IsAddGroup α] [MonoidOps α] [IsMonoid α] [IsLeftDistrib α] [IsRightDistrib α] [IsMulZeroClass α] (x: ℤ) [IsUnit x] (a: α) [IsUnit a] : IsUnit (x • a: α) := by
+  rcases Int.ofIsUnit x with rfl | rfl
+  rw [one_zsmul]; infer_instance
+  rw [neg_one_zsmul]; infer_instance

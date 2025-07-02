@@ -7,6 +7,11 @@ structure Units (α: Type*) [One α] [Mul α] where
   val_mul_inv: val * inv = 1
   inv_mul_val: inv * val = 1
 
+attribute [coe] Units.val
+
+instance [One α] [Mul α] : Coe (Units α) α where
+  coe := Units.val
+
 instance [One α] [Mul α] (u: Units α) : IsInvertible u.val where
   invOf := u.inv
   mul_invOf := u.val_mul_inv
@@ -37,6 +42,10 @@ instance [One α] [Mul α] : Inv (Units α) where
     val_mul_inv := a.inv_mul_val
     inv_mul_val := a.val_mul_inv
   }
+
+def Units.val_one [MonoidOps α] [IsMonoid α] : (1: Units α).val = 1 := rfl
+def Units.val_mul [MonoidOps α] [IsMonoid α] (a b: Units α) : (a * b).val = a.val * b.val := rfl
+def Units.val_inv [MonoidOps α] [IsMonoid α] (a: Units α) : (a⁻¹).val = a.inv := rfl
 
 instance [MonoidOps α] [IsMonoid α] : IsInvertible (1: α) :=
   inferInstanceAs (IsInvertible (1: Units α).val)
@@ -179,6 +188,9 @@ def inv_mul (x: α) [h: IsUnit x] : inv x * x = 1 := by
   exact (Classical.choose h.eq_unit).inv_mul_val
 
 end IsUnit
+
+instance [MonoidOps α] [IsMonoid α] : IsUnit (1: α) where
+  eq_unit := ⟨1, rfl⟩
 
 noncomputable
 def toUnit (x: α) [One α] [Mul α] [IsUnit x] : Units α where

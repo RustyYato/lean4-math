@@ -515,3 +515,26 @@ def mul_eq_one_of_eq_inv [IsGroup α] {a b: α} : a = b⁻¹ -> a * b = 1 :=
   add_eq_zero_of_eq_neg (α := AddOfMul α)
 
 end Group
+
+def mul_sub [AddGroupOps α] [IsAddGroup α] [Mul α] [IsLeftDistrib α] [IsMulZeroClass α] (k a b: α): k * (a - b) = k * a - k * b := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, mul_add]
+  congr 1
+  symm
+  apply neg_eq_of_add_left
+  rw [←mul_add, add_neg_cancel, mul_zero]
+
+def sub_mul [AddGroupOps α] [IsAddGroup α] [Mul α] [IsRightDistrib α] [IsMulZeroClass α] (k a b: α): (a - b) * k = a * k - b * k := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, add_mul]
+  congr 1
+  symm
+  apply neg_eq_of_add_left
+  rw [←add_mul, add_neg_cancel, zero_mul]
+
+@[simp]
+def neg_mul [AddGroupOps α] [Mul α] [IsAddGroup α] [IsRightDistrib α] [IsMulZeroClass α] (a b: α) : -a * b = -(a * b) := by
+  symm; apply neg_eq_of_add_left
+  rw [←add_mul, add_neg_cancel, zero_mul]
+@[simp]
+def mul_neg [AddGroupOps α] [Mul α] [IsAddGroup α] [IsLeftDistrib α] [IsMulZeroClass α] (a b: α) : a * -b = -(a * b) := by
+  symm; apply neg_eq_of_add_left
+  rw [←mul_add, add_neg_cancel, mul_zero]

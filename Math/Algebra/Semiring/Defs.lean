@@ -1,37 +1,5 @@
 import Math.Algebra.AddMonoidWithOne.Defs
 
-section Distrib
-
-class IsLeftDistrib (α: Type*) [Add α] [Mul α]: Prop where
-  mul_add (k a b: α): k * (a + b) = k * a + k * b
-class IsRightDistrib (α: Type*) [Add α] [Mul α]: Prop where
-  add_mul (a b k: α): (a + b) * k = a * k + b * k
-
-def mul_add [Add α] [Mul α] [IsLeftDistrib α] (k a b: α): k * (a + b) = k * a + k * b := IsLeftDistrib.mul_add k a b
-def add_mul [Add α] [Mul α] [IsRightDistrib α] (a b k: α): (a + b) * k = a * k + b * k := IsRightDistrib.add_mul a b k
-
-instance [Add α] [Mul α] [IsLeftDistrib α] : IsLeftDistrib αᵃᵒᵖ where
-  mul_add _ _ _ := mul_add (α := α) _ _ _
-instance [Add α] [Mul α] [IsRightDistrib α] : IsRightDistrib αᵃᵒᵖ where
-  add_mul _ _ _ := add_mul (α := α) _ _ _
-
-instance [Add α] [Mul α] [IsLeftDistrib α] : IsRightDistrib αᵐᵒᵖ where
-  add_mul _ _ _ := mul_add (α := α) _ _ _
-instance [Add α] [Mul α] [IsRightDistrib α] : IsLeftDistrib αᵐᵒᵖ where
-  mul_add _ _ _ := add_mul (α := α) _ _ _
-
-instance (priority := 100) [Add α] [Mul α] [IsCommMagma α] [IsLeftDistrib α] : IsRightDistrib α where
-  add_mul a b k := by
-    iterate 3 rw [mul_comm _ k]
-    rw [mul_add]
-instance (priority := 100) [Add α] [Mul α] [IsCommMagma α] [IsRightDistrib α] : IsLeftDistrib α where
-  mul_add k a b := by
-    iterate 3 rw [mul_comm k]
-    rw [add_mul]
-
-
-end Distrib
-
 section PreSemiring
 
 class IsNonUnitalNonAssocSemiring (α: Type*) [AddMonoidOps α] [Mul α] : Prop extends IsAddCommMagma α, IsAddMonoid α, IsLeftDistrib α, IsRightDistrib α, IsMulZeroClass α
