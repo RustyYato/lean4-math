@@ -1,115 +1,83 @@
 import Math.Type.Notation
-import Math.Data.Vector.Defs
-import Math.Data.Nat.Basic
+import Math.Data.Fintype.Basic
+import Math.Data.Fintype.Impls.Finset
+import Math.Data.Finset.Basic
 
-structure MinsweeperData (n m: ℕ) where
-  isMine: Array.Vector Bool (n * m)
+structure MinesweeperBoard (ι: Type*) where
+  neighbors: ι -> Finset ι
+  mines: Finset ι
+  is_mine: ι -> Bool := by intro i; exact i ∈ mines
+  neighbors_symm: ∀x y: ι, y ∈ neighbors x ↔ x ∈ neighbors y
+  is_mine_spec: ∀i, is_mine i ↔ i ∈ mines
 
-structure Minsweeper (n m: ℕ) where
-  grid: Array.Vector (Option (Fin 9)) (n * m)
+structure Minesweeper (ι: Type*) where
+  -- .none if the cell hasn't been clicked on yet
+  -- .some if the cell has been clicked on, and how many mines are around it
+  count_mines: ι -> Option ℕ
 
-def toIndex (i: Fin n) (j: Fin m) : Fin (n * m) where
-  val := i.val * m + j.val
-  isLt := by
-    refine Nat.mul_add_lt i j n ?_ ?_
-    apply Fin.isLt
-    apply Fin.isLt
+def MinesweeperBoard.count_mines_around (i: ι) (board: MinesweeperBoard ι) : ℕ :=
+  (board.neighbors i).val.fold (fun x => (· + if board.is_mine x then 1 else 0)) 0 (by
+    intro x y h; dsimp; ac_rfl)
 
-instance : GetElem (MinsweeperData n m) (Fin n × Fin m) Bool (fun _ _ => True) where
-  getElem d x _ := d.isMine[toIndex x.fst x.snd]
+namespace Minesweeper
 
-instance : GetElem (Minsweeper n m) (Fin n × Fin m) (Option (Fin 9)) (fun _ _ => True) where
-  getElem d x _ := d.grid[toIndex x.fst x.snd]
+def IsCompatible (board: MinesweeperBoard ι) (ms: Minesweeper ι) : Prop :=
+  ∀i: ι, (ms.count_mines i).all (fun n => n = board.count_mines_around i)
 
-namespace Nat
-
-private def abs_diff (i j: ℕ) : ℕ := if i ≤ j then j - i else i - j
-
-end Nat
-
-namespace MinsweeperData
-
-def minesAround (data: MinsweeperData n m) (i: Fin n) (j: Fin m) : Fin 9 :=
-  match n with
-  | n + 1 =>
-  match m with
-  | m + 1 =>
-
-  have i₀ := i - 1
-  have j₀ := j - 1
-  have i₁ := i + 1
-  have j₁ := j + 1
-
-  Id.run do
-    let mut count : Fin 9 := 0
-
-    if Nat.abs_diff i₀ i = 1 ∧ Nat.abs_diff j₀ j = 1 then
-      count ← count + if data[(i₀, j₀)] then 1 else 0
-    else
-      ()
-    if Nat.abs_diff i₀ i = 1 then
-      count ← count + if data[(i₀, j)] then 1 else 0
-    else
-      ()
-    if Nat.abs_diff i₀ i = 1 ∧ Nat.abs_diff j₁ j = 1 then
-      count ← count + if data[(i₀, j₁)] then 1 else 0
-    else
-      ()
-
-    if Nat.abs_diff j₀ j = 1 then
-      count ← count + if data[(i, j₀)] then 1 else 0
-    else
-      ()
-    if Nat.abs_diff j₁ j = 1 then
-      count ← count + if data[(i, j₁)] then 1 else 0
-    else
-      ()
-
-    if Nat.abs_diff i₁ i = 1 ∧ Nat.abs_diff j₀ j = 1 then
-      count ← count + if data[(i₁, j₀)] then 1 else 0
-    else
-      ()
-    if Nat.abs_diff i₁ i = 1 then
-      count ← count + if data[(i₁, j)] then 1 else 0
-    else
-      ()
-    if Nat.abs_diff i₁ i = 1 ∧ Nat.abs_diff j₁ j = 1 then
-      count ← count + if data[(i₁, j₁)] then 1 else 0
-    else
-      ()
-
-    return count
-
-def mines (data: MinsweeperData n m) :=
-  data.isMine.toArray.foldl (· + if · then 1 else 0) 0
-
-end MinsweeperData
-
-namespace Minsweeper
-
-def isValid (game: Minsweeper n m) (data: MinsweeperData n m) : Prop :=
-  -- every tile in the game is either hidden or equal to the number of mines around the game data
-   ∀(i: Fin n) (j: Fin m), game[(i, j)].all (fun x => x = data.minesAround i j)
-
-instance (game: Minsweeper n m) (data: MinsweeperData n m) : Decidable (game.isValid data) :=
+instance [Fintype ι] (board: MinesweeperBoard ι) (ms: Minesweeper ι) : Decidable (ms.IsCompatible board) :=
   inferInstanceAs (Decidable (∀_, _))
 
-def reveal (game: Minsweeper n m) (data: MinsweeperData n m) (i: Fin n) (j: Fin m) : Minsweeper n m where
-  grid := game.grid.set (toIndex i j) (data.minesAround i j)
+def empty (ι: Type*) : Minesweeper ι where
+  count_mines _ := .none
 
--- a tile is doesn't have a mine in every possible board which is valid for this game
+def reveal [DecidableEq ι] (game: Minesweeper ι) (data: MinesweeperBoard ι) (i: ι) : Minesweeper ι where
+  count_mines x :=
+    if x = i then
+      data.count_mines_around x
+    else
+      game.count_mines x
+
+-- a tile is doesn't have a mine in every possible board which is compatible for this game
 -- and has the given number of mines on the board
-def isGuaranteedSafe (game: Minsweeper n m) (i: Fin n) (j: Fin m) (num_mines: ℕ) : Prop :=
-  ∀data: MinsweeperData n m, data.mines = num_mines -> game.isValid data -> !data[(i, j)]
+def IsGuaranteedSafe (game: Minesweeper ι) (i: ι) (num_mines: ℕ) : Prop :=
+  ∀data: MinesweeperBoard ι, data.mines.card = num_mines -> game.IsCompatible data -> ¬data.is_mine i
+
+def IsSolved (board: MinesweeperBoard ι) (game: Minesweeper ι) :=
+  -- in a solved board, the only tiles which aren't revealed are the ones which are mines
+  ∀(i: ι), (game.count_mines i).isNone -> board.is_mine i
 
 -- a board is solvable if it requires no guesses to find every mine
-inductive IsSolvable (data: MinsweeperData n m) : Minsweeper n m -> Prop where
-| solved (game: Minsweeper n m) :
-  (∀(i: Fin n) (j: Fin m), game[(i, j)].isNone -> data[(i, j)]) ->
-  IsSolvable data game
-| reveal (game: Minsweeper n m) (i: Fin n) (j: Fin m) :
-  game.isGuaranteedSafe i j data.mines ->
-  IsSolvable data (game.reveal data i j) ->
-  IsSolvable data game
+inductive IsSolvable (board: MinesweeperBoard ι) : Minesweeper ι -> Prop where
+| solved (game: Minesweeper ι) : game.IsSolved board -> IsSolvable board game
+| reveal [DecidableEq ι] (game: Minesweeper ι) (i: ι) :
+  game.IsGuaranteedSafe i board.mines.card ->
+  -- if after revealing a tile the board is solvable, then the current board is also solvable
+  IsSolvable board (game.reveal board i) ->
+  IsSolvable board game
 
-end Minsweeper
+instance [DecidableEq ι] : WellFoundedRelation { ms: Minesweeper ι // ms.IsSolvable board ∧ ms.IsCompatible board } where
+  rel a b := ∃i,
+    a.val = b.val.reveal board i ∧
+    b.val.IsGuaranteedSafe i board.mines.card ∧
+    (b.val.count_mines i).isNone
+  wf := by
+    apply WellFounded.intro
+    intro ⟨ms, h, compat⟩
+    induction h with
+    | solved ms solved =>
+      apply Acc.intro
+      intro ⟨ms', h', compat'⟩ h
+      obtain ⟨i, rfl, safe, nomine⟩ := h
+      dsimp at *
+      have := safe board rfl compat
+      have := solved i nomine
+      contradiction
+    | reveal ms i safe solvable ih =>
+      apply Acc.intro
+      intro ⟨ms', h', compat'⟩ h
+      obtain ⟨j, rfl, safe, nomine⟩ := h
+      dsimp at *
+      apply ih
+      sorry
+
+end Minesweeper
