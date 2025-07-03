@@ -180,3 +180,84 @@ def dvd_gcd_iff {k a b: α} : k ∣ gcd a b ↔ k ∣ a ∧ k ∣ b := by
   apply dvd_gcd
   assumption
   assumption
+
+-- def IsAssociated.gcd_mul (a b k: α) : IsAssociated (gcd a b * k) (gcd (a * k) (b * k)) := by
+--   apply dvd_antisymm
+--   apply dvd_gcd
+--   apply mul_dvd_mul_right
+--   apply gcd_dvd_left
+--   apply mul_dvd_mul_right
+--   apply gcd_dvd_right
+--   have ⟨x, hx⟩ := dvd_iff.mp (gcd_dvd_left (a * k) (b * k))
+--   apply of_mul_dvd_mul_right
+--   rw [←hx, mul_comm_right _ k]
+--   apply mul_dvd_mul_right
+
+
+
+
+--   sorry
+
+-- def dvd_lcm_left (a b: α) : a ∣ lcm a b := by
+--   apply of_mul_dvd_mul_left
+--   rw [gcd_mul_lcm, mul_comm]
+--   apply mul_dvd_mul_left
+--   apply gcd_dvd_right
+
+-- def dvd_lcm_right (a b: α) : b ∣ lcm a b := by
+--   apply of_mul_dvd_mul_left
+--   rw [gcd_mul_lcm]
+--   apply mul_dvd_mul_right
+--   apply gcd_dvd_left
+
+-- def lcm_dvd (a b k: α) : a ∣ k -> b ∣ k -> lcm a b ∣ k := by
+--   rw [dvd_iff, dvd_iff]
+--   intro ha hb
+--   apply of_mul_dvd_mul_left
+--   rw [gcd_mul_lcm]
+--   obtain ⟨a₀, rfl⟩ := ha
+--   obtain ⟨b₀, h⟩ := hb
+--   rw [mul_comm (gcd _ _), mul_assoc]
+--   apply mul_dvd_mul_left
+--   rw [mul_comm]
+
+
+--   sorry
+
+-- def lcm_dvd_iff (a b k: α) : lcm a b ∣ k ↔ a ∣ k ∧ b ∣ k := by
+--   by_cases hz:a = 0 ∨ b = 0
+--   · rcases hz with rfl | rfl
+--     simp
+--     intro h
+--     cases zero_dvd _ h
+--     apply dvd_zero
+--     simp
+--     intro h
+--     cases zero_dvd _ h
+--     apply dvd_zero
+--   · replace ⟨ha, hb⟩ := not_or.mp hz
+--     clear hz
+--     apply Iff.intro
+--     · intro h
+--       apply And.intro
+--       apply dvd_trans _ h
+--       apply dvd_lcm_left
+--       apply dvd_trans _ h
+--       clear h
+--       apply dvd_lcm_right
+--     · intro ⟨ha, hb⟩
+
+--       sorry
+
+
+-- def dvd_lcm_left (a b: α) : a ∣ lcm a b := by
+
+--   sorry
+
+-- protected def Associates.gcd : Associates α -> Associates α -> Associates α := by
+--   refine Quotient.lift₂ (fun a b => Associates.mk (gcd a b)) ?_
+--   intro a b c d h g
+--   apply Associates.mk_rel
+--   apply IsAssociated.gcd_congr
+--   assumption
+--   assumption
