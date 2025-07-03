@@ -27,6 +27,7 @@ instance : RelLike (Setoid α) α where
   coe s := s.r
 
 structure AddCon (α: Type*) [Add α] extends Setoid α where
+  iseqv := by exact Relation.equiv _
   protected resp_add: ∀{a b c d: α}, r a c -> r b d -> r (a + b) (c + d)
 
 instance [Add α] : RelLike (AddCon α) α where
@@ -35,6 +36,7 @@ instance [Add α] : RelLike (AddCon α) α where
 instance [Add α] : IsAddCon (AddCon α) where
 
 structure SMulCon (R α: Type*) [SMul R α] extends Setoid α where
+  iseqv := by exact Relation.equiv _
   protected resp_smul: ∀(s: R) {x y: α}, r x y -> r (s • x) (s • y)
 
 instance [SMul R α] : RelLike (SMulCon R α) α where
@@ -43,6 +45,7 @@ instance [SMul R α] : RelLike (SMulCon R α) α where
 instance [SMul R α] : IsSMulCon (SMulCon R α) R where
 
 structure MulCon (α: Type*) [Mul α] extends Setoid α where
+  iseqv := by exact Relation.equiv _
   protected resp_mul: ∀{a b c d: α}, r a c -> r b d -> r (a * b) (c * d)
 
 instance [Mul α] : RelLike (MulCon α) α where

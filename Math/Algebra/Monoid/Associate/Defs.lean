@@ -13,7 +13,6 @@ instance [MonoidOps α] [IsMonoid α] : Relation.IsEquiv (IsAssociated (α := α
 
 def Associates.Con (α: Type*) [MonoidOps α] [IsCommMagma α] [IsMonoid α] : MulCon α where
   r := IsAssociated
-  iseqv := Relation.equiv _
   resp_mul := by
     intro a b c d ac bd
     obtain ⟨u, rfl⟩ := ac

@@ -101,8 +101,8 @@ def lcm_absorb (a b: α) (h: IsAbsorbing b) : lcm a b = b := IsGcdMonoid.lcm_abs
 def absorb_lcm (a b: α) (h: IsAbsorbing a) : lcm a b = a := IsGcdMonoid.absorb_lcm _ _ h
 def gcd_mul_lcm (a b: α): gcd a b * lcm a b = a * b := IsGcdMonoid.gcd_mul_lcm _ _
 
-def lcm_zero (a: α) : lcm a 0 = 0 := lcm_absorb _ _ inferInstance
-def zero_lcm (a: α) : lcm 0 a = 0 := absorb_lcm _ _ inferInstance
+@[simp] def lcm_zero (a: α) : lcm a 0 = 0 := lcm_absorb _ _ inferInstance
+@[simp] def zero_lcm (a: α) : lcm 0 a = 0 := absorb_lcm _ _ inferInstance
 
 def IsAssociated.gcd_comm (a b: α) : IsAssociated (gcd a b) (gcd b a) := by
   apply dvd_antisymm
@@ -167,3 +167,16 @@ def IsAssociated.gcd_congr (a b c d: α) (ac: IsAssociated a c) (bd: IsAssociate
   apply gcd_dvd_right
   apply dvd_of_is_associated
   apply Relation.symm; assumption
+
+def dvd_gcd_iff {k a b: α} : k ∣ gcd a b ↔ k ∣ a ∧ k ∣ b := by
+  apply Iff.intro
+  intro h
+  apply And.intro
+  apply dvd_trans h
+  apply gcd_dvd_left
+  apply dvd_trans h
+  apply gcd_dvd_right
+  intro ⟨hb, hc⟩
+  apply dvd_gcd
+  assumption
+  assumption

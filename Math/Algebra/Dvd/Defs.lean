@@ -67,6 +67,36 @@ def dvd_absorb [Mul α] [IsLawfulDvd α] (a b: α) (h: IsAbsorbing b) : a ∣ b 
   exists b
   rw [IsAbsorbing.mul_left]
 
+def absorb_dvd [Mul α] [IsLawfulDvd α] (a b: α) (h: IsAbsorbing b) : b ∣ a -> a = b := by
+  rw [dvd_iff]
+  rintro ⟨b, rfl⟩
+  rw [IsAbsorbing.mul_right]
+
 def dvd_zero [Mul α] [Zero α] [IsMulZeroClass α] [IsLawfulDvd α] (a: α) : a ∣ 0 := by
   apply dvd_absorb
   infer_instance
+
+def zero_dvd [Mul α] [Zero α] [IsMulZeroClass α] [IsLawfulDvd α] (a: α) : 0 ∣ a -> a = 0 := by
+  apply absorb_dvd
+  infer_instance
+
+def of_mul_dvd_mul_left [Mul α] [IsSemigroup α] [IsLeftCancel α] [IsLawfulDvd α] (k a b: α) : k * a ∣ k * b -> a ∣ b := by
+  rw [dvd_iff, dvd_iff]
+  intro ⟨x, h⟩
+  rw [mul_assoc] at h
+  exists x
+  exact mul_left_cancel h
+
+def of_mul_dvd_mul_right [Mul α] [IsSemigroup α] [IsCommMagma α] [IsMulCancel α] [IsLawfulDvd α] (k a b: α) : a * k ∣ b * k -> a ∣ b := by
+  iterate 2 rw [mul_comm _ k]
+  apply of_mul_dvd_mul_left
+
+def mul_dvd_mul_left [Mul α] [IsSemigroup α] [IsLawfulDvd α] (k a b: α) : a ∣ b -> k * a ∣ k * b := by
+  rw [dvd_iff, dvd_iff]
+  rintro ⟨x, rfl⟩
+  exists x
+  rw [mul_assoc]
+
+def mul_dvd_mul_right [Mul α] [IsCommMagma α] [IsSemigroup α] [IsLawfulDvd α] (k a b: α) : a ∣ b -> a * k ∣ b * k := by
+  iterate 2 rw [mul_comm _ k]
+  apply mul_dvd_mul_left
