@@ -1,6 +1,7 @@
 import Math.Type.Notation
 import Math.Data.Fintype.Basic
 import Math.Data.Fintype.Impls.Finset
+import Math.Data.Fintype.Impls.Subtype
 import Math.Data.Finset.Basic
 
 structure MinesweeperBoard (ι: Type*) where
@@ -8,7 +9,7 @@ structure MinesweeperBoard (ι: Type*) where
   mines: Finset ι
   is_mine: ι -> Bool := by intro i; exact i ∈ mines
   neighbors_symm: ∀x y: ι, y ∈ neighbors x ↔ x ∈ neighbors y
-  is_mine_spec: ∀i, is_mine i ↔ i ∈ mines
+  is_mine_spec: ∀i, is_mine i ↔ i ∈ mines := by intro; simp
 
 structure Minesweeper (ι: Type*) where
   -- .none if the cell hasn't been clicked on yet
@@ -18,6 +19,27 @@ structure Minesweeper (ι: Type*) where
 def MinesweeperBoard.count_mines_around (i: ι) (board: MinesweeperBoard ι) : ℕ :=
   (board.neighbors i).val.fold (fun x => (· + if board.is_mine x then 1 else 0)) 0 (by
     intro x y h; dsimp; ac_rfl)
+
+def Equiv.minesweeperBoard (ι: Type*) [DecidableEq ι] : MinesweeperBoard ι ≃ { data: (Finset ι) × (ι -> Finset ι) // ∀x y, y ∈ data.2 x ↔ x ∈ data.2 y } where
+  toFun b := ⟨⟨b.mines, b.neighbors⟩, b.neighbors_symm⟩
+  invFun b := {
+    mines := b.1.1
+    neighbors := b.1.2
+    neighbors_symm := b.2
+    is_mine x := x ∈ b.1.1
+  }
+  leftInv := by
+    intro b
+    simp
+    congr
+    ext x
+    suffices (decide (x ∈ b.mines) = true) ↔ b.is_mine x by
+      exact Bool.coe_iff_coe.mp this
+    simp [b.is_mine_spec]
+  rightInv x := rfl
+
+instance Fintype.instMinesweeperBoard [Fintype ι] [DecidableEq ι] : Fintype (MinesweeperBoard ι) :=
+  Fintype.ofEquiv (Equiv.minesweeperBoard ι)
 
 namespace Minesweeper
 
@@ -54,30 +76,5 @@ inductive IsSolvable (board: MinesweeperBoard ι) : Minesweeper ι -> Prop where
   -- if after revealing a tile the board is solvable, then the current board is also solvable
   IsSolvable board (game.reveal board i) ->
   IsSolvable board game
-
-instance [DecidableEq ι] : WellFoundedRelation { ms: Minesweeper ι // ms.IsSolvable board ∧ ms.IsCompatible board } where
-  rel a b := ∃i,
-    a.val = b.val.reveal board i ∧
-    b.val.IsGuaranteedSafe i board.mines.card ∧
-    (b.val.count_mines i).isNone
-  wf := by
-    apply WellFounded.intro
-    intro ⟨ms, h, compat⟩
-    induction h with
-    | solved ms solved =>
-      apply Acc.intro
-      intro ⟨ms', h', compat'⟩ h
-      obtain ⟨i, rfl, safe, nomine⟩ := h
-      dsimp at *
-      have := safe board rfl compat
-      have := solved i nomine
-      contradiction
-    | reveal ms i safe solvable ih =>
-      apply Acc.intro
-      intro ⟨ms', h', compat'⟩ h
-      obtain ⟨j, rfl, safe, nomine⟩ := h
-      dsimp at *
-      apply ih
-      sorry
 
 end Minesweeper
