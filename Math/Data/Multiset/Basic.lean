@@ -1658,4 +1658,13 @@ def nodup_label [DecidableEq α] (ms: Multiset α) : ms.label.Nodup := by
 
 def Elem [DecidableEq α] (ms: Multiset α) := { x // x ∈ ms.label }
 
+def ext_nodup (a b: Multiset α) : a.Nodup -> b.Nodup -> (∀x, x ∈ a ↔ x ∈ b) -> a = b := by
+  cases a with | mk a =>
+  cases b with | mk b =>
+  intro ha hb h
+  apply Quotient.sound
+  apply List.ext_nodup <;> assumption
+
+def singleton_append (a: α) (as: Multiset α) : {a} ++ as = a::ₘas := by rfl
+
 end Multiset

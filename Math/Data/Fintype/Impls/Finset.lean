@@ -202,3 +202,266 @@ def Finset.mem_compl [Fintype α] [DecidableEq α] {s: Finset α} : ∀{x}, x �
 
 def Finset.compl_compl [Fintype α] [DecidableEq α] (s: Finset α) : sᶜᶜ = s := by
   ext; simp [mem_compl]
+
+private def mk_multiset (f: Fintype.Repr c α) (x: Nat) (h: c' ≤ c) : Multiset α :=
+  Multiset.mk (Fin.foldl c' (fun acc i =>
+    if x.testBit i.val then
+      acc.push (f.decode (i.castLE h))
+    else
+      acc
+    ) #[]).toList
+
+private def mk_multiset_zero (f: Fintype.Repr c α) (x: Nat) : mk_multiset f x (Nat.zero_le _) = ∅ := rfl
+private def mk_multiset_succ (f: Fintype.Repr c α) (x: Nat) (h: c' + 1 ≤ c) :
+  mk_multiset f x h = (
+    let prev := mk_multiset (c' := c') f x (by
+      apply Nat.le_trans _ h
+      apply Nat.le_succ)
+    if x.testBit c' then
+      (f.decode ⟨c', Nat.lt_of_succ_le h⟩)::ₘprev
+    else
+      prev
+  ) := by
+  dsimp
+  induction c' with
+  | zero =>
+    unfold mk_multiset
+    dsimp
+    rw [Fin.foldl_succ, Fin.foldl_zero, Fin.foldl_zero]
+    dsimp
+    split
+    rfl
+    rfl
+  | succ c' ih =>
+    rw [mk_multiset, Fin.foldl_succ_last]
+    dsimp
+    split
+    · rw [Array.push_toList, ←Multiset.mk_append, Multiset.append_comm, Multiset.mk_append,
+        List.singleton_append, ←Multiset.mk_cons]
+      rfl
+    · rfl
+private def mk_multiset_succ' (f: Fintype.Repr c α) (x: Nat) (h: c' + 1 ≤ c) :
+  mk_multiset f x h = (
+    (if x.testBit c' then
+      {f.decode ⟨c', Nat.lt_of_succ_le h⟩}
+    else
+      (∅: Multiset α)) ++ mk_multiset (c' := c') f x (by
+      apply Nat.le_trans _ h
+      apply Nat.le_succ)
+  ) := by
+  rw [mk_multiset_succ]
+  dsimp
+  split
+  rfl
+  rfl
+
+private def mem_mk_multiset {f: Fintype.Repr c α} {x: Nat} {h: c' ≤ c} : ∀{a: α}, a ∈ mk_multiset f x h ↔ ∃i: Fin c', a = f.decode (i.castLE h) ∧ x.testBit i.val := by
+  intro a
+  induction c' with
+  | zero =>
+    rw [mk_multiset_zero]
+    simp [show a ∉ (∅: Multiset α) from nofun]
+    nofun
+  | succ c' ih =>
+    rw [mk_multiset_succ]
+    split
+    · simp; apply Iff.intro
+      · intro g
+        rcases g with g | g
+        exists Fin.last _
+        have ⟨i, hi⟩ := ih.mp g
+        exists i.castSucc
+      · intro ⟨i, _, _⟩
+        cases i using Fin.lastCases
+        left; assumption
+        right; apply ih.mpr
+        rename_i i _ _
+        exists i
+    · simp
+      apply Iff.intro
+      · intro g
+        have ⟨i, hi⟩ := ih.mp g
+        exists i.castSucc
+      · intro ⟨i, _, _⟩
+        cases i using Fin.lastCases
+        contradiction
+        apply ih.mpr
+        rename_i i _ _
+        exists i
+
+private def mk_multiset_nodup (f: Fintype.Repr c α) (x: Nat) (h: c' ≤ c) : (mk_multiset f x h).Nodup := by
+  induction c' with
+  | zero => apply List.Pairwise.nil
+  | succ c ih =>
+    rw [mk_multiset_succ]
+    dsimp
+    split
+    apply Multiset.nodup_cons
+    · rw [mem_mk_multiset]
+      intro ⟨⟨j, jlt⟩, hj, _⟩
+      have := f.decode.inj hj
+      dsimp at this
+      cases this
+      exact Nat.lt_irrefl _ jlt
+    · apply ih
+    · apply ih
+
+private def mk_finset (f: Fintype.Repr c α) (x: Fin (2 ^ c')) (h: c' ≤ c) : Finset α where
+  val := (mk_multiset f x h)
+  property := by apply mk_multiset_nodup
+
+private def mk_finset_zero (f: Fintype.Repr c α) (h: c' ≤ c) : mk_finset f 0 h = ∅ := by
+  unfold mk_finset; congr
+  induction c' with
+  | zero => rw [mk_multiset_zero]
+  | succ c' ih =>
+    rw [mk_multiset_succ, if_neg]
+    apply ih
+    apply Bool.eq_false_iff.mp
+    apply Nat.zero_testBit
+
+private def nat_pow_lt_pow_iff_right (i j: Nat) : i < j -> 2 ^ i < 2 ^ j := by
+  intro h
+  induction i generalizing j with
+  | zero =>
+    simp
+    omega
+  | succ i ih =>
+    cases j
+    contradiction
+    rw [Nat.pow_succ, Nat.pow_succ]
+    rw [Nat.mul_two, Nat.mul_two]
+    apply Nat.add_lt_add
+    all_goals
+      apply ih
+      omega
+
+private def Fin.twoPow (i: Fin n) : Fin (2 ^ n) where
+  val := 2 ^ i.val
+  isLt := by
+    apply nat_pow_lt_pow_iff_right
+    exact i.isLt
+
+private def mk_multiset_or (f: Fintype.Repr c α) (i: Fin (2 ^ c')) (j: Fin c') (h: c' ≤ c) (g: ¬i.val.testBit j.val) :
+  mk_multiset f (i ||| j.twoPow) h = f.decode (j.castLE h)::ₘmk_multiset f i h := by
+  -- show a ∈ mk_multiset _ _ _ ↔ a ∈ _::ₘmk_multiset _ _ _
+  obtain ⟨i, iLt⟩ := i
+  dsimp [Fin.twoPow] at *
+  clear iLt
+  induction c' generalizing i with
+  | zero => exact j.elim0
+  | succ c' ih =>
+    rw [mk_multiset_succ]
+    cases j using Fin.lastCases with
+    | last =>
+      simp
+      congr 1
+      apply Multiset.ext_nodup
+      apply mk_multiset_nodup
+      apply mk_multiset_nodup
+      intro a
+      rw [mem_mk_multiset, mem_mk_multiset]
+      simp; conv => {
+        lhs; arg 1; intro k; rhs
+        rw [Nat.testBit_two_pow, decide_eq_true_iff, or_iff_left (by
+          intro g
+          have := k.isLt
+          rw [←g] at this
+          exact Nat.lt_irrefl _ this)]
+      }
+      dsimp at g
+      apply Iff.intro
+      · intro ⟨k, _, _⟩
+        exists k.castSucc
+      · intro ⟨k, _, _⟩
+        cases k using Fin.lastCases
+        contradiction
+        rename_i k _ _
+        exists k
+    | cast j =>
+      simp [Nat.testBit_two_pow]
+      rw [mk_multiset_succ']
+      symm
+      split <;> (symm; rename_i htest)
+      · rw [if_pos (.inl htest)]
+        rw [Multiset.singleton_append, Multiset.cons_comm]
+        congr
+        apply ih
+        assumption
+      · rw [if_neg]
+        apply ih
+        assumption
+        intro g
+        cases g
+        contradiction
+        have := j.isLt
+        rename_i h
+        rw [h] at this
+        exact Nat.lt_irrefl _ this
+
+instance Fintype.instFinset [f: Fintype α] : Fintype (Finset α) where
+  card_thunk := Thunk.mk fun _ => 2 ^ Fintype.card α
+  toRepr :=
+    let c := Fintype.card α
+    f.toRepr.map (β := Fintype.Repr (2 ^ c) _) fun f => {
+      decode := {
+        toFun x := mk_finset f x (Nat.le_refl _)
+        inj' := by
+          intro x y h
+          dsimp at h
+          have : ∀{a: α}, a ∈ mk_finset f x (Nat.le_refl _) ↔ a ∈ mk_finset f y (Nat.le_refl _) := by rw [h]
+          replace this : ∀{a: α}, a ∈ mk_multiset _ _ (Nat.le_refl _) ↔ a ∈ mk_multiset _ _ (Nat.le_refl _) := this
+          simp [mem_mk_multiset] at this
+          have : ∀i, x.val.testBit i = y.val.testBit i := by
+            intro i
+            by_cases hi:i < c
+            · let a := f.decode ⟨i, hi⟩
+              by_cases h:x.val.testBit i = true
+              have ⟨j, hj, testbit⟩ := (@this a).mp ⟨⟨i, hi⟩, rfl, h⟩
+              cases f.decode.inj hj
+              rw [h, testbit]
+              have := (Iff.not_iff_not (@this a)).mp (by
+                intro ⟨j, hj, tb⟩
+                cases f.decode.inj hj
+                contradiction)
+              simp at this
+              rw [this ⟨i, hi⟩ rfl]
+              apply Bool.eq_false_iff.mpr
+              assumption
+            · rw [Nat.testBit_eq_decide_div_mod_eq, Nat.testBit_eq_decide_div_mod_eq, Nat.div_eq_of_lt, Nat.div_eq_of_lt]
+              apply Nat.lt_of_lt_of_le y.isLt
+              refine Nat.pow_le_pow_right ?_ ?_ <;> omega
+              apply Nat.lt_of_lt_of_le x.isLt
+              refine Nat.pow_le_pow_right ?_ ?_ <;> omega
+          ext; apply Nat.eq_of_testBit_eq
+          assumption
+        surj' := by
+          intro x
+          dsimp
+          obtain ⟨x, xNodup⟩ := x
+          induction x with
+          | nil =>
+            exists 0
+            rw [mk_finset_zero]
+            rfl
+          | cons x xs ih =>
+            replace ih := ih xNodup.tail
+            obtain ⟨is, his⟩ := ih
+            have ⟨i, hi⟩ := f.decode.surj x
+            exists is ||| i.twoPow
+            unfold mk_finset
+            congr; simp
+            by_cases hi':is.val.testBit i.val
+            · exfalso
+              cases Subtype.mk.inj his
+              clear his
+              have := xNodup.head
+              rw [mem_mk_multiset, not_exists] at this
+              exact this i ⟨hi, hi'⟩
+            · rw [mk_multiset_or]
+              congr
+              exact Subtype.mk.inj his
+              assumption
+      }
+      encode := Thunk.mk fun _ => .none
+    }

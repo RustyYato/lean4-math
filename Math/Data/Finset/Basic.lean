@@ -17,11 +17,7 @@ instance [DecidableEq α] (as: Finset α) : Decidable (x ∈ as) :=
 @[ext]
 def ext : ∀(a b: Finset α), (h: ∀{x: α}, x ∈ a ↔ x ∈ b) -> a = b := by
   intro ⟨a, ha⟩ ⟨b, hb⟩ h
-  cases a with | mk a =>
-  cases b with | mk b =>
-  congr 1
-  apply Quotient.sound
-  apply List.ext_nodup <;> assumption
+  congr 1; apply Multiset.ext_nodup <;> assumption
 
 variable [DecidableEq α] [DecidableEq β]
 

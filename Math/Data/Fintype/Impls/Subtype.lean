@@ -2,7 +2,7 @@ import Math.Data.Fintype.Impls.List
 
 namespace Fintype
 
-instance [f: Fintype α] {P: α -> Prop} [DecidablePred P] : Fintype (Subtype P) := by
+instance instSubtype [f: Fintype α] {P: α -> Prop} [DecidablePred P] : Fintype (Subtype P) := by
   refine f.toRepr.recOnSubsingleton fun f => ?_
   refine Fintype.ofArray ?_ ?_ ?_
   · exact (Array.ofFn f.decode).filterMap (fun x => if h:P x then .some ⟨x, h⟩ else .none)
